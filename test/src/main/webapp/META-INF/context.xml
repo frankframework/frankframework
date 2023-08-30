@@ -2,7 +2,7 @@
 <Context>
 	<JarScanner scanClassPath="false" scanAllFiles="false" scanAllDirectories="false"/>
 
-	<!-- 
+	<!--
 		Support for XA using BTM requires JDBC datasources to be configured via
 		factory="org.apache.naming.factory.BeanFactory" and a proper XADataSource classname.
 		Configuration via driverClassName only works for the standard transaction manager.
@@ -45,9 +45,9 @@
 		password="${testiaf_user/password:-testiaf_user00}"
 	/>
 
-	<Resource 
-		name="jdbc/ibis4test-mssql" 
-		auth="Container" 
+	<Resource
+		name="jdbc/ibis4test-mssql"
+		auth="Container"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
 		URL="jdbc:sqlserver://${jdbc.hostname:-host.docker.internal}:1433;database=testiaf"
@@ -68,6 +68,7 @@
 	/>
 
 	<!-- serverTimezone is set for docker instances -->
+	<!-- pinGlobalTxToPhysicalConnection is required because BTM is not a real Transaction Manager and cannot handle transactions over multiple connections -->
 	<Resource
 		name="jdbc/ibis4test-mysql"
 		factory="org.apache.naming.factory.BeanFactory"
@@ -82,47 +83,28 @@
 		socketTimeout="5000"
 	/>
 
- 	<!-- pinGlobalTxToPhysicalConnection appears to be required to avoid locking problems under XA -->
-
-	<!-- Use MySQL driver for MariaDB for proper XA support. --> <!-- serverTimezone is set for docker instances -->
-	<Resource
-		name="jdbc/ibis4test-mariadb"
-		factory="org.apache.naming.factory.BeanFactory"
-		type="com.mysql.cj.jdbc.MysqlXADataSource"
-		URL="jdbc:mysql://${jdbc.hostname:-host.docker.internal}:3306/testiaf"
-		user="${testiaf_user/username:-testiaf_user}"
-		password="${testiaf_user/password:-testiaf_user00}"
-		sslMode="DISABLED"
-		serverTimezone="Europe/Amsterdam"
-		allowPublicKeyRetrieval="true"
-		pinGlobalTxToPhysicalConnection="true"
-		socketTimeout="5000"
-	/>
-<!-- 
+	<!-- pinGlobalTxToPhysicalConnection is required because BTM is not a real Transaction Manager and cannot handle transactions over multiple connections -->
 	<Resource
 		name="jdbc/ibis4test-mariadb"
 		factory="org.apache.naming.factory.BeanFactory"
 		type="org.mariadb.jdbc.MariaDbDataSource"
-		user="testiaf_user"
-		password="testiaf_user00"
+		user="${testiaf_user/username:-testiaf_user}"
+		password="${testiaf_user/password:-testiaf_user00}"
 		url="jdbc:mariadb://${jdbc.hostname:-host.docker.internal}:3306/testiaf?pinGlobalTxToPhysicalConnection=true"
 	/>
- -->
- 	<!-- pinGlobalTxToPhysicalConnection does not work the same for mariadb as it does for mysql, therefor still locking problems under XA for mariadb -->
-	
 
-	<Resource 
-		name="jdbc/ibis4test-postgres-xa" 
+	<Resource
+		name="jdbc/ibis4test-postgres-xa"
 		factory="org.apache.naming.factory.BeanFactory"
-		type="org.postgresql.xa.PGXADataSource" 
+		type="org.postgresql.xa.PGXADataSource"
 		URL="jdbc:postgresql://${jdbc.hostname:-host.docker.internal}:5432/testiaf"
 		user="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 	/>
-	
+
 	<!-- Postgres XA does not work without BTM/Narayana, gives ClassCastException casting the XA datasource to Java datasource, so add non-XA for those cases -->
 	<Resource name="jdbc/ibis4test-postgres" auth="Container"
-		type="javax.sql.DataSource" 
+		type="javax.sql.DataSource"
 		driverClassName="org.postgresql.Driver"
 		url="jdbc:postgresql://${jdbc.hostname:-host.docker.internal}:5432/testiaf"
 		username="${testiaf_user/username:-testiaf_user}"
@@ -132,7 +114,7 @@
 	/>
 
 	<Resource name="jdbc/ibis4test-db2-xa" auth="Container"
-		factory="org.apache.naming.factory.BeanFactory" 
+		factory="org.apache.naming.factory.BeanFactory"
 		type="com.ibm.db2.jcc.DB2XADataSource"
 		serverName="${jdbc.hostname:-host.docker.internal}"
 		portNumber="50000"
@@ -144,14 +126,14 @@
 
 	<!-- DB2 XA does not work without BTM/Narayana, gives ClassCastException casting the XA datasource to Java datasource, so add non-XA for those cases -->
 	<Resource name="jdbc/ibis4test-db2" auth="Container"
-		type="javax.sql.DataSource" 
+		type="javax.sql.DataSource"
 		driverClassName="com.ibm.db2.jcc.DB2Driver"
 		url="jdbc:db2://${jdbc.hostname:-host.docker.internal}:50000/testiaf"
 		username="${testiaf_user/username:-testiaf_user}"
 		password="${testiaf_user/password:-testiaf_user00}"
 	/>
 
-	<Resource 
+	<Resource
 		name="mongodb/ibis4test"
 		type="com.mongodb.MongoClient"
 		factory="com.mongodb.client.MongoClientFactory"
@@ -161,15 +143,15 @@
 	/>
 
 
-	<!-- Tibco crendentials can be set here via 'userName' and 'userPassword' attributes, or in the jmsRealm via authAlias (not via username and password) -->
+	<!-- Tibco credentials can be set here via 'userName' and 'userPassword' attributes, or in the jmsRealm via authAlias (not via username and password) -->
 	<Resource
 		name="jms/qcf_tibco_esb_ff"
 		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"
-		
+
 		delegate_name="SLXHP_Queue_ConnectionFactory"
 		delegate_jndiProperties="TibcoJndi.properties"
 		delegate_providerURL="tibjmsnaming://DEVESBLARGEDC1:37243,tibjmsnaming://DEVESBLARGEDC2:37243"
-		
+
 		userName="IBIS_AWS_POC_USER"
 		userPassword="xxxxxxxxx"
 		SSLEnableVerifyHost="false"
@@ -177,11 +159,11 @@
 	<Resource
 		name="jms/qcf_tibco_esb_rr"
 		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"
-		
+
 		delegate_name="SLNHN_Queue_ConnectionFactory"
 		delegate_jndiProperties="TibcoJndi.properties"
 		delegate_providerURL="tibjmsnaming://DEVESBSMALLDC1:37243,tibjmsnaming://DEVESBSMALLDC2:37243"
-		
+
 		userName="IBIS_AWS_POC_USER"
 		userPassword="xxxxxxxxx"
 		SSLEnableVerifyHost="false"
@@ -190,7 +172,7 @@
 	<Resource
 		name="jms/GetMessageRequest"
 		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"
-		
+
 		delegate_name="ESB.Infrastructure.TS.Test.TestIAF.1.GetMessage.1.Request"
 		delegate_jndiProperties="TibcoJndi.properties"
 		delegate_providerURL="tibjmsnaming://DEVESBSMALLDC1:37243,tibjmsnaming://DEVESBSMALLDC2:37243"
@@ -199,7 +181,7 @@
 	<Resource
 		name="jms/UpdateMessageAction"
 		factory="nl.nn.adapterframework.jndi.TomcatJndiProxy"
-		
+
 		delegate_name="ESB.Infrastructure.TS.Test.TestIAF.1.UpdateMessage.1.Action"
 		delegate_jndiProperties="TibcoJndi.properties"
 		delegate_providerURL="tibjmsnaming://DEVESBLARGEDC1:37243,tibjmsnaming://DEVESBLARGEDC2:37243"

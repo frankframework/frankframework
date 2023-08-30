@@ -35,6 +35,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
+import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
+import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
 
 import bitronix.tm.resource.jms.PoolingConnectionFactory;
 import lombok.Getter;
@@ -146,10 +148,15 @@ public class MessagingSource  {
 		return connectionFactory;
 	}
 
-	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+	/** The QCF is wrapped in a Spring TransactionAwareConnectionFactoryProxy, this should always be the most outer wrapped QCF. */
+	private ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+		if(getConnectionFactory() instanceof TransactionAwareConnectionFactoryProxy) {
+			return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(), "targetConnectionFactory");
+		}
 		return getConnectionFactory();
 	}
 
+	/** Retrieve the 'original' ConnectionFactory, used by the console (to get the Tibco QCF) in order to display queue message count. */
 	public Object getManagedConnectionFactory() {
 		ConnectionFactory qcf = null;
 		try {
@@ -157,16 +164,13 @@ public class MessagingSource  {
 			if (qcf instanceof PoolingConnectionFactory) { //BTM
 				return ((PoolingConnectionFactory)qcf).getXaConnectionFactory();
 			}
-			try {
-				if (qcf instanceof ConnectionFactoryProxy) { // Narayana
-					return ClassUtils.getDeclaredFieldValue(qcf, ConnectionFactoryProxy.class, "xaConnectionFactory");
-				}
-				return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
-			} catch (Exception e) {
-				log.debug("Could not get managedConnectionFactory: ("+e.getClass().getTypeName()+") "+e.getMessage());
-				// In case of BTM.
-				return ClassUtils.invokeGetter(qcf, "getResource", true);
+			if (qcf instanceof JmsPoolConnectionFactory) { //Narayana with pooling
+				return ((JmsPoolConnectionFactory)qcf).getConnectionFactory();
 			}
+			if (qcf instanceof ConnectionFactoryProxy) { // Narayana without pooling
+				return ClassUtils.getDeclaredFieldValue(qcf, ConnectionFactoryProxy.class, "xaConnectionFactory");
+			}
+			return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
 		} catch (Exception e) {
 			if (qcf != null) {
 				return qcf;
@@ -192,13 +196,37 @@ public class MessagingSource  {
 		try {
 			ConnectionFactory qcfd = getConnectionFactoryDelegate();
 			if (qcfd != managedConnectionFactory) {
-				result += " managed by ["+qcfd+"]";
+				result += getConnectionPoolInfo(qcfd);
 			}
 		} catch (Exception e) {
 			result+= ClassUtils.nameOf(connectionFactory)+".getConnectionFactoryDelegate() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
 		}
 
 		return result;
+	}
+
+	/** Return pooling info if present */
+	private String getConnectionPoolInfo(ConnectionFactory qcfd) {
+		StringBuilder result = new StringBuilder(" managed by [").append(ClassUtils.classNameOf(qcfd)).append("] ");
+		if (qcfd instanceof PoolingConnectionFactory) {
+			PoolingConnectionFactory poolcf = ((PoolingConnectionFactory)qcfd);
+			result.append("min poolsize [").append(poolcf.getMinPoolSize()).append("] ");
+			result.append("max poolsize ["+poolcf.getMaxPoolSize()).append("] ");
+			result.append("number of idle connections [").append(poolcf.getInPoolSize()).append("] ");
+			result.append("max idle time [").append(poolcf.getMaxIdleTime()).append("] ");
+			result.append("max life time [").append(poolcf.getMaxLifeTime()).append("] ");
+		}
+		if (qcfd instanceof JmsPoolConnectionFactory) {
+			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);
+			result.append("idle connections [").append(poolcf.getNumConnections()).append("] ");
+			result.append("max connections [").append(poolcf.getMaxConnections()).append("] ");
+			result.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append("] ");
+			result.append("block if session pool is full [").append(poolcf.isBlockIfSessionPoolIsFull()).append("] ");
+			result.append("block if session pool is full timeout [").append(poolcf.getBlockIfSessionPoolIsFullTimeout()).append("] ");
+			result.append("connection check interval [").append(poolcf.getConnectionCheckInterval()).append("] ");
+			result.append("connection idle timeout [").append(poolcf.getConnectionIdleTimeout()).append("] ");
+		}
+		return result.toString();
 	}
 
 	protected Connection createConnection() throws JMSException {

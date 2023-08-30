@@ -53,6 +53,10 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 	public OutputStream _createFile(String folder, String filename) throws IOException {
 		Path f = getFileHandle(folder, filename);
 		try {
+			if(folder != null && !Files.exists(f.getParent())) {
+				Files.createDirectories(f.getParent());
+			}
+
 			Files.createFile(f);
 		} catch (IOException e) {
 			throw new IOException("Cannot create file ["+f.toString()+"]",e);

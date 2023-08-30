@@ -17,10 +17,10 @@ package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  * Utility class to populate and reference side tables.

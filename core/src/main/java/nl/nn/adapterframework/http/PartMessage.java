@@ -17,11 +17,10 @@ package nl.nn.adapterframework.http;
 
 import java.util.Map;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.Part;
-
 import org.apache.commons.lang3.StringUtils;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.Part;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 

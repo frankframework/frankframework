@@ -174,9 +174,6 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 			if(session != null) {
 				session.close();
 			}
-			if(connection != null) {
-				connection.close();
-			}
 			if(client != null) {
 				client.close();
 			}
@@ -345,7 +342,14 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		return diskShare.folderExists(folder);
+		try {
+			return diskShare.folderExists(folder);
+		} catch (SMBApiException e) {
+			if(NtStatus.STATUS_OBJECT_NAME_COLLISION.equals(NtStatus.valueOf(e.getStatusCode()))) {
+				return false;
+			}
+			throw e;
+		}
 	}
 
 	@Override

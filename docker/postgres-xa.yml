@@ -3,7 +3,7 @@ version: '3.8'
 services:
     ff-test:
         environment:
-            jdbc.dbms.default: postgres
+            jdbc.dbms.default: postgres-xa
             jdbc.hostname: postgres
 
     postgres:

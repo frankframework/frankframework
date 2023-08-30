@@ -37,12 +37,14 @@
     "jquery": "2.1.1",
     "jquery-slimscroll": "1.3.6",
     "jquery-ui": "1.10.4",
+    "markdown-it": "^13.0.1",
     "mermaid": "8.14.0",
     "metismenu": "2.0.2",
     "moment": "2.8.1",
     "ng-idle": "1.0.4",
     "pace-js": "1.2.4",
     "prismjs": "1.25.0",
+    "sweetalert": "^2.1.2",
     "tinycon": "0.6.8"
   },
   "devDependencies": {

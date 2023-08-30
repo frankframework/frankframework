@@ -27,6 +27,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.UUIDUtil;
 
 public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -516,6 +517,107 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 	@Test
 	public void fileSystemSenderListActionTestInFolder() throws Exception {
 		fileSystemSenderListActionTest("folder",2);
+	}
+
+	public void fileSystemSenderCreateFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
+		String filename = "create" + FILE1;
+
+		if(_folderExists(folder)) {
+			_deleteFolder(folder);
+		}
+		waitForActionToFinish();
+
+		fileSystemSender.setAction(FileSystemAction.CREATE); //TODO WRITE
+		if (setCreateFolderAttribute) {
+			fileSystemSender.setCreateFolder(true);
+		}
+		fileSystemSender.configure();
+		fileSystemSender.open();
+
+		Message message = new Message(folder + "/" + filename);
+		Message rs = fileSystemSender.sendMessageOrThrow(message, session);
+		String result = rs.asString();
+
+		// test
+		// result should be name of the moved file
+		assertNotNull(result);
+
+		// TODO: result should point to new location of file
+		// TODO: contents of result should be contents of original file
+
+		assertTrue(_fileExists(folder, filename), "file should exist in destination folder ["+folder+"]");
+	}
+
+	@Test
+	public void fileSystemSenderCreateFile() throws Exception {
+		SenderException e = assertThrows(SenderException.class, () -> fileSystemSenderCreateFile("folder", false, false));
+		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertThat(e.getMessage(), containsString("unable to process [CREATE] action for File [folder/createfile1.txt]"));
+	}
+
+	@Test
+	public void fileSystemSenderCreateFileAndCreateFolderAttributeEnabled() throws Exception {
+		fileSystemSenderCreateFile("folder", false, true);
+	}
+
+	public void fileSystemSenderWriteFile(String folder, boolean fileAlreadyExists, boolean setCreateFolderAttribute) throws Exception {
+		String filename = "write" + FILE1;
+
+		if(_folderExists(folder)) {
+			_deleteFolder(folder);
+		}
+		waitForActionToFinish();
+
+		if(fileAlreadyExists && !_fileExists(folder, filename)) {
+			_createFile(folder, filename);
+		}
+
+		fileSystemSender.setAction(FileSystemAction.WRITE);
+		if (setCreateFolderAttribute) {
+			fileSystemSender.setCreateFolder(true);
+		}
+		fileSystemSender.addParameter(ParameterBuilder.create("filename", folder + "/" + filename));
+		fileSystemSender.configure();
+		fileSystemSender.open();
+
+		Message message = new Message("dummyText");
+		Message resultMessage = fileSystemSender.sendMessageOrThrow(message, session);
+		String result = resultMessage.asString();
+
+		// test
+		// result should be name of the moved file
+		assertNotNull(result);
+
+		// TODO: result should point to new location of file
+		// TODO: contents of result should be contents of original file
+
+		assertTrue(_fileExists(folder, filename), "file should exist in destination folder ["+folder+"]");
+		assertEquals("dummyText", StreamUtil.streamToString(_readFile(folder, filename)));
+	}
+	@Test
+	public void fileSystemSenderWriteNewFileInFolder() throws Exception {
+		SenderException e = assertThrows(SenderException.class, () -> fileSystemSenderWriteFile("folder1", false, false));
+		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder1/writefile1.txt]"));
+	}
+
+	@Test
+	public void fileSystemSenderWritingFileAndCreateFolderAttributeEnabled() throws Exception {
+		fileSystemSenderWriteFile("folder2", false, true);
+	}
+
+	@Test
+	public void fileSystemSenderWritingFileThatAlreadyExists() throws Exception {
+		SenderException e = assertThrows(SenderException.class, () -> fileSystemSenderWriteFile("folder3", true, false));
+		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
+	}
+
+	@Test
+	public void fileSystemSenderWritingFileThatAlreadyExistsAndCreateFolderAttributeEnabled() throws Exception {
+		SenderException e = assertThrows(SenderException.class, () -> fileSystemSenderWriteFile("folder3", true, false));
+		assertEquals(e.getCause().getClass(), FileSystemException.class);
+		assertThat(e.getMessage(), containsString("unable to process [WRITE] action for File [folder3/writefile1.txt]"));
 	}
 
 	@Test

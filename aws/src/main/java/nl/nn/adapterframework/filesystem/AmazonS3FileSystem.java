@@ -42,13 +42,16 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.internal.BucketNameUtils;
+import com.amazonaws.services.s3.model.CopyObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.StorageClass;
 
 import lombok.Getter;
 import nl.nn.adapterframework.aws.AwsUtil;
@@ -91,6 +94,8 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	private @Getter String proxyHost = null;
 	private @Getter Integer proxyPort = null;
 	private @Getter int maxConnections = 50;
+
+	private @Getter StorageClass storageClass = StorageClass.Standard;
 
 	private AmazonS3 s3Client;
 	private AWSCredentialsProvider credentialProvider;
@@ -158,7 +163,6 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	/**
 	 * Creates a local S3Object pointer, not representative with what is stored in the S3 Bucket.
 	 * This method may be used to upload a file to S3.
-	 * See {@link #resolve(S3Object) resolve}.
 	 */
 	@Override
 	public S3Object toFile(String filename) throws FileSystemException {
@@ -255,6 +259,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 
 	@Override
 	public OutputStream createFile(final S3Object f) throws FileSystemException, IOException {
+		String folder = getParentFolder(f);
+		if (folder != null && !folderExists(folder)) { //AWS Supports the creation of folders, this check is purely here so all FileSystems have the same behavior
+			throw new FileSystemException("folder ["+folder+"] does not exist");
+		}
+
 		final File file = FileUtils.createTempFile(".s3-upload");
 		final FileOutputStream fos = new FileOutputStream(file);
 		return new BufferedOutputStream(fos) {
@@ -268,7 +277,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 						metaData.setContentLength(file.length());
 
 						try(S3Object file = f) {
-							s3Client.putObject(bucketName, file.getKey(), fis, metaData);
+							PutObjectRequest por = new PutObjectRequest(bucketName, file.getKey(), fis, metaData);
+							por.setStorageClass(getStorageClass());
+							s3Client.putObject(por);
 						}
 					} finally {
 						isClosed = true;
@@ -303,7 +314,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	/**
-	 * Attempts to resolve the Local S3 Pointer created by the {@link #toFile(String) toFile} method.
+	 * Attempts to update the Local S3 Pointer created by the {@link #toFile(String) toFile} method.
 	 * Updates the Metadata context but does not retrieve the actual file handle.
 	 */
 	private S3Object updateFileAttributes(S3Object f) {
@@ -361,7 +372,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	// rename is actually implemented via copy
 	public S3Object renameFile(S3Object source, S3Object destination) throws FileSystemException {
-		s3Client.copyObject(bucketName, source.getKey(), bucketName, destination.getKey());
+		CopyObjectRequest cor = new CopyObjectRequest(bucketName, source.getKey(), bucketName, destination.getKey());
+		cor.setStorageClass(getStorageClass());
+		s3Client.copyObject(cor);
 		s3Client.deleteObject(bucketName, source.getKey());
 		return destination;
 	}
@@ -372,7 +385,9 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 			throw new FileSystemException("folder ["+destinationFolder+"] does not exist");
 		}
 		String destinationFile = destinationFolder+"/"+getName(f);
-		s3Client.copyObject(bucketName, f.getKey(), bucketName, destinationFile);
+		CopyObjectRequest cor = new CopyObjectRequest(bucketName, f.getKey(), bucketName,destinationFile);
+		cor.setStorageClass(getStorageClass());
+		s3Client.copyObject(cor);
 		return toFile(destinationFile);
 	}
 
@@ -649,6 +664,15 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	/** Proxy port */
 	public void setProxyPort(Integer proxyPort) {
 		this.proxyPort = proxyPort;
+	}
+
+	/**
+	 * Set the desired storage class for the S3 object when action is move,copy or write.
+	 * More info on storage classes can be found on the AWS S3 docs: https://aws.amazon.com/s3/storage-classes/
+	 * @ff.default STANDARD
+	 */
+	public void setStorageClass(StorageClass storageClass) {
+		this.storageClass = storageClass;
 	}
 
 	/** Maximum concurrent connections towards S3 */

@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.runner;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -23,12 +25,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.context.support.HttpRequestHandlerServlet;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
@@ -42,6 +48,23 @@ public class ConsoleFrontendBean implements ApplicationContextAware {
 	private static final String WELCOME_FILE = "/index.html";
 
 	private @Setter ApplicationContext applicationContext;
+
+	@Autowired
+	private Environment environment;
+
+	private String getFrontendLocation() {
+		if(Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
+			String devFrontendLocation = environment.getProperty("frontend.resources.location");
+			if(devFrontendLocation == null) {
+				Path rootPath = Paths.get("").toAbsolutePath(); // get default location based on current working directory, in IntelliJ this is the project root.
+				devFrontendLocation = rootPath.resolve("console/frontend/target/frontend/").toString(); //Navigate to the target of the frontend module
+			}
+
+			return ResourceUtils.FILE_URL_PREFIX + FilenameUtils.getFullPath(devFrontendLocation);
+		}
+
+		return "classpath:/META-INF/resources/iaf/gui/";
+	}
 
 	/**
 	 * Spring MVC Bean that allows file retrieval from (classpath) jars and static resources (META-INF/resources).
@@ -64,7 +87,8 @@ public class ConsoleFrontendBean implements ApplicationContextAware {
 
 		};
 		SpringUtils.autowireByName(applicationContext, requestHandler);
-		requestHandler.setLocationValues(Arrays.asList("classpath:/META-INF/resources/iaf/gui/"));
+
+		requestHandler.setLocationValues(Arrays.asList(getFrontendLocation()));
 		return requestHandler;
 	}
 

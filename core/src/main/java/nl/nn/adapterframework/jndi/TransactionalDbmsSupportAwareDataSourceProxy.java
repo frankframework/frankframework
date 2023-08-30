@@ -43,10 +43,10 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 
 	public Map<String, String> getMetaData() throws SQLException {
 		if(metadata == null) {
+			log.debug("populating metadata from getMetaData");
 			try (Connection connection = getConnection()) {
 				populateMetadata(connection);
 			}
-			log.debug("populated metadata from getMetaData");
 		}
 		return metadata;
 	}
@@ -86,8 +86,8 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 	public Connection getConnection() throws SQLException {
 		Connection conn = super.getConnection();
 		if(metadata == null) {
+			log.debug("populating metadata from getConnection");
 			populateMetadata(conn);
-			log.debug("populated metadata from getConnection");
 		}
 
 		return conn;

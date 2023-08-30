@@ -152,6 +152,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	private List<DefaultValueMethods> defaultValueMethodsList;
 
+	@Getter
+	private ParameterMode mode = ParameterMode.INPUT;
+
+	public enum ParameterMode {
+		INPUT, OUTPUT, INOUT
+	}
+
 	public enum ParameterType {
 		/** Renders the contents of the first node (in combination with xslt or xpath). Please note that
 		 * if there are child nodes, only the contents are returned, use <code>XML</code> if the xml tags are required */
@@ -1101,4 +1108,18 @@ public class Parameter implements IConfigurable, IWithParameters {
 		hidden = b;
 	}
 
+	/**
+	 * Set the mode of the parameter, which determines if the parameter is an INPUT, OUTPUT, or INOUT.
+	 * This parameter only has effect for {@link nl.nn.adapterframework.jdbc.StoredProcedureQuerySender}.
+	 * An OUTPUT parameter does not need to have a value specified, but does need to have the type specified.
+	 * Parameter values will not be updated, but output values will be put into the result of the
+	 * {@link nl.nn.adapterframework.jdbc.StoredProcedureQuerySender}.
+	 * <b/>
+	 * If not specified, the default is INPUT.
+	 *
+	 * @param mode INPUT, OUTPUT or INOUT.
+	 */
+	public void setMode(ParameterMode mode) {
+		this.mode = mode;
+	}
 }

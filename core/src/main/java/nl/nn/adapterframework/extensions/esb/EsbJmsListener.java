@@ -169,8 +169,8 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessage, pipeLineSession);
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessageWrapper, pipeLineSession);
 		if (getMessageProtocol() == MessageProtocol.RR) {
 			Destination replyTo = (Destination) pipeLineSession.get("replyTo");
 			if (replyTo == null) {

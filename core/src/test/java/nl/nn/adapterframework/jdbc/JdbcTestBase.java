@@ -3,6 +3,7 @@ package nl.nn.adapterframework.jdbc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,6 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -44,15 +48,26 @@ import nl.nn.adapterframework.util.LogUtil;
 
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {
+
+	private boolean failed = false;
+	@Rule
+	public TestWatcher watchman = new TestWatcher() {
+		@Override
+		protected void failed(Throwable e, Description description) {
+			failed = true;
+		}
+	};
+
 	protected static final String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
 	protected static final String DEFAULT_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 	private @Getter TestConfiguration configuration;
 
-	public static final String TEST_TABLE="Temp"; // use mixed case tablename for testing
+	public static final String TEST_TABLE = "Temp"; // use mixed case tablename for testing
 
 	protected static String singleDatasource = null;  //null; // "MariaDB";  // set to a specific datasource name, to speed up testing
 
+	private boolean dropAllAfterEachTest = true;
 	protected Liquibase liquibase;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected Properties dataSourceInfo;
@@ -129,11 +144,13 @@ public abstract class JdbcTestBase {
 	@After
 	public void teardown() throws Exception {
 		if(liquibase != null) {
-			try {
-				liquibase.dropAll();
-			} catch(Exception e) {
-				log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
-				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
+			if (dropAllAfterEachTest) {
+				try {
+					liquibase.dropAll();
+				} catch(Exception e) {
+					log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
+					liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
+				}
 			}
 			liquibase.close();
 			liquibase = null;
@@ -149,20 +166,40 @@ public abstract class JdbcTestBase {
 					log.debug("Could not rollback: "+e.getMessage());
 				}
 				connection.close();
+				connection = null;
 			}
+		}
+
+		if (failed) {
+			transactionManagerType.closeConfigurationContext();
+			configuration = null;
 		}
 	}
 
-	protected Connection createNonTransactionalConnection() throws SQLException {
-		Connection connection = new DelegatingDataSource(dataSource).getConnection();
+	protected final Connection createNonTransactionalConnection() throws SQLException {
+		Connection connection = getTargetDataSource(dataSource).getConnection();
 		connection.setAutoCommit(true); //Ensure this connection is NOT transactional!
 		return connection;
 	}
 
+	private DataSource getTargetDataSource(DataSource dataSource) {
+		if(dataSource instanceof DelegatingDataSource) {
+			return getTargetDataSource(((DelegatingDataSource) dataSource).getTargetDataSource());
+		}
+		return dataSource;
+	}
+
 	//IBISSTORE_CHANGESET_PATH
 	protected void runMigrator(String changeLogFile) throws Exception {
-		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
+		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(createNonTransactionalConnection()));
 		liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
+		liquibase.forceReleaseLocks();
+		StringWriter out = new StringWriter(2048);
+		liquibase.reportStatus(true, new Contexts(), out);
+		log.info("Liquibase Database: {}, {}", liquibase.getDatabase().getDatabaseProductName(), liquibase.getDatabase().getDatabaseProductVersion());
+		log.info("Liquibase Database connection: {}", liquibase.getDatabase());
+		log.info("Liquibase changeset status:");
+		log.info(out.toString());
 		liquibase.update(new Contexts());
 	}
 

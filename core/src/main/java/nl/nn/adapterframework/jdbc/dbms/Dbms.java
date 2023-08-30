@@ -70,11 +70,8 @@ public enum Dbms {
 				IDbmsSupport result;
 				try {
 					result = dbms.dbmsSupportClass.newInstance();
-					if (result != null) {
-						log.debug("Returning built-in DBMS ["+dbms+"] found for product ["+product+"]");
-						return result;
-					}
-					log.warn("No DbmsSupport configured for built-in DBMS ["+dbms+"] found for product ["+product+"]");
+					log.debug("Returning built-in DBMS [" + dbms + "] found for product [" + product + "]");
+					return result;
 				} catch (IllegalAccessException | InstantiationException e) {
 					log.warn("Could not instantiate DbmsSupport for DBMS ["+dbms+"] found for product ["+product+"]", e);
 				}

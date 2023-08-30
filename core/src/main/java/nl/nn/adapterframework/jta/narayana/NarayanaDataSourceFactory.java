@@ -16,61 +16,97 @@
 package nl.nn.adapterframework.jta.narayana;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.dbcp2.ConnectionFactory;
+import org.apache.commons.dbcp2.DataSourceConnectionFactory;
+import org.apache.commons.dbcp2.PoolableConnection;
+import org.apache.commons.dbcp2.PoolableConnectionFactory;
+import org.apache.commons.dbcp2.PoolingDataSource;
+import org.apache.commons.dbcp2.managed.DataSourceXAConnectionFactory;
+import org.apache.commons.dbcp2.managed.ManagedDataSource;
+import org.apache.commons.dbcp2.managed.PoolableManagedConnectionFactory;
+import org.apache.commons.dbcp2.managed.XAConnectionFactory;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 
-import com.arjuna.ats.internal.jdbc.drivers.modifiers.IsSameRMModifier;
-import com.arjuna.ats.internal.jdbc.drivers.modifiers.ModifierFactory;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
 
 public class NarayanaDataSourceFactory extends JndiDataSourceFactory {
-	private static final Logger LOG = LogUtil.getLogger(NarayanaDataSourceFactory.class);
 
-	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", 20);
+	private @Getter @Setter int minPoolSize = 0;
+	private @Getter @Setter int maxPoolSize = 20;
+	private @Getter @Setter int maxLifeTime = 0;
+
+	public NarayanaDataSourceFactory() {
+		AppConstants appConstants = AppConstants.getInstance();
+		minPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.minPoolSize", minPoolSize);
+		maxPoolSize = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxPoolSize", maxPoolSize);
+		maxLifeTime = appConstants.getInt("transactionmanager.narayana.jdbc.connection.maxLifeTime", maxLifeTime);
+	}
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
 
 	@Override
 	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
-		if (dataSource instanceof XADataSource) {
-			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper((XADataSource) dataSource);
+		if(dataSource instanceof XADataSource) {
+			XADataSource xaDataSource = (XADataSource) dataSource;
+			XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper(xaDataSource);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
-			NarayanaDataSource result = new NarayanaDataSource(dataSource, dataSourceName);
-			result.setMaxConnections(maxPoolSize);
-			checkModifiers(result);
-			return result;
-		}
 
-		log.warn("DataSource [{}] is not XA enabled", dataSourceName);
-		return (DataSource) dataSource;
-	}
-
-	public static void checkModifiers(DataSource dataSource) {
-		try (Connection connection = dataSource.getConnection()) {
-			DatabaseMetaData metadata = connection.getMetaData();
-			String driverName = metadata.getDriverName();
-			int major = metadata.getDriverMajorVersion();
-			int minor = metadata.getDriverMinorVersion();
-
-			if (ModifierFactory.getModifier(driverName, major, minor)==null) {
-				LOG.info("No Modifier found for driver [{}] version [{}.{}], creating IsSameRM modifier", driverName, major, minor);
-				ModifierFactory.putModifier(driverName, major, minor, IsSameRMModifier.class.getName());
+			if(maxPoolSize > 1) {
+				return XAPool(xaDataSource);
 			}
-		} catch (SQLException e) {
-			LOG.warn("Could not check for existence of Modifier", e);
+
+			NarayanaDataSource ds = new NarayanaDataSource(xaDataSource, dataSourceName);
+			log.info("registered Narayana DataSource [{}] with Transaction Manager", ds);
+			return ds;
 		}
+
+		log.info("DataSource [{}] is not XA enabled, unable to register with an Transaction Manager", dataSourceName);
+		return pool((DataSource) dataSource);
 	}
 
+	private DataSource pool(DataSource dataSource) {
+		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
+		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
+
+		ObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
+
+		PoolingDataSource<PoolableConnection> ds = new PoolingDataSource<>(connectionPool);
+		log.info("created PoolingDataSource [{}]", ds);
+		return ds;
+	}
+
+	private DataSource XAPool(XADataSource dataSource) {
+		XAConnectionFactory cf = new DataSourceXAConnectionFactory(transactionManager.getTransactionManager(), dataSource);
+		PoolableConnectionFactory poolableConnectionFactory = new PoolableManagedConnectionFactory(cf, null);
+
+		ObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
+
+		PoolingDataSource<PoolableConnection> ds = new ManagedDataSource<>(connectionPool, cf.getTransactionRegistry());
+		log.info("created XA-enabled PoolingDataSource [{}]", ds);
+		return ds;
+	}
+
+	private ObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
+		poolableConnectionFactory.setAutoCommitOnReturn(false);
+		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+		poolableConnectionFactory.setMaxConnLifetimeMillis((maxLifeTime > 0) ? maxLifeTime * 1000L : -1L);
+		poolableConnectionFactory.setRollbackOnReturn(true);
+		GenericObjectPool<PoolableConnection> connectionPool = new GenericObjectPool<>(poolableConnectionFactory);
+		connectionPool.setMinIdle(minPoolSize);
+		connectionPool.setMaxTotal(maxPoolSize);
+		connectionPool.setBlockWhenExhausted(true);
+		poolableConnectionFactory.setPool(connectionPool);
+		return connectionPool;
+	}
 }

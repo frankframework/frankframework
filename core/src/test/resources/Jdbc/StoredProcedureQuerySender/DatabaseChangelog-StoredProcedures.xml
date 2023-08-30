@@ -1,0 +1,333 @@
+<databaseChangeLog
+		xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+	<changeSet id="IAF-UnitTests-SP-Table" author="Tim van der Leeuw">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<tableExists tableName="SP_TESTDATA" schemaName="TESTIAF_USER"/>
+			</not>
+		</preConditions>
+		<comment>Create SP_TESTDATA for Tests</comment>
+		<createTable tableName="SP_TESTDATA">
+			<column name="TKEY" type="BIGINT" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_DUMMYTABLE"/>
+			</column>
+			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
+			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
+		</createTable>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-SP-H2" author="Tim van der Leeuw" runOnChange="true" dbms="h2">
+		<comment>Create Stored Procedures for H2</comment>
+		<sql>
+			CREATE ALIAS IF NOT EXISTS INSERT_MESSAGE FOR "nl.nn.adapterframework.jdbc.H2TestProcedures.insertMessage";
+			CREATE ALIAS IF NOT EXISTS GET_MESSAGES_BY_CONTENT FOR "nl.nn.adapterframework.jdbc.H2TestProcedures.selectByContent";
+		</sql>
+
+		<rollback>
+			<sql>
+				DROP ALIAS INSERT_MESSAGE;
+				DROP ALIAS GET_MESSAGES_BY_CONTENT;
+			</sql>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-SP-PostgreSQL" author="Tim van der Leeuw" runOnChange="true" dbms="postgresql">
+		<comment>Create Stored Procedures for PostgreSQL</comment>
+		<sql>
+			CREATE OR REPLACE PROCEDURE INSERT_MESSAGE(
+				MESSAGE VARCHAR(100),
+				STATUS CHAR(1)
+			) LANGUAGE SQL
+			BEGIN ATOMIC
+				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
+			END;
+		</sql>
+		<sql>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_BY_ID(
+				IN ID BIGINT,
+				OUT MESSAGE VARCHAR
+			) LANGUAGE SQL
+			BEGIN ATOMIC
+				SELECT TMESSAGE FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</sql>
+		<sql>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
+				IN ID BIGINT,
+				OUT MESSAGE VARCHAR,
+				OUT STATUS CHAR
+			) LANGUAGE SQL
+			BEGIN ATOMIC
+				SELECT TMESSAGE MESSAGE, TCHAR STATUS FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</sql>
+		<sql>
+			CREATE OR REPLACE PROCEDURE COUNT_MESSAGES_BY_CONTENT(
+				INOUT MESSAGE VARCHAR,
+				OUT CNT_INT INTEGER,
+				OUT CNT_BIGINT BIGINT,
+				OUT CNT_DECIMAL DECIMAL
+			) LANGUAGE SQL
+			BEGIN ATOMIC
+				SELECT MESSAGE MESSAGE, COUNT(*) CNT_INT, COUNT(*) CNT_BIGINT, COUNT(*) CNT_DECIMAL FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE;
+			END;
+		</sql>
+		<rollback>
+			<sql>
+				DROP PROCEDURE IF EXISTS INSERT_MESSAGE;
+				DROP PROCEDURE IF EXISTS GET_MESSAGE_BY_ID;
+				DROP PROCEDURE IF EXISTS GET_MESSAGE_AND_TYPE_BY_ID;
+				DROP PROCEDURE IF EXISTS COUNT_MESSAGES_BY_CONTENT;
+			</sql>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-SP-MySQL-MariaDB" author="Tim van der Leeuw" runOnChange="true" dbms="mysql,mariadb">
+		<comment>Stored Procedures for MySQL and MariaDB</comment>
+		<createProcedure procedureName="INSERT_MESSAGE" replaceIfExists="true">
+			CREATE PROCEDURE INSERT_MESSAGE(
+				MESSAGE VARCHAR(100),
+				STATUS CHAR(1)
+			) LANGUAGE SQL
+			BEGIN
+				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
+			END;
+		</createProcedure>
+		<createProcedure procedureName="GET_MESSAGE_BY_ID" replaceIfExists="true">
+			CREATE PROCEDURE GET_MESSAGE_BY_ID(
+				IN ID BIGINT,
+				OUT MESSAGE VARCHAR(100)
+			) LANGUAGE SQL
+			BEGIN
+				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure procedureName="GET_MESSAGE_AND_TYPE_BY_ID" replaceIfExists="true">
+			CREATE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
+				IN ID BIGINT,
+				OUT MESSAGE VARCHAR(100),
+				OUT STATUS CHAR
+			) LANGUAGE SQL
+			BEGIN
+				SELECT TMESSAGE, TCHAR INTO MESSAGE, STATUS FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure procedureName="GET_MESSAGES_BY_CONTENT" replaceIfExists="true">
+			CREATE PROCEDURE GET_MESSAGES_BY_CONTENT(
+				IN MESSAGE VARCHAR(100)
+			)
+			BEGIN
+				SELECT * FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE ORDER BY TKEY;
+			END;
+		</createProcedure>
+		<createProcedure
+				procedureName="COUNT_MESSAGES_BY_CONTENT"
+				replaceIfExists="true"
+		>
+			CREATE PROCEDURE COUNT_MESSAGES_BY_CONTENT(
+				INOUT MESSAGE VARCHAR(200),
+				OUT CNT_INT INTEGER,
+				OUT CNT_BIGINT BIGINT,
+				OUT CNT_DECIMAL DECIMAL
+			) LANGUAGE SQL
+			BEGIN
+				SELECT COUNT(*), COUNT(*), COUNT(*) INTO CNT_INT, CNT_BIGINT, CNT_DECIMAL FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE;
+			END;
+		</createProcedure>
+		<rollback>
+			<sql>
+				DROP PROCEDURE IF EXISTS INSERT_MESSAGE;
+				DROP PROCEDURE IF EXISTS GET_MESSAGE_BY_ID;
+				DROP PROCEDURE IF EXISTS GET_MESSAGE_AND_TYPE_BY_ID;
+				DROP PROCEDURE IF EXISTS GET_MESSAGES_BY_CONTENT;
+				DROP PROCEDURE IF EXISTS COUNT_MESSAGES_BY_CONTENT;
+			</sql>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-SP-MS-SQL" author="Tim van der Leeuw" runOnChange="true" dbms="mssql">
+		<comment>Stored Procedures for MS SQL Server</comment>
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE INSERT_MESSAGE(
+				@MESSAGE VARCHAR(100),
+				@STATUS CHAR(1)
+			) AS
+			BEGIN
+				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (@MESSAGE, @STATUS);
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE GET_MESSAGE_BY_ID(
+				@ID BIGINT,
+				@MESSAGE VARCHAR(100) OUTPUT
+			) AS
+			BEGIN
+				SELECT @MESSAGE = TMESSAGE FROM SP_TESTDATA WHERE TKEY = @ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
+				@ID BIGINT,
+				@MESSAGE VARCHAR(100) OUTPUT,
+				@STATUS CHAR OUT
+			) AS
+			BEGIN
+				SELECT @MESSAGE = TMESSAGE, @STATUS = TCHAR FROM SP_TESTDATA WHERE TKEY = @ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE GET_MESSAGES_BY_CONTENT(
+				@MESSAGE VARCHAR(100)
+			) AS
+			BEGIN
+				SELECT * FROM SP_TESTDATA WHERE TMESSAGE = @MESSAGE ORDER BY TKEY;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE COUNT_MESSAGES_BY_CONTENT(
+				@MESSAGE VARCHAR(200) OUT,
+				@CNT_INT INTEGER OUT,
+				@CNT_BIGINT BIGINT OUT,
+				@CNT_DECIMAL DECIMAL OUT
+			) AS
+			BEGIN
+				SELECT @CNT_INT = COUNT(*), @CNT_BIGINT = COUNT(*), @CNT_DECIMAL = COUNT(*) FROM SP_TESTDATA WHERE TMESSAGE = @MESSAGE;
+			END;
+		</createProcedure>
+		<rollback>
+			<sql>
+				DROP PROCEDURE IF EXISTS INSERT_MESSAGE;
+				DROP PROCEDURE IF EXISTS GET_MESSAGE_BY_ID;
+				DROP PROCEDURE IF EXISTS GET_MESSAGE_AND_TYPE_BY_ID;
+				DROP PROCEDURE IF EXISTS GET_MESSAGES_BY_CONTENT;
+				DROP PROCEDURE IF EXISTS COUNT_MESSAGES_BY_CONTENT;
+			</sql>
+		</rollback>
+	</changeSet>
+
+	<changeSet id="IAF-UnitTests-SP-DB2" author="Tim van der Leeuw" runOnChange="true" dbms="db2">
+		<comment>Stored Procedures for DB2</comment>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE INSERT_MESSAGE(
+				MESSAGE VARCHAR(100),
+				STATUS CHAR(1)
+			) LANGUAGE SQL
+			BEGIN
+				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_BY_ID(
+				IN ID BIGINT,
+				OUT MESSAGE VARCHAR(100)
+			) LANGUAGE SQL
+			BEGIN
+				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
+				IN ID BIGINT,
+				OUT MESSAGE VARCHAR(100),
+				OUT STATUS CHAR
+			) LANGUAGE SQL
+			BEGIN
+				SELECT TMESSAGE, TCHAR INTO MESSAGE, STATUS FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGES_BY_CONTENT(
+				IN MESSAGE VARCHAR(100)
+			) RESULT SETS 1 LANGUAGE SQL
+			BEGIN
+				DECLARE cursor1 CURSOR WITH RETURN TO CLIENT FOR
+					SELECT * FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE ORDER BY TKEY;
+				OPEN cursor1;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE COUNT_MESSAGES_BY_CONTENT(
+				INOUT MESSAGE VARCHAR(200),
+				OUT CNT_INT INTEGER,
+				OUT CNT_BIGINT BIGINT,
+				OUT CNT_DECIMAL DECIMAL
+			) LANGUAGE SQL
+			BEGIN
+				SELECT COUNT(*), COUNT(*), COUNT(*) INTO CNT_INT, CNT_BIGINT, CNT_DECIMAL FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE;
+			END;
+		</createProcedure>
+		<rollback>
+			<sql>
+				DROP PROCEDURE INSERT_MESSAGE;
+				DROP PROCEDURE GET_MESSAGE_BY_ID;
+				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
+				DROP PROCEDURE GET_MESSAGES_BY_CONTENT;
+				DROP PROCEDURE COUNT_MESSAGES_BY_CONTENT;
+			</sql>
+		</rollback>
+
+	</changeSet>
+	<changeSet id="IAF-UnitTests-SP-Oracle" author="Tim van der Leeuw" runOnChange="true" dbms="oracle">
+		<comment>Stored Procedures for Oracle</comment>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE INSERT_MESSAGE(
+				MESSAGE IN SP_TESTDATA.TMESSAGE%TYPE,
+				STATUS IN SP_TESTDATA.TCHAR%TYPE
+			) AS
+			BEGIN
+				INSERT INTO SP_TESTDATA(TMESSAGE, TCHAR) VALUES (MESSAGE, STATUS);
+			END INSERT_MESSAGE;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_BY_ID(
+				MSG_ID IN SP_TESTDATA.TKEY%type,
+				MESSAGE OUT SP_TESTDATA.TMESSAGE%TYPE
+			) AS
+			BEGIN
+				SELECT TMESSAGE INTO MESSAGE FROM SP_TESTDATA WHERE TKEY = MSG_ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID(
+				ID IN NUMBER,
+				MESSAGE OUT VARCHAR,
+				STATUS OUT CHAR
+			) AS
+			BEGIN
+				SELECT TMESSAGE, TCHAR INTO MESSAGE, STATUS FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE COUNT_MESSAGES_BY_CONTENT(
+				MESSAGE IN OUT VARCHAR,
+				CNT_INT OUT INTEGER,
+				CNT_BIGINT OUT NUMBER,
+				CNT_DECIMAL OUT DECIMAL
+			) AS
+			BEGIN
+				SELECT COUNT(*), COUNT(*), COUNT(*) INTO CNT_INT, CNT_BIGINT, CNT_DECIMAL FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE FUNCTION add_numbers(a IN NUMBER, b IN NUMBER)
+				RETURN NUMBER IS
+			BEGIN
+				RETURN a + b;
+			END;
+		</createProcedure>
+		<rollback>
+			<sql>
+				DROP PROCEDURE INSERT_MESSAGE;
+				DROP PROCEDURE GET_MESSAGE_BY_ID;
+				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
+				DROP PROCEDURE COUNT_MESSAGES_BY_CONTENT;
+				DROP FUNCTION add_number;
+			</sql>
+		</rollback>
+
+	</changeSet>
+</databaseChangeLog>

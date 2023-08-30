@@ -13,8 +13,8 @@
 
 		<jackson.version>2.15.2</jackson.version>
 		<cxf.version>3.5.6</cxf.version>
-		<spring.version>5.3.28</spring.version>
-		<spring-security.version>5.8.4</spring-security.version>
+		<spring.version>5.3.29</spring.version>
+		<spring-security.version>5.8.5</spring-security.version>
 		<spring-integration.version>5.5.18</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
@@ -26,15 +26,16 @@
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
 
 		<!-- DB Driver Versions -->
-		<h2.driver.version>2.1.214</h2.driver.version>
+		<h2.driver.version>2.2.220</h2.driver.version>
 		<db2.driver.version>11.5.8.0</db2.driver.version>
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
 		<mssql.driver.version>7.4.1.jre8</mssql.driver.version>
-		<mysql.driver.version>8.0.33</mysql.driver.version>
+		<mysql.driver.version>8.1.0</mysql.driver.version>
+		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
 		<mariadb.driver.version>2.7.9</mariadb.driver.version>
 		<postgresql.driver.version>42.6.0</postgresql.driver.version>
-		<mongodb.driver.version>4.10.1</mongodb.driver.version>
+		<mongodb.driver.version>4.10.2</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>5.16.6</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
@@ -56,26 +57,32 @@
 		<license>
 			<name>Apache License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>manual</distribution>
+			<distribution>repo</distribution>
 		</license>
 	</licenses>
 
 	<developers>
 		<developer>
-			<name>Jaco de Groot</name>
-			<email>jaco@ibissource.org</email>
+			<name>Niels Meijer</name>
+			<email>niels@frankframework.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
-			<name>Niels Meijer</name>
-			<email>niels@ibissource.org</email>
+			<name>Tim van der Leeuw</name>
+			<email>tim@frankframework.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
 			<name>Ali Sihab Akcan</name>
 			<email>ali@ibissource.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+		<developer>
+			<name>Jaco de Groot</name>
+			<email>jaco@ibissource.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
@@ -315,6 +322,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
+				<artifactId>spring-webmvc</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
 				<artifactId>spring-aop</artifactId>
 				<version>${spring.version}</version>
 			</dependency>
@@ -421,12 +433,12 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
-				<version>3.12.0</version>
+				<version>3.13.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
-				<version>1.15</version>
+				<version>1.16.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-net</groupId>
@@ -436,7 +448,7 @@
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.12.0</version>
+				<version>2.13.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.mail</groupId>
@@ -446,7 +458,7 @@
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.26</version>
+				<version>1.18.28</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -1210,7 +1222,7 @@
 					<plugin>
 						<groupId>org.ibissource</groupId>
 						<artifactId>frank-doc-plugin</artifactId>
-						<version>0.2-SNAPSHOT</version>
+						<version>0.2</version>
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>

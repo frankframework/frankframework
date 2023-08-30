@@ -15,6 +15,9 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http;
 
+import java.io.IOException;
+import java.util.Date;
+
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -24,12 +27,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-import java.util.Date;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class CacheControlFilter implements Filter {
 
