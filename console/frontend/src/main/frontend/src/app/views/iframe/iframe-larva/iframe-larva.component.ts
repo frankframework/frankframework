@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MiscService } from 'src/app/services.types';
+import { MiscService } from 'src/angularjs/app/services/misc.service';
 
 @Component({
   selector: 'app-iframe-larva',

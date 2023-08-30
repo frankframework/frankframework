@@ -1,7 +1,9 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { StateService } from 'angular-ui-router';
 import { AppConstants } from 'src/angularjs/app/app.module';
-import { ApiService, CookiesService } from 'src/app/services.types';
+import { AppService } from 'src/angularjs/app/app.service';
+import { ApiService } from 'src/angularjs/app/services/api.service';
+import { CookiesService } from 'src/angularjs/app/services/cookies.service';
+import { APP_APPCONSTANTS } from 'src/app/app.module';
 
 @Component({
   selector: 'app-jdbc-execute-query',
@@ -18,23 +20,22 @@ export class JdbcExecuteQueryComponent implements OnInit {
   result: any;
 
   constructor(
-    @Inject("$scope") private $scope: angular.IScope,
-    @Inject("apiService") private apiService: ApiService,
-    @Inject("$timeout") private $timeout: angular.ITimeoutService,
-    @Inject("$state") private $state: StateService,
-    @Inject("cookiesService") private cookiesService: CookiesService,
-    @Inject("appConstants") private appConstants: AppConstants
+    private apiService: ApiService,
+    private cookiesService: CookiesService,
+    @Inject(APP_APPCONSTANTS) private appConstants: AppConstants,
+    private appService: AppService
   ) { };
 
   ngOnInit(): void {
-    this.$scope.$on('appConstants', () => {
+    this.appService.appConstants$.subscribe(() => {
       this.form["datasource"] = this.appConstants['jdbc.datasource.default'];
     });
 
     var executeQueryCookie = this.cookiesService.get("executeQuery");
 
     this.apiService.Get("jdbc", (data) => {
-      this.updateData(data);
+      Object.assign(this, data); // Replacement for $.extend
+
       this.form["datasource"] = (this.appConstants['jdbc.datasource.default'] != undefined) ? this.appConstants['jdbc.datasource.default'] : data.datasources[0];
       this.form["queryType"] = data.queryTypes[0];
       this.form["resultType"] = data.resultTypes[0];
@@ -90,13 +91,5 @@ export class JdbcExecuteQueryComponent implements OnInit {
     this.form["avoidLocking"] = false;
     this.form["trimSpaces"] = false;
     this.cookiesService.remove("executeQuery");
-  };
-
-  updateData(data: any) {
-    for (const key in data) {
-      if (data.hasOwnProperty(key)) {
-        this[key] = data[key];
-      };
-    };
   };
 }

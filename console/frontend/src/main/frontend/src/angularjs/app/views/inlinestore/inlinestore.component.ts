@@ -1,5 +1,5 @@
-import { ApiService } from "src/app/services.types";
 import { appModule } from "../../app.module";
+import { ApiService } from "../../services/api.service";
 
 class InlineStoreController {
 	result: any;

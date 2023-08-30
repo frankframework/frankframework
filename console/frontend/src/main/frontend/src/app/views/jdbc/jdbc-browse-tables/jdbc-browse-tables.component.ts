@@ -1,6 +1,8 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { AppConstants } from 'src/angularjs/app/app.module';
-import { ApiService } from 'src/app/services.types';
+import { AppService } from 'src/angularjs/app/app.service';
+import { ApiService } from 'src/angularjs/app/services/api.service';
+import { APP_APPCONSTANTS } from 'src/app/app.module';
 
 @Component({
   selector: 'app-jdbc-browse-tables',
@@ -9,7 +11,7 @@ import { ApiService } from 'src/app/services.types';
 })
 export class JdbcBrowseTablesComponent implements OnInit {
   datasources = [];
-  resultTypes = {};
+  resultTypes = [];
   error = "";
   processingMessage = false;
   form: Record<string, any> = {};
@@ -18,13 +20,13 @@ export class JdbcBrowseTablesComponent implements OnInit {
   query: any;
 
   constructor(
-    @Inject("$scope") private $scope: angular.IScope,
-    @Inject("apiService") private apiService: ApiService,
-    @Inject("appConstants") private appConstants: AppConstants
+    private apiService: ApiService,
+    @Inject(APP_APPCONSTANTS) private appConstants: AppConstants, 
+    private appService: AppService
   ) { };
 
   ngOnInit(): void {
-    this.$scope.$on('appConstants', () => {
+    this.appService.appConstants$.subscribe(() => {
       this.form["datasource"] = this.appConstants['jdbc.datasource.default'];
     });
 

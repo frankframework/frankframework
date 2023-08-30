@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { ApiService } from 'src/app/services.types';
+import { ApiService } from 'src/angularjs/app/services/api.service';
 
 @Component({
   selector: 'app-inlinestore',

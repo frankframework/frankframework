@@ -1,6 +1,6 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { StateService } from 'angular-ui-router';
-import { MiscService } from 'src/app/services.types';
+import { MiscService } from 'src/angularjs/app/services/misc.service';
 
 @Component({
   selector: 'app-iframe-custom-view',
@@ -12,9 +12,9 @@ export class IframeCustomViewComponent implements OnInit {
   redirectURL = "";
 
   constructor(
-    @Inject("miscService") private miscService: MiscService,
+    private miscService: MiscService,
     private $state: StateService,
-    @Inject("$window") private $window: angular.IWindowService
+    private window: Window
   ) { };
 
   ngOnInit(): void {
@@ -22,7 +22,7 @@ export class IframeCustomViewComponent implements OnInit {
       this.$state.go('pages.status');
 
     if (this.$state.params["url"].indexOf("http") > -1) {
-      this.$window.open(this.$state.params["url"], this.$state.params["name"]);
+      this.window.open(this.$state.params["url"], this.$state.params["name"]);
       this.redirectURL = this.$state.params["url"];
     }
     else

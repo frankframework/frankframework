@@ -1,11 +1,12 @@
 import * as angular from "angular";
 import { AppConstants, appModule } from "../../../app.module";
-import { ApiService } from "src/app/services.types";
 import { StateService } from "angular-ui-router";
+import { AppService } from "src/angularjs/app/app.service";
+import { ApiService } from "src/angularjs/app/services/api.service";
 
 class JdbcBrowseTablesController {
-    datasources = {};
-    resultTypes = {};
+    datasources = [];
+    resultTypes = [];
     error = "";
     processingMessage = false;
     form: Record<string, any> = {};
@@ -18,11 +19,12 @@ class JdbcBrowseTablesController {
         private Api: ApiService,
         private $timeout: angular.ITimeoutService,
         private $state: StateService,
-        private appConstants: AppConstants
+        private appConstants: AppConstants,
+        private appService: AppService
     ) { };
 
     $onInit() {
-        this.$scope.$on('appConstants', () => {
+        this.appService.appConstants$.subscribe(() => {
             this.form["datasource"] = this.appConstants['jdbc.datasource.default'];
         });
 
@@ -32,7 +34,7 @@ class JdbcBrowseTablesController {
         });
     };
 
-    submit(formData) {
+    submit(formData: any) {
         var columnNameArray: string[] = [];
         this.processingMessage = true;
 

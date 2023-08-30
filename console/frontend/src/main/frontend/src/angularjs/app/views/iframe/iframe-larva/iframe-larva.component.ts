@@ -1,6 +1,6 @@
 import * as angular from "angular";
 import { appModule } from "../../../app.module";
-import { MiscService } from "src/app/services.types";
+import { MiscService } from "src/angularjs/app/services/misc.service";
 
 class IframeLarvaController {
     url = "";

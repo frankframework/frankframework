@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MiscService } from 'src/app/services.types';
+import { MiscService } from 'src/angularjs/app/services/misc.service';
 
 @Component({
   selector: 'app-iframe-ladybug',
@@ -11,7 +11,7 @@ export class IframeLadybugComponent implements OnInit {
   redirectURL = "";
 
   constructor(
-    @Inject("miscService") private Misc: MiscService,
+    private Misc: MiscService,
   ) { };
 
   ngOnInit(): void {

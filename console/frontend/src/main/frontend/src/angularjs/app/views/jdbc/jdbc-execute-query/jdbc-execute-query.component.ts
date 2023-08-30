@@ -1,11 +1,13 @@
 import * as angular from "angular";
 import { AppConstants, appModule } from "../../../app.module";
-import { ApiService, CookiesService } from "src/app/services.types";
 import { StateService } from "angular-ui-router";
+import { ApiService } from "src/angularjs/app/services/api.service";
+import { CookiesService } from "src/angularjs/app/services/cookies.service";
+import { AppService } from "src/angularjs/app/app.service";
 
 class JdbcExecuteQueryController {
-	datasources = {};
-	resultTypes = {};
+	datasources = [];
+	resultTypes = [];
 	error = "";
 	processingMessage = false;
 	form: Record<string, any> = {};
@@ -17,11 +19,12 @@ class JdbcExecuteQueryController {
 		private $timeout: angular.ITimeoutService,
 		private $state: StateService,
 		private Cookies: CookiesService,
-		private appConstants: AppConstants
+		private appConstants: AppConstants,
+		private appService: AppService
 	) { };
 
 	$onInit() {
-		this.$scope.$on('appConstants', () => {
+		this.appService.appConstants$.subscribe(() => {
 			this.form["datasource"] = this.appConstants['jdbc.datasource.default'];
 		});
 
@@ -45,7 +48,7 @@ class JdbcExecuteQueryController {
 		});
 	};
 
-	submit(formData) {
+	submit(formData: any) {
 		this.processingMessage = true;
 
 		if (!formData || !formData.query) {
