@@ -524,17 +524,17 @@ public class Parameter implements IConfigurable, IWithParameters {
 			 * N.B. this order differs from transformed parameters.
 			 */
 			if (StringUtils.isNotEmpty(requestedSessionKey)) {
-				result=session.get(requestedSessionKey);
+				result = session.get(requestedSessionKey);
 				if (result instanceof Message && StringUtils.isNotEmpty(getContextKey())) {
 					result = ((Message)result).getContext().get(getContextKey());
 				}
-				if ((result == null) ||
+				if (LOG.isDebugEnabled() && (result == null ||
 						((result instanceof String) && ((String) result).isEmpty()) ||
-						((result instanceof Message) && ((Message) result).isEmpty())) {
-						LOG.debug("Parameter [{}] session variable [{}] is empty", this::getName, ()->requestedSessionKey);
+						((result instanceof Message) && ((Message) result).isEmpty()))) {
+					LOG.debug("Parameter [{}] session variable [{}] is empty", this::getName, () -> requestedSessionKey);
 				}
 			} else if (StringUtils.isNotEmpty(getPattern())) {
-				result=formatPattern(alreadyResolvedParameters, session);
+				result = formatPattern(alreadyResolvedParameters, session);
 			} else if (getValue()!=null) {
 				result = getValue();
 			} else {
