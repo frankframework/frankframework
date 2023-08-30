@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -89,18 +91,35 @@ public class PipeLineSessionTest {
 	}
 
 	@Test
-	public void testMessage() throws Exception {
+	public void testGetMessage() throws Exception {
 		Message message1 = session.getMessage("key1");
 		Message message2 = session.getMessage("key2");
 		Message message3 = session.getMessage("key3");
 		Message message4 = session.getMessage("key4");
-		Message message5 = session.getMessage("doenst-exist");
+		Message message5 = session.getMessage("doesnt-exist");
 
 		assertEquals("test1", message1.asString());
 		assertEquals("test2", message2.asString());
 		assertEquals("test3", message3.asString());
 		assertEquals("test4", message4.asString());
-		assertTrue(message5.isEmpty());
+		assertTrue(message5.isEmpty(), "If key does not exist, result message should be empty");
+		assertNotNull(((Message) session.get("key2")).asObject(), "SessionKey 'key2' stored in Message should not be closed after reading value");
+	}
+
+	@Test
+	public void testGetString() throws Exception {
+		String message1 = session.getString("key1");
+		String message2 = session.getString("key2");
+		String message3 = session.getString("key3");
+		String message4 = session.getString("key4");
+		String message5 = session.getString("doesnt-exist");
+
+		assertEquals("test1", message1);
+		assertEquals("test2", message2);
+		assertEquals("test3", message3);
+		assertEquals("test4", message4);
+		assertNull(message5, "If key does not exist, result string should be NULL");
+		assertNotNull(((Message) session.get("key2")).asObject(), "SessionKey 'key2' stored in Message should not be closed after reading value");
 	}
 
 	@Test
@@ -128,6 +147,8 @@ public class PipeLineSessionTest {
 		assertEquals(456, session.get("key8b", 0));
 		assertEquals(456, session.get("key8c", 0));
 		assertEquals(456, session.get("key8d", 0));
+
+		assertNotNull(((Message) session.get("key8c")).asObject(), "SessionKey 'key8c' stored in Message should not be closed after reading value");
 	}
 
 	@Test
