@@ -17,6 +17,7 @@ package nl.nn.adapterframework.parameters;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -84,7 +85,7 @@ public class ParameterValue {
 	 * @return convert the value to a boolean
 	 */
 	public boolean asBooleanValue(boolean defaultValue) {
-		return value != null ? Boolean.valueOf(valueAsString()).booleanValue() : defaultValue;
+		return value != null ? Boolean.parseBoolean(valueAsString()) : defaultValue;
 	}
 
 	/**
@@ -92,7 +93,7 @@ public class ParameterValue {
 	 * @return convert the value to a byte
 	 */
 	public byte asByteValue(byte defaultValue) {
-		return value != null ? Byte.valueOf(valueAsString()).byteValue() : defaultValue;
+		return value != null ? Byte.parseByte(valueAsString()) : defaultValue;
 	}
 
 	/**
@@ -100,7 +101,7 @@ public class ParameterValue {
 	 * @return convert the value to a double
 	 */
 	public double asDoubleValue(double defaultValue) {
-		return value != null ? Double.valueOf(valueAsString()).doubleValue() : defaultValue;
+		return value != null ? Double.parseDouble(valueAsString()) : defaultValue;
 	}
 
 	/**
@@ -108,7 +109,7 @@ public class ParameterValue {
 	 * @return convert the value to an int
 	 */
 	public int asIntegerValue(int defaultValue) {
-		return value != null ? Integer.valueOf(valueAsString()).intValue() : defaultValue;
+		return value != null ? Integer.parseInt(valueAsString()) : defaultValue;
 	}
 
 	/**
@@ -116,7 +117,7 @@ public class ParameterValue {
 	 * @return convert the value to a long
 	 */
 	public long asLongValue(long defaultValue) {
-		return value != null ? Long.valueOf(valueAsString()).longValue() : defaultValue;
+		return value != null ? Long.parseLong(valueAsString()) : defaultValue;
 	}
 
 	/**
@@ -124,7 +125,7 @@ public class ParameterValue {
 	 * @return convert the value to a float
 	 */
 	public float asFloatValue(float defaultValue) {
-		return value != null ? Float.valueOf(valueAsString()).floatValue() : defaultValue;
+		return value != null ? Float.parseFloat(valueAsString()) : defaultValue;
 	}
 
 	/**
@@ -132,7 +133,7 @@ public class ParameterValue {
 	 * @return convert the value to a short
 	 */
 	public short asShortValue(short defaultValue) {
-		return value != null ? Short.valueOf(valueAsString()).shortValue() : defaultValue;
+		return value != null ? Short.parseShort(valueAsString()) : defaultValue;
 	}
 
 	/**
@@ -163,7 +164,7 @@ public class ParameterValue {
 
 	public Collection<Node> asCollection() throws ParameterException {
 		if (value == null) {
-			return null;
+			return Collections.emptyList();
 		}
 		try {
 			LOG.debug("rendering Parameter [{}] value [{}] as Collection", ()->getDefinition().getName(), ()->value);
