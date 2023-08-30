@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.aspose.cells.IndividualFontConfigs;
+import com.aspose.cells.LoadOptions;
 import com.aspose.words.Document;
 import com.aspose.words.FolderFontSource;
 import com.aspose.words.FontSettings;
@@ -38,7 +40,6 @@ public class Fontsetter {
 	 * @param doc
 	 */
 	public void setFontSettings(Document doc) {
-		String pathToFonts = fontFilesLocation;
 		FontSettings fontSettings = new FontSettings();
 
 		// Retrieve the array of environment-dependent font sources that are searched by
@@ -52,7 +53,7 @@ public class Fontsetter {
 
 		// Add a new folder source which will instruct Aspose.Words to search the
 		// following folder for fonts.
-		FolderFontSource folderFontSource = new FolderFontSource(pathToFonts, false);
+		FolderFontSource folderFontSource = new FolderFontSource(fontFilesLocation, false);
 		// com.aspose.pdf.FolderFontSource
 		// Add the custom folder which contains our fonts to the list of existing font
 		// sources.
@@ -64,6 +65,38 @@ public class Fontsetter {
 		// Apply the new set of font sources to use.
 		fontSettings.setFontsSources(updatedFontSources);
 		doc.setFontSettings(fontSettings);
+	}
+
+	public LoadOptions getCellsLoadOptions() {
+		IndividualFontConfigs config = new IndividualFontConfigs();
+		LoadOptions options = new LoadOptions();
+
+		// Retrieve the array of environment-dependent font sources that are searched by
+		// default.
+		// For example this will contain a "Windows\Fonts\" source on a Windows
+		// machines.
+		// We add this array to a new ArrayList to make adding or removing font entries
+		// much easier.
+		List<com.aspose.cells.FontSourceBase> fontSources = new ArrayList<>();
+		if(options.getFontConfigs() != null) {
+			fontSources.addAll(Arrays.asList(options.getFontConfigs().getFontSources()));
+		}
+
+		// Add a new folder source which will instruct Aspose.Words to search the
+		// following folder for fonts.
+		com.aspose.cells.FolderFontSource folderFontSource = new com.aspose.cells.FolderFontSource(fontFilesLocation, false);
+		// com.aspose.pdf.FolderFontSource
+		// Add the custom folder which contains our fonts to the list of existing font
+		// sources.
+		fontSources.add(folderFontSource);
+
+		// Convert the list of source back into a primitive array of FontSource objects.
+		com.aspose.cells.FontSourceBase[] updatedFontSources = fontSources.toArray(new com.aspose.cells.FontSourceBase[fontSources.size()]);
+
+		// Apply the new set of font sources to use.
+		config.setFontSources(updatedFontSources);
+		options.setFontConfigs(config);
+		return options;
 	}
 
 }

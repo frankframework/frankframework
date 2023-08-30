@@ -83,6 +83,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
+		message.preserve();
 
 		File tmpImageFile = null;
 		com.aspose.imaging.Image image = null;
@@ -99,7 +100,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			// Temporary file (because first we need to get image information (the size) and than load it into
 			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
 			tmpImageFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
-			image =  com.aspose.imaging.Image.load(message.asInputStream());
+			image = com.aspose.imaging.Image.load(message.asInputStream());
 			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 				TiffFrame[] frames = ((TiffImage)image).getFrames();
 				PngOptions pngOptions = new PngOptions();

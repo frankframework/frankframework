@@ -58,6 +58,7 @@ public class PDFUtil {
 	private String[] excludePattern;
 	private int startPage = 1;
 	private int endPage = -1;
+	private double allowedDeviation = 0.0;
 
 	/*
 	 * Constructor
@@ -89,6 +90,10 @@ public class PDFUtil {
 		this.compareMode = mode;
 	}
 
+	public void setAllowedRGBDeviation(double deviation) {
+		this.allowedDeviation = deviation;
+	}
+	
    /**
    * This method is used to get the current comparison mode text/visual
    * @return CompareMode
@@ -482,7 +487,7 @@ public class PDFUtil {
 					logger.info("Comparing Page No : " + (iPage+1));
 					BufferedImage image1 = pdfRenderer1.renderImageWithDPI(iPage, 300, ImageType.RGB);
 					BufferedImage image2 = pdfRenderer2.renderImageWithDPI(iPage, 300, ImageType.RGB);
-					result = ImageUtil.compareAndHighlight(image1, image2, fileName, this.bHighlightPdfDifference, this.imgColor.getRGB()) && result;
+					result = ImageUtil.compareAndHighlight(image1, image2, fileName, this.bHighlightPdfDifference, this.imgColor.getRGB(), allowedDeviation) && result;
 					if(!this.bCompareAllPages && !result){
 						break;
 					}
