@@ -1,0 +1,59 @@
+<div class="row border-bottom">
+  <nav class="navbar navbar-static-top" role="navigation" style="margin-bottom: 0">
+    <div class="navbar-header">
+      <app-hamburger />
+      <span class="m-r-sm text-muted iaf-info"></span>
+    </div>
+    <ul class="nav navbar-top-links navbar-right">
+      <li class="m-r-sm rating" title="Please rate us!">
+        <i *ngFor="let n in [1,2,3,4,5]; let index = index" class="fa fa-star-o rating{{index}}" aria-hidden="true"
+          (click)="openFeedback(index)" (mouseover)="hoverFeedback(index)"
+          mouseleave="hoverFeedback(-1)"></i>
+      </li>
+      <li>
+        <span class="m-r-sm text-muted serverTime">{{serverTime}}</span>
+      </li>
+      <li>
+        <span class="m-r-sm stage">{{dtapStage}}</span>
+      </li>
+      <li *ngIf="dtapSide != ''">
+        <span class="m-r-sm stage">({{dtapSide}})</span>
+      </li>
+      <li uib-dropdown href (click)="resetNotificationCount()">
+        <a class="count-info" href uib-dropdown-toggle>
+          <i class="fa fa-bell"></i> <span [hidden]="notificationCount < 1"
+            class="label label-primary">{{(notificationCount > 5) ? "5+" : notificationCount}}</span>
+        </a>
+        <ul class="dropdown-alerts" uib-dropdown-menu>
+          <ng-container *ngFor="let message in notificationList; let last = last">
+            <li>
+              <a ui-sref="pages.notifications({id: message.id})">
+                <div>
+                  <i class="fa {{message.icon}} fa-fw"></i> {{message.title}}
+                  <span class="pull-right text-muted small" time-since time="{{message.time}}"></span>
+                </div>
+              </a>
+            </li>
+            <li class="divider" *ngIf="!last"></li>
+          </ng-container>
+          <li class="text-center" *ngIf="notificationList.length <= 0">No notifications</li>
+          <!-- <li>
+                        <div class="text-center link-block">
+                            <a ui-sref="pages.notifications({id: 0})">
+                                <strong>See All Alerts</strong>
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        </div>
+                    </li> -->
+        </ul>
+      </li>
+      <li *ngIf="userName">{{userName}}</li>
+      <li *ngIf="loggedin">
+        <a ui-sref="logout">
+          <i title="Logout" class="fa fa-sign-out"></i>
+        </a>
+      </li>
+    </ul>
+
+  </nav>
+</div>
