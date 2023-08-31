@@ -49,10 +49,13 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 
 	@Override
 	public void configure() throws ConfigurationException {
-		super.configure();
 		if (StringUtils.isEmpty(getQuery())) {
 			throw new ConfigurationException(getLogPrefix()+"query must be specified");
 		}
+		if(getUseNamedParams() == null && getQuery().contains(UNP_START)) {
+			setUseNamedParams(true);
+		}
+		super.configure();
 	}
 
 	@Override
