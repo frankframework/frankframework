@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -851,12 +850,13 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void apiListenerWithRepeatableMessageShouldReturnEtag() throws Exception {
+	public void apiListenerWithExplicitlyEnabledEtag() throws Exception {
 		// Arrange
 		String uri="/etag1";
 		Message repeatableMessage = new Message("{\"tralalalallala\":true}", new MessageContext().withModificationTime("2023-01-13 14:02:00"));
 		new ApiListenerBuilder(uri, Methods.GET)
 			.withResponseContent(repeatableMessage)
+			.setUpdateEtag(true)
 			.build();
 
 		Map<String, String> headers = new HashMap<String, String>();
@@ -877,13 +877,12 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void apiListenerWithNonRepeatableMessageShouldNotReturnEtag() throws Exception {
+	public void apiListenerWithRepeatableMessageAndGloballyDisabled() throws Exception {
 		// Arrange
 		String uri="/etag2";
 		Message repeatableMessage = Message.asMessage(new Message("{\"tralalalallala\":true}").asByteArray());
-		Message nonRepeatableMessage = new Message(new FilterInputStream(repeatableMessage.asInputStream()) {}, new MessageContext().withModificationTime("2023-01-13 14:02:00"));
 		new ApiListenerBuilder(uri, Methods.GET)
-			.withResponseContent(nonRepeatableMessage)
+			.withResponseContent(repeatableMessage)
 			.build();
 
 		Map<String, String> headers = new HashMap<String, String>();
@@ -900,7 +899,6 @@ public class ApiListenerServletTest extends Mockito {
 		assertFalse(result.containsHeader("etag"));
 		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
 		assertTrue(result.containsHeader("pragma"));
-		assertEquals("Fri, 13 Jan 2023 13:02:00 GMT", result.getHeader("Last-Modified"));
 	}
 
 	@Test
@@ -1688,6 +1686,11 @@ public class ApiListenerServletTest extends Mockito {
 				listener.setAuthenticationRoles("IbisObserver,TestRole");
 			}
 
+		}
+
+		public ApiListenerBuilder setUpdateEtag(boolean roles) {
+			listener.setUpdateEtag(roles);
+			return this;
 		}
 
 		public ApiListenerBuilder setAuthenticationRoles(String roles) {
