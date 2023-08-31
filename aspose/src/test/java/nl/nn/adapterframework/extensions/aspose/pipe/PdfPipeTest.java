@@ -56,6 +56,8 @@ import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils.MessageType;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -210,7 +212,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.start();
 
 		PipeLineSession session = new PipeLineSession();
-		Message input = new UrlMessage(TestFileUtils.getTestFileURL("/Util/MessageUtils/utf8-with-bom.txt"));
+		Message input = MessageTestUtils.getMessage(MessageType.CHARACTER_UTF8);
 		MimeType mimeType = MessageUtils.computeMimeType(input);
 		assertEquals("UTF-8", mimeType.getParameter("charset")); //ensure we have a charset in the mimetype
 		PipeRunResult result = pipe.doPipe(input, session);
