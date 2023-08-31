@@ -55,7 +55,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 	private @Getter String uriPattern;
-	private @Getter Boolean updateEtag = null;
+	private @Getter boolean updateEtag = AppConstants.getInstance().getBoolean("api.etag.enabled", true);
 	private @Getter String operationId;
 
 	private @Getter HttpMethod method = HttpMethod.GET;
@@ -253,7 +253,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	/**
 	 * Automatically generate and validate etags
-	 * @ff.default <code>true</code> for repeatable responses
+	 * @ff.default <code>true</code>, can be changed by setting the property <code>api.etag.enabled</code>.
 	 */
 	public void setUpdateEtag(Boolean updateEtag) {
 		this.updateEtag = updateEtag;
@@ -372,7 +372,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		builder.append(" produces["+getProduces()+"]");
 		builder.append(" consumes["+getConsumes()+"]");
 		builder.append(" messageIdHeader["+getMessageIdHeader()+"]");
-		builder.append(" updateEtag["+getUpdateEtag()+"]");
+		builder.append(" updateEtag["+isUpdateEtag()+"]");
 		return builder.toString();
 	}
 
