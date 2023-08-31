@@ -19,14 +19,15 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
+import com.aspose.cells.LoadOptions;
 import com.aspose.cells.SaveFormat;
 import com.aspose.cells.Style;
 import com.aspose.cells.Workbook;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -47,15 +48,18 @@ class CellsConvertor extends AbstractConvertor {
 		FILE_TYPE_MAP.put(XLSX_MEDIA_TYPE, "xlsx");
 	}
 
+	private final LoadOptions defaultLoadOptions;
+
 	protected CellsConvertor(CisConfiguration configuration) {
 		super(configuration, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
+		defaultLoadOptions = new Fontsetter(configuration.getFontsDirectory()).getCellsLoadOptions();
 	}
 
 	@Override
 	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
 		// Convert Excel to pdf and store in result
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			Workbook workbook = new Workbook(inputStream);
+			Workbook workbook = new Workbook(inputStream, defaultLoadOptions);
 
 			Style style = workbook.getDefaultStyle();
 			LOGGER.debug("Default font: " + style.getFont());
