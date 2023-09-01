@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { UpgradeModule } from '@angular/upgrade/static';
 import { AppRoutingModule } from './app-routing.module';
 import { InjectionToken } from '@angular/core';
+import { InputFileUploadController } from 'src/angularjs/app/components/input-file-upload/input-file-upload.component';
 
 import '../angularjs/main';
 import '../angularjs/app/app.module';
@@ -43,6 +44,8 @@ import {
 } from './ajs-upgraded-services';
 import { AppConstants, appConstants } from '../angularjs/app/app.module';
 import { LocationStrategy, PathLocationStrategy } from '@angular/common';
+import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
+import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
 
 export const APP_APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -58,6 +61,8 @@ export const APP_APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstan
     IframeLadybugBetaComponent,
     IframeLarvaComponent,
     IbisstoreSummaryComponent,
+    JmsBrowseQueueComponent,
+    JmsSendMessageComponent,
   ],
   imports: [
     BrowserModule,
