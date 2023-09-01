@@ -6,9 +6,13 @@
     </div>
     <ul class="nav navbar-top-links navbar-right">
       <li class="m-r-sm rating" title="Please rate us!">
-        <i *ngFor="let n in [1,2,3,4,5]; let index = index" class="fa fa-star-o rating{{index}}" aria-hidden="true"
-          (click)="openFeedback(index)" (mouseover)="hoverFeedback(index)"
-          mouseleave="hoverFeedback(-1)"></i>
+        <i *ngFor="let _ of [1,2,3,4,5]; let index = index"
+          (click)="openFeedback(index)"
+          (mouseover)="hoverFeedback(index)"
+          (mouseleave)="hoverFeedback(-1)"
+          class="fa fa-star-o rating{{index}}"
+          aria-hidden="true"
+        ></i>
       </li>
       <li>
         <span class="m-r-sm text-muted serverTime">{{serverTime}}</span>
@@ -25,12 +29,12 @@
             class="label label-primary">{{(notificationCount > 5) ? "5+" : notificationCount}}</span>
         </a>
         <ul class="dropdown-alerts" uib-dropdown-menu>
-          <ng-container *ngFor="let message in notificationList; let last = last">
+          <ng-container *ngFor="let message of notificationList; let last = last">
             <li>
               <a ui-sref="pages.notifications({id: message.id})">
                 <div>
                   <i class="fa {{message.icon}} fa-fw"></i> {{message.title}}
-                  <span class="pull-right text-muted small" time-since time="{{message.time}}"></span>
+                  <!-- TODO <span class="pull-right text-muted small" time-since time="{{message.time}}"></span> -->
                 </div>
               </a>
             </li>

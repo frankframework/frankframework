@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { AppConstants } from 'src/angularjs/app/app.module';
 import { AppService } from 'src/angularjs/app/app.service';
+import { APPCONSTANTS } from 'src/app/app.module';
 
 @Component({
   selector: 'app-custom-views',
@@ -8,13 +9,16 @@ import { AppService } from 'src/angularjs/app/app.service';
   styleUrls: ['./custom-views.component.scss']
 })
 export class CustomViewsComponent {
+  appConstants: AppConstants;
   customViews: {
     view: string,
     name: string,
     url: string
   }[] = [];
 
-  constructor(private appService: AppService, private appConstants: AppConstants) { }
+  constructor(private appService: AppService, @Inject(APPCONSTANTS) appConstants: AppConstants) {
+    this.appConstants = appConstants;
+  }
 
   $onInit() {
     this.appService.appConstants$.subscribe(() => {

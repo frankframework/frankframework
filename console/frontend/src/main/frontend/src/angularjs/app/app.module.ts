@@ -23,7 +23,7 @@ catch (e) {
   server = path;
 }
 
-const appConstants: AppConstants = {
+export const appConstants: AppConstants = {
   //Configure these in the server AppConstants!!!
   //The settings here are defaults and will be overwritten upon set in any .properties file.
 
@@ -71,12 +71,3 @@ export const appModule = angular.module('iaf.beheerconsole', [
 ]).constant("appConstants", appConstants);
 export type AppConstants = Record<string, string | any> // typeof appConstants;
 console.timeEnd("startup");
-
-appModule
-  .directive('hamburger', downgradeComponent({ component: HamburgerComponent }) as angular.IDirectiveFactory)
-  .directive('minimalizaSidebar', downgradeComponent({ component: MinimalizaSidebarComponent }) as angular.IDirectiveFactory)
-  .directive('pagesFooter', downgradeComponent({ component: PagesFooterComponent }) as angular.IDirectiveFactory)
-  .directive('pagesNavigation', downgradeComponent({ component: PagesNavigationComponent }) as angular.IDirectiveFactory)
-  .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
-  .directive('pagesTopnavbar', downgradeComponent({ component: PagesTopnavbarComponent }) as angular.IDirectiveFactory)
-  .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory);
