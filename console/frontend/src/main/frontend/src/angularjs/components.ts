@@ -29,7 +29,7 @@ import './app/views/iaf-update/iaf-update-status.component';
 // import './app/views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
 // import './app/views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
 // import './app/views/jms/jms-browse-queue/jms-browse-queue.component';
-import './app/views/jms/jms-send-message/jms-send-message.component';
+// import './app/views/jms/jms-send-message/jms-send-message.component';
 import './app/views/liquibase/liquibase.component';
 import './app/views/loading/loading.component';
 import './app/views/login/login.component';

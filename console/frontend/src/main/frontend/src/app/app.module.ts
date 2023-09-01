@@ -46,6 +46,8 @@ import { AppConstants, appConstants } from '../angularjs/app/app.module';
 import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
 import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
+import { LiquibaseComponent } from './views/liquibase/liquibase.component';
+import { FilterPipe } from './filters/filter.pipe';
 
 export const APP_APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -63,6 +65,8 @@ export const APP_APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstan
     IbisstoreSummaryComponent,
     JmsBrowseQueueComponent,
     JmsSendMessageComponent,
+    LiquibaseComponent,
+    FilterPipe
   ],
   imports: [
     BrowserModule,

@@ -68,7 +68,7 @@ export type Configuration = {
   stubbed: boolean,
   state: RunState,
   type: 'DatabaseClassLoader' | 'DirectoryClassLoader' | 'DummyClassLoader' | 'JarFileClassLoader' | 'ScanningDirectoryClassLoader' | 'WebAppClassLoader',
-  dbcMigrator: boolean
+  jdbcMigrator: boolean
 }
 
 export type Alert = {
