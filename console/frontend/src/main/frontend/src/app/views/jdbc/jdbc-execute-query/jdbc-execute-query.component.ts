@@ -34,7 +34,7 @@ export class JdbcExecuteQueryComponent implements OnInit {
     var executeQueryCookie = this.cookiesService.get("executeQuery");
 
     this.apiService.Get("jdbc", (data) => {
-      Object.assign(this, data); // Replacement for $.extend
+      Object.assign(this, data);
 
       this.form["datasource"] = (this.appConstants['jdbc.datasource.default'] != undefined) ? this.appConstants['jdbc.datasource.default'] : data.datasources[0];
       this.form["queryType"] = data.queryTypes[0];

@@ -42,6 +42,7 @@ import {
   toastrServiceProvider
 } from './ajs-upgraded-services';
 import { AppConstants, appConstants } from '../angularjs/app/app.module';
+import { LocationStrategy, PathLocationStrategy } from '@angular/common';
 
 export const APP_APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -80,7 +81,8 @@ export const APP_APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstan
     sweetalertServiceProvider,
     toastrServiceProvider,
     { provide: Window, useValue: window },
-    { provide: APP_APPCONSTANTS, useValue: appConstants } // Use AngularJS Injector to get value
+    { provide: APP_APPCONSTANTS, useValue: appConstants }, // Use AngularJS Injector to get value
+    Location, { provide: LocationStrategy, useClass: PathLocationStrategy }
   ],
 })
 
