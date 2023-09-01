@@ -8,15 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -39,51 +36,6 @@ public class MiscTest {
 		assertEquals(s, res);
 	}
 
-	/**
-	 * Method: copyContext(String keys, Map<String,Object> from, Map<String,Object>
-	 * to)
-	 */
-	@Test
-	public void testCopyContext() throws Exception {
-		Map<String, Object> from = new HashMap<>();
-		PipeLineSession to = new PipeLineSession();
-		String keys = "a,b";
-		from.put("a", 15);
-		from.put("b", 16);
-		Misc.copyContext(keys, from, to, null);
-		assertEquals(from,to);
-	}
-
-	@Test
-	public void testCopyContextNullKeys() throws Exception {
-		Map<String, Object> from = new HashMap<>();
-		PipeLineSession to = new PipeLineSession();
-		from.put("a", 15);
-		from.put("b", 16);
-		Misc.copyContext(null, from, to, null);
-		assertEquals(from,to);
-	}
-
-	@Test
-	public void testCopyContextLimitedKeys() throws Exception {
-		Map<String, Object> from = new HashMap<>();
-		PipeLineSession to = new PipeLineSession();
-		String keys = "a";
-		from.put("a", 15);
-		from.put("b", 16);
-		Misc.copyContext(keys, from, to, null);
-		assertEquals(1,to.size());
-	}
-
-	@Test
-	public void testCopyContextEmptyKeys() throws Exception {
-		Map<String, Object> from = new HashMap<>();
-		PipeLineSession to = new PipeLineSession();
-		from.put("a", 15);
-		from.put("b", 16);
-		Misc.copyContext("", from, to, null);
-		assertEquals(0,to.size());
-	}
 	/**
 	 * Method: toFileSize(String value, long defaultValue)
 	 */

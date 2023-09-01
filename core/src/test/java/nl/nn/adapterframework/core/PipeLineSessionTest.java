@@ -197,4 +197,50 @@ public class PipeLineSessionTest {
 		session.put(PipeLineSession.CORRELATION_ID_KEY, Message.asMessage(correlationId)); //key inserted as Message
 		assertEquals(correlationId, session.getCorrelationId());
 	}
+
+	/**
+	 * Method: mergeToParentContext(String keys, Map<String,Object> from, Map<String,Object>
+	 * to)
+	 */
+	@Test
+	public void testMergeToParentContext() throws Exception {
+		Map<String, Object> from = new HashMap<>();
+		PipeLineSession to = new PipeLineSession();
+		String keys = "a,b";
+		from.put("a", 15);
+		from.put("b", 16);
+		PipeLineSession.mergeToParentContext(keys, from, to, null);
+		assertEquals(from,to);
+	}
+
+	@Test
+	public void testMergeToParentContextNullKeys() throws Exception {
+		Map<String, Object> from = new HashMap<>();
+		PipeLineSession to = new PipeLineSession();
+		from.put("a", 15);
+		from.put("b", 16);
+		PipeLineSession.mergeToParentContext(null, from, to, null);
+		assertEquals(from,to);
+	}
+
+	@Test
+	public void testMergeToParentContextLimitedKeys() throws Exception {
+		Map<String, Object> from = new HashMap<>();
+		PipeLineSession to = new PipeLineSession();
+		String keys = "a";
+		from.put("a", 15);
+		from.put("b", 16);
+		PipeLineSession.mergeToParentContext(keys, from, to, null);
+		assertEquals(1,to.size());
+	}
+
+	@Test
+	public void testMergeToParentContextEmptyKeys() throws Exception {
+		Map<String, Object> from = new HashMap<>();
+		PipeLineSession to = new PipeLineSession();
+		from.put("a", 15);
+		from.put("b", 16);
+		PipeLineSession.mergeToParentContext("", from, to, null);
+		assertEquals(0,to.size());
+	}
 }

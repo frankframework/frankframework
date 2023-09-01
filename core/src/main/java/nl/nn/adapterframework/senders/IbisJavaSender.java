@@ -36,7 +36,6 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * Posts a message to another IBIS-adapter or application in the same JVM using IbisServiceDispatcher.
@@ -143,7 +142,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 			}
-			Misc.copyContext(getReturnedSessionKeys(), context, session, this);
+			PipeLineSession.mergeToParentContext(getReturnedSessionKeys(), context, session, this);
 		}
 		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);

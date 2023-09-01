@@ -21,12 +21,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -86,6 +88,57 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 */
 	public PipeLineSession(@Nonnull Map<String, Object> t) {
 		super(t);
+	}
+
+	public static void mergeToParentContext(String keysToCopy, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
+		if (to == null) {
+			return;
+		}
+		LOG.debug("returning context, returned session keys [" + keysToCopy + "]");
+		copyIfExists(EXIT_CODE_CONTEXT_KEY, from, to);
+		copyIfExists(EXIT_STATE_CONTEXT_KEY, from, to);
+		if (StringUtils.isNotEmpty(keysToCopy)) {
+			StringTokenizer st = new StringTokenizer(keysToCopy,",;");
+			while (st.hasMoreTokens()) {
+				String key = st.nextToken();
+				copySessionKey(key, from, to, requester);
+			}
+		} else if (keysToCopy == null) { // if keys are not set explicitly ...
+			for (String key : from.keySet()) { // ... all keys will be copied
+				copySessionKey(key, from, to, requester);
+			}
+		}
+		if (from instanceof PipeLineSession) {
+			PipeLineSession fromSession = (PipeLineSession) from;
+			for (Entry<String, Object> sessionEntry : from.entrySet()) {
+				if (sessionEntry.getValue() instanceof AutoCloseable &&
+						to.containsKey(sessionEntry.getKey()) &&
+						sessionEntry.getValue().equals(to.get(sessionEntry.getKey()))
+				) {
+					fromSession.unscheduleCloseOnSessionExit((AutoCloseable) sessionEntry.getValue());
+				}
+			}
+		}
+	}
+
+	private static void copySessionKey(String key, Map<String, Object> from, Map<String, Object> to, INamedObject requester) {
+		Object value = from.get(key);
+		if (value instanceof AutoCloseable) {
+			Message message = Message.asMessage(value);
+			if (from instanceof PipeLineSession) {
+				message.unscheduleFromCloseOnExitOf((PipeLineSession) from);
+			}
+			if (to instanceof PipeLineSession) {
+				message.closeOnCloseOf((PipeLineSession) to, requester);
+			}
+		}
+		to.put(key, value);
+	}
+
+	private static void copyIfExists(String key, Map<String,Object> from, Map<String,Object> to) {
+		if (from.containsKey(key)) {
+			to.put(key, from.get(key));
+		}
 	}
 
 	/*
