@@ -237,7 +237,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 	@Override
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws XmlValidatorException, PipeRunException, ConfigurationException {
-		ValidationContext context = null;
+		ValidationContext context;
 		if(StringUtils.isNotEmpty(messageRoot)) {
 			context = validator.createValidationContext(session, createRootValidation(messageRoot), getInvalidRootNamespaces());
 		} else {
@@ -266,7 +266,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		});
 	}
 
-	protected PipeRunResult getErrorResult(ValidationResult result, String reason, PipeLineSession session, boolean responseMode) throws PipeRunException {
+	protected PipeRunResult getErrorResult(String reason, PipeLineSession session, boolean responseMode) throws PipeRunException {
 		if (StringUtils.isNotEmpty(getReasonSessionKey())) {
 			session.put(getReasonSessionKey(), reason);
 		}
@@ -613,7 +613,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 	/**
-	 * 
+	 *
 	 * @param path to the element from where to start validating namespaces
 	 * @param invalidRootNamespaces XML namespace that is not allowed on the current element
 	 */

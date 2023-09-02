@@ -198,10 +198,10 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				}
 			}
 			if (!isAllowJson() && !responseMode) {
-				return getErrorResult(ValidationResult.PARSER_ERROR, "message is not XML, because it starts with ["+firstChar+"] and not with '<'", session, responseMode);
+				return getErrorResult("message is not XML, because it starts with ["+firstChar+"] and not with '<'", session, responseMode);
 			}
 			if (firstChar!='{' && firstChar!='[') {
-				return getErrorResult(ValidationResult.PARSER_ERROR, "message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['", session, responseMode);
+				return getErrorResult("message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['", session, responseMode);
 			}
 			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
 		}
