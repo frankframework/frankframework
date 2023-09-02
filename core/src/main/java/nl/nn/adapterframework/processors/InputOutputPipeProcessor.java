@@ -202,40 +202,40 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
 	}
 
-	private String restoreMovedElements(String invoerString, PipeLineSession pipeLineSession) throws IOException {
+	private String restoreMovedElements(String inputString, PipeLineSession pipeLineSession) throws IOException {
 		StringBuilder buffer = new StringBuilder();
-		int startPos = invoerString.indexOf(ME_START);
+		int startPos = inputString.indexOf(ME_START);
 		if (startPos == -1) {
-			return invoerString;
+			return inputString;
 		}
-		char[] invoerChars = invoerString.toCharArray();
+		char[] inputChars = inputString.toCharArray();
 		int copyFrom = 0;
 		while (startPos != -1) {
-			buffer.append(invoerChars, copyFrom, startPos - copyFrom);
-			int nextStartPos = invoerString.indexOf(ME_START, startPos + ME_START.length());
+			buffer.append(inputChars, copyFrom, startPos - copyFrom);
+			int nextStartPos = inputString.indexOf(ME_START, startPos + ME_START.length());
 			if (nextStartPos == -1) {
-				nextStartPos = invoerString.length();
+				nextStartPos = inputString.length();
 			}
-			int endPos = invoerString.indexOf(ME_END, startPos + ME_START.length());
+			int endPos = inputString.indexOf(ME_END, startPos + ME_START.length());
 			if (endPos == -1 || endPos > nextStartPos) {
-				log.warn("Found a start delimiter without an end delimiter while restoring from compacted result at position [" + startPos + "] in ["+ invoerString+ "]");
-				buffer.append(invoerChars, startPos, nextStartPos - startPos);
+				log.warn("Found a start delimiter without an end delimiter while restoring from compacted result at position [" + startPos + "] in ["+ inputString+ "]");
+				buffer.append(inputChars, startPos, nextStartPos - startPos);
 				copyFrom = nextStartPos;
 			} else {
-				String movedElementSessionKey = invoerString.substring(startPos + ME_START.length(),endPos);
+				String movedElementSessionKey = inputString.substring(startPos + ME_START.length(),endPos);
 				if (pipeLineSession.containsKey(movedElementSessionKey)) {
 					String movedElementValue = pipeLineSession.getString(movedElementSessionKey);
 					buffer.append(movedElementValue);
 					copyFrom = endPos + ME_END.length();
 				} else {
 					log.warn("Did not find sessionKey [" + movedElementSessionKey + "] while restoring from compacted result");
-					buffer.append(invoerChars, startPos, nextStartPos - startPos);
+					buffer.append(inputChars, startPos, nextStartPos - startPos);
 					copyFrom = nextStartPos;
 				}
 			}
-			startPos = invoerString.indexOf(ME_START, copyFrom);
+			startPos = inputString.indexOf(ME_START, copyFrom);
 		}
-		buffer.append(invoerChars, copyFrom, invoerChars.length - copyFrom);
+		buffer.append(inputChars, copyFrom, inputChars.length - copyFrom);
 		return buffer.toString();
 	}
 }
