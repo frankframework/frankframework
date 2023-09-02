@@ -1061,4 +1061,25 @@ public class Message implements Serializable, Closeable {
 		}
 		closeOnClose(writer);
 	}
+
+	@Nonnull
+	public Message copyMessage() throws IOException {
+		final Message newMessage;
+		if (!isRepeatable()) {
+			preserve();
+		}
+		if (request instanceof SerializableFileReference) {
+			final SerializableFileReference newRef;
+			if (isBinary()) {
+				newRef = SerializableFileReference.of(asInputStream());
+			} else {
+				newRef = SerializableFileReference.of(asReader(), getCharset());
+			}
+			newMessage = Message.asMessage(newRef);
+		} else {
+			newMessage = Message.asMessage(request);
+		}
+		newMessage.context = copyContext();
+		return newMessage;
+	}
 }
