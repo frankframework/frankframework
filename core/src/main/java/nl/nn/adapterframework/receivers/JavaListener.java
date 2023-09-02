@@ -178,7 +178,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 					}
 				}
 			} finally {
-				PipeLineSession.mergeToParentContext(getReturnedSessionKeys(), session, context, this);
+				PipeLineSession.mergeToParentSession(getReturnedSessionKeys(), session, context, this);
 			}
 		}
 	}

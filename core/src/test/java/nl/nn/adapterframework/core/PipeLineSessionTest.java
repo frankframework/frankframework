@@ -199,48 +199,48 @@ public class PipeLineSessionTest {
 	}
 
 	/**
-	 * Method: mergeToParentContext(String keys, Map<String,Object> from, Map<String,Object>
+	 * Method: mergeToParentSession(String keys, Map<String,Object> from, Map<String,Object>
 	 * to)
 	 */
 	@Test
-	public void testMergeToParentContext() throws Exception {
+	public void testMergeToParentSession() throws Exception {
 		Map<String, Object> from = new HashMap<>();
 		PipeLineSession to = new PipeLineSession();
 		String keys = "a,b";
 		from.put("a", 15);
 		from.put("b", 16);
-		PipeLineSession.mergeToParentContext(keys, from, to, null);
+		PipeLineSession.mergeToParentSession(keys, from, to, null);
 		assertEquals(from,to);
 	}
 
 	@Test
-	public void testMergeToParentContextNullKeys() throws Exception {
+	public void testMergeToParentSessionNullKeys() throws Exception {
 		Map<String, Object> from = new HashMap<>();
 		PipeLineSession to = new PipeLineSession();
 		from.put("a", 15);
 		from.put("b", 16);
-		PipeLineSession.mergeToParentContext(null, from, to, null);
+		PipeLineSession.mergeToParentSession(null, from, to, null);
 		assertEquals(from,to);
 	}
 
 	@Test
-	public void testMergeToParentContextLimitedKeys() throws Exception {
+	public void testMergeToParentSessionLimitedKeys() throws Exception {
 		Map<String, Object> from = new HashMap<>();
 		PipeLineSession to = new PipeLineSession();
 		String keys = "a";
 		from.put("a", 15);
 		from.put("b", 16);
-		PipeLineSession.mergeToParentContext(keys, from, to, null);
+		PipeLineSession.mergeToParentSession(keys, from, to, null);
 		assertEquals(1,to.size());
 	}
 
 	@Test
-	public void testMergeToParentContextEmptyKeys() throws Exception {
+	public void testMergeToParentSessionEmptyKeys() throws Exception {
 		Map<String, Object> from = new HashMap<>();
 		PipeLineSession to = new PipeLineSession();
 		from.put("a", 15);
 		from.put("b", 16);
-		PipeLineSession.mergeToParentContext("", from, to, null);
+		PipeLineSession.mergeToParentSession("", from, to, null);
 		assertEquals(0,to.size());
 	}
 }

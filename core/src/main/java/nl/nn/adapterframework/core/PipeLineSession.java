@@ -90,7 +90,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		super(t);
 	}
 
-	public static void mergeToParentContext(String keysToCopy, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
+	public static void mergeToParentSession(String keysToCopy, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
 		if (to == null) {
 			return;
 		}
@@ -123,16 +123,26 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	private static void copySessionKey(String key, Map<String, Object> from, Map<String, Object> to, INamedObject requester) {
 		Object value = from.get(key);
-		if (value instanceof AutoCloseable) {
-			Message message = Message.asMessage(value);
+		to.put(key, value);
+		if (value instanceof Message) {
+			// Give messages the special treatment, because they do something extra before registering with session.
+			Message message = (Message) value;
 			if (from instanceof PipeLineSession) {
 				message.unscheduleFromCloseOnExitOf((PipeLineSession) from);
 			}
 			if (to instanceof PipeLineSession) {
 				message.closeOnCloseOf((PipeLineSession) to, requester);
 			}
+		} else if (value instanceof AutoCloseable) {
+			// Don't wrap closeables in a message, that makes unregistering them later unreliable
+			AutoCloseable closeable = (AutoCloseable) value;
+			if (from instanceof PipeLineSession) {
+				((PipeLineSession) from).unscheduleCloseOnSessionExit(closeable);
+			}
+			if (to instanceof PipeLineSession) {
+				((PipeLineSession) to).scheduleCloseOnSessionExit(closeable, ClassUtils.nameOf(requester));
+			}
 		}
-		to.put(key, value);
 	}
 
 	private static void copyIfExists(String key, Map<String,Object> from, Map<String,Object> to) {

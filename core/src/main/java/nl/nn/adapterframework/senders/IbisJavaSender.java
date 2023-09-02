@@ -142,7 +142,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
 			}
-			PipeLineSession.mergeToParentContext(getReturnedSessionKeys(), context, session, this);
+			PipeLineSession.mergeToParentSession(getReturnedSessionKeys(), context, session, this);
 		}
 		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
