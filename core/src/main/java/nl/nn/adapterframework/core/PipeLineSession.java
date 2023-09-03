@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -68,7 +69,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
-	private final Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
+	private final @Getter Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSession() {
 		super();
 	}
@@ -90,7 +91,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		super(t);
 	}
 
-	public static void mergeToParentSession(String keysToCopy, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
+	public static void mergeToParentSession(String keysToCopy, PipeLineSession from, Map<String,Object> to, INamedObject requester) {
 		if (to == null) {
 			return;
 		}
@@ -108,37 +109,30 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 				copySessionKey(key, from, to, requester);
 			}
 		}
-		if (from instanceof PipeLineSession) {
-			PipeLineSession fromSession = (PipeLineSession) from;
-			for (Entry<String, Object> sessionEntry : from.entrySet()) {
-				if (sessionEntry.getValue() instanceof AutoCloseable &&
-						to.containsKey(sessionEntry.getKey()) &&
-						sessionEntry.getValue().equals(to.get(sessionEntry.getKey()))
-				) {
-					fromSession.unscheduleCloseOnSessionExit((AutoCloseable) sessionEntry.getValue());
-				}
+		for (Entry<String, Object> sessionEntry : from.entrySet()) {
+			if (sessionEntry.getValue() instanceof AutoCloseable &&
+					to.containsKey(sessionEntry.getKey()) &&
+					sessionEntry.getValue().equals(to.get(sessionEntry.getKey()))
+			) {
+				from.unscheduleCloseOnSessionExit((AutoCloseable) sessionEntry.getValue());
 			}
 		}
 	}
 
-	private static void copySessionKey(String key, Map<String, Object> from, Map<String, Object> to, INamedObject requester) {
+	private static void copySessionKey(String key, PipeLineSession from, Map<String, Object> to, INamedObject requester) {
 		Object value = from.get(key);
 		to.put(key, value);
 		if (value instanceof Message) {
 			// Give messages the special treatment, because they do something extra before registering with session.
 			Message message = (Message) value;
-			if (from instanceof PipeLineSession) {
-				message.unscheduleFromCloseOnExitOf((PipeLineSession) from);
-			}
+			message.unscheduleFromCloseOnExitOf(from);
 			if (to instanceof PipeLineSession) {
 				message.closeOnCloseOf((PipeLineSession) to, requester);
 			}
 		} else if (value instanceof AutoCloseable) {
 			// Don't wrap closeables in a message, that makes unregistering them later unreliable
 			AutoCloseable closeable = (AutoCloseable) value;
-			if (from instanceof PipeLineSession) {
-				((PipeLineSession) from).unscheduleCloseOnSessionExit(closeable);
-			}
+			from.unscheduleCloseOnSessionExit(closeable);
 			if (to instanceof PipeLineSession) {
 				((PipeLineSession) to).scheduleCloseOnSessionExit(closeable, ClassUtils.nameOf(requester));
 			}

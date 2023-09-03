@@ -18,7 +18,6 @@ package nl.nn.adapterframework.senders;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -53,7 +52,7 @@ import nl.nn.adapterframework.stream.Message;
  *   <li>Define a Receiver with a JavaListener</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i></li>
  * </ul>
- * N.B. Please make sure that the IbisServiceDispatcher-1.1.jar is present on the class path of the server.
+ * N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server.
  *
  * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
  * @ff.forward "&lt;Exit.code&gt;" default
@@ -99,15 +98,15 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result;
-		Map<String, Object> context = null;
+		PipeLineSession context = null;
 		try {
 			if (paramList!=null) {
-				context = paramList.getValues(message, session).getValueMap();
+				context = new PipeLineSession(paramList.getValues(message, session).getValueMap());
 			} else {
-				context=new HashMap<>();
+				context=new PipeLineSession();
 			}
 			DispatcherManager dm;
-			Class c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
+			Class<?> c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
 
 			if(getDispatchType().equalsIgnoreCase("DLL")) {
 				String version = nl.nn.adapterframework.dispatcher.Version.version;

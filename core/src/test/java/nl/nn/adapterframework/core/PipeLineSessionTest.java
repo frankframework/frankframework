@@ -1,11 +1,14 @@
 package nl.nn.adapterframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -141,6 +144,19 @@ public class PipeLineSessionTest {
 
 	@Test
 	public void testInteger() {
+		// Arrange
+		session.put("key8e", "123");
+		session.put("key8f", 123L);
+		session.put("key8g", Message.asMessage("123"));
+
+		// Act / Assert
+		assertEquals(123, session.getInteger("key8"));
+		assertEquals(123, session.getInteger("key8e"));
+		assertEquals(123, session.getInteger("key8f"));
+	}
+
+	@Test
+	public void testIntegerWithDefault() {
 		assertEquals(123, session.get("key8"));
 		assertEquals(123, session.get("key8", 0));
 		assertEquals(0, session.get("key8a", 0));
@@ -153,11 +169,24 @@ public class PipeLineSessionTest {
 
 	@Test
 	public void testBoolean() {
+		// Arrange
+		session.put("key9d", "true");
+		session.put("key9e", "false");
+
+		// Act / Assert
+		assertEquals(true, session.getBoolean("key9"));
+		assertEquals(true, session.getBoolean("key9d"));
+		assertEquals(false, session.getBoolean("key9e"));
+		assertNull(session.getBoolean("key-not-there"));
+	}
+
+	@Test
+	public void testBooleanWithDefault() {
 		assertEquals(true, session.get("key9"));
-		assertEquals(true, session.get("key9", false));
-		assertEquals(false, session.get("key9a", false));
-		assertEquals(true, session.get("key9b", false));
-		assertEquals(false, session.get("key9c", true));
+		assertTrue(session.get("key9", false));
+		assertFalse(session.get("key9a", false));
+		assertTrue(session.get("key9b", false));
+		assertFalse(session.get("key9c", true));
 	}
 
 	@Test
@@ -169,7 +198,7 @@ public class PipeLineSessionTest {
 	}
 
 	@Test
-	public void testLong() {
+	public void testLongWithDefault() {
 		assertEquals(123L, session.get("key11"));
 		assertEquals(123L, session.get("key11", 0L));
 		assertEquals(0L, session.get("key11a", 0L));
@@ -203,8 +232,8 @@ public class PipeLineSessionTest {
 	 * to)
 	 */
 	@Test
-	public void testMergeToParentSession() throws Exception {
-		Map<String, Object> from = new HashMap<>();
+	public void testMergeToParentSession() {
+		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
 		String keys = "a,b";
 		from.put("a", 15);
@@ -215,28 +244,64 @@ public class PipeLineSessionTest {
 
 	@Test
 	public void testMergeToParentSessionNullKeys() throws Exception {
-		Map<String, Object> from = new HashMap<>();
+		// Arrange
+		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
 		from.put("a", 15);
 		from.put("b", 16);
+		from.put("c", Message.asMessage("a message"));
+		from.put("d", new BufferedReader(new StringReader("a closeable")));
+
+		// Act
 		PipeLineSession.mergeToParentSession(null, from, to, null);
+
+		from.close();
+
+		// Assert
 		assertEquals(from,to);
+
+		assertTrue(to.getCloseables().containsKey(from.get("c")));
+		assertTrue(to.getCloseables().containsKey(from.get("d")));
+		assertNotNull(((Message) to.get("c")).asObject());
+		assertEquals("a message", ((Message) to.get("c")).asString());
+		assertEquals("a closeable", ((BufferedReader) to.get("d")).readLine());
+
+		// Act
+		to.close();
+
+		// Assert
+		assertNull(((Message) to.get("c")).asObject());
 	}
 
 	@Test
-	public void testMergeToParentSessionLimitedKeys() throws Exception {
-		Map<String, Object> from = new HashMap<>();
+	public void testMergeToParentSessionLimitedKeys() {
+		// Arrange
+		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
-		String keys = "a";
+		String keys = "a,c";
 		from.put("a", 15);
 		from.put("b", 16);
+		from.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, "exitCode");
+		from.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, "exitState");
+
+		// Act
 		PipeLineSession.mergeToParentSession(keys, from, to, null);
-		assertEquals(1,to.size());
+
+		from.close();
+
+		// Assert
+		assertEquals(4,to.size());
+		assertTrue(to.containsKey("a"));
+		assertTrue(to.containsKey("c"));
+		assertTrue(to.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
+		assertTrue(to.containsKey(PipeLineSession.EXIT_STATE_CONTEXT_KEY));
+		assertEquals(15, to.get("a"));
+		assertNull(to.get("c"));
 	}
 
 	@Test
-	public void testMergeToParentSessionEmptyKeys() throws Exception {
-		Map<String, Object> from = new HashMap<>();
+	public void testMergeToParentSessionEmptyKeys() {
+		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
 		from.put("a", 15);
 		from.put("b", 16);
