@@ -1,4 +1,12 @@
+import { HamburgerComponent } from 'src/app/components/pages/pages-topnavbar/hamburger.component';
 import '../deps';
+import { downgradeComponent } from '@angular/upgrade/static';
+import { MinimalizaSidebarComponent } from 'src/app/components/pages/pages-navigation/minimaliza-sidebar.component';
+import { PagesFooterComponent } from 'src/app/components/pages/pages-footer/pages-footer.component';
+import { PagesNavigationComponent } from 'src/app/components/pages/pages-navigation/pages-navigation.component';
+import { PagesTopinfobarComponent } from 'src/app/components/pages/pages-topinfobar/pages-topinfobar.component';
+import { PagesTopnavbarComponent } from 'src/app/components/pages/pages-topnavbar/pages-topnavbar.component';
+import { ScrollToTopComponent } from 'src/app/components/pages/pages-navigation/scroll-to-top.component';
 
 var server: string; //Try and see if serverurl has been defined, if not try to deduct from local url;
 try {
@@ -15,7 +23,7 @@ catch (e) {
   server = path;
 }
 
-const appConstants: AppConstants = {
+export const appConstants: AppConstants = {
   //Configure these in the server AppConstants!!!
   //The settings here are defaults and will be overwritten upon set in any .properties file.
 
@@ -52,6 +60,7 @@ const appConstants: AppConstants = {
 export const appModule = angular.module('iaf.beheerconsole', [
   'ngCookies',                    // Angular Cookies
   'ui.router',                    // Routing
+  'ui.router.upgrade',
   'ui.bootstrap',                 // Ui Bootstrap
   'ngIdle',                       // Idle timer
   'ngSanitize',                   // ngSanitize

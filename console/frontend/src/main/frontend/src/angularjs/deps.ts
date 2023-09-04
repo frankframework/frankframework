@@ -19,7 +19,8 @@ import 'angular-route';
 import 'angular-sanitize';
 import 'angular-touch';
 import 'angular-ui-bootstrap';
-import '@uirouter/angularjs'; // somehow loads angularjs again
+// import '@uirouter/angularjs'; // somehow loads angularjs again
+import '@uirouter/angular-hybrid';
 import 'ng-idle/angular-idle.js';
 import 'angular-ladda';
 import 'angularjs-toaster';
