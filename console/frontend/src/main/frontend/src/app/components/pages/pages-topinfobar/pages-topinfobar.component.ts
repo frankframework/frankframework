@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { StateService } from '@uirouter/angularjs';
 import { AppService } from 'src/angularjs/app/app.service';
 
@@ -7,13 +7,14 @@ import { AppService } from 'src/angularjs/app/app.service';
   templateUrl: './pages-topinfobar.component.html',
   styleUrls: ['./pages-topinfobar.component.scss']
 })
-export class PagesTopinfobarComponent {
+export class PagesTopinfobarComponent implements OnInit {
   loading = true;
-  currRoute = this.$state.current
+  currRoute = this.$state.current;
 
   constructor(private appService: AppService, private $state: StateService) { }
 
-  $onInit() {
+  ngOnInit() {
+    this.currRoute = this.$state.current;
     this.appService.loading$.subscribe(loading => this.loading = loading);
   }
 }

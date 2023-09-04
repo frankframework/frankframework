@@ -1,7 +1,7 @@
 import { DoBootstrap, InjectionToken, NgModule, ValueProvider } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { UpgradeModule, downgradeComponent } from '@angular/upgrade/static';
-
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppRoutingModule } from './app-routing.module';
 
 import '../angularjs/main';
@@ -42,6 +42,7 @@ import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pa
 import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/pages-topnavbar.component';
 import { HamburgerComponent } from './components/pages/pages-topnavbar/hamburger.component';
 import { $stateServiceProvider } from './ajs-deps-services';
+import { UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -73,7 +74,9 @@ appModule
   imports: [
     BrowserModule,
     UpgradeModule,
+    NgbModule,
     // AppRoutingModule
+    UIRouterUpgradeModule.forRoot(),
   ],
   providers: [
     alertServiceProvider,
@@ -90,7 +93,6 @@ appModule
     sweetalertServiceProvider,
     toastrServiceProvider,
     appConstantsProvider,
-    // { provide: APPCONSTANTS, useValue: appConstants },
 
     // deps
     $stateServiceProvider,

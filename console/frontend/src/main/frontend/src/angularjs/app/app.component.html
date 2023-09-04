@@ -1,7 +1,7 @@
 <!-- Wrapper-->
 <div id="wrapper">
   <!-- Navigation -->
-	<pages-navigation on-open-info="$ctrl.openInfoModel()" on-open-feedback="$ctrl.sendFeedback()"></pages-navigation>
+	<pages-navigation (on-open-info)="$ctrl.openInfoModel()" (on-open-feedback)="$ctrl.sendFeedback()"></pages-navigation>
 
   <!-- Page wraper -->
   <!-- ng-class with current state name give you the ability to extended customization your view -->
@@ -9,12 +9,12 @@
 
     <!-- Page wrapper -->
     <pages-topnavbar class="topnavbar"
-			on-open-feedback="$ctrl.sendFeedback(rating)"
-			server-time="$ctrl.serverTime"
-			dtap-side="$ctrl.dtapSide"
-			dtap-stage="$ctrl.dtapStage"
-			user-name="$ctrl.userName"
-			loggedin="$ctrl.loggedin"
+			(on-open-feedback)="$ctrl.sendFeedback(rating)"
+			[server-time]="$ctrl.serverTime"
+			[dtap-side]="$ctrl.dtapSide"
+			[dtap-stage]="$ctrl.dtapStage"
+			[user-name]="$ctrl.userName"
+			[loggedin]="$ctrl.loggedin"
 		></pages-topnavbar>
     <pages-topinfobar class="topinfobar"></pages-topinfobar>
 

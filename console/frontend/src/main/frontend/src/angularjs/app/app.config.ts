@@ -1,5 +1,6 @@
 import { AppConstants, appModule } from "./app.module";
 import { StateProvider, UrlRouterProvider } from "@uirouter/angularjs";
+import { UrlService } from '@uirouter/core';
 import { StateService, Trace } from "@uirouter/angularjs";
 import { DebugService } from "./services/debug.service";
 import { MiscService } from "./services/misc.service";
@@ -469,7 +470,9 @@ appModule.config(['$httpProvider', function ($httpProvider: angular.IHttpProvide
 				component: "error",
 			});
 
-	}]).run(['$rootScope', '$state', 'Debug', '$trace', function ($rootScope: angular.IRootScopeService, $state: StateService, Debug: DebugService, $trace: Trace) {
+  }]).config(
+    ['$urlServiceProvider', ($urlService: UrlService) => $urlService.deferIntercept()]
+  ).run(['$rootScope', '$state', 'Debug', '$trace', function ($rootScope: angular.IRootScopeService, $state: StateService, Debug: DebugService, $trace: Trace) {
 		// Set this asap on localhost to capture all debug data
 		if (location.hostname == "localhost")
 			Debug.setLevel(3);

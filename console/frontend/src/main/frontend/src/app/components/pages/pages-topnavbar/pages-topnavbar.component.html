@@ -23,15 +23,15 @@
       <li *ngIf="dtapSide != ''">
         <span class="m-r-sm stage">({{dtapSide}})</span>
       </li>
-      <li uib-dropdown href (click)="resetNotificationCount()">
-        <a class="count-info" href uib-dropdown-toggle>
-          <i class="fa fa-bell"></i> <span [hidden]="notificationCount < 1"
+      <li ngbDropdown (click)="resetNotificationCount()">
+        <a class="count-info" href ngbDropdownToggle>
+          <i class="fa fa-bell"></i> <span *ngIf="notificationCount > 0"
             class="label label-primary">{{(notificationCount > 5) ? "5+" : notificationCount}}</span>
         </a>
-        <ul class="dropdown-alerts" uib-dropdown-menu>
+        <ul class="dropdown-alerts" ngbDropdownMenu>
           <ng-container *ngFor="let message of notificationList; let last = last">
             <li>
-              <a ui-sref="pages.notifications({id: message.id})">
+              <a uiSref="pages.notifications({id: message.id})" ngbDropdownItem>
                 <div>
                   <i class="fa {{message.icon}} fa-fw"></i> {{message.title}}
                   <!-- TODO <span class="pull-right text-muted small" time-since time="{{message.time}}"></span> -->
@@ -53,7 +53,7 @@
       </li>
       <li *ngIf="userName">{{userName}}</li>
       <li *ngIf="loggedin">
-        <a ui-sref="logout">
+        <a uiSref="logout">
           <i title="Logout" class="fa fa-sign-out"></i>
         </a>
       </li>

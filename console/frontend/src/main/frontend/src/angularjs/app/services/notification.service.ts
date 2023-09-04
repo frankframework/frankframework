@@ -34,8 +34,8 @@ export class NotificationService {
     };
     this.list.unshift(obj);
     obj.id = this.list.length;
-    this.onCountUpdateSource.next();
     this.count++;
+    this.onCountUpdateSource.next();
 
     Tinycon.setBubble(this.count);
   }
@@ -59,8 +59,8 @@ export class NotificationService {
 
   resetCount(): void {
     Tinycon.setBubble(0);
-    this.onCountUpdateSource.next();
     this.count = 0;
+    this.onCountUpdateSource.next();
   }
 
   getCount(): number {
