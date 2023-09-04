@@ -247,10 +247,15 @@ public class PipeLineSessionTest {
 		// Arrange
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
+		Message message = Message.asMessage("a message");
+		BufferedReader closeable = new BufferedReader(new StringReader("a closeable"));
 		from.put("a", 15);
 		from.put("b", 16);
-		from.put("c", Message.asMessage("a message"));
-		from.put("d", new BufferedReader(new StringReader("a closeable")));
+		from.put("c", message);
+		from.put("d", closeable);
+
+		from.scheduleCloseOnSessionExit(message, "test-c");
+		from.scheduleCloseOnSessionExit(closeable, "test-d");
 
 		// Act
 		PipeLineSession.mergeToParentSession(null, from, to, null);
@@ -260,8 +265,8 @@ public class PipeLineSessionTest {
 		// Assert
 		assertEquals(from,to);
 
-		assertTrue(to.getCloseables().containsKey(from.get("c")));
-		assertTrue(to.getCloseables().containsKey(from.get("d")));
+		assertTrue(to.getCloseables().containsKey(message));
+		assertTrue(to.getCloseables().containsKey(closeable));
 		assertNotNull(((Message) to.get("c")).asObject());
 		assertEquals("a message", ((Message) to.get("c")).asString());
 		assertEquals("a closeable", ((BufferedReader) to.get("d")).readLine());
@@ -274,15 +279,24 @@ public class PipeLineSessionTest {
 	}
 
 	@Test
-	public void testMergeToParentSessionLimitedKeys() {
+	public void testMergeToParentSessionLimitedKeys() throws Exception {
 		// Arrange
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
+
+		Message message1 = Message.asMessage("m1");
+		Message message2 = Message.asMessage("m2");
+
 		String keys = "a,c";
 		from.put("a", 15);
 		from.put("b", 16);
 		from.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, "exitCode");
 		from.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, "exitState");
+
+		from.put("d", message1);
+		to.put("d", message2);
+
+		from.scheduleCloseOnSessionExit(message1, "test-d");
 
 		// Act
 		PipeLineSession.mergeToParentSession(keys, from, to, null);
@@ -290,13 +304,16 @@ public class PipeLineSessionTest {
 		from.close();
 
 		// Assert
-		assertEquals(4,to.size());
+		assertEquals(5, to.size());
 		assertTrue(to.containsKey("a"));
 		assertTrue(to.containsKey("c"));
 		assertTrue(to.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 		assertTrue(to.containsKey(PipeLineSession.EXIT_STATE_CONTEXT_KEY));
 		assertEquals(15, to.get("a"));
 		assertNull(to.get("c"));
+
+		assertNull(message1.asObject());
+		assertEquals("m2", message2.asString());
 	}
 
 	@Test
