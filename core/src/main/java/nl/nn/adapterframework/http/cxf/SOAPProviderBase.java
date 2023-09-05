@@ -48,6 +48,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageDataSource;
@@ -68,6 +69,9 @@ import nl.nn.adapterframework.util.XmlUtils;
 @BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	protected Logger log = LogUtil.getLogger(this);
+
+	@Deprecated
+	private boolean useNameAttributeAsContentId = AppConstants.getInstance().getBoolean("WebServiceListener.useNameAttributeAsContentId", false);
 
 	private String attachmentXmlSessionKey = null;
 	private Map<String, MessageFactory> factory = new HashMap<>();
@@ -208,24 +212,34 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						while (iter.hasNext()) {
 							Element partElement = (Element) iter.next();
 
-							if(StringUtils.isNotEmpty(partElement.getAttribute("name"))) {
-								log.info("multipart xml attribute name is no longer used!");
+							String partSessionKey = partElement.getAttribute("sessionKey");
+							String contentID = partSessionKey;
+							String name = partElement.getAttribute("name");
+							if(StringUtils.isNotEmpty(name)) {
+								if(useNameAttributeAsContentId) {
+									contentID = name;
+								} else {
+									log.info("multipart xml attribute name is no longer used!");
+								}
 							}
 
-							String partSessionKey = partElement.getAttribute("sessionKey");
 							Message partObject = pipelineSession.getMessage(partSessionKey);
 
 							if(!partObject.isNull()) {
-								String mimeType = partElement.getAttribute("mimeType");
+								String mimeType = partElement.getAttribute("mimeType"); //Optional, auto detected if not set
 								partObject.unscheduleFromCloseOnExitOf(pipelineSession); // Closed by the SourceClosingDataHandler
-								SourceClosingDataHandler dataHander = new SourceClosingDataHandler(new MessageDataSource(partObject, mimeType));
+								MessageDataSource ds = new MessageDataSource(partObject, mimeType);
+								SourceClosingDataHandler dataHander = new SourceClosingDataHandler(ds);
 								AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-								attachmentPart.setContentId(partSessionKey);
+								attachmentPart.setContentId(contentID);
+
+								String filename = StringUtils.isNotBlank(name) ? name : ds.getName();
+								attachmentPart.addMimeHeader("Content-Disposition", "attachment; name=\""+filename+"\"; filename=\""+filename+"\"");
 								soapMessage.addAttachmentPart(attachmentPart);
 
-								log.debug(getLogPrefix(correlationId)+"appended filepart ["+partSessionKey+"] key ["+partSessionKey+"]");
+								log.debug(getLogPrefix(correlationId)+"appended filepart ["+contentID+"] key ["+partSessionKey+"]");
 							} else {
-								log.debug(getLogPrefix(correlationId)+"skipping filepart ["+partSessionKey+"] key ["+partSessionKey+"], content is <NULL>");
+								log.debug(getLogPrefix(correlationId)+"skipping filepart ["+contentID+"] key ["+partSessionKey+"], content is <NULL>");
 							}
 						}
 					}
