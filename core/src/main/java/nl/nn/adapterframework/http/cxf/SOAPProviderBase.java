@@ -209,24 +209,25 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						for (final Node part : parts) {
 							Element partElement = (Element) part;
 
-							if (StringUtils.isNotEmpty(partElement.getAttribute("name"))) {
-								log.info("multipart xml attribute name is no longer used!");
-							}
-
 							String partSessionKey = partElement.getAttribute("sessionKey");
+							String name = partElement.getAttribute("name");
 							Message partObject = pipelineSession.getMessage(partSessionKey);
 
 							if (!partObject.isNull()) {
-								String mimeType = partElement.getAttribute("mimeType");
+								String mimeType = partElement.getAttribute("mimeType"); //Optional, auto detected if not set
 								partObject.unscheduleFromCloseOnExitOf(pipelineSession); // Closed by the SourceClosingDataHandler
-								SourceClosingDataHandler dataHander = new SourceClosingDataHandler(new MessageDataSource(partObject, mimeType));
+								MessageDataSource ds = new MessageDataSource(partObject, mimeType);
+								SourceClosingDataHandler dataHander = new SourceClosingDataHandler(ds);
 								AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
 								attachmentPart.setContentId(partSessionKey); // ContentID is URLDecoded, it may not contain special characters, see #4661
+
+								String filename = StringUtils.isNotBlank(name) ? name : ds.getName();
+								attachmentPart.addMimeHeader("Content-Disposition", "attachment; name=\""+filename+"\"; filename=\""+filename+"\"");
 								soapMessage.addAttachmentPart(attachmentPart);
 
-								log.debug(getLogPrefix(messageId) + "appended filepart [" + partSessionKey + "] key [" + partSessionKey + "]");
+								log.debug("appended filepart [{}] key [{}]", filename, partSessionKey);
 							} else {
-								log.debug(getLogPrefix(messageId) + "skipping filepart [" + partSessionKey + "] key [" + partSessionKey + "], content is <NULL>");
+								log.debug("skipping filepart [{}] key [{}], content is <NULL>", name, partSessionKey);
 							}
 						}
 					}
