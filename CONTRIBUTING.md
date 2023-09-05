@@ -5,10 +5,6 @@
 Thanks for reading this we're glad you're taking an interest in contributing to our framework.
 We want you working on things you're excited about, there are however plenty of [issues](https://github.com/ibissource/iaf/issues) that can be picked up.
 
-**Please be advised that we use our own repository manager for snapshot builds.**
-Either use our public `ibissource` or private `proprietary` profile when running Maven.
-
-
 ## Running the Frank!Framework
 
 If you want to experiment with the Frank!Framework, you can use the [Frank!Runner](https://github.com/ibissource/frank-runner). If you want to stick with Maven, you can follow the instructions of this section.
