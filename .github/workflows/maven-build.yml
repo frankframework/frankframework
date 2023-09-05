@@ -7,6 +7,7 @@ env:
   PROFILES: ibissource,codecoverage,cmis,attachFrankDoc
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource') && github.actor != 'dependabot[bot]' }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  MAVEN_GOALS: verify
 
 on:
   push:
@@ -61,6 +62,13 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-maven-
 
+    - name: Cache SonarCloud packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.sonar/cache
+        key: ${{ runner.os }}-sonar
+        restore-keys: ${{ runner.os }}-sonar
+
     - name: Set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v3
       with:
@@ -73,10 +81,15 @@ jobs:
       with:
         servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
 
-    - name: Update maven profiles
+    - name: Update Maven profiles
       if: ${{ env.USE_PROPRIETARY == 'true' }}
       run: |
         echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
+
+    - name: Update environment when JDK == 11
+      if: ${{ matrix.java == '11' }}
+      run: |
+        echo "MAVEN_GOALS=${{ env.MAVEN_GOALS }} org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_ENV
 
       # Use Maven Wrapper so we can build with an older version of Maven, see PR #4579.
     - name: Build with Maven
@@ -85,7 +98,9 @@ jobs:
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         jdk11: true # allows the use of the JDK11 profile, when running JDK11
-      run: ./mvnw -B -V -T1 package -P${{env.PROFILES}}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
