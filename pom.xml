@@ -1025,6 +1025,13 @@
 		<tag>HEAD</tag>
 	</scm>
 
+	<repositories>
+		<repository>
+			<id>ibissource</id>
+			<url>https://nexus.frankframework.org/content/groups/public</url>
+		</repository>
+	</repositories>
+
 	<profiles>
 		<profile>
 			<id>ossrh</id>
@@ -1098,12 +1105,6 @@
 					<url>file:target/site-deploy</url>
 				</site>
 			</distributionManagement>
-			<repositories>
-				<repository>
-					<id>ibissource</id>
-					<url>https://nexus.frankframework.org/content/groups/public</url>
-				</repository>
-			</repositories>
 		</profile>
 		<profile>
 			<id>default-modules</id><!-- Profile defaults to ON, when the property is set it will turn off -->
