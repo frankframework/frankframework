@@ -1,6 +1,6 @@
 import * as angular from "angular";
 import { appModule } from "../../../app.module";
-import { StateService } from "angular-ui-router";
+import { StateService } from "@uirouter/angularjs";
 import { MiscService } from "src/angularjs/app/services/misc.service";
 
 class IframeCustomViewController {
