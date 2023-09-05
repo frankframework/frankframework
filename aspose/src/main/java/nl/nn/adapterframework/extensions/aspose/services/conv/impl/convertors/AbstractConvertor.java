@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -110,9 +110,9 @@ abstract class AbstractConvertor implements Convertor {
 			result.setPdfResultFile(resultFile);
 			result.setResultFilePath(resultFile.getAbsolutePath());
 
-			LOGGER.debug("Convert to file... " + filename);
+			LOGGER.debug("Convert to file... {}", filename);
 			convert(mediaType, message, result, charset);
-			LOGGER.debug("Convert to file finished. " + filename);
+			LOGGER.debug("Convert to file finished. {}", filename);
 
 		} catch (Exception e) {
 			if (isPasswordException(e)) {
@@ -129,11 +129,9 @@ abstract class AbstractConvertor implements Convertor {
 	protected int getNumberOfPages(File file) throws IOException {
 		int result = 0;
 		if(file != null) {
-			try (InputStream inStream = new FileInputStream(file)){
+			try (InputStream inStream = new FileInputStream(file)) {
 				Document doc = new Document(inStream);
 				result = doc.getPages().size();
-			} catch (IOException e) {
-				throw e;
 			}
 		}
 

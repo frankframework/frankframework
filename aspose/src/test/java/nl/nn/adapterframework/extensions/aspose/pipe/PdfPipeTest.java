@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.extensions.aspose.pipe;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -40,6 +41,7 @@ import javax.imageio.ImageIO;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.util.MimeType;
 
 import com.testautomationguru.utility.CompareMode;
 import com.testautomationguru.utility.ImageUtil;
@@ -54,9 +56,12 @@ import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils.MessageType;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageUtils;
 
 /**
  * Executes defined tests against the PdfPipe to ensure the correct working of this pipe.
@@ -198,6 +203,23 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			result = result.replaceAll(ignore, "IGNORE");
 		}
 		return result;
+	}
+
+	@Test
+	public void testFileWithMimeTypeAndCharset() throws Exception {
+		pipe.setAction(DocumentAction.CONVERT);
+		pipe.configure();
+		pipe.start();
+
+		PipeLineSession session = new PipeLineSession();
+		Message input = MessageTestUtils.getMessage(MessageType.CHARACTER_UTF8);
+		MimeType mimeType = MessageUtils.computeMimeType(input);
+		assertEquals("UTF-8", mimeType.getParameter("charset")); //ensure we have a charset in the mimetype
+		PipeRunResult result = pipe.doPipe(input, session);
+
+		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
+		String responseXml = result.getResult().asString();
+		assertFalse(responseXml.contains("failureReason"));
 	}
 
 	@Test
