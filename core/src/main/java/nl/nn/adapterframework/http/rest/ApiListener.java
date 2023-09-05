@@ -253,7 +253,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	/**
 	 * Automatically generate and validate etags
-	 * @ff.default <code>true</code>, can be changed by setting the property <code>api.etag.enabled</code>.
+	 * @ff.default <code>false</code>, can be changed by setting the property <code>api.etag.enabled</code>.
 	 */
 	public void setUpdateEtag(boolean updateEtag) {
 		this.updateEtag = updateEtag;
