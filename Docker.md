@@ -1,9 +1,10 @@
-Frank!Framework with Docker
-===========================
+# Frank!Framework with Docker
 
-Docker images are provided, suitable both for local and server use. Images are provided from the registry located at https://nexus.frankframework.org, the source is available from the [docker-folder](docker/appserver/Tomcat) in this repository.
+Docker images are provided, suitable both for local and server use. Images are provided from the registry located at https://nexus.frankframework.org, where images will be stored for as long as possible. 
+Specific nightly builds are made available on [DockerHub wearefrank/frank-framework](https://hub.docker.com/r/wearefrank/frank-framework), but may only be available for [6 months](https://www.docker.com/blog/scaling-dockers-business-to-serve-millions-more-developers-storage/).
+The source is available from the [docker-folder](docker/Tomcat) in this repository.
 
-# Contents
+## Contents
 
 - [General use](#General-use)
   - [Local use](#Local-use)
@@ -20,15 +21,15 @@ Docker images are provided, suitable both for local and server use. Images are p
   - [Non-root](#Non-root)
 
 
-General use
-===========
+## General use
+
 The image contains an empty framework-instance that needs to be configured before use.
 
 Whether using the container locally or building your own image for use on servers, refer to [Filesystem](#Filesystem) information on which directories and files to mount or copy.
 
 For a list of available tags, see https://nexus.frankframework.org/#browse/search/docker.
 
-## Local use
+### Local use
 
 To run the image, run the following command, adding environment variables and mounts as needed:
 
@@ -45,7 +46,7 @@ docker run --publish 80:8080 \
 	nexus.frankframework.org/frank-framework:latest
 ```
 
-## Server use
+### Server use
 
 Please read the [Considerations](#Considerations) before using the image on servers, as the default setup might not be secure enough for your use.
 
@@ -55,10 +56,9 @@ For use on servers, you need to build your own image that includes the required 
 
 Use `COPY --chown=tomcat` when copying files to ensure that tomcat can use the files.
 
-Filesystem
-==========
+## Filesystem
 
-## Directories
+### Directories
 
 The image contains the following directories:
 | directory | description | notes |
@@ -71,7 +71,7 @@ The image contains the following directories:
 | /usr/local/tomcat/logs | Log directory | |
 | /opt/frank/secrets | Credential storage | See [Secrets](#Secrets) |
 
-## Files
+### Files
 
 The image also contains the following files:
 | file | description | notes |
@@ -80,13 +80,11 @@ The image also contains the following files:
 | /usr/local/tomcat/conf/server.xml | mount/copy of your server.xml | Contains the default server.xml of Tomcat, replace to secure your application |
 | /usr/local/tomcat/conf/catalina.properties | Server properties, contains default framework values | Do not replace this file, use [Environment variables](#Environment-variables) or append to the file, see [Dockerfile](docker/appserver/Tomcat/Dockerfile) for an example |
 
-Logging
-=======
+## Logging
 
 Generated log files are stored in `/usr/local/tomcat/logs`.
 
-Environment variables
-=====================
+## Environment variables
 
 Environment variables can be used to set parameters. Environment variables have the highest precedence and override parameters set in .property files supplied by Tomcat, resources and configurations.
 
@@ -94,21 +92,19 @@ Environment variables can be used to replace parameters in Tomcat configuration 
 
 Do not use environment variables for secrets!
 
-Health and readiness
-====================
+## Health and readiness
 
 The health and readiness of the container can be monitored by polling the `/iaf/api/server/health` API endpoint. This will return a HTTP statuscode of 200 if all adapters are running and a HTTP statuscode of 503 if there are adapters in a non-running state.
 
-Considerations
-==============
+## Considerations
 
 The images are based on Tomcat, all restrictions and considerations that apply to Tomcat also apply to using the provided images.
 
-## HTTPS and authentication
+### HTTPS and authentication
 
 Frank!Applications use HTTPS and require authentication unless `dtap.stage=LOC`, but the default server.xml of Tomcat is not configured for inbound HTTPS traffic and user authentication. To configure this, the server.xml file will need to be replaced by either building your own image or mounting it at runtime.
 
-## Secrets
+### Secrets
 
 Special consideration should be taken with secrets. As described on the [Tomcat website](https://cwiki.apache.org/confluence/display/TOMCAT/Password), secrets are stored in plain text in the container. To use secrets in your Tomcat and Frank!Application configuration, you can take the following steps:
 - In your configuration, use the authAlias attribute with value `${<secret-name>}` 
@@ -118,6 +114,6 @@ Special consideration should be taken with secrets. As described on the [Tomcat 
 
 See the [context.xml](test/src/main/webapp/META-INF/context.xml) of the test-project and corresponding [Dockerfile](docker/appserver/Tomcat/test/Dockerfile) for an example.
 
-## Non-root
+### Non-root
 
 This image runs Tomcat as a separate user `tomcat:tomcat` with `UID=1000` and `GID=1000` instead of `root`. If you need to run as `root`, you will need to set `USER root` in your Dockerfile.
