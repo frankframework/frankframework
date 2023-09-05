@@ -3,7 +3,7 @@ import { AppConstants } from 'src/angularjs/app/app.module';
 import { AppService } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { CookiesService } from 'src/angularjs/app/services/cookies.service';
-import { APP_APPCONSTANTS } from 'src/app/app.module';
+import { APPCONSTANTS } from 'src/app/app.module';
 
 @Component({
   selector: 'app-jdbc-execute-query',
@@ -22,7 +22,7 @@ export class JdbcExecuteQueryComponent implements OnInit {
   constructor(
     private apiService: ApiService,
     private cookiesService: CookiesService,
-    @Inject(APP_APPCONSTANTS) private appConstants: AppConstants,
+    @Inject(APPCONSTANTS) private appConstants: AppConstants,
     private appService: AppService
   ) { };
 

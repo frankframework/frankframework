@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { AppConstants } from 'src/angularjs/app/app.module';
 import { AppService } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
-import { APP_APPCONSTANTS } from 'src/app/app.module';
+import { APPCONSTANTS } from 'src/app/app.module';
 
 @Component({
   selector: 'app-jdbc-browse-tables',
@@ -21,7 +21,7 @@ export class JdbcBrowseTablesComponent implements OnInit {
 
   constructor(
     private apiService: ApiService,
-    @Inject(APP_APPCONSTANTS) private appConstants: AppConstants, 
+    @Inject(APPCONSTANTS) private appConstants: AppConstants,
     private appService: AppService
   ) { };
 

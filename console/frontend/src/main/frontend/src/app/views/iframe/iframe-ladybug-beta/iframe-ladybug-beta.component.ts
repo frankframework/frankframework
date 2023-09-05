@@ -11,7 +11,7 @@ export class IframeLadybugBetaComponent implements OnInit {
   redirectURL = "";
 
   constructor(
-    @Inject("miscService") private miscService: MiscService
+    private miscService: MiscService
   ) { };
 
   ngOnInit(): void {
