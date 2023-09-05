@@ -28,7 +28,7 @@ import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/page
 import { HamburgerComponent } from './components/pages/pages-topnavbar/hamburger.component';
 import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
 import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
-import { OrderByPipe } from './filters/orderby.pipe';
+import { OrderByPipe } from './pipes/orderby.pipe';
 import { FormsModule } from '@angular/forms';
 import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
 import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
@@ -73,7 +73,16 @@ appModule
   .directive('pagesNavigation', downgradeComponent({ component: PagesNavigationComponent }) as angular.IDirectiveFactory)
   .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
   .directive('pagesTopnavbar', downgradeComponent({ component: PagesTopnavbarComponent }) as angular.IDirectiveFactory)
-  .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory);
+  .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory)
+  .directive('inlineStore', downgradeComponent({ component: InlinestoreComponent }) as angular.IDirectiveFactory)
+  .directive('jdbcBrowseTables', downgradeComponent({ component: JdbcBrowseTablesComponent }) as angular.IDirectiveFactory)
+  .directive('jdbcExecuteQuery', downgradeComponent({ component: JdbcExecuteQueryComponent }) as angular.IDirectiveFactory)
+  .directive('iframeCustomView', downgradeComponent({ component: IframeCustomViewComponent }) as angular.IDirectiveFactory)
+  .directive('iframeLadybug', downgradeComponent({ component: IframeLadybugComponent }) as angular.IDirectiveFactory)
+  .directive('iframeLadybugBeta', downgradeComponent({ component: IframeLadybugBetaComponent }) as angular.IDirectiveFactory)
+  .directive('iframeLarva', downgradeComponent({ component: IframeLarvaComponent }) as angular.IDirectiveFactory)
+  .directive('ibisstoreSummary', downgradeComponent({ component: IbisstoreSummaryComponent }) as angular.IDirectiveFactory);
+
 
 @NgModule({
   declarations: [
@@ -87,13 +96,15 @@ appModule
     HamburgerComponent,
     InlinestoreComponent,
     JdbcBrowseTablesComponent,
-    OrderByPipe,
     JdbcExecuteQueryComponent,
     IframeCustomViewComponent,
     IframeLadybugComponent,
     IframeLadybugBetaComponent,
     IframeLarvaComponent,
     IbisstoreSummaryComponent,
+
+    // pipes
+    OrderByPipe,
   ],
   imports: [
     BrowserModule,
