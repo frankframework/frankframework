@@ -1062,6 +1062,12 @@ public class Message implements Serializable, Closeable {
 		closeOnClose(writer);
 	}
 
+	/**
+	 * Creates a copy of this Message object.
+	 *
+	 * @return A new Message object that is a copy of this Message.
+	 * @throws IOException If an I/O error occurs during the copying process.
+	 */
 	@Nonnull
 	public Message copyMessage() throws IOException {
 		final Message newMessage;

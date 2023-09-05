@@ -18,6 +18,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import nl.nn.adapterframework.stream.Message;
 
@@ -242,8 +244,9 @@ public class PipeLineSessionTest {
 		assertEquals(from,to);
 	}
 
-	@Test
-	public void testMergeToParentSessionNullKeys() throws Exception {
+	@ParameterizedTest
+	@CsvSource(value = {"*", ","})
+	public void testMergeToParentSessionCopyAllKeys(String keysToCopy) throws Exception {
 		// Arrange
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
@@ -258,7 +261,7 @@ public class PipeLineSessionTest {
 		from.scheduleCloseOnSessionExit(closeable, "test-d");
 
 		// Act
-		PipeLineSession.mergeToParentSession(null, from, to, null);
+		PipeLineSession.mergeToParentSession(keysToCopy, from, to, null);
 
 		from.close();
 
