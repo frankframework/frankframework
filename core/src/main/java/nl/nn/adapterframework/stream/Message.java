@@ -393,19 +393,7 @@ public class Message implements Serializable, Closeable {
 			return;
 		}
 		LOG.debug("registering Message [{}] for close on exit", this);
-		if (request instanceof InputStream) {
-			request = StreamUtil.onClose((InputStream) request, () -> {
-				LOG.debug("closed InputStream and unregistering Message [{}] from close on exit", this);
-				unscheduleFromCloseOnExitOf(session);
-			});
-		}
-		if (request instanceof Reader) {
-			request = StreamUtil.onClose((Reader) request, () -> {
-				LOG.debug("closed Reader and unregistering Message [{}] from close on exit", this);
-				unscheduleFromCloseOnExitOf(session);
-			});
-		}
-		session.scheduleCloseOnSessionExit(this, request.toString() + " requested by " + requester);
+		session.scheduleCloseOnSessionExit(this, StringUtils.truncate(request.toString(), 100) + " requested by " + requester);
 	}
 
 	public boolean isScheduledForCloseOnExitOf(@Nonnull PipeLineSession session) {

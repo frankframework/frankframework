@@ -17,7 +17,6 @@ package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -98,57 +97,54 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result;
-		PipeLineSession context = null;
-		try {
-			if (paramList!=null) {
-				context = new PipeLineSession(paramList.getValues(message, session).getValueMap());
-			} else {
-				context=new PipeLineSession();
-			}
-			DispatcherManager dm;
-			Class<?> c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
+		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
+			try {
+				if (paramList != null) {
+					subAdapterSession.putAll(paramList.getValues(message, session).getValueMap());
+				}
+				DispatcherManager dm;
+				Class<?> c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
 
-			if(getDispatchType().equalsIgnoreCase("DLL")) {
-				String version = nl.nn.adapterframework.dispatcher.Version.version;
-				if(version.contains("IbisServiceDispatcher 1.3"))
-					throw new SenderException("IBIS-ServiceDispatcher out of date! Please update to version 1.4 or higher");
+				if (getDispatchType().equalsIgnoreCase("DLL")) {
+					String version = nl.nn.adapterframework.dispatcher.Version.version;
+					if (version.contains("IbisServiceDispatcher 1.3"))
+						throw new SenderException("IBIS-ServiceDispatcher out of date! Please update to version 1.4 or higher");
 
-				Method getDispatcherManager = c.getMethod("getDispatcherManager", String.class);
-				dm = (DispatcherManager) getDispatcherManager.invoke(null, getDispatchType());
-			}
-			else {
-				Method getDispatcherManager = c.getMethod("getDispatcherManager");
-				dm = (DispatcherManager) getDispatcherManager.invoke(null, (Object[])null);
-			}
+					Method getDispatcherManager = c.getMethod("getDispatcherManager", String.class);
+					dm = (DispatcherManager) getDispatcherManager.invoke(null, getDispatchType());
+				} else {
+					Method getDispatcherManager = c.getMethod("getDispatcherManager");
+					dm = (DispatcherManager) getDispatcherManager.invoke(null, (Object[]) null);
+				}
 
-			String serviceName;
-			if (StringUtils.isNotEmpty(getServiceNameSessionKey())) {
-				serviceName = session.getString(getServiceNameSessionKey());
-			} else {
-				serviceName = getServiceName();
-			}
+				String serviceName;
+				if (StringUtils.isNotEmpty(getServiceNameSessionKey())) {
+					serviceName = session.getString(getServiceNameSessionKey());
+				} else {
+					serviceName = getServiceName();
+				}
 
-			String correlationID = session==null ? null : session.getCorrelationId();
-			result = dm.processRequest(serviceName, correlationID, message.asString(), (HashMap) context);
-			if (isMultipartResponse()) {
-				return new SenderResult(HttpSender.handleMultipartResponse(MULTIPART_RESPONSE_CONTENT_TYPE, new ByteArrayInputStream(result.getBytes(MULTIPART_RESPONSE_CHARSET)), session));
+				String correlationID = session == null ? null : session.getCorrelationId();
+				result = dm.processRequest(serviceName, correlationID, message.asString(), subAdapterSession);
+				if (isMultipartResponse()) {
+					return new SenderResult(HttpSender.handleMultipartResponse(MULTIPART_RESPONSE_CONTENT_TYPE, new ByteArrayInputStream(result.getBytes(MULTIPART_RESPONSE_CHARSET)), session));
+				}
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix() + "exception evaluating parameters", e);
+			} catch (Exception e) {
+				throw new SenderException(getLogPrefix() + "exception processing message using request processor [" + serviceName + "]", e);
+			} finally {
+				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+					log.debug("returning values of session keys [" + getReturnedSessionKeys() + "]");
+				}
+				PipeLineSession.mergeToParentSession(getReturnedSessionKeys(), subAdapterSession, session, this);
 			}
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
-		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"exception processing message using request processor ["+serviceName+"]",e);
-		} finally {
-			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-			}
-			PipeLineSession.mergeToParentSession(getReturnedSessionKeys(), context, session, this);
+			ExitState exitState = (ExitState) subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+			Object exitCode = subAdapterSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+			String forwardName = exitCode != null ? exitCode.toString() : null;
+			return new SenderResult(exitState == null || exitState == ExitState.SUCCESS, new Message(result), "exitState=" + exitState, forwardName);
 		}
-		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
-		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-		String forwardName = exitCode !=null ? exitCode.toString() : null;
-		return new SenderResult(exitState==null || exitState==ExitState.SUCCESS, new Message(result), "exitState="+exitState, forwardName);
 	}
-
 
 	/**
 	 * ServiceName of the {@link JavaListener} that should be called.

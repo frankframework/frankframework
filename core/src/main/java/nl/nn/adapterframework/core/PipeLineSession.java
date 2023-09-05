@@ -114,7 +114,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if (to == null) {
 			return;
 		}
-		LOG.debug("returning context, returned session keys [" + keysToCopy + "]");
+		LOG.debug("returning context, returned session keys [{}]", keysToCopy);
 		copyIfExists(EXIT_CODE_CONTEXT_KEY, from, to);
 		copyIfExists(EXIT_STATE_CONTEXT_KEY, from, to);
 		if (StringUtils.isNotEmpty(keysToCopy) && !"*".equals(keysToCopy)) {
@@ -123,7 +123,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 				String key = st.nextToken();
 				copySessionKey(key, from, to, requester);
 			}
- 		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
+		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
 			for (String key : from.keySet()) { // ... all keys will be copied
 				copySessionKey(key, from, to, requester);
 			}
@@ -162,6 +162,14 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if (from.containsKey(key)) {
 			to.put(key, from.get(key));
 		}
+	}
+
+	@Override
+	public Object put(String key, Object value) {
+		if (value instanceof AutoCloseable) {
+			closeables.put((AutoCloseable) value, "Session key [" + key + "]");
+		}
+		return super.put(key, value);
 	}
 
 	/*
