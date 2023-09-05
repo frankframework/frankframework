@@ -613,8 +613,10 @@ public class ApiListenerServlet extends HttpServletBase {
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-				MimeType contentType = determineContentType(messageContext, listener, result);
-				response.setContentType(contentType.toString());
+				if (!Message.isEmpty(result)) {
+					MimeType contentType = determineContentType(messageContext, listener, result);
+					response.setContentType(contentType.toString());
+				}
 
 				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
 					String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
