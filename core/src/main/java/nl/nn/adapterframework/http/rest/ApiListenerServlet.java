@@ -96,6 +96,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		if (cache == null) {
 			cache = ApiCacheManager.getInstance();
 		}
+
 		super.init();
 	}
 
@@ -401,7 +402,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 					}
 				}
-				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.getUpdateEtag());
+				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.isUpdateEtag());
 
 				/*
 				 * Check authorization
@@ -561,14 +562,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Calculate an eTag over the processed result and store in cache
 				 */
-				Boolean updateEtag = messageContext.getBoolean(UPDATE_ETAG_CONTEXT_KEY);
-				if (updateEtag==null) {
-					updateEtag=listener.getUpdateEtag();
-				}
-				if (updateEtag==null) {
-					updateEtag=result==null || result.isRepeatable();
-				}
-				if(updateEtag) {
+				if (Boolean.TRUE.equals(messageContext.getBoolean(UPDATE_ETAG_CONTEXT_KEY))) {
 					log.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
 					if(!Message.isEmpty(result) && method == HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag

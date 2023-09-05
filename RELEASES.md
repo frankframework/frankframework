@@ -28,6 +28,7 @@ Upcoming (7.8)
 - Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'.
 - XsltPipe and XsltSender 'handleLexicalEvents' attribute default value has been changed to 'false'.
 - Some API endpoints have been deprecated. Users are encouraged to change over to the new API, however in order to restore the deprecated functionality the property 'iaf-api.allowDeprecated' can be set to true.
+- ApiListener eTag generation has been disabled by default, set api.etag.enabled=true to enable default etag generation.
 
 7.7
 ---
