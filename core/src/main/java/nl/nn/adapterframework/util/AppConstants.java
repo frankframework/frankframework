@@ -123,8 +123,7 @@ public final class AppConstants extends PropertyLoader {
 	 * Returns a list of {@link AppConstants#getInstance() AppConstants} which names begin with the keyBase
 	 */
 	public Properties getAppConstants(String keyBase, boolean useSystemProperties, boolean useEnvironmentVariables) {
-		if(!keyBase.endsWith("."))
-			keyBase +=".";
+		final String propertyPrefix = keyBase + (!keyBase.endsWith(".") ? "." : "");
 
 		AppConstants constants = getInstance();
 		if(useSystemProperties)
@@ -140,7 +139,7 @@ public final class AppConstants extends PropertyLoader {
 		Properties filteredProperties = new Properties();
 		for(Object objKey: constants.keySet()) {
 			String key = (String) objKey;
-			if(key.startsWith(keyBase)) {
+			if(key.startsWith(propertyPrefix)) {
 				filteredProperties.put(key, constants.getResolvedProperty(key));
 			}
 		}
