@@ -10,7 +10,6 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
@@ -21,7 +20,7 @@ import nl.nn.adapterframework.stream.Message;
 class SendMessageJobTest {
 
 	private final SendMessageJob jobDef = new SendMessageJob();
-	private final IbisLocalSender localSenderMock = Mockito.mock(IbisLocalSender.class);
+	private final IbisLocalSender localSenderMock = mock(IbisLocalSender.class);
 
 	@BeforeEach
 	void setup(){
