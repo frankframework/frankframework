@@ -26,6 +26,7 @@ import { CustomViewsComponent } from './components/custom-views/custom-views.com
 import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pages-topinfobar.component';
 import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/pages-topnavbar.component';
 import { HamburgerComponent } from './components/pages/pages-topnavbar/hamburger.component';
+import { InputFileUploadComponent } from './components/input-file-upload/input-file-upload.component';
 import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
 import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
 import { OrderByPipe } from './pipes/orderby.pipe';
@@ -94,6 +95,7 @@ appModule
     PagesTopinfobarComponent,
     PagesTopnavbarComponent,
     HamburgerComponent,
+    InputFileUploadComponent,
     InlinestoreComponent,
     JdbcBrowseTablesComponent,
     JdbcExecuteQueryComponent,
