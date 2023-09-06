@@ -35,37 +35,37 @@ public class AppConstantsTest {
 
 	@Test
 	public void onlyInAppConstants() {
-		assertEquals("1", constants.getResolvedProperty("only.in.appconstants"));
+		assertEquals("1", constants.getProperty("only.in.appconstants"));
 	}
 
 	@Test
 	public void onlyInDeploymentSpecifics() {
-		assertEquals("2", constants.getResolvedProperty("only.in.deploymentspecifics"));
+		assertEquals("2", constants.getProperty("only.in.deploymentspecifics"));
 	}
 
 	@Test
 	public void overwriteInDeploymentSpecifics() {
-		assertEquals("2", constants.getResolvedProperty("overwrite.in.deploymentspecifics"));
+		assertEquals("2", constants.getProperty("overwrite.in.deploymentspecifics"));
 	}
 
 	@Test
 	public void onlyInDeploymentSpecificsParent() {
-		assertEquals("3", constants.getResolvedProperty("only.in.deploymentspecifics.parent"));
+		assertEquals("3", constants.getProperty("only.in.deploymentspecifics.parent"));
 	}
 
 	@Test
 	public void overwriteInDeploymentSpecificsParent() {
-		assertEquals("3", constants.getResolvedProperty("overwrite.in.deploymentspecifics.parent"));
+		assertEquals("3", constants.getProperty("overwrite.in.deploymentspecifics.parent"));
 	}
 
 	@Test
 	public void onlyInBuildInfo() {
-		assertEquals("4", constants.getResolvedProperty("only.in.buildinfo"));
+		assertEquals("4", constants.getProperty("only.in.buildinfo"));
 	}
 
 	@Test
 	public void overwriteInBuildInfo() {
-		assertEquals("4", constants.getResolvedProperty("overwrite.in.buildinfo"));
+		assertEquals("4", constants.getProperty("overwrite.in.buildinfo"));
 	}
 
 	@Test
@@ -96,12 +96,12 @@ public class AppConstantsTest {
 
 	@Test
 	public void removeInstanceWithClassLoader() {
-		assertEquals("3", constants.getResolvedProperty("only.in.deploymentspecifics.parent"));
+		assertEquals("3", constants.getProperty("only.in.deploymentspecifics.parent"));
 		AppConstants.removeInstance(classLoader);
 
 		constants = AppConstants.getInstance(new ClassLoaderMock(contextClassLoader, true));
 
-		assertEquals("changed", constants.getResolvedProperty("only.in.deploymentspecifics.parent"));
+		assertEquals("changed", constants.getProperty("only.in.deploymentspecifics.parent"));
 	}
 
 	@Test
@@ -121,12 +121,12 @@ public class AppConstantsTest {
 
 	@Test
 	public void callResolvedProperty() {
-		assertEquals("123", constants.getResolvedProperty("unresolved.property"));
+		assertEquals("123", constants.getProperty("unresolved.property"));
 	}
 
 	@Test
 	public void callNonExistingProperty() {
-		assertEquals(null, constants.getResolvedProperty("i.dont.exist"));
+		assertEquals(null, constants.getProperty("i.dont.exist"));
 	}
 
 	@Test

@@ -166,9 +166,9 @@ public class WsdlGenerator {
 		}
 		String fileName = getName();
 		AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfigurationClassLoader());
-		String tns = appConstants.getResolvedProperty("wsdl." + getName() + ".targetNamespace");
+		String tns = appConstants.getProperty("wsdl." + getName() + ".targetNamespace");
 		if (tns == null) {
-			tns = appConstants.getResolvedProperty("wsdl.targetNamespace");
+			tns = appConstants.getProperty("wsdl.targetNamespace");
 		}
 		if (tns == null) {
 			if (inputValidator instanceof EsbSoapValidator) {
@@ -645,15 +645,15 @@ public class WsdlGenerator {
 
 	protected String getSoapAction(IListener<?> listener) {
 		AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfiguration().getClassLoader());
-		String sa = appConstants.getResolvedProperty("wsdl." + getName() + "." + listener.getName() + ".soapAction");
+		String sa = appConstants.getProperty("wsdl." + getName() + "." + listener.getName() + ".soapAction");
 		if (sa != null) {
 			return sa;
 		}
-		sa = appConstants.getResolvedProperty("wsdl." + getName() + ".soapAction");
+		sa = appConstants.getProperty("wsdl." + getName() + ".soapAction");
 		if (sa != null) {
 			return sa;
 		}
-		sa = appConstants.getResolvedProperty("wsdl.soapAction");
+		sa = appConstants.getProperty("wsdl.soapAction");
 		if (sa != null) {
 			return sa;
 		}
@@ -665,11 +665,11 @@ public class WsdlGenerator {
 
 	protected String getLocation(String defaultLocation) {
 		AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfiguration().getClassLoader());
-		String sa = appConstants.getResolvedProperty("wsdl." + getName() + ".location");
+		String sa = appConstants.getProperty("wsdl." + getName() + ".location");
 		if (sa != null) {
 			return sa;
 		}
-		sa = appConstants.getResolvedProperty("wsdl.location");
+		sa = appConstants.getProperty("wsdl.location");
 		if (sa != null) {
 			return sa;
 		}
@@ -826,7 +826,7 @@ public class WsdlGenerator {
 						w.writeCharacters("externalJndiName-for-"
 								+ listener.getQueueConnectionFactoryName()
 								+ "-on-"
-								+ AppConstants.getInstance().getResolvedProperty("dtap.stage"));
+								+ AppConstants.getInstance().getProperty("dtap.stage"));
 						w.writeEndElement();
 					}
 					w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "targetAddress"); {
@@ -835,7 +835,7 @@ public class WsdlGenerator {
 						if (queueName == null) {
 							queueName = "queueName-for-"
 									+ listener.getDestinationName() + "-on-"
-									+ AppConstants.getInstance().getResolvedProperty("dtap.stage");
+									+ AppConstants.getInstance().getProperty("dtap.stage");
 						}
 						w.writeCharacters(queueName);
 						w.writeEndElement();
@@ -868,7 +868,7 @@ public class WsdlGenerator {
 						warn("Could not encode queueConnectionFactoryName for listener '" + listener.getName() + "'", e);
 					}
 				}
-				String stage = AppConstants.getInstance().getResolvedProperty("dtap.stage");
+				String stage = AppConstants.getInstance().getProperty("dtap.stage");
 				if (StringUtils.isEmpty(stage)) {
 					warn("Property dtap.stage empty");
 				} else {

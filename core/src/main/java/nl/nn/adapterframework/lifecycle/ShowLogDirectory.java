@@ -45,7 +45,7 @@ import nl.nn.adapterframework.webcontrol.FileViewerServlet;
 @IbisInitializer
 public class ShowLogDirectory {
 
-	private String defaultLogDirectory = AppConstants.getInstance().getResolvedProperty("logging.path").replace("\\\\", "\\");
+	private String defaultLogDirectory = AppConstants.getInstance().getProperty("logging.path").replace("\\\\", "\\");
 	private String defaultLogWildcard = AppConstants.getInstance().getProperty("logging.wildcard");
 	private boolean showDirectories = AppConstants.getInstance().getBoolean("logging.showdirectories", false);
 	private int maxItems = AppConstants.getInstance().getInt("logging.items.max", 500);

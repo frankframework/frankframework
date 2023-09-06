@@ -187,7 +187,7 @@ public class IbisApplicationContext implements Closeable {
 		if (classLoader == null) throw new IllegalStateException("no ClassLoader found to initialize Spring from");
 		classPathApplicationContext.setConfigLocations(getSpringConfigurationFiles(classLoader));
 
-		String instanceName = APP_CONSTANTS.getResolvedProperty("instance.name");
+		String instanceName = APP_CONSTANTS.getProperty("instance.name");
 		classPathApplicationContext.setId(requireNonNull(instanceName));
 		classPathApplicationContext.setDisplayName("IbisApplicationContext [" + instanceName + "]");
 

@@ -93,7 +93,7 @@ public class ApiStreamPipe extends StreamPipe {
 				throw new PipeRunException(this, "Exception configuring dummy query sender", e);
 			}
 
-			String slotId = AppConstants.getInstance().getResolvedProperty("instance.name") + "/" + session.get("operation");
+			String slotId = AppConstants.getInstance().getProperty("instance.name") + "/" + session.get("operation");
 			String selectMessageKeyResult = null;
 			try {
 				selectMessageKeyResult = selectMessageKey(slotId, messageId);

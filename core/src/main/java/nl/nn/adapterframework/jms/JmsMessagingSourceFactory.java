@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.AppConstants;
 public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	private static Map<String,MessagingSource> jmsMessagingSourceMap = new HashMap<>();
 	private JMSFacade jmsFacade;
-	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
+	private String applicationServerType = AppConstants.getInstance().getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 
 	public JmsMessagingSourceFactory(JMSFacade jmsFacade) {
 		this.jmsFacade = jmsFacade;
