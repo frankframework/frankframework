@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.http.cxf;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,12 +18,15 @@ public class SoapProviderStub extends SOAPProviderBase {
 	@Override
 	@SneakyThrows
 	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
-		if(session != null)
+		if(session != null) {
 			pipelineSession.putAll(session);
-
+			session.getCloseables().clear();
+		}
 		session = pipelineSession;
 		for (String key : session.keySet()) {
-			sessionCopy.put(key, session.getMessage(key).copyMessage());
+			if (!(session.get(key) instanceof InputStream)) {
+				sessionCopy.put(key, session.getMessage(key).copyMessage());
+			}
 		}
 		return message;
 	}

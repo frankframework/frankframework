@@ -185,8 +185,6 @@ public class PipeLineSessionBaseTest {
 		log.debug("test calling close on wrapped(b)");
 		mb.close();
 
-//		assertFalse(mb.isScheduledForCloseOnExitOf(session));
-
 		log.debug("test unschedule wrapped(c)");
 		mc.unscheduleFromCloseOnExitOf(session);
 

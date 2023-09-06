@@ -402,6 +402,9 @@ public class Message implements Serializable, Closeable {
 
 	public void unscheduleFromCloseOnExitOf(@Nonnull PipeLineSession session) {
 		session.unscheduleCloseOnSessionExit(this);
+		if (request instanceof AutoCloseable) {
+			session.unscheduleCloseOnSessionExit((AutoCloseable) request);
+		}
 	}
 
 	private void onExceptionClose(@Nonnull Exception e) {
