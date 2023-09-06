@@ -63,6 +63,7 @@ public class SenderThread extends Thread {
 			session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			SenderResult result = sender.sendMessage(new Message(request), session);
 			response = result.getResult().asString();
+			result.getResult().close();
 		} catch(SenderException e) {
 			if (convertExceptionToMessage) {
 				response = Util.throwableToXml(e);
