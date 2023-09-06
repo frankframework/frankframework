@@ -36,7 +36,7 @@ import org.apache.logging.log4j.Logger;
  * that file is loaded also</p>
 
  * @author Niels Meijer
- * @version 2.0
+ * @version 2.1
  *
  */
 public final class AppConstants extends PropertyLoader {
