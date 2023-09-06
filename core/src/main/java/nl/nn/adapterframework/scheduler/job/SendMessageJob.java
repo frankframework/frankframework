@@ -15,9 +15,12 @@
 */
 package nl.nn.adapterframework.scheduler.job;
 
+import java.io.IOException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -30,10 +33,9 @@ import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.UUIDUtil;
 
 public class SendMessageJob extends JobDef {
-	private IbisLocalSender localSender = null;
+	private @Setter IbisLocalSender localSender = null;
 	private @Getter String javaListener;
 	private @Getter String message = null;
-
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -55,19 +57,16 @@ public class SendMessageJob extends JobDef {
 
 	@Override
 	public void execute() throws JobExecutionException, TimeoutException {
-		try {
-			localSender.open();
-			//sendMessage message cannot be NULL
-			Message message = new Message((getMessage()==null) ? "" : getMessage());
-			PipeLineSession session = new PipeLineSession();
+		try (Message toSendMessage = new Message((getMessage() == null) ? "" : getMessage());
+				PipeLineSession session = new PipeLineSession()) {
 			//Set a messageId that will be forwarded by the localSender to the called adapter. Adapter and job will then share a Ladybug report.
 			session.put(PipeLineSession.CORRELATION_ID_KEY, UUIDUtil.createSimpleUUID());
-			localSender.sendMessageOrThrow(message, session);
-		}
-		catch (SenderException e) {
-			throw new JobExecutionException("unable to send message to javaListener ["+javaListener+"]", e);
-		}
-		finally {
+
+			localSender.open();
+			localSender.sendMessageOrThrow(toSendMessage, session).close();
+		} catch (SenderException | IOException e) {
+			throw new JobExecutionException("unable to send message to javaListener [" + javaListener + "]", e);
+		} finally {
 			try {
 				localSender.close();
 			} catch (SenderException e) {
@@ -90,7 +89,7 @@ public class SendMessageJob extends JobDef {
 		setJavaListener(receiverName); //For backwards compatibility
 	}
 
-	/** message to be send into the pipeline */
+	/** message to be sent into the pipeline */
 	public void setMessage(String message) {
 		if(StringUtils.isNotEmpty(message)) {
 			this.message = message;
