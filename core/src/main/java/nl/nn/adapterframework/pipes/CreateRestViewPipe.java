@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2018, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2015-2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
