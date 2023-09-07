@@ -1055,7 +1055,10 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Creates a copy of this Message object.
-	 *
+	 * <p>
+	 *     <b>NB:</b> To copy the underlying value of the message object, the message
+	 *     may be preserved if it was not repeatable.
+	 * </p>
 	 * @return A new Message object that is a copy of this Message.
 	 * @throws IOException If an I/O error occurs during the copying process.
 	 */

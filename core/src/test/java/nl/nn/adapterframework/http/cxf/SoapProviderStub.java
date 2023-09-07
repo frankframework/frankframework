@@ -25,6 +25,7 @@ public class SoapProviderStub extends SOAPProviderBase {
 		session = pipelineSession;
 		for (String key : session.keySet()) {
 			if (!(session.get(key) instanceof InputStream)) {
+				// Do not copy input-streams b/c then they are no longer readable
 				sessionCopy.put(key, session.getMessage(key).copyMessage());
 			}
 		}

@@ -188,6 +188,18 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return getString(CORRELATION_ID_KEY); // Allow Ladybug to wrap it in a Message
 	}
 
+	/**
+	 * Retrieves the value associated with the specified key and returns it as a {@link Message} object.
+	 * If the key does not exist or the value is null, it returns a null message.
+	 * <p>
+	 *     <b>NB:</b> If the underlying value was a stream, reading the message will read the underlying
+	 *     stream. The value can be preserved in the message, but the underlying stream can not be
+	 *     preserved and reading the same session key again will effectively return an empty value.
+	 * </p>
+	 * @param key The key for which to retrieve the value.
+	 * @return The value associated with the key encapsulated in a {@link Message} object.
+	 *         If the key does not exist or the value is null, a null message is returned.
+	 */
 	@Nonnull
 	public Message getMessage(String key) {
 		Object obj = get(key);
@@ -270,6 +282,16 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return handler.getPrincipal(this);
 	}
 
+	/**
+	 * Get value of a PipeLineSession key as String.
+	 * <p>
+	 *     <b>NB:</b> If the value was a stream, the stream is read and closed.
+	 *     If the value was another kind of {@link AutoCloseable}, then a side effect of this method
+	 *     may also be the value was closed.
+	 * </p>
+	 * @param key Session key to get.
+	 * @return Value of the session key as String, or NULL of either the key was not present or had a NULL value.
+	 */
 	@Nullable
 	@SneakyThrows
 	public String getString(@Nonnull String key) {
@@ -281,8 +303,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		} else if (obj instanceof Number) {
 			return obj.toString();
 		} else if (obj instanceof Message) {
+			// Existing messages returned directly so they are not closed
 			return ((Message) obj).asString();
 		} else {
+			// Other types are wrapped into a message, which is closed after converting to String.
+			// NB: If the sessionKey value is a stream this consumes the stream.
 			try (Message message = Message.asMessage(obj)) {
 				return message.asString();
 			}

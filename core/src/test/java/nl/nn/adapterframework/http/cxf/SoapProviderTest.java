@@ -128,9 +128,9 @@ public class SoapProviderTest {
 
 		if(addAttachment) {
 			InputStream fis = new ByteArrayInputStream(ATTACHMENT_CONTENT.getBytes());
-			DataHandler dataHander = new DataHandler(new InputStreamDataSource(ATTACHMENT_MIMETYPE, fis));
+			DataHandler dataHandler = new DataHandler(new InputStreamDataSource(ATTACHMENT_MIMETYPE, fis));
 
-			AttachmentPart part = soapMessage.createAttachmentPart(dataHander);
+			AttachmentPart part = soapMessage.createAttachmentPart(dataHandler);
 			soapMessage.addAttachmentPart(part);
 		}
 		return soapMessage;
