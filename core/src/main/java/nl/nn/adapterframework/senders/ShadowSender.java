@@ -156,7 +156,7 @@ public class ShadowSender extends ParallelSenders {
 				} catch (IOException | SAXException e) {
 					log.error("unable to compose result message", e);
 				} catch (TimeoutException | SenderException se) {
-					log.error("failed to send ShadowSender result to [{}]", resultSender.getName());
+					log.error("failed to send ShadowSender result to [{}]", resultSender::getName);
 				}
 			} catch (InterruptedException e) {
 				log.warn("{} result collection thread was interrupted", getLogPrefix(), e);
