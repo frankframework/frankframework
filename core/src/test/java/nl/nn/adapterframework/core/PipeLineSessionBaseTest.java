@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.core;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -185,8 +184,6 @@ public class PipeLineSessionBaseTest {
 
 		log.debug("test calling close on wrapped(b)");
 		mb.close();
-
-		assertFalse(mb.isScheduledForCloseOnExitOf(session));
 
 		log.debug("test unschedule wrapped(c)");
 		mc.unscheduleFromCloseOnExitOf(session);

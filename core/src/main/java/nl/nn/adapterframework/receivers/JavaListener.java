@@ -48,7 +48,6 @@ import nl.nn.adapterframework.senders.IbisJavaSender;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 
 // TODO: When anchors are supported by the Frank!Doc, link to https://github.com/ibissource/ibis-servicedispatcher
 /**
@@ -169,7 +168,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 					}
 				}
 			} finally {
-				Misc.copyContext(getReturnedSessionKeys(), session, context, this);
+				PipeLineSession.mergeToParentSession(getReturnedSessionKeys(), session, context, this);
 			}
 		}
 	}

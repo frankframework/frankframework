@@ -43,7 +43,6 @@ import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance.
@@ -268,7 +267,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 			} finally {
 				if (session != null && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
-					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
+					PipeLineSession.mergeToParentSession(getReturnedSessionKeys(), context, session, this);
 				}
 			}
 

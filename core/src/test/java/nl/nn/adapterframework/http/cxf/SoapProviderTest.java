@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ public class SoapProviderTest {
 
 	/*
 	 * The above exclusion of IBM JDK to work around the below error, seen when executing these tests with an IBM JDK:
-	 * 
+	 *
 		java.lang.VerifyError: JVMVRFY012 stack shape inconsistent; class=com/sun/xml/messaging/saaj/soap/SOAPDocumentImpl, method=createDocumentFragment()Lorg/w3c/dom/DocumentFragment;, pc=5; Type Mismatch, argument 0 in signature com/sun/xml/messaging/saaj/soap/SOAPDocumentFragment.<init>:(Lcom/sun/org/apache/xerces/internal/dom/CoreDocumentImpl;)V does not match
 		Exception Details:
 		  Location:
@@ -128,9 +128,9 @@ public class SoapProviderTest {
 
 		if(addAttachment) {
 			InputStream fis = new ByteArrayInputStream(ATTACHMENT_CONTENT.getBytes());
-			DataHandler dataHander = new DataHandler(new InputStreamDataSource(ATTACHMENT_MIMETYPE, fis));
+			DataHandler dataHandler = new DataHandler(new InputStreamDataSource(ATTACHMENT_MIMETYPE, fis));
 
-			AttachmentPart part = soapMessage.createAttachmentPart(dataHander);
+			AttachmentPart part = soapMessage.createAttachmentPart(dataHandler);
 			soapMessage.addAttachmentPart(part);
 		}
 		return soapMessage;
@@ -147,7 +147,7 @@ public class SoapProviderTest {
 		//Retrieve sessionkey the attachment was stored in
 		String sessionKey = XmlUtils.getChildTagAsString(attachment, "sessionKey");
 		assertNotNull(sessionKey);
-		Message attachmentMessage = session.getMessage(sessionKey);
+		Message attachmentMessage = SOAPProvider.getMessageFromSessionCopy(sessionKey);
 
 		//Verify that the attachment sent, was received properly
 		assertEquals(ATTACHMENT_CONTENT, attachmentMessage.asString());
@@ -186,12 +186,12 @@ public class SoapProviderTest {
 		}
 	}
 
-	@Test
 	/**
 	 * Receive SOAP message without attachment
 	 * Reply SOAP message without attachment
 	 * @throws Throwable
 	 */
+	@Test
 	public void simpleMessageTest() throws Throwable {
 		SOAPMessage request = createMessage("correct-soapmsg.xml");
 
@@ -207,23 +207,23 @@ public class SoapProviderTest {
 		assertEquals("<attachments/>", session.get("attachments").toString().trim());
 	}
 
-	@Test
 	/**
 	 * Receive faulty message without attachment
 	 * @throws Throwable
 	 */
+	@Test
 	public void errorMessageTest() throws Throwable {
 		SOAPMessage message = SOAPProvider.invoke(null);
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		assertTrue(result.indexOf("SOAPMessage is null") > 0);
 	}
 
-	@Test
 	/**
 	 * Receive SOAP message with MTOM attachment
 	 * Reply SOAP message without attachment
 	 * @throws Throwable
 	 */
+	@Test
 	public void receiveMessageWithAttachmentsTest() throws Throwable {
 		SOAPMessage request = createMessage("correct-soapmsg.xml", true, false);
 
@@ -236,12 +236,12 @@ public class SoapProviderTest {
 		assertAttachmentInSession(session);
 	}
 
-	@Test
 	/**
 	 * Receive SOAP message without attachment
 	 * Reply SOAP message with (InputStream) attachment
 	 * @throws Throwable
 	 */
+	@Test
 	public void sendMessageWithInputStreamAttachmentsTest() throws Throwable {
 		SOAPMessage request = createMessage("correct-soapmsg.xml");
 		PipeLineSession session = new PipeLineSession();
@@ -261,12 +261,12 @@ public class SoapProviderTest {
 		assertAttachmentInReceivedMessage(message);
 	}
 
-	@Test
 	/**
 	 * Receive SOAP message without attachment
 	 * Reply SOAP message with (String) attachment
 	 * @throws Throwable
 	 */
+	@Test
 	public void sendMessageWithStringAttachmentsTest() throws Throwable {
 		SOAPMessage request = createMessage("correct-soapmsg.xml");
 		PipeLineSession session = new PipeLineSession();
@@ -410,7 +410,7 @@ public class SoapProviderTest {
 
 	@Test
 	public void soapActionInSessionKeySOAP1_1() throws Throwable {
-		// Soap protocol 1.1 
+		// Soap protocol 1.1
 		SOAPMessage request = createMessage("soapmsg1_1.xml", false, true);
 		String value = "1.1-SoapAction";
 		webServiceContext.getMessageContext().put("SOAPAction", value);
@@ -421,7 +421,7 @@ public class SoapProviderTest {
 
 	@Test
 	public void noSoapActionInSessionKeySOAP1_1() throws Throwable {
-		// Soap protocol 1.1 
+		// Soap protocol 1.1
 		SOAPMessage request = createMessage("soapmsg1_1.xml", false, true);
 		SOAPProvider.invoke(request);
 		assertNull(SOAPProvider.getSession().get("SOAPAction"));
@@ -429,7 +429,7 @@ public class SoapProviderTest {
 
 	@Test
 	public void soap1_1MessageWithActionInContentTypeHeader() throws Throwable {
-		// Soap protocol 1.1 
+		// Soap protocol 1.1
 		SOAPMessage request = createMessage("soapmsg1_1.xml", false, true);
 		String value = "ActionInContentTypeHeader";
 		webServiceContext.getMessageContext().put("Content-Type", "application/soap+xml; action="+value);
