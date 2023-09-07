@@ -18,15 +18,12 @@ package nl.nn.adapterframework.lifecycle;
 import static java.util.Objects.requireNonNull;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.cxf.bus.spring.SpringBus;
@@ -41,6 +38,7 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.ResourceUtils;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Environment;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -256,19 +254,23 @@ public class IbisApplicationContext implements Closeable {
 		List<String> modulesToScanFor = new ArrayList<>();
 
 		modulesToScanFor.add("ibis-adapterframework-akamai");
+		modulesToScanFor.add("ibis-adapterframework-aspose");
+		modulesToScanFor.add("ibis-adapterframework-aws");
 		modulesToScanFor.add("ibis-adapterframework-cmis");
+		modulesToScanFor.add("ibis-adapterframework-commons");
+		modulesToScanFor.add("ibis-adapterframework-console-backend");
 		modulesToScanFor.add("ibis-adapterframework-coolgen");
 		modulesToScanFor.add("ibis-adapterframework-core");
+		modulesToScanFor.add("credentialprovider");
 		modulesToScanFor.add("ibis-adapterframework-ibm");
 		modulesToScanFor.add("ibis-adapterframework-idin");
 		modulesToScanFor.add("ibis-adapterframework-ifsa");
 		modulesToScanFor.add("ibis-adapterframework-ladybug");
 		modulesToScanFor.add("ibis-adapterframework-larva");
+		modulesToScanFor.add("iaf-management-gateway");
 		modulesToScanFor.add("ibis-adapterframework-sap");
 		modulesToScanFor.add("ibis-adapterframework-tibco");
 		modulesToScanFor.add("ibis-adapterframework-webapp");
-		modulesToScanFor.add("ibis-adapterframework-console");
-		modulesToScanFor.add("ibis-adapterframework-aws");
 
 		registerApplicationModules(modulesToScanFor);
 	}
@@ -280,39 +282,13 @@ public class IbisApplicationContext implements Closeable {
 	 */
 	private void registerApplicationModules(List<String> modules) {
 		for (String module : modules) {
-			String version = getModuleVersion(module);
+			String version = Environment.getModuleVersion(module);
 
 			if (version != null) {
 				iafModules.put(module, version);
 				APP_CONSTANTS.put(module + ".version", version);
 				applicationLog.debug("Loading IAF module [{}] version [{}]", module, version);
 			}
-		}
-	}
-
-	/**
-	 * Get IBIS module version
-	 *
-	 * @param module name of the module to fetch the version
-	 * @return module version or null if not found
-	 */
-	private String getModuleVersion(String module) {
-		ClassLoader classLoader = this.getClass().getClassLoader();
-		String basePath = "META-INF/maven/org.ibissource/";
-		URL pomProperties = classLoader.getResource(basePath + module + "/pom.properties");
-
-		if (pomProperties == null) {
-			// unable to find module, assume it's not on the classpath
-			return null;
-		}
-		try (InputStream is = pomProperties.openStream()) {
-			Properties props = new Properties();
-			props.load(is);
-			return (String) props.get("version");
-		} catch (IOException e) {
-			applicationLog.warn("unable to read pom.properties file for module[{}]", module, e);
-
-			return "unknown";
 		}
 	}
 }

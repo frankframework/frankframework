@@ -18,9 +18,11 @@ package nl.nn.adapterframework.management.gateway;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.EvaluationException;
 import org.springframework.expression.Expression;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -37,10 +39,14 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.security.JwtKeyGenerator;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
+
+	@Autowired
+	private JwtKeyGenerator jwtGenerator;
 
 	public HttpOutboundHandler(String endpoint) {
 		super(endpoint);
@@ -51,6 +57,10 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	 */
 	@Override
 	protected void doInit() {
+		if(jwtGenerator == null) {
+			throw new IllegalStateException("JwtKeyGenerator not set");
+		}
+
 		super.doInit();
 
 		QueueChannel responseChannel = SpringUtils.createBean(getApplicationContext(), QueueChannel.class);
@@ -100,6 +110,17 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 			}
 			return super.getValue(context, rootObject);
 		}
+	}
+
+	/**
+	 * Add authentication JWT, see {@link JwtKeyGenerator}.
+	 */
+	@Override
+	protected HttpHeaders mapHeaders(Message<?> message) {
+		HttpHeaders headers = super.mapHeaders(message);
+
+		headers.add("Authentication", "Bearer " + jwtGenerator.create());
+		return headers;
 	}
 
 	@Override
