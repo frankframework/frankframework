@@ -48,7 +48,7 @@ public class IbisCacheManager {
 
 	private IbisCacheManager() {
 		Configuration cacheManagerConfig = new Configuration();
-		String cacheDir = AppConstants.getInstance().getResolvedProperty(CACHE_DIR_KEY);
+		String cacheDir = AppConstants.getInstance().getProperty(CACHE_DIR_KEY);
 		if (StringUtils.isNotEmpty(cacheDir)) {
 			log.debug("setting cache directory to [{}]", cacheDir);
 			DiskStoreConfiguration diskStoreConfiguration = new DiskStoreConfiguration();

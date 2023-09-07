@@ -98,7 +98,7 @@ public class FileViewerServlet extends HttpServletBase {
 	private static final String stats_prefix    = "<statisticsCollections>";
 	private static final String stats_postfix	  = "</statisticsCollections>";
 
-	public static final String permissionRules = AppConstants.getInstance().getResolvedProperty("FileViewerServlet.permission.rules");
+	public static final String permissionRules = AppConstants.getInstance().getProperty("FileViewerServlet.permission.rules");
 
 	public static String makeConfiguredReplacements(String input) {
 		for (final String signal : AppConstants.getInstance().getListProperty(fvConfigKey)) {
@@ -150,7 +150,7 @@ public class FileViewerServlet extends HttpServletBase {
 
 			out.println("<html>");
 			out.println("<head>");
-			out.println("<title>"+AppConstants.getInstance().getResolvedProperty("instance.name.lc")+"@"+Misc.getHostname()+" - "+title+"</title>");
+			out.println("<title>"+AppConstants.getInstance().getProperty("instance.name.lc")+"@"+Misc.getHostname()+" - "+title+"</title>");
 			out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\"iaf/"+AppConstants.getInstance().getProperty(fvConfigKey+".css")+"\">");
 			out.println("</head>");
 			out.println("<body>");

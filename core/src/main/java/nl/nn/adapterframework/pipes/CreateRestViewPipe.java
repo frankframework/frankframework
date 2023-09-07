@@ -225,7 +225,7 @@ public class CreateRestViewPipe extends XsltPipe {
 
 			XmlBuilder p = new XmlBuilder("property");
 			p.addAttribute("name", propName);
-			p.setValue(appConstants.getResolvedProperty(propName));
+			p.setValue(appConstants.getProperty(propName));
 			xml.addSubElement(p);
 		}
 		return xmlh.toXML();

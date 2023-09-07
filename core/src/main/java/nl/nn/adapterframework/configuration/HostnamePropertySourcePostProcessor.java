@@ -35,7 +35,7 @@ public class HostnamePropertySourcePostProcessor extends CustomPropertySourcePos
 	@Override
 	protected void convertProperties(Properties props) {
 		AppConstants appConstants = AppConstants.getInstance();
-		String hostname = appConstants.getResolvedProperty(HOSTNAME_PROPERTY);
+		String hostname = appConstants.getProperty(HOSTNAME_PROPERTY);
 		if (StringUtils.isEmpty(hostname)) {
 			hostname = Misc.getHostname();
 			appConstants.setProperty(HOSTNAME_PROPERTY, hostname);

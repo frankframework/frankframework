@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.CredentialConstants;
 
 public abstract class MapCredentialFactory implements ICredentialFactory {
 
@@ -45,7 +45,7 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 
 	@Override
 	public void initialize() throws IOException {
-		AppConstants appConstants = AppConstants.getInstance();
+		CredentialConstants appConstants = CredentialConstants.getInstance();
 
 		aliases = getCredentialMap(appConstants);
 		if (aliases == null) {
@@ -58,9 +58,9 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 
 	protected abstract String getPropertyBase();
 
-	protected abstract Map<String,String> getCredentialMap(AppConstants appConstants) throws IOException;
+	protected abstract Map<String,String> getCredentialMap(CredentialConstants appConstants) throws IOException;
 
-	protected InputStream getInputStream(AppConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
+	protected InputStream getInputStream(CredentialConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
 		String filename = appConstants.getProperty(key, defaultValue);
 		if (StringUtils.isEmpty(filename)) {
 			throw new IllegalStateException("No property ["+key+"] found for "+purpose);

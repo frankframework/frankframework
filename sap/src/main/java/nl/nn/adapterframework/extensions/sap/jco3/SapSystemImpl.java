@@ -91,7 +91,7 @@ public abstract class SapSystemImpl extends GlobalListItem implements ISapSystem
 		try {
 			SapSystemDataProvider.getInstance().updateSystem(this);
 			if (log.isDebugEnabled() && getTraceLevel()>0) {
-				String logPath=AppConstants.getInstance().getResolvedProperty("logging.path");
+				String logPath=AppConstants.getInstance().getProperty("logging.path");
 				JCo.setTrace(getTraceLevel(), logPath);
 			}
 		} catch (Throwable t) {

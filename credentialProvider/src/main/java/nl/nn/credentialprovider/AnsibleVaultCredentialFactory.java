@@ -26,7 +26,7 @@ import java.util.Properties;
 import net.wedjaa.ansible.vault.crypto.data.Util;
 import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.CredentialConstants;
 
 public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 
@@ -44,7 +44,7 @@ public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 	}
 
 	@Override
-	protected Map<String, String> getCredentialMap(AppConstants appConstants) throws IOException {
+	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
 		try (InputStream vaultStream = getInputStream(appConstants, VAULT_PROPERTY, vaultFile, "Ansible Vault")) {
 			try (InputStream keyStream = getInputStream(appConstants, VAULT_KEY_PROPERTY, vaultKeyFile, "Ansible Vault Key")) {
 

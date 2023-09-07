@@ -21,7 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.CredentialConstants;
 
 /**
  * CredentialFactory that reads its credentials from a plain (unencrypted) .properties file.
@@ -44,7 +44,7 @@ public class PropertyFileCredentialFactory extends MapCredentialFactory {
 	}
 
 	@Override
-	protected Map<String, String> getCredentialMap(AppConstants appConstants) throws IOException {
+	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
 		try (InputStream propertyStream = getInputStream(appConstants, FILE_PROPERTY, DEFAULT_PROPERTIES_FILE, "Credentials")) {
 			Properties properties = new Properties();
 			properties.load(propertyStream);

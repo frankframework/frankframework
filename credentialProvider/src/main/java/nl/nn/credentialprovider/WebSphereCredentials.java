@@ -34,7 +34,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginContext;
 
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.CredentialConstants;
 
 /**
  * Provides user-id and password from the WebSphere authentication-alias repository.
@@ -125,7 +125,7 @@ public class WebSphereCredentials extends Credentials implements CallbackHandler
 			Principal p = new FrankPrincipal();
 			principals.add(p);
 			Subject initialSubject= new Subject(false, principals, publicCredentials, privateCredentials);
-			String loginConfiguration = AppConstants.getInstance().getProperty("PrincipalMapping", "DefaultPrincipalMapping");
+			String loginConfiguration = CredentialConstants.getInstance().getProperty("PrincipalMapping", "DefaultPrincipalMapping");
 			LoginContext lc = new LoginContext(loginConfiguration, initialSubject, this);
 			lc.login();
 			Subject s = lc.getSubject();
