@@ -2,19 +2,15 @@ package nl.nn.adapterframework.monitoring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
-import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
@@ -54,11 +50,7 @@ public class MonitorTest {
 		SenderMonitorAdapter destination = configuration.createBean(SenderMonitorAdapter.class);
 		destination.setName("myTestDestination");
 
-		EchoSender sender = spy(EchoSender.class);
-		ArgumentCaptor<Message> messageCapture = ArgumentCaptor.forClass(Message.class);
-		ArgumentCaptor<PipeLineSession> sessionCapture = ArgumentCaptor.forClass(PipeLineSession.class);
-		when(sender.sendMessage(messageCapture.capture(), sessionCapture.capture())).thenCallRealMethod();
-
+		MessageCapturingEchoSender sender = new  MessageCapturingEchoSender();
 		destination.setSender(sender);
 		manager.registerDestination(destination);
 		monitor.setDestinations(destination.getName());
@@ -70,13 +62,13 @@ public class MonitorTest {
 		configuration.publishEvent(EventThrowingClass.createMonitorEvent(message));
 
 		// Assert
-		Message capturedMessage = messageCapture.getValue();
+		Message capturedMessage = sender.getInputMessage();
 		String result = "<event hostname=\"XXX\" monitor=\"monitorName\" source=\"TriggerTestClass\" type=\"TECHNICAL\" severity=\"CRITICAL\" event=\"I'm an error code\"/>";
 		assertEquals(result, ignoreHostname(capturedMessage.asString()));
-		PipeLineSession session = sessionCapture.getValue();
+		PipeLineSession session = sender.getInputSession();
 		assertTrue(session.containsKey(PipeLineSession.ORIGINAL_MESSAGE_KEY));
 		Message originalMessage = session.getMessage(PipeLineSession.ORIGINAL_MESSAGE_KEY);
-		assertEquals(message.asString(), originalMessage.asString());
+		assertEquals(message.asString(), sender.getSessionOriginalMessageValue());
 		assertEquals(123, originalMessage.getContext().get("special-key"));
 	}
 

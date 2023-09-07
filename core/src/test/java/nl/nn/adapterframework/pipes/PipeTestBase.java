@@ -89,7 +89,9 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 				Message wrappedInput = new Message(new ThrowingAfterCloseInputStream((InputStream) input.asObject()));
 				wrappedInput.closeOnCloseOf(session, pipe);
 				session.computeIfAbsent(PipeLineSession.ORIGINAL_MESSAGE_KEY, k -> wrappedInput);
-				return pipe.doPipe(wrappedInput, session);
+				PipeRunResult result = pipe.doPipe(wrappedInput, session);
+				session.unscheduleCloseOnSessionExit(result.getResult());
+				return result;
 			}
 		}
 		session.computeIfAbsent(PipeLineSession.ORIGINAL_MESSAGE_KEY, k -> input);

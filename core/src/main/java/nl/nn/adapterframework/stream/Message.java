@@ -362,8 +362,8 @@ public class Message implements Serializable, Closeable {
 				} catch (Exception e) {
 					LOG.warn("Could not close request", e);
 				}
-				request = null;
 			}
+			request = null;
 		} finally {
 			if (resourcesToClose != null) {
 				resourcesToClose.forEach(r -> {
@@ -393,19 +393,7 @@ public class Message implements Serializable, Closeable {
 			return;
 		}
 		LOG.debug("registering Message [{}] for close on exit", this);
-		if (request instanceof InputStream) {
-			request = StreamUtil.onClose((InputStream) request, () -> {
-				LOG.debug("closed InputStream and unregistering Message [{}] from close on exit", this);
-				unscheduleFromCloseOnExitOf(session);
-			});
-		}
-		if (request instanceof Reader) {
-			request = StreamUtil.onClose((Reader) request, () -> {
-				LOG.debug("closed Reader and unregistering Message [{}] from close on exit", this);
-				unscheduleFromCloseOnExitOf(session);
-			});
-		}
-		session.scheduleCloseOnSessionExit(this, request.toString() + " requested by " + requester);
+		session.scheduleCloseOnSessionExit(this, StringUtils.truncate(request.toString(), 100) + " requested by " + requester);
 	}
 
 	public boolean isScheduledForCloseOnExitOf(@Nonnull PipeLineSession session) {
@@ -414,6 +402,9 @@ public class Message implements Serializable, Closeable {
 
 	public void unscheduleFromCloseOnExitOf(@Nonnull PipeLineSession session) {
 		session.unscheduleCloseOnSessionExit(this);
+		if (request instanceof AutoCloseable) {
+			session.unscheduleCloseOnSessionExit((AutoCloseable) request);
+		}
 	}
 
 	private void onExceptionClose(@Nonnull Exception e) {
@@ -1060,5 +1051,35 @@ public class Message implements Serializable, Closeable {
 			request = StreamCaptureUtils.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize, true);
 		}
 		closeOnClose(writer);
+	}
+
+	/**
+	 * Creates a copy of this Message object.
+	 * <p>
+	 *     <b>NB:</b> To copy the underlying value of the message object, the message
+	 *     may be preserved if it was not repeatable.
+	 * </p>
+	 * @return A new Message object that is a copy of this Message.
+	 * @throws IOException If an I/O error occurs during the copying process.
+	 */
+	@Nonnull
+	public Message copyMessage() throws IOException {
+		final Message newMessage;
+		if (!isRepeatable()) {
+			preserve();
+		}
+		if (request instanceof SerializableFileReference) {
+			final SerializableFileReference newRef;
+			if (isBinary()) {
+				newRef = SerializableFileReference.of(asInputStream());
+			} else {
+				newRef = SerializableFileReference.of(asReader(), getCharset());
+			}
+			newMessage = Message.asMessage(newRef);
+		} else {
+			newMessage = Message.asMessage(request);
+		}
+		newMessage.context = copyContext();
+		return newMessage;
 	}
 }

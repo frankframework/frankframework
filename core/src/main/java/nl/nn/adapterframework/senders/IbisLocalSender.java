@@ -44,7 +44,6 @@ import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &lt;<code>exit</code>&gt;
@@ -283,7 +282,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 				}
-				Misc.copyContext(getReturnedSessionKeys(), subAdapterSession, session, this);
+				PipeLineSession.mergeToParentSession(getReturnedSessionKeys(), subAdapterSession, session, this);
 			}
 
 			ExitState exitState = (ExitState)subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
