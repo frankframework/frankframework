@@ -15,9 +15,8 @@
 */
 package nl.nn.adapterframework.scheduler.job;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -29,12 +28,14 @@ import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.SpringUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.IOException;
 
 public class SendMessageJob extends JobDef {
-	private IbisLocalSender localSender = null;
+	private @Setter IbisLocalSender localSender = null;
 	private @Getter String javaListener;
 	private @Getter String message = null;
-
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -56,18 +57,15 @@ public class SendMessageJob extends JobDef {
 
 	@Override
 	public void execute() throws JobExecutionException, TimeoutException {
-		try {
-			localSender.open();
-			//sendMessage message cannot be NULL
-			Message message = new Message((getMessage()==null) ? "" : getMessage());
-			PipeLineSession session = new PipeLineSession();
+		try (Message toSendMessage = new Message((getMessage() == null) ? "" : getMessage());
+				PipeLineSession session = new PipeLineSession()) {
 			session.put(PipeLineSession.messageIdKey, Misc.createSimpleUUID()); //Create a dummy messageId so the localSender uses it as correlationId for the calling adapter.
-			localSender.sendMessage(message, session);
-		}
-		catch (SenderException e) {
-			throw new JobExecutionException("unable to send message to javaListener ["+javaListener+"]", e);
-		}
-		finally {
+
+			localSender.open();
+			localSender.sendMessage(toSendMessage, session).close();
+		} catch (SenderException | IOException e) {
+			throw new JobExecutionException("unable to send message to javaListener [" + javaListener + "]", e);
+		} finally {
 			try {
 				localSender.close();
 			} catch (SenderException e) {
@@ -90,7 +88,7 @@ public class SendMessageJob extends JobDef {
 		setJavaListener(receiverName); //For backwards compatibility
 	}
 
-	@IbisDoc({"message to be send into the pipeline", ""})
+	@IbisDoc({"message to be sent into the pipeline", ""})
 	public void setMessage(String message) {
 		if(StringUtils.isNotEmpty(message)) {
 			this.message = message;
