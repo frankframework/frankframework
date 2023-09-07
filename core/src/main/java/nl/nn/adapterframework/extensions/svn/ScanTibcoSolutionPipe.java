@@ -45,7 +45,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe which scans TIBCO sources in Subversion and creates a report in xml.
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 
@@ -421,12 +421,11 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			httpSender.setXhtml(true);
 			httpSender.configure();
 			httpSender.open();
-			String result = httpSender.sendMessageOrThrow(new Message(""), null).asString();
-			return result;
-		} finally {
-			if (httpSender != null) {
-				httpSender.close();
+			try (Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), null)) {
+				return result.asString();
 			}
+		} finally {
+			httpSender.close();
 		}
 	}
 

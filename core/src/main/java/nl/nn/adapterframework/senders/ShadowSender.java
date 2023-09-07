@@ -152,14 +152,14 @@ public class ShadowSender extends ParallelSenders {
 				// Collect the results of the (Shadow)Sender and send them to the resultSender.
 				try {
 					Message result = collectResults(executorMap, message, session);
-					resultSender.sendMessageOrThrow(result, session);
+					resultSender.sendMessageOrThrow(result, session).close();
 				} catch (IOException | SAXException e) {
 					log.error("unable to compose result message", e);
-				} catch(TimeoutException | SenderException se) {
-					log.error("failed to send ShadowSender result to ["+resultSender.getName()+"]");
+				} catch (TimeoutException | SenderException se) {
+					log.error("failed to send ShadowSender result to [{}]", resultSender.getName());
 				}
 			} catch (InterruptedException e) {
-				log.warn(getLogPrefix()+"result collection thread was interupted", e);
+				log.warn("{} result collection thread was interrupted", getLogPrefix(), e);
 			}
 		};
 

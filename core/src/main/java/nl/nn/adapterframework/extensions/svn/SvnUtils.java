@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Some utilities for working with SVN.
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 public class SvnUtils {
@@ -67,8 +67,9 @@ public class SvnUtils {
 			httpSender.setMethodType(HttpMethod.HEAD);
 			httpSender.configure();
 			httpSender.open();
-			String result = httpSender.sendMessageOrThrow(new Message(""), null).asString();
-			return result;
+			try (Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), null)) {
+				return result.asString();
+			}
 		} finally {
 			if (httpSender != null) {
 				httpSender.close();
@@ -95,12 +96,11 @@ public class SvnUtils {
 					+ "<S:limit>1</S:limit>" + "<S:path>" + path + "</S:path>"
 					+ "</S:log-report>";
 
-			String result = httpSender.sendMessageOrThrow(new Message(logReportRequest), null).asString();
-			return result;
-		} finally {
-			if (httpSender != null) {
-				httpSender.close();
+			try (Message result = httpSender.sendMessageOrThrow(new Message(logReportRequest), null)) {
+				return result.asString();
 			}
+		} finally {
+			httpSender.close();
 		}
 	}
 

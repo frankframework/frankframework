@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -114,9 +115,10 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.configure();
 				qs.open();
 
-				Message result = qs.sendMessageOrThrow(Message.nullMessage(), null);
-				String resultString = result.asString();
-				int numberOfRowsAffected = Integer.parseInt(resultString);
+				int numberOfRowsAffected;
+				try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
+					numberOfRowsAffected = Integer.parseInt(Objects.requireNonNull(result.asString()));
+				}
 				if(numberOfRowsAffected > 0) {
 					getMessageKeeper().add("deleted ["+numberOfRowsAffected+"] row(s) from [IBISLOCK] table. It implies that there have been process(es) that finished unexpectedly or failed to complete. Please investigate the log files!", MessageKeeperLevel.WARN);
 				}
@@ -162,10 +164,12 @@ public class CleanupDatabaseJob extends JobDef {
 
 				boolean deletedAllRecords = false;
 				while(!deletedAllRecords) {
-					Message result = qs.sendMessageOrThrow(Message.nullMessage(), null);
-					String resultString = result.asString();
-					log.info("deleted [" + resultString + "] rows");
-					int numberOfRowsAffected = Integer.valueOf(resultString);
+					int numberOfRowsAffected;
+					try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
+						String resultString = result.asString();
+						log.info("deleted [{}] rows", resultString);
+						numberOfRowsAffected = Integer.valueOf(resultString);
+					}
 					if(maxRows<=0 || numberOfRowsAffected<maxRows) {
 						deletedAllRecords = true;
 					} else {

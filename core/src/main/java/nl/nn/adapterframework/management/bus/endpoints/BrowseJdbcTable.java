@@ -128,9 +128,11 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				Transformer t = XmlUtils.createTransformer(url);
 				query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
 			}
-			result = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query), null).asString();
+			nl.nn.adapterframework.stream.Message message = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query), null);
+			result = message.asString();
+			message.close();
 		} catch (Exception t) {
-			throw new BusException("an error occured on executing jdbc query ["+query+"]", t);
+			throw new BusException("an error occurred on executing jdbc query ["+query+"]", t);
 		} finally {
 			qs.close();
 		}

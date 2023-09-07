@@ -1213,7 +1213,6 @@ public class TestTool {
 
 	public static boolean closeQueues(Map<String, Queue> queues, Properties properties, Map<String, Object> writers, String correlationId) {
 		boolean remainingMessagesFound = false;
-		Iterator<String> iterator;
 		debugMessage("Close jms senders", writers);
 		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
 			String queueName = entry.getKey();
@@ -1253,7 +1252,6 @@ public class TestTool {
 						session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 						String postResult = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 						if (!preResult.equals(postResult)) {
-
 							String message = null;
 							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 							try {
@@ -1399,12 +1397,13 @@ public class TestTool {
 			if (providedCorrelationId == null) {
 				providedCorrelationId = correlationId;
 			}
-			jmsSender.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(fileContent), null);
+			try (Message ignored = jmsSender.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(fileContent), null)) {
+			}
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
 			result = RESULT_OK;
 		} catch(TimeoutException e) {
 			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e, writers);
-		} catch(SenderException e) {
+		} catch(SenderException | IOException e) {
 			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e, writers);
 		}
 
@@ -1582,9 +1581,13 @@ public class TestTool {
 			try {
 				String preResult = (String)querySendersInfo.get("prePostQueryResult");
 				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
-				PipeLineSession session = new PipeLineSession();
-				session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-				String postResult = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
+				String postResult;
+				try (PipeLineSession session = new PipeLineSession()) {
+					session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+					Message message = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session);
+					postResult = message.asString();
+					message.close();
+				}
 				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
 				if (preResult.equals(postResult)) {
 					newRecordFound = false;
@@ -1601,14 +1604,14 @@ public class TestTool {
 		}
 		String message = null;
 		if (newRecordFound) {
-			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
+			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender) querySendersInfo.get("readQueryQueryFixedQuerySender");
 			try {
 				PipeLineSession session = new PipeLineSession();
 				session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 				message = readQueryFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 			} catch(TimeoutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
-			} catch(IOException | SenderException e) {
+			} catch (IOException | SenderException e) {
 				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e, writers);
 			}
 		}
@@ -1625,7 +1628,6 @@ public class TestTool {
 				result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 			}
 		}
-
 		return result;
 	}
 
