@@ -243,7 +243,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * @see #load(String)
 	 */
 	private void load() {
-		if(AppConstants.getInstance().getBoolean(AppConstants.JDBC_PROPERTIES_KEY, false)) {
+		if(AppConstants.getInstance().getBoolean(JdbcPropertySourceFactory.JDBC_PROPERTIES_KEY, false)) {
 			JdbcPropertySourceFactory propertySourceFactory = getBean("jdbcPropertySourceFactory", JdbcPropertySourceFactory.class);
 			Properties properties = propertySourceFactory.createPropertySource(getApplicationName()+"-DatabaseProperties");
 			if(properties != null) {

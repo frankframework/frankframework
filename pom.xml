@@ -9,6 +9,8 @@
 	<properties>
 		<revision>7.9-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
 		<log4j2.version>2.20.0</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
@@ -29,7 +31,7 @@
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
 
 		<!-- DB Driver Versions -->
-		<h2.driver.version>2.2.220</h2.driver.version>
+		<h2.driver.version>2.2.222</h2.driver.version>
 		<db2.driver.version>11.5.8.0</db2.driver.version>
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
@@ -582,8 +584,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.11.0</version>
 					<configuration>
-						<source>1.8</source>
-						<target>1.8</target>
+						<source>${maven.compiler.source}</source>
+						<target>${maven.compiler.target}</target>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -719,7 +721,7 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>3.5.0</version>
 					<configuration>
-						<source>1.8</source>
+						<source>${maven.compiler.source}</source>
 						<doclint>none</doclint>
 						<tags>
 							<tag>
@@ -1253,7 +1255,7 @@
 							</additionalOptions>
 							<show>private</show>
 							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
-							<source>1.8</source>
+							<source>${maven.compiler.source}</source>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<appendTo>ibis-adapterframework-core</appendTo>
 							<finalName>ibis-adapterframework-parent-${project.version}</finalName>

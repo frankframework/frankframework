@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -59,7 +58,7 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 
 	protected abstract String getPropertyBase();
 
-	protected abstract Map<String,String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException;
+	protected abstract Map<String,String> getCredentialMap(AppConstants appConstants) throws IOException;
 
 	protected InputStream getInputStream(AppConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
 		String filename = appConstants.getProperty(key, defaultValue);
