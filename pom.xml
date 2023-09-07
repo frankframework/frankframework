@@ -737,6 +737,7 @@
 											<exclude>org.apache.geronimo.specs:geronimo-jta_1.1_spec:*:jar:compile</exclude>
 											<exclude>javax.servlet:javax.servlet-api:*:jar:compile</exclude>
 											<exclude>jakarta.servlet:jakarta.servlet-api:*:jar:compile</exclude>
+											<exclude>jakarta.transaction:jakarta.transaction-api:*:jar:compile</exclude>
 										</excludes>
 										<message>These dependencies should be provided by the Application Server!</message>
 									</bannedDependencies>
