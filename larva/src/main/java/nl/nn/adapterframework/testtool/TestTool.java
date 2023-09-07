@@ -106,7 +106,7 @@ public class TestTool {
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 10000);
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
-	public static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
+	public static final Message TESTTOOL_DUMMY_MESSAGE = new Message("<TestTool>Dummy message</TestTool>");
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
 	public static final int RESULT_ERROR = 0;
 	public static final int RESULT_OK = 1;
@@ -637,7 +637,7 @@ public class TestTool {
 				StringWriter buffer = (StringWriter)writers.get(type + "buffer");
 				try {
 					out.write(buffer.toString());
-				} catch(IOException e) {
+				} catch(IOException ignored) {
 				}
 				useBuffer = "false";
 				writers.put("use" + type + "buffer", useBuffer);
@@ -767,16 +767,16 @@ public class TestTool {
 			writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
-			String scenario_passed_failed = "scenario passed/failed";
+			String scenarioPassedFailed = "scenario passed/failed";
 			if (LOG_LEVEL_ORDER.indexOf(
 					"[" + (String) writers.get("loglevel") + "]") == LOG_LEVEL_ORDER
-							.indexOf("[" + scenario_passed_failed + "]")) {
+							.indexOf("[" + scenarioPassedFailed + "]")) {
 				writeLog("<h5 hidden='true'>Difference description:</h5>",
-						scenario_passed_failed, writers, false);
+						scenarioPassedFailed, writers, false);
 				writeLog(
 						"<p class='diffMessage' hidden='true'>"
 								+ XmlEncodingUtils.encodeChars(message) + "</p>",
-						scenario_passed_failed, writers, true);
+						scenarioPassedFailed, writers, true);
 			} else {
 				writeLog("<h5>Difference description:</h5>", method, writers,
 						false);
@@ -1397,10 +1397,10 @@ public class TestTool {
 			if (providedCorrelationId == null) {
 				providedCorrelationId = correlationId;
 			}
-			try (Message ignored = jmsSender.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(fileContent), null)) {
-			}
+			Message message = jmsSender.sendMessageOrThrow(new Message(fileContent), null);
 			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
 			result = RESULT_OK;
+			message.close();
 		} catch(TimeoutException e) {
 			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e, writers);
 		} catch(SenderException | IOException e) {
@@ -1421,7 +1421,7 @@ public class TestTool {
 			result = queue.executeWrite(stepDisplayName, fileContent, correlationId, xsltParameters);
 			if (result == RESULT_OK) {
 				debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + queueName + "':", fileContent, writers);
-				logger.debug("Successfully wrote message to '" + queueName + "'");
+				logger.debug("Successfully wrote message to '{}'", queueName);
 			}
 		} catch(TimeoutException e) {
 			errorMessage("Time out sending message to '" + queueName + "': " + e.getMessage(), e, writers);
