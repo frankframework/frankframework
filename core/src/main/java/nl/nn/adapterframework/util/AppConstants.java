@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,7 +45,7 @@ public final class AppConstants extends PropertyLoader {
 	private static final String ADDITIONAL_PROPERTIES_FILE_KEY = "ADDITIONAL.PROPERTIES.FILE";
 	public static final String APPLICATION_SERVER_TYPE_PROPERTY = "application.server.type";
 	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = "application.server.type.custom";
-	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX"; //Can't be final because of tests
+	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX";
 
 	private static final Properties additionalProperties = new Properties();
 
@@ -197,12 +196,7 @@ public final class AppConstants extends PropertyLoader {
 	}
 
 	private synchronized void load(final ClassLoader classLoader, final String filename, final String suffix, final boolean loadAdditionalPropertiesFiles) {
-		if(StringUtils.isEmpty(filename)) {
-			throw new IllegalStateException("file to load properties from cannot be null");
-		}
-
-		List<String> fileNameList = StringUtil.split(filename);
-		for (final String theFilename : fileNameList) {
+		for (final String theFilename : StringUtil.split(filename)) {
 			super.load(classLoader, theFilename);
 
 			String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); //Only load additional properties if it's defined...

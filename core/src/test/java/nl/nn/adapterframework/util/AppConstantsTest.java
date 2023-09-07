@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.logging.log4j.Logger;
@@ -182,6 +183,12 @@ public class AppConstantsTest {
 	@Test
 	public void testUtf8EncodedPropertyFile() {
 		assertEquals("‘’", constants.getProperty("encoding.utf8"));
+	}
+
+	@Test
+	public void testSubAppConstants() {
+		Properties propertiesStartingWithConfigurations = constants.getAppConstants("configurations");
+		assertEquals("true", propertiesStartingWithConfigurations.getProperty("configurations.validate"));
 	}
 
 	private class ClassLoaderMock extends ClassLoader {
