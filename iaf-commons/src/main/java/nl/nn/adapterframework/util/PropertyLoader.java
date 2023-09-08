@@ -39,10 +39,6 @@ public class PropertyLoader extends Properties {
 	private static final Logger LOG = LogManager.getLogger(PropertyLoader.class);
 	private final String rootPropertyFile;
 
-	public PropertyLoader(String propertiesFile) {
-		this(PropertyLoader.class.getClassLoader(), propertiesFile);
-	}
-
 	public PropertyLoader(ClassLoader classLoader, String propertiesFile) {
 		super();
 		rootPropertyFile = propertiesFile;

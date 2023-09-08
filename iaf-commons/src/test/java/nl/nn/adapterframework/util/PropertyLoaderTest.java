@@ -134,10 +134,9 @@ public class PropertyLoaderTest {
 		assertEquals("‘’", constants.getProperty("encoding.utf8"));
 	}
 
-	/* File paths contain an extra / at the beginning to test if CI/CD pipeline still works regardless */
 	@Test
 	public void testYAML() {
-		PropertyLoader yamlConstants = new PropertyLoader("/ParserTestFiles/yamlProperties2.yaml");
+		PropertyLoader yamlConstants = new PropertyLoader(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/yamlProperties2.yaml");
 
 		assertEquals("100", yamlConstants.get("Dit.Is.YamlTest1"));
 		assertEquals("LRU", yamlConstants.get("Dit.Is.YamlTest2"));
@@ -151,7 +150,7 @@ public class PropertyLoaderTest {
 	@Test
 	public void testYamlFromPropertiesConverter() {
 
-		PropertyLoader yamlConstants = new PropertyLoader("/ParserTestFiles/yamlProperties.yaml");
+		PropertyLoader yamlConstants = new PropertyLoader(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/yamlProperties.yaml");
 
 		String p2y = PropertiesParser.PropertiesParser(property2Reader(yamlConstants));
 
@@ -163,9 +162,9 @@ public class PropertyLoaderTest {
 
 	@Test
 	public void testYamlIfResolves() {
-		PropertyLoader yamlConstants = new PropertyLoader(PropertyLoaderTest.class.getClassLoader(), "/ParserTestFiles/ResolveTest1.yaml");
-		yamlConstants.load(PropertyLoaderTest.class.getClassLoader(), "/ParserTestFiles/ResolveTest2.properties");
-		yamlConstants.load(PropertyLoaderTest.class.getClassLoader(), "/ParserTestFiles/ResolveTest3.yaml");
+		PropertyLoader yamlConstants = new PropertyLoader(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/ResolveTest1.yaml");
+		yamlConstants.load(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/ResolveTest2.properties");
+		yamlConstants.load(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/ResolveTest3.yaml");
 
 		assertEquals("Piet", yamlConstants.getProperty("Resolve1"));
 		assertEquals("Pat", yamlConstants.getProperty("InverseResolve3"));
