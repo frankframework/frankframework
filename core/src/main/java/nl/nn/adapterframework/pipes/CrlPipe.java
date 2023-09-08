@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden
+   Copyright 2016, 2020 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
 
+import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -76,7 +77,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 @ElementType(ElementTypes.TRANSLATOR)
 public class CrlPipe extends FixedForwardPipe {
-	private String issuerSessionKey;
+	private @Getter String issuerSessionKey;
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
@@ -123,11 +124,7 @@ public class CrlPipe extends FixedForwardPipe {
 		return false;
 	}
 
-	public String getIssuerSessionKey() {
-		return issuerSessionKey;
-	}
-
-	/** name of the sessionkey that holds a stream to the certificate of the issuer who signed the crl. the steam is closed after reading */
+	/** Name of the sessionKey that holds the certificate of the issuer who signed the CRL. */
 	public void setIssuerSessionKey(String issuerSessionKey) {
 		this.issuerSessionKey = issuerSessionKey;
 	}
