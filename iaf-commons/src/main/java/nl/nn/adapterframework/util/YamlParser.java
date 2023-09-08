@@ -89,7 +89,8 @@ public class YamlParser extends Properties {
 
 		// Else if the value is a string, will put it in the properties.
 		else {
-			String[] split = ((String) value).split(":", 1);
+			String valueToString = value.toString();
+			String[] split = (valueToString).split(":", 1);
 			if (split.length == 1) {
 				put(key, split[0]);
 			} else {

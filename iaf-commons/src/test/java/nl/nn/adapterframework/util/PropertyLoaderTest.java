@@ -152,7 +152,7 @@ public class PropertyLoaderTest {
 
 		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/YamlProperties.yaml");
 
-		String p2y = PropertiesParser.PropertiesParser(property2Reader(yamlConstants));
+		String p2y = PropertiesParser.parseFile(property2Reader(yamlConstants));
 
 		Properties yamlProperties = new YamlParser(new StringReader(p2y));
 
