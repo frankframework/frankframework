@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isIn;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.StringReader;
 import java.util.List;
@@ -145,6 +146,17 @@ public class PropertyLoaderTest {
 		assertEquals("200", yamlConstants.get("Ook.Is.Daarnaast.YamlTest1"));
 		assertEquals("MRU", yamlConstants.get("Ook.Is.Daarnaast.YamlTest2"));
 		assertEquals("true", yamlConstants.get("Ook.Is.Daarnaast.YamlTest3"));
+	}
+
+	@Test
+	public void extensionThrowError() {
+		try{
+			PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/Properties.extensionNonSupported");
+			fail();
+		}
+		catch(IllegalArgumentException e){
+			assertEquals("Extension not supported: extensionNonSupported", e.getMessage());
+		}
 	}
 
 	@Test
