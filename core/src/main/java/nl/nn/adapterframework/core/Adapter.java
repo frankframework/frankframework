@@ -92,8 +92,8 @@ public class Adapter implements IAdapter, NamedBean {
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private AppConstants APP_CONSTANTS = AppConstants.getInstance(configurationClassLoader);
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final AppConstants APP_CONSTANTS = AppConstants.getInstance(configurationClassLoader);
 
 	private String name;
 	private @Getter String description;
@@ -113,16 +113,6 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private final Map<String, SenderLastExitState> sendersLastExitState = new HashMap<>();
 
-	private class SenderLastExitState {
-		private String lastExitState;
-		private long lastExitStateDate;
-
-		public SenderLastExitState (long lastExitStateDate, String lastExitState) {
-			this.lastExitStateDate = lastExitStateDate;
-			this.lastExitState = lastExitState;
-		}
-	}
-
 	private int numOfMessagesInProcess = 0;
 
 	private final CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
@@ -141,11 +131,19 @@ public class Adapter implements IAdapter, NamedBean {
 	private MessageKeeper messageKeeper; //instantiated in configure()
 	private final boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
 
-
 	private @Getter @Setter TaskExecutor taskExecutor;
 
 	private String composedHideRegex;
 
+	private static class SenderLastExitState {
+		private final String lastExitState;
+		private final long lastExitStateDate;
+
+		public SenderLastExitState(long lastExitStateDate, String lastExitState) {
+			this.lastExitStateDate = lastExitStateDate;
+			this.lastExitState = lastExitState;
+		}
+	}
 
 	/*
 	 * This function is called by Configuration.registerAdapter,
