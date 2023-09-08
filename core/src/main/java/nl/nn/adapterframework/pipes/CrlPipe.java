@@ -88,7 +88,7 @@ public class CrlPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "Could not read CRL", e);
 		}
 		String result = null;
-		if (isCRLOK(crl, (InputStream)session.get(getIssuerSessionKey()))) {
+		if (isCRLOK(crl, Message.asMessage(session.get(getIssuerSessionKey())))) {
 			XmlBuilder root = new XmlBuilder("SerialNumbers");
 			Iterator <? extends X509CRLEntry> it = crl.getRevokedCertificates().iterator();
 			while (it.hasNext()) {
@@ -102,14 +102,14 @@ public class CrlPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	private boolean isCRLOK(X509CRL x509crl, InputStream issuer) throws PipeRunException {
+	private boolean isCRLOK(X509CRL x509crl, Message issuer) throws PipeRunException {
 		try {
 			CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-			X509Certificate issuerCertificate = (X509Certificate)certificateFactory.generateCertificate(issuer);
+			X509Certificate issuerCertificate = (X509Certificate)certificateFactory.generateCertificate(issuer.asInputStream());
 			if (x509crl.getIssuerX500Principal().equals(issuerCertificate.getSubjectX500Principal())) {
 				return true;
 			}
-		} catch (CertificateException e) {
+		} catch (CertificateException | IOException e) {
 			throw new PipeRunException(this, "Could not read issuer certificate", e);
 		} finally {
 			if (issuer != null) {
