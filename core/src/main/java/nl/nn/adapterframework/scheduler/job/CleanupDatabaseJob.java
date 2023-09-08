@@ -33,6 +33,7 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -165,13 +166,14 @@ public class CleanupDatabaseJob extends JobDef {
 
 				boolean deletedAllRecords = false;
 				while(!deletedAllRecords) {
-					int numberOfRowsAffected = 0;
+					int numberOfRowsAffected;
 					try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
 						String resultString = result.asString();
 						log.info("deleted [{}] rows", resultString);
-						if (NumberUtils.isDigits(resultString)) {
-							numberOfRowsAffected = Integer.parseInt(resultString);
+						if (!NumberUtils.isDigits(resultString)) {
+							throw new SenderException("Sent message result did not result in a number, found: " + resultString);
 						}
+						numberOfRowsAffected = Integer.parseInt(resultString);
 					}
 					if (maxRows <= 0 || numberOfRowsAffected < maxRows) {
 						deletedAllRecords = true;

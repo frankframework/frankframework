@@ -56,9 +56,8 @@ public class SvnUtils {
 	}
 
 	private static String getHeadHtml(String urlString) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		HttpSender httpSender = null;
+		HttpSender httpSender = new HttpSender();
 		try {
-			httpSender = new HttpSender();
 			httpSender.setUrl(urlString);
 			httpSender.setAllowSelfSignedCertificates(true);
 			httpSender.setVerifyHostname(false);
@@ -71,9 +70,7 @@ public class SvnUtils {
 				return result.asString();
 			}
 		} finally {
-			if (httpSender != null) {
-				httpSender.close();
-			}
+			httpSender.close();
 		}
 	}
 
