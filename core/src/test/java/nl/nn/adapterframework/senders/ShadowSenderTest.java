@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import org.junit.jupiter.api.Disabled;
@@ -52,7 +51,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	}
 
 	@Override
-	protected String getExpectedTestFile(String path) throws IOException {
+	protected String getExpectedTestFile(String path) {
 		return ORIGINAL_SENDER_RESULT; //Should always return the result of the originalSender
 	}
 

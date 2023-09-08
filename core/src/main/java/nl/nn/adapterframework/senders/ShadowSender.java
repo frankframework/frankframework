@@ -152,7 +152,7 @@ public class ShadowSender extends ParallelSenders {
 				// Collect the results of the (Shadow)Sender and send them to the resultSender.
 				try {
 					Message result = collectResults(executorMap, message, session);
-					resultSender.sendMessageOrThrow(result, session).close();
+					resultSender.sendMessageOrThrow(result, session); // Can not close() the message, since results are used later.
 				} catch (IOException | SAXException e) {
 					log.error("unable to compose result message", e);
 				} catch (TimeoutException | SenderException se) {
