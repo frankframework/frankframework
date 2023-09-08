@@ -151,7 +151,7 @@ public class PropertyLoaderTest {
 	@Test
 	public void extensionThrowError() {
 		try{
-			PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/Properties.extensionNonSupported");
+			new PropertyLoader("ParserTestFiles/Properties.extensionNonSupported");
 			fail();
 		}
 		catch(IllegalArgumentException e){
