@@ -76,9 +76,9 @@ public class IbisstoreSummary extends BusEndpointBase {
 				qs.setAvoidLocking(true);
 				qs.configure(true);
 				qs.open();
-				nl.nn.adapterframework.stream.Message message = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query != null ? query : qs.getDbmsSupport().getIbisStoreSummaryQuery()), null);
-				result = message.asString();
-				message.close();
+				try (nl.nn.adapterframework.stream.Message message = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query != null ? query : qs.getDbmsSupport().getIbisStoreSummaryQuery()), null)) {
+					result = message.asString();
+				}
 			} catch (Throwable t) {
 				throw new BusException("An error occurred on executing jdbc query", t);
 			} finally {

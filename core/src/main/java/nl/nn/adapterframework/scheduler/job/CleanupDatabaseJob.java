@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -164,13 +165,15 @@ public class CleanupDatabaseJob extends JobDef {
 
 				boolean deletedAllRecords = false;
 				while(!deletedAllRecords) {
-					int numberOfRowsAffected;
+					int numberOfRowsAffected = 0;
 					try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
 						String resultString = result.asString();
 						log.info("deleted [{}] rows", resultString);
-						numberOfRowsAffected = Integer.valueOf(resultString);
+						if (NumberUtils.isDigits(resultString)) {
+							numberOfRowsAffected = Integer.parseInt(resultString);
+						}
 					}
-					if(maxRows<=0 || numberOfRowsAffected<maxRows) {
+					if (maxRows <= 0 || numberOfRowsAffected < maxRows) {
 						deletedAllRecords = true;
 					} else {
 						log.info("executing the query again for job [cleanupDatabase]!");
@@ -179,7 +182,7 @@ public class CleanupDatabaseJob extends JobDef {
 			} catch (Exception e) {
 				String msg = "error while deleting expired records from table ["+mlo.getTableName()+"] (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error(getLogPrefix()+msg);
+				log.error("{} {}", getLogPrefix(), msg);
 			} finally {
 				if(qs != null) {
 					qs.close();

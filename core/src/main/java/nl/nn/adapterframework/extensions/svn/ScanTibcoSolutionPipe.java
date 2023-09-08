@@ -411,9 +411,8 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 	}
 
 	private String getHtml(String urlString) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		HttpSender httpSender = null;
+		HttpSender httpSender = new HttpSender();
 		try {
-			httpSender = new HttpSender();
 			httpSender.setUrl(urlString);
 			httpSender.setAllowSelfSignedCertificates(true);
 			httpSender.setVerifyHostname(false);

@@ -1397,10 +1397,10 @@ public class TestTool {
 			if (providedCorrelationId == null) {
 				providedCorrelationId = correlationId;
 			}
-			Message message = jmsSender.sendMessageOrThrow(new Message(fileContent), null);
-			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
-			result = RESULT_OK;
-			message.close();
+			try (Message ignored = jmsSender.sendMessageOrThrow(new Message(fileContent), null)) {
+				debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
+				result = RESULT_OK;
+			}
 		} catch(TimeoutException e) {
 			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e, writers);
 		} catch(SenderException | IOException e) {

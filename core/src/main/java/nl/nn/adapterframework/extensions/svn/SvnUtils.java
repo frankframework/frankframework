@@ -78,9 +78,8 @@ public class SvnUtils {
 	}
 
 	private static String getReportHtml(String urlString, String revision, String path) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		HttpSender httpSender = null;
+		HttpSender httpSender = new HttpSender();
 		try {
-			httpSender = new HttpSender();
 			httpSender.setUrl(urlString);
 			httpSender.setAllowSelfSignedCertificates(true);
 			httpSender.setVerifyHostname(false);
