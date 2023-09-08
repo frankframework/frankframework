@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.util;
 
+import lombok.Lombok;
+
 import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
@@ -39,7 +41,7 @@ public class YamlParser extends Properties {
 			try {
 				recursiveYaml(entry.getKey(), entry.getValue());
 			} catch (IOException e) {
-				throw new RuntimeException("Error parsing yaml file: " + e.getMessage(), e);
+				throw Lombok.sneakyThrow(e);
 			}
 		});
 	}
@@ -59,7 +61,7 @@ public class YamlParser extends Properties {
 				try {
 					recursiveYaml(key + "." + entry.getKey(), entry.getValue());
 				} catch (IOException e) {
-					throw new RuntimeException(e);
+					throw Lombok.sneakyThrow(e);
 				}
 			});
 		}
