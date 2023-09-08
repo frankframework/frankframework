@@ -18,6 +18,7 @@ package nl.nn.adapterframework.pipes;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -125,9 +126,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			}
 		} else {
 			files = directory.listFiles(fileFilter);
-			for (int i = 0; i < files.length; i++) {
-				result.add(files[i]);
-			}
+			result.addAll(Arrays.asList(files));
 		}
 
 		if (isSubdirectories()) {

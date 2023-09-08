@@ -86,7 +86,7 @@ import nl.nn.adapterframework.util.StringUtil;
 public class Adapter implements IAdapter, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";
@@ -106,16 +106,16 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private @Getter Configuration configuration;
 
-	private ArrayList<Receiver<?>> receivers = new ArrayList<>();
+	private final ArrayList<Receiver<?>> receivers = new ArrayList<>();
 	private long lastMessageDate = 0;
 	private @Getter String lastMessageProcessingState; //"OK" or "ERROR"
 	private PipeLine pipeline;
 
-	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
+	private final Map<String, SenderLastExitState> sendersLastExitState = new HashMap<>();
 
 	private class SenderLastExitState {
-		private String lastExitState = null;
-		private long lastExitStateDate = 0;
+		private String lastExitState;
+		private long lastExitStateDate;
 
 		public SenderLastExitState (long lastExitStateDate, String lastExitState) {
 			this.lastExitStateDate = lastExitStateDate;
@@ -125,11 +125,11 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private int numOfMessagesInProcess = 0;
 
-	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
-	private CounterStatistic numOfMessagesInError = new CounterStatistic(0);
+	private final CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
+	private final CounterStatistic numOfMessagesInError = new CounterStatistic(0);
 
 	private int hourOfLastMessageProcessed=-1;
-	private long[] numOfMessagesStartProcessingByHour = new long[24];
+	private final long[] numOfMessagesStartProcessingByHour = new long[24];
 
 	private StatisticsKeeper statsMessageProcessingDuration = null;
 
@@ -139,7 +139,7 @@ public class Adapter implements IAdapter, NamedBean {
 	private final RunStateManager runState = new RunStateManager();
 	private @Getter boolean configurationSucceeded = false;
 	private MessageKeeper messageKeeper; //instantiated in configure()
-	private boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
+	private final boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
 
 
 	private @Getter @Setter TaskExecutor taskExecutor;
@@ -725,7 +725,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void registerReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
 		// Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
-		if (log.isDebugEnabled()) log.debug("Adapter [{}] registered receiver [{}] with properties [{}]", name, receiver.getName(), receiver.toString());
+		if (log.isDebugEnabled()) log.debug("Adapter [{}] registered receiver [{}] with properties [{}]", name, receiver.getName(), receiver);
 	}
 
 	/**

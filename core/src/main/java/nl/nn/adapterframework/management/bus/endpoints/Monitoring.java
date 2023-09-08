@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
@@ -323,14 +322,7 @@ public class Monitoring extends BusEndpointBase {
 			triggers.add(map);
 		}
 		monitorMap.put("triggers", triggers);
-
-		List<String> destinations = new ArrayList<>();
-		Set<String> d = monitor.getDestinationSet();
-		for(Iterator<String> it = d.iterator(); it.hasNext();) {
-			destinations.add(it.next());
-		}
-		monitorMap.put("destinations", destinations);
-
+		monitorMap.put("destinations", new ArrayList<>(monitor.getDestinationSet()));
 		return monitorMap;
 	}
 

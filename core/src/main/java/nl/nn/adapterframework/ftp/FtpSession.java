@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Base class for FTP(s) connections
- * 
+ *
  * @author John Dekker
  */
 public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
@@ -154,7 +154,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 
 	private void openFtpClient(String remoteDirectory) throws FtpConnectException {
 		try {
-			// connect and logic using normal, non-secure ftp 
+			// connect and logic using normal, non-secure ftp
 			ftpClient = createFTPClient();
 			ftpClient.connect(host, port);
 			if (isPassive()) {
@@ -182,7 +182,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		if (!FTPReply.isPositiveCompletion(ftpClient.getReplyCode())) {
 			throw new IOException("Command [" + cmd + "] returned error [" + ftpClient.getReplyCode() + "]: " + ftpClient.getReplyString());
 		}
-		LOG.debug("Command [{}] returned ", ()->cmd, ftpClient::getReplyString);
+		LOG.debug("Command [{}] returned {}", () -> cmd, ftpClient::getReplyString);
 	}
 
 	private FTPClient createFTPClient() throws GeneralSecurityException, IOException {
@@ -327,7 +327,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		keystore = string;
 	}
 
-	/** (ftps) Type of keystore 
+	/** (ftps) Type of keystore
 	 * @ff.default pkcs12
 	 */
 	@Override
@@ -379,7 +379,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		truststore = string;
 	}
 
-	/** (ftps) Type of truststore 
+	/** (ftps) Type of truststore
 	 * @ff.default jks
 	 */
 	@Override

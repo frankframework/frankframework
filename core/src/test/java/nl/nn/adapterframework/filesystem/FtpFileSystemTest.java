@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,11 +13,11 @@ import nl.nn.adapterframework.ftp.FTPFileRef;
  */
 public class FtpFileSystemTest extends FileSystemTest<FTPFileRef, FtpFileSystem> {
 
-	private String username = "frankframework";
-	private String password = "pass_123";
-	private String host = "localhost";
+	private final String username = "frankframework";
+	private final String password = "pass_123";
+	private final String host = "localhost";
 	private int port = 21;
-	private String remoteDirectory = "/home";
+	private final String remoteDirectory = "/home";
 
 	@LocalFileSystemMock
 	private static LocalFileServer fs;

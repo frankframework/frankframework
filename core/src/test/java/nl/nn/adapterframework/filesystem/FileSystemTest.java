@@ -53,8 +53,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		String actual = readFile(null, filename);
 		// test
-		equalsCheck(contents.trim(), actual.trim());
-
+		assertEquals(contents.trim(), actual.trim());
 	}
 
 	@Test
@@ -80,7 +79,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		String actual = readFile(null, filename);
 		// test
-		equalsCheck(contents.trim(), actual.trim());
+		assertEquals(contents.trim(), actual.trim());
 	}
 
 
@@ -103,7 +102,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		String actual = readFile(null, filename);
 		// test
-		equalsCheck("", actual.trim());
+		assertEquals("", actual.trim());
 	}
 
 	@Test
@@ -131,7 +130,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		String actual = readFile(null, filename);
 		// test
-		equalsCheck(expected.trim(), actual.trim());
+		assertEquals(expected.trim(), actual.trim());
 	}
 
 	@Test
@@ -157,8 +156,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		String actual = readFile(null, filename);
 		// test
-		equalsCheck(contents.trim(), actual.trim());
-
+		assertEquals(contents.trim(), actual.trim());
 	}
 
 
