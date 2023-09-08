@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.CredentialConstants;
 
 public class CredentialFactory {
 	protected Logger log = Logger.getLogger(this.getClass().getCanonicalName());
@@ -39,7 +39,7 @@ public class CredentialFactory {
 	private static CredentialFactory self;
 
 	static {
-		optionalPrefix = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY);
+		optionalPrefix = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY);
 		if (optionalPrefix != null) {
 			optionalPrefix = optionalPrefix.toLowerCase();
 		}
@@ -53,7 +53,7 @@ public class CredentialFactory {
 	}
 
 	private CredentialFactory() {
-		String factoryClassName = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
+		String factoryClassName = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
 		if (tryFactory(factoryClassName)) {
 			return;
 		}

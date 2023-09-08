@@ -144,7 +144,7 @@ public class FileSender implements IConfigurable {
 		Enumeration<String> enums = (Enumeration<String>) appConstants.propertyNames();
 		while (enums.hasMoreElements()) {
 			String key = enums.nextElement();
-			ant.setProperty(key, appConstants.getResolvedProperty(key));
+			ant.setProperty(key, appConstants.getProperty(key));
 		}
 
 		ant.init();

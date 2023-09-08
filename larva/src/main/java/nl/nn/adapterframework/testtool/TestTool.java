@@ -201,7 +201,7 @@ public class TestTool {
 		}
 
 		TestTool.debugMessage("Start logging to logbuffer until form is written", writers);
-		String asd = appConstants.getResolvedProperty("larva.diffs.autosave");
+		String asd = appConstants.getProperty("larva.diffs.autosave");
 		if (asd!=null) {
 			autoSaveDiffs = Boolean.parseBoolean(asd);
 		}
@@ -993,8 +993,8 @@ public class TestTool {
 			Map<String, String> scenariosRoots = new HashMap<String, String>();
 			Map<String, String> scenariosRootsBroken = new HashMap<String, String>();
 			int j = 1;
-			String directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
-			String description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
+			String directory = appConstants.getProperty("scenariosroot" + j + ".directory");
+			String description = appConstants.getProperty("scenariosroot" + j + ".description");
 			while (directory != null) {
 				if (description == null) {
 					errorMessage("Could not find description for root directory '" + directory + "'", writers);
@@ -1002,7 +1002,7 @@ public class TestTool {
 					errorMessage("A root directory named '" + description + "' already exist", writers);
 				} else {
 					String parent = realPath;
-					String m2eFileName = appConstants.getResolvedProperty("scenariosroot" + j + ".m2e.pom.properties");
+					String m2eFileName = appConstants.getProperty("scenariosroot" + j + ".m2e.pom.properties");
 					if (m2eFileName != null) {
 						File m2eFile = new File(realPath, m2eFileName);
 						if (m2eFile.exists()) {
@@ -1022,8 +1022,8 @@ public class TestTool {
 					}
 				}
 				j++;
-				directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
-				description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
+				directory = appConstants.getProperty("scenariosroot" + j + ".directory");
+				description = appConstants.getProperty("scenariosroot" + j + ".description");
 			}
 			TreeSet<String> treeSet = new TreeSet<String>(new CaseInsensitiveComparator());
 			treeSet.addAll(scenariosRoots.keySet());
@@ -1044,7 +1044,7 @@ public class TestTool {
 			debugMessage("Read scenariosrootdirectory parameter", writers);
 			debugMessage("Get current scenarios root directory", writers);
 			if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
-				String scenariosRootDefault = appConstants.getResolvedProperty("scenariosroot.default");
+				String scenariosRootDefault = appConstants.getProperty("scenariosroot.default");
 				if (scenariosRootDefault != null) {
 					currentScenariosRootDirectory = scenariosRoots.get(scenariosRootDefault);
 				}
@@ -1750,7 +1750,7 @@ public class TestTool {
 	// Used by saveResultToFile.jsp
 	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, SenderException {
 		AppConstants appConstants = AppConstants.getInstance();
-		String windiffCommand = appConstants.getResolvedProperty("larva.windiff.command");
+		String windiffCommand = appConstants.getProperty("larva.windiff.command");
 		if (windiffCommand == null) {
 			String realPath = application.getRealPath("/iaf/");
 			List<String> scenariosRootDirectories = new ArrayList<>();

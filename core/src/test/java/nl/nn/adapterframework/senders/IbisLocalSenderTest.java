@@ -349,6 +349,8 @@ class IbisLocalSenderTest {
 	private static IbisLocalSender createIbisLocalSenderWithDummyServiceClient() throws ListenerException, ConfigurationException {
 		ServiceDispatcher.getInstance().registerServiceClient(SERVICE_NAME, ((message, session) -> {
 			session.put("key-not-configured-for-copy", "dummy-value");
+			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter1")), "param1");
+			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter2")), "param2");
 			return session.getMessage(message.asObject().toString());
 		}));
 		IbisLocalSender sender = new IbisLocalSender();

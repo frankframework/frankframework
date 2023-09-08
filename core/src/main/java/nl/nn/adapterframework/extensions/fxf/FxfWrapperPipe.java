@@ -94,15 +94,15 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		super.configure();
 		AppConstants rootAppConstants = AppConstants.getInstance();
 		if (getDirection()==Direction.WRAP) {
-			instanceName = rootAppConstants.getResolvedProperty("instance.name");
+			instanceName = rootAppConstants.getProperty("instance.name");
 			if (StringUtils.isEmpty(instanceName)) {
 				throw new ConfigurationException("instance.name not available");
 			}
-			instanceNameLowerCase = rootAppConstants.getResolvedProperty("instance.name.lc");
+			instanceNameLowerCase = rootAppConstants.getProperty("instance.name.lc");
 			if (StringUtils.isEmpty(instanceNameLowerCase)) {
 				throw new ConfigurationException("instance.name.lc not available");
 			}
-			environment = rootAppConstants.getResolvedProperty("dtap.stage");
+			environment = rootAppConstants.getProperty("dtap.stage");
 			if (StringUtils.isEmpty(environment) || environment.length() < 1) {
 				throw new ConfigurationException("dtap.stage not available");
 			}
@@ -116,7 +116,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			if (!StringUtils.isEmpty(getFlowId())) {
 				throw new ConfigurationException("attribute flowId must not be specified");
 			}
-			fxfDir = AppConstants.getInstance(getConfigurationClassLoader()).getResolvedProperty("fxf.dir");
+			fxfDir = AppConstants.getInstance(getConfigurationClassLoader()).getProperty("fxf.dir");
 			if (fxfDir == null) {
 				throw new ConfigurationException("property fxf.dir has not been initialised");
 			}

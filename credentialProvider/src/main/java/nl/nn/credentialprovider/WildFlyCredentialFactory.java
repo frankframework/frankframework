@@ -31,7 +31,7 @@ import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
 
-import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.CredentialConstants;
 
 public class WildFlyCredentialFactory implements ICredentialFactory {
 	protected Logger log = Logger.getLogger(this.getClass().getName());
@@ -47,7 +47,7 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 	@Override
 	public void initialize() {
 		log.info("Initializing WildFlyCredentialFactory");
-		AppConstants appConstants = AppConstants.getInstance();
+		CredentialConstants appConstants = CredentialConstants.getInstance();
 		credentialStore = appConstants.getProperty(WILDFLY_CREDENTIALSTORE_PROPERTY, credentialStore);
 		if (StringUtils.isEmpty(credentialStore)) {
 			throw new IllegalStateException("No valid property ["+WILDFLY_CREDENTIALSTORE_PROPERTY+"] found");

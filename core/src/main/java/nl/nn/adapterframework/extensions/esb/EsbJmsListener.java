@@ -55,7 +55,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class EsbJmsListener extends JmsListener implements ITransactionRequirements {
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private final String MSGLOG_KEYS = APP_CONSTANTS.getResolvedProperty("msg.log.keys");
+	private final String MSGLOG_KEYS = APP_CONSTANTS.getProperty("msg.log.keys");
 
 	private @Getter MessageProtocol messageProtocol = null;
 	private @Getter boolean copyAEProperties = false;
@@ -100,7 +100,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			return;
 		}
 		for (String name : StringUtil.split(logKeys)) {
-			String xPath = APP_CONSTANTS.getResolvedProperty("msg.log.xPath." + name);
+			String xPath = APP_CONSTANTS.getProperty("msg.log.xPath." + name);
 			if(xPath != null)
 				xPathLogMap.put(name, xPath);
 		}

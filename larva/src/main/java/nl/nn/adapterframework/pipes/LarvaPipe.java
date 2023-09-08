@@ -83,7 +83,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		IbisContext ibisContext = getAdapter().getConfiguration().getIbisManager().getIbisContext();
-		String realPath = AppConstants.getInstance().getResolvedProperty("webapp.realpath") + "iaf/";
+		String realPath = AppConstants.getInstance().getProperty("webapp.realpath") + "iaf/";
 		List<String> scenariosRootDirectories = new ArrayList<>();
 		List<String> scenariosRootDescriptions = new ArrayList<>();
 		String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(

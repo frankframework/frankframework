@@ -53,7 +53,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	protected Logger log = LogUtil.getLogger(this);
 	private ReportLevel reportLevel = ReportLevel.ERROR;
 
-	private String instanceName = AppConstants.getInstance().getResolvedProperty("instance.name");
+	private String instanceName = AppConstants.getInstance().getProperty("instance.name");
 	private String basePath = null;
 
 	private boolean allowCustomClasses = AppConstants.getInstance().getBoolean("configurations.allowCustomClasses", false);
