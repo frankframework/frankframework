@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -146,7 +147,7 @@ public class CompactSaxHandler extends DefaultHandler {
 	private String elementsToString() {
 		String chain = null;
 		for (Iterator<String> it = elements.iterator(); it.hasNext();) {
-			String element = (String) it.next();
+			String element = it.next();
 			if (chain == null) {
 				chain = element;
 			} else {
