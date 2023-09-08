@@ -28,6 +28,7 @@ import java.util.Properties;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -97,7 +98,7 @@ public class PropertyLoader extends Properties {
 	/**
 	 * the method is like the <code>Properties.getProperty</code>, but provides functionality to resolve <code>${variable}</code>
 	 * Syntaxes. It uses the property values and system values to resolve the variables, and does so recursively.
-	 * 
+	 *
 	 * @see nl.nn.adapterframework.util.StringResolver
 	 */
 	protected final String getResolvedProperty(String key) {
@@ -127,7 +128,7 @@ public class PropertyLoader extends Properties {
 	}
 
 	/**
-	 * Retrieves a list property value associated with the specified key. The method first resolves the property value using 
+	 * Retrieves a list property value associated with the specified key. The method first resolves the property value using
 	 * the {@link #getResolvedProperty(String)} method. If the resolved property value is null, an empty list is returned.
 	 *
 	 * @param key the key of the property value to retrieve
@@ -139,8 +140,8 @@ public class PropertyLoader extends Properties {
 	}
 
 	/**
-	 * Retrieves a list property value associated with the specified key. The method first resolves the property value using 
-	 * the {@link #getResolvedProperty(String)} method. If the resolved property value is null, it returns the list of string 
+	 * Retrieves a list property value associated with the specified key. The method first resolves the property value using
+	 * the {@link #getResolvedProperty(String)} method. If the resolved property value is null, it returns the list of string
 	 * values provided as "defaults".
 	 *
 	 * @param key the key of the property value to retrieve
@@ -206,7 +207,7 @@ public class PropertyLoader extends Properties {
 
 			for (URL url : resources) {
 				try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
-					load(reader);
+					loadResource(reader, url);
 					LOG.info("Properties loaded from url [{}]", url::toString);
 				}
 			}
@@ -285,5 +286,25 @@ public class PropertyLoader extends Properties {
 		String ob = this.getResolvedProperty(key);
 		if (ob == null)return dfault;
 		return Double.parseDouble(ob);
+	}
+
+	/**
+	 * Decides whether a property or yaml needs to be loaded
+	 * @param reader    the reader
+	 * @param url 		the url
+	 */
+	public void loadResource(Reader reader, URL url) throws IOException {
+		String extension = FilenameUtils.getExtension(url.toString());
+
+		switch (extension) {
+			case "properties":
+				load(reader);
+				break;
+			case "yaml":
+				putAll(new YamlParser(reader));
+				break;
+			default:
+				throw new IllegalArgumentException("Extension not supported: " + extension);
+		}
 	}
 }

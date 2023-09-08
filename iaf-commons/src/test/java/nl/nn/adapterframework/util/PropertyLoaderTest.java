@@ -4,8 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.CoreMatchers.everyItem;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isIn;
 
+import java.io.StringReader;
 import java.util.List;
+import java.util.Properties;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -127,5 +132,50 @@ public class PropertyLoaderTest {
 	@Test
 	public void testUtf8EncodedPropertyFile() {
 		assertEquals("‘’", constants.getProperty("encoding.utf8"));
+	}
+
+	@Test
+	public void testYAML() {
+		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/yamlProperties2.yaml");
+
+		assertEquals("100", yamlConstants.get("Dit.Is.YamlTest1"));
+		assertEquals("LRU", yamlConstants.get("Dit.Is.YamlTest2"));
+		assertEquals("false", yamlConstants.get("Dit.Is.YamlTest3"));
+
+		assertEquals("200", yamlConstants.get("Ook.Is.Daarnaast.YamlTest1"));
+		assertEquals("MRU", yamlConstants.get("Ook.Is.Daarnaast.YamlTest2"));
+		assertEquals("true", yamlConstants.get("Ook.Is.Daarnaast.YamlTest3"));
+	}
+
+	@Test
+	public void testYamlFromPropertiesConverter() {
+
+		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/yamlProperties.yaml");
+
+		String p2y = PropertiesParser.PropertiesParser(property2Reader(yamlConstants));
+
+		Properties yamlProperties = new YamlParser(new StringReader(p2y));
+
+		assertThat( yamlConstants.entrySet(), everyItem(isIn(yamlProperties.entrySet())));
+		assertThat( yamlProperties.entrySet(), everyItem(isIn(yamlConstants.entrySet())));
+	}
+
+	@Test
+	public void testYamlIfResolves() {
+		PropertyLoader yamlConstants = new PropertyLoader(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/ResolveTest1.yaml");
+		yamlConstants.load(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/ResolveTest2.properties");
+		yamlConstants.load(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/ResolveTest3.yaml");
+
+		assertEquals("Piet", yamlConstants.getProperty("Resolve1"));
+		assertEquals("Pat", yamlConstants.getProperty("InverseResolve3"));
+	}
+
+	private StringReader property2Reader(PropertyLoader constants) {
+		// convert the AppConstants to string, so that it can be read as a file
+		StringBuilder stringBuilder = new StringBuilder();
+		for (Object key : constants.keySet()) {
+			stringBuilder.append(key).append("=").append(constants.getUnresolvedProperty((String) key)).append("\n");
+		}
+		return new StringReader(stringBuilder.toString());
 	}
 }
