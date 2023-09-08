@@ -136,7 +136,7 @@ public class PropertyLoaderTest {
 
 	@Test
 	public void testYAML() {
-		PropertyLoader yamlConstants = new PropertyLoader(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/yamlProperties2.yaml");
+		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/YamlProperties2.yaml");
 
 		assertEquals("100", yamlConstants.get("Dit.Is.YamlTest1"));
 		assertEquals("LRU", yamlConstants.get("Dit.Is.YamlTest2"));
@@ -150,7 +150,7 @@ public class PropertyLoaderTest {
 	@Test
 	public void testYamlFromPropertiesConverter() {
 
-		PropertyLoader yamlConstants = new PropertyLoader(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/yamlProperties.yaml");
+		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/YamlProperties.yaml");
 
 		String p2y = PropertiesParser.PropertiesParser(property2Reader(yamlConstants));
 
