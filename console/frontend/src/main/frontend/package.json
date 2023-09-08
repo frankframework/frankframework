@@ -21,6 +21,7 @@
     "@angular/router": "^15.2.0",
     "@angular/upgrade": "^15.2.9",
     "@ng-bootstrap/ng-bootstrap": "^14.2.0",
+    "@ng-idle/core": "^13.0.0",
     "@popperjs/core": "^2.11.8",
     "@uirouter/angular-hybrid": "^15.0.2",
     "angular": "1.7.9",

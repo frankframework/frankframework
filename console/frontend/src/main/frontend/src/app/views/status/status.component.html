@@ -1,0 +1,532 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content">
+  <!--     <uib-alert ng-repeat="alert in alerts | orderBy:'type'" type="{{alert.type}}" close="closeAlert($index)">{{alert.message}}</uib-alert> -->
+
+  <ul *ngIf="alerts.length > 0" class="alert p-n m-n">
+    <li *ngIf="messageLog[selectedConfiguration].errorStoreCount == 1" class="list-group-item alert-danger">
+      <i class="m-r-md fa fa-info-circle"></i>
+      <span>Errorlog contains 1 record. Service management should check whether this record has to be resent or
+        deleted</span>
+    </li>
+    <li *ngIf="messageLog[selectedConfiguration].errorStoreCount > 1" class="list-group-item alert-danger">
+      <i class="m-r-md fa fa-info-circle"></i>
+      <span>Errorlog contains {{messageLog[selectedConfiguration].errorStoreCount}} records. Service management
+        should check whether this record has to be resent or deleted</span>
+    </li>
+    <li *ngIf="messageLog[selectedConfiguration].errorStoreCount == -1" class="list-group-item alert-warning">
+      <i class="m-r-md fa fa-info-circle"></i>
+      <span>Errorlog might contain records. This is unknown because errorStore.count.show is not set to true</span>
+    </li>
+    <ng-template ngFor let-alert [ngForOf]="alerts">
+      <li class="list-group-item" [ngClass]="['alert-' + alert.type]"
+        *ngIf="alert.configuration == '' || selectedConfiguration==alert.configuration || selectedConfiguration=='All'">
+        <div [ngClass]="{pointer: alert.link}" uiSref="pages.configuration(alert.link)" [disabled]="!alert.link">
+          <i class="m-r-md fa" [ngClass]="['fa-' + ((alert.type=='warning') ? 'warning' : 'times')]"></i>
+          <span *ngIf="selectedConfiguration=='All' && alert.configuration!=''">Configuration
+            [{{alert.configuration}}] - </span>
+          <span>{{alert.message}}</span>
+        </div>
+      </li>
+    </ng-template>
+  </ul>
+
+  <div class="row">
+    <div class="col-lg-12 tabs-container">
+      <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+        <li [ngClass]="{active : selectedConfiguration == 'All'}"><a
+            (click)="changeConfiguration('All')">All</a></li>
+        <li [ngClass]="{active : selectedConfiguration == configuration.name}"
+          *ngFor="let configuration of configurations">
+          <a (click)="changeConfiguration(configuration.name)">{{configuration.name}}</a>
+        </li>
+      </ul>
+    </div>
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins m-n">
+        <div class="ibox-title summary">
+          <h4 class="col-md-9">Configuration Summary <span *ngIf="isConfigStubbed[selectedConfiguration]"
+              class="label label-warning">STUBBED</span> <span *ngIf="isConfigReloading[selectedConfiguration]"
+              class="label label-warning">RELOADING</span></h4>
+          <h4 class="hidden-sm col-md-3">Configuration Flow</h4>
+        </div>
+        <div class="ibox-content">
+          <div class="row">
+            <div class="col-md-5">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th><strong>State</strong></th>
+                    <th title="Started"
+                      [ngClass]="{'text-primary': (adapterSummary.started > 0 || receiverSummary.started > 0) }">
+                      <i class="fa fa-check-square"></i>
+                    </th>
+                    <th title="Starting"
+                      [ngClass]="{'text-primary': (adapterSummary.starting > 0 || receiverSummary.starting > 0) }">
+                      <i class="fa fa-check-square-o"></i>
+                    </th>
+                    <th title="Stopped"
+                      [ngClass]="{'text-danger': (adapterSummary.stopped > 0 || receiverSummary.stopped > 0) }">
+                      <i class="fa fa-stop-circle"></i>
+                    </th>
+                    <th title="Stopping"
+                      [ngClass]="{'text-danger': (adapterSummary.stopping > 0 || receiverSummary.stopping > 0) }">
+                      <i class="fa fa-stop-circle-o"></i>
+                    </th>
+                    <th title="Error"
+                      [ngClass]="{'text-warning': (adapterSummary.error > 0 || receiverSummary.error > 0 || adapterSummary.exception_starting > 0 || receiverSummary.exception_starting > 0 || adapterSummary.exception_stopping > 0 || receiverSummary.exception_stopping > 0) }">
+                      <i class="fa fa-warning"></i>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Adapters</strong></td>
+                    <td>{{adapterSummary.started}}</td>
+                    <td>{{adapterSummary.starting}}</td>
+                    <td>{{adapterSummary.stopped}}</td>
+                    <td>{{adapterSummary.stopping}}</td>
+                    <td>{{adapterSummary.error + adapterSummary.exception_starting +
+                      adapterSummary.exception_stopping}}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Receivers</strong></td>
+                    <td>{{receiverSummary.started}}</td>
+                    <td>{{receiverSummary.starting}}</td>
+                    <td>{{receiverSummary.stopped}}</td>
+                    <td>{{receiverSummary.stopping}}</td>
+                    <td>{{receiverSummary.error + receiverSummary.exception_starting +
+                      receiverSummary.exception_stopping}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="col-md-4">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <td><strong>Info messages</strong></td>
+                    <td>{{messageSummary.info}}</td>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Warning messages</strong></td>
+                    <td>{{messageSummary.warn}}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Error messages</strong></td>
+                    <td>{{messageSummary.error}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="col-md-3 configurationFlow" *ngIf="configurationFlowDiagram && !reloading">
+              <a [href]="configurationFlowDiagram" target="_blank" rel="noopener noreferrer"><img
+                  [src]="configurationFlowDiagram" alt="Configuration Flow Diagram"></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" id="adapterFilters">
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins">
+        <div class="ibox-content summary">
+          <div class="row ibox-grid">
+            <div class="ibox-right">
+              <div class="pull-left">
+                <button title="Stop All Adapters" (click)="stopAll()" class="btn btn-danger btn-xs"
+                  id="stop-all-adapters" type="button"><i class="fa fa-stop"></i></button>
+                <button title="Start All Adapters" (click)="startAll()" class="btn btn-primary btn-xs"
+                  id="start-all-adapters" type="button"><i class="fa fa-play"></i></button>
+              </div>
+              <div class="text-right pull-right">
+                <button title="Open All Adapters" (click)="expandAll()" class="btn btn-default btn-xs"
+                  id="expand-all" type="button"><i class="fa fa-angle-double-down fa-size-up"></i></button>
+                <button title="Collapse All Adapters" (click)="collapseAll()" class="btn btn-default btn-xs"
+                  id="collapse-all" type="button"><i class="fa fa-angle-double-up fa-size-up"></i></button>
+              </div>
+              <div class="text-center">
+                <button
+                  *ngIf="selectedConfiguration != 'All' && !reloading && !isConfigReloading[selectedConfiguration]"
+                  title="Reload Configuration" (click)="reloadConfiguration()" class="btn btn-info btn-xs"
+                  id="reload-configuration" type="button"><i class="fa fa-undo"></i></button>
+                <button
+                  *ngIf="selectedConfiguration != 'All' && !reloading && isConfigReloading[selectedConfiguration]"
+                  disabled="disabled" title="Reload Configuration" class="btn btn-warning btn-xs" type="button"><i
+                    class="fa fa-spin fa-refresh"></i></button>
+                <button *ngIf="selectedConfiguration == 'All' && !reloading" title="Full Reload"
+                  (click)="fullReload()" class="btn btn-info btn-xs" id="full-reload" type="button"><i
+                    class="fa fa-undo"></i></button>
+                <button *ngIf="reloading" disabled="disabled" title="Full Reload in process"
+                  class="btn btn-danger btn-xs" type="button"><i class="fa fa-spin fa-refresh"></i></button>
+                <button *ngIf="configurationFlowDiagram" title="Show Adapter References"
+                  (click)="showReferences()" class="btn btn-info btn-xs" id="adapter-references" type="button"><i
+                    class="fa fa-file-picture-o"></i></button>
+              </div>
+            </div>
+            <div class="ibox-left">
+              <span style="font-weight:700;margin-right:4px;">Filter:</span>
+              <div class="btn-group state">
+                <label class="btn btn-primary btn-outline btn-xs started" [(ngModel)]="filter.started"
+                  (click)="applyFilter(filter)" uib-btn-checkbox>Started</label>
+                <label class="btn btn-danger btn-outline btn-xs stopped" [(ngModel)]="filter.stopped"
+                  (click)="applyFilter(filter)" uib-btn-checkbox>Stopped</label>
+                <label class="btn btn-warning btn-outline btn-xs warning" [(ngModel)]="filter.warning"
+                  (click)="applyFilter(filter)" uib-btn-checkbox>Warning</label>
+              </div>
+            </div>
+            <div class="ibox-stretch">
+              <div class="input-group" id="searchbar">
+                <input type="text" class="form-control" placeholder="Search ... (Ctrl + Shift + F)"
+                  [(ngModel)]="searchText" name="search"
+                  (change)="updateQueryParams();" />
+                <i [hidden]="searchText.length == 0" (click)="searchText = ''; updateQueryParams();"
+                  class="fa fa-times input-group-closeSearch" aria-hidden="true"></i>
+                <span class="input-group-addon">
+                  <i class="fa fa-search" aria-hidden="true"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins">
+        <div (click)="msgBoxExpanded = !msgBoxExpanded" class="ibox-title pointer" [ngClass]="{
+                    'warning': messageLog[selectedConfiguration].messageLevel=='WARN',
+                    'danger': messageLog[selectedConfiguration].messageLevel=='ERROR'
+                }">
+          <div class="ibox-tools pull-right">
+            <a> <i class="fa fa-chevron-{{(msgBoxExpanded) ? 'up' : 'down' }}"></i></a>
+          </div>
+          <div class="row full-width">
+            <div class="col-lg-6 col-md-12 clear">
+              <h4>Configuration Messages</h4>
+            </div>
+          </div>
+        </div>
+        <div class="ibox-content p-w-sm" [hidden]="!msgBoxExpanded">
+          <div class="row">
+            <div class="col-md-12" style="padding: 0 1px;">
+              <div class="table-responsive">
+                <table class="table table-striped table-nohead m-b-none">
+                  <tbody>
+                    <tr *ngFor="let message of messageLog[selectedConfiguration].messages" [ngClass]="{
+                                            'text-warning' : message.level == 'WARN',
+                                            'text-danger' : message.level == 'ERROR'
+                                        }">
+                      <td style="width:40px;" class="text-center">
+                        <i class="m-l-md fa" [ngClass]="{
+                                                    'fa-info': message.level == 'INFO',
+                                                    'fa-warning' : message.level == 'WARN',
+                                                    'fa-times' : message.level == 'ERROR'
+                                                }"></i>
+                      </td>
+                      <td style="width:200px;" class="text-center"><span to-date [time]="message.date"></span></td>
+                      <td>{{message.message}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div *ngFor="let adapter of adapters | configurationFilter:this | searchFilter:this"
+      class="col-lg-12 adapters">
+      <div class="ibox float-e-margins" id="{{adapter.name}}">
+        <div (click)="adapterShowContent[adapter.name] = !showContent(adapter)" class="ibox-title" title="Click to open"
+          [ngClass]="(adapter.status=='warning') ? 'warning' : ((adapter.status=='stopped') ? 'danger' : 'primary')">
+          <div class="ibox-tools pull-right">
+            <a> <i class="fa fa-chevron-{{(showContent(adapter)) ? 'up' : 'down' }}"></i></a>
+          </div>
+          <div class="row almost-full-width">
+            <div class="col-lg-6 col-md-12 clear">
+              <h5>{{adapter.name}} <small class="m-l-sm">&nbsp;{{adapter.description}}</small></h5>
+            </div>
+            <div class="col-lg-6 col-md-12">
+              <div class="row">
+                <div class="col-sm-4" *ngIf="adapter.upSince > 0" title="Uptime">
+                  <span to-date [time]="adapter.upSince"></span> (<span time-since [time]="adapter.upSince"></span>)
+                </div>
+                <div class="col-sm-4" *ngIf="adapter.upSince == 0">
+                </div>
+                <div class="col-sm-4" *ngIf="adapter.lastMessage > 0" title="Last Message">
+                  <span to-date [time]="adapter.lastMessage"></span> (<span time-since
+                    [time]="adapter.lastMessage"></span>)
+                </div>
+                <div class="col-sm-4" *ngIf="!adapter.lastMessage > 0">
+                </div>
+                <div class="col-sm-2" title="Messages Processed (Messages in Process) | Messages in Error">
+                  {{adapter.messagesProcessed}}
+                  <span *ngIf="adapter.messagesInProcess > 0">({{adapter.messagesInProcess}} <i
+                      class="fa fa-cog fa-spin" aria-hidden="true"></i>)</span>
+                  <span *ngIf="adapter.messagesInError > 0">| {{adapter.messagesInError}} <i
+                      class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
+                </div>
+                <div class="col-sm-2" title="Adapter Store" *ngIf="!showContent(adapter)">
+                  <span *ngIf="adapter.messageLogMessageCount > 0" class="text-success"
+                    title="Total # of processed messages by the adapter">
+                    <i class="fa fa-sign-in"></i> ({{adapter.messageLogMessageCount}})
+                  </span>
+                  <span *ngIf="adapter.errorStoreMessageCount > 0" class="text-danger"
+                    title="Total # of messages in Error">
+                    &nbsp<i class="fa fa-times-circle"></i> ({{adapter.errorStoreMessageCount}})
+                  </span>
+                  <span *ngIf="adapter.sendersMessageLogCount > 0" class="text-success"
+                    title="Total # of messages processed by senders that have a messagelog">
+                    &nbsp<i class="fa fa-database"></i> ({{adapter.sendersMessageLogCount}})
+                  </span>
+                  <span *ngIf="adapter.senderTransactionalStorageMessageCount > 0" class="text-primary"
+                    title="Total # of messages in messageStoreSenders">
+                    &nbsp<i class="fa fa-sign-out"></i> ({{adapter.senderTransactionalStorageMessageCount}})
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="ibox-content p-md" *ngIf="showContent(adapter)">
+          <div class="row">
+            <div class="col-md-6">
+              <!-- adapter information -->
+              <span class="pull-right">
+                <button uiSref="pages.adapterstatistics({configuration: adapter.configuration, name: adapter.name})"
+                  class="btn btn-xs btn-info pull-right m-r-xs" type="button"><i class="fa fa-bar-chart m-r-xs"
+                    aria-hidden="true"></i>More statistics</button>
+              </span>
+              <h4>Adapter information</h4>
+              <table class="table">
+                <tbody>
+                  <tr>
+                    <td class="col-md-6">State</td>
+                    <td class="col-md-6" *ngIf="adapter.state =='starting'">
+                      <span><i class="fa fa-check-square-o lh22 m-r-xs"></i> Starting</span>
+                      <button style="float:right;" title="Starting adapter" class="btn btn-xs btn-warning"
+                        type="button"><i class="fa fa-cog fa-spin"></i></button>
+                    </td>
+                    <td class="col-md-6" *ngIf="adapter.state =='started'">
+                      <span><i class="fa fa-check-square lh22 m-r-xs"></i> Started</span>
+                      <button style="float:right;" title="Stop adapter" (click)="stopAdapter(adapter)"
+                        class="btn btn-xs danger-hover" type="button"><i class="fa fa-stop"></i></button>
+                    </td>
+                    <td class="col-md-6" *ngIf="adapter.state =='stopping'">
+                      <span><i class="fa fa-stop-circle-o lh22 m-r-xs"></i> Stopping</span>
+                      <button style="float:right;" title="Stopping adapter" class="btn btn-xs btn-warning"
+                        type="button"><i class="fa fa-cog fa-spin"></i></button>
+                    </td>
+                    <td class="col-md-6" *ngIf="adapter.state =='stopped'">
+                      <span><i class="fa fa-stop-circle lh22 m-r-xs"></i> Stopped</span>
+                      <button style="float:right;" title="Start adapter" (click)="startAdapter(adapter)"
+                        class="btn btn-xs primary-hover" type="button"><i class="fa fa-play"></i></button>
+                    </td>
+                    <td class="col-md-6" *ngIf="adapter.state =='error'">
+                      <span><i class="fa fa-warning lh22 m-r-xs"></i> ERROR</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Configured</td>
+                    <td><i class="fa {{adapter.configured ? 'fa-check-square' : 'fa-times-circle'}}"></i></td>
+                  </tr>
+                  <tr>
+                    <td>Up since</td>
+                    <td *ngIf="adapter.upSince > 0"><span to-date [time]="adapter.upSince"></span> (<span time-since
+                        [time]="adapter.upSince"></span>)</td>
+                    <td *ngIf="adapter.upSince == 0">-</td>
+                  </tr>
+                  <tr>
+                    <td>Last message</td>
+                    <td *ngIf="adapter.lastMessage"><span to-date [time]="adapter.lastMessage"></span></td>
+                    <td *ngIf="!adapter.lastMessage">-</td>
+                  </tr>
+                  <tr>
+                    <td>Configuration</td>
+                    <td>{{adapter.configuration}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <!-- for Message sending pipe -> Sender -->
+              <h4>Messages Information</h4>
+              <table class="table">
+                <tbody>
+                  <tr>
+                    <td class="col-md-6">Processed</td>
+                    <td class="col-md-6">{{adapter.messagesProcessed}}</td>
+                  </tr>
+                  <tr>
+                    <td>In process</td>
+                    <td>{{adapter.messagesInProcess}}</td>
+                  </tr>
+                  <tr>
+                    <td>With error</td>
+                    <td>{{adapter.messagesInError}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <h4>Receivers</h4>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Listener</th>
+                      <th>Retried</th>
+                      <th>Received</th>
+                      <th>Rejected</th>
+                      <th></th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let receiver of adapter.receivers"
+                      [ngClass]="{'text-danger' : (receiver.state == 'error')}">
+                      <td>{{receiver.name}}</td>
+                      <td [title]="receiver.listener.destination">{{receiver.listener.class}}
+                        ({{receiver.listener.destination|truncate:150}})</td>
+                      <td>{{receiver.messages.retried}}</td>
+                      <td>{{receiver.messages.received}}</td>
+                      <td>{{receiver.messages.rejected}}</td>
+                      <td *ngIf="receiver.threadCount != undefined">
+                        {{receiver.threadCount}}/{{receiver.maxThreadCount}} Threads
+                        <span *ngIf="receiver.threadCountControllable">
+                          <button [disabled]="receiver.state=='loading'" class="btn btn-xs btn-default m-l-xs"
+                            (click)="addThread(adapter, receiver)" type="button"
+                            title="Increase the maximum numbers of threads"><i class="fa fa-plus"></i> Inc</button>
+                          <button [disabled]="receiver.state=='loading' || receiver.maxThreadCount < 2"
+                            class="btn btn-xs btn-default m-l-xs" (click)="removeThread(adapter, receiver)"
+                            type="button" title="Decrease the maximum numbers of threads"><i class="fa fa-minus"></i>
+                            Dec</button>
+                        </span>
+                      </td>
+                      <td *ngIf="receiver.threadCount == undefined"></td>
+                      <td>
+                        <span class="pull-right">
+                          <span *ngFor="let store of receiver.transactionalStores">
+                            <span class="text-{{getProcessStateIconColor(store.name)}}"
+                              title="Browse messages with ProcessState: {{store.name}}">
+                              <button
+                                uiSref="pages.storage.list({configuration: adapter.configuration, adapter: adapter.name, storageSource: 'receivers', storageSourceName: receiver.name, processState: store.name})"
+                                class="btn btn-xs btn-default" type="button">
+                                <i class="fa {{getProcessStateIcon(store.name)}}"></i>
+                                ({{store.numberOfMessages}})
+                              </button>
+                            </span>
+                          </span>
+                          <button title="Stop receiver" class="btn btn-xs danger-hover"
+                            *ngIf="receiver.state =='started' || receiver.state =='exception_starting'" type="button"
+                            (click)="stopReceiver(adapter, receiver)"><i class="fa fa-stop"></i></button>
+                          <button title="Start receiver" class="btn btn-xs primary-hover"
+                            *ngIf="receiver.state =='stopped' || receiver.state =='exception_stopping'" type="button"
+                            (click)="startReceiver(adapter, receiver)"><i class="fa fa-play"></i></button>
+                          <button title="Loading..." class="btn btn-warning btn-xs"
+                            *ngIf="receiver.state =='loading' || receiver.state =='starting' || receiver.state =='stopping'"
+                            type="button"><i class="fa fa-cog fa-spin"></i></button>
+                          <button title="RECEIVER IN ERROR STATE" class="btn btn-warning btn-xs"
+                            *ngIf="receiver.state =='error'" type="button" disabled><i
+                              class="fa fa-warning"></i></button>
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="row" *ngIf="adapter.hasSender">
+            <div class="col-md-12">
+              <h4>Senders</h4>
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Sender</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <ng-template ngFor let-pipes [ngForOf]="adapter.pipes">
+                      <tr *ngIf="pipes.sender">
+                        <td>{{pipes.name}}</td>
+                        <td>{{pipes.sender}}<span *ngIf="pipes.destination" title="{{pipes.destination}}">
+                            ({{pipes.destination|truncate:150}})</span></td>
+                        <td>
+                          <span class="pull-right">
+                            <span [ngClass]="pipes.isSenderTransactionalStorage ? 'text-primary' : 'text-success'">
+                              <button *ngIf="pipes.hasMessageLog"
+                                uiSref="pages.storage.list({configuration: adapter.configuration, adapter: adapter.name, storageSource: 'pipes', storageSourceName: pipes.name, processState: 'Done'})"
+                                class="btn btn-xs btn-default m-l-xs" type="button">
+                                <i
+                                  [ngClass]="pipes.isSenderTransactionalStorage ? 'fa fa-sign-out' : 'fa fa-database'"></i>
+                                ({{pipes.messageLogCount}})
+                              </button>
+                            </span>
+                          </span>
+                        </td>
+                      </tr>
+                    </ng-template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-9 col-md-12 messages table-responsive">
+              <h4>Messages</h4>
+              <table class="table table-striped" style="min-width: 620px;">
+                <tbody>
+                  <tr *ngFor="let message of adapter.messages">
+                    <ng-container [ngIf]="message.level == 'INFO'">
+                      <td style="width:40px;" class="text-center">
+                        &nbsp;<i class="fa fa-info"></i>
+                      </td>
+                      <td style="width:200px;" class="text-left"><span to-date [time]="message.date"></span></td>
+                      <td >{{message.message|truncate:700}}</td>
+                    </ng-container>
+                    <ng-container [ngIf]="message.level == 'WARN'">
+                      <td style="width:40px;" class="text-center">
+                        &nbsp;<i class="fa fa-warning"></i>
+                      </td>
+                      <td style="width:200px;" class="text-left"><span to-date [time]="message.date"></span></td>
+                      <td class="text-warning">{{message.message|truncate:700}}</td>
+                    </ng-container>
+                    <ng-container [ngIf]="message.level == 'ERROR'">
+                      <td style="width:40px;" class="text-center" ng-if-start=>
+                        &nbsp;<i class="fa fa-times"></i>
+                      </td>
+                      <td style="width:200px;" class="text-left"><span to-date [time]="message.date"></span></td>
+                      <td class="text-danger">{{message.message|truncate:700}}</td>
+                    </ng-container>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="col-lg-3 col-md-0 flow">
+              <h4>Flow</h4>
+              <flow adapter="adapter" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

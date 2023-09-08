@@ -1,4 +1,5 @@
 import { Component, OnInit } from "@angular/core";
+import { Idle } from "@ng-idle/core";
 import { AuthService } from "src/angularjs/app/services/authservice.service";
 import { PollerService } from "src/angularjs/app/services/poller.service";
 
@@ -10,12 +11,12 @@ export class LogoutComponent implements OnInit {
   constructor(
     private Poller: PollerService,
     private authService: AuthService,
-    private Idle: angular.idle.IIdleService
+    // private idleService: Idle
   ){}
 
   ngOnInit() {
     this.Poller.getAll().remove();
-    this.Idle.unwatch();
+    // this.idleService.unwatch(); TODO handle this in a seperate service
     this.authService.logout();
   };
 }

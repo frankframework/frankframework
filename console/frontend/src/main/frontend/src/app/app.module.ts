@@ -55,6 +55,9 @@ import {
   toastrServiceProvider
 } from './ajs-upgraded-services';
 import { AppConstants, appConstants, appModule } from '../angularjs/app/app.module';
+import { NgIdleModule } from '@ng-idle/core';
+import { StatusComponent } from './views/status/status.component';
+import { LogoutComponent } from './components/logout/logout.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -75,6 +78,8 @@ appModule
   .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
   .directive('pagesTopnavbar', downgradeComponent({ component: PagesTopnavbarComponent }) as angular.IDirectiveFactory)
   .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory)
+  .directive('inputFileUpload', downgradeComponent({ component: InputFileUploadComponent }) as angular.IDirectiveFactory)
+  .directive('logout', downgradeComponent({ component: LogoutComponent }) as angular.IDirectiveFactory)
   .directive('inlineStore', downgradeComponent({ component: InlinestoreComponent }) as angular.IDirectiveFactory)
   .directive('jdbcBrowseTables', downgradeComponent({ component: JdbcBrowseTablesComponent }) as angular.IDirectiveFactory)
   .directive('jdbcExecuteQuery', downgradeComponent({ component: JdbcExecuteQueryComponent }) as angular.IDirectiveFactory)
@@ -96,6 +101,7 @@ appModule
     PagesTopnavbarComponent,
     HamburgerComponent,
     InputFileUploadComponent,
+    LogoutComponent,
     InlinestoreComponent,
     JdbcBrowseTablesComponent,
     JdbcExecuteQueryComponent,
@@ -104,6 +110,7 @@ appModule
     IframeLadybugBetaComponent,
     IframeLarvaComponent,
     IbisstoreSummaryComponent,
+    StatusComponent,
 
     // pipes
     OrderByPipe,
@@ -116,6 +123,7 @@ appModule
     NgbModule,
     // AppRoutingModule
     UIRouterUpgradeModule.forRoot(),
+    NgIdleModule.forRoot(),
   ],
   providers: [
     alertServiceProvider,
