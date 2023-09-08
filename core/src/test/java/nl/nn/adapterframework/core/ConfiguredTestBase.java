@@ -3,6 +3,8 @@ package nl.nn.adapterframework.core;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -29,6 +31,7 @@ public abstract class ConfiguredTestBase {
 	}
 
 	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		pipeline = getConfiguration().createBean(PipeLine.class);
 		adapter = getConfiguration().createBean(Adapter.class);
@@ -38,6 +41,7 @@ public abstract class ConfiguredTestBase {
 	}
 
 	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		getConfigurationWarnings().destroy();
 		getConfigurationWarnings().afterPropertiesSet();
