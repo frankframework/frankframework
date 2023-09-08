@@ -15,13 +15,21 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.*;
-import java.util.*;
-
 public class PropertiesParser {
-	public static String PropertiesParser(String inputFilePath) throws IOException {
+	public static String parseFile(String inputFilePath) {
 
 		Map<String, Object> accumulation = new LinkedHashMap<>();
 
@@ -42,7 +50,7 @@ public class PropertiesParser {
 		return yaml.dump(accumulation);
 	}
 
-	public static String PropertiesParser(Reader reader) {
+	public static String parseFile(Reader reader) {
 
 		Map<String, Object> accumulation = new LinkedHashMap<>();
 
@@ -98,11 +106,9 @@ public class PropertiesParser {
 
 	static void addMapToList(Map<String, Object> propertiesMap, String currentKey, Object currentValue, String[] restOfProperty, String[] keys){
 		for (Object listValue : (ArrayList<?>) currentValue) {
-			if (listValue instanceof Map) {
-				if (((Map<?, ?>) listValue).containsKey(keys[1])) {
+			if (listValue instanceof Map && ((Map<?, ?>) listValue).containsKey(keys[1])) {
 					addPropertyToMap((Map<String, Object>) listValue, restOfProperty);
 					return;
-				}
 			}
 		}
 
@@ -120,9 +126,8 @@ public class PropertiesParser {
 
 		List<String> list = new ArrayList<>(Arrays.asList(currentValue));
 		list.remove(restOfProperty[0]);
-		currentValue = list.toArray(new String[0]);
 
-		arrayList.addAll(Arrays.asList(currentValue));
+		arrayList.addAll(Arrays.asList(list.toArray(new String[0])));
 		arrayList.add(newSubMap);
 		addPropertyToMap(newSubMap, restOfProperty);
 		propertiesMap.put(currentKey, arrayList);
