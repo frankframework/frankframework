@@ -87,7 +87,9 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 				input.unscheduleFromCloseOnExitOf(session);
 				Message wrappedInput = new Message(new ThrowingAfterCloseInputStream((InputStream) input.asObject()));
 				wrappedInput.closeOnCloseOf(session, pipe);
-				return pipe.doPipe(wrappedInput, session);
+				final PipeRunResult result = pipe.doPipe(wrappedInput, session);
+				session.unscheduleCloseOnSessionExit(result.getResult());
+				return result;
 			}
 		}
 		return pipe.doPipe(input, session);
