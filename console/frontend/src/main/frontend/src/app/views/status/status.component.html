@@ -22,7 +22,7 @@
     <ng-template ngFor let-alert [ngForOf]="alerts">
       <li class="list-group-item" [ngClass]="['alert-' + alert.type]"
         *ngIf="alert.configuration == '' || selectedConfiguration==alert.configuration || selectedConfiguration=='All'">
-        <div [ngClass]="{pointer: alert.link}" uiSref="pages.configuration(alert.link)" [disabled]="!alert.link">
+        <div [ngClass]="{pointer: alert.link}" uiSref="pages.configuration(alert.link)" [attr.disabled]="!alert.link ? true : null">
           <i class="m-r-md fa" [ngClass]="['fa-' + ((alert.type=='warning') ? 'warning' : 'times')]"></i>
           <span *ngIf="selectedConfiguration=='All' && alert.configuration!=''">Configuration
             [{{alert.configuration}}] - </span>
@@ -245,7 +245,7 @@
   </div>
 
   <div class="row">
-    <div *ngFor="let adapter of adapters | configurationFilter:this | searchFilter:this"
+    <div *ngFor="let adapter of adapters | configurationFilter:selectedConfiguration:filter | searchFilter:searchText"
       class="col-lg-12 adapters">
       <div class="ibox float-e-margins" id="{{adapter.name}}">
         <div (click)="adapterShowContent[adapter.name] = !showContent(adapter)" class="ibox-title" title="Click to open"
@@ -264,33 +264,32 @@
                 </div>
                 <div class="col-sm-4" *ngIf="adapter.upSince == 0">
                 </div>
-                <div class="col-sm-4" *ngIf="adapter.lastMessage > 0" title="Last Message">
+                <div class="col-sm-4" *ngIf="(adapter.lastMessage ?? 0) > 0; else lastMessageElse" title="Last Message">
                   <span to-date [time]="adapter.lastMessage"></span> (<span time-since
                     [time]="adapter.lastMessage"></span>)
                 </div>
-                <div class="col-sm-4" *ngIf="!adapter.lastMessage > 0">
-                </div>
+                <ng-template #lastMessageElse></ng-template>
                 <div class="col-sm-2" title="Messages Processed (Messages in Process) | Messages in Error">
                   {{adapter.messagesProcessed}}
-                  <span *ngIf="adapter.messagesInProcess > 0">({{adapter.messagesInProcess}} <i
+                  <span *ngIf="(adapter.messagesInProcess ?? 0) > 0">({{adapter.messagesInProcess}} <i
                       class="fa fa-cog fa-spin" aria-hidden="true"></i>)</span>
-                  <span *ngIf="adapter.messagesInError > 0">| {{adapter.messagesInError}} <i
+                  <span *ngIf="(adapter.messagesInError ?? 0) > 0">| {{adapter.messagesInError}} <i
                       class="fa fa-exclamation-triangle" aria-hidden="true"></i></span>
                 </div>
                 <div class="col-sm-2" title="Adapter Store" *ngIf="!showContent(adapter)">
-                  <span *ngIf="adapter.messageLogMessageCount > 0" class="text-success"
+                  <span *ngIf="(adapter.messageLogMessageCount ?? 0) > 0" class="text-success"
                     title="Total # of processed messages by the adapter">
                     <i class="fa fa-sign-in"></i> ({{adapter.messageLogMessageCount}})
                   </span>
-                  <span *ngIf="adapter.errorStoreMessageCount > 0" class="text-danger"
+                  <span *ngIf="(adapter.errorStoreMessageCount ?? 0) > 0" class="text-danger"
                     title="Total # of messages in Error">
                     &nbsp<i class="fa fa-times-circle"></i> ({{adapter.errorStoreMessageCount}})
                   </span>
-                  <span *ngIf="adapter.sendersMessageLogCount > 0" class="text-success"
+                  <span *ngIf="(adapter.sendersMessageLogCount ?? 0) > 0" class="text-success"
                     title="Total # of messages processed by senders that have a messagelog">
                     &nbsp<i class="fa fa-database"></i> ({{adapter.sendersMessageLogCount}})
                   </span>
-                  <span *ngIf="adapter.senderTransactionalStorageMessageCount > 0" class="text-primary"
+                  <span *ngIf="adapter.senderTransactionalStorageMessageCount! > 0" class="text-primary"
                     title="Total # of messages in messageStoreSenders">
                     &nbsp<i class="fa fa-sign-out"></i> ({{adapter.senderTransactionalStorageMessageCount}})
                   </span>
@@ -411,7 +410,7 @@
                           <button [disabled]="receiver.state=='loading'" class="btn btn-xs btn-default m-l-xs"
                             (click)="addThread(adapter, receiver)" type="button"
                             title="Increase the maximum numbers of threads"><i class="fa fa-plus"></i> Inc</button>
-                          <button [disabled]="receiver.state=='loading' || receiver.maxThreadCount < 2"
+                          <button [disabled]="receiver.state=='loading' || (receiver.maxThreadCount ?? 0) < 2"
                             class="btn btn-xs btn-default m-l-xs" (click)="removeThread(adapter, receiver)"
                             type="button" title="Decrease the maximum numbers of threads"><i class="fa fa-minus"></i>
                             Dec</button>

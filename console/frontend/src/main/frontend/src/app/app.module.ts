@@ -58,6 +58,10 @@ import { AppConstants, appConstants, appModule } from '../angularjs/app/app.modu
 import { NgIdleModule } from '@ng-idle/core';
 import { StatusComponent } from './views/status/status.component';
 import { LogoutComponent } from './components/logout/logout.component';
+import { ConfigurationFilterPipe } from './pipes/configuration-filter.pipe';
+import { SearchFilterPipe } from './pipes/search-filter.pipe';
+import { TruncatePipe } from './pipes/truncate.pipe';
+import { ToDateDirective } from './components/to-date.directive';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -114,6 +118,10 @@ appModule
 
     // pipes
     OrderByPipe,
+    ConfigurationFilterPipe,
+    SearchFilterPipe,
+    TruncatePipe,
+    ToDateDirective
   ],
   imports: [
     BrowserModule,

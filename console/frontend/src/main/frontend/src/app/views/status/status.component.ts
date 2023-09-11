@@ -1,12 +1,14 @@
+import { ViewportScroller } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { StateService } from "@uirouter/angularjs";
-import { Adapter, Alert, AppService, Configuration, MessageLog, MessageSummary, Receiver, Summary } from 'src/angularjs/app/app.service';
-import { ConfigurationFilter } from 'src/angularjs/app/filters/configuration-filter.filter';
+import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog, MessageSummary, Receiver, Summary } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { MiscService } from 'src/angularjs/app/services/misc.service';
 import { PollerService } from 'src/angularjs/app/services/poller.service';
+import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
 
-type Filter = Record<'started' | 'stopped' | 'warning', boolean>;
+type Filter = Record<AdapterStatus, boolean>;
 
 @Component({
   selector: 'app-status',
@@ -36,6 +38,8 @@ export class StatusComponent implements OnInit {
     stopped: 0,
     starting: 0,
     stopping: 0,
+    exception_starting: 0,
+    exception_stopping: 0,
     error: 0
   };
   receiverSummary: Summary = {
@@ -43,6 +47,8 @@ export class StatusComponent implements OnInit {
     stopped: 0,
     starting: 0,
     stopping: 0,
+    exception_starting: 0,
+    exception_stopping: 0,
     error: 0
   };
   messageSummary: MessageSummary = {
@@ -63,20 +69,23 @@ export class StatusComponent implements OnInit {
     // private $filter: angular.IFilterService,
     private $state: StateService,
     private Misc: MiscService,
-    // private $anchorScroll: angular.IAnchorScrollService,
-    // private $location: angular.ILocationService,
+    private viewportScroller: ViewportScroller, // private $anchorScroll: angular.IAnchorScrollService,
+    private route: ActivatedRoute, // private $location: angular.ILocationService,
+    private router: Router,
     // private $http: angular.IHttpService,
     private appService: AppService
   ) { }
 
   ngOnInit() {
-    var hash = this.$location.hash();
-    this.adapterName = this.$state.params["adapter"];
-    if (this.adapterName == "" && hash != "") { //If the adapter param hasn't explicitly been set
-      this.adapterName = hash;
-    } else {
-      this.$location.hash(this.adapterName);
-    }
+    this.route.fragment.subscribe(fragment => {
+      const hash = fragment ?? ""; // var hash = this.$location.hash();
+      this.adapterName = this.$state.params["adapter"];
+      if (this.adapterName == "" && hash != "") { //If the adapter param hasn't explicitly been set
+        this.adapterName = hash;
+      } else {
+        this.router.navigate([], { relativeTo: this.route, fragment: hash }); // this.$location.hash(this.adapterName);
+      }
+    });
 
     if (this.$state.params["filter"] != "") {
       var filter = this.$state.params["filter"].split("+");
@@ -107,7 +116,10 @@ export class StatusComponent implements OnInit {
     });
     this.appService.alerts$.subscribe(() => { this.alerts = this.appService.alerts; });
     this.appService.messageLog$.subscribe(() => { this.messageLog = this.appService.messageLog; });
-    this.appService.adapters$.subscribe(() => { this.adapters = this.appService.adapters; });
+    this.appService.adapters$.subscribe(() => {
+      this.adapters = this.appService.adapters;
+      this.updateAdapterShownContent();
+    });
 
     if (this.$state.params["configuration"] != "All")
       this.changeConfiguration(this.$state.params["configuration"]);
@@ -148,24 +160,10 @@ export class StatusComponent implements OnInit {
       .forEach(adapter => this.adapterShowContent[adapter] = true);
   };
   stopAll() {
-    let compiledAdapterList = Array();
-    // let adapters = $filter('configurationFilter')($scope.adapters, $scope);
-    let adapters = this.$filter<ConfigurationFilter>('configurationFilter')(this.adapters, this);
-    for (const adapter in adapters) {
-      let configuration = adapters[adapter].configuration;
-      compiledAdapterList.push(configuration + "/" + adapter);
-    }
-    this.Api.Put("adapters", { "action": "stop", "adapters": compiledAdapterList });
+    this.Api.Put("adapters", { "action": "stop", "adapters": this.getCompiledAdapterList() });
   };
   startAll() {
-    let compiledAdapterList = Array();
-    // let adapters = $filter('configurationFilter')($scope.adapters, $scope);
-    let adapters = this.$filter<ConfigurationFilter>('configurationFilter')(this.adapters, this);
-    for (const adapter in adapters) {
-      let configuration = adapters[adapter].configuration;
-      compiledAdapterList.push(configuration + "/" + adapter);
-    }
-    this.Api.Put("adapters", { "action": "start", "adapters": compiledAdapterList });
+    this.Api.Put("adapters", { "action": "start", "adapters": this.getCompiledAdapterList() });
   };
   reloadConfiguration() {
     if (this.selectedConfiguration == "All") return;
@@ -275,11 +273,21 @@ export class StatusComponent implements OnInit {
     this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name) + "/receivers/" + this.Misc.escapeURL(receiver.name), { "action": "decthread" });
   }
 
+  private getCompiledAdapterList() {
+    const compiledAdapterList: string[] = [];
+    // let adapters = $filter('configurationFilter')($scope.adapters, $scope);
+    const adapters = ConfigurationFilter(this.adapters, this.selectedConfiguration, this.filter);
+    for (const adapter in adapters) {
+      const configuration = adapters[adapter].configuration;
+      compiledAdapterList.push(configuration + "/" + adapter);
+    }
+  }
+
   private determineShowContent(adapter: Adapter) {
     if (adapter.status == "stopped") {
       return true;
     } else if (this.adapterName != "" && adapter.name == this.adapterName) {
-      this.$anchorScroll();
+      this.viewportScroller.scrollToAnchor(this.adapterName); // this.$anchorScroll();
       return true;
     } else {
       return false;
