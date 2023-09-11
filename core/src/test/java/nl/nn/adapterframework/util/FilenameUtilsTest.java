@@ -37,9 +37,6 @@ class FilenameUtilsTest {
 		assertNull(FilenameUtils.normalize(null));
 	}
 
-	/**
-	 * Method: concat(String basePath, String fullFilenameToAdd)
-	 */
 	@Test
 	void testConcat() {
 		assertEquals("src" + File.separator + "test" + File.separator + "java" + File.separator + "nl" + File.separator + "nn"
@@ -104,59 +101,37 @@ class FilenameUtilsTest {
 
 	}
 
-	/**
-	 * Method: getFullPathNoEndSeparator(String filename)
-	 */
 	@Test
 	void testGetFullPathNoEndSeparator() {
 		assertEquals("C:\\a\\b", FilenameUtils.getFullPathNoEndSeparator("C:\\a\\b\\c.txt"));
 
 	}
 
-	/**
-	 * Method: getName(String filename)
-	 */
 	@Test
 	void testGetName() {
 		assertEquals("c.txt", FilenameUtils.getName("C:\\a\\b\\c.txt"));
 	}
 
-	/**
-	 * Method: getBaseName(String filename)
-	 */
 	@Test
 	void testGetBaseName() {
 		assertEquals("c", FilenameUtils.getBaseName("C:\\a\\b\\c.txt"));
 	}
 
-	/**
-	 * Method: getExtension(String filename)
-	 */
 	@Test
 	void testGetExtension() {
 		assertEquals("txt", FilenameUtils.getExtension("C:\\a\\b\\c.txt"));
 	}
 
-	/**
-	 * Method: removeExtension(String filename)
-	 */
 	@Test
 	void testRemoveExtension() {
 		assertEquals("C:\\a\\b\\c", FilenameUtils.removeExtension("C:\\a\\b\\c.txt"));
-
 	}
 
-	/**
-	 * Method: equals(String filename1, String filename2)
-	 */
 	@Test
 	void testEqualsForFilename1Filename2() {
 		assertTrue(FilenameUtils.equals("C:\\a\\b\\c.txt", "C:\\a\\b\\c.txt"));
 	}
 
-	/**
-	 * Method: equalsOnSystem(String filename1, String filename2)
-	 */
 	@Test
 	void testEqualsOnSystem() {
 		if (FilenameUtils.isSystemWindows()) {
@@ -166,17 +141,11 @@ class FilenameUtilsTest {
 		}
 	}
 
-	/**
-	 * Method: equalsNormalized(String filename1, String filename2)
-	 */
 	@Test
 	void testEqualsNormalized() {
 		assertTrue(FilenameUtils.equalsNormalized("/foo//", "/foo/./"));
 	}
 
-	/**
-	 * Method: equalsNormalizedOnSystem(String filename1, String filename2)
-	 */
 	@Test
 	void testEqualsNormalizedOnSystem() {
 		if (FilenameUtils.isSystemWindows()) {
@@ -186,34 +155,22 @@ class FilenameUtilsTest {
 		}
 	}
 
-	/**
-	 * Method: isExtension(String filename, String extension)
-	 */
 	@Test
 	void testIsExtensionForFilenameExtension() {
 		assertTrue(FilenameUtils.isExtension("C:\\a\\b\\c.txt", "txt"));
 	}
 
-	/**
-	 * Method: isExtension(String filename, String[] extensions)
-	 */
 	@Test
 	void testIsExtensionForFilenameExtensions() {
 		String[] extensions = {"txt", "js"};
 		assertTrue(FilenameUtils.isExtension("C:\\a\\b\\c.txt", extensions));
 	}
 
-	/**
-	 * Method: wildcardMatch(String filename, String wildcardMatcher)
-	 */
 	@Test
 	void testWildcardMatchForFilenameWildcardMatcher() {
 		assertTrue(FilenameUtils.wildcardMatch("C:\\a\\b\\c.txt", "*.txt"));
 	}
 
-	/**
-	 * Method: wildcardMatchOnSystem(String filename, String wildcardMatcher)
-	 */
 	@Test
 	void testWildcardMatchOnSystem() {
 		if (FilenameUtils.isSystemWindows()) {

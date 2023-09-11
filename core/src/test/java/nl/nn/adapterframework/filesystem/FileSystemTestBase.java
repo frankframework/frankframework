@@ -100,11 +100,6 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 		}
 	}
 
-	protected void equalsCheck(String content, String actual) {
-		assertEquals(content, actual);
-	}
-
-
 	protected void existsCheck(String filename) throws Exception {
 		assertTrue(_fileExists(filename), "Expected file [" + filename + "] to be present");
 	}

@@ -720,10 +720,10 @@ public class Adapter implements IAdapter, NamedBean {
 	 * then add a receiver for each channel.
 	 * @ff.mandatory
 	 */
+	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
 	public void registerReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
-		// Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
-		if (log.isDebugEnabled()) log.debug("Adapter [{}] registered receiver [{}] with properties [{}]", name, receiver.getName(), receiver);
+		if (log.isDebugEnabled()) log.debug("Adapter [{}] registered receiver [{}] with properties [{}]", name, receiver.getName(), receiver.toString());
 	}
 
 	/**

@@ -109,6 +109,6 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		}
 	}
 
-	/** Before building, it configures the Chain. */
+	/** Before building, configure the FilterChain. */
 	protected abstract SecurityFilterChain configure(HttpSecurity http) throws Exception;
 }
