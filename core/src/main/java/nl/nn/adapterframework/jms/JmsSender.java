@@ -78,7 +78,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	protected ParameterList paramList = null;
 	private SoapWrapper soapWrapper = null;
 	private String responseHeaders = null;
-	private @Getter List<String> responseHeadersList = new ArrayList<String>();
+	private @Getter List<String> responseHeadersList = new ArrayList<>();
 
 	public enum LinkMethod {
 		/** use the generated messageId as the correlationId in the selector for response messages */
@@ -164,18 +164,16 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 		try {
 			if (isSoap()) {
-				if (soapHeader==null) {
-					if (pvl!=null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
-						ParameterValue soapHeaderParamValue=pvl.get(getSoapHeaderParam());
-						if (soapHeaderParamValue==null) {
-							log.warn("no SoapHeader found using parameter ["+getSoapHeaderParam()+"]");
-						} else {
-							soapHeader=soapHeaderParamValue.asStringValue("");
-						}
+				if (soapHeader == null && pvl != null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
+					ParameterValue soapHeaderParamValue = pvl.get(getSoapHeaderParam());
+					if (soapHeaderParamValue == null) {
+						log.warn("no SoapHeader found using parameter [" + getSoapHeaderParam() + "]");
+					} else {
+						soapHeader = soapHeaderParamValue.asStringValue("");
 					}
 				}
-				message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(),getServiceNamespaceURI(),soapHeader);
-				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"correlationId ["+correlationID+"] soap message ["+message+"]");
+				message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(), getServiceNamespaceURI(), soapHeader);
+				if (log.isDebugEnabled()) log.debug("{} correlationId [{}] soap message [{}]", getLogPrefix(), correlationID, message);
 			}
 			s = createSession();
 			mp = getMessageProducer(s, getDestination(session, pvl));
@@ -209,17 +207,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			}
 			if (replyQueue!=null) {
 				msg.setJMSReplyTo(replyQueue);
-				if (log.isDebugEnabled()) log.debug("replyTo set to queue [" + replyQueue + "]");
+				log.debug("replyTo set to queue [{}]", replyQueue);
 			}
 
 			// send message
 			send(mp, msg);
-			if (log.isDebugEnabled()) {
-				log.debug("[" + getName() + "] " + "sent message [" + message + "] " + "to [" + mp.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "using deliveryMode [" + getDeliveryMode() + "] " + ((getReplyToName() != null) ? "replyTo [" + getReplyToName()+"]" : ""));
-			} else {
-				if (log.isInfoEnabled()) {
-					log.info("[" + getName() + "] " + "sent message to [" + mp.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "using deliveryMode [" + getDeliveryMode() + "] " + ((getReplyToName() != null) ? "replyTo [" + getReplyToName()+"]" : ""));
-				}
+			if (log.isInfoEnabled()) {
+				log.info("[" + getName() + "] " + "sent message to [" + mp.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "using deliveryMode [" + getDeliveryMode() + "] " + ((getReplyToName() != null) ? "replyTo [" + getReplyToName() + "]" : ""));
 			}
 			if (isSynchronous()) {
 				String replyCorrelationId=null;
@@ -245,22 +239,28 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 					if (rawReplyMsg==null) {
 						throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] within ["+getReplyTimeout()+"] ms");
 					}
-					if(getResponseHeadersList().size() > 0) {
+					StringBuilder receivedJMSProperties = new StringBuilder();
+					if(!getResponseHeadersList().isEmpty()) {
 						Enumeration<?> propertyNames = rawReplyMsg.getPropertyNames();
 						while(propertyNames.hasMoreElements()) {
 							String jmsProperty = (String) propertyNames.nextElement();
 							if(getResponseHeadersList().contains(jmsProperty)) {
 								session.put(jmsProperty, rawReplyMsg.getObjectProperty(jmsProperty));
+								if (log.isDebugEnabled()) {
+									receivedJMSProperties.append(jmsProperty).append(": ").append(rawReplyMsg.getObjectProperty(jmsProperty)).append("; ");
+								}
 							}
 						}
 					}
-					return extractMessage(rawReplyMsg, session, isSoap(), getReplySoapHeaderSessionKey(),soapWrapper);
+					logMessageDetails(rawReplyMsg);
+					log.debug("Received properties: {}", receivedJMSProperties);
+					return extractMessage(rawReplyMsg, session, isSoap(), getReplySoapHeaderSessionKey(), soapWrapper);
 				} finally {
 					if(mc != null) {
 						try {
 							mc.close();
 						} catch (JMSException e) {
-							log.warn("JmsSender [" + getName() + "] got exception closing message consumer for reply", e);
+							log.warn("JmsSender [{}] got exception closing message consumer for reply", getName(), e);
 						}
 					}
 				}
@@ -273,7 +273,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 				try {
 					mp.close();
 				} catch (JMSException e) {
-					log.warn("JmsSender [" + getName() + "] got exception closing message producer", e);
+					log.warn("JmsSender [{}] got exception closing message producer", getName(), e);
 				}
 			}
 			closeSession(s);
@@ -300,7 +300,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 			if ((!isSoap() || !name.equals(getSoapHeaderParam()) && (StringUtils.isEmpty(getDestinationParam()) || !name.equals(getDestinationParam())))) {
 
-				if (log.isDebugEnabled()) { log.debug(getLogPrefix()+"setting ["+type+"] property from param ["+name+"] to value ["+property.getValue()+"]"); }
+				if (log.isDebugEnabled()) { log.debug("{} setting [{}] property from param [{}] to value [{}]", getLogPrefix(), type, name, property.getValue()); }
 				switch(type) {
 					case BOOLEAN:
 						msg.setBooleanProperty(name, property.asBooleanValue(false));

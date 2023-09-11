@@ -317,8 +317,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		}
 	}
 
-	public javax.jms.Message createMessage(Session session, String correlationID, Message message) throws NamingException, JMSException, IOException {
-		TextMessage textMessage = null;
+	public javax.jms.Message createMessage(Session session, String correlationID, Message message) throws JMSException, IOException {
+		TextMessage textMessage;
 		textMessage = session.createTextMessage();
 		setMessageCorrelationID(textMessage, correlationID);
 		textMessage.setText(message.asString());
@@ -361,7 +361,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return getDestination(getDestinationName());
 	}
 
-	public Destination getDestination(String destinationName) throws NamingException, JMSException, JmsException {
+	public Destination getDestination(String destinationName) {
 		return destinations.computeIfAbsent(destinationName, this::computeDestination);
 	}
 
@@ -397,7 +397,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * Gets a MessageConsumer object for either Topics or Queues.
 	 * @return a MessageConsumer with the right filter (messageSelector)
 	 */
-	public MessageConsumer getMessageConsumerForCorrelationId(Session session, Destination destination, String correlationId) throws NamingException, JMSException {
+	public MessageConsumer getMessageConsumerForCorrelationId(Session session, Destination destination, String correlationId) throws JMSException {
 		if (correlationId==null) {
 			return getMessageConsumer(session, destination, null);
 		}
@@ -415,7 +415,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * @param selector the MessageSelector
 	 * @return MessageConsumer
 	 */
-	public MessageConsumer getMessageConsumer(Session session, Destination destination, String selector) throws NamingException, JMSException {
+	public MessageConsumer getMessageConsumer(Session session, Destination destination, String selector) throws JMSException {
 		if (useTopicFunctions) {
 			if (useJms102()) {
 				return getTopicSubscriber((TopicSession)session, (Topic)destination, selector);
@@ -559,13 +559,13 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return messageConsumer;
 	}
 
-	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority) throws NamingException, JMSException, SenderException, IOException {
+	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority) throws JMSException, SenderException, IOException {
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, false);
 	}
-	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws NamingException, JMSException, SenderException, IOException {
+	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws JMSException, SenderException, IOException {
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException, null);
 	}
-	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws NamingException, JMSException, SenderException, IOException {
+	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws JMSException, SenderException, IOException {
 		javax.jms.Message msg = createMessage(session, correlationId, message);
 		MessageProducer mp;
 		try {
@@ -584,7 +584,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			}
 		} catch (InvalidDestinationException e) {
 			if (ignoreInvalidDestinationException) {
-				log.warn("queue ["+dest+"] doesn't exist");
+				log.warn("queue [{}] doesn't exist", dest);
 				return null;
 			}
 			throw e;
@@ -613,6 +613,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 				msg.setObjectProperty(key, value);
 			}
 		}
+		logMessageDetails(msg);
 		String result = send(mp, msg, ignoreInvalidDestinationException);
 		mp.close();
 		return result;
@@ -624,27 +625,17 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * @param message
 	 * @return messageID of the sent message
 	 */
-	public String send(MessageProducer messageProducer, javax.jms.Message message) throws NamingException, JMSException {
+	public String send(MessageProducer messageProducer, javax.jms.Message message) throws JMSException {
 		return send(messageProducer, message, false);
 	}
-	public String send(MessageProducer messageProducer, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws NamingException, JMSException {
-		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+"sender on ["+ getDestinationName()
-				+ "] will send message with JMSDeliveryMode=[" + message.getJMSDeliveryMode()
-				+ "] \n  JMSMessageID=[" + message.getJMSMessageID()
-				+ "] \n  JMSCorrelationID=[" + message.getJMSCorrelationID()
-				+ "] \n  JMSTimestamp=[" + DateUtils.format(message.getJMSTimestamp())
-				+ "] \n  JMSExpiration=[" + message.getJMSExpiration()
-				+ "] \n  JMSPriority=[" + message.getJMSPriority()
-				+ "] \n Message=[" + message.toString()
-				+ "]");
-		}
+	public String send(MessageProducer messageProducer, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
+		logMessageDetails(message);
 		try {
 			if (useJms102()) {
 				if (messageProducer instanceof TopicPublisher) {
 					((TopicPublisher) messageProducer).publish(message);
 				} else {
-					((QueueSender) messageProducer).send(message);
+					messageProducer.send(message);
 				}
 				return message.getJMSMessageID();
 			}
@@ -659,6 +650,24 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		}
 	}
 
+	protected void logMessageDetails(javax.jms.Message message) throws JMSException {
+		if (!log.isDebugEnabled()) {
+			return;
+		}
+
+		log.debug(getLogPrefix() + "sender on [" + getDestinationName()
+				+ "] JMSDeliveryMode=[" + message.getJMSDeliveryMode()
+				+ "] \n  JMSMessageID=[" + message.getJMSMessageID()
+				+ "] \n  JMSCorrelationID=[" + message.getJMSCorrelationID()
+				+ "] \n  JMSTimestamp=[" + DateUtils.format(message.getJMSTimestamp())
+				+ "] \n  JMSExpiration=[" + message.getJMSExpiration()
+				+ (message.getJMSPriority() != 0 ? "] \n  JMSPriority=[" + message.getJMSPriority() : "")
+				+ (message.getJMSType() != null ? "] \n  JMSType=[" + message.getJMSType() : "")
+				+ (message.getJMSReplyTo() != null ? "] \n  JMSReplyTo=[" + message.getJMSReplyTo() : "")
+				+ "] \n Message=[" + message
+				+ "]");
+	}
+
 	/**
 	 * Send a message
 	 * @param session
@@ -667,10 +676,11 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * @return message ID of the sent message
 	 */
 	public String send(Session session, Destination dest, javax.jms.Message message)
-		throws NamingException, JMSException {
+		throws JMSException {
 		return send(session, dest, message, false);
 	}
-	public String send(Session session, Destination dest, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws NamingException, JMSException {
+	public String send(Session session, Destination dest, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
+		logMessageDetails(message);
 		try {
 			if (useJms102()) {
 				if (dest instanceof Topic) {
@@ -684,21 +694,21 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			return message.getJMSMessageID();
 		} catch (InvalidDestinationException e) {
 			if (ignoreInvalidDestinationException) {
-				log.warn("queue ["+dest+"] doesn't exist");
+				log.warn("queue [{}] doesn't exist", dest);
 				return null;
 			}
 			throw e;
 		}
 	}
 
-	protected String sendByQueue(QueueSession session, Queue destination, javax.jms.Message message) throws NamingException, JMSException {
+	protected String sendByQueue(QueueSession session, Queue destination, javax.jms.Message message) throws JMSException {
 		QueueSender tqs = session.createSender(destination);
 		tqs.send(message);
 		tqs.close();
 		return message.getJMSMessageID();
 	}
 
-	protected String sendByTopic(TopicSession session, Topic destination, javax.jms.Message message) throws NamingException, JMSException {
+	protected String sendByTopic(TopicSession session, Topic destination, javax.jms.Message message) throws JMSException {
 		TopicPublisher tps = session.createPublisher(destination);
 		tps.publish(message);
 		tps.close();
