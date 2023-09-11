@@ -128,27 +128,16 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 				copySessionKey(key, from, to, requester);
 			}
 		}
-		for (Entry<String, Object> sessionEntry : from.entrySet()) {
-			if (sessionEntry.getValue() instanceof AutoCloseable &&
-					to.containsKey(sessionEntry.getKey()) &&
-					sessionEntry.getValue().equals(to.get(sessionEntry.getKey()))
-			) {
-				from.unscheduleCloseOnSessionExit((AutoCloseable) sessionEntry.getValue());
-			}
+		if (to instanceof PipeLineSession) {
+			PipeLineSession toSession = (PipeLineSession) to;
+			from.closeables.keySet().removeAll(toSession.closeables.keySet());
 		}
 	}
 
 	private static void copySessionKey(String key, PipeLineSession from, Map<String, Object> to, INamedObject requester) {
 		Object value = from.get(key);
 		to.put(key, value);
-		if (value instanceof Message) {
-			// Give messages the special treatment, because they do something extra before registering with session.
-			Message message = (Message) value;
-			message.unscheduleFromCloseOnExitOf(from);
-			if (to instanceof PipeLineSession) {
-				message.closeOnCloseOf((PipeLineSession) to, requester);
-			}
-		} else if (value instanceof AutoCloseable) {
+		if (value instanceof AutoCloseable) {
 			// Don't wrap closeables in a message, that makes unregistering them later unreliable
 			AutoCloseable closeable = (AutoCloseable) value;
 			from.unscheduleCloseOnSessionExit(closeable);

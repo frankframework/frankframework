@@ -296,7 +296,10 @@ public class PipeLineSessionTest {
 		from.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, "exitCode");
 		from.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, "exitState");
 
+		// Same key different objects; same object different keys.
+		// Afterwards message1 should be closed and message2 should not be.
 		from.put("d", message1);
+		from.put("e", message2);
 		to.put("d", message2);
 
 		from.scheduleCloseOnSessionExit(message1, "test-d");
