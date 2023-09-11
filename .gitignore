@@ -1,5 +1,6 @@
 .idea
 *.iml
+*.log
 target
 lib
 bin

@@ -24,6 +24,7 @@ public class TestExecuteJdbcQuery extends BusTestBase {
 
 	@Test
 	public void testExecuteQuery() throws Exception {
+		// Arrange
 		URL url = TestFileUtils.getTestFileURL("/Management/ExecuteJdbcQueryMessage.xml");
 		nl.nn.adapterframework.stream.Message responseXmlMessage = new nl.nn.adapterframework.stream.UrlMessage(url);
 		mockDirectQuerySenderResult("ExecuteJdbc QuerySender", responseXmlMessage);
@@ -31,19 +32,24 @@ public class TestExecuteJdbcQuery extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC, BusAction.MANAGE);
 		request.setHeader("table", "testTable");
 
-		//Test without resultType (defaults to XML)
-
+		// Act / Assert - Test without resultType (defaults to XML)
 		String expectedXml = TestFileUtils.getTestFile("/Management/ExecuteJdbcQueryMessage.xml");
 		MatchUtils.assertXmlEquals("XML Mismatch", expectedXml, (String) callSyncGateway(request).getPayload());
 
+		// Arrange - create new open Message object.
+		responseXmlMessage = new nl.nn.adapterframework.stream.UrlMessage(url);
+		mockDirectQuerySenderResult("ExecuteJdbc QuerySender", responseXmlMessage);
 
-		//Test with JSON resultType
+		// Act / Assert - Test with JSON resultType
 		request.setHeader("resultType", "json");
 		String expectedJson = TestFileUtils.getTestFile("/Management/ExecuteJdbcQueryMessage.json");
 		MatchUtils.assertJsonEquals("JSON Mismatch", expectedJson, (String) callSyncGateway(request).getPayload());
 
+		// Arrange - create new open Message object.
+		responseXmlMessage = new nl.nn.adapterframework.stream.UrlMessage(url);
+		mockDirectQuerySenderResult("ExecuteJdbc QuerySender", responseXmlMessage);
 
-		//Test with CSV resultType
+		// Act / Assert - Test with CSV resultType
 		request.setHeader("resultType", "csv");
 		String expectedCsv = TestFileUtils.getTestFile("/Management/ExecuteJdbcQueryMessage.csv");
 		TestAssertions.assertEqualsIgnoreCRLF(expectedCsv, (String) callSyncGateway(request).getPayload(), "CSV Mismatch");

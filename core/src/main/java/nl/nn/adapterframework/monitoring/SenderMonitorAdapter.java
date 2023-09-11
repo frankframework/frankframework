@@ -75,7 +75,7 @@ public class SenderMonitorAdapter extends MonitorDestinationBase {
 				session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, newMessage);
 				session.scheduleCloseOnSessionExit(newMessage, "Event fired by "+ monitorName);
 			}
-			getSender().sendMessageOrThrow(new Message(makeXml(monitorName, eventType, severity, eventCode, event)), session);
+			getSender().sendMessageOrThrow(new Message(makeXml(monitorName, eventType, severity, eventCode, event)), session); // close() disables unit testing Message result
 		} catch (Exception e) {
 			log.error("Could not signal event", e);
 		}
