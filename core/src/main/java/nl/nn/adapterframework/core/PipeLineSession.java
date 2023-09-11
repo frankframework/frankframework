@@ -21,8 +21,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -128,10 +130,15 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 				copySessionKey(key, from, to, requester);
 			}
 		}
+		Set<AutoCloseable> closeablesInDestination = to.values().stream()
+				.filter(v -> v instanceof AutoCloseable)
+				.map(v -> (AutoCloseable) v)
+				.collect(Collectors.toSet());
 		if (to instanceof PipeLineSession) {
 			PipeLineSession toSession = (PipeLineSession) to;
-			from.closeables.keySet().removeAll(toSession.closeables.keySet());
+			closeablesInDestination.addAll(toSession.closeables.keySet());
 		}
+		from.closeables.keySet().removeAll(closeablesInDestination);
 	}
 
 	private static void copySessionKey(String key, PipeLineSession from, Map<String, Object> to, INamedObject requester) {
@@ -159,6 +166,13 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			closeables.put((AutoCloseable) value, "Session key [" + key + "]");
 		}
 		return super.put(key, value);
+	}
+
+	@Override
+	public void putAll(Map<? extends String, ?> m) {
+		for (Entry<? extends String, ?> entry : m.entrySet()) {
+			put(entry.getKey(), entry.getValue());
+		}
 	}
 
 	/*
