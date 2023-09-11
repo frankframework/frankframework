@@ -56,27 +56,27 @@ public class MQSender extends JmsSender {
 	}
 
 	@Override
-	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws NamingException, JMSException, SenderException, IOException {
+	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws JMSException, SenderException, IOException {
 		setTargetClientMQ(dest);
 		return super.send(session, dest,  correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException);
 	}
 
 	@Override
-	public String send(Session session, Destination dest, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws NamingException, JMSException {
+	public String send(Session session, Destination dest, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
 		setTargetClientMQ(dest);
 		return super.send(session, dest, message, ignoreInvalidDestinationException);
 	}
 
 	@Override
 	protected String sendByQueue(QueueSession session, Queue destination,
-			javax.jms.Message message) throws NamingException, JMSException {
+			javax.jms.Message message) throws JMSException {
 		setTargetClientMQ(destination);
 		return super.sendByQueue(session, destination, message);
 	}
 
 	@Override
 	protected String sendByTopic(TopicSession session, Topic destination,
-			javax.jms.Message message) throws NamingException, JMSException {
+			javax.jms.Message message) throws JMSException {
 		setTargetClientMQ(destination);
 		return super.sendByTopic(session, destination, message);
 	}
