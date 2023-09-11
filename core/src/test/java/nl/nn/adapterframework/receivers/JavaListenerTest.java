@@ -164,7 +164,7 @@ public class JavaListenerTest {
 
 		// Assert
 		assertTrue(result.requiresStream(), "Result message should be a stream");
-		assertTrue(result.asObject() instanceof Reader, "Result message should be a stream");
+		assertTrue(result.asObject() instanceof Reader, "Result message should be of type Reader");
 		assertEquals("TEST", result.asString());
 	}
 

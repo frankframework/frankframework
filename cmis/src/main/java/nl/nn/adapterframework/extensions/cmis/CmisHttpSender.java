@@ -41,7 +41,6 @@ import org.apache.http.entity.ByteArrayEntity;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -171,9 +170,8 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 		return new Message("response");
 	}
 
-	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer, BindingSession session) throws SenderException, TimeoutException {
+	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer, BindingSession session) {
 		//Prepare the message. We will overwrite things later...
-
 		int responseCode = -1;
 
 		PipeLineSession pls = new PipeLineSession();
@@ -182,12 +180,10 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 		pls.put("method", method);
 		pls.put("headers", headers);
 
-		try {
+		try (Message ignored = sendMessageOrThrow(Message.nullMessage(), pls)) {
 			// Message is unused, we use 'Output writer' instead
-			sendMessageOrThrow(new Message(""), pls);
 			return (Response) pls.get("response");
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			throw new CmisConnectionException(getUrl(), responseCode, e);
 		}
 	}

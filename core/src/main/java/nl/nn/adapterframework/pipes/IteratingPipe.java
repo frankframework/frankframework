@@ -349,14 +349,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					}
 				} catch (SenderException e) {
 					if (isIgnoreExceptions()) {
-						log.info("ignoring SenderException after excution of sender for item ["+item+"]",e);
+						log.info("ignoring SenderException after execution of sender for item [{}]", item, e);
 						itemResult="<exception>"+ XmlEncodingUtils.encodeChars(e.getMessage())+"</exception>";
 					} else {
 						throw e;
 					}
 				} catch (TimeoutException e) {
 					if (isIgnoreExceptions()) {
-						log.info("ignoring TimeOutException after excution of sender for item ["+item+"]",e);
+						log.info("ignoring TimeOutException after execution of sender item [{}]", item, e);
 						itemResult="<timeout>"+ XmlEncodingUtils.encodeChars(e.getMessage())+"</timeout>";
 					} else {
 						throw e;
@@ -406,7 +406,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(message.asString()):message.asString())+"</input>";
 			}
 			itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
-			results.append(itemResult+"\n");
+			results.append(itemResult).append("\n");
 		}
 
 		public void waitForResults() throws SenderException, IOException {
@@ -430,7 +430,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						addResult(count, pse.getRequest(), itemResult);
 					}
 				} catch (InterruptedException e) {
-					throw new SenderException("was interupted",e);
+					throw new SenderException("was interrupted",e);
 				}
 			}
 		}
