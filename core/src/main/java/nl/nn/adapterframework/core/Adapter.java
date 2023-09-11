@@ -240,7 +240,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	/**
-	 * sends a warning to the log and to the messagekeeper of the adapter
+	 * send a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
 		log.warn("Adapter [{}] {}", name, msg);
@@ -248,10 +248,10 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	/**
-	 * sends a warning to the log and to the messagekeeper of the adapter
+	 * send an error to the log and to the messagekeeper of the adapter
 	 */
 	protected void addErrorMessageToMessageKeeper(String msg, Throwable t) {
-		log.error("Adapter [{}] {}", name, msg, t);
+		log.error("Adapter [{}] {}", name, msg);
 		if (!(t instanceof IbisException)) {
 			msg += " (" + t.getClass().getName() + ")";
 		}
