@@ -273,7 +273,7 @@ public class PipeLineSessionTest {
 		from.put("b", 16);
 
 		// Act
-		PipeLineSession.mergeToParentSession(keys, from, to, null);
+		PipeLineSession.mergeToParentSession(keys, from, to);
 
 		// Assert
 		assertEquals(from,to);
@@ -293,7 +293,7 @@ public class PipeLineSessionTest {
 		to.put("c", message1);
 
 		// Act
-		PipeLineSession.mergeToParentSession(keys, from, to, null);
+		PipeLineSession.mergeToParentSession(keys, from, to);
 
 		// Assert
 		assertEquals(from,to);
@@ -316,7 +316,7 @@ public class PipeLineSessionTest {
 		from.scheduleCloseOnSessionExit(closeable, "test-d");
 
 		// Act
-		PipeLineSession.mergeToParentSession(keysToCopy, from, to, null);
+		PipeLineSession.mergeToParentSession(keysToCopy, from, to);
 
 		from.close();
 
@@ -360,7 +360,7 @@ public class PipeLineSessionTest {
 		from.scheduleCloseOnSessionExit(message1, "test-d");
 
 		// Act
-		PipeLineSession.mergeToParentSession(keys, from, to, null);
+		PipeLineSession.mergeToParentSession(keys, from, to);
 
 		from.close();
 
@@ -383,7 +383,7 @@ public class PipeLineSessionTest {
 		PipeLineSession to = new PipeLineSession();
 		from.put("a", 15);
 		from.put("b", 16);
-		PipeLineSession.mergeToParentSession("", from, to, null);
+		PipeLineSession.mergeToParentSession("", from, to);
 		assertEquals(0,to.size());
 	}
 }

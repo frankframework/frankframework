@@ -109,10 +109,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 *                   If an empty string then no keys will be copied.
 	 * @param from Child {@link PipeLineSession} from which keys are copied.
 	 * @param to Parent {@link PipeLineSession} or {@link Map}.
-	 * @param requester Tag of where the request to copy comes from so this can be logged when
-	 *                  closing any messages.
 	 */
-	public static void mergeToParentSession(String keysToCopy, PipeLineSession from, Map<String,Object> to, INamedObject requester) {
+	public static void mergeToParentSession(String keysToCopy, PipeLineSession from, Map<String,Object> to) {
 		if (to == null) {
 			return;
 		}
@@ -123,12 +121,10 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			StringTokenizer st = new StringTokenizer(keysToCopy,",;");
 			while (st.hasMoreTokens()) {
 				String key = st.nextToken();
-				copySessionKey(key, from, to, requester);
+				to.put(key, from.get(key));
 			}
 		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
-			for (String key : from.keySet()) { // ... all keys will be copied
-				copySessionKey(key, from, to, requester);
-			}
+			to.putAll(from);                                      // ... all keys will be copied
 		}
 		Set<AutoCloseable> closeablesInDestination = to.values().stream()
 				.filter(v -> v instanceof AutoCloseable)
@@ -139,19 +135,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			closeablesInDestination.addAll(toSession.closeables.keySet());
 		}
 		from.closeables.keySet().removeAll(closeablesInDestination);
-	}
-
-	private static void copySessionKey(String key, PipeLineSession from, Map<String, Object> to, INamedObject requester) {
-		Object value = from.get(key);
-		to.put(key, value);
-		if (value instanceof AutoCloseable) {
-			// Don't wrap closeables in a message, that makes unregistering them later unreliable
-			AutoCloseable closeable = (AutoCloseable) value;
-			from.unscheduleCloseOnSessionExit(closeable);
-			if (to instanceof PipeLineSession) {
-				((PipeLineSession) to).scheduleCloseOnSessionExit(closeable, ClassUtils.nameOf(requester));
-			}
-		}
 	}
 
 	private static void copyIfExists(String key, Map<String,Object> from, Map<String,Object> to) {
