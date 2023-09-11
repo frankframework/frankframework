@@ -26,7 +26,6 @@ import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.naming.NamingException;
 
 import org.junit.Test;
 
@@ -45,7 +44,7 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 	@Override
 	public IMSSender createSender() {
 		return new IMSSender() {
-			TestJMSMessage message = TestJMSMessage.newInstance();
+			final TestJMSMessage message = TestJMSMessage.newInstance();
 
 			@Override
 			public String getQueueConnectionFactoryName() {
@@ -53,23 +52,22 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 			}
 
 			@Override
-			public void configure() throws ConfigurationException {
+			public void configure() {
 				// configure is not required for this test
 			}
 
 			@Override
-			protected MessagingSource getMessagingSource() throws JmsException {
+			protected MessagingSource getMessagingSource() {
 				return mock(JmsMessagingSource.class);
 			}
 
 			@Override
-			public Destination getDestination() throws NamingException, JMSException, JmsException {
+			public Destination getDestination() {
 				return null;
 			}
 
 			@Override
-			public MessageProducer getMessageProducer(Session session, Destination destination)
-					throws NamingException, JMSException {
+			public MessageProducer getMessageProducer(Session session, Destination destination) {
 				return mock(MessageProducer.class);
 			}
 
@@ -86,7 +84,7 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 
 			@Override
 			public MessageConsumer getMessageConsumerForCorrelationId(Session session, Destination destination,
-					String correlationId) throws NamingException, JMSException {
+					String correlationId) throws JMSException {
 				// TODO Auto-generated method stub
 				MessageConsumer mc = mock(MessageConsumer.class);
 
