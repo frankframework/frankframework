@@ -21,7 +21,7 @@
                                 </tr>
                             </thead>
                             <tbody *ngFor="let name, let stateItem in result"> <!-- [hidden]="stateItem.items.length <= 0" -->
-                                <ng-container *ngIf="stateItem.items.length > 0">
+                                <ng-template [ngIf]="stateItem.items.length > 0">
                                     <tr *ngFor="let item in stateItem.items; let innerIndex = index">
                                         <td *ngIf="innerIndex===0" rowspan="0">{{name}}</td>
                                         <td *ngIf="innerIndex===0" rowspan="0">{{stateItem.totalMessageCount}}</td>
@@ -36,7 +36,7 @@
                                             </span>
                                         </td>
                                     </tr>
-                                </ng-container>
+                                </ng-template>
                             </tbody>
                         </table>
                     </div>

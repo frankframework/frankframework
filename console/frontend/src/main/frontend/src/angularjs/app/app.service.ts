@@ -317,6 +317,13 @@ export class AppService {
         return "danger";
     }
   }
+
+  getUserLocale() {
+    if (window.navigator.languages) {
+      return window.navigator.languages[0];
+    }
+    return window.navigator.language;
+  }
 }
 
 appModule.factory('appService', ['$state', function ($state: StateService) {

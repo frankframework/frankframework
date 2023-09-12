@@ -13,10 +13,4 @@ export const $stateServiceProvider: FactoryProvider = {
   provide: StateService,
   useFactory: $stateServiceFactory,
   deps: ['$injector']
-};
-
-export const idleServiceProvider: FactoryProvider = {
-  provide: angular.idle.IIdleService,
-  useFactory: idleServiceFactory,
-  deps: ['$injector']
-};
+}

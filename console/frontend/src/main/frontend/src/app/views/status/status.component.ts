@@ -7,6 +7,7 @@ import { ApiService } from 'src/angularjs/app/services/api.service';
 import { MiscService } from 'src/angularjs/app/services/misc.service';
 import { PollerService } from 'src/angularjs/app/services/poller.service';
 import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
+import { StatusService } from './status.service';
 
 type Filter = Record<AdapterStatus, boolean>;
 
@@ -72,7 +73,7 @@ export class StatusComponent implements OnInit {
     private viewportScroller: ViewportScroller, // private $anchorScroll: angular.IAnchorScrollService,
     private route: ActivatedRoute, // private $location: angular.ILocationService,
     private router: Router,
-    // private $http: angular.IHttpService,
+    private statusService: StatusService, // private $http: angular.IHttpService,
     private appService: AppService
   ) { }
 
@@ -114,10 +115,10 @@ export class StatusComponent implements OnInit {
       this.receiverSummary = this.appService.receiverSummary;
       this.messageSummary = this.appService.messageSummary;
     });
-    this.appService.alerts$.subscribe(() => { this.alerts = this.appService.alerts; });
-    this.appService.messageLog$.subscribe(() => { this.messageLog = this.appService.messageLog; });
+    this.appService.alerts$.subscribe(() => { this.alerts = [...this.appService.alerts]; });
+    this.appService.messageLog$.subscribe(() => { this.messageLog = {...this.appService.messageLog}; });
     this.appService.adapters$.subscribe(() => {
-      this.adapters = this.appService.adapters;
+      this.adapters = {...this.appService.adapters};
       this.updateAdapterShownContent();
     });
 
@@ -210,15 +211,17 @@ export class StatusComponent implements OnInit {
 
   showReferences() {
     window.open(this.configurationFlowDiagram!);
-  };
+  }
+
   updateConfigurationFlowDiagram(configurationName: string) {
-    var url = this.Misc.getServerPath() + 'iaf/api/configurations/';
+    let flowUrl: string;
     if (configurationName == "All") {
-      url += "?flow=true";
+      flowUrl = "?flow=true";
     } else {
-      url += configurationName + "/flow";
+      flowUrl = configurationName + "/flow";
     }
-    this.$http.get(url).then((data) => {
+
+    this.statusService.getConfigurationFlowDiagram(flowUrl).subscribe(({ data, url }) => {
       let status = (data && data.status) ? data.status : 204;
       if (status == 200) {
         this.configurationFlowDiagram = url;
@@ -233,41 +236,49 @@ export class StatusComponent implements OnInit {
       this.isConfigStubbed[config.name] = config.stubbed;
       this.isConfigReloading[config.name] = config.state == "STARTING" || config.state == "STOPPING"; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
     }
-  };
+  }
 
   // Commented out in template, so unused
   closeAlert(index: number) {
     this.appService.alerts.splice(index, 1);
     this.appService.updateAlerts(this.appService.alerts);
-  };
+  }
 
   changeConfiguration(name: string) {
     this.selectedConfiguration = name;
     this.appService.updateAdapterSummary(name);
     this.updateQueryParams();
     this.updateConfigurationFlowDiagram(name);
-  };
+  }
+
+  getTransactionalStores(receiver: Receiver) {
+    return Object.values(receiver.transactionalStores);
+  }
+
+  getMessageLog(selectedConfiguration: string){
+    return this.messageLog[selectedConfiguration].messages ?? [];
+  }
 
   startAdapter(adapter: Adapter) {
     adapter.state = 'starting';
     this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name), { "action": "start" });
-  };
+  }
   stopAdapter(adapter: Adapter) {
     adapter.state = 'stopping';
     this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name), { "action": "stop" });
-  };
+  }
   startReceiver(adapter: Adapter, receiver: Receiver) {
     receiver.state = 'loading';
     this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name) + "/receivers/" + this.Misc.escapeURL(receiver.name), { "action": "start" });
-  };
+  }
   stopReceiver(adapter: Adapter, receiver: Receiver) {
     receiver.state = 'loading';
     this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name) + "/receivers/" + this.Misc.escapeURL(receiver.name), { "action": "stop" });
-  };
+  }
   addThread(adapter: Adapter, receiver: Receiver) {
     receiver.state = 'loading';
     this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name) + "/receivers/" + this.Misc.escapeURL(receiver.name), { "action": "incthread" });
-  };
+  }
   removeThread(adapter: Adapter, receiver: Receiver) {
     receiver.state = 'loading';
     this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name) + "/receivers/" + this.Misc.escapeURL(receiver.name), { "action": "decthread" });
@@ -294,9 +305,9 @@ export class StatusComponent implements OnInit {
     }
   };
 
-  private updateAdapterShownContent(){
+  private updateAdapterShownContent() {
     for (const adapter in this.adapters) {
-      if(!this.adapterShowContent.hasOwnProperty(adapter))
+      if (!this.adapterShowContent.hasOwnProperty(adapter))
         this.adapterShowContent[adapter] = this.determineShowContent(this.adapters[adapter]);
     }
   }

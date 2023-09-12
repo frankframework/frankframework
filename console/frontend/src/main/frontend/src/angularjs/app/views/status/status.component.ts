@@ -30,6 +30,8 @@ class StatusController {
     stopped: 0,
     starting: 0,
     stopping: 0,
+    exception_starting: 0,
+    exception_stopping: 0,
     error: 0
   };
   receiverSummary: Summary = {
@@ -37,6 +39,8 @@ class StatusController {
     stopped: 0,
     starting: 0,
     stopping: 0,
+    exception_starting: 0,
+    exception_stopping: 0,
     error: 0
   };
   messageSummary: MessageSummary = {

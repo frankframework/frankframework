@@ -1,18 +1,8 @@
-import { appModule } from './app/app.module';
-import { downgradeComponent } from '@angular/upgrade/static';
-
 import './app/app.component';
 
 import './app/components/custom-views/custom-views.component';
 import './app/components/input-file-upload/input-file-upload.component';
 import './app/components/logout/logout.component';
-import { PagesFooterComponent } from 'src/app/components/pages/pages-footer/pages-footer.component';
-import { MinimalizaSidebarComponent } from 'src/app/components/pages/pages-navigation/minimaliza-sidebar.component';
-import { PagesNavigationComponent } from 'src/app/components/pages/pages-navigation/pages-navigation.component';
-import { ScrollToTopComponent } from 'src/app/components/pages/pages-navigation/scroll-to-top.component';
-import { PagesTopinfobarComponent } from 'src/app/components/pages/pages-topinfobar/pages-topinfobar.component';
-import { HamburgerComponent } from 'src/app/components/pages/pages-topnavbar/hamburger.component';
-import { PagesTopnavbarComponent } from 'src/app/components/pages/pages-topnavbar/pages-topnavbar.component';
 
 import './app/views/adapterstatistics/adapterstatistics.component';
 import './app/views/configurations/configurations-manage/configurations-manage.component';
@@ -45,8 +35,8 @@ import './app/views/scheduler/scheduler.component';
 import './app/views/scheduler/scheduler-add/scheduler-add.component';
 import './app/views/scheduler/scheduler-edit/scheduler-edit.component';
 import './app/views/security-items/security-items.component';
-import './app/views/status/status.component';
-import './app/views/status/flow/flow.component';
+// import './app/views/status/status.component';
+// import './app/views/status/flow/flow.component';
 import './app/views/status/flow/flow-modal/flow-modal.component';
 import './app/views/storage/storage.component';
 import './app/views/storage/storage-list/storage-list.component';
@@ -55,11 +45,3 @@ import './app/views/test-pipeline/test-pipeline.component';
 import './app/views/test-service-listener/test-service-listener.component';
 import './app/views/webservices/webservices.component';
 
-// appModule
-//   .directive('hamburger', downgradeComponent({ component: HamburgerComponent }) as angular.IDirectiveFactory)
-//   .directive('minimalizaSidebar', downgradeComponent({ component: MinimalizaSidebarComponent }) as angular.IDirectiveFactory)
-//   .directive('pagesFooter', downgradeComponent({ component: PagesFooterComponent }) as angular.IDirectiveFactory)
-//   .directive('pagesNavigation', downgradeComponent({ component: PagesNavigationComponent }) as angular.IDirectiveFactory)
-//   .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
-//   .directive('pagesTopnavbar', downgradeComponent({ component: PagesTopnavbarComponent }) as angular.IDirectiveFactory)
-//   .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory);

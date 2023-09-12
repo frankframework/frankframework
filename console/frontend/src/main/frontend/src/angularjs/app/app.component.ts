@@ -301,12 +301,13 @@ class AppController {
       if (adapter.started == true) {
         for (const x in adapter.receivers) {
           // TODO Receiver.started is not really a thing, maybe this should work differently?
-          /* if (adapter.receivers[+x].started == false) {
+          // @ts-ignore
+          if (adapter.receivers[+x].started == false) {
             this.Notification.add('fa-exclamation-circle', "Receiver '" + name + "' stopped!", false, () => {
               this.$location.path("status");
               this.$location.hash(adapter.name);
             });
-          } */
+          }
         }
       }
       else {

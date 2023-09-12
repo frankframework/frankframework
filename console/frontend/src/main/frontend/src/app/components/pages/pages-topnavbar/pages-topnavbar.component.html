@@ -34,7 +34,7 @@
               <a uiSref="pages.notifications({id: message.id})" ngbDropdownItem>
                 <div>
                   <i class="fa {{message.icon}} fa-fw"></i> {{message.title}}
-                  <!-- TODO <span class="pull-right text-muted small" time-since time="{{message.time}}"></span> -->
+                  <span class="pull-right text-muted small" appTimeSince [time]="message.time"></span>
                 </div>
               </a>
             </li>

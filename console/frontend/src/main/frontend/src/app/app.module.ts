@@ -1,9 +1,11 @@
 import { DoBootstrap, InjectionToken, NgModule, ValueProvider } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { UpgradeModule, downgradeComponent } from '@angular/upgrade/static';
+import { HttpClientModule } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { $stateServiceProvider } from './ajs-deps-services';
 import { UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
+import { NgIdleModule } from '@ng-idle/core';
 
 import { AppRoutingModule } from './app-routing.module';
 
@@ -38,6 +40,12 @@ import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-lad
 import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
 import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
 import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
+import { StatusComponent } from './views/status/status.component';
+import { LogoutComponent } from './components/logout/logout.component';
+import { ConfigurationFilterPipe } from './pipes/configuration-filter.pipe';
+import { SearchFilterPipe } from './pipes/search-filter.pipe';
+import { TruncatePipe } from './pipes/truncate.pipe';
+import { ToDateDirective } from './components/to-date.directive';
 
 import {
   alertServiceProvider,
@@ -55,13 +63,8 @@ import {
   toastrServiceProvider
 } from './ajs-upgraded-services';
 import { AppConstants, appConstants, appModule } from '../angularjs/app/app.module';
-import { NgIdleModule } from '@ng-idle/core';
-import { StatusComponent } from './views/status/status.component';
-import { LogoutComponent } from './components/logout/logout.component';
-import { ConfigurationFilterPipe } from './pipes/configuration-filter.pipe';
-import { SearchFilterPipe } from './pipes/search-filter.pipe';
-import { TruncatePipe } from './pipes/truncate.pipe';
-import { ToDateDirective } from './components/to-date.directive';
+import { TimeSinceDirective } from './components/time-since.directive';
+import { FlowComponent } from './views/status/flow/flow.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -91,7 +94,9 @@ appModule
   .directive('iframeLadybug', downgradeComponent({ component: IframeLadybugComponent }) as angular.IDirectiveFactory)
   .directive('iframeLadybugBeta', downgradeComponent({ component: IframeLadybugBetaComponent }) as angular.IDirectiveFactory)
   .directive('iframeLarva', downgradeComponent({ component: IframeLarvaComponent }) as angular.IDirectiveFactory)
-  .directive('ibisstoreSummary', downgradeComponent({ component: IbisstoreSummaryComponent }) as angular.IDirectiveFactory);
+  .directive('ibisstoreSummary', downgradeComponent({ component: IbisstoreSummaryComponent }) as angular.IDirectiveFactory)
+  .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory)
+  .directive('flow', downgradeComponent({ component: FlowComponent }) as angular.IDirectiveFactory);
 
 
 @NgModule({
@@ -121,15 +126,20 @@ appModule
     ConfigurationFilterPipe,
     SearchFilterPipe,
     TruncatePipe,
-    ToDateDirective
+
+    // directives
+    ToDateDirective,
+    TimeSinceDirective,
+    FlowComponent
   ],
   imports: [
     BrowserModule,
     UpgradeModule,
     FormsModule,
+    HttpClientModule,
     LaddaModule,
     NgbModule,
-    // AppRoutingModule
+    AppRoutingModule,
     UIRouterUpgradeModule.forRoot(),
     NgIdleModule.forRoot(),
   ],
