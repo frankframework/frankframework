@@ -408,7 +408,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * Create a MessageConsumer. In this overloaded function the selector is taken into account.
 	 * This ensures that listeners (or other extensions of this class) do not influence how the selector
 	 * is used: when a correlationID should be in the filter the  <code>getMessageConsumerForCorrelationId</code>
-	 * should be used, other wise the <code>getMessageConsumer</code> function which has no attribute for
+	 * should be used, otherwise the <code>getMessageConsumer</code> function which has no attribute for
 	 * <code>selector</code>. When a MessageSelector is set, it will be used when no correlation id is required.
 	 * @param session the Session
 	 * @param destination the Destination
@@ -459,7 +459,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		try {
 			return getPhysicalDestinationShortName(false);
 		} catch (JmsException e) {
-			log.warn("[" + getName() + "] got exception in getPhysicalDestinationShortName", e);
+			log.warn("[{}] got exception in getPhysicalDestinationShortName", getName(), e);
 			return null;
 		}
 	}
@@ -481,7 +481,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			if (throwException) {
 				throw new JmsException(e);
 			}
-			log.warn("["+getName()+"] got exception in getPhysicalDestinationShortName", e);
+			log.warn("[{}] got exception in getPhysicalDestinationShortName", getName(), e);
 		}
 		return result;
 	}
@@ -489,9 +489,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	@Override
 	public String getPhysicalDestinationName() {
 		StringBuilder builder = new StringBuilder(getDestinationType().toString());
-		builder.append("("+getDestinationName()+") ["+getPhysicalDestinationShortName()+"]");
+		builder.append("(").append(getDestinationName()).append(") [").append(getPhysicalDestinationShortName()).append("]");
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
-			builder.append(" selector ["+getMessageSelector()+"]");
+			builder.append(" selector [").append(getMessageSelector()).append("]");
 		}
 
 		builder.append(" on (");
@@ -613,7 +613,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 				msg.setObjectProperty(key, value);
 			}
 		}
-		logMessageDetails(msg);
+		logMessageDetails(msg, mp);
 		String result = send(mp, msg, ignoreInvalidDestinationException);
 		mp.close();
 		return result;
@@ -629,7 +629,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return send(messageProducer, message, false);
 	}
 	public String send(MessageProducer messageProducer, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
-		logMessageDetails(message);
+		logMessageDetails(message, messageProducer);
 		try {
 			if (useJms102()) {
 				if (messageProducer instanceof TopicPublisher) {
@@ -650,7 +650,16 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		}
 	}
 
-	protected void logMessageDetails(javax.jms.Message message) throws JMSException {
+	protected void logMessageDetails(javax.jms.Message message, MessageProducer messageProducer) throws JMSException {
+		if (log.isInfoEnabled() && !log.isDebugEnabled()) {
+				log.info("[" + getName()
+						+ (messageProducer != null ? " ] message destination: [" + messageProducer.getDestination() + "] " : "")
+						+ "] msgID: [" + message.getJMSMessageID()
+						+ "] correlationID: [" + message.getJMSCorrelationID()
+						+ "] using deliveryMode: [" + message.getJMSDeliveryMode() + "] "
+						+ (message.getJMSReplyTo() != null ? "replyTo: [" + message.getJMSReplyTo() + "]" : ""));
+				return;
+		}
 		if (!log.isDebugEnabled()) {
 			return;
 		}
@@ -680,15 +689,17 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return send(session, dest, message, false);
 	}
 	public String send(Session session, Destination dest, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
-		logMessageDetails(message);
 		try {
 			if (useJms102()) {
 				if (dest instanceof Topic) {
+					logMessageDetails(message, null);
 					return sendByTopic((TopicSession)session, (Topic)dest, message);
 				}
+				logMessageDetails(message, null);
 				return sendByQueue((QueueSession)session, (Queue)dest, message);
 			}
 			MessageProducer mp = session.createProducer(dest);
+			logMessageDetails(message, mp);
 			mp.send(message);
 			mp.close();
 			return message.getJMSMessageID();

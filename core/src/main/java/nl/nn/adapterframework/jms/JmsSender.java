@@ -149,8 +149,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 
 	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException, TimeoutException {
 		Session s = null;
-		MessageProducer mp = null;
-		String correlationID = session==null ? null : session.getCorrelationId();
+		MessageProducer messageProducer = null;
 
 		checkTransactionManagerValidity();
 		ParameterValueList pvl=null;
@@ -163,6 +162,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		}
 
 		try {
+			String correlationID = session == null ? null : session.getCorrelationId();
 			if (isSoap()) {
 				if (soapHeader == null && pvl != null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
 					ParameterValue soapHeaderParamValue = pvl.get(getSoapHeaderParam());
@@ -176,107 +176,113 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 				if (log.isDebugEnabled()) log.debug("{} correlationId [{}] soap message [{}]", getLogPrefix(), correlationID, message);
 			}
 			s = createSession();
-			mp = getMessageProducer(s, getDestination(session, pvl));
-			Destination replyQueue = null;
+			messageProducer = getMessageProducer(s, getDestination(session, pvl));
 
-			// create message
-			javax.jms.Message msg = createMessage(s, correlationID, message);
-
-			if (getMessageType()!=null) {
-				msg.setJMSType(getMessageType());
-			}
-			if (getDeliveryMode()!=DeliveryMode.NOT_SET) {
-				msg.setJMSDeliveryMode(getDeliveryMode().getDeliveryMode());
-				mp.setDeliveryMode(getDeliveryMode().getDeliveryMode());
-			}
-			if (getPriority()>=0) {
-				msg.setJMSPriority(getPriority());
-				mp.setPriority(getPriority());
-			}
-
-			// set properties
-			if (pvl != null) {
-				setProperties(msg, pvl);
-			}
-			if (getReplyToName() != null) {
-				replyQueue = getDestination(getReplyToName());
-			} else {
-				if (isSynchronous()) {
-					replyQueue = getMessagingSource().getDynamicReplyQueue(s);
-				}
-			}
-			if (replyQueue!=null) {
-				msg.setJMSReplyTo(replyQueue);
-				log.debug("replyTo set to queue [{}]", replyQueue);
-			}
+			// create message to send
+			javax.jms.Message messageToSend = createMessage(s, correlationID, message);
+			enhanceMessage(messageToSend, messageProducer, pvl, s);
+			Destination replyQueue = messageToSend.getJMSReplyTo();
 
 			// send message
-			send(mp, msg);
-			if (log.isInfoEnabled()) {
-				log.info("[" + getName() + "] " + "sent message to [" + mp.getDestination() + "] " + "msgID [" + msg.getJMSMessageID() + "] " + "correlationID [" + msg.getJMSCorrelationID() + "] " + "using deliveryMode [" + getDeliveryMode() + "] " + ((getReplyToName() != null) ? "replyTo [" + getReplyToName() + "]" : ""));
-			}
+			send(messageProducer, messageToSend);
 			if (isSynchronous()) {
-				String replyCorrelationId=null;
-				if (getReplyToName() != null) {
-					switch (getLinkMethod()) {
-					case MESSAGEID:
-						replyCorrelationId=msg.getJMSMessageID();
-						break;
-					case CORRELATIONID:
-						replyCorrelationId=correlationID;
-						break;
-					case CORRELATIONID_FROM_MESSAGE:
-						replyCorrelationId=msg.getJMSCorrelationID();
-						break;
-					default:
-						throw new IllegalStateException("unknown linkMethod ["+getLinkMethod()+"]");
-					}
-				}
-				if (log.isDebugEnabled()) log.debug("[" + getName() + "] start waiting for reply on [" + replyQueue + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] for ["+getReplyTimeout()+"] ms");
-				MessageConsumer mc = getMessageConsumerForCorrelationId(s,replyQueue,replyCorrelationId);
-				try {
-					javax.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
-					if (rawReplyMsg==null) {
-						throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId ["+msg.getJMSMessageID()+"] replyCorrelationId ["+replyCorrelationId+"] within ["+getReplyTimeout()+"] ms");
-					}
-					StringBuilder receivedJMSProperties = new StringBuilder();
-					if(!getResponseHeadersList().isEmpty()) {
-						Enumeration<?> propertyNames = rawReplyMsg.getPropertyNames();
-						while(propertyNames.hasMoreElements()) {
-							String jmsProperty = (String) propertyNames.nextElement();
-							if(getResponseHeadersList().contains(jmsProperty)) {
-								session.put(jmsProperty, rawReplyMsg.getObjectProperty(jmsProperty));
-								if (log.isDebugEnabled()) {
-									receivedJMSProperties.append(jmsProperty).append(": ").append(rawReplyMsg.getObjectProperty(jmsProperty)).append("; ");
-								}
-							}
-						}
-					}
-					logMessageDetails(rawReplyMsg);
-					log.debug("Received properties: {}", receivedJMSProperties);
-					return extractMessage(rawReplyMsg, session, isSoap(), getReplySoapHeaderSessionKey(), soapWrapper);
-				} finally {
-					if(mc != null) {
-						try {
-							mc.close();
-						} catch (JMSException e) {
-							log.warn("JmsSender [{}] got exception closing message consumer for reply", getName(), e);
-						}
-					}
-				}
+				return waitAndHandleResponseMessage(messageToSend, replyQueue, session, s);
 			}
-			return new Message(msg.getJMSMessageID());
+			return new Message(messageToSend.getJMSMessageID());
 		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException e) {
 			throw new SenderException(e);
-		}  finally {
-			if(mp != null) {
+		} finally {
+			if (messageProducer != null) {
 				try {
-					mp.close();
+					messageProducer.close();
 				} catch (JMSException e) {
 					log.warn("JmsSender [{}] got exception closing message producer", getName(), e);
 				}
 			}
 			closeSession(s);
+		}
+	}
+
+	private void enhanceMessage(javax.jms.Message msg, MessageProducer messageProducer, ParameterValueList pvl, Session s) throws JMSException, JmsException {
+		if (getMessageType() != null) {
+			msg.setJMSType(getMessageType());
+		}
+		if (getDeliveryMode() != DeliveryMode.NOT_SET) {
+			msg.setJMSDeliveryMode(getDeliveryMode().getDeliveryMode());
+			messageProducer.setDeliveryMode(getDeliveryMode().getDeliveryMode());
+		}
+		if (getPriority() >= 0) {
+			msg.setJMSPriority(getPriority());
+			messageProducer.setPriority(getPriority());
+		}
+
+		// set properties
+		if (pvl != null) {
+			setProperties(msg, pvl);
+		}
+		Destination replyQueue = null;
+		if (getReplyToName() != null) {
+			replyQueue = getDestination(getReplyToName());
+		} else {
+			if (isSynchronous()) {
+				replyQueue = getMessagingSource().getDynamicReplyQueue(s);
+			}
+		}
+		if (replyQueue != null) {
+			msg.setJMSReplyTo(replyQueue);
+			log.debug("replyTo set to queue [{}]", replyQueue);
+		}
+	}
+
+	private Message waitAndHandleResponseMessage(javax.jms.Message msg, Destination replyQueue, PipeLineSession session, Session s) throws JMSException, TimeoutException, IOException, TransformerException, SAXException {
+		String replyCorrelationId = null;
+		if (getReplyToName() != null) {
+			switch (getLinkMethod()) {
+				case MESSAGEID:
+					replyCorrelationId = msg.getJMSMessageID();
+					break;
+				case CORRELATIONID:
+					replyCorrelationId = session == null ? null : session.getCorrelationId();
+					break;
+				case CORRELATIONID_FROM_MESSAGE:
+					replyCorrelationId = msg.getJMSCorrelationID();
+					break;
+				default:
+					throw new IllegalStateException("unknown linkMethod [" + getLinkMethod() + "]");
+			}
+		}
+		if (log.isDebugEnabled())
+			log.debug("[" + getName() + "] start waiting for reply on [" + replyQueue + "] requestMsgId [" + msg.getJMSMessageID() + "] replyCorrelationId [" + replyCorrelationId + "] for [" + getReplyTimeout() + "] ms");
+		MessageConsumer mc = getMessageConsumerForCorrelationId(s, replyQueue, replyCorrelationId);
+		try {
+			javax.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
+			if (rawReplyMsg == null) {
+				throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId [" + msg.getJMSMessageID() + "] replyCorrelationId [" + replyCorrelationId + "] within [" + getReplyTimeout() + "] ms");
+			}
+			StringBuilder receivedJMSProperties = new StringBuilder();
+			if (!getResponseHeadersList().isEmpty()) {
+				Enumeration<?> propertyNames = rawReplyMsg.getPropertyNames();
+				while (propertyNames.hasMoreElements()) {
+					String jmsProperty = (String) propertyNames.nextElement();
+					if (getResponseHeadersList().contains(jmsProperty)) {
+						session.put(jmsProperty, rawReplyMsg.getObjectProperty(jmsProperty));
+						if (log.isDebugEnabled()) {
+							receivedJMSProperties.append(jmsProperty).append(": ").append(rawReplyMsg.getObjectProperty(jmsProperty)).append("; ");
+						}
+					}
+				}
+			}
+			logMessageDetails(rawReplyMsg, null);
+			log.debug("Received properties: {}", receivedJMSProperties);
+			return extractMessage(rawReplyMsg, session, isSoap(), getReplySoapHeaderSessionKey(), soapWrapper);
+		} finally {
+			if (mc != null) {
+				try {
+					mc.close();
+				} catch (JMSException e) {
+					log.warn("JmsSender [{}] got exception closing message consumer for reply", getName(), e);
+				}
+			}
 		}
 	}
 
