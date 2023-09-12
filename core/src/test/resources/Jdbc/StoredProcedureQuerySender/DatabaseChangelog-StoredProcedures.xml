@@ -17,6 +17,8 @@
 			</column>
 			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
 			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="TCLOB" type="java.sql.Types.CLOB"/>
+			<column name="TBLOB" type="java.sql.Types.BLOB"/>
 		</createTable>
 	</changeSet>
 
