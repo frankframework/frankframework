@@ -107,24 +107,23 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @param keysToCopy Keys to be copied, separated by {@value ,} or {@value ;}.
 	 *                   If {@code null} then all keys will be copied.
 	 *                   If an empty string then no keys will be copied.
-	 * @param from Child {@link PipeLineSession} from which keys are copied.
 	 * @param to Parent {@link PipeLineSession} or {@link Map}.
 	 */
-	public static void mergeToParentSession(String keysToCopy, PipeLineSession from, Map<String,Object> to) {
+	public void mergeToParentSession(String keysToCopy, Map<String, Object> to) {
 		if (to == null) {
 			return;
 		}
 		LOG.debug("returning context, returned session keys [{}]", keysToCopy);
-		copyIfExists(EXIT_CODE_CONTEXT_KEY, from, to);
-		copyIfExists(EXIT_STATE_CONTEXT_KEY, from, to);
+		copyIfExists(EXIT_CODE_CONTEXT_KEY, to);
+		copyIfExists(EXIT_STATE_CONTEXT_KEY, to);
 		if (StringUtils.isNotEmpty(keysToCopy) && !"*".equals(keysToCopy)) {
 			StringTokenizer st = new StringTokenizer(keysToCopy,",;");
 			while (st.hasMoreTokens()) {
 				String key = st.nextToken();
-				to.put(key, from.get(key));
+				to.put(key, get(key));
 			}
 		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
-			to.putAll(from);                                      // ... all keys will be copied
+			to.putAll(this);                                      // ... all keys will be copied
 		}
 		Set<AutoCloseable> closeablesInDestination = to.values().stream()
 				.filter(v -> v instanceof AutoCloseable)
@@ -134,12 +133,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			PipeLineSession toSession = (PipeLineSession) to;
 			closeablesInDestination.addAll(toSession.closeables.keySet());
 		}
-		from.closeables.keySet().removeAll(closeablesInDestination);
+		closeables.keySet().removeAll(closeablesInDestination);
 	}
 
-	private static void copyIfExists(String key, Map<String,Object> from, Map<String,Object> to) {
-		if (from.containsKey(key)) {
-			to.put(key, from.get(key));
+	private void copyIfExists(String key, Map<String, Object> to) {
+		if (containsKey(key)) {
+			to.put(key, get(key));
 		}
 	}
 

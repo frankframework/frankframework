@@ -282,7 +282,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 				}
-				PipeLineSession.mergeToParentSession(getReturnedSessionKeys(), subAdapterSession, session);
+				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
 
 			ExitState exitState = (ExitState)subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
