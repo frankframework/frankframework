@@ -86,14 +86,14 @@ import nl.nn.adapterframework.util.StringUtil;
 public class Adapter implements IAdapter, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private AppConstants APP_CONSTANTS = AppConstants.getInstance(configurationClassLoader);
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final AppConstants APP_CONSTANTS = AppConstants.getInstance(configurationClassLoader);
 
 	private String name;
 	private @Getter String description;
@@ -106,30 +106,20 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private @Getter Configuration configuration;
 
-	private ArrayList<Receiver<?>> receivers = new ArrayList<>();
+	private final ArrayList<Receiver<?>> receivers = new ArrayList<>();
 	private long lastMessageDate = 0;
 	private @Getter String lastMessageProcessingState; //"OK" or "ERROR"
 	private PipeLine pipeline;
 
-	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
-
-	private class SenderLastExitState {
-		private String lastExitState = null;
-		private long lastExitStateDate = 0;
-
-		public SenderLastExitState (long lastExitStateDate, String lastExitState) {
-			this.lastExitStateDate = lastExitStateDate;
-			this.lastExitState = lastExitState;
-		}
-	}
+	private final Map<String, SenderLastExitState> sendersLastExitState = new HashMap<>();
 
 	private int numOfMessagesInProcess = 0;
 
-	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
-	private CounterStatistic numOfMessagesInError = new CounterStatistic(0);
+	private final CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
+	private final CounterStatistic numOfMessagesInError = new CounterStatistic(0);
 
 	private int hourOfLastMessageProcessed=-1;
-	private long[] numOfMessagesStartProcessingByHour = new long[24];
+	private final long[] numOfMessagesStartProcessingByHour = new long[24];
 
 	private StatisticsKeeper statsMessageProcessingDuration = null;
 
@@ -139,13 +129,21 @@ public class Adapter implements IAdapter, NamedBean {
 	private final RunStateManager runState = new RunStateManager();
 	private @Getter boolean configurationSucceeded = false;
 	private MessageKeeper messageKeeper; //instantiated in configure()
-	private boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
-
+	private final boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
 
 	private @Getter @Setter TaskExecutor taskExecutor;
 
 	private String composedHideRegex;
 
+	private static class SenderLastExitState {
+		private final String lastExitState;
+		private final long lastExitStateDate;
+
+		public SenderLastExitState(long lastExitStateDate, String lastExitState) {
+			this.lastExitStateDate = lastExitStateDate;
+			this.lastExitState = lastExitState;
+		}
+	}
 
 	/*
 	 * This function is called by Configuration.registerAdapter,
@@ -722,9 +720,9 @@ public class Adapter implements IAdapter, NamedBean {
 	 * then add a receiver for each channel.
 	 * @ff.mandatory
 	 */
+	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
 	public void registerReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
-		// Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
 		if (log.isDebugEnabled()) log.debug("Adapter [{}] registered receiver [{}] with properties [{}]", name, receiver.getName(), receiver.toString());
 	}
 

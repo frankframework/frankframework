@@ -1827,7 +1827,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		String errorMessage = null;
 		try {
 			if (getSender() != null) {
-				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
+				log.debug("Receiver [{}] sending result to configured sender", this::getName);
 				getSender().sendMessageOrThrow(result, null); // sending correlated responses via a receiver embedded sender is not supported
 			}
 		} catch (Exception e) {

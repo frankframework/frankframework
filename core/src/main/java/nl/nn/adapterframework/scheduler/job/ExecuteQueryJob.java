@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.scheduler.job;
 
+import java.io.IOException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -56,11 +58,12 @@ public class ExecuteQueryJob extends JobDef {
 	public void execute() throws JobExecutionException, TimeoutException {
 		try {
 			qs.open();
-			Message result = qs.sendMessageOrThrow(Message.nullMessage(), null);
-			log.info("result [" + result + "]");
+			try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
+				log.info("result [{}]", result);
+			}
 		}
-		catch (SenderException e) {
-			throw new JobExecutionException("unable to execute query ["+getQuery()+"]", e);
+		catch (SenderException | IOException e) {
+			throw new JobExecutionException("unable to execute query [" + getQuery() + "]", e);
 		}
 		finally {
 			qs.close();

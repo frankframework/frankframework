@@ -388,7 +388,7 @@ class ParserState {
 	/**
 	 * Set the year value.
 	 */
-	void setYear(int val) throws CalendarParserException {
+	void setYear(int val) {
 		if(val < 0) {
 //            throw new CalendarParserException("Bad year " + val);
 			val = new Date().getYear() - 100;
@@ -555,7 +555,7 @@ public class CalendarParser {
 	/**
 	 * Return a string representation of the order value.
 	 */
-	public static final String getOrderString(int order) {
+	public static String getOrderString(int order) {
 		switch (order) {
 		case DD_MM_YY:
 			return "DD_MM_YY";
@@ -754,7 +754,7 @@ public class CalendarParser {
 	 *
 	 * @throws CalendarParserException if there was a problem parsing the string.
 	 */
-	public static final Calendar parse(String dateStr) throws CalendarParserException {
+	public static Calendar parse(String dateStr) throws CalendarParserException {
 		return parse(dateStr, YY_MM_DD);
 	}
 
@@ -769,7 +769,7 @@ public class CalendarParser {
 	 *
 	 * @throws CalendarParserException if there was a problem parsing the string.
 	 */
-	public static final Calendar parse(String dateStr, int order) throws CalendarParserException {
+	public static Calendar parse(String dateStr, int order) throws CalendarParserException {
 		return parse(dateStr, order, true);
 	}
 
@@ -787,7 +787,7 @@ public class CalendarParser {
 	 *
 	 * @throws CalendarParserException if there was a problem parsing the string.
 	 */
-	public static final Calendar parse(String dateStr, int order, boolean ignoreChanges) throws CalendarParserException {
+	public static Calendar parse(String dateStr, int order, boolean ignoreChanges) throws CalendarParserException {
 		if(dateStr == null) {
 			return null;
 		}
@@ -1593,7 +1593,7 @@ public class CalendarParser {
 	 *
 	 * @return a printable string.
 	 */
-	public static final String prettyString(Calendar cal) {
+	public static String prettyString(Calendar cal) {
 		if(cal == null) {
 			return null;
 		}
@@ -1641,7 +1641,7 @@ public class CalendarParser {
 	 *
 	 * @return the basic string.
 	 */
-	public static final String toString(Calendar cal) {
+	public static String toString(Calendar cal) {
 		if(cal == null) {
 			return null;
 		}
@@ -1687,7 +1687,7 @@ public class CalendarParser {
 	 *
 	 * @return the SQL-friendly string.
 	 */
-	public static final String toSQLString(Calendar cal) {
+	public static String toSQLString(Calendar cal) {
 		if(cal == null) {
 			return null;
 		}

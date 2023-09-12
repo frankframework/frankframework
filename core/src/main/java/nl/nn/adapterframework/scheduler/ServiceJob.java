@@ -43,7 +43,7 @@ public class ServiceJob extends BaseJob {
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		try {
-			log.info("executing" + getLogPrefix(context));
+			log.info("executing {}", () -> getLogPrefix(context));
 			JobDataMap dataMap = context.getJobDetail().getJobDataMap();
 			String serviceName = dataMap.getString(JAVALISTENER_KEY);
 			Message message = new Message(dataMap.getString(MESSAGE_KEY));
@@ -57,17 +57,16 @@ public class ServiceJob extends BaseJob {
 
 			localSender.open();
 			try {
-				localSender.sendMessageOrThrow(message, null);
-			}
-			finally {
+				localSender.sendMessageOrThrow(message, null).close();
+			} finally {
 				localSender.close();
 			}
 		}
 		catch (Exception e) {
-			log.error("JobExecutionException while running "+getLogPrefix(context), e);
+			log.error("JobExecutionException while running {}", getLogPrefix(context), e);
 			throw new JobExecutionException(e, false);
 		}
-		log.debug(getLogPrefix(context) + "completed");
+		log.debug("{} completed", () -> getLogPrefix(context));
 	}
 
 }

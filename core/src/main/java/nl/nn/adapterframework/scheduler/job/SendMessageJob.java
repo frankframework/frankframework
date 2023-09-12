@@ -57,7 +57,7 @@ public class SendMessageJob extends JobDef {
 
 	@Override
 	public void execute() throws JobExecutionException, TimeoutException {
-		try (Message toSendMessage = new Message((getMessage() == null) ? "" : getMessage());
+		try (Message toSendMessage = getMessage() == null ? Message.nullMessage() : new Message(getMessage());
 				PipeLineSession session = new PipeLineSession()) {
 			//Set a messageId that will be forwarded by the localSender to the called adapter. Adapter and job will then share a Ladybug report.
 			session.put(PipeLineSession.CORRELATION_ID_KEY, UUIDUtil.createSimpleUUID());

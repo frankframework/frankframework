@@ -85,7 +85,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 
 	@Override
 	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
-		querySender.sendMessageOrThrow(new Message(streamId), session); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it?
+		querySender.sendMessageOrThrow(new Message(streamId), session).close(); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it?
 		Connection connection=querySender.getConnection();
 		openConnections.put(streamId, connection);
 		Message message = new Message(streamId);

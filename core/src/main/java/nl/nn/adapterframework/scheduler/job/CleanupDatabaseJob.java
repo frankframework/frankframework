@@ -19,9 +19,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -31,6 +33,7 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -114,9 +117,10 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.configure();
 				qs.open();
 
-				Message result = qs.sendMessageOrThrow(Message.nullMessage(), null);
-				String resultString = result.asString();
-				int numberOfRowsAffected = Integer.parseInt(resultString);
+				int numberOfRowsAffected;
+				try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
+					numberOfRowsAffected = Integer.parseInt(Objects.requireNonNull(result.asString()));
+				}
 				if(numberOfRowsAffected > 0) {
 					getMessageKeeper().add("deleted ["+numberOfRowsAffected+"] row(s) from [IBISLOCK] table. It implies that there have been process(es) that finished unexpectedly or failed to complete. Please investigate the log files!", MessageKeeperLevel.WARN);
 				}
@@ -162,11 +166,16 @@ public class CleanupDatabaseJob extends JobDef {
 
 				boolean deletedAllRecords = false;
 				while(!deletedAllRecords) {
-					Message result = qs.sendMessageOrThrow(Message.nullMessage(), null);
-					String resultString = result.asString();
-					log.info("deleted [" + resultString + "] rows");
-					int numberOfRowsAffected = Integer.valueOf(resultString);
-					if(maxRows<=0 || numberOfRowsAffected<maxRows) {
+					int numberOfRowsAffected;
+					try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
+						String resultString = result.asString();
+						log.info("deleted [{}] rows", resultString);
+						if (!NumberUtils.isDigits(resultString)) {
+							throw new SenderException("Sent message result did not result in a number, found: " + resultString);
+						}
+						numberOfRowsAffected = Integer.parseInt(resultString);
+					}
+					if (maxRows <= 0 || numberOfRowsAffected < maxRows) {
 						deletedAllRecords = true;
 					} else {
 						log.info("executing the query again for job [cleanupDatabase]!");
@@ -175,7 +184,7 @@ public class CleanupDatabaseJob extends JobDef {
 			} catch (Exception e) {
 				String msg = "error while deleting expired records from table ["+mlo.getTableName()+"] (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error(getLogPrefix()+msg);
+				log.error("{} {}", getLogPrefix(), msg);
 			} finally {
 				if(qs != null) {
 					qs.close();

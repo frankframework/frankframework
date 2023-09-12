@@ -154,7 +154,7 @@ public class SqlTranslatorOracleToH2Test {
 	public void testNotConverted() throws JdbcException {
 		String query = "SELECT COUNT(*) FROM IBISSTORE";
 		String result = convertQuery(query);
-		assertEquals(query, query, result);
+		assertEquals(query, result);
 	}
 
 }

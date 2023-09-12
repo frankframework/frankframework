@@ -12,7 +12,7 @@ import com.icegreen.greenmail.util.ServerSetupTest;
 import jakarta.mail.internet.MimeMessage;
 import nl.nn.adapterframework.stream.Message;
 
-public class MailSenderTest2 extends SenderTestBase<MailSender> {
+class MailSender2Test extends SenderTestBase<MailSender> {
 
 	private final String toAddress="testUser@localhost";
 	private final String testUser="testUser";
@@ -39,7 +39,7 @@ public class MailSenderTest2 extends SenderTestBase<MailSender> {
 	}
 
 	@Test
-	public void testSendMessageBasic() throws Exception {
+	void testSendMessageBasic() throws Exception {
 		// For this test disable the whitelist to verify that the empty value lets through all recipients
 		sender.setDomainWhitelist("");
 
@@ -67,7 +67,7 @@ public class MailSenderTest2 extends SenderTestBase<MailSender> {
 	}
 
 	@Test
-	public void testSendMessageDomainWhitelist() throws Exception {
+	void testSendMessageDomainWhitelist() throws Exception {
 		String subject = "My Subject";
 		String body = "My Message Goes Here";
 
@@ -91,7 +91,7 @@ public class MailSenderTest2 extends SenderTestBase<MailSender> {
 	}
 
 	@Test
-	public void testSendMessageNoRecipientOnWhitelist() throws Exception {
+	void testSendMessageNoRecipientOnWhitelist() throws Exception {
 		String subject = "My Subject";
 		String body = "My Message Goes Here";
 
