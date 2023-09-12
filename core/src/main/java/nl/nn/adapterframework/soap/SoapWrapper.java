@@ -29,6 +29,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.wss4j.common.WSS4JConstants;
 import org.apache.wss4j.common.util.UsernameTokenUtil;
 import org.apache.wss4j.common.util.WSTimeSource;
 import org.apache.wss4j.dom.WSConstants;
@@ -56,7 +57,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Utility class that wraps and unwraps messages from (and into) a SOAP Envelope.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class SoapWrapper {
@@ -122,7 +123,7 @@ public class SoapWrapper {
 		} catch (SAXException|IOException e) {
 			log.debug("IOException extracting fault message", e);
 		} catch (TransformerException e) {
-			log.debug("TransformerException extracting fault message:" + e.getMessageAndLocation());
+			log.debug("TransformerException extracting fault message: {}", e.getMessageAndLocation());
 		}
 		if (faultCount > 0) {
 			String msg = "SOAP fault [" + faultCode + "]: " + faultString;
@@ -221,7 +222,7 @@ public class SoapWrapper {
 				log.debug("namespaceDef [{}]", namespaceDef);
 				int separatorPos = namespaceDef.indexOf('=');
 				if (separatorPos < 1) {
-					namespaceClause.append(" xmlns=\"" + namespaceDef + "\"");
+					namespaceClause.append(" xmlns=\"").append(namespaceDef).append("\"");
 				} else {
 					namespaceClause.append(" xmlns:" + namespaceDef.substring(0, separatorPos) + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"");
 				}
@@ -275,9 +276,9 @@ public class SoapWrapper {
 			WSSecUsernameToken tokenBuilder = new WSSecUsernameToken(secHeader);
 			tokenBuilder.setIdAllocator(idAllocator);
 			if (passwordDigest) {
-				tokenBuilder.setPasswordType(WSConstants.PASSWORD_DIGEST);
+				tokenBuilder.setPasswordType(WSS4JConstants.PASSWORD_DIGEST);
 			} else {
-				tokenBuilder.setPasswordType(WSConstants.PASSWORD_TEXT);
+				tokenBuilder.setPasswordType(WSS4JConstants.PASSWORD_TEXT);
 			}
 			tokenBuilder.setPrecisionInMilliSeconds(false);
 			tokenBuilder.setUserInfo(user, password);
@@ -292,14 +293,14 @@ public class SoapWrapper {
 
 			WSSecSignature sign = new WSSecSignature(secHeader);
 			sign.setIdAllocator(idAllocator);
-			sign.setCustomTokenValueType(WSConstants.WSS_USERNAME_TOKEN_VALUE_TYPE);
+			sign.setCustomTokenValueType(WSS4JConstants.WSS_USERNAME_TOKEN_VALUE_TYPE);
 			sign.setCustomTokenId(tokenBuilder.getId());
-			sign.setSigCanonicalization(WSConstants.C14N_EXCL_OMIT_COMMENTS);
+			sign.setSigCanonicalization(WSS4JConstants.C14N_EXCL_OMIT_COMMENTS);
 			sign.setAddInclusivePrefixes(false);
 			String signatureValue = UsernameTokenUtil.doPasswordDigest(decodedNonce, created, password); //conform WS-Trust spec
 			sign.setSecretKey(signatureValue.getBytes(StreamUtil.DEFAULT_CHARSET));
 			sign.setKeyIdentifierType(WSConstants.CUSTOM_SYMM_SIGNING); //UT_SIGNING no longer exists since v1.5.11
-			sign.setSignatureAlgorithm(WSConstants.HMAC_SHA1);
+			sign.setSignatureAlgorithm(WSS4JConstants.HMAC_SHA1);
 			sign.build(null);
 
 			tokenBuilder.prependToHeader();

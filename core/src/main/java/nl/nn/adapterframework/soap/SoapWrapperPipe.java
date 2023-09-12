@@ -48,7 +48,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	protected static final String DEFAULT_SOAP_HEADER_SESSION_KEY = "soapHeader";
 	protected static final String DEFAULT_SOAP_NAMESPACE_SESSION_KEY = "soapNamespace";
-
 	protected static final SoapVersion DEFAULT_SOAP_VERSION_FOR_WRAPPING = SoapVersion.SOAP11;
 
 	private @Getter Direction direction = Direction.WRAP;
@@ -256,7 +255,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	private String determineSoapNamespace(PipeLineSession session) throws IOException {
+	private String determineSoapNamespace(PipeLineSession session) {
 		String soapNamespace = getSoapNamespace();
 		if (StringUtils.isEmpty(soapNamespace)) {
 			String savedSoapNamespace = session.getString(getSoapNamespaceSessionKey());
