@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -10,30 +10,26 @@ import java.util.Collections;
 import org.apache.sshd.common.file.FileSystemFactory;
 import org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
 import org.apache.sshd.server.SshServer;
-import org.apache.sshd.server.auth.AsyncAuthException;
 import org.apache.sshd.server.auth.hostbased.StaticHostBasedAuthenticator;
-import org.apache.sshd.server.auth.password.PasswordAuthenticator;
-import org.apache.sshd.server.auth.password.PasswordChangeRequiredException;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
-import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.sftp.server.SftpSubsystemFactory;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.ftp.SftpFileRef;
 
 /**
  * This test class is created to test both SFtpFileSystem and SFtpFileSystemSender classes.
- * 
+ *
  * @author Niels Meijer
  *
  */
-public class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
+class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 
-	private String username = "wearefrank";
-	private String password = "pass_123";
-	private String host = "localhost";
+	private final String username = "wearefrank";
+	private final String password = "pass_123";
+	private final String host = "localhost";
 	private int port = 22;
 	private String remoteDirectory = "/home/wearefrank/sftp";
 
@@ -57,14 +53,7 @@ public class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSyst
 	static SshServer createSshServer(String username, String password) throws IOException {
 		SshServer sshd = SshServer.setUpDefaultServer();
 		sshd.setHost("localhost");
-		sshd.setPasswordAuthenticator(new PasswordAuthenticator() {
-
-			@Override
-			public boolean authenticate(String uname, String psswrd, ServerSession session) throws PasswordChangeRequiredException, AsyncAuthException {
-				return username.equals(uname) && password.equals(psswrd);
-			}
-
-		});
+		sshd.setPasswordAuthenticator((uname, psswrd, session) -> username.equals(uname) && password.equals(psswrd));
 		sshd.setHostBasedAuthenticator(new StaticHostBasedAuthenticator(true));
 
 		SftpSubsystemFactory sftpFactory = new SftpSubsystemFactory();
@@ -118,25 +107,25 @@ public class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSyst
 	}
 
 	@Test
-	public void testSFTPFileRefSetRelative() {
+	void testSFTPFileRefSetRelative() {
 		assertEquals("test123", new SftpFileRef("test123").getName());
 		assertEquals("folder/test123", new SftpFileRef("folder/test123").getName());
 	}
 
 	@Test
-	public void testSFTPFileRefSetFolder() {
+	void testSFTPFileRefSetFolder() {
 		SftpFileRef ref1 = new SftpFileRef("test123", "folder");
 		assertEquals("folder/test123", ref1.getName());
 	}
 
 	@Test
-	public void testSFTPFileRefRelativeWithSetFolder() {
+	void testSFTPFileRefRelativeWithSetFolder() {
 		SftpFileRef ref2 = new SftpFileRef("folder1/test123", "folder2");
 		assertEquals("folder2/test123", ref2.getName());
 	}
 
 	@Test
-	public void testSFTPFileRefWindowsSlash() {
+	void testSFTPFileRefWindowsSlash() {
 		SftpFileRef ref2 = new SftpFileRef("folder1\\test123", "folder2");
 		assertEquals("folder2/test123", ref2.getName());
 	}

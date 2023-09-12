@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -61,9 +62,9 @@ public class CompactSaxHandler extends DefaultHandler {
 		}
 
 		if (isRemoveCompactMsgNamespaces()) {
-			messageBuffer.append("<" + localName + attributeBuffer.toString() + ">");
+			messageBuffer.append("<").append(localName).append(attributeBuffer).append(">");
 		} else {
-			messageBuffer.append("<" + qName + namespaceBuffer + attributeBuffer.toString() + ">");
+			messageBuffer.append("<").append(qName).append(namespaceBuffer).append(attributeBuffer).append(">");
 		}
 		elements.add(localName);
 		namespaceBuffer.setLength(0);
@@ -72,27 +73,27 @@ public class CompactSaxHandler extends DefaultHandler {
 	@Override
 	public void startPrefixMapping(String prefix, String uri) {
 		String thisPrefix = "";
-		if (prefix != "") {
+		if (StringUtils.isNotEmpty(prefix)) {
 			thisPrefix = ":" + prefix;
 		}
-		if (uri != "") {
-			namespaceBuffer.append(" xmlns" + thisPrefix + "=\"" + uri + "\"");
+		if (StringUtils.isNotEmpty(uri)) {
+			namespaceBuffer.append(" xmlns").append(thisPrefix).append("=\"").append(uri).append("\"");
 		}
 	}
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		int lastIndex = elements.size() - 1;
-		String lastElement = (String) elements.get(lastIndex);
+		String lastElement = elements.get(lastIndex);
 		if (!lastElement.equals(localName)) {
 			throw new SAXException("expected end element [" + lastElement + "] but got end element [" + localName + "]");
 		}
 
 		printCharBuffer();
 		if (isRemoveCompactMsgNamespaces()) {
-			messageBuffer.append("</" + localName + ">");
+			messageBuffer.append("</").append(localName).append(">");
 		} else {
-			messageBuffer.append("</" + qName + ">");
+			messageBuffer.append("</").append(qName).append(">");
 		}
 		elements.remove(lastIndex);
 	}
@@ -114,7 +115,7 @@ public class CompactSaxHandler extends DefaultHandler {
 			}
 
 			int lastIndex = elements.size() - 1;
-			String lastElement = (String) elements.get(lastIndex);
+			String lastElement = elements.get(lastIndex);
 
 			if (context != null
 					&& ((getElementToMove() != null && lastElement.equals(getElementToMove()) || (getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain()))))
@@ -134,9 +135,9 @@ public class CompactSaxHandler extends DefaultHandler {
 					}
 				}
 				context.put(elementToMoveSK, before + charBuffer.toString() + after);
-				messageBuffer.append(VALUE_MOVE_START + elementToMoveSK + VALUE_MOVE_END);
+				messageBuffer.append(VALUE_MOVE_START).append(elementToMoveSK).append(VALUE_MOVE_END);
 			} else {
-				messageBuffer.append(before + XmlEncodingUtils.encodeChars(charBuffer.toString()) + after);
+				messageBuffer.append(before).append(XmlEncodingUtils.encodeChars(charBuffer.toString())).append(after);
 			}
 
 			charBuffer.setLength(0);
@@ -146,7 +147,7 @@ public class CompactSaxHandler extends DefaultHandler {
 	private String elementsToString() {
 		String chain = null;
 		for (Iterator<String> it = elements.iterator(); it.hasNext();) {
-			String element = (String) it.next();
+			String element = it.next();
 			if (chain == null) {
 				chain = element;
 			} else {

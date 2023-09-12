@@ -124,19 +124,19 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 	}
 
 	@Test
-	public void testShutdown() throws Exception {
+	public void testShutdown() {
 		setupTransactionManager();
 		assertStatus("ACTIVE", txManagerReal.getUid());
 		assertEquals(txManagerReal.getUid(),getTMUID());
 		ConcurrentXATransactionTester xaTester = new ConcurrentXATransactionTester();
-		xaTester.run(); // same thread
+		xaTester.start(); // same thread
 		txManagerReal.destroy();
 		assertStatus("COMPLETED", txManagerReal.getUid());
 
 	}
 
 	@Test
-	public void testShutdownPending() throws Exception {
+	public void testShutdownPending() {
 		setupTransactionManager();
 		String uid = txManagerReal.getUid();
 		assertStatus("ACTIVE", uid);

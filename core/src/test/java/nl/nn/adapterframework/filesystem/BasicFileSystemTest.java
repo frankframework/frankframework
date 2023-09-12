@@ -85,13 +85,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertFalse(fileSystem.exists(f), "Expected file[" + filename + "] not to be present");
 	}
 
-
-	@Override
-	protected void equalsCheck(String content, String actual) {
-		assertEquals(content, actual);
-	}
-
-
 	@Override
 	protected void existsCheck(String filename) throws Exception {
 		assertTrue(_fileExists(filename), "Expected file [" + filename + "] to be present");
@@ -122,7 +115,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		Message in = fileSystem.readFile(file, charset);
 		String actual = in.asString();
 		// test
-		equalsCheck(expectedContents.trim(), actual.trim());
+		assertEquals(expectedContents.trim(), actual.trim());
 	}
 
 	@Test
@@ -166,9 +159,9 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		// test if message can actually be read multiple times, without turning it explicitly into a String or byte array.
 		// This will fail if a message declared that it was repeatable, but actually was not repeatable.
 		String actual1 = StreamUtil.readerToString(in.asReader(), null);
-		equalsCheck(contents, actual1.trim());
+		assertEquals(contents, actual1.trim());
 		String actual2 = StreamUtil.readerToString(in.asReader(), null);
-		equalsCheck(contents, actual2.trim());
+		assertEquals(contents, actual2.trim());
 	}
 
 	@Test
