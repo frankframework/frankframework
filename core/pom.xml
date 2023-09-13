@@ -16,7 +16,7 @@
 		<j2v8.version>4.6.0</j2v8.version>
 		<jackson.version>2.15.2</jackson.version>
 		<jackson-databind.version>2.15.2</jackson-databind.version>
-		<micrometer.version>1.11.3</micrometer.version>
+		<micrometer.version>1.11.4</micrometer.version>
 		<saxon.version>10.9</saxon.version>
 	</properties>
 
