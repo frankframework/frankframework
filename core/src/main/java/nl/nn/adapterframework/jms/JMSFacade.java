@@ -650,31 +650,28 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		}
 	}
 
+	@SuppressWarnings("java:S3457") // Ignore {} usage inside logging
 	protected void logMessageDetails(javax.jms.Message message, MessageProducer messageProducer) throws JMSException {
-		if (log.isInfoEnabled() && !log.isDebugEnabled()) {
-				log.info("[" + getName()
-						+ (messageProducer != null ? " ] message destination: [" + messageProducer.getDestination() + "] " : "")
-						+ "] msgID: [" + message.getJMSMessageID()
-						+ "] correlationID: [" + message.getJMSCorrelationID()
-						+ "] using deliveryMode: [" + message.getJMSDeliveryMode() + "] "
-						+ (message.getJMSReplyTo() != null ? "replyTo: [" + message.getJMSReplyTo() + "]" : ""));
-				return;
+		if (log.isDebugEnabled()) {
+			log.debug(getLogPrefix() + "sender on [" + getDestinationName()
+					+ "] JMSDeliveryMode=[" + message.getJMSDeliveryMode()
+					+ "] JMSMessageID=[" + message.getJMSMessageID()
+					+ "] JMSCorrelationID=[" + message.getJMSCorrelationID()
+					+ "] JMSTimestamp=[" + DateUtils.format(message.getJMSTimestamp())
+					+ "] JMSExpiration=[" + message.getJMSExpiration()
+					+ "] JMSPriority=[" + message.getJMSPriority()
+					+ "] JMSType=[" + message.getJMSType()
+					+ "] JMSReplyTo=[" + message.getJMSReplyTo()
+					+ "] Message=[" + message
+					+ "]");
+		} else if (log.isInfoEnabled()){
+			log.info("[" + getName()
+					+ (messageProducer != null ? " ] message destination: [" + messageProducer.getDestination() + "] " : "")
+					+ "] msgID: [" + message.getJMSMessageID()
+					+ "] correlationID: [" + message.getJMSCorrelationID()
+					+ "] using deliveryMode: [" + message.getJMSDeliveryMode()
+					+ "] replyTo: [" + message.getJMSReplyTo() + "]");
 		}
-		if (!log.isDebugEnabled()) {
-			return;
-		}
-
-		log.debug(getLogPrefix() + "sender on [" + getDestinationName()
-				+ "] JMSDeliveryMode=[" + message.getJMSDeliveryMode()
-				+ "] \n  JMSMessageID=[" + message.getJMSMessageID()
-				+ "] \n  JMSCorrelationID=[" + message.getJMSCorrelationID()
-				+ "] \n  JMSTimestamp=[" + DateUtils.format(message.getJMSTimestamp())
-				+ "] \n  JMSExpiration=[" + message.getJMSExpiration()
-				+ (message.getJMSPriority() != 0 ? "] \n  JMSPriority=[" + message.getJMSPriority() : "")
-				+ (message.getJMSType() != null ? "] \n  JMSType=[" + message.getJMSType() : "")
-				+ (message.getJMSReplyTo() != null ? "] \n  JMSReplyTo=[" + message.getJMSReplyTo() : "")
-				+ "] \n Message=[" + message
-				+ "]");
 	}
 
 	/**
