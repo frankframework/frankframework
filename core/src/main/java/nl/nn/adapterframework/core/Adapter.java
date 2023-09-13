@@ -251,7 +251,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * send an error to the log and to the messagekeeper of the adapter
 	 */
 	protected void addErrorMessageToMessageKeeper(String msg, Throwable t) {
-		log.error("Adapter [{}] {}", name, msg);
+		log.error("Adapter [{}] {}", name, msg, t);
 		if (!(t instanceof IbisException)) {
 			msg += " (" + t.getClass().getName() + ")";
 		}
