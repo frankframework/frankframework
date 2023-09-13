@@ -149,6 +149,7 @@ class IbisLocalSenderTest {
 			session.put("my-parameter1", "parameter1-value");
 			session.put("my-parameter2", Message.asMessage("parameter2-value"));
 			Message message = new Message("my-parameter1");
+			session.put("session-message", message);
 
 			// Act
 			SenderResult result = sender.sendMessage(message, session);
@@ -162,7 +163,8 @@ class IbisLocalSenderTest {
 				() -> assertEquals("parameter2-value", session.getString("my-parameter2")),
 				() -> assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should contain key [this-doesnt-exist]"),
 				() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]"),
-				() -> assertFalse(session.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'")
+				() -> assertFalse(session.containsKey("key-not-configured-for-copy"), "Session should not contain key 'key-not-configured-for-copy'"),
+				() -> assertEquals("my-parameter1", message.asString())
 			);
 		}
 	}
@@ -349,6 +351,7 @@ class IbisLocalSenderTest {
 	private static IbisLocalSender createIbisLocalSenderWithDummyServiceClient() throws ListenerException, ConfigurationException {
 		ServiceDispatcher.getInstance().registerServiceClient(SERVICE_NAME, ((message, session) -> {
 			session.put("key-not-configured-for-copy", "dummy-value");
+			session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
 			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter1")), "param1");
 			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter2")), "param2");
 			return session.getMessage(message.asObject().toString());
