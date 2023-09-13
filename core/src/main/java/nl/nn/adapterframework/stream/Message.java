@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
@@ -335,8 +336,8 @@ public class Message implements Serializable, Closeable {
 		try {
 			if (request instanceof AutoCloseable) {
 				((AutoCloseable)request).close();
-				request = null;
 			}
+			request = null;
 		} finally {
 			if (resourcesToClose!=null) {
 				resourcesToClose.forEach(r -> {
@@ -366,18 +367,6 @@ public class Message implements Serializable, Closeable {
 			return;
 		}
 		if (log.isDebugEnabled()) log.debug("registering Message [{}] for close on exit", this);
-		if (request instanceof InputStream) {
-			request = StreamUtil.onClose((InputStream)request, () -> {
-				if (log.isDebugEnabled()) log.debug("closed InputStream and unregistering Message [{}] from close on exit", this);
-				unscheduleFromCloseOnExitOf(session);
-			});
-		}
-		if (request instanceof Reader) {
-			request = StreamUtil.onClose((Reader)request, () -> {
-				if (log.isDebugEnabled()) log.debug("closed Reader and unregistering Message [{}] from close on exit", this);
-				unscheduleFromCloseOnExitOf(session);
-			});
-		}
 		session.scheduleCloseOnSessionExit(this, request.toString()+" requested by "+requester);
 	}
 
@@ -952,5 +941,35 @@ public class Message implements Serializable, Closeable {
 			request = StreamUtil.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset), maxSize, true);
 		}
 		closeOnClose(writer);
+	}
+
+	/**
+	 * Creates a copy of this Message object.
+	 * <p>
+	 *     <b>NB:</b> To copy the underlying value of the message object, the message
+	 *     may be preserved if it was not repeatable.
+	 * </p>
+	 * @return A new Message object that is a copy of this Message.
+	 * @throws IOException If an I/O error occurs during the copying process.
+	 */
+	@Nonnull
+	public Message copyMessage() throws IOException {
+		final Message newMessage;
+		if (!isRepeatable()) {
+			preserve();
+		}
+		if (request instanceof SerializableFileReference) {
+			final SerializableFileReference newRef;
+			if (isBinary()) {
+				newRef = SerializableFileReference.of(asInputStream());
+			} else {
+				newRef = SerializableFileReference.of(asReader(), getCharset());
+			}
+			newMessage = Message.asMessage(newRef);
+		} else {
+			newMessage = Message.asMessage(request);
+		}
+		newMessage.context = copyContext();
+		return newMessage;
 	}
 }

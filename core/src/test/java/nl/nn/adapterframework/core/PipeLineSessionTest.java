@@ -1,9 +1,14 @@
 package nl.nn.adapterframework.core;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -11,8 +16,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.commons.io.input.ReaderInputStream;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import nl.nn.adapterframework.stream.Message;
 
@@ -23,7 +31,7 @@ public class PipeLineSessionTest {
 
 	private PipeLineSession session;
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		session = new PipeLineSession();
 
@@ -53,6 +61,34 @@ public class PipeLineSessionTest {
 		session.put("key10", map);
 		session.put("key11", 123L);
 		session.put("key11b", "456");
+	}
+
+	@Test
+	public void testPutWithCloseable() {
+		// Arrange
+		InputStream closeable = new ReaderInputStream(new StringReader("xyz"));
+
+		// Act
+		session.put("x", closeable);
+
+		// Assert
+		assertTrue(session.getCloseables().containsKey(closeable));
+	}
+
+	@Test
+	public void testPutAllWithCloseable() {
+		// Arrange
+		InputStream closeable = new ReaderInputStream(new StringReader("xyz"));
+		Map<String, Object> values = new HashMap<>();
+		values.put("v1", 1);
+		values.put("v2", 2);
+		values.put("x", closeable);
+
+		// Act
+		session.putAll(values);
+
+		// Assert
+		assertTrue(session.getCloseables().containsKey(closeable));
 	}
 
 	@Test
@@ -149,5 +185,133 @@ public class PipeLineSessionTest {
 		assertEquals(123L, session.get("key11", 0L));
 		assertEquals(0L, session.get("key11a", 0L));
 		assertEquals(456L, session.get("key11b", 0L));
+	}
+
+	/**
+	 * Method: mergeToParentSession(String keys, Map<String,Object> from, Map<String,Object>
+	 * to)
+	 */
+	@Test
+	public void testMergeToParentSession() {
+		// Arrange
+		PipeLineSession from = new PipeLineSession();
+		PipeLineSession to = new PipeLineSession();
+		String keys = "a,b";
+		from.put("a", 15);
+		from.put("b", 16);
+
+		// Act
+		from.mergeToParentSession(keys, to);
+
+		// Assert
+		assertEquals(from,to);
+	}
+
+	@Test
+	public void testMergeToParentContextMap() {
+		// Arrange
+		PipeLineSession from = new PipeLineSession();
+		Map<String, Object> to = new HashMap<>();
+		String keys = "a,b";
+		from.put("a", 15);
+		from.put("b", 16);
+
+		Message message1 = Message.asMessage("17");
+		from.put("c", message1);
+		to.put("c", message1);
+
+		// Act
+		from.mergeToParentSession(keys, to);
+
+		// Assert
+		assertEquals(from,to);
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"*", ","})
+	public void testMergeToParentSessionCopyAllKeys(String keysToCopy) throws Exception {
+		// Arrange
+		PipeLineSession from = new PipeLineSession();
+		PipeLineSession to = new PipeLineSession();
+		Message message = Message.asMessage("a message");
+		BufferedReader closeable = new BufferedReader(new StringReader("a closeable"));
+		from.put("a", 15);
+		from.put("b", 16);
+		from.put("c", message);
+		from.put("d", closeable);
+
+		from.scheduleCloseOnSessionExit(message, "test-c");
+		from.scheduleCloseOnSessionExit(closeable, "test-d");
+
+		// Act
+		from.mergeToParentSession(keysToCopy, to);
+
+		from.close();
+
+		// Assert
+		assertEquals(from,to);
+
+		assertTrue(to.getCloseables().containsKey(message));
+		assertTrue(to.getCloseables().containsKey(closeable));
+		assertNotNull(((Message) to.get("c")).asObject());
+		assertEquals("a message", ((Message) to.get("c")).asString());
+		assertEquals("a closeable", ((BufferedReader) to.get("d")).readLine());
+
+		// Act
+		to.close();
+
+		// Assert
+		assertNull(((Message) to.get("c")).asObject());
+	}
+
+	@Test
+	public void testMergeToParentSessionLimitedKeys() throws Exception {
+		// Arrange
+		PipeLineSession from = new PipeLineSession();
+		PipeLineSession to = new PipeLineSession();
+
+		Message message1 = Message.asMessage("m1");
+		Message message2 = Message.asMessage("m2");
+
+		String keys = "a,c";
+		from.put("a", 15);
+		from.put("b", 16);
+		from.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, "exitCode");
+		from.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, "exitState");
+
+		// Same key different objects; same object different keys.
+		// Afterwards message1 should be closed and message2 should not be.
+		from.put("d", message1);
+		from.put("e", message2);
+		to.put("d", message2);
+
+		from.scheduleCloseOnSessionExit(message1, "test-d");
+
+		// Act
+		from.mergeToParentSession(keys, to);
+
+		from.close();
+
+		// Assert
+		assertEquals(5, to.size());
+		assertTrue(to.containsKey("a"));
+		assertTrue(to.containsKey("c"));
+		assertTrue(to.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
+		assertTrue(to.containsKey(PipeLineSession.EXIT_STATE_CONTEXT_KEY));
+		assertEquals(15, to.get("a"));
+		assertNull(to.get("c"));
+
+		assertNull(message1.asObject());
+		assertEquals("m2", message2.asString());
+	}
+
+	@Test
+	public void testMergeToParentSessionEmptyKeys() {
+		PipeLineSession from = new PipeLineSession();
+		PipeLineSession to = new PipeLineSession();
+		from.put("a", 15);
+		from.put("b", 16);
+		from.mergeToParentSession("", to);
+		assertEquals(0,to.size());
 	}
 }

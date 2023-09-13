@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.monitoring;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.ArgumentCaptor;
 
 import lombok.Getter;
@@ -46,26 +46,23 @@ public class SenderMonitorAdapterTest implements EventThrowing {
 	public void testSenderMonitorAdapterWithMessage() throws Exception {
 		// Arrange
 		SenderMonitorAdapter destination = new SenderMonitorAdapter();
-		EchoSender sender = spy(EchoSender.class);
-		ArgumentCaptor<Message> messageCapture = ArgumentCaptor.forClass(Message.class);
-		ArgumentCaptor<PipeLineSession> sessionCapture = ArgumentCaptor.forClass(PipeLineSession.class);
+		MessageCapturingEchoSender sender = new MessageCapturingEchoSender();
 		destination.setSender(sender);
 		destination.configure();
 		String eventText = "<ik>ben<xml/></ik>";
 
-		when(sender.sendMessage(messageCapture.capture(), sessionCapture.capture())).thenCallRealMethod();
 		MonitorEvent event = new MonitorEvent(this, EVENTCODE, new Message(eventText));
 
 		// Act
 		destination.fireEvent(null, EventType.FUNCTIONAL, Severity.WARNING, EVENTCODE, event);
 
 		// Assert
-		Message message = messageCapture.getValue();
+		Message message = sender.getInputMessage();
 		String result = "<event hostname=\"XXX\" source=\"MONITOR_DESTINATION_TEST\" type=\"FUNCTIONAL\" severity=\"WARNING\" event=\"MONITOR_EVENT_CODE\"/>";
-		assertEquals(result, ignoreHostname(message.asString()));
-		PipeLineSession session = sessionCapture.getValue();
-		assertTrue(session.containsKey(PipeLineSession.originalMessageKey));
-		assertEquals(eventText, session.getMessage(PipeLineSession.originalMessageKey).asString());
+		Assertions.assertEquals(result, ignoreHostname(message.asString()));
+		PipeLineSession session = sender.getInputSession();
+		Assertions.assertTrue(session.containsKey(PipeLineSession.originalMessageKey));
+		Assertions.assertEquals(eventText, sender.getSessionOriginalMessageValue());
 	}
 
 	private String ignoreHostname(String result) {

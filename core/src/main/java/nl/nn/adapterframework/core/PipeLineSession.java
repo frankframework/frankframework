@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.SneakyThrows;
@@ -39,7 +43,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @since   version 3.2.2
  */
 public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
-	private Logger log = LogUtil.getLogger(this);
+	private static final Logger LOG = LogUtil.getLogger(PipeLineSession.class);
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String originalMessageIdKey="id";
@@ -63,7 +67,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
-	private Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
+	private final Map<AutoCloseable, String> closeables = new ConcurrentHashMap<>(); // needs to be concurrent, closes may happen from other threads
 	public PipeLineSession() {
 		super();
 	}
@@ -80,7 +84,75 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		super(t);
 	}
 
-	//Shouldn't this be `id` ? See {#setListenerParameters(...)};
+
+	/**
+	 * Copy specified keys from the {@code from} {@link PipeLineSession} to the parent
+	 * {@link PipeLineSession} or {@link Map} {@code to}.
+	 * Any keys present in both parent and child session will be unregistered from closing
+	 * on the closing of the child session.
+	 * <p>
+	 *     The keys which will be copied are specified in parameter {@code keysToCopy}.
+	 *     Keys names are separated by , or ; symbols.
+	 *     If that parameter is {@code null} then all keys will be copied, if it is an
+	 *     empty string then no keys will be copied.
+	 * </p>
+	 * @param keysToCopy Keys to be copied, separated by {@value ,} or {@value ;}.
+	 *                   If {@code null} then all keys will be copied.
+	 *                   If an empty string then no keys will be copied.
+	 * @param to Parent {@link PipeLineSession} or {@link Map}.
+	 */
+	public void mergeToParentSession(String keysToCopy, Map<String, Object> to) {
+		if (to == null) {
+			return;
+		}
+		LOG.debug("returning context, returned session keys [{}]", keysToCopy);
+		copyIfExists(EXIT_CODE_CONTEXT_KEY, to);
+		copyIfExists(EXIT_STATE_CONTEXT_KEY, to);
+		if (StringUtils.isNotEmpty(keysToCopy) && !"*".equals(keysToCopy)) {
+			StringTokenizer st = new StringTokenizer(keysToCopy,",;");
+			while (st.hasMoreTokens()) {
+				String key = st.nextToken();
+				to.put(key, get(key));
+			}
+		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
+			to.putAll(this);                                      // ... all keys will be copied
+		}
+		Set<AutoCloseable> closeablesInDestination = to.values().stream()
+				.filter(v -> v instanceof AutoCloseable)
+				.map(v -> (AutoCloseable) v)
+				.collect(Collectors.toSet());
+		if (to instanceof PipeLineSession) {
+			PipeLineSession toSession = (PipeLineSession) to;
+			closeablesInDestination.addAll(toSession.closeables.keySet());
+		}
+		closeables.keySet().removeAll(closeablesInDestination);
+	}
+
+	private void copyIfExists(String key, Map<String, Object> to) {
+		if (containsKey(key)) {
+			to.put(key, get(key));
+		}
+	}
+
+	@Override
+	public Object put(String key, Object value) {
+		if (value instanceof AutoCloseable) {
+			closeables.put((AutoCloseable) value, "Session key [" + key + "]");
+		}
+		return super.put(key, value);
+	}
+
+	@Override
+	public void putAll(Map<? extends String, ?> m) {
+		for (Entry<? extends String, ?> entry : m.entrySet()) {
+			put(entry.getKey(), entry.getValue());
+		}
+	}
+
+	/*
+	 * The ladybug might stub the MessageId. The Stubbed value will be wrapped in a Message.
+	 * Ensure that a proper string is returned in those cases too.
+	 */
 	@SneakyThrows
 	public String getMessageId() {
 		return Message.asString(get(messageIdKey)); // Allow Ladybug to wrap it in a Message
@@ -281,19 +353,23 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	@Override
 	public void close() {
-		log.debug("Closing PipeLineSession");
+		LOG.debug("Closing PipeLineSession");
 		while (!closeables.isEmpty()) {
 			Iterator<Entry<AutoCloseable, String>> it = closeables.entrySet().iterator();
 			Entry<AutoCloseable, String> entry = it.next();
 			AutoCloseable closeable = entry.getKey();
 			try {
-				log.info("messageId ["+getMessageId()+"] auto closing resource "+entry.getValue());
+				LOG.debug("messageId [{}] auto closing resource {}", this::getMessageId, entry::getValue);
 				closeable.close();
 			} catch (Exception e) {
-				log.warn("Exception closing resource", e);
+				LOG.warn("Exception closing resource", e);
 			} finally {
 				closeables.remove(closeable);
 			}
 		}
+	}
+
+	public Map<AutoCloseable, String> getCloseables() {
+		return closeables;
 	}
 }

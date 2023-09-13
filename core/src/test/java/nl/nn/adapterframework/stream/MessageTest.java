@@ -22,6 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -43,6 +44,7 @@ import java.nio.file.Paths;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.rules.TemporaryFolder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -1118,4 +1120,51 @@ public class MessageTest {
 		}
 	}
 
+	@Test
+	public void testCopyMessage1() throws IOException {
+		// Arrange
+		Message msg1 = Message.asMessage("a");
+
+		// Act
+		Message msg2 = msg1.copyMessage();
+
+		msg1.close();
+
+		// Assert
+		assertNull(msg1.asObject());
+		Assertions.assertNotNull(msg2.asObject());
+		Assertions.assertEquals("a", msg2.asString());
+	}
+
+	@Test
+	public void testCopyMessage2() throws IOException {
+		// Arrange
+		Message msg1 = Message.asMessage(new StringReader("á"));
+
+		// Act
+		Message msg2 = msg1.copyMessage();
+
+		msg1.close();
+
+		// Assert
+		assertNull(msg1.asObject());
+		Assertions.assertNotNull(msg2.asObject());
+		Assertions.assertEquals("á", msg2.asString());
+	}
+
+	@Test
+	public void testCopyMessage3() throws IOException {
+		// Arrange
+		Message msg1 = Message.asMessage(new ByteArrayInputStream("á".getBytes()));
+
+		// Act
+		Message msg2 = msg1.copyMessage();
+
+		msg1.close();
+
+		// Assert
+		assertNull(msg1.asObject());
+		Assertions.assertNotNull(msg2.asObject());
+		Assertions.assertEquals("á", msg2.asString());
+	}
 }

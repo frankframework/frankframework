@@ -21,7 +21,6 @@ import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.FilterReader;
-import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -48,7 +47,6 @@ import org.apache.commons.io.output.ThresholdingOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import lombok.SneakyThrows;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -295,79 +293,6 @@ public class StreamUtil {
 		response.setHeader("Content-Disposition","attachment; filename=\""+filename+"\"");
 		ZipOutputStream zipOutputStream = new ZipOutputStream(out);
 		return zipOutputStream;
-	}
-
-	public static InputStream onClose(InputStream stream, Runnable onClose) {
-		return new FilterInputStream(stream) {
-			@Override
-			public void close() throws IOException {
-				try {
-					super.close();
-				} finally {
-					onClose.run();
-				}
-			}
-		};
-	}
-
-	public static OutputStream onClose(OutputStream stream, Runnable onClose) {
-		return new FilterOutputStream(stream) {
-			@Override
-			public void close() throws IOException {
-				try {
-					super.close();
-				} finally {
-					onClose.run();
-				}
-			}
-		};
-	}
-
-	public static Reader onClose(Reader reader, Runnable onClose) {
-		return new FilterReader(reader) {
-			@Override
-			public void close() throws IOException {
-				try {
-					super.close();
-				} finally {
-					onClose.run();
-				}
-			}
-		};
-	}
-
-	public static Writer onClose(Writer writer, Runnable onClose) {
-		return new FilterWriter(writer) {
-			@Override
-			public void close() throws IOException {
-				try {
-					super.close();
-				} finally {
-					onClose.run();
-				}
-			}
-		};
-	}
-
-	@SneakyThrows // throw the IOException thrown by resource.close(), without declaring it as a checked Exception (that would be incompatible with the use in lambda's below)
-	private static void closeResource(AutoCloseable resource) {
-		resource.close();
-	}
-
-	public static InputStream closeOnClose(InputStream stream, AutoCloseable resource) {
-		return onClose(stream, () -> closeResource(resource));
-	}
-
-	public static OutputStream closeOnClose(OutputStream stream, AutoCloseable resource) {
-		return onClose(stream, () -> closeResource(resource));
-	}
-
-	public static Reader closeOnClose(Reader reader, AutoCloseable resource) {
-		return onClose(reader, () -> closeResource(resource));
-	}
-
-	public static Writer closeOnClose(Writer writer, AutoCloseable resource) {
-		return onClose(writer, () -> closeResource(resource));
 	}
 
 	public static InputStream watch(InputStream stream, Runnable onClose, Runnable onException) {

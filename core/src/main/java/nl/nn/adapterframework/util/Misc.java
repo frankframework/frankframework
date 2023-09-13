@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -68,9 +68,6 @@ import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
 import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -838,43 +835,6 @@ public class Misc {
 			localHost="unknown ("+uhe.getMessage()+")";
 		}
 		return localHost;
-	}
-
-	public static void copyContext(String keys, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
-		if (to!=null) {
-			log.debug("returning context, returned sessionkeys ["+keys+"]");
-			copyIfExists(PipeLineSession.EXIT_CODE_CONTEXT_KEY, from, to);
-			copyIfExists(PipeLineSession.EXIT_STATE_CONTEXT_KEY, from, to);
-			if (StringUtils.isNotEmpty(keys)) {
-				StringTokenizer st = new StringTokenizer(keys,",;");
-				while (st.hasMoreTokens()) {
-					String key=st.nextToken();
-					copySessionKey(key, from, to, requester);
-				}
-			} else if (keys==null) { // if keys are not set explicity, all keys will be copied
-				for (String key:from.keySet()) {
-					copySessionKey(key, from, to, requester);
-				}
-			}
-		}
-	}
-
-	private static void copySessionKey(String key, Map<String,Object> from, Map<String,Object> to, INamedObject requester) {
-		Object value=from.get(key);
-		Message message = Message.asMessage(value);
-		if (from instanceof PipeLineSession) {
-			message.unscheduleFromCloseOnExitOf((PipeLineSession)from);
-		}
-		if (to instanceof PipeLineSession) {
-			Message.asMessage(value).closeOnCloseOf((PipeLineSession)to, requester);
-		}
-		to.put(key,value);
-	}
-
-	private static void copyIfExists(String key, Map<String,Object> from, Map<String,Object> to) {
-		if (from.containsKey(key)) {
-			to.put(key, from.get(key));
-		}
 	}
 
 	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
