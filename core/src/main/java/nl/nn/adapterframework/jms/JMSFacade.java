@@ -666,11 +666,11 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 					+ "]");
 		} else if (log.isInfoEnabled()){
 			log.info("[" + getName()
-					+ (messageProducer != null ? " ] message destination: [" + messageProducer.getDestination() + "] " : "")
-					+ "] msgID: [" + message.getJMSMessageID()
-					+ "] correlationID: [" + message.getJMSCorrelationID()
-					+ "] using deliveryMode: [" + message.getJMSDeliveryMode()
-					+ "] replyTo: [" + message.getJMSReplyTo() + "]");
+					+ (messageProducer != null ? "] message destination [" + messageProducer.getDestination() : "")
+					+ "] JMSDeliveryMode=[" + message.getJMSDeliveryMode()
+					+ "] JMSMessageID=[" + message.getJMSMessageID()
+					+ "] JMSCorrelationID=[" + message.getJMSCorrelationID()
+					+ "] JMSReplyTo=[" + message.getJMSReplyTo() + "]");
 		}
 	}
 
