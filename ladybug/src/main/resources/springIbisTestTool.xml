@@ -69,7 +69,7 @@
 		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="10000" />
 	</task:scheduled-tasks>
 
-	<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName" init-method="init">
+	<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
 		<property name="name" value="Logging"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
