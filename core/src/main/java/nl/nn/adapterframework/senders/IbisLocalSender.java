@@ -220,12 +220,12 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 	public SenderResult sendMessageAndProvideForwardName(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session == null ? null : session.getMessageId();
 		Message result;
-		try (PipeLineSession context = new PipeLineSession()) {
+		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
 			if (paramList!=null) {
 				try {
 					Map<String,Object> paramValues = paramList.getValues(message, session).getValueMap();
 					if (paramValues!=null) {
-						context.putAll(paramValues);
+						subAdapterSession.putAll(paramValues);
 					}
 				} catch (ParameterException e) {
 					throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
@@ -247,17 +247,17 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 				if (isIsolated()) {
 					if (isSynchronous()) {
 						log.debug("{} calling {} in separate Thread", this::getLogPrefix,() -> serviceIndication);
-						result = isolatedServiceCaller.callServiceIsolated(serviceClient, correlationID, message, context, threadLifeCycleEventListener);
+						result = isolatedServiceCaller.callServiceIsolated(serviceClient, correlationID, message, subAdapterSession, threadLifeCycleEventListener);
 					} else {
 						// We return same message as we send, so it should be preserved in case it's not repeatable
 						message.preserve();
 						log.debug("{} calling {} in asynchronously", this::getLogPrefix, () -> serviceIndication);
-						isolatedServiceCaller.callServiceAsynchronous(serviceClient, correlationID, message, context, threadLifeCycleEventListener);
+						isolatedServiceCaller.callServiceAsynchronous(serviceClient, correlationID, message, subAdapterSession, threadLifeCycleEventListener);
 						result = message;
 					}
 				} else {
 					log.debug("{} calling {} in same Thread", this::getLogPrefix, () -> serviceIndication);
-					result = serviceClient.processRequest(correlationID, message, context);
+					result = serviceClient.processRequest(correlationID, message, subAdapterSession);
 				}
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
@@ -267,18 +267,18 @@ public class IbisLocalSender extends SenderWithParametersBase implements IForwar
 			} finally {
 				if (session != null && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
-					PipeLineSession.mergeToParentSession(getReturnedSessionKeys(), context, session, this);
 				}
+				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
 
-			ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
-			Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+			ExitState exitState = (ExitState) subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+			Object exitCode = subAdapterSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 			if (exitState != null && exitState != ExitState.SUCCESS) {
-				context.put("originalResult", result);
+				subAdapterSession.put("originalResult", result);
 				throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
 			}
 
-			result.unscheduleFromCloseOnExitOf(context);
+			result.unscheduleFromCloseOnExitOf(subAdapterSession);
 			result.closeOnCloseOf(session, this);
 			String forwardName = Objects.toString(exitCode, null);
 			return new SenderResult(forwardName, result);

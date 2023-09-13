@@ -94,10 +94,10 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	@Override
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result;
-		try (PipeLineSession context = new PipeLineSession()) {
+		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
 			try {
 				if (paramList != null) {
-					context.putAll(paramList.getValues(message, session).getValueMap());
+					subAdapterSession.putAll(paramList.getValues(message, session).getValueMap());
 				}
 				DispatcherManager dm;
 				Class c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
@@ -122,7 +122,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				}
 
 				String correlationID = session == null ? null : session.getMessage(PipeLineSession.businessCorrelationIdKey).asString();
-				result = dm.processRequest(serviceName, correlationID, message.asString(), context);
+				result = dm.processRequest(serviceName, correlationID, message.asString(), subAdapterSession);
 				if (isMultipartResponse()) {
 					return HttpSender.handleMultipartResponse(MULTIPART_RESPONSE_CONTENT_TYPE, new ByteArrayInputStream(result.getBytes(MULTIPART_RESPONSE_CHARSET)), session);
 				}
@@ -135,9 +135,7 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [" + getReturnedSessionKeys() + "]");
 				}
-				if (session != null) {
-					PipeLineSession.mergeToParentSession(getReturnedSessionKeys(), context, session, this);
-				}
+				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
 			return new Message(result);
 		}

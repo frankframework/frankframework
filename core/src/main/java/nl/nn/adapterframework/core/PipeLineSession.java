@@ -20,8 +20,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -97,62 +99,38 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @param keysToCopy Keys to be copied, separated by {@value ,} or {@value ;}.
 	 *                   If {@code null} then all keys will be copied.
 	 *                   If an empty string then no keys will be copied.
-	 * @param from Child {@link PipeLineSession} from which keys are copied.
 	 * @param to Parent {@link PipeLineSession} or {@link Map}.
-	 * @param requester Tag of where the request to copy comes from so this can be logged when
-	 *                  closing any messages.
 	 */
-	public static void mergeToParentSession(String keysToCopy, PipeLineSession from, Map<String,Object> to, INamedObject requester) {
+	public void mergeToParentSession(String keysToCopy, Map<String, Object> to) {
 		if (to == null) {
 			return;
 		}
 		LOG.debug("returning context, returned session keys [{}]", keysToCopy);
-		copyIfExists(EXIT_CODE_CONTEXT_KEY, from, to);
-		copyIfExists(EXIT_STATE_CONTEXT_KEY, from, to);
+		copyIfExists(EXIT_CODE_CONTEXT_KEY, to);
+		copyIfExists(EXIT_STATE_CONTEXT_KEY, to);
 		if (StringUtils.isNotEmpty(keysToCopy) && !"*".equals(keysToCopy)) {
 			StringTokenizer st = new StringTokenizer(keysToCopy,",;");
 			while (st.hasMoreTokens()) {
 				String key = st.nextToken();
-				copySessionKey(key, from, to, requester);
+				to.put(key, get(key));
 			}
 		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
-			for (String key : from.keySet()) { // ... all keys will be copied
-				copySessionKey(key, from, to, requester);
-			}
+			to.putAll(this);                                      // ... all keys will be copied
 		}
-		for (Entry<String, Object> sessionEntry : from.entrySet()) {
-			if (sessionEntry.getValue() instanceof AutoCloseable &&
-				to.containsKey(sessionEntry.getKey()) &&
-				sessionEntry.getValue().equals(to.get(sessionEntry.getKey()))
-			) {
-				from.unscheduleCloseOnSessionExit((AutoCloseable) sessionEntry.getValue());
-			}
+		Set<AutoCloseable> closeablesInDestination = to.values().stream()
+				.filter(v -> v instanceof AutoCloseable)
+				.map(v -> (AutoCloseable) v)
+				.collect(Collectors.toSet());
+		if (to instanceof PipeLineSession) {
+			PipeLineSession toSession = (PipeLineSession) to;
+			closeablesInDestination.addAll(toSession.closeables.keySet());
 		}
+		closeables.keySet().removeAll(closeablesInDestination);
 	}
 
-	private static void copySessionKey(String key, PipeLineSession from, Map<String, Object> to, INamedObject requester) {
-		Object value = from.get(key);
-		to.put(key, value);
-		if (value instanceof Message) {
-			// Give messages the special treatment, because they do something extra before registering with session.
-			Message message = (Message) value;
-			message.unscheduleFromCloseOnExitOf(from);
-			if (to instanceof PipeLineSession) {
-				message.closeOnCloseOf((PipeLineSession) to, requester);
-			}
-		} else if (value instanceof AutoCloseable) {
-			// Don't wrap closeables in a message, that makes unregistering them later unreliable
-			AutoCloseable closeable = (AutoCloseable) value;
-			from.unscheduleCloseOnSessionExit(closeable);
-			if (to instanceof PipeLineSession) {
-				((PipeLineSession) to).scheduleCloseOnSessionExit(closeable, ClassUtils.nameOf(requester));
-			}
-		}
-	}
-
-	private static void copyIfExists(String key, Map<String,Object> from, Map<String,Object> to) {
-		if (from.containsKey(key)) {
-			to.put(key, from.get(key));
+	private void copyIfExists(String key, Map<String, Object> to) {
+		if (containsKey(key)) {
+			to.put(key, get(key));
 		}
 	}
 
@@ -164,7 +142,17 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return super.put(key, value);
 	}
 
-	//Shouldn't this be `id` ? See {#setListenerParameters(...)};
+	@Override
+	public void putAll(Map<? extends String, ?> m) {
+		for (Entry<? extends String, ?> entry : m.entrySet()) {
+			put(entry.getKey(), entry.getValue());
+		}
+	}
+
+	/*
+	 * The ladybug might stub the MessageId. The Stubbed value will be wrapped in a Message.
+	 * Ensure that a proper string is returned in those cases too.
+	 */
 	@SneakyThrows
 	public String getMessageId() {
 		return Message.asString(get(messageIdKey)); // Allow Ladybug to wrap it in a Message
