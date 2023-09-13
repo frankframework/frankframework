@@ -17,13 +17,23 @@ package nl.nn.adapterframework.lifecycle;
 
 import java.util.Map;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextListener;
+
 import org.springframework.stereotype.Component;
 
 /**
+ * A Servlet registration wrapper to register {@link javax.servlet.Servlet}s in a Servlet 3.0+
+ * container. Similar to the {@link ServletContext#addServlet(String, Class)}
+ * registration} features provided by {@link ServletContext} but with a friendly design allowing
+ * users to change servlet settings before they are initialized by the {@link ServletContextListener} (starting the application).
+ * <p>
  * Interface to use in combination with a Spring {@link Component} annotation.
  * Classes that implement the annotation are automatically picked up by Spring,
  * and in combination with the ServletRegisteringPostProcessor the servlets are
- * automatically registered with the ServletManager
+ * automatically registered with the ServletManager.
+ * 
+ * The servlet name will be deduced if not specified.
  *
  * @author Niels Meijer
  */

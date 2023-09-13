@@ -22,6 +22,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
 			<artifactId>credentialprovider</artifactId>
 		</dependency>
 		<dependency>
@@ -284,25 +288,7 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-core</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-config</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-ldap</artifactId>
-		</dependency>
-		<!-- not yet used, note that it depends on Spring 4.3.30
-		<dependency>
-			<groupId>org.springframework.security.oauth</groupId>
-			<artifactId>spring-security-oauth2</artifactId>
-			<version>2.5.2.RELEASE</version>
-		</dependency>
-		-->
+
 		<dependency> <!-- for version number compare -->
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-artifact</artifactId>

@@ -23,6 +23,8 @@ import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration.Servlet;
+import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
+import nl.nn.adapterframework.util.SpringUtils;
 
 public class ServletRegisteringPostProcessor implements BeanPostProcessor, ApplicationContextAware {
 
@@ -32,7 +34,9 @@ public class ServletRegisteringPostProcessor implements BeanPostProcessor, Appli
 	@Override
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		if(bean instanceof Servlet) {
-			servletManager.register((Servlet) bean);
+			ServletConfiguration config = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
+			config.loadDefaultsFromServlet((Servlet) bean);
+			servletManager.register(config);
 		}
 
 		return bean;

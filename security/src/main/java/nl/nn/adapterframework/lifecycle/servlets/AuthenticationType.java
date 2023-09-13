@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.lifecycle.servlets;
 
-import java.lang.reflect.InvocationTargetException;
-
 import lombok.Getter;
 
 //LdapAuthenticationProvider
@@ -26,13 +24,12 @@ public enum AuthenticationType {
 	IN_MEMORY(InMemoryAuthenticator.class),
 	NONE(NoOpAuthenticator.class);
 
-	private final @Getter IAuthenticator authenticator;
+	/**
+	 * NB. Should be initialized with a Spring AutoWired /Value enabled PostProcessor.
+	 */
+	private final @Getter Class<? extends IAuthenticator> authenticator;
 
 	private AuthenticationType(Class<? extends IAuthenticator> clazz) {
-		try {
-			authenticator = clazz.getDeclaredConstructor().newInstance();
-		} catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-			throw new IllegalStateException(e);
-		}
+		authenticator = clazz;
 	}
 }
