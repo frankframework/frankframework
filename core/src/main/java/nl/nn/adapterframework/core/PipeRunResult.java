@@ -40,7 +40,7 @@ import nl.nn.adapterframework.stream.Message;
 public class PipeRunResult {
 
 	private @Getter @Setter PipeForward pipeForward;
-	private @Getter Message result = Message.NULL_MESSAGE;
+	private Message result;
 
 	public PipeRunResult() {
 		super();
@@ -53,6 +53,13 @@ public class PipeRunResult {
 
 	public void setResult(Object result) {
 		this.result = Message.asMessage(result);
+	}
+
+	public Message getResult() {
+		if (result == null) {
+			return Message.nullMessage();
+		}
+		return result;
 	}
 
 	@Override
