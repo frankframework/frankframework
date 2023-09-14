@@ -51,7 +51,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 public class ServletConfiguration implements InitializingBean, EnvironmentAware {
 
 	private @Getter String name;
-	private @Getter List<String> securityRoles;
+	private @Getter List<String> securityRoles = Collections.emptyList();
 	private @Getter List<String> urlMapping;
 	private @Getter @Setter int loadOnStartup = -1;
 	private @Getter @Setter boolean enabled = true;
@@ -63,18 +63,14 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	@Override
 	public void afterPropertiesSet() {
-		defaultSecuritySettings();
-		loadProperties();
-
-		if(urlMapping.isEmpty()) {
-			throw new IllegalStateException("servlet must have an URL to map to");
-		}
-
 		SecuritySettings.setupDefaultSecuritySettings(environment);
+		defaultSecuritySettings();
 	}
 
 	public void setSecurityRoles(String[] accessGrantingRoles) {
-		this.urlMapping = accessGrantingRoles == null ? Collections.emptyList() : Arrays.asList(accessGrantingRoles);
+		if(accessGrantingRoles != null) {
+			this.securityRoles = Arrays.asList(accessGrantingRoles);
+		}
 	}
 
 	public void setName(String servletName) {
@@ -117,7 +113,10 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 		authenticatorName = defaultType.name();
 	}
 
-	private void loadProperties() {
+	/**
+	 * Overwrites servlet defaults with properties.
+	 */
+	public void loadProperties() {
 		String propertyPrefix = "servlet."+name+".";
 
 		this.enabled = environment.getProperty(propertyPrefix+"enabled", boolean.class, enabled);
@@ -148,6 +147,10 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 	}
 
 	private void setUrlMapping(List<String> urlMappings) {
+		if(urlMappings == null || urlMappings.isEmpty()) {
+			throw new IllegalStateException("servlet must have an URL to map to");
+		}
+
 		this.urlMapping = urlMappings;
 	}
 

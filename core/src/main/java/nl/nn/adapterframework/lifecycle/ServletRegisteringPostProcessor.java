@@ -36,6 +36,7 @@ public class ServletRegisteringPostProcessor implements BeanPostProcessor, Appli
 		if(bean instanceof Servlet) {
 			ServletConfiguration config = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
 			config.loadDefaultsFromServlet((Servlet) bean);
+			config.loadProperties();
 			servletManager.register(config);
 		}
 
