@@ -52,14 +52,16 @@ public class CompactSaxHandler extends DefaultHandler {
 		printCharBuffer();
 
 		StringBuilder attributeBuffer = new StringBuilder();
-		if (!isRemoveCompactMsgNamespaces()) {
-			for (int i = 0; i < attributes.getLength(); i++) {
-				attributeBuffer.append(" ");
+		for (int i = 0; i < attributes.getLength(); i++) {
+			attributeBuffer.append(" ");
+			if (isRemoveCompactMsgNamespaces()) {
+				attributeBuffer.append(attributes.getLocalName(i));
+			} else {
 				attributeBuffer.append(attributes.getQName(i));
-				attributeBuffer.append("=\"");
-				attributeBuffer.append(attributes.getValue(i));
-				attributeBuffer.append("\"");
 			}
+			attributeBuffer.append("=\"");
+			attributeBuffer.append(attributes.getValue(i));
+			attributeBuffer.append("\"");
 		}
 
 		if (isRemoveCompactMsgNamespaces()) {

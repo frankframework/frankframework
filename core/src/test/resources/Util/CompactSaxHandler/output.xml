@@ -11,7 +11,7 @@
 				<mutatiesoort>T</mutatiesoort>
 				<indicatorOvername>V</indicatorOvername>
 			</parameters>
-			<object>
+			<object entiteittype="EDC" verwerkingssoort="T">
 				<identificatie>DC2023-00020</identificatie>
 				<dct.omschrijving>Brief</dct.omschrijving>
 			</object>
