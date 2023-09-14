@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -218,6 +218,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 					log.debug(getLogPrefix()+"error executing insert query (as part of locker): ",e);
 					if (numRetries == -1 || r < numRetries) {
 						log.debug(getLogPrefix()+"will try again");
+						objectIdWithSuffix = null;
 					} else {
 						log.debug(getLogPrefix()+"will not try again");
 
@@ -227,11 +228,11 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 								messageKeeper.add(msg, MessageKeeperLevel.INFO);
 							}
 							log.info(getLogPrefix()+msg);
+							return null;
 						} else {
 							throw e;
 						}
 					}
-					return null;
 				}
 			} finally {
 				if(itx != null) {
