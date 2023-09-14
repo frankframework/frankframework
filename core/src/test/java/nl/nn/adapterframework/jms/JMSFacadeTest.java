@@ -1,10 +1,13 @@
 package nl.nn.adapterframework.jms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import javax.jms.JMSException;
+import javax.jms.TextMessage;
 import javax.xml.soap.SOAPConstants;
 import javax.xml.transform.TransformerException;
 
@@ -12,7 +15,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
@@ -20,7 +22,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageContext;
 
 class JMSFacadeTest {
 
@@ -52,12 +53,13 @@ class JMSFacadeTest {
 	void testExtractMessageWithHeaders() throws JMSException, IOException, TransformerException, SAXException {
 		// Arrange
 		PipeLineSession pipeLineSession = new PipeLineSession();
-		try (MockedStatic<Message> mockedStaticMessage = Mockito.mockStatic(Message.class)) {
-			mockedStaticMessage.when(() -> Message.asMessage(Mockito.any())).thenReturn(new Message(SOAP_MESSAGE, new MessageContext()));
+		TextMessage mock = Mockito.mock(TextMessage.class);
+		when(mock.getText()).thenReturn(SOAP_MESSAGE);
+		when(mock.getPropertyNames()).thenReturn(Collections.emptyEnumeration());
 
-			// Act
-			message = jmsFacade.extractMessage(Mockito.mock(javax.jms.Message.class), pipeLineSession, true, "key", soapWrapper);
-		}
+		// Act
+		message = jmsFacade.extractMessage(mock, pipeLineSession, true, "key", soapWrapper);
+		pipeLineSession.close();
 
 		// Assert
 		assertEquals(DEFAULT_BODY, message.asString());
