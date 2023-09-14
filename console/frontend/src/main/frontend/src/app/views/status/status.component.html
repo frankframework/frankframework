@@ -284,8 +284,7 @@
                     <i class="fa fa-sign-in"></i> ({{adapter.messageLogMessageCount}})
                   </span>
                   <span *ngIf="(adapter.errorStoreMessageCount ?? 0) > 0" class="text-danger"
-                    title="Total # of messages in Error">
-                    &nbsp<i class="fa fa-times-circle"></i> ({{adapter.errorStoreMessageCount}})
+                    title="Total # of messages in Error">&nbsp;<i class="fa fa-times-circle"></i> ({{adapter.errorStoreMessageCount}})
                   </span>
                   <span *ngIf="(adapter.sendersMessageLogCount ?? 0) > 0" class="text-success"
                     title="Total # of messages processed by senders that have a messagelog">

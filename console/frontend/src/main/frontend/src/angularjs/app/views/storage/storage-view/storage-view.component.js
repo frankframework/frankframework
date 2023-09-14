@@ -62,5 +62,5 @@ appModule.component('storageView', {
 		onDownloadMessage: '&',
     },
     controller: ['Api', '$state', 'SweetAlert', StorageViewController],
-    templateUrl: 'js/app/views/storage/storage-view/storage-view.component.html',
+    templateUrl: 'angularjs/app/views/storage/storage-view/storage-view.component.html',
 });

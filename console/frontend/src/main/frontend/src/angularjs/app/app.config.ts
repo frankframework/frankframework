@@ -153,7 +153,6 @@ appModule.config(['$httpProvider', function ($httpProvider: angular.IHttpProvide
 					configuration: { value: '', squash: true },
 					adapter: { value: '', squash: true },
 					storageSourceName: { value: '', squash: true },
-					processState: { value: '', squash: true },
 					storageSource: { value: '', squash: true },
 				},
 				data: {
@@ -164,11 +163,15 @@ appModule.config(['$httpProvider', function ($httpProvider: angular.IHttpProvide
 			.state('pages.storage.list', {
 				url: "stores/:processState",
 				component: "storageList",
+        params: {
+          processState: { value: '', squash: true },
+        }
 			})
 			.state('pages.storage.view', {
 				url: "stores/:processState/messages/:messageId",
 				component: "storageView",
-				params: {
+        params: {
+          processState: { value: '', squash: true },
 					messageId: { value: '', squash: true },
 				},
 			})

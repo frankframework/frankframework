@@ -335,5 +335,5 @@ appModule.component('storageList', {
 		onDoResendMessage: '&',
 	},
 	controller: ['$scope', 'Api', '$compile', 'Cookies', 'Session', 'SweetAlert', StorageListController],
-	templateUrl: 'js/app/views/storage/storage-list/storage-list.component.html',
+	templateUrl: 'angularjs/app/views/storage/storage-list/storage-list.component.html',
 });
