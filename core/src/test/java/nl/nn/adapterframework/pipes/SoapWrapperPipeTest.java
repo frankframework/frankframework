@@ -23,7 +23,7 @@ import nl.nn.adapterframework.testutil.TestAssertions;
 public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase<P> {
 
 	private static final String TARGET_NAMESPACE = "urn:fakenamespace";
-	private static final String DEFAULT_BODY_END =  "<root xmlns=\"" + TARGET_NAMESPACE + "\">\n<attrib>1</attrib>\n<attrib>2</attrib>\n"
+	private static final String DEFAULT_BODY_END = "<root xmlns=\"" + TARGET_NAMESPACE + "\">\n<attrib>1</attrib>\n<attrib>2</attrib>\n"
 			+ "</root></soapenv:Body></soapenv:Envelope>";
 
 	@Override
@@ -98,8 +98,8 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 
 		// Assert 2
 		actual = pipeRunResult.getResult().asString();
-    	assertNotNull(actual);
-    	assertTrue(actual.contains(SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE));
+		assertNotNull(actual);
+		assertTrue(actual.contains(SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE));
 
 		wrapPipeSoap11.stop();
 	}
