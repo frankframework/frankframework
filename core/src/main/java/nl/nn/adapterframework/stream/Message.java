@@ -74,6 +74,7 @@ import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class Message implements Serializable, Closeable {
+	public static final Message NULL_MESSAGE = nullMessage(new MessageContext());
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 512L * 1024L;
 	private static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
@@ -174,7 +175,7 @@ public class Message implements Serializable, Closeable {
 
 	@Nonnull
 	public static Message nullMessage() {
-		return nullMessage(new MessageContext());
+		return NULL_MESSAGE;
 	}
 
 	@Nonnull
@@ -796,6 +797,9 @@ public class Message implements Serializable, Closeable {
 	}
 
 	public static Message asMessage(Object object) {
+		if (object == null) {
+			return NULL_MESSAGE;
+		}
 		if (object instanceof Message) {
 			return (Message) object;
 		}

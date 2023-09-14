@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import nl.nn.adapterframework.stream.Message;
  * </ul><br/>
  * <code>Pipe</code>s return a <code>PipeRunResult</code> with the information
  * as above.
- * 
+ *
  * @author Johan Verrips
  * @see PipeForward
  * @see nl.nn.adapterframework.pipes.AbstractPipe#doPipe
@@ -40,7 +40,7 @@ import nl.nn.adapterframework.stream.Message;
 public class PipeRunResult {
 
 	private @Getter @Setter PipeForward pipeForward;
-	private @Getter Message result;
+	private @Getter Message result = Message.NULL_MESSAGE;
 
 	public PipeRunResult() {
 		super();
