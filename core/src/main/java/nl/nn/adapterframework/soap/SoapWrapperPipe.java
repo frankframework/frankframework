@@ -236,7 +236,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					throw new PipeRunException(this, "SOAP Body contains SOAP Fault");
 				}
 				if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-					String soapHeader = soapWrapper.getHeader(message);
+					String soapHeader = soapWrapper.getHeader(message, (SoapVersion) session.getOrDefault(PipeLineSession.MESSAGE_SOAP_VERSION, SoapVersion.SOAP11));
 					session.put(getSoapHeaderSessionKey(), soapHeader);
 				}
 				if (removeOutputNamespacesTp != null) {
@@ -255,7 +255,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	private String determineSoapNamespace(PipeLineSession session) {
+	private String determineSoapNamespaceFromSession(PipeLineSession session) {
 		String soapNamespace = getSoapNamespace();
 		if (StringUtils.isEmpty(soapNamespace)) {
 			String savedSoapNamespace = session.getString(getSoapNamespaceSessionKey());
@@ -277,7 +277,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	}
 
 	protected Message wrapMessage(Message message, String soapHeader, PipeLineSession session) throws IOException {
-		String soapNamespace = determineSoapNamespace(session);
+		String soapNamespace = determineSoapNamespaceFromSession(session);
 		if (soapNamespace==null) {
 			return message;
 		}

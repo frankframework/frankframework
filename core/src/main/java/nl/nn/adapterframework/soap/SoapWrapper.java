@@ -65,7 +65,8 @@ public class SoapWrapper {
 
 	private TransformerPool extractBodySoap11;
 	private TransformerPool extractBodySoap12;
-	private TransformerPool extractHeader;
+	private TransformerPool extractHeaderSoap11;
+	private TransformerPool extractHeaderSoap12;
 	private TransformerPool extractFaultCount;
 	private TransformerPool extractFaultCode;
 	private TransformerPool extractFaultString;
@@ -88,12 +89,13 @@ public class SoapWrapper {
 
 	private void init() throws ConfigurationException {
 		try {
-			extractBodySoap11  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_BODY_XPATH, OutputType.XML, false, null, false));
-			extractBodySoap12  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_BODY_XPATH, OutputType.XML, false, null, false));
-			extractHeader      = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_HEADER_XPATH, OutputType.XML));
-			extractFaultCount  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCOUNTER_XPATH, OutputType.TEXT));
-			extractFaultCode   = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCODE_XPATH, OutputType.TEXT));
-			extractFaultString = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTSTRING_XPATH, OutputType.TEXT));
+			extractBodySoap11   = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_BODY_XPATH, OutputType.XML, false, null, false), 0);
+			extractBodySoap12   = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_BODY_XPATH, OutputType.XML, false, null, false), 0);
+			extractHeaderSoap11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_HEADER_XPATH, OutputType.XML), 0);
+			extractHeaderSoap12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_HEADER_XPATH, OutputType.XML), 0);
+			extractFaultCount   = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCOUNTER_XPATH, OutputType.TEXT), 0);
+			extractFaultCode    = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCODE_XPATH, OutputType.TEXT), 0);
+			extractFaultString  = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTSTRING_XPATH, OutputType.TEXT), 0);
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("cannot create SOAP transformer", e);
 		}
@@ -140,15 +142,21 @@ public class SoapWrapper {
 		message.preserve();
 		Message result = new Message(extractBodySoap11.transform(message.asSource()));
 		if (!Message.isEmpty(result)) {
-			if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
-				session.put(soapNamespaceSessionKey, SoapVersion.SOAP11.namespace);
+			if (session != null) {
+				session.putIfAbsent(PipeLineSession.MESSAGE_SOAP_VERSION, SoapVersion.SOAP11);
+				if (StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
+					session.put(soapNamespaceSessionKey, SoapVersion.SOAP11.namespace);
+				}
 			}
 			return result;
 		}
 		result = new Message(extractBodySoap12.transform(message.asSource()));
 		if (!Message.isEmpty(result)) {
-			if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
-				session.put(soapNamespaceSessionKey, SoapVersion.SOAP12.namespace);
+			if (session != null) {
+				session.putIfAbsent(PipeLineSession.MESSAGE_SOAP_VERSION, SoapVersion.SOAP12);
+				if (StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
+					session.put(soapNamespaceSessionKey, SoapVersion.SOAP12.namespace);
+				}
 			}
 			return result;
 		}
@@ -158,9 +166,11 @@ public class SoapWrapper {
 		return allowPlainXml ? message : new Message(""); // could replace "" with nullMessage(), but then tests fail.
 	}
 
-
-	public String getHeader(Message message) throws SAXException, TransformerException, IOException {
-		return extractHeader.transform(message.asSource());
+	public String getHeader(final Message message, final SoapVersion soapVersion) throws SAXException, TransformerException, IOException {
+		if (soapVersion == SoapVersion.SOAP12) {
+			return extractHeaderSoap12.transform(message.asSource());
+		}
+		return extractHeaderSoap11.transform(message.asSource());
 	}
 
 	public int getFaultCount(Message message) throws SAXException, TransformerException, IOException {
