@@ -7,11 +7,11 @@
             <accountId>12345</accountId>
             <displayName>Frank</displayName>
             <email>info@frankframework.org</email>
-            <street>Westersingel</street>
-            <houseNumber>42</houseNumber>
-            <city>Rotterdam</city>
-            <zip>3014GT</zip>
-            <country>The Netherlands</country>
+			<street>Example Street</street>
+			<houseNumber>1</houseNumber>
+			<city>Example City</city>
+			<zip>1234AB</zip>
+			<country>Example country</country>
         </to>
     </header>
     <!-- Base64 encoded "The document contents" -->

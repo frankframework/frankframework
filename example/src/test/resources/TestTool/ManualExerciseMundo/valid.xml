@@ -7,21 +7,21 @@
             <accountId>12345</accountId>
             <displayName>Frank</displayName>
             <email>info@frankframework.org</email>
-            <street>Westersingel</street>
-            <houseNumber>42</houseNumber>
-            <city>Rotterdam</city>
-            <zip>3014GT</zip>
-            <country>The Netherlands</country>
+            <street>Example Street</street>
+            <houseNumber>1</houseNumber>
+            <city>Example City</city>
+            <zip>1234AB</zip>
+            <country>Example country</country>
         </to>
         <cc>
             <accountId>12346</accountId>
             <displayName>Frits</displayName>
             <email>frits@frankframework.org</email>
-            <street>Blaak</street>
-            <houseNumber>1</houseNumber>
-            <city>Rotterdam</city>
-            <zip>3016ZZ</zip>
-            <country>The Netherlands</country>
+			<street>Other Example Street</street>
+			<houseNumber>2</houseNumber>
+			<city>Other Example City</city>
+			<zip>5678CD</zip>
+			<country>Example country</country>
         </cc>
     </header>
     <!-- Base64 encoded "The document contents" -->
