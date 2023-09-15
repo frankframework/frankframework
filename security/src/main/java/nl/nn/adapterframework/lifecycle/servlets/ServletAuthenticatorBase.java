@@ -114,7 +114,8 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		return configureHttpSecurity(httpSecurityConfigurer);
 	}
 
-	private SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
+	@Override
+	public SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
 		try {
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request

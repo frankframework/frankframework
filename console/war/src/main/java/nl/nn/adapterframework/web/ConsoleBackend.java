@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Configuration;
 
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration.ServletWithParameters;
+import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.management.web.ServletDispatcher;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -37,22 +38,10 @@ public class ConsoleBackend implements ApplicationContextAware {
 	private @Setter ApplicationContext applicationContext;
 
 	@Bean
-	public ServletRegistrationBean<ServletWithParameters> createBackendServletBean() {
-		ServletWithParameters servlet = SpringUtils.createBean(applicationContext, ServletDispatcher.class);
-		log.info("registering servlet [{}]", servlet::getName);
-
-		ServletRegistrationBean<ServletWithParameters> bean = new ServletRegistrationBean<>(servlet);
-		Map<String, String> initParams = servlet.getParameters();
-		for(Map.Entry<String, String> entry : initParams.entrySet()) {
-			String key = entry.getKey();
-			String val = entry.getValue();
-			bean.addInitParameter(key, val);
-		}
-		bean.setName(servlet.getName());
-		bean.addUrlMappings("/iaf/api/*");
-
-		log.info("created IAF API servlet endpoint {}", bean::getUrlMappings);
-
-		return bean;
+	public ServletRegistration backendServletBean() {
+//		ServletRegistration servletRegistration = SpringUtils.createBean(applicationContext, ServletRegistration.class);
+//		servletRegistration.setServlet(ServletDispatcher.class);
+//		return servletRegistration;
+		return new ServletRegistration(ServletDispatcher.class);
 	}
 }

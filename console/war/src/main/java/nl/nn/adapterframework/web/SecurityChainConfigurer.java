@@ -15,66 +15,74 @@
 */
 package nl.nn.adapterframework.web;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.lang.reflect.Method;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import nl.nn.adapterframework.lifecycle.DynamicRegistration;
+import lombok.Setter;
+import nl.nn.adapterframework.lifecycle.servlets.AuthenticationType;
+import nl.nn.adapterframework.lifecycle.servlets.IAuthenticator;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 @Configuration
 @EnableWebSecurity //Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class SecurityChainConfigurer {
+public class SecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
+	private @Setter ApplicationContext applicationContext;
+	private @Setter Environment environment;
 
-	private SecurityFilterChain configureAuthenticator(HttpSecurity http) throws Exception {
-		http.anonymous().authorities(getRolePrefixedAuthorities());
-		return http.build();
-	}
+	private IAuthenticator createAuthenticator() {
+		String properyPrefix = "application.security.console.authentication.";
+		String type = environment.getProperty(properyPrefix+"type", "NONE");
+		AuthenticationType auth = null;
+		try {
+			auth = EnumUtils.parse(AuthenticationType.class, type);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalStateException("invalid authenticator type", e);
+		}
+		Class<? extends IAuthenticator> clazz = auth.getAuthenticator();
+		IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
 
-	// Adds AuthorityAuthorizationManager#ROLE_PREFIX
-	private List<GrantedAuthority> getRolePrefixedAuthorities() {
-		return Arrays.asList(DynamicRegistration.ALL_IBIS_USER_ROLES).stream().map(e -> "ROLE_" + e).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+		for(Method method: clazz.getMethods()) {
+			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+				continue;
+
+			String setter = StringUtil.lcFirst(method.getName().substring(3));
+			String value = environment.getProperty(properyPrefix+setter);
+			if(StringUtils.isEmpty(value))
+				continue;
+
+			ClassUtils.invokeSetter(authenticator, method, value);
+		}
+
+		return authenticator;
 	}
 
 	@Bean
-	public SecurityFilterChain configureChain(HttpSecurity http) throws Exception {
-		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-		http.securityMatcher( new MatchAllButJWKS() );
-		http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
-		http.csrf().disable();
-		http.formLogin().disable(); //Disable the form login filter
-		http.anonymous().disable(); //Disable the default anonymous filter
-
-		return configureAuthenticator(http);
-	}
-
-	private static class MatchAllButJWKS implements RequestMatcher {
-		private static final String JWKS_ENDPOINT = "/iaf/management/jwks";
-
-		@Override
-		public boolean matches(HttpServletRequest request) {
-			return !JWKS_ENDPOINT.equals(request.getServletPath());
-		}
-
-		@Override
-		public String toString() {
-			return "All endpoints except ["+JWKS_ENDPOINT+"]";
-		}
+	public SecurityFilterChain configureChain(HttpSecurity http) {
+		ServletRegistration servlet = applicationContext.getBean("backendServletBean", ServletRegistration.class);
+		IAuthenticator authenticator = createAuthenticator();
+		authenticator.registerServlet(servlet.getServletConfiguration());
+		return authenticator.configureHttpSecurity(http);
 	}
 }
