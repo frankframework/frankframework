@@ -796,6 +796,9 @@ public class Message implements Serializable, Closeable {
 	}
 
 	public static Message asMessage(Object object) {
+		if (object == null) {
+			return nullMessage();
+		}
 		if (object instanceof Message) {
 			return (Message) object;
 		}
