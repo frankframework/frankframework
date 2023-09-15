@@ -15,7 +15,7 @@
 
 	<properties>
 		<config.image.repository>nexus.frankframework.org</config.image.repository>
-		<config.image.name>frank-framework</config.image.name>
+		<config.image.name>frankframework</config.image.name>
 		<config.image.tag>${config.image.name}:${revision}</config.image.tag>
 	</properties>
 
