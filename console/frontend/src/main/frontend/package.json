@@ -76,6 +76,7 @@
     "@types/angular-route": "^1.7.3",
     "@types/angular-sanitize": "^1.8.1",
     "@types/angular-ui-bootstrap": "^1.0.3",
+    "@types/datatables.net": "^1.10.11",
     "@types/jasmine": "~4.3.0",
     "@types/jquery": "^3.5.16",
     "@types/prismjs": "^1.26.0",

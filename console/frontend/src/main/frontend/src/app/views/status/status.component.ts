@@ -65,10 +65,10 @@ export class StatusComponent implements OnInit {
   getProcessStateIconColor = this.appService.getProcessStateIconColor;
 
   constructor(
+    public $state: StateService,
     private Api: ApiService,
     private Poller: PollerService,
     // private $filter: angular.IFilterService,
-    private $state: StateService,
     private Misc: MiscService,
     private viewportScroller: ViewportScroller, // private $anchorScroll: angular.IAnchorScrollService,
     private route: ActivatedRoute, // private $location: angular.ILocationService,

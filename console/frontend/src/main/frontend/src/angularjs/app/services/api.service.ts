@@ -75,7 +75,7 @@ export class ApiService {
     }).catch((response) => { this.errorException(response, error); });
   };
 
-  Put(uri: string, object: Record<string, any> | FormData | null, callback?: (data: any) => void, error?: ErrorCallback, intercept?: boolean): angular.IPromise<void> {
+  Put(uri: string, object: Record<string, any> | FormData | boolean | null, callback?: (data: any) => void, error?: ErrorCallback, intercept?: boolean): angular.IPromise<void> {
     var headers: angular.IHttpRequestConfigHeaders = {};
     var data = {};
     if (object != null) {

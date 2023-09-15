@@ -424,7 +424,7 @@
                             <span class="text-{{getProcessStateIconColor(store.name)}}"
                               title="Browse messages with ProcessState: {{store.name}}">
                               <button
-                                uiSref="pages.storage.list({configuration: adapter.configuration, adapter: adapter.name, storageSource: 'receivers', storageSourceName: receiver.name, processState: store.name})"
+                                (click)="$state.go('pages.storage.list', {configuration: adapter.configuration, adapter: adapter.name, storageSource: 'receivers', storageSourceName: receiver.name, processState: store.name})"
                                 class="btn btn-xs btn-default" type="button">
                                 <i class="fa {{getProcessStateIcon(store.name)}}"></i>
                                 ({{store.numberOfMessages}})
@@ -473,7 +473,7 @@
                           <span class="pull-right">
                             <span [ngClass]="pipes.isSenderTransactionalStorage ? 'text-primary' : 'text-success'">
                               <button *ngIf="pipes.hasMessageLog"
-                                uiSref="pages.storage.list({configuration: adapter.configuration, adapter: adapter.name, storageSource: 'pipes', storageSourceName: pipes.name, processState: 'Done'})"
+                                (click)="$state.go('pages.storage.list', {configuration: adapter.configuration, adapter: adapter.name, storageSource: 'pipes', storageSourceName: pipes.name, processState: 'Done'})"
                                 class="btn btn-xs btn-default m-l-xs" type="button">
                                 <i
                                   [ngClass]="pipes.isSenderTransactionalStorage ? 'fa fa-sign-out' : 'fa fa-database'"></i>
