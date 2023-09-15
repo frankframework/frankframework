@@ -65,6 +65,9 @@ import {
 import { AppConstants, appConstants, appModule } from '../angularjs/app/app.module';
 import { TimeSinceDirective } from './components/time-since.directive';
 import { FlowComponent } from './views/status/flow/flow.component';
+import { StorageComponent } from './views/storage/storage.component';
+import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
+import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -130,7 +133,10 @@ appModule
     // directives
     ToDateDirective,
     TimeSinceDirective,
-    FlowComponent
+    FlowComponent,
+    StorageComponent,
+    StorageListComponent,
+    StorageViewComponent
   ],
   imports: [
     BrowserModule,
