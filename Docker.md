@@ -1,7 +1,7 @@
 # Frank!Framework with Docker
 
 Docker images are provided, suitable both for local and server use. Images are provided from the registry located at https://nexus.frankframework.org, where images will be stored for as long as possible. 
-Specific nightly builds are made available on [DockerHub wearefrank/frank-framework](https://hub.docker.com/r/wearefrank/frank-framework), but may only be available for [6 months](https://www.docker.com/blog/scaling-dockers-business-to-serve-millions-more-developers-storage/).
+Specific nightly builds are made available on [DockerHub frankframework/frankframework](https://hub.docker.com/r/frankframework/frankframework), but may only be available for [6 months](https://www.docker.com/blog/scaling-dockers-business-to-serve-millions-more-developers-storage/).
 The source is available from the [docker-folder](docker/Tomcat) in this repository.
 
 ## Contents

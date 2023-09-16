@@ -29,6 +29,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -148,6 +150,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		this.securityContext = securityContext;
 	}
 
+	@PostConstruct
 	public void init() throws JdbcException {
 		jdbcTemplate = new JdbcTemplate(getDatasource());
 	}

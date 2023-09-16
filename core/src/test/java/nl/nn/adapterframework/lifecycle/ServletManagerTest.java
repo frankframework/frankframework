@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -22,7 +23,6 @@ import javax.servlet.ServletSecurityElement;
 import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 import javax.servlet.http.HttpServlet;
 
-import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.commons.lang3.NotImplementedException;
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,6 +37,7 @@ import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.servlets.IAuthenticator;
 import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 
 public class ServletManagerTest {
@@ -269,9 +270,7 @@ public class ServletManagerTest {
 
 		@Override
 		public Set<String> addMapping(String... urlPatterns) {
-			for(String pattern : urlPatterns) {
-				mappings.add(pattern);
-			}
+			mappings.addAll(Arrays.asList(urlPatterns));
 			return null;
 		}
 

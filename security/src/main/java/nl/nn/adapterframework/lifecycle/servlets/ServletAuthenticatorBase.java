@@ -87,7 +87,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 				throw new IllegalStateException("endpoint already configured");
 			}
 
-			log.info("registering url pattern [{}]", url, url);
+			log.info("registering url pattern [{}]", url);
 			endpoints.add(url);
 		}
 	}
@@ -132,6 +132,6 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		}
 	}
 
-	/** Before building it configures the Chain. */
+	/** Before building, configure the FilterChain. */
 	protected abstract SecurityFilterChain configure(HttpSecurity http) throws Exception;
 }

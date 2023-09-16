@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.jta.btm;
 
-import static org.junit.Assert.assertEquals;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ public class BtmConnectionFactoryFactoryTest {
 	}
 
 	@Test
-	public void testSetup() {
+	void testSetup() {
 		// Arrange
 		AppConstants appConstants = AppConstants.getInstance();
 		appConstants.setProperty("transactionmanager.btm.jms.connection.minPoolSize", "1");
@@ -31,6 +32,5 @@ public class BtmConnectionFactoryFactoryTest {
 		assertEquals(2, factory.getMaxPoolSize());
 		assertEquals(3, factory.getMaxIdleTime());
 		assertEquals(4, factory.getMaxLifeTime());
-
 	}
 }
