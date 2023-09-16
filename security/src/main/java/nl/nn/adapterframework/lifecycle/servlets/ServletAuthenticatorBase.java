@@ -56,7 +56,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	protected final synchronized Properties getEnvironmentProperties() {
 		if(applicationConstants == null) {
 			applicationConstants = new Properties();
-	
+
 			PropertySources pss = ((ConfigurableEnvironment) applicationContext.getEnvironment()).getPropertySources();
 			for(PropertySource<?> propertySource : pss) {
 				if (propertySource instanceof MapPropertySource) {
@@ -75,10 +75,10 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	private void setSecurityRoles(List<String> securityRoles) {
 		if(securityRoles == null || securityRoles.isEmpty()) {
-			securityRoles = DEFAULT_IBIS_ROLES;
+			this.securityRoles.addAll(DEFAULT_IBIS_ROLES);
+		} else {
+			this.securityRoles.addAll(securityRoles);
 		}
-
-		this.securityRoles.addAll(securityRoles);
 	}
 
 	private void setEndpoints(List<String> urlMappings) {
