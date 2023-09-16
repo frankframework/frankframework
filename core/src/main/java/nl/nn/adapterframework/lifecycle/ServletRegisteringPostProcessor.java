@@ -35,8 +35,7 @@ public class ServletRegisteringPostProcessor implements BeanPostProcessor, Appli
 	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 		if(bean instanceof Servlet) {
 			ServletConfiguration config = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
-			config.loadDefaultsFromServlet((Servlet) bean);
-			config.loadProperties();
+			config.fromServlet((Servlet) bean);
 			servletManager.register(config);
 		}
 

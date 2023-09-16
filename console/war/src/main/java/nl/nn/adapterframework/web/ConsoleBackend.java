@@ -15,33 +15,16 @@
 */
 package nl.nn.adapterframework.web;
 
-import java.util.Map;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import lombok.Setter;
-import nl.nn.adapterframework.lifecycle.DynamicRegistration.ServletWithParameters;
-import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.management.web.ServletDispatcher;
-import nl.nn.adapterframework.util.SpringUtils;
 
 @Configuration
-public class ConsoleBackend implements ApplicationContextAware {
-	private final Logger log = LogManager.getLogger(ConsoleBackend.class);
-
-	private @Setter ApplicationContext applicationContext;
+public class ConsoleBackend {
 
 	@Bean
 	public ServletRegistration backendServletBean() {
-//		ServletRegistration servletRegistration = SpringUtils.createBean(applicationContext, ServletRegistration.class);
-//		servletRegistration.setServlet(ServletDispatcher.class);
-//		return servletRegistration;
 		return new ServletRegistration(ServletDispatcher.class);
 	}
 }

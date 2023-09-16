@@ -17,8 +17,6 @@ package nl.nn.adapterframework.web;
 
 import java.lang.reflect.Method;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -31,10 +29,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.servlets.AuthenticationType;
 import nl.nn.adapterframework.lifecycle.servlets.IAuthenticator;

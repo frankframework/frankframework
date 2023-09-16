@@ -100,6 +100,8 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 	@Override // After initialization but before other servlets are wired
 	public void afterPropertiesSet() throws Exception {
+		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
+
 		addDefaultAuthenticator(AuthenticationType.CONTAINER);
 		addDefaultAuthenticator(AuthenticationType.NONE);
 

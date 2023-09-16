@@ -34,7 +34,7 @@ public class SecuritySettings {
 	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
 	private static AtomicBoolean initialized = new AtomicBoolean(false);
 
-	protected static void setupDefaultSecuritySettings(Environment properties) {
+	public static void setupDefaultSecuritySettings(Environment properties) {
 		if(initialized.compareAndSet(false, true)) {
 			boolean isDtapStageLoc = "LOC".equalsIgnoreCase(properties.getProperty("dtap.stage"));
 			String isAuthEnabled = properties.getProperty(AUTH_ENABLED_KEY);

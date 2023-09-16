@@ -63,7 +63,6 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	@Override
 	public void afterPropertiesSet() {
-		SecuritySettings.setupDefaultSecuritySettings(environment);
 		defaultSecuritySettings();
 	}
 
@@ -81,7 +80,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 	}
 
 	/** Convenience method to easily register a dynamic Frank servlet. */
-	public void loadDefaultsFromServlet(Servlet servlet) {
+	public void fromServlet(Servlet servlet) {
 		setName(servlet.getName());
 		setUrlMapping(servlet.getUrlMapping());
 		setSecurityRoles(servlet.getAccessGrantingRoles());
@@ -93,6 +92,8 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 			Map<String, String> initParams = ((DynamicRegistration.ServletWithParameters) servlet).getParameters();
 			initParams.entrySet().stream().forEach(e -> addInitParameter(e.getKey(), e.getValue()));
 		}
+
+		loadProperties();
 	}
 
 	public void setServlet(javax.servlet.Servlet servlet) {
