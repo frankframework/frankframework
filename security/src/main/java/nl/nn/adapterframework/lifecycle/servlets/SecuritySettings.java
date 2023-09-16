@@ -15,41 +15,36 @@
 */
 package nl.nn.adapterframework.lifecycle.servlets;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.core.env.Environment;
+import org.springframework.core.env.PropertyResolver;
 
 import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.util.EnumUtils;
 
 @Log4j2
 public class SecuritySettings {
-	protected static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
-	protected static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
+	public static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
+	public static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
 
 	private static boolean webSecurityEnabled = true;
 	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
-	private static AtomicBoolean initialized = new AtomicBoolean(false);
 
-	public static void setupDefaultSecuritySettings(Environment properties) {
-		if(initialized.compareAndSet(false, true)) {
-			boolean isDtapStageLoc = "LOC".equalsIgnoreCase(properties.getProperty("dtap.stage"));
-			String isAuthEnabled = properties.getProperty(AUTH_ENABLED_KEY);
-			webSecurityEnabled = StringUtils.isNotEmpty(isAuthEnabled) ? Boolean.parseBoolean(isAuthEnabled) : !isDtapStageLoc;
-	
-			String constraintType = properties.getProperty(HTTPS_ENABLED_KEY);
-			if (StringUtils.isNotEmpty(constraintType)) {
-				try {
-					defaultTransportGuarantee = EnumUtils.parse(TransportGuarantee.class, constraintType);
-				} catch(IllegalArgumentException e) {
-					log.error("unable to set TransportGuarantee", e);
-				}
-			} else if(isDtapStageLoc) {
-				defaultTransportGuarantee = TransportGuarantee.NONE;
+	public static void setupDefaultSecuritySettings(PropertyResolver properties) {
+		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(properties.getProperty("dtap.stage"));
+		String isAuthEnabled = properties.getProperty(AUTH_ENABLED_KEY);
+		webSecurityEnabled = StringUtils.isNotEmpty(isAuthEnabled) ? Boolean.parseBoolean(isAuthEnabled) : !isDtapStageLoc;
+
+		String constraintType = properties.getProperty(HTTPS_ENABLED_KEY);
+		if (StringUtils.isNotEmpty(constraintType)) {
+			try {
+				defaultTransportGuarantee = EnumUtils.parse(TransportGuarantee.class, constraintType);
+			} catch(IllegalArgumentException e) {
+				log.error("unable to set TransportGuarantee", e);
 			}
+		} else if(isDtapStageLoc) {
+			defaultTransportGuarantee = TransportGuarantee.NONE;
 		}
 	}
 
