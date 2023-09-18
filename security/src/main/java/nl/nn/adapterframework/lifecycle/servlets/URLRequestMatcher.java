@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,13 +20,12 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import nl.nn.adapterframework.util.LogUtil;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class URLRequestMatcher implements RequestMatcher {
-	private final Logger log = LogUtil.getLogger(this);
 	private final Set<String> endpoints;
 
 	public URLRequestMatcher(Set<String> endpoints) {

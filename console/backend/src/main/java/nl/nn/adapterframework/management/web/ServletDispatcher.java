@@ -29,6 +29,8 @@ import org.apache.cxf.transport.servlet.CXFServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
@@ -42,6 +44,7 @@ import nl.nn.adapterframework.util.HttpUtils;
  * @author	Niels Meijer
  */
 @Component
+@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class ServletDispatcher extends CXFServlet implements DynamicRegistration.ServletWithParameters {
 
 	private static final long serialVersionUID = 3L;

@@ -108,6 +108,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-security</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
 				<artifactId>iaf-management-gateway</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -1122,6 +1127,7 @@
 			</activation>
 			<modules>
 				<module>iaf-commons</module>
+				<module>security</module>
 				<module>credentialProvider</module>
 				<module>management-gateway</module>
 				<module>core</module>

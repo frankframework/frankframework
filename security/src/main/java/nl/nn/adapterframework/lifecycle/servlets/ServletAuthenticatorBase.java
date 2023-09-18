@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,34 +15,56 @@
 */
 package nl.nn.adapterframework.lifecycle.servlets;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.PropertySources;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Getter;
-import nl.nn.adapterframework.lifecycle.ServletManager;
-import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class ServletAuthenticatorBase implements IAuthenticator, ApplicationContextAware {
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
+	public static final List<String> DEFAULT_IBIS_ROLES = Collections.unmodifiableList(Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"));
 
-	protected final Logger log = LogUtil.getLogger(this);
+	protected final Logger log = LogManager.getLogger(this);
 
 	private Set<String> endpoints = new HashSet<>();
 	private @Getter ApplicationContext applicationContext;
 	private @Getter Set<String> securityRoles = new HashSet<>();
+	private Properties applicationConstants = null;
 
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
+	}
+
+	protected final synchronized Properties getEnvironmentProperties() {
+		if(applicationConstants == null) {
+			applicationConstants = new Properties();
+
+			PropertySources pss = ((ConfigurableEnvironment) applicationContext.getEnvironment()).getPropertySources();
+			for(PropertySource<?> propertySource : pss) {
+				if (propertySource instanceof MapPropertySource) {
+					applicationConstants.putAll(((MapPropertySource) propertySource).getSource());
+				}
+			}
+		}
+		return applicationConstants;
 	}
 
 	@Override
@@ -53,10 +75,10 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	private void setSecurityRoles(List<String> securityRoles) {
 		if(securityRoles == null || securityRoles.isEmpty()) {
-			securityRoles = ServletManager.DEFAULT_IBIS_ROLES;
+			this.securityRoles.addAll(DEFAULT_IBIS_ROLES);
+		} else {
+			this.securityRoles.addAll(securityRoles);
 		}
-
-		this.securityRoles.addAll(securityRoles);
 	}
 
 	private void setEndpoints(List<String> urlMappings) {
@@ -92,11 +114,12 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		return configureHttpSecurity(httpSecurityConfigurer);
 	}
 
-	private SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
+	@Override
+	public SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
 		try {
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
-			http.csrf().disable();
+			http.csrf().disable(); //Disable because the front-end doesn't support CSFR tokens (yet!)
 			http.securityMatcher(new URLRequestMatcher(endpoints));
 			http.formLogin().disable(); //Disable the form login filter
 			http.anonymous().disable(); //Disable the default anonymous filter
