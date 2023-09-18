@@ -1,7 +1,7 @@
 # Frank!Framework with Docker
 
 Docker images are provided, suitable both for local and server use. Images are provided from the registry located at https://nexus.frankframework.org, where images will be stored for as long as possible. 
-Specific nightly builds are made available on [DockerHub wearefrank/frank-framework](https://hub.docker.com/r/wearefrank/frank-framework), but may only be available for [6 months](https://www.docker.com/blog/scaling-dockers-business-to-serve-millions-more-developers-storage/).
+Specific nightly builds are made available on [DockerHub frankframework/frankframework](https://hub.docker.com/r/frankframework/frankframework), but may only be available for [6 months](https://www.docker.com/blog/scaling-dockers-business-to-serve-millions-more-developers-storage/).
 The source is available from the [docker-folder](docker/Tomcat) in this repository.
 
 ## Contents
@@ -33,17 +33,17 @@ For a list of available tags, see https://nexus.frankframework.org/#browse/searc
 
 To run the image, run the following command, adding environment variables and mounts as needed:
 
-`docker run --publish <hostport>:8080 [-e <name>=<value>] [-v <source>:<target>[:<options>]] --name <name> nexus.frankframework.org/frank-framework[:<tag>]`
+`docker run --publish <hostport>:8080 [-e <name>=<value>] [-v <source>:<target>[:<options>]] --name <name> nexus.frankframework.org/frankframework[:<tag>]`
 
-For example, to run Frank2Example on http://localhost with the latest image using Powershell on Windows:
+For example, to run Frank2Example on http://localhost with the latest image using Powershell on Windows or Bash on Linux:
 
 ```bash
 docker run --publish 80:8080 \
 	-e dtap.stage=LOC \
-	-v $pwd/example/src/main/resources:/opt/frank/resources \
-	-v $pwd/example/src/main/webapp/META-INF/context.xml:/usr/local/tomcat/conf/Catalina/localhost/ROOT.xml \
+	-v $PWD/example/src/main/resources:/opt/frank/resources \
+	-v $PWD/example/src/main/webapp/META-INF/context.xml:/usr/local/tomcat/conf/Catalina/localhost/ROOT.xml \
 	--name Frank2Example \
-	nexus.frankframework.org/frank-framework:latest
+	nexus.frankframework.org/frankframework:latest
 ```
 
 ### Server use
@@ -52,7 +52,7 @@ Please read the [Considerations](#Considerations) before using the image on serv
 
 For use on servers, you need to build your own image that includes the required configuration files. To start building your own image, start your Dockerfile with:
 
-`FROM nexus.frankframework.org/frank-framework[:<tag>]`
+`FROM nexus.frankframework.org/frankframework[:<tag>]`
 
 Use `COPY --chown=tomcat` when copying files to ensure that tomcat can use the files.
 

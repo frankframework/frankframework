@@ -25,9 +25,9 @@ public class BusTestBase {
 
 	private Configuration configuration;
 	private ApplicationContext parentContext;
-	private QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
+	private final QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 
-	private final ApplicationContext getParentContext() {
+	private ApplicationContext getParentContext() {
 		if(parentContext == null) {
 			ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext();
 			applicationContext.setConfigLocation("testBusApplicationContext.xml");
@@ -79,7 +79,7 @@ public class BusTestBase {
 	}
 
 	/**
-	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked 
+	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked
 	 * ResultSet using a {@link nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
 	 */
 	public void mockFixedQuerySenderResult(String query, ResultSet resultSet) {

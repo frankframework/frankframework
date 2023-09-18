@@ -176,7 +176,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		return applicationContext.getBean(busName, SubscribableChannel.class);
 	}
 
-	private final void initializeBean(Object bean) {
+	private void initializeBean(Object bean) {
 		applicationContext.getAutowireCapableBeanFactory().initializeBean(bean, bean.getClass().getCanonicalName());
 	}
 }

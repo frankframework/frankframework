@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
+import nl.nn.testtool.TestTool;
 import nl.nn.testtool.run.ReportRunner;
 
 /**
@@ -39,13 +40,13 @@ public class Debugger extends nl.nn.ibistesttool.Debugger {
 	@Override
 	public List<String> getStubStrategies() {
 		List<String> stubStrategies = new ArrayList<>();
-		stubStrategies.add(STUB_STRATEGY_NEVER);
+		stubStrategies.add(TestTool.STUB_STRATEGY_NEVER);
 		return stubStrategies;
 	}
 
 	@Override
 	public String getDefaultStubStrategy() {
-		return STUB_STRATEGY_NEVER;
+		return TestTool.STUB_STRATEGY_NEVER;
 	}
 
 	@Override

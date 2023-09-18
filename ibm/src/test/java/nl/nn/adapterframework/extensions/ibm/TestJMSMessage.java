@@ -18,7 +18,6 @@ package nl.nn.adapterframework.extensions.ibm;
 import java.nio.charset.StandardCharsets;
 
 import javax.jms.BytesMessage;
-import javax.jms.JMSException;
 
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -34,32 +33,32 @@ public abstract class TestJMSMessage extends Mockito implements BytesMessage, An
 	}
 
 	@Override
-	public BytesMessage answer(InvocationOnMock invocation) throws Throwable {
+	public BytesMessage answer(InvocationOnMock invocation) {
 		return this; //created at newInstance() to mock unimplemented methods, initialized once answer is called
 	}
 
 	@Override
-	public String getJMSMessageID() throws JMSException {
+	public String getJMSMessageID() {
 		return "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
 	}
 
 	@Override
-	public String getJMSCorrelationID() throws JMSException {
+	public String getJMSCorrelationID() {
 		return "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
 	}
 
 	@Override
-	public String getStringProperty(String name) throws JMSException {
+	public String getStringProperty(String name) {
 		return StandardCharsets.ISO_8859_1.name();
 	}
 
 	@Override
-	public long getBodyLength() throws JMSException {
+	public long getBodyLength() {
 		return messageContent.length;
 	}
 
 	@Override
-	public int readBytes(byte[] value) throws JMSException {
+	public int readBytes(byte[] value) {
 		int length = value.length;
 		int to = byteOffset + length;
 		int from = byteOffset;
@@ -76,12 +75,12 @@ public abstract class TestJMSMessage extends Mockito implements BytesMessage, An
 	}
 
 	@Override
-	public int readBytes(byte[] value, int length) throws JMSException {
+	public int readBytes(byte[] value, int length) {
 		return 0;
 	}
 
 	@Override
-	public void writeBytes(byte[] value) throws JMSException {
+	public void writeBytes(byte[] value) {
 		messageContent = value;
 	}
 }

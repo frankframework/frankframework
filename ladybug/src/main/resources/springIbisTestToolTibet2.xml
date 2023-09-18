@@ -106,7 +106,7 @@
 
 	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory"/>
 
-	<bean name="auditLogStorage" class="nl.nn.ibistesttool.tibet2.Storage" autowire="byName" init-method="init">
+	<bean name="auditLogStorage" class="nl.nn.ibistesttool.tibet2.Storage" autowire="byName">
 		<property name="name" value="Logging"/>
 		<property name="datasourceName" value="jdbc/${instance.name.lc}"/>
 		<property name="table" value="AUDITLOG"/>
@@ -207,7 +207,7 @@
 		</property>
 	</bean>
 
-	<bean name="exceptionLogStorage" class="nl.nn.ibistesttool.tibet2.Storage" autowire="byName" init-method="init">
+	<bean name="exceptionLogStorage" class="nl.nn.ibistesttool.tibet2.Storage" autowire="byName">
 		<property name="name" value="Logging"/>
 		<property name="datasourceName" value="jdbc/${instance.name.lc}"/>
 		<property name="table" value="EXCEPTIONLOG"/>
