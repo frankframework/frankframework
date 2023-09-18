@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import javax.xml.soap.SOAPConstants;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
@@ -22,7 +23,15 @@ class CompactSaxHandlerTest {
 	private static final String DEFAULT_HEADER = "<soapenv:Header><info>234</info></soapenv:Header>";
 	private static final String SOAP_MESSAGE = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\">" + DEFAULT_HEADER + "<soapenv:Body>" + DEFAULT_BODY + "</soapenv:Body></soapenv:Envelope>";
 
+	private static Message defaultInputMessage;
+
 	private CompactSaxHandler handler;
+
+	@BeforeAll
+	static void loadFile() throws IOException {
+		defaultInputMessage = MessageTestUtils.getMessage("/Util/CompactSaxHandler/input.xml");
+	}
+
 	@BeforeEach
 	void setUp() {
 		handler = new CompactSaxHandler();
@@ -44,10 +53,9 @@ class CompactSaxHandlerTest {
 		// Arrange
 		handler.setRemoveCompactMsgNamespaces(true);
 		handler.setContext(new PipeLineSession());
-		Message message = MessageTestUtils.getMessage("/Util/CompactSaxHandler/input.xml");
 
 		// Act
-		XmlUtils.parseXml(message.asInputSource(), handler);
+		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output.xml");
@@ -59,12 +67,75 @@ class CompactSaxHandlerTest {
 		// Arrange
 		handler.setRemoveCompactMsgNamespaces(false);
 		handler.setContext(new PipeLineSession());
-		Message message = MessageTestUtils.getMessage("/Util/CompactSaxHandler/input.xml");
 
 		// Act
-		XmlUtils.parseXml(message.asInputSource(), handler);
+		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
 
 		// Assert
-		assertEquals(Objects.requireNonNull(message.asString()).trim(), handler.getXmlString());
+		assertEquals(Objects.requireNonNull(defaultInputMessage.asString()).trim(), handler.getXmlString());
 	}
+
+	@Test
+	void testElementToMoveFeature() throws IOException, SAXException {
+		// Arrange
+		handler.setChompLength(32);
+		handler.setContext(new PipeLineSession());
+		handler.setElementToMove("edcLk01");
+
+		// Act
+		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
+
+		// Assert
+		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-moved.xml");
+		assertEquals(testOutputFile, handler.getXmlString());
+	}
+
+	@Test
+	void testElementToMoveFeatureSessionKey() throws IOException, SAXException {
+		// Arrange
+		handler.setChompCharSize("1KB");
+		handler.setContext(new PipeLineSession());
+		handler.setElementToMove("stuurgegevens");
+		handler.setElementToMoveSessionKey("sessionKey");
+
+		// Act
+		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
+
+		// Assert
+		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-moved2.xml");
+		assertEquals(testOutputFile, handler.getXmlString());
+	}
+
+	@Test
+	void testElementChompSizeTooLong() throws IOException, SAXException {
+		// Arrange
+		handler.setChompLength(8);
+		handler.setRemoveCompactMsgNamespaces(true);
+		handler.setContext(new PipeLineSession());
+
+		// Act
+		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
+
+		// Assert
+		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chompsize.xml");
+		assertEquals(testOutputFile, handler.getXmlString());
+	}
+
+	@Test
+	void testElementToMoveChain() throws IOException, SAXException {
+		// Arrange
+		handler.setChompLength(80);
+		handler.setRemoveCompactMsgNamespaces(true);
+		handler.setElementToMoveChain("Envelope;Body;edcLk01;object;identificatie");
+
+		handler.setContext(new PipeLineSession());
+
+		// Act
+		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
+
+		// Assert
+		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest.xml");
+		assertEquals(testOutputFile, handler.getXmlString());
+	}
+
 }

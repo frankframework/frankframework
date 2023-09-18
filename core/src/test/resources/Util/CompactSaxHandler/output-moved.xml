@@ -1,0 +1,16 @@
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+	<SOAP-ENV:Header></SOAP-ENV:Header>
+	<SOAP-ENV:Body>
+		<ZKN:edcLk01 xmlns:StUF="http://www.egem.nl/StUF/StUF0301" xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310">{sessionKey:ref_edcLk01}<ZKN:stuurgegevens>
+				<StUF:berichtcode>Lk01</StUF:berichtcode>
+				<StUF:tijdstipBericht>20230825095316895</StUF:tijdstipBericht>
+				<StUF:entiteittype>EDC</StUF:entiteittype>
+			</ZKN:stuurgegevens>{sessionKey:ref_edcLk012}<ZKN:parameters>
+				<StUF:mutatiesoort>T</StUF:mutatiesoort>
+				<StUF:indicatorOvername>V</StUF:indicatorOvername>
+			</ZKN:parameters>{sessionKey:ref_edcLk013}<ZKN:object StUF:entiteittype="EDC" StUF:verwerkingssoort="T">
+				<ZKN:identificatie>DC2023-00020</ZKN:identificatie>
+				<ZKN:dct.omschrijving>Brief</ZKN:dct.omschrijving>
+			</ZKN:object>{sessionKey:ref_edcLk014}</ZKN:edcLk01>
+	</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
