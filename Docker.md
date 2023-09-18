@@ -33,7 +33,7 @@ For a list of available tags, see https://nexus.frankframework.org/#browse/searc
 
 To run the image, run the following command, adding environment variables and mounts as needed:
 
-`docker run --publish <hostport>:8080 [-e <name>=<value>] [-v <source>:<target>[:<options>]] --name <name> nexus.frankframework.org/frank-framework[:<tag>]`
+`docker run --publish <hostport>:8080 [-e <name>=<value>] [-v <source>:<target>[:<options>]] --name <name> nexus.frankframework.org/frankframework[:<tag>]`
 
 For example, to run Frank2Example on http://localhost with the latest image using Powershell on Windows or Bash on Linux:
 
@@ -43,7 +43,7 @@ docker run --publish 80:8080 \
 	-v $PWD/example/src/main/resources:/opt/frank/resources \
 	-v $PWD/example/src/main/webapp/META-INF/context.xml:/usr/local/tomcat/conf/Catalina/localhost/ROOT.xml \
 	--name Frank2Example \
-	nexus.frankframework.org/frank-framework:latest
+	nexus.frankframework.org/frankframework:latest
 ```
 
 ### Server use
@@ -52,7 +52,7 @@ Please read the [Considerations](#Considerations) before using the image on serv
 
 For use on servers, you need to build your own image that includes the required configuration files. To start building your own image, start your Dockerfile with:
 
-`FROM nexus.frankframework.org/frank-framework[:<tag>]`
+`FROM nexus.frankframework.org/frankframework[:<tag>]`
 
 Use `COPY --chown=tomcat` when copying files to ensure that tomcat can use the files.
 
