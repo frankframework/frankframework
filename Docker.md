@@ -35,13 +35,13 @@ To run the image, run the following command, adding environment variables and mo
 
 `docker run --publish <hostport>:8080 [-e <name>=<value>] [-v <source>:<target>[:<options>]] --name <name> nexus.frankframework.org/frank-framework[:<tag>]`
 
-For example, to run Frank2Example on http://localhost with the latest image using Powershell on Windows:
+For example, to run Frank2Example on http://localhost with the latest image using Powershell on Windows or Bash on Linux:
 
 ```bash
 docker run --publish 80:8080 \
 	-e dtap.stage=LOC \
-	-v $pwd/example/src/main/resources:/opt/frank/resources \
-	-v $pwd/example/src/main/webapp/META-INF/context.xml:/usr/local/tomcat/conf/Catalina/localhost/ROOT.xml \
+	-v $PWD/example/src/main/resources:/opt/frank/resources \
+	-v $PWD/example/src/main/webapp/META-INF/context.xml:/usr/local/tomcat/conf/Catalina/localhost/ROOT.xml \
 	--name Frank2Example \
 	nexus.frankframework.org/frank-framework:latest
 ```
