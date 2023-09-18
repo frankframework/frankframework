@@ -114,6 +114,13 @@
 			</exclusions>
 		</dependency>
 
+		<!-- perhaps it's a good idea to put all API's at the top of the POM... -->
+		<dependency>
+			<groupId>jakarta.transaction</groupId>
+			<artifactId>jakarta.transaction-api</artifactId>
+			<version>1.3.3</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
@@ -139,12 +146,6 @@
 					<artifactId>jakarta.transaction-api</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.transaction</groupId>
-			<artifactId>jakarta.transaction-api</artifactId>
-			<version>1.3.3</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
