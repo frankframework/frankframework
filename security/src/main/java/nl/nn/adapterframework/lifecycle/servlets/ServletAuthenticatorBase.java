@@ -119,7 +119,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		try {
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
-			http.csrf().disable();
+			http.csrf().disable(); //Disable because the front-end doesn't support CSFR tokens (yet!)
 			http.securityMatcher(new URLRequestMatcher(endpoints));
 			http.formLogin().disable(); //Disable the form login filter
 			http.anonymous().disable(); //Disable the default anonymous filter
