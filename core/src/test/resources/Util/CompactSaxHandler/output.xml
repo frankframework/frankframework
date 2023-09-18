@@ -1,0 +1,20 @@
+<Envelope>
+	<Header></Header>
+	<Body>
+		<edcLk01>
+			<stuurgegevens>
+				<berichtcode>Lk01</berichtcode>
+				<tijdstipBericht>20230825095316895</tijdstipBericht>
+				<entiteittype>EDC</entiteittype>
+			</stuurgegevens>
+			<parameters>
+				<mutatiesoort>T</mutatiesoort>
+				<indicatorOvername>V</indicatorOvername>
+			</parameters>
+			<object entiteittype="EDC" verwerkingssoort="T">
+				<identificatie>DC2023-00020</identificatie>
+				<dct.omschrijving>Brief</dct.omschrijving>
+			</object>
+		</edcLk01>
+	</Body>
+</Envelope>
