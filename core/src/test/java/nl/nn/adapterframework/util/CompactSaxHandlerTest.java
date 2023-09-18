@@ -3,6 +3,7 @@ package nl.nn.adapterframework.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javax.xml.soap.SOAPConstants;
 
@@ -12,6 +13,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 class CompactSaxHandlerTest {
@@ -42,12 +44,10 @@ class CompactSaxHandlerTest {
 		// Arrange
 		handler.setRemoveCompactMsgNamespaces(true);
 		handler.setContext(new PipeLineSession());
-
-		String testInputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/input.xml");
-		Message message1 = Message.asMessage(testInputFile);
+		Message message = MessageTestUtils.getMessage("/Util/CompactSaxHandler/input.xml");
 
 		// Act
-		XmlUtils.parseXml(message1.asInputSource(), handler);
+		XmlUtils.parseXml(message.asInputSource(), handler);
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output.xml");
@@ -59,14 +59,12 @@ class CompactSaxHandlerTest {
 		// Arrange
 		handler.setRemoveCompactMsgNamespaces(false);
 		handler.setContext(new PipeLineSession());
-
-		String testInputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/input.xml");
-		Message message1 = Message.asMessage(testInputFile);
+		Message message = MessageTestUtils.getMessage("/Util/CompactSaxHandler/input.xml");
 
 		// Act
-		XmlUtils.parseXml(message1.asInputSource(), handler);
+		XmlUtils.parseXml(message.asInputSource(), handler);
 
 		// Assert
-		assertEquals(testInputFile, handler.getXmlString());
+		assertEquals(Objects.requireNonNull(message.asString()).trim(), handler.getXmlString());
 	}
 }
