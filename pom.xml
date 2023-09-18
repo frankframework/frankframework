@@ -491,8 +491,9 @@
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
-				<artifactId>hamcrest-all</artifactId>
-				<version>1.3</version>
+				<artifactId>hamcrest</artifactId>
+				<version>2.2</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.awaitility</groupId>
@@ -731,7 +732,7 @@
 							</tag>
 							<!-- The ff.parameter tag can occur multiple times in the same JavaDoc comment.
 								 The standard doclet does not properly format JavaDoc tags in this case. This
-								 can be solved with a taglet, but WeAreFrank! does not want that complexity.
+								 can be solved with a taglet, but we do not want that complexity.
 								 We therefore accept that all occurrences of ff.parameter are formatted on the
 								 same line.
 

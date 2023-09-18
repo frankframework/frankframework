@@ -13,7 +13,7 @@ public class SftpFileSystemSenderTest extends FileSystemSenderTest<SftpFileSyste
 	private String password = "pass_123";
 	private String host = "localhost";
 	private int port = 22;
-	private String remoteDirectory = "/home/wearefrank/sftp";
+	private String remoteDirectory = "/home/frankframework/sftp";
 
 	private SshServer sshd;
 

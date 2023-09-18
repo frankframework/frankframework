@@ -27,11 +27,11 @@ import nl.nn.adapterframework.ftp.SftpFileRef;
  */
 class SftpFileSystemTest extends FileSystemTest<SftpFileRef, SftpFileSystem> {
 
-	private final String username = "wearefrank";
+	private final String username = "frankframework";
 	private final String password = "pass_123";
 	private final String host = "localhost";
 	private int port = 22;
-	private String remoteDirectory = "/home/wearefrank/sftp";
+	private String remoteDirectory = "/home/frankframework/sftp";
 
 	private SshServer sshd;
 
