@@ -671,7 +671,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			processingSuccess = false;
 			incNumOfMessagesInError();
-			addErrorMessageToMessageKeeper("error processing message with messageId [" + messageId+"]: ",e);
+			log.warn("error processing message with messageId [{}]: {}", messageId, e.getMessage());
 			result = new PipeLineResult();
 			result.setState(ExitState.ERROR);
 			result.setResult(new Message(e.getMessage()));
