@@ -1,7 +1,7 @@
 ARG FF_VERSION=latest
 # Make repository variable so iaf-test can use a private image
 ARG REGISTRY=nexus.frankframework.org
-FROM ${REGISTRY}/frank-framework:${FF_VERSION}
+FROM ${REGISTRY}/frankframework:${FF_VERSION}
 
 # Copy additional environment configuration for iaf-test
 COPY --chown=tomcat src/scripts/catalinaAdditionalTest.properties /tmp

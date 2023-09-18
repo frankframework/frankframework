@@ -56,7 +56,7 @@ One-line messages are fine for small changes, but bigger changes should look lik
     > A paragraph describing what changed and its impact."
 
 When you have created a pull request, you can visit it on GitHub.
-If your work needs improvement, WeAreFrank! will add comments that
+If your work needs improvement, other Frank!Framework contributors will add comments that
 are visible inside your pull request. For each comment, GitHub keeps
 a property whether the comment has been resolved. This is useful
 when a pull request goes through many iterations of improvements.
@@ -70,7 +70,7 @@ if you simply granted it, please say so.
 After answering, you can set the
 comment to resolved if it was clear and if you have fully granted
 it. If the comment was not clear to you or if you only partially
-granted it, then do not resolve the comment yourself. WeAreFrank!
+granted it, then do not resolve the comment yourself. Frank!Framework maintainers
 should resolve the comment when they are satisfied.
 
 If a comment you answered to is very old and if no additional
@@ -89,17 +89,17 @@ Start reading our code, and you'll get the hang of it. We optimize for readabili
   * Use Unix style newlines.
   * Each class that can be used in a configuration must contain the following documentation:
     - Class level IbisDoc, not larger than 5 to 10 lines
-    - For each configurable attribute, IbisDoc must not be larger then 2 lines
-    - Any examples and more detailed information, that has to be incorperated in to the IbisManual, should be provided as a separate file(s) attached to the pull request
+    - For each configurable attribute, IbisDoc must not be larger than 2 lines
+    - Any examples and more detailed information, that has to be incorporated in to the IbisManual, should be provided as a separate file(s) attached to the pull request
   * In JavaDoc comments, do not use the `’` character. It breaks the Frank!Doc. You can use `'` instead.
   * Please do not modify files purely for the sake of formatting, or do so in a dedicated pull request. Formatting changes make a pull request harder to understand for reviewers.
   * You can experiment with Eclipse's formatting capabilities. In the preferences window, search for the string "tab". You will get an overview of all the options about formatting. The following options are interesting in particular:
     - There are many screens in which you can define that you use tabs instead of spaces for indentation. Please visit them all to configure that you use tabs.
     - In Java | Code Style, you can define your own named code style. When you open the dialog, you see many options on how to format Java code. You can set the maximum length of lines here, for example, to avoid artificial line breaks.
 
-WeAreFrank! has introduced [Project Lombok](https://projectlombok.org/) in this source code. Please keep the following in mind when using it:
+The Frank!Framework community has introduced [Project Lombok](https://projectlombok.org/) in this source code. Please keep the following in mind when using it:
 
-* With Lombok, you do not have to code getters and setters anymore. You can generate them by by putting annotations `@Getter` and `@Setter` on the backing field. This is very useful. But please do NOT put the `@Getter` or `@Setter` on the class. This makes fewer lines of code, but there is a drawback. You cannot see the call hierarchy anymore of a getter or a setter. When you put the annotations on the method level, you can still see the call hierarchy: right-click the `@Getter` or `@Setter` and select "Open Call Hierarchy" in Eclipse.
+* With Lombok, you do not have to code getters and setters anymore. You can generate them by putting annotations `@Getter` and `@Setter` on the backing field. This is very useful. But please do NOT put the `@Getter` or `@Setter` on the class. This makes fewer lines of code, but there is a drawback. You cannot see the call hierarchy anymore of a getter or a setter. When you put the annotations on the method level, you can still see the call hierarchy: right-click the `@Getter` or `@Setter` and select "Open Call Hierarchy" in Eclipse.
 * For the sake of readability, please put the `@Getter` or `@Setter` annotations inside the variable declaration: "`private @Getter @Setter MyType myField`".
 
 See our [Additional Coding Guidelines](AdditionalCodingGuidelines.md) for code examples to help create more readable, testable and maintainable code.
@@ -128,7 +128,7 @@ If you are developing under Windows, you can do the following to set this up:
 - In `catalina.properties`, add: `larva.windiff.command=c:/Program Files (x86)/WinMerge/winmergeu`, but replace the value after the `=` by the path to WinMerge on your laptop.
 - Start module iaf-test.
 - If you see a "Differences:" panel, you have a button "windiff" above it. Please press it to see the differences in WinMerge. NOTE: You only see a "Differences:" panel if you select a low log level. Mind the pull-down menu labeled "Log level".
-- If all your tests succeed, you do not have "Differences:" panels and you have no "windiff" buttons. To test your WinMerge integration, you may have to temporarily edit a test scenario to make it fail. 
+- If all your tests succeed, you do not have "Differences:" panels, and you have no "windiff" buttons. To test your WinMerge integration, you may have to temporarily edit a test scenario to make it fail. 
 
 ## Developing with Eclipse
 
@@ -224,7 +224,7 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 - In pull-down menu "Malformed Javadoc comments", select "Error".
 - In pull-down menu "Only consider members as visible as", choose "Private".
 - Check checkbox "Validate tag arguments".
-- Uncheck "Report non visible references" and "Report deprecated references".
+- Uncheck "Report non-visible references" and "Report deprecated references".
 - In pull-down menu "Missing tag descriptions", select "Ignore".
 - In pull-down menu "Missing Javadoc tags", select "Ignore".
 

@@ -28,7 +28,7 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * SAX2 event handler to compact XML messages.
  *
- * @author  Peter Leeuwenburgh
+ * @author Peter Leeuwenburgh
  */
 public class CompactSaxHandler extends DefaultHandler {
 	private static final String VALUE_MOVE_START = "{sessionKey:";
@@ -41,21 +41,24 @@ public class CompactSaxHandler extends DefaultHandler {
 	private String elementToMoveChain = null;
 	private boolean removeCompactMsgNamespaces = true;
 
-	private StringBuilder messageBuffer = new StringBuilder();
-	private StringBuilder charBuffer = new StringBuilder();
-	private StringBuilder namespaceBuffer = new StringBuilder();
-	private List<String> elements = new ArrayList<>();
-	private Map<String,Object> context = null;
+	private final StringBuilder messageBuffer = new StringBuilder();
+	private final StringBuilder charBuffer = new StringBuilder();
+	private final StringBuilder namespaceBuffer = new StringBuilder();
+	private final List<String> elements = new ArrayList<>();
+	private Map<String, Object> context = null;
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-
 		printCharBuffer();
 
 		StringBuilder attributeBuffer = new StringBuilder();
 		for (int i = 0; i < attributes.getLength(); i++) {
 			attributeBuffer.append(" ");
-			attributeBuffer.append(attributes.getQName(i));
+			if (isRemoveCompactMsgNamespaces()) {
+				attributeBuffer.append(attributes.getLocalName(i));
+			} else {
+				attributeBuffer.append(attributes.getQName(i));
+			}
 			attributeBuffer.append("=\"");
 			attributeBuffer.append(attributes.getValue(i));
 			attributeBuffer.append("\"");
@@ -134,7 +137,7 @@ public class CompactSaxHandler extends DefaultHandler {
 						elementToMoveSK = etmsk + counter;
 					}
 				}
-				context.put(elementToMoveSK, before + charBuffer.toString() + after);
+				context.put(elementToMoveSK, before + charBuffer + after);
 				messageBuffer.append(VALUE_MOVE_START).append(elementToMoveSK).append(VALUE_MOVE_END);
 			} else {
 				messageBuffer.append(before).append(XmlEncodingUtils.encodeChars(charBuffer.toString())).append(after);
@@ -146,7 +149,7 @@ public class CompactSaxHandler extends DefaultHandler {
 
 	private String elementsToString() {
 		String chain = null;
-		for (Iterator<String> it = elements.iterator(); it.hasNext();) {
+		for (Iterator<String> it = elements.iterator(); it.hasNext(); ) {
 			String element = it.next();
 			if (chain == null) {
 				chain = element;
@@ -157,7 +160,7 @@ public class CompactSaxHandler extends DefaultHandler {
 		return chain;
 	}
 
-	public void setContext(Map<String,Object> map) {
+	public void setContext(Map<String, Object> map) {
 		context = map;
 	}
 
