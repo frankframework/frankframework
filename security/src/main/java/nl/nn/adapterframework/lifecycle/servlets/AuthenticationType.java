@@ -22,6 +22,7 @@ public enum AuthenticationType {
 	AD(ActiveDirectoryAuthenticator.class),
 	CONTAINER(JeeAuthenticator.class),
 	IN_MEMORY(InMemoryAuthenticator.class),
+	OAUTH2(OAuth2Authenticator.class),
 	NONE(NoOpAuthenticator.class);
 
 	/**

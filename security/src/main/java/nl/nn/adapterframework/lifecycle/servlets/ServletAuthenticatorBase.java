@@ -92,6 +92,10 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		}
 	}
 
+	protected Set<String> getEndpoints() {
+		return Collections.unmodifiableSet(endpoints);
+	}
+
 	@Override
 	public void build() {
 		if(applicationContext == null) {

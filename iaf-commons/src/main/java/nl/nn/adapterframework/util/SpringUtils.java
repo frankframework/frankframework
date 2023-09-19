@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 public class SpringUtils {
@@ -40,5 +41,10 @@ public class SpringUtils {
 
 		applicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(existingBean, autowireMode, false);
 		applicationContext.getAutowireCapableBeanFactory().initializeBean(existingBean, existingBean.getClass().getCanonicalName());
+	}
+
+	public static void registerSingleton(ApplicationContext applicationContext, String name, Object bean) {
+		ConfigurableBeanFactory cbf = (ConfigurableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
+		cbf.registerSingleton(name, bean);
 	}
 }
