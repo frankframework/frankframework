@@ -1652,7 +1652,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (currentInterval>1) {
 			error(description+", will continue retrieving messages in [" + currentInterval + "] seconds", t);
 		} else {
-			log.warn("{}, will continue retrieving messages in [{}] seconds", description, currentInterval, t);
+			log.info("{}, will continue retrieving messages in [{}] seconds. Details: {}", description, currentInterval, t != null ? t.getMessage() : "NA");
 		}
 		synchronized (this) {
 			if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
