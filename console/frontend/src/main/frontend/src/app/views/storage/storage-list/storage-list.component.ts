@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DataTable } from "simple-datatables"
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { CookiesService } from 'src/angularjs/app/services/cookies.service';
@@ -26,7 +26,6 @@ export class StorageListComponent {
   changingProcessState = false;
 
   search: Record<string, string> = {};
-  dtOptions: Partial<DataTable['options']> = {};
   searching = false;
   clearSearchLadda = false;
   messagesDownloading = false;
@@ -55,6 +54,8 @@ export class StorageListComponent {
   storageParams = this.storageService.storageParams;
   closeNote = (index: number) => { this.storageService.closeNote(index); };
   getProcessStateIcon = (processState: string) => { this.appService.getProcessStateIcon(processState); }
+
+  @ViewChild('datatable') dtElement!: ElementRef<HTMLTableElement>;
 
   constructor(
     private Api: ApiService,
@@ -102,7 +103,13 @@ export class StorageListComponent {
       { "name": "label", "data": "label", orderable: false, defaultContent: "" },
     ];
 
-    this.dtOptions = {
+    const table = new DataTable(this.dtElement.nativeElement, {
+      columns: columns,
+      searchable: false,
+      paging: true,
+    });
+
+    const dtOptions = {
       stateSave: true,
       stateSaveCallback: (settings, data: Record<any, any>) => {
         data["columns"] = columns;
@@ -114,8 +121,7 @@ export class StorageListComponent {
       drawCallback: (settings) => {
         // reset visited rows with all draw actions e.g. pagination, filter, search
         this.selectedMessages = [];
-        // var table = $('#datatable').DataTable();
-        const table = new DataTable('#datatable');
+        var table = $('#datatable').DataTable();
         var data = table.rows({ page: 'current' }).data();
         // visit rows in the current page once (draw event is fired after rowcallbacks)
         for (var i = 0; i < data.length; i++) {
