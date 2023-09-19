@@ -3,25 +3,7 @@ import { StateService } from "@uirouter/angularjs";
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { MiscService } from 'src/angularjs/app/services/misc.service';
 import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
-
-export type Message = {
-  id: string; //MessageId
-  originalId: string; //Made up Id?
-  correlationId: string;
-  type: string;
-  host: string;
-  insertDate: number;
-  comment: string;
-  message: string;
-  expiryDate?: number;
-  label?: string;
-  position?: number;
-}
-
-export type MessageRuntime = Message & {
-  deleting?: boolean;
-  resending?: boolean;
-}
+import { StorageService } from './storage.service';
 
 @Component({
   selector: 'app-storage',
@@ -35,15 +17,12 @@ export class StorageComponent implements OnInit {
   storageSource = this.$state.params["storageSource"];
   storageSourceName = this.$state.params["storageSourceName"];
 
-  private baseUrl = "configurations/" + this.Misc.escapeURL(this.configuration) +
-    "/adapters/" + this.Misc.escapeURL(this.adapterName) + "/" + this.storageSource +
-    "/" + this.Misc.escapeURL(this.storageSourceName) + "/stores/" + this.processState;
-
   constructor(
     private Api: ApiService,
     private $state: StateService,
     private SweetAlert: SweetAlertService,
-    private Misc: MiscService
+    private Misc: MiscService,
+    private storageService: StorageService
   ) { }
 
   ngOnInit() {
@@ -66,6 +45,10 @@ export class StorageComponent implements OnInit {
       this.SweetAlert.Warning("Invalid URL", "No storage type provided!");
       return;
     }
+
+    this.storageService.baseUrl = "configurations/" + this.Misc.escapeURL(this.configuration) +
+      "/adapters/" + this.Misc.escapeURL(this.adapterName) + "/" + this.storageSource +
+      "/" + this.Misc.escapeURL(this.storageSourceName) + "/stores/" + this.processState;
   }
 
 }

@@ -2,10 +2,30 @@ import { Injectable } from '@angular/core';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { MiscService } from 'src/angularjs/app/services/misc.service';
 
+export type Message = {
+  id: string; //MessageId
+  originalId: string; //Made up Id?
+  correlationId: string;
+  type: string;
+  host: string;
+  insertDate: number;
+  comment: string;
+  message: string;
+  expiryDate?: number;
+  label?: string;
+  position?: number;
+}
+
+export type MessageRuntime = Message & {
+  deleting?: boolean;
+  resending?: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class StorageService {
+  baseUrl = "";
   notes: { type: string, message: string }[] = [];
   storageParams = {
     adapterName: "",

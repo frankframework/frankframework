@@ -5,12 +5,12 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 /**@Deprecated Replace with component code */
 export class OrderByPipe implements PipeTransform {
-  transform(array: any[], field: string): any[] {
+  transform<T>(array: T[], field: keyof T): T[] {
     if (!array || !field) {
       return array;
     }
 
-    array.sort((a: any, b: any) => {
+    array.sort((a, b) => {
       if (a[field] < b[field]) {
         return -1;
       }

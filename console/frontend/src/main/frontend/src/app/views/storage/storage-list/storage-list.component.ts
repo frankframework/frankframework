@@ -1,8 +1,11 @@
 import { Component } from '@angular/core';
+import { DataTable } from "simple-datatables"
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { CookiesService } from 'src/angularjs/app/services/cookies.service';
 import { SessionService } from 'src/angularjs/app/services/session.service';
 import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
+import { StorageService } from '../storage.service';
+import { AppService } from 'src/angularjs/app/app.service';
 
 @Component({
   selector: 'app-storage-list',
@@ -11,16 +14,11 @@ import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service
 })
 export class StorageListComponent {
   selectedMessages: boolean[] = [];
-  targetStates = [];
+  targetStates: { name: string; }[] = [];
 
   truncated = false;
   truncateButtonText = "Truncate displayed data";
   filterBoxExpanded = false;
-
-  //@ts-expect-error binding
-  resendMessage = this.onDoResendMessage;
-  //@ts-expect-error binding
-  deleteMessage = this.onDoDeleteMessage;
 
   messagesResending = false;
   messagesDeleting = false;
@@ -28,7 +26,7 @@ export class StorageListComponent {
   changingProcessState = false;
 
   search: Record<string, string> = {};
-  dtOptions: DataTables.Settings = {};
+  dtOptions: Partial<DataTable['options']> = {};
   searching = false;
   clearSearchLadda = false;
   messagesDownloading = false;
@@ -43,28 +41,32 @@ export class StorageListComponent {
     expiryDate: boolean,
     label: boolean,
   } = {
-      id: true,
-      insertDate: true,
-      host: true,
-      originalId: true,
-      correlationId: true,
-      comment: true,
-      expiryDate: true,
-      label: true,
-    }
+    id: true,
+    insertDate: true,
+    host: true,
+    originalId: true,
+    correlationId: true,
+    comment: true,
+    expiryDate: true,
+    label: true,
+  }
+
+  // service bindings
+  storageParams = this.storageService.storageParams;
+  closeNote = (index: number) => { this.storageService.closeNote(index); };
+  getProcessStateIcon = (processState: string) => { this.appService.getProcessStateIcon(processState); }
 
   constructor(
-    private $scope: angular.IScope,
     private Api: ApiService,
-    private $compile: angular.ICompileService,
     private Cookies: CookiesService,
     private Session: SessionService,
-    private SweetAlert: SweetAlertService
+    private SweetAlert: SweetAlertService,
+    private storageService: StorageService,
+    private appService: AppService
   ) { }
 
   $onInit() {
-    //@ts-expect-error binding
-    this.onCloseNotes();
+    this.storageService.closeNotes();
     let searchSession = this.Session.get('search');
 
     this.search = {
@@ -79,18 +81,16 @@ export class StorageListComponent {
       message: searchSession ? searchSession["message"] : ""
     };
 
-    var a = '';
+    const defaultContent = `<input icheck type="checkbox" ng-model="$ctrl.selectedMessages[message.id]"/>
+      <div ng-show="!$ctrl.selectedMessages[message.id]">
+        <a ui-sref="pages.storage.view({processState:$ctrl.processState,messageId: message.id })" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>
+        <button ng-if="::processState=='Error'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="$ctrl.resendMessage({message: message})" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>
+        <button ng-if="::processState=='Error'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="$ctrl.deleteMessage({message: message})" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>
+        <button title="Download Message" ng-click="$ctrl.onDownloadMessage({messageId: message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>
+      </div>`;
 
-    a += '<input icheck type="checkbox" ng-model="$ctrl.selectedMessages[message.id]"/>';
-    a += '<div ng-show="!$ctrl.selectedMessages[message.id]">';
-    a += '<a ui-sref="pages.storage.view({processState:$ctrl.processState,messageId: message.id })" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>';
-    a += '<button ng-if="::processState==\'Error\'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="$ctrl.resendMessage({message: message})" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>';
-    a += '<button ng-if="::processState==\'Error\'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="$ctrl.deleteMessage({message: message})" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>';
-    a += '<button title="Download Message" ng-click="$ctrl.onDownloadMessage({messageId: message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>';
-    a += '</div';
-
-    var columns: DataTables.ColumnSettings[] = [
-      { "data": null, defaultContent: a, className: "m-b-xxs storageActions", orderable: false },
+    var columns: DataTable['options']['columns'] = [
+      { "data": null, defaultContent, className: "m-b-xxs storageActions", orderable: false },
       { "name": "pos", "data": "position", orderable: false, defaultContent: "" },
       { "name": "id", "data": "messageId", orderable: false, defaultContent: "" },
       { "name": "insertDate", "data": "insertDate", className: "date", defaultContent: "" },
@@ -106,22 +106,23 @@ export class StorageListComponent {
       stateSave: true,
       stateSaveCallback: (settings, data: Record<any, any>) => {
         data["columns"] = columns;
-        // @ts-expect-error binding
-        this.Session.set('DataTable' + this.processState, data);
+        this.Session.set('DataTable' + this.storageParams.processState, data);
       },
       stateLoadCallback: (settings) => {
-        // @ts-expect-error binding
-        return this.Session.get('DataTable' + this.processState);
+        return this.Session.get('DataTable' + this.storageParams.processState);
       },
       drawCallback: (settings) => {
         // reset visited rows with all draw actions e.g. pagination, filter, search
         this.selectedMessages = [];
-        var table = $('#datatable').DataTable();
+        // var table = $('#datatable').DataTable();
+        const table = new DataTable('#datatable');
         var data = table.rows({ page: 'current' }).data();
         // visit rows in the current page once (draw event is fired after rowcallbacks)
         for (var i = 0; i < data.length; i++) {
           this.selectedMessages[data[i].id] = false;
         }
+
+
       },
       rowCallback: (row, data: Record<any, any>) => {
         var rowNode = $(row);// .children("td:first").addClass("m-b-xxs");
@@ -168,8 +169,7 @@ export class StorageListComponent {
         var direction = order.dir; // asc or desc
 
 
-        // @ts-expect-error binding
-        var url = this.baseUrl + "?max=" + length + "&skip=" + start + "&sort=" + direction;
+        var url = this.storageService.baseUrl + "?max=" + length + "&skip=" + start + "&sort=" + direction;
         let search = this.search;
         let searchSession: Record<keyof typeof search, string> = {};
         for (let column in search) {
@@ -194,8 +194,7 @@ export class StorageListComponent {
       }
     }
 
-    // @ts-expect-error binding
-    var filterCookie = this.Cookies.get(this.processState + "Filter");
+    var filterCookie = this.Cookies.get(this.storageParams.processState + "Filter");
     if (filterCookie) {
       for (let column of columns) {
         if (column.name && filterCookie[column.name] === false) {
@@ -227,6 +226,10 @@ export class StorageListComponent {
     }
   }
 
+  getNotes(){
+    return this.storageService.notes;
+  }
+
   getFormData() {
     var messageIds: string[] = [];
     for (const i in this.selectedMessages) {
@@ -243,8 +246,7 @@ export class StorageListComponent {
 
   searchUpdated() {
     this.searching = true;
-    // @ts-expect-error binding
-    this.onUpdateTable();
+    this.storageService.updateTable();
   }
 
   truncate() {
@@ -254,21 +256,18 @@ export class StorageListComponent {
     } else {
       this.truncateButtonText = "Truncate displayed data";
     }
-    // @ts-expect-error binding
-    this.onUpdateTable();
+    this.storageService.updateTable();
   }
 
   clearSearch() {
     this.clearSearchLadda = true;
     this.Session.remove('search');
     this.search = {};
-    // @ts-expect-error binding
-    this.onUpdateTable();
+    this.storageService.updateTable();
   }
 
   updateFilter(column: string) {
-    // @ts-expect-error binding
-    this.Cookies.set(this.processState + "Filter", this.displayColumn);
+    this.Cookies.set(this.storageParams.processState + "Filter", this.displayColumn);
 
     let table = $('#datatable').DataTable();
     if (table) {
@@ -295,19 +294,14 @@ export class StorageListComponent {
     let fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.messagesResending = true;
-      // @ts-expect-error binding
-      this.Api.Post(this.baseUrl, fd, () => {
+      this.Api.Post(this.storageService.baseUrl, fd, () => {
         this.messagesResending = false;
-        // @ts-expect-error binding
-        this.onAddNote("success", "Selected messages will be reprocessed");
-        // @ts-expect-error binding
-        this.onUpdateTable();
+        this.storageService.addNote("success", "Selected messages will be reprocessed");
+        this.storageService.updateTable();
       }, (data) => {
         this.messagesResending = false;
-        // @ts-expect-error binding
-        this.onAddNote("danger", "Something went wrong, unable to resend all messages!");
-        // @ts-expect-error binding
-        this.onUpdateTable();
+        this.storageService.addNote("danger", "Something went wrong, unable to resend all messages!");
+        this.storageService.updateTable();
       });
     }
   }
@@ -316,19 +310,14 @@ export class StorageListComponent {
     let fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.messagesDeleting = true;
-      // @ts-expect-error binding
-      this.Api.Delete(this.baseUrl, fd, () => {
+      this.Api.Delete(this.storageService.baseUrl, fd, () => {
         this.messagesDeleting = false;
-        // @ts-expect-error binding
-        this.onAddNote("success", "Successfully deleted messages");
-        // @ts-expect-error binding
-        this.onUpdateTable();
+        this.storageService.addNote("success", "Successfully deleted messages");
+        this.storageService.updateTable();
       }, (data) => {
         this.messagesDeleting = false;
-        // @ts-expect-error binding
-        this.onAddNote("danger", "Something went wrong, unable to delete all messages!");
-        // @ts-expect-error binding
-        this.onUpdateTable();
+        this.storageService.addNote("danger", "Something went wrong, unable to delete all messages!");
+        this.storageService.updateTable();
       });
     }
   }
@@ -338,8 +327,7 @@ export class StorageListComponent {
     let fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.messagesDownloading = true;
-      // @ts-expect-error binding
-      this.Api.Post(this.baseUrl + "/messages/download", fd, (response) => {
+      this.Api.Post(this.storageService.baseUrl + "/messages/download", fd, (response) => {
         let blob = new Blob([response], { type: 'application/octet-stream' });
         let downloadLink = document.createElement('a');
         downloadLink.href = window.URL.createObjectURL(blob);
@@ -347,13 +335,11 @@ export class StorageListComponent {
         document.body.appendChild(downloadLink);
         downloadLink.click();
         downloadLink.parentNode!.removeChild(downloadLink);
-        // @ts-expect-error binding
-        this.onAddNote("success", "Successfully downloaded messages");
+        this.storageService.addNote("success", "Successfully downloaded messages");
         this.messagesDownloading = false;
       }, (data) => {
         this.messagesDownloading = false;
-        // @ts-expect-error binding
-        this.onAddNote("danger", "Something went wrong, unable to download selected messages!");
+        this.storageService.addNote("danger", "Something went wrong, unable to download selected messages!");
       }, false, 'blob');
     }
   }
@@ -362,19 +348,14 @@ export class StorageListComponent {
     let fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.changingProcessState = true;
-      // @ts-expect-error binding
-      this.Api.Post(this.baseUrl + "/move/" + targetState, fd, () => {
+      this.Api.Post(this.storageService.baseUrl + "/move/" + targetState, fd, () => {
         this.changingProcessState = false;
-        // @ts-expect-error binding
-        this.onAddNote("success", "Successfully changed the state of messages to " + targetState);
-        // @ts-expect-error binding
-        this.onUpdateTable();
+        this.storageService.addNote("success", "Successfully changed the state of messages to " + targetState);
+        this.storageService.updateTable();
       }, (data) => {
         this.changingProcessState = false;
-        // @ts-expect-error binding
-        this.onAddNote("danger", "Something went wrong, unable to move selected messages!");
-        // @ts-expect-error binding
-        this.onUpdateTable();
+        this.storageService.addNote("danger", "Something went wrong, unable to move selected messages!");
+        this.storageService.updateTable();
       });
     }
   }
@@ -389,24 +370,3 @@ export class StorageListComponent {
     }
   }
 }
-
-/*
-appModule.component('storageList', {
-	bindings: {
-		adapterName: '<',
-		baseUrl: '<',
-		storageSourceName: '<',
-		storageSource: '<',
-		processState: '<',
-		onAddNote: '&',
-		onCloseNote: '&',
-		onCloseNotes: '&',
-		onUpdateTable: '&',
-		onDoDeleteMessage: '&',
-		onDownloadMessage: '&',
-		onDoResendMessage: '&',
-	},
-	controller: ['$scope','Api', '$compile', 'Cookies', 'Session', 'SweetAlert', StorageListController],
-	templateUrl: 'angularjs/app/views/storage/storage-list/storage-list.component.html',
-});
-*/

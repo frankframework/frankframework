@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { StateService } from "@uirouter/angularjs";
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
-import { Message } from '../storage.component';
+import { Message, StorageService } from '../storage.service';
 
 @Component({
   selector: 'app-storage-view',
@@ -22,24 +22,28 @@ export class StorageViewComponent {
     message: "Loading..."
   };
 
+  // service bindings
+  storageParams = this.storageService.storageParams;
+  closeNote = (index: number) => { this.storageService.closeNote(index); };
+  downloadMessage = (messageId: string) => { this.storageService.downloadMessage(messageId); };
+
   constructor(
     private Api: ApiService,
     private $state: StateService,
-    private SweetAlert: SweetAlertService
+    private SweetAlert: SweetAlertService,
+    private storageService: StorageService
   ) { }
 
   $onInit() {
     this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List > View Message " + this.$state.params["messageId"];
-    // @ts-expect-error binding
-    this.onCloseNotes();
+    this.storageService.closeNotes();
 
     if (!this.message.id) {
       this.SweetAlert.Warning("Invalid URL", "No message id provided!");
       return;
     }
 
-    // @ts-expect-error binding
-    this.Api.Get(this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(this.message.id)), (data) => {
+    this.Api.Get(this.storageService.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(this.message.id)), (data) => {
       this.metadata = data;
     }, (errorData, statusCode, errorMsg) => {
       let error = (errorData) ? errorData.error : errorMsg;
@@ -48,30 +52,25 @@ export class StorageViewComponent {
       } else {
         this.SweetAlert.Warning("Message not found", "message id [" + this.message.id + "] error [" + error + "]");
       }
-      // @ts-expect-error binding
-      this.$state.go("pages.storage.list", { adapter: this.adapterName, storageSource: this.storageSource, storageSourceName: this.storageSourceName, processState: this.processState });
+      this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
     });
   };
 
+  getNotes() {
+    return this.storageService.notes;
+  }
+
   resendMessage(message: Message) {
-    // @ts-expect-error binding
-    this.onDoResendMessage({
-      message: message, callback: (messageId: string) => {
-        //Go back to the storage list if successful
-        // @ts-expect-error binding
-        this.$state.go("pages.storage.list", { adapter: this.adapterName, storageSource: this.storageSource, storageSourceName: this.storageSourceName, processState: this.processState });
-      }
+    this.storageService.doResendMessage(message, (messageId: string) => {
+      //Go back to the storage list if successful
+      this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
     });
   };
 
   deleteMessage(message: Message) {
-    // @ts-expect-error binding
-    this.onDoDeleteMessage({
-      message: message, callback: (messageId: string) => {
-        //Go back to the storage list if successful
-        // @ts-expect-error binding
-        this.$state.go("pages.storage.list", { adapter: this.adapterName, storageSource: this.storageSource, storageSourceName: this.storageSourceName, processState: this.processState });
-      }
+    this.storageService.doDeleteMessage(message, (messageId: string) => {
+      //Go back to the storage list if successful
+      this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
     });
   };
 
@@ -79,21 +78,3 @@ export class StorageViewComponent {
     history.back();
   }
 }
-
-/*
-appModule.component('storageView', {
-  bindings: {
-    adapterName: '<',
-    baseUrl: '<',
-    storageSourceName: '<',
-    storageSource: '<',
-    onCloseNote: '&',
-    onCloseNotes: '&',
-    onDoDeleteMessage: '&',
-    onDoResendMessage: '&',
-    onDownloadMessage: '&',
-  },
-  controller: ['Api', '$state', 'SweetAlert', StorageViewController],
-  templateUrl: 'angularjs/app/views/storage/storage-view/storage-view.component.html',
-});
-*/
