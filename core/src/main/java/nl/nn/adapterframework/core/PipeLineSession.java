@@ -66,7 +66,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
 	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
 	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
-	public static final String MESSAGE_SOAP_VERSION = "messageSoapVersion";
 
 	private ISecurityHandler securityHandler = null;
 

@@ -77,6 +77,7 @@ public class SoapWrapper {
 	private static final String EXTRACT_FAULTCOUNTER_XPATH = "count(/soapenv:Envelope/soapenv:Body/soapenv:Fault)";
 	private static final String EXTRACT_FAULTCODE_XPATH = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode";
 	private static final String EXTRACT_FAULTSTRING_XPATH = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
+	public static final String SESSION_MESSAGE_SOAP_VERSION = "messageSoapVersion";
 
 	private static SoapWrapper self = null;
 	private @Setter WsuIdAllocator idAllocator = null; //Only used for testing purposes
@@ -143,7 +144,7 @@ public class SoapWrapper {
 		Message result = new Message(extractBodySoap11.transform(message.asSource()));
 		if (!Message.isEmpty(result)) {
 			if (session != null) {
-				session.putIfAbsent(PipeLineSession.MESSAGE_SOAP_VERSION, SoapVersion.SOAP11);
+				session.putIfAbsent(SESSION_MESSAGE_SOAP_VERSION, SoapVersion.SOAP11);
 				if (StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
 					session.put(soapNamespaceSessionKey, SoapVersion.SOAP11.namespace);
 				}
@@ -153,7 +154,7 @@ public class SoapWrapper {
 		result = new Message(extractBodySoap12.transform(message.asSource()));
 		if (!Message.isEmpty(result)) {
 			if (session != null) {
-				session.putIfAbsent(PipeLineSession.MESSAGE_SOAP_VERSION, SoapVersion.SOAP12);
+				session.putIfAbsent(SESSION_MESSAGE_SOAP_VERSION, SoapVersion.SOAP12);
 				if (StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
 					session.put(soapNamespaceSessionKey, SoapVersion.SOAP12.namespace);
 				}
