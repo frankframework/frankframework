@@ -13,7 +13,7 @@
 	<packaging>war</packaging>
 
 	<properties>
-		<spring-security.version>5.8.6</spring-security.version>
+		<spring-security.version>5.8.7</spring-security.version>
 		<spring.boot.version>2.7.15</spring.boot.version>
 		<m2eclipse.wtp.contextRoot>iaf-console</m2eclipse.wtp.contextRoot>
 	</properties>
@@ -21,11 +21,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-console-frontend</artifactId>
+			<artifactId>ibis-adapterframework-commons</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-console-backend</artifactId>
+			<artifactId>ibis-adapterframework-security</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -33,7 +33,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-commons</artifactId>
+			<artifactId>ibis-adapterframework-console-frontend</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-console-backend</artifactId>
 		</dependency>
 
 		<dependency>

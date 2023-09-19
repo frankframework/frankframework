@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,19 +12,19 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-*/
-package nl.nn.adapterframework.web;
+ */
+package nl.nn.adapterframework.lifecycle.servlets;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
-import nl.nn.adapterframework.management.web.ServletDispatcher;
+//SecurityContextHolder.getContext().getAuthentication(); can be used to retrieve the username (when available)
+public interface IAuthenticator {
 
-@Configuration
-public class ConsoleBackend {
+	void registerServlet(ServletConfiguration config);
 
-	@Bean
-	public ServletRegistration backendServletBean() {
-		return new ServletRegistration(ServletDispatcher.class);
-	}
+	/** Spring invoked HttpSecurity */
+	SecurityFilterChain configureHttpSecurity(HttpSecurity http);
+
+	void build();
 }
