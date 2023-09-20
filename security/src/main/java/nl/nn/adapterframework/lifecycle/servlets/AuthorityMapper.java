@@ -67,7 +67,6 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 		List<GrantedAuthority> mappedAuthorities = new ArrayList<>();
 		for(GrantedAuthority grantedAuthority : authorities) {
 			String canonicalRoleName = grantedAuthority.getAuthority();
-			System.err.println(canonicalRoleName);
 			GrantedAuthority authority = roleToAuthorityMapping.get(canonicalRoleName);
 			if(authority != null) {
 				mappedAuthorities.add(authority);
