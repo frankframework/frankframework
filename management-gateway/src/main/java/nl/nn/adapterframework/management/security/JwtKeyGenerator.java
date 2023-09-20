@@ -30,6 +30,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
@@ -97,7 +98,7 @@ public class JwtKeyGenerator implements InitializingBean {
 	private @Nonnull JWTClaimsSet createClaimsSet(Authentication authentication) {
 		try {
 			return new JWTClaimsSet.Builder()
-					.subject(authentication.getName())
+					.subject(getPrincipalName(authentication))
 					.expirationTime(Date.from(Instant.now().plusSeconds(120)))
 					.issueTime(Date.from(Instant.now()))
 					.jwtID(UUIDUtil.createRandomUUID())
@@ -106,6 +107,13 @@ public class JwtKeyGenerator implements InitializingBean {
 		} catch (Exception e) {
 			throw new AuthenticationServiceException("unable to generate JWT ClaimsSet", e);
 		}
+	}
+
+	private String getPrincipalName(Authentication authentication) {
+		if (authentication.getPrincipal() instanceof OidcUser) {
+			return ((OidcUser) authentication.getPrincipal()).getGivenName();
+		}
+		return authentication.getName();
 	}
 
 	//Should contain AuthorityAuthorizationManager#ROLE_PREFIX

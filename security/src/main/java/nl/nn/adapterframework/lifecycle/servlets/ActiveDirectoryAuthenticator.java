@@ -16,34 +16,23 @@
 package nl.nn.adapterframework.lifecycle.servlets;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.naming.Context;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.StringResolver;
 
-public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase implements InitializingBean {
+public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase {
 
 	private @Setter String domainName = null;
 
@@ -60,8 +49,11 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase imple
 	private @Setter String roleMappingFile = "ldap-role-mapping.properties";
 	private URL roleMappingURL = null;
 
-	@Override
-	public void afterPropertiesSet() throws FileNotFoundException {
+	private void configure() throws FileNotFoundException {
+		if(StringUtils.isEmpty(url)) {
+			throw new IllegalArgumentException("url may not be empty");
+		}
+
 		roleMappingURL = ClassUtils.getResourceURL(roleMappingFile);
 		if(roleMappingURL == null) {
 			throw new FileNotFoundException("unable to find LDAP role-mapping file ["+roleMappingFile+"]");
@@ -80,9 +72,7 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase imple
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		if(StringUtils.isEmpty(url)) {
-			throw new IllegalArgumentException("url may not be empty");
-		}
+		configure();
 
 		ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(domainName, url, baseDn);
 		provider.setConvertSubErrorCodesToExceptions(log.isDebugEnabled());
@@ -98,50 +88,11 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase imple
 		roleMapper.setRolePrefix("");
 		provider.setUserDetailsContextMapper(roleMapper);
 
-		provider.setAuthoritiesMapper(new LdapAuthorityMapper(roleMappingURL));
+		provider.setAuthoritiesMapper(new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties()));
 
 		http.authenticationProvider(provider);
 		String realmName = StringUtils.isNotEmpty(domainName) ? domainName : url;
 		http.httpBasic().realmName(realmName);
 		return http.build();
-	}
-
-	public class LdapAuthorityMapper implements GrantedAuthoritiesMapper {
-		Map<String, SimpleGrantedAuthority> roleToAuthorityMapping = new HashMap<>();
-
-		public LdapAuthorityMapper(URL roleMappingURL) throws IOException {
-			Properties roleMappingProperties = new Properties();
-			try(InputStream stream = roleMappingURL.openStream()) {
-				roleMappingProperties.load(stream);
-			} catch (IOException e) {
-				throw new IOException("unable to open LDAP role-mapping file ["+roleMappingFile+"]", e);
-			}
-
-			for(String role : getSecurityRoles()) {
-				String value = roleMappingProperties.getProperty(role);
-				if(StringUtils.isEmpty(value)) {
-					log.warn("LDAP role [{}] has not been mapped to anything, ignoring this role", role);
-					continue;
-				}
-
-				String resolvedValue = StringResolver.substVars(value, getEnvironmentProperties());
-				if(StringUtils.isNotEmpty(role) && StringUtils.isNotEmpty(resolvedValue)) {
-					roleToAuthorityMapping.put(resolvedValue, new SimpleGrantedAuthority("ROLE_"+role));
-				}
-			}
-		}
-
-		@Override
-		public Collection<? extends GrantedAuthority> mapAuthorities(Collection<? extends GrantedAuthority> authorities) {
-			List<GrantedAuthority> mappedAuthorities = new ArrayList<>();
-			for(GrantedAuthority grantedAuthority : authorities) {
-				String canonicalRoleName = grantedAuthority.getAuthority();
-				SimpleGrantedAuthority authority = roleToAuthorityMapping.get(canonicalRoleName);
-				if(authority != null) {
-					mappedAuthorities.add(authority);
-				}
-			}
-			return mappedAuthorities;
-		}
 	}
 }

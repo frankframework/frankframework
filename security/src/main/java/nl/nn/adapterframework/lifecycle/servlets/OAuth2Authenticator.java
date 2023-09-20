@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.lifecycle.servlets;
 
+import java.io.FileNotFoundException;
+import java.net.URL;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.Builder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -36,6 +37,7 @@ import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StringUtil;
@@ -61,7 +63,7 @@ import nl.nn.adapterframework.util.StringUtil;
 public class OAuth2Authenticator extends ServletAuthenticatorBase {
 
 	/** eg. openid, profile, email */
-	private @Setter String scope;
+	private @Setter String scopes;
 
 	/** eg. https://accounts.google.com/o/oauth2/v2/auth */
 	private @Setter String authorizationUri;
@@ -90,26 +92,36 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 	private ClientRegistrationRepository clientRepository;
 	private String oauthBaseUrl;
 
+	private @Setter String roleMappingFile = "oauth-role-mapping.properties";
+	private URL roleMappingURL = null;
+
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 		configure();
 
 		http.oauth2Login()
 			.clientRegistrationRepository(clientRepository) //explicitly set, but can also be implicitly implied.
-			.authorizedClientService(authorizedClientService())
-			.authorizationEndpoint().baseUri(oauthBaseUrl + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI)
-			.and()
-			.loginProcessingUrl(oauthBaseUrl + "/oauth2/code/*")
-			;
+			.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
+			.authorizationEndpoint()
+				.baseUri(oauthBaseUrl + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI).and()
+			.userInfoEndpoint()
+				.userAuthoritiesMapper(new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties())).and()
+			.loginProcessingUrl(oauthBaseUrl + "/oauth2/code/*");
 
 		http.authorizeHttpRequests().anyRequest().authenticated();
 		return http.build();
 	}
 
-	private void configure() {
+	private void configure() throws FileNotFoundException {
 		if(StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret)) {
 			throw new IllegalStateException("clientId and clientSecret must be set");
 		}
+
+		roleMappingURL = ClassUtils.getResourceURL(roleMappingFile);
+		if(roleMappingURL == null) {
+			throw new FileNotFoundException("unable to find OAUTH role-mapping file ["+roleMappingFile+"]");
+		}
+		log.info("found rolemapping file [{}]", roleMappingURL);
 
 		oauthBaseUrl = computeBaseUrl();
 		clientRepository = createClientRegistrationRepository();
@@ -127,20 +139,20 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 		ClientRegistration.Builder builder;
 
 		switch (provider.toLowerCase()) {
-		case "google":
-		case "github":
-		case "facebook":
-		case "okta":
-			CommonOAuth2Provider commonProvider = EnumUtils.parse(CommonOAuth2Provider.class, provider);
-			builder = commonProvider.getBuilder(provider);
-			break;
+			case "google":
+			case "github":
+			case "facebook":
+			case "okta":
+				CommonOAuth2Provider commonProvider = EnumUtils.parse(CommonOAuth2Provider.class, provider);
+				builder = commonProvider.getBuilder(provider);
+				break;
 
-		case "custom":
-			builder = createCustomBuilder(provider, provider.toLowerCase());
-			break;
+			case "custom":
+				builder = createCustomBuilder(provider, provider.toLowerCase());
+				break;
 
-		default:
-			throw new IllegalStateException("unknown OAuth provider");
+			default:
+				throw new IllegalStateException("unknown OAuth provider");
 		}
 
 		builder.clientId(clientId).clientSecret(clientSecret);
@@ -154,7 +166,7 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 		builder.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
 		builder.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE);
 
-		builder.scope(getSecurityRoles());
+		builder.scope(StringUtil.split(scopes));
 		builder.authorizationUri(authorizationUri);
 		builder.tokenUri(tokenUri);
 		builder.jwkSetUri(jwkSetUri);
@@ -176,9 +188,5 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 		}
 
 		return baseUrl;
-	}
-
-	public OAuth2AuthorizedClientService authorizedClientService() {
-		return new InMemoryOAuth2AuthorizedClientService(clientRepository);
 	}
 }
