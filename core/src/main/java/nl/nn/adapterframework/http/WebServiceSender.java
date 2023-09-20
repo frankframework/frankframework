@@ -143,7 +143,7 @@ public class WebServiceSender extends HttpSender {
 
 	@Override
 	protected Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
-		Message httpResult = null;
+		Message httpResult;
 		try {
 			httpResult = super.extractResult(responseHandler, session);
 			httpResult.preserve();

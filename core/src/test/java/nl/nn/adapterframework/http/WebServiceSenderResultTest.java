@@ -117,8 +117,10 @@ public class WebServiceSenderResultTest extends Mockito {
 
 		int multipartAttachmentCount = 0;
 		for (Map.Entry<String, Object> entry : pls.entrySet()) {
-			System.out.println("found multipart ["+entry.getKey()+"]");
-			multipartAttachmentCount++;
+			if (entry.getKey().startsWith("multipart")) {
+				System.out.println("found multipart [" + entry.getKey() + "]");
+				multipartAttachmentCount++;
+			}
 		}
 		assertEquals(2, multipartAttachmentCount);
 
@@ -185,8 +187,10 @@ public class WebServiceSenderResultTest extends Mockito {
 
 		int multipartAttachmentCount = 0;
 		for (Map.Entry<String, Object> entry : pls.entrySet()) {
-			System.out.println("found multipart key["+entry.getKey()+"] type["+(entry.getValue().getClass())+"]");
-			multipartAttachmentCount++;
+			if (entry.getKey().startsWith("multipart")) {
+				System.out.println("found multipart key["+entry.getKey()+"] type["+(entry.getValue().getClass())+"]");
+				multipartAttachmentCount++;
+			}
 		}
 		assertEquals(1, multipartAttachmentCount);
 
