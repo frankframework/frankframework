@@ -59,49 +59,51 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	public void testShouldKeepPipeSoapConfigurationVersionWhileWrapping() throws Exception {
 		pipe.setDirection(Direction.UNWRAP);
 		pipe.registerForward(new PipeForward("pipe2", "READY"));
-		pipe.setStoreResultInSessionKey("originalMessage_unwrapped");
 		pipe.setRemoveOutputNamespaces(true);
 		pipe.configure();
 		pipe.start();
 
-		P wrapPipeSoap11 = createPipe();
-		wrapPipeSoap11.setDirection(Direction.WRAP);
-		wrapPipeSoap11.setSoapVersion(SoapVersion.SOAP11);
-		autowireByType(wrapPipeSoap11);
-		wrapPipeSoap11.registerForward(new PipeForward("success", "READY"));
-		wrapPipeSoap11.setName("pipe2");
-		pipeline.addPipe(wrapPipeSoap11);
-		wrapPipeSoap11.configure();
-		wrapPipeSoap11.start();
+		P wrapPipeSoap = createPipe();
+		wrapPipeSoap.setDirection(Direction.WRAP);
+		wrapPipeSoap.setSoapVersion(SoapVersion.SOAP11);
+		autowireByType(wrapPipeSoap);
+		wrapPipeSoap.registerForward(new PipeForward("success", "READY"));
+		wrapPipeSoap.setName("pipe2");
+		pipeline.addPipe(wrapPipeSoap);
+		wrapPipeSoap.configure();
+		wrapPipeSoap.start();
 
 		// Arrange 1
 		String inputSoap12 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
 
 		PipeLineSession pipeLineSession = new PipeLineSession();
-		// Act
+		// Act 1
 		PipeRunResult prr = doPipe(pipe, inputSoap12, pipeLineSession);
-		PipeRunResult pipeRunResult = doPipe(wrapPipeSoap11, prr.getResult(), pipeLineSession);
+		PipeRunResult pipeRunResult = doPipe(wrapPipeSoap, prr.getResult(), pipeLineSession);
 
-		// Assert
+		// Assert 1
 		String actual = pipeRunResult.getResult().asString();
 		assertNotNull(actual);
 		assertTrue(actual.contains(SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE));
 		pipeLineSession.close();
 
+
 		// Arrange 2
 		String inputSoap11 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
+		wrapPipeSoap.setSoapVersion(SoapVersion.SOAP12);
+		wrapPipeSoap.configure();
 		pipeLineSession = new PipeLineSession();
 
 		// Act 2
 		prr = doPipe(pipe, inputSoap11, pipeLineSession);
-		pipeRunResult = doPipe(wrapPipeSoap11, prr.getResult(), pipeLineSession);
+		pipeRunResult = doPipe(wrapPipeSoap, prr.getResult(), pipeLineSession);
 
 		// Assert 2
 		actual = pipeRunResult.getResult().asString();
 		assertNotNull(actual);
-		assertTrue(actual.contains(SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE));
+		assertTrue(actual.contains(SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE));
 
-		wrapPipeSoap11.stop();
+		wrapPipeSoap.stop();
 	}
 
 	@Test

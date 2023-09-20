@@ -6,17 +6,14 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Collections;
 
-import javax.jms.JMSException;
 import javax.jms.TextMessage;
 import javax.xml.soap.SOAPConstants;
-import javax.xml.transform.TransformerException;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -50,7 +47,7 @@ class JMSFacadeTest {
 	}
 
 	@Test
-	void testExtractMessageWithHeaders() throws JMSException, IOException, TransformerException, SAXException {
+	void testExtractMessageWithHeaders() throws Exception {
 		// Arrange
 		PipeLineSession pipeLineSession = new PipeLineSession();
 		TextMessage mock = Mockito.mock(TextMessage.class);

@@ -82,7 +82,7 @@ public class SoapWrapper {
 	private static final String EXTRACT_FAULTCODE_XPATH_SOAP12 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/soapenv:Code";
 	private static final String EXTRACT_FAULTSTRING_XPATH_SOAP11 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
 	private static final String EXTRACT_FAULTSTRING_XPATH_SOAP12 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/soapenv:Reason";
-	public static final String SESSION_MESSAGE_SOAP_VERSION = "messageSoapVersion";
+	public static final String SOAP_VERSION_SESSION_KEY = "messageSoapVersion";
 
 	private static SoapWrapper self = null;
 	private @Setter WsuIdAllocator idAllocator = null; //Only used for testing purposes
@@ -178,7 +178,7 @@ public class SoapWrapper {
 
 		if (StringUtils.isNotEmpty(extractedMessage)) {
 			if (session != null && soapVersion != null) {
-				session.putIfAbsent(SESSION_MESSAGE_SOAP_VERSION, soapVersion);
+				session.putIfAbsent(SOAP_VERSION_SESSION_KEY, soapVersion);
 				if (StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
 					session.putIfAbsent(soapNamespaceSessionKey, soapVersion.namespace);
 				}
@@ -190,7 +190,7 @@ public class SoapWrapper {
 
 	private SoapVersion getSoapVersionFromSession(final PipeLineSession session) {
 		if (session == null) return null;
-		Object soapVersionObject = session.getOrDefault(SoapWrapper.SESSION_MESSAGE_SOAP_VERSION, null);
+		Object soapVersionObject = session.getOrDefault(SoapWrapper.SOAP_VERSION_SESSION_KEY, null);
 		if (soapVersionObject instanceof SoapVersion) {
 			return (SoapVersion) soapVersionObject;
 		}
