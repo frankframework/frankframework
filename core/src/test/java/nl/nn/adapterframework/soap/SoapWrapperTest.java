@@ -2,6 +2,7 @@ package nl.nn.adapterframework.soap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -106,7 +107,7 @@ public class SoapWrapperTest {
 	public void getBody11() {
 		String soapBody;
 		try {
-			soapBody = soapWrapper.getBody(new Message(soapMessageSoap11)).asString();
+			soapBody = soapWrapper.getBody(new Message(soapMessageSoap11), false, null, null).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
@@ -117,7 +118,7 @@ public class SoapWrapperTest {
 	public void getBody12() {
 		String soapBody;
 		try {
-			soapBody = soapWrapper.getBody(new Message(soapMessageSoap12)).asString();
+			soapBody = soapWrapper.getBody(new Message(soapMessageSoap12), false, null, null).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
@@ -139,35 +140,44 @@ public class SoapWrapperTest {
 
 	@Test
 	void testGetFaultCodeSoap11() throws IOException, TransformerException, SAXException {
-		assertEquals("SOAP-ENV:Client", soapWrapper.getFaultCode(new Message(soapFaultMessage11)));
-		assertEquals("", soapWrapper.getFaultCode(new Message(soapMessageSoap11)));
+		assertEquals("SOAP-ENV:Client", soapWrapper.getFaultCode(new Message(soapFaultMessage11), null));
+		assertNull(soapWrapper.getFaultCode(new Message(soapMessageSoap11), null));
 	}
 
 	@Test
 	void testGetFaultCodeSoap12() throws IOException, TransformerException, SAXException {
-		assertEquals("env:Sender", soapWrapper.getFaultCode(new Message(soapFaultMessage12)));
-		assertEquals("", soapWrapper.getFaultCode(new Message(soapMessageSoap12)));
+		assertEquals("env:Sender", soapWrapper.getFaultCode(new Message(soapFaultMessage12), null));
+		assertNull(soapWrapper.getFaultCode(new Message(soapMessageSoap12), null));
 	}
 
 	@Test
 	void testGetFaultStringSoap11() throws IOException, TransformerException, SAXException {
-		assertEquals("Message does not have necessary info", soapWrapper.getFaultString(new Message(soapFaultMessage11)));
-		assertEquals("", soapWrapper.getFaultString(new Message(soapMessageSoap11)));
+		assertEquals("Message does not have necessary info", soapWrapper.getFaultString(new Message(soapFaultMessage11), null));
+		assertNull(soapWrapper.getFaultString(new Message(soapMessageSoap11), null));
 	}
 
 	@Test
 	void testGetFaultStringSoap12() throws IOException, TransformerException, SAXException {
-		assertEquals("Message does not have necessary info", soapWrapper.getFaultString(new Message(soapFaultMessage12)));
-		assertEquals("", soapWrapper.getFaultString(new Message(soapMessageSoap12)));
+		assertEquals("Message does not have necessary info", soapWrapper.getFaultString(new Message(soapFaultMessage12), null));
+		assertNull(soapWrapper.getFaultString(new Message(soapMessageSoap12), null));
 	}
 
 	@Test
 	void testCheckForSoapFault() throws SenderException {
-		assertThrows(SenderException.class, () -> soapWrapper.checkForSoapFault(new Message(soapFaultMessage11), null));
-		soapWrapper.checkForSoapFault(new Message(soapMessageSoap11), null);
+		assertThrows(SenderException.class, () -> soapWrapper.checkForSoapFault(new Message(soapFaultMessage11), null, null));
+		soapWrapper.checkForSoapFault(new Message(soapMessageSoap11), null, null);
 
-		assertThrows(SenderException.class, () -> soapWrapper.checkForSoapFault(new Message(soapFaultMessage12), null));
-		soapWrapper.checkForSoapFault(new Message(soapMessageSoap12), null);
+		assertThrows(SenderException.class, () -> soapWrapper.checkForSoapFault(new Message(soapFaultMessage12), null, null));
+		soapWrapper.checkForSoapFault(new Message(soapMessageSoap12), null, null);
+
+		// Same tests, now with a session1, to store the SOAP version, discovered at the first check
+		PipeLineSession session1 = new PipeLineSession();
+		assertThrows(SenderException.class, () -> soapWrapper.checkForSoapFault(new Message(soapFaultMessage11), null, session1));
+		soapWrapper.checkForSoapFault(new Message(soapMessageSoap11), null, session1);
+
+		PipeLineSession session2 = new PipeLineSession();
+		assertThrows(SenderException.class, () -> soapWrapper.checkForSoapFault(new Message(soapFaultMessage12), null, session2));
+		soapWrapper.checkForSoapFault(new Message(soapMessageSoap12), null, session2);
 	}
 
 	@Test
@@ -175,7 +185,7 @@ public class SoapWrapperTest {
 		String expectedSoapBody = "";
 		String soapBody;
 		try {
-			soapBody = soapWrapper.getBody(new Message(xmlMessage)).asString();
+			soapBody = soapWrapper.getBody(new Message(xmlMessage), false, null, null).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
@@ -413,6 +423,7 @@ public class SoapWrapperTest {
 
 	private static class RemoveDynamicElements extends FullXmlFilter {
 		private enum Namespace {Timestamp, Nonce, Password, SignatureValue}
+
 		private Namespace ns = null;
 
 		public RemoveDynamicElements(ContentHandler writer) {

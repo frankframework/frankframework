@@ -236,13 +236,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					throw new PipeRunException(this, "SOAP Body contains SOAP Fault");
 				}
 				if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-					SoapVersion soapVersionFromSession = soapWrapper.getSoapVersionFromSession(session);
-					String soapHeader;
-					if (soapVersionFromSession != null) {
-						soapHeader = soapWrapper.getHeader(message, soapVersionFromSession);
-					} else {
-						soapHeader = soapWrapper.getHeader(message, SoapVersion.SOAP11);
-					}
+					String soapHeader = soapWrapper.getHeader(message, session);
 					session.put(getSoapHeaderSessionKey(), soapHeader);
 				}
 				if (removeOutputNamespacesTp != null) {

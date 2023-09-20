@@ -64,7 +64,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.jndi.JndiBase;
-import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
@@ -770,8 +769,13 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		message.preserve();
 		Message messageText=extractMessageBody(message, context, soapWrapper);
 		if (StringUtils.isNotEmpty(soapHeaderSessionKey)) {
-			SoapVersion soapVersion = (SoapVersion) context.getOrDefault(SoapWrapper.SESSION_MESSAGE_SOAP_VERSION, SoapVersion.SOAP11);
-			String soapHeader = soapWrapper.getHeader(message, soapVersion);
+			String soapHeader;
+			if (context instanceof PipeLineSession) {
+				soapHeader = soapWrapper.getHeader(message, (PipeLineSession) context);
+			} else {
+				soapHeader = soapWrapper.getHeader(message, null);
+			}
+
 			context.put(soapHeaderSessionKey, soapHeader);
 		}
 		return messageText;

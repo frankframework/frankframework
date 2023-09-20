@@ -23,7 +23,6 @@ import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
-import javax.xml.transform.Source;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
@@ -119,7 +118,7 @@ public class SoapWrapper {
 		return self;
 	}
 
-	public void checkForSoapFault(Message responseBody, Throwable nested) throws SenderException {
+	public void checkForSoapFault(Message responseBody, Throwable nested, PipeLineSession session) throws SenderException {
 		String faultString = null;
 		String faultCode = null;
 		int faultCount = 0;
@@ -128,8 +127,8 @@ public class SoapWrapper {
 			faultCount = getFaultCount(responseBody);
 			log.debug("fault count={}", faultCount);
 			if (faultCount > 0) {
-				faultCode = getFaultCode(responseBody);
-				faultString = getFaultString(responseBody);
+				faultCode = getFaultCode(responseBody, session);
+				faultString = getFaultString(responseBody, session);
 				log.debug("faultCode={}, faultString={}", faultCode, faultString);
 			}
 		} catch (SAXException|IOException e) {
@@ -144,18 +143,11 @@ public class SoapWrapper {
 		}
 	}
 
-	public Message getBody(Message message) throws SAXException, TransformerException, IOException  {
-		return getBody(message, false, null, null);
-	}
-
 	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
 		message.preserve();
 
 		// First try with Soap 1.1 transform pool, when no result, try with Soap 1.2 transform pool
-		String extractedBody = extractMessageWithTransformer(extractBodySoap11, message.asSource(), SoapVersion.SOAP11, session, soapNamespaceSessionKey);
-		if (StringUtils.isEmpty(extractedBody)) {
-			extractedBody = extractMessageWithTransformer(extractBodySoap12, message.asSource(), SoapVersion.SOAP12, session, soapNamespaceSessionKey);
-		}
+		String extractedBody = extractMessageWithTransformers(extractBodySoap11, extractBodySoap12, message, session, soapNamespaceSessionKey);
 		if (StringUtils.isNotEmpty(extractedBody)) {
 			return new Message(extractedBody);
 		}
@@ -166,14 +158,24 @@ public class SoapWrapper {
 		return allowPlainXml ? message : new Message(""); // could replace "" with nullMessage(), but then tests fail.
 	}
 
-	private String extractMessageWithTransformer(TransformerPool transformer, Source source, SoapVersion soapVersion, PipeLineSession session, String soapNamespaceSessionKey) throws IOException, TransformerException {
-		// If SOAP version is already determined in the session, and version is different, skip processing this message
-		SoapVersion soapVersionFromSession = getSoapVersionFromSession(session);
-		if (soapVersionFromSession != null && !soapVersionFromSession.equals(soapVersion)) {
-			return null;
+	private String extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session, String soapNamespaceSessionKey) throws IOException, TransformerException, SAXException {
+		// If SOAP version is already determined in the session, directly use the SOAP 1.2 transformer
+		SoapVersion soapVersion = getSoapVersionFromSession(session);
+		String extractedMessage;
+		if (soapVersion == SoapVersion.SOAP12) {
+			extractedMessage = transformerS12.transform(message.asSource());
+		} else {
+			extractedMessage = transformerS11.transform(message.asSource());
+			if (StringUtils.isNotEmpty(extractedMessage)) {
+				soapVersion = SoapVersion.SOAP11;
+			} else {
+				extractedMessage = transformerS12.transform(message.asSource());
+				if (StringUtils.isNotEmpty(extractedMessage)) {
+					soapVersion = SoapVersion.SOAP12;
+				}
+			}
 		}
 
-		String extractedMessage = transformer.transform(source);
 		if (StringUtils.isNotEmpty(extractedMessage)) {
 			if (session != null) {
 				session.putIfAbsent(SESSION_MESSAGE_SOAP_VERSION, soapVersion);
@@ -186,7 +188,7 @@ public class SoapWrapper {
 		return null;
 	}
 
-	public SoapVersion getSoapVersionFromSession(final PipeLineSession session) {
+	private SoapVersion getSoapVersionFromSession(final PipeLineSession session) {
 		if (session == null) return null;
 		Object soapVersionObject = session.getOrDefault(SoapWrapper.SESSION_MESSAGE_SOAP_VERSION, null);
 		if (soapVersionObject instanceof SoapVersion) {
@@ -195,11 +197,8 @@ public class SoapWrapper {
 		return null;
 	}
 
-	public String getHeader(final Message message, final SoapVersion soapVersion) throws SAXException, TransformerException, IOException {
-		if (soapVersion == SoapVersion.SOAP12) {
-			return extractHeaderSoap12.transform(message.asSource());
-		}
-		return extractHeaderSoap11.transform(message.asSource());
+	public String getHeader(final Message message, final PipeLineSession session) throws SAXException, TransformerException, IOException {
+		return extractMessageWithTransformers(extractHeaderSoap11, extractHeaderSoap12, message, session, null);
 	}
 
 	public int getFaultCount(Message message) throws SAXException, TransformerException, IOException {
@@ -220,20 +219,12 @@ public class SoapWrapper {
 		return Integer.parseInt(faultCount);
 	}
 
-	protected String getFaultCode(Message message) throws SAXException, TransformerException, IOException {
-		String faultCode = extractFaultCode11.transform(message.asSource());
-		if (StringUtils.isEmpty(faultCode)) {
-			faultCode = extractFaultCode12.transform(message.asSource());
-		}
-		return faultCode;
+	protected String getFaultCode(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException {
+		return extractMessageWithTransformers(extractFaultCode11, extractFaultCode12, message, session, null);
 	}
 
-	protected String getFaultString(Message message) throws SAXException, TransformerException, IOException {
-		String faultString = extractFaultString11.transform(message.asSource());
-		if (StringUtils.isEmpty(faultString)) {
-			faultString = extractFaultString12.transform(message.asSource());
-		}
-		return faultString;
+	protected String getFaultString(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException {
+		return extractMessageWithTransformers(extractFaultString11, extractFaultString12, message, session, null);
 	}
 
 	public Message putInEnvelope(Message message, String encodingStyleUri) throws IOException {
