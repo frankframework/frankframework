@@ -5,18 +5,28 @@ import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.DeflaterInputStream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +36,7 @@ import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
@@ -128,6 +139,74 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	}
 
 	@Test
+	public void testSimpleStoredProcedureBlobInputParameter() throws Exception {
+		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL", "DB2")));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long id = insertRowWithMessageValue(value);
+		sender.setQuery("CALL SET_BLOB(?, ?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+		sender.setScalar(true);
+
+		Parameter p1 = new Parameter("id", String.valueOf(id));
+		p1.setType(Parameter.ParameterType.NUMBER);
+		sender.addParameter(p1);
+		Parameter p2 = new Parameter("data", null);
+		p2.setSessionKey("data");
+		p2.setType(Parameter.ParameterType.BINARY);
+		sender.addParameter(p2);
+		session.put("data", new ByteArrayInputStream("test-data".getBytes(StandardCharsets.UTF_8)));
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+		String blobValue = getBlobValueAsString(id);
+		assertEquals("test-data", blobValue);
+	}
+
+	@Test
+	public void testSimpleStoredProcedureClobInputParameter() throws Exception {
+		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL", "DB2")));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long id = insertRowWithMessageValue(value);
+		sender.setQuery("CALL SET_CLOB(?, ?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+		sender.setScalar(true);
+
+		Parameter p1 = new Parameter("id", String.valueOf(id));
+		p1.setType(Parameter.ParameterType.NUMBER);
+		sender.addParameter(p1);
+		Parameter p2 = new Parameter("data", null);
+		p2.setSessionKey("data");
+		p2.setType(Parameter.ParameterType.CHARACTER);
+		sender.addParameter(p2);
+		session.put("data", new StringReader("test-data"));
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+		String clobValue = getClobValueAsString(id);
+		assertEquals("test-data", clobValue);
+	}
+
+	@Test
 	public void testStoredProcedureInputAndOutputParameters() throws Exception {
 
 		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
@@ -159,6 +238,196 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		// Assert
 		assertTrue(result.isSuccess());
 		assertEquals(value, result.getResult().asString());
+	}
+
+	@Test
+	public void testStoredProcedureInputAndOutputParameterNullValue() throws Exception {
+
+		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
+
+		// Arrange
+		long id = insertRowWithMessageValue(null);
+
+		sender.setQuery("CALL GET_MESSAGE_BY_ID(?, ?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+		sender.setScalar(true);
+
+		Parameter inParam = new Parameter("id", String.valueOf(id));
+		sender.addParameter(inParam);
+
+		Parameter outParam1 = new Parameter("r1", null);
+		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
+		outParam1.setType(Parameter.ParameterType.STRING);
+		sender.addParameter(outParam1);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+		assertNull(result.getResult().asString());
+	}
+
+	@Test
+	public void testStoredProcedureBlobOutputParameter1() throws Exception {
+		testStoredProcedureBlobOutputParameter(false, true, null);
+	}
+	@Test
+	public void testStoredProcedureBlobOutputParameter2() throws Exception {
+		testStoredProcedureBlobOutputParameter(false, true, StandardCharsets.UTF_8.name());
+	}
+	@Test
+	public void testStoredProcedureBlobOutputParameter3() throws Exception {
+		testStoredProcedureBlobOutputParameter(true, false, StandardCharsets.UTF_8.name());
+	}
+	@Test
+	public void testStoredProcedureBlobOutputParameter4() throws Exception {
+		testStoredProcedureBlobOutputParameter(true, true, StandardCharsets.UTF_8.name());
+	}
+
+	private void testStoredProcedureBlobOutputParameter(boolean blobSmartGet, boolean compressed, String charSet) throws Exception {
+
+		assumeThat("H2, PSQL not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL")));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long id = insertRowWithBlobValue(value, compressed);
+
+		sender.setQuery("CALL GET_BLOB(?, ?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+		sender.setScalar(true);
+		sender.setBlobSmartGet(blobSmartGet);
+		sender.setBlobCharset(charSet);
+
+		Parameter inParam = new Parameter("id", String.valueOf(id));
+		sender.addParameter(inParam);
+
+		Parameter outParam1 = new Parameter("r1", null);
+		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
+		outParam1.setType(Parameter.ParameterType.BINARY);
+		sender.addParameter(outParam1);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+		assertEquals(value, result.getResult().asString());
+	}
+
+	@Test
+	public void testStoredProcedureClobOutputParameter() throws Exception {
+
+		assumeThat("H2, PSQL not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL")));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long id = insertRowWithClobValue(value);
+
+		sender.setQuery("CALL GET_CLOB(?, ?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+		sender.setScalar(true);
+
+		Parameter inParam = new Parameter("id", String.valueOf(id));
+		sender.addParameter(inParam);
+
+		Parameter outParam1 = new Parameter("r1", null);
+		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
+		outParam1.setType(Parameter.ParameterType.CHARACTER);
+		sender.addParameter(outParam1);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+		assertEquals(value, result.getResult().asString());
+	}
+
+	@Test
+	public void testStoredProcedureBlobOutputParameterNullValue() throws Exception {
+
+		assumeThat("H2, PSQL not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL")));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long id = insertRowWithMessageValue(value);
+
+		sender.setQuery("CALL GET_BLOB(?, ?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+		sender.setScalar(true);
+
+		Parameter inParam = new Parameter("id", String.valueOf(id));
+		sender.addParameter(inParam);
+
+		Parameter outParam1 = new Parameter("r1", null);
+		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
+		outParam1.setType(Parameter.ParameterType.BINARY);
+		sender.addParameter(outParam1);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+		Object resultData = result.getResult().asObject();
+		assertTrue(resultData instanceof byte[]);
+		byte[] bytes = (byte[]) resultData;
+		assertEquals(0, bytes.length);
+		assertEquals("", result.getResult().asString());
+	}
+	@Test
+	public void testStoredProcedureClobOutputParameterNullValue() throws Exception {
+
+		assumeThat("H2, PSQL not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL")));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long id = insertRowWithMessageValue(value);
+
+		sender.setQuery("CALL GET_CLOB(?, ?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+		sender.setScalar(true);
+
+		Parameter inParam = new Parameter("id", String.valueOf(id));
+		sender.addParameter(inParam);
+
+		Parameter outParam1 = new Parameter("r1", null);
+		outParam1.setMode(Parameter.ParameterMode.OUTPUT);
+		outParam1.setType(Parameter.ParameterType.CHARACTER);
+		sender.addParameter(outParam1);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+		assertTrue(StringUtils.isEmpty(result.getResult().asString()));
 	}
 
 	@Test
@@ -342,6 +611,65 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 				fail("No generated keys from insert statement");
 			}
 			return generatedKeys.getLong(1);
+		}
+	}
+
+	private long insertRowWithBlobValue(final String value, final boolean compressed) throws SQLException, JdbcException {
+		String insertValueQuery = dbmsSupport.convertQuery("INSERT INTO SP_TESTDATA (TBLOB, TCHAR) VALUES (?, 'B')", "Oracle");
+		// Column name of generated key-field should be in lowercase for PostgreSQL
+		try (PreparedStatement statement = getConnection().prepareStatement(insertValueQuery, new String[] {"tkey"})) {
+			ByteArrayInputStream inputStream = new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8));
+			statement.setBlob(1, (compressed) ? new DeflaterInputStream(inputStream) : inputStream);
+			statement.executeUpdate();
+			ResultSet generatedKeys = statement.getGeneratedKeys();
+			if (!generatedKeys.next()) {
+				fail("No generated keys from insert statement");
+			}
+			return generatedKeys.getLong(1);
+		}
+	}
+
+	private long insertRowWithClobValue(final String value) throws SQLException, JdbcException {
+		String insertValueQuery = dbmsSupport.convertQuery("INSERT INTO SP_TESTDATA (TCLOB, TCHAR) VALUES (?, 'C')", "Oracle");
+		// Column name of generated key-field should be in lowercase for PostgreSQL
+		try (PreparedStatement statement = getConnection().prepareStatement(insertValueQuery, new String[] {"tkey"})) {
+			statement.setClob(1, new StringReader(value));
+			statement.executeUpdate();
+			ResultSet generatedKeys = statement.getGeneratedKeys();
+			if (!generatedKeys.next()) {
+				fail("No generated keys from insert statement");
+			}
+			return generatedKeys.getLong(1);
+		}
+	}
+
+	private String getBlobValueAsString(final long id) throws SQLException, JdbcException, IOException {
+		String getBlobQuery = dbmsSupport.convertQuery("SELECT TBLOB FROM SP_TESTDATA WHERE TKEY = ?", "Oracle");
+		try (PreparedStatement statement = getConnection().prepareStatement(getBlobQuery)) {
+			statement.setLong(1, id);
+			ResultSet rs = statement.executeQuery();
+			if (!rs.next()) {
+				fail("No data found for id = " + id);
+			}
+			Blob blob = rs.getBlob(1);
+			try (InputStream in = blob.getBinaryStream()) {
+				return StreamUtil.streamToString(in);
+			}
+		}
+	}
+
+	private String getClobValueAsString(final long id) throws SQLException, JdbcException, IOException {
+		String getClobQuery = dbmsSupport.convertQuery("SELECT TCLOB FROM SP_TESTDATA WHERE TKEY = ?", "Oracle");
+		try (PreparedStatement statement = getConnection().prepareStatement(getClobQuery)) {
+			statement.setLong(1, id);
+			ResultSet rs = statement.executeQuery();
+			if (!rs.next()) {
+				fail("No data found for id = " + id);
+			}
+			Clob clob = rs.getClob(1);
+			try (Reader in = clob.getCharacterStream()) {
+				return StreamUtil.readerToString(in, "\n");
+			}
 		}
 	}
 

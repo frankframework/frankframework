@@ -86,8 +86,8 @@ class StoredProcedureResultWrapper implements ResultSet {
 	}
 
 	@Override
-	public boolean wasNull() {
-		return false;
+	public boolean wasNull() throws SQLException {
+		return delegate.wasNull();
 	}
 
 	@Override

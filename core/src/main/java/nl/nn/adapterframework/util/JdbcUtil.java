@@ -257,14 +257,14 @@ public class JdbcUtil {
 	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, boolean blobIsCompressed) throws SQLException, JdbcException {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
-	private static InputStream getBlobInputStream(InputStream blobIntputStream, boolean blobIsCompressed) {
-		if (blobIntputStream==null) {
+	private static InputStream getBlobInputStream(InputStream blobInputStream, boolean blobIsCompressed) {
+		if (blobInputStream==null) {
 			return null;
 		}
 		if (blobIsCompressed) {
-			return new InflaterInputStream(blobIntputStream);
+			return new InflaterInputStream(blobInputStream);
 		}
-		return blobIntputStream;
+		return blobInputStream;
 	}
 
 	public static Reader getBlobReader(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
@@ -273,43 +273,43 @@ public class JdbcUtil {
 	public static Reader getBlobReader(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
 		return getBlobReader(getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed),charset);
 	}
-	public static Reader getBlobReader(final InputStream blobIntputStream, String charset) throws IOException {
-		if (blobIntputStream==null) {
+	public static Reader getBlobReader(final InputStream blobInputStream, String charset) throws IOException {
+		if (blobInputStream==null) {
 			return null;
 		}
 		if (charset==null) {
 			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
-		return StreamUtil.getCharsetDetectingInputStreamReader(blobIntputStream, charset);
+		return StreamUtil.getCharsetDetectingInputStreamReader(blobInputStream, charset);
 	}
 
 	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
-		try (InputStream blobIntputStream = getBlobInputStream(dbmsSupport, rs, columnIndex, blobIsCompressed)) {
-			streamBlob(blobIntputStream, charset, blobBase64Direction, target, close);
+		try (InputStream blobInputStream = getBlobInputStream(dbmsSupport, rs, columnIndex, blobIsCompressed)) {
+			streamBlob(blobInputStream, charset, blobBase64Direction, target, close);
 		}
 	}
 	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, String columnName, String charset, boolean blobIsCompressed, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
-		try (InputStream blobIntputStream = getBlobInputStream(dbmsSupport, rs, columnName, blobIsCompressed)) {
-			streamBlob(blobIntputStream, charset, blobBase64Direction, target, close);
+		try (InputStream blobInputStream = getBlobInputStream(dbmsSupport, rs, columnName, blobIsCompressed)) {
+			streamBlob(blobInputStream, charset, blobBase64Direction, target, close);
 		}
 	}
 
-	public static void streamBlob(final InputStream blobIntputStream, String charset, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, IOException {
+	public static void streamBlob(final InputStream blobInputStream, String charset, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, IOException {
 		if (target==null) {
 			throw new JdbcException("cannot stream Blob to null object");
 		}
 		OutputStream outputStream = getOutputStream(target);
 		if (outputStream != null) {
 			if (blobBase64Direction == Direction.DECODE){
-				Base64InputStream base64DecodedStream = new Base64InputStream (blobIntputStream);
+				Base64InputStream base64DecodedStream = new Base64InputStream (blobInputStream);
 				StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);
 			}
 			else if (blobBase64Direction == Direction.ENCODE){
-				Base64InputStream base64EncodedStream = new Base64InputStream (blobIntputStream, true);
+				Base64InputStream base64EncodedStream = new Base64InputStream (blobInputStream, true);
 				StreamUtil.copyStream(base64EncodedStream, outputStream, 50000);
 			}
 			else {
-				StreamUtil.copyStream(blobIntputStream, outputStream, 50000);
+				StreamUtil.copyStream(blobInputStream, outputStream, 50000);
 			}
 
 			if (close) {
@@ -319,7 +319,7 @@ public class JdbcUtil {
 		}
 		Writer writer = getWriter(target);
 		if (writer !=null) {
-			Reader reader = JdbcUtil.getBlobReader(blobIntputStream, charset);
+			Reader reader = JdbcUtil.getBlobReader(blobInputStream, charset);
 			StreamUtil.copyReaderToWriter(reader, writer, 50000);
 			if (close) {
 				writer.close();
