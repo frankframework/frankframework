@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -231,7 +232,9 @@ public class ApiListenerTest {
 		Servlet servlet = mock(Servlet.class);
 		when(servlet.getName()).thenReturn(ApiListenerServlet.class.getSimpleName());
 		when(servlet.getUrlMapping()).thenReturn("aapje");
-		ServletConfiguration servletConfig = spy(new ServletConfiguration(servlet));
+		ServletConfiguration servletConfig = spy(new ServletConfiguration());
+		doNothing().when(servletConfig).loadProperties();
+		servletConfig.fromServlet(servlet);
 		when(manager.getServlet(anyString())).thenReturn(servletConfig);
 		listener.setServletManager(manager);
 
@@ -247,7 +250,9 @@ public class ApiListenerTest {
 		Servlet servlet = mock(Servlet.class);
 		when(servlet.getName()).thenReturn(ApiListenerServlet.class.getSimpleName());
 		when(servlet.getUrlMapping()).thenReturn("aap,noot");
-		ServletConfiguration servletConfig = spy(new ServletConfiguration(servlet));
+		ServletConfiguration servletConfig = spy(new ServletConfiguration());
+		doNothing().when(servletConfig).loadProperties();
+		servletConfig.fromServlet(servlet);
 		when(manager.getServlet(anyString())).thenReturn(servletConfig);
 		listener.setServletManager(manager);
 

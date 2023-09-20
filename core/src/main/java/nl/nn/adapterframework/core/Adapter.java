@@ -238,7 +238,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	/**
-	 * sends a warning to the log and to the messagekeeper of the adapter
+	 * send a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
 		log.warn("Adapter [{}] {}", name, msg);
@@ -246,7 +246,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	/**
-	 * sends a warning to the log and to the messagekeeper of the adapter
+	 * send an error to the log and to the messagekeeper of the adapter
 	 */
 	protected void addErrorMessageToMessageKeeper(String msg, Throwable t) {
 		log.error("Adapter [{}] {}", name, msg, t);
@@ -671,7 +671,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			processingSuccess = false;
 			incNumOfMessagesInError();
-			addErrorMessageToMessageKeeper("error processing message with messageId [" + messageId+"]: ",e);
+			warn("error processing message with messageId [" + messageId + "]: " + e.getMessage());
 			result = new PipeLineResult();
 			result.setState(ExitState.ERROR);
 			result.setResult(new Message(e.getMessage()));

@@ -19,7 +19,7 @@
 		<jackson.version>2.15.2</jackson.version>
 		<cxf.version>3.5.7</cxf.version>
 		<spring.version>5.3.30</spring.version>
-		<spring-security.version>5.8.6</spring-security.version>
+		<spring-security.version>5.8.7</spring-security.version>
 		<spring-integration.version>5.5.18</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
@@ -104,6 +104,11 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-commons</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-security</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -720,7 +725,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.5.0</version>
+					<version>3.6.0</version>
 					<configuration>
 						<source>${maven.compiler.source}</source>
 						<doclint>none</doclint>
@@ -1005,7 +1010,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.6.0</version>
 				<reportSets>
 					<reportSet>
 						<id>default</id>
@@ -1122,6 +1127,7 @@
 			</activation>
 			<modules>
 				<module>iaf-commons</module>
+				<module>security</module>
 				<module>credentialProvider</module>
 				<module>management-gateway</module>
 				<module>core</module>

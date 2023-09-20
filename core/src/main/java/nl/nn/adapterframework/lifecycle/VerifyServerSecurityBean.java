@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2020 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
+import nl.nn.adapterframework.lifecycle.servlets.SecuritySettings;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -35,7 +36,7 @@ public class VerifyServerSecurityBean implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() {
-		if(!ServletManager.isWebSecurityEnabled()) {
+		if(!SecuritySettings.isWebSecurityEnabled()) {
 			AppConstants appConstants = AppConstants.getInstance();
 			boolean isDtapStageLoc = "LOC".equalsIgnoreCase(appConstants.getProperty("dtap.stage"));
 			if(appConstants.getBoolean("security.constraint.warning", !isDtapStageLoc)) {
