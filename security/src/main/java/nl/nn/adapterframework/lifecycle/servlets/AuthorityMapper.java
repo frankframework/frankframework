@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
@@ -36,7 +37,7 @@ import nl.nn.adapterframework.util.StringResolver;
 
 @Log4j2
 public class AuthorityMapper implements GrantedAuthoritiesMapper {
-	private Map<String, GrantedAuthority> roleToAuthorityMapping = new HashMap<>();
+	private Map<GrantedAuthority, String> roleToAuthorityMapping = new HashMap<>();
 
 	public AuthorityMapper(URL roleMappingURL, Set<String> roles, Properties properties) throws IOException {
 		Properties roleMappingProperties = new Properties();
@@ -54,9 +55,9 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 			}
 
 			String resolvedValue = StringResolver.substVars(value, properties);
-			if(StringUtils.isNotEmpty(role) && StringUtils.isNotEmpty(resolvedValue)) {
+			if(StringUtils.isNotEmpty(resolvedValue)) {
 				GrantedAuthority grantedAuthority = new SimpleGrantedAuthority("ROLE_"+role);
-				roleToAuthorityMapping.put(resolvedValue, grantedAuthority);
+				roleToAuthorityMapping.put(grantedAuthority, resolvedValue);
 				log.info("mapped role [{}] to [{}]", resolvedValue, grantedAuthority);
 			}
 		}
@@ -65,13 +66,14 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 	@Override
 	public Collection<? extends GrantedAuthority> mapAuthorities(Collection<? extends GrantedAuthority> authorities) {
 		List<GrantedAuthority> mappedAuthorities = new ArrayList<>();
-		for(GrantedAuthority grantedAuthority : authorities) {
-			String canonicalRoleName = grantedAuthority.getAuthority();
-			GrantedAuthority authority = roleToAuthorityMapping.get(canonicalRoleName);
-			if(authority != null) {
+		List<String> canonicalRoleNames = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+
+		roleToAuthorityMapping.forEach((authority, key) -> {
+			if(canonicalRoleNames.contains(key)) {
 				mappedAuthorities.add(authority);
 			}
-		}
+		});
+
 		return mappedAuthorities;
 	}
 }
