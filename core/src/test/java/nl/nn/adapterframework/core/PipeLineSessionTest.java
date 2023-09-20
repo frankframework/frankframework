@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.input.ReaderInputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -62,6 +64,34 @@ public class PipeLineSessionTest {
 		session.put("key10", map);
 		session.put("key11", 123L);
 		session.put("key11b", "456");
+	}
+
+	@Test
+	public void testPutWithCloseable() {
+		// Arrange
+		InputStream closeable = new ReaderInputStream(new StringReader("xyz"));
+
+		// Act
+		session.put("x", closeable);
+
+		// Assert
+		assertTrue(session.getCloseables().containsKey(closeable));
+	}
+
+	@Test
+	public void testPutAllWithCloseable() {
+		// Arrange
+		InputStream closeable = new ReaderInputStream(new StringReader("xyz"));
+		Map<String, Object> values = new HashMap<>();
+		values.put("v1", 1);
+		values.put("v2", 2);
+		values.put("x", closeable);
+
+		// Act
+		session.putAll(values);
+
+		// Assert
+		assertTrue(session.getCloseables().containsKey(closeable));
 	}
 
 	@Test
@@ -235,12 +265,37 @@ public class PipeLineSessionTest {
 	 */
 	@Test
 	public void testMergeToParentSession() {
+		// Arrange
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
 		String keys = "a,b";
 		from.put("a", 15);
 		from.put("b", 16);
-		PipeLineSession.mergeToParentSession(keys, from, to, null);
+
+		// Act
+		from.mergeToParentSession(keys, to);
+
+		// Assert
+		assertEquals(from,to);
+	}
+
+	@Test
+	public void testMergeToParentContextMap() {
+		// Arrange
+		PipeLineSession from = new PipeLineSession();
+		Map<String, Object> to = new HashMap<>();
+		String keys = "a,b";
+		from.put("a", 15);
+		from.put("b", 16);
+
+		Message message1 = Message.asMessage("17");
+		from.put("c", message1);
+		to.put("c", message1);
+
+		// Act
+		from.mergeToParentSession(keys, to);
+
+		// Assert
 		assertEquals(from,to);
 	}
 
@@ -261,7 +316,7 @@ public class PipeLineSessionTest {
 		from.scheduleCloseOnSessionExit(closeable, "test-d");
 
 		// Act
-		PipeLineSession.mergeToParentSession(keysToCopy, from, to, null);
+		from.mergeToParentSession(keysToCopy, to);
 
 		from.close();
 
@@ -296,13 +351,16 @@ public class PipeLineSessionTest {
 		from.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, "exitCode");
 		from.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, "exitState");
 
+		// Same key different objects; same object different keys.
+		// Afterwards message1 should be closed and message2 should not be.
 		from.put("d", message1);
+		from.put("e", message2);
 		to.put("d", message2);
 
 		from.scheduleCloseOnSessionExit(message1, "test-d");
 
 		// Act
-		PipeLineSession.mergeToParentSession(keys, from, to, null);
+		from.mergeToParentSession(keys, to);
 
 		from.close();
 
@@ -325,7 +383,7 @@ public class PipeLineSessionTest {
 		PipeLineSession to = new PipeLineSession();
 		from.put("a", 15);
 		from.put("b", 16);
-		PipeLineSession.mergeToParentSession("", from, to, null);
+		from.mergeToParentSession("", to);
 		assertEquals(0,to.size());
 	}
 }

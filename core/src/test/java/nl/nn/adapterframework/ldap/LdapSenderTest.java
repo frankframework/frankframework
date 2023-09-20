@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.ldap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -204,6 +204,6 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 			}
 		});
-		assertTrue(diff.toString(), diff.identical());
+		assertTrue(diff.identical(), diff.toString());
 	}
 }

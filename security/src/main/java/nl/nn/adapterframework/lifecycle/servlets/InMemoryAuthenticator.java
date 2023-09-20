@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022 - 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,8 +41,9 @@ public class InMemoryAuthenticator extends ServletAuthenticatorBase {
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		http.httpBasic().realmName("InMemoryAuthenticator"); //BasicAuthenticationEntryPoint
+		http.httpBasic().realmName("Frank"); //BasicAuthenticationEntryPoint
 		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		http.authorizeHttpRequests().anyRequest().authenticated();
 
 		UserDetails user = User.builder()
 				.username(username)

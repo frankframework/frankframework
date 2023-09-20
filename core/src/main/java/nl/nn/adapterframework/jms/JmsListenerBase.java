@@ -296,7 +296,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 					}
 				}
 			}
-		} catch (JMSException | SenderException | TimeoutException | NamingException | IOException | JmsException e) {
+		} catch (JMSException | SenderException | TimeoutException | NamingException | IOException e) {
 			throw new ListenerException(e);
 		}
 

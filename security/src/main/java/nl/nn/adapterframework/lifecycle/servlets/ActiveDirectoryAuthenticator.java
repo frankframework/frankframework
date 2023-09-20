@@ -30,6 +30,7 @@ import javax.naming.Context;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -39,23 +40,43 @@ import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassLoaderUtils;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StringResolver;
 
 public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase implements InitializingBean {
 
 	private @Setter String domainName = null;
+
 	/** LDAP server endpoint, eg: ldap://10.1.2.3 */
-	private @Setter String url = AppConstants.getInstance().getProperty("ldap.auth.url");
+	private @Setter String url;
+
 	/** Domain root DN, eg: DC=company,DC=org */
-	private @Setter String baseDn = AppConstants.getInstance().getProperty("ldap.auth.user.base");
+	private @Setter String baseDn;
 	private @Setter boolean followReferrals = true;
+
 	/** defaults to (&(objectClass=user)(userPrincipalName={0})) */
 	private @Setter String searchFilter = null;
 
 	private @Setter String roleMappingFile = "ldap-role-mapping.properties";
 	private URL roleMappingURL = null;
+
+	@Override
+	public void afterPropertiesSet() throws FileNotFoundException {
+		roleMappingURL = ClassUtils.getResourceURL(roleMappingFile);
+		if(roleMappingURL == null) {
+			throw new FileNotFoundException("unable to find LDAP role-mapping file ["+roleMappingFile+"]");
+		}
+		log.info("found rolemapping file [{}]", roleMappingURL);
+
+		setDefaultValues();
+	}
+
+	/** Set default values for legacy properties to ease application upgrades, these values will be overwritten when the appropiate setter is called. */
+	private void setDefaultValues() {
+		Environment env = getApplicationContext().getEnvironment();
+		url = env.getProperty("ldap.auth.url");
+		baseDn = env.getProperty("ldap.auth.user.base");
+	}
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
@@ -103,7 +124,7 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase imple
 					continue;
 				}
 
-				String resolvedValue = StringResolver.substVars(value, AppConstants.getInstance());
+				String resolvedValue = StringResolver.substVars(value, getEnvironmentProperties());
 				if(StringUtils.isNotEmpty(role) && StringUtils.isNotEmpty(resolvedValue)) {
 					roleToAuthorityMapping.put(resolvedValue, new SimpleGrantedAuthority("ROLE_"+role));
 				}
@@ -122,14 +143,5 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase imple
 			}
 			return mappedAuthorities;
 		}
-	}
-
-	@Override
-	public void afterPropertiesSet() throws FileNotFoundException {
-		roleMappingURL = ClassLoaderUtils.getResourceURL(roleMappingFile);
-		if(roleMappingURL == null) {
-			throw new FileNotFoundException("unable to find LDAP role-mapping file ["+roleMappingFile+"]");
-		}
-		log.info("found rolemapping file [{}]", roleMappingURL);
 	}
 }
