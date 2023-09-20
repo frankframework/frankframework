@@ -212,14 +212,12 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				if (!getParameterList().isEmpty() && (soapHeaderTp != null || soapBodyTp != null)) {
 					parameterValues = getParameterList().getValues(payload, session).getValueMap();
 				}
-				String soapHeader = null;
+				String soapHeader;
 				if (soapHeaderTp != null) {
 					payload.preserve();
 					soapHeader = soapHeaderTp.transform(payload, parameterValues);
 				} else {
-					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-						soapHeader = session.getString(getSoapHeaderSessionKey());
-					}
+					soapHeader = session.getString(getSoapHeaderSessionKey());
 				}
 				if (soapBodyTp != null) {
 					payload = new Message(soapBodyTp.transform(payload, parameterValues));
@@ -255,21 +253,28 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	private String determineSoapNamespaceFromSession(PipeLineSession session) {
-		String soapNamespace = getSoapNamespace();
-		if (StringUtils.isEmpty(soapNamespace)) {
-			String savedSoapNamespace = session.getString(getSoapNamespaceSessionKey());
-			if (StringUtils.isNotEmpty(savedSoapNamespace)) {
-				soapNamespace = savedSoapNamespace;
-			} else {
-				SoapVersion soapVersion = getSoapVersion();
-				if (soapVersion==SoapVersion.AUTO) {
-					soapVersion=DEFAULT_SOAP_VERSION_FOR_WRAPPING;
-				}
-				soapNamespace = soapVersion.namespace;
-			}
+	/**
+	 * Determines the SOAP namespace for wrapping a message. Used order:
+	 * 1) soapNamespace configuration setting
+	 * 2) soapVersion configuration setting
+	 * 3) saved soapNamespace from session
+	 * 4) default soap version namespace fall back
+	 *
+	 * @param session to fetch namespace from
+	 * @return full SOAP namespace URL
+	 */
+	private String determineSoapNamespace(PipeLineSession session) {
+		if (StringUtils.isNotEmpty(getSoapNamespace())) {
+			return getSoapNamespace();
 		}
-		return soapNamespace;
+		if (getSoapVersion() != SoapVersion.AUTO) {
+			return getSoapVersion().namespace;
+		}
+		String savedSoapNamespace = session.getString(getSoapNamespaceSessionKey());
+		if (StringUtils.isNotEmpty(savedSoapNamespace)) {
+			return savedSoapNamespace;
+		}
+		return DEFAULT_SOAP_VERSION_FOR_WRAPPING.namespace;
 	}
 
 	protected Message unwrapMessage(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException {
@@ -277,7 +282,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	}
 
 	protected Message wrapMessage(Message message, String soapHeader, PipeLineSession session) throws IOException {
-		String soapNamespace = determineSoapNamespaceFromSession(session);
+		String soapNamespace = determineSoapNamespace(session);
 		if (soapNamespace==null) {
 			return message;
 		}
@@ -301,8 +306,8 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	 * (only used when direction=<code>wrap</code>) Namespace of the soap envelope
 	 * @ff.default auto determined from soapVersion
 	 */
-	public void setSoapNamespace(String string) {
-		soapNamespace = string;
+	public void setSoapNamespace(String soapNamespace) {
+		this.soapNamespace = soapNamespace;
 	}
 
 	/**
