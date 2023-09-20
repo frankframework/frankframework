@@ -177,7 +177,7 @@ public class SoapWrapper {
 		}
 
 		if (StringUtils.isNotEmpty(extractedMessage)) {
-			if (session != null) {
+			if (session != null && soapVersion != null) {
 				session.putIfAbsent(SESSION_MESSAGE_SOAP_VERSION, soapVersion);
 				if (StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
 					session.putIfAbsent(soapNamespaceSessionKey, soapVersion.namespace);
