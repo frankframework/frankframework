@@ -72,11 +72,11 @@ public class SoapWrapperTest {
 
 	private final String soapMessageSoap11 = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">"
 			+ "<soapenv:Header><MessageHeader xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\"><HeaderFields><MessageId>messageId</MessageId></HeaderFields></MessageHeader></soapenv:Header>"
-			+ "<soapenv:Body>"+xmlMessage+"</soapenv:Body></soapenv:Envelope>";
+			+ "<soapenv:Body>" + xmlMessage + "</soapenv:Body></soapenv:Envelope>";
 
 	private final String soapMessageSoap12 = "<soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\">"
 			+ "<soapenv:Header><MessageHeader xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\"><HeaderFields><MessageId>messageId</MessageId></HeaderFields></MessageHeader></soapenv:Header>"
-			+ "<soapenv:Body>"+xmlMessage+"</soapenv:Body></soapenv:Envelope>";
+			+ "<soapenv:Body>" + xmlMessage + "</soapenv:Body></soapenv:Envelope>";
 
 	private final String soapFaultMessage11 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" +
 			"<soapenv:Fault><faultcode>SOAP-ENV:Client</faultcode>" +
@@ -172,7 +172,7 @@ public class SoapWrapperTest {
 
 	@Test
 	public void getBodyXml() {
-    String expectedSoapBody = "";
+		String expectedSoapBody = "";
 		String soapBody;
 		try {
 			soapBody = soapWrapper.getBody(new Message(xmlMessage)).asString();
@@ -184,7 +184,7 @@ public class SoapWrapperTest {
 
 	@Test
 	public void getBody11AndStoreSoapNamespace() {
-    	String soapBody;
+		String soapBody;
 		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
 		try {
@@ -193,13 +193,13 @@ public class SoapWrapperTest {
 			soapBody = e.getMessage();
 		}
 		assertEquals(expectedSoapBody11, soapBody);
-		String soapVersion = (String)session.get(sessionKey);
-		assertEquals(SoapVersion.SOAP11.namespace,soapVersion);
+		String soapVersion = (String) session.get(sessionKey);
+		assertEquals(SoapVersion.SOAP11.namespace, soapVersion);
 	}
 
 	@Test
 	public void getBody12AndStoreSoapNamespace() {
-    	String soapBody;
+		String soapBody;
 		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
 		try {
@@ -208,13 +208,13 @@ public class SoapWrapperTest {
 			soapBody = e.getMessage();
 		}
 		assertEquals(expectedSoapBody12, soapBody);
-		String soapVersion = (String)session.get(sessionKey);
-		assertEquals(SoapVersion.SOAP12.namespace,soapVersion);
+		String soapVersion = (String) session.get(sessionKey);
+		assertEquals(SoapVersion.SOAP12.namespace, soapVersion);
 	}
 
 	@Test
 	public void getBodyXmlAndStoreSoapNamespace() {
-    	String soapBody;
+		String soapBody;
 		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
 		try {
@@ -223,15 +223,15 @@ public class SoapWrapperTest {
 			soapBody = e.getMessage();
 		}
 		assertEquals(xmlMessage, soapBody);
-		String soapVersion = (String)session.get(sessionKey);
-		assertEquals(SoapVersion.NONE.namespace,soapVersion);
+		String soapVersion = (String) session.get(sessionKey);
+		assertEquals(SoapVersion.NONE.namespace, soapVersion);
 	}
 
 	@Test
 	public void signSoap11MessageDigestPassword() throws Exception {
 		resetWSConfig();
 
-    	String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_passwordDigest_mock.xml");
+		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_passwordDigest_mock.xml");
 		Message soapBody = soapWrapper.signMessage(new Message(soapMessageSoap11), "dummy-username", "dummy-password", true);
 		String result = replaceDynamicElements(soapBody);
 		MatchUtils.assertXmlEquals(expectedSoapBody, result);
@@ -243,7 +243,7 @@ public class SoapWrapperTest {
 	public void signSoap11Message() throws Exception {
 		resetWSConfig();
 
-    	Message soapBody = soapWrapper.signMessage(new Message(soapMessageSoap11), "dummy-username", "dummy-password", false);
+		Message soapBody = soapWrapper.signMessage(new Message(soapMessageSoap11), "dummy-username", "dummy-password", false);
 		String result = replaceDynamicElements(soapBody);
 
 		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_mock.xml");
@@ -412,7 +412,7 @@ public class SoapWrapperTest {
 	}
 
 	private static class RemoveDynamicElements extends FullXmlFilter {
-		private enum Namespace { Timestamp, Nonce, Password, SignatureValue };
+		private enum Namespace {Timestamp, Nonce, Password, SignatureValue}
 		private Namespace ns = null;
 
 		public RemoveDynamicElements(ContentHandler writer) {
@@ -421,43 +421,47 @@ public class SoapWrapperTest {
 
 		@Override
 		public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes atts) throws SAXException {
-			if(uri.equals(WSConstants.WSU_NS)) {
+			if (uri.equals(WSConstants.WSU_NS)) {
 				ns = Namespace.Timestamp;
 			}
-			if(uri.equals(WSConstants.WSSE_NS) && localName.equals("Nonce")) {
+			if (uri.equals(WSConstants.WSSE_NS) && localName.equals("Nonce")) {
 				ns = Namespace.Nonce;
 			}
-			if(uri.equals(WSConstants.WSSE_NS) && localName.equals("Password")) {
+			if (uri.equals(WSConstants.WSSE_NS) && localName.equals("Password")) {
 				ns = Namespace.Password;
 			}
-			if(uri.equals(WSConstants.SIG_NS) && localName.equals("SignatureValue")) {
+			if (uri.equals(WSConstants.SIG_NS) && localName.equals("SignatureValue")) {
 				ns = Namespace.SignatureValue;
 			}
-			if(uri.equals(WSConstants.WSSE_NS) && localName.equals("SecurityTokenReference")) {
+			if (uri.equals(WSConstants.WSSE_NS) && localName.equals("SecurityTokenReference")) {
 				atts = new AttributesWrapper(atts, "Id");
 			}
-			if(uri.equals(WSConstants.SIG_NS) && localName.equals("KeyInfo")) {
+			if (uri.equals(WSConstants.SIG_NS) && localName.equals("KeyInfo")) {
 				atts = new AttributesWrapper(atts, "Id");
 			}
 
 			super.startElement(uri, localName, qName, atts);
 		}
+
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
-			if(ns != null && length > 1) {
-				String replaceWith = "fake-"+ns.name();
+			if (ns != null && length > 1) {
+				String replaceWith = "fake-" + ns.name();
 				super.characters(replaceWith.toCharArray(), 0, replaceWith.length());
 				return;
 			}
 			super.characters(ch, start, length);
 		}
+
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
-			if(ns != null) {
+			if (ns != null) {
 				ns = null;
 			}
 			super.endElement(uri, localName, qName);
-		};
+		}
+
+		;
 	}
 
 	private void resetWSConfig() throws Exception {
@@ -466,13 +470,13 @@ public class SoapWrapperTest {
 
 			@Override
 			public String createId(String prefix, Object o) {
-				if(prefix.equals("TS-")) {
+				if (prefix.equals("TS-")) {
 					prefix = "Timestamp-";
 				}
-				if(prefix.equals("SIG-")) {
+				if (prefix.equals("SIG-")) {
 					prefix = "Signature-";
 				}
-				return StringUtil.concat("", prefix, ""+i.getAndIncrement());
+				return StringUtil.concat("", prefix, "" + i.getAndIncrement());
 			}
 
 			@Override
