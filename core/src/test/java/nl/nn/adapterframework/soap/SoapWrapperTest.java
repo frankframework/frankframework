@@ -2,8 +2,13 @@ package nl.nn.adapterframework.soap;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,7 +28,6 @@ import javax.xml.crypto.KeySelectorResult;
 import javax.xml.crypto.XMLCryptoContext;
 import javax.xml.crypto.XMLStructure;
 import javax.xml.crypto.dom.DOMStructure;
-import javax.xml.crypto.dsig.SignatureMethod;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.crypto.dsig.XMLSignatureFactory;
 import javax.xml.crypto.dsig.dom.DOMValidateContext;
@@ -36,8 +40,6 @@ import javax.xml.soap.SOAPPart;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
-import nl.nn.adapterframework.util.StringUtil;
-import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.wss4j.common.WSS4JConstants;
 import org.apache.wss4j.common.util.UsernameTokenUtil;
 import org.apache.wss4j.dom.WSConstants;
@@ -53,9 +55,12 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.StringUtil;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.AttributesWrapper;
 import nl.nn.adapterframework.xml.FullXmlFilter;
@@ -66,126 +71,193 @@ import nl.nn.adapterframework.xml.XmlWriter;
  */
 public class SoapWrapperTest {
 
-	private String xmlMessage = "<FindDocuments_Response xmlns=\"http://api.nn.nl/FindDocuments\"><Result xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\">"
+	private final String xmlMessage = "<FindDocuments_Response xmlns=\"http://api.nn.nl/FindDocuments\"><Result xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\">"
 			+ "<Status>OK</Status></Result></FindDocuments_Response>";
 
-	private String soapMessageSoap11 = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">"
+	private final String soapMessageSoap11 = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">"
 			+ "<soapenv:Header><MessageHeader xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\"><HeaderFields><MessageId>messageId</MessageId></HeaderFields></MessageHeader></soapenv:Header>"
-			+ "<soapenv:Body>"+xmlMessage+"</soapenv:Body></soapenv:Envelope>";
+			+ "<soapenv:Body>" + xmlMessage + "</soapenv:Body></soapenv:Envelope>";
 
-	private String soapMessageSoap12 = "<soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\">"
+	private final String soapMessageSoap12 = "<soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\">"
 			+ "<soapenv:Header><MessageHeader xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\"><HeaderFields><MessageId>messageId</MessageId></HeaderFields></MessageHeader></soapenv:Header>"
-			+ "<soapenv:Body>"+xmlMessage+"</soapenv:Body></soapenv:Envelope>";
+			+ "<soapenv:Body>" + xmlMessage + "</soapenv:Body></soapenv:Envelope>";
 
-	private String expectedSoapBody11 = "<FindDocuments_Response xmlns=\"http://api.nn.nl/FindDocuments\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><Result xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\">"
+	private final String soapFaultMessage11 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" +
+			"<soapenv:Fault><faultcode>SOAP-ENV:Client</faultcode>" +
+			"<faultstring>Message does not have necessary info</faultstring>" +
+			"<faultactor>order</faultactor>" +
+			"</soapenv:Fault></soapenv:Body></soapenv:Envelope>";
+
+	private final String soapFaultMessage12 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE + "\"><soapenv:Body>" +
+			"<soapenv:Fault>" +
+			"<soapenv:Code><soapenv:Value>env:Sender</soapenv:Value></soapenv:Code>" +
+			"<soapenv:Reason><soapenv:Text xml:lang=\"en-US\">Message does not have necessary info</soapenv:Text></soapenv:Reason>" +
+			"<soapenv:Role>http://gizmos.com/order</soapenv:Role>" +
+			"<soapenv:Detail>Quantity element does not have a value</soapenv:Detail>" +
+			"</soapenv:Fault></soapenv:Body></soapenv:Envelope>";
+
+	private final String expectedSoapBody11 = "<FindDocuments_Response xmlns=\"http://api.nn.nl/FindDocuments\" xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><Result xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\">"
 			+ "<Status>OK</Status></Result></FindDocuments_Response>";
-	private String expectedSoapBody12 = "<FindDocuments_Response xmlns=\"http://api.nn.nl/FindDocuments\" xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\"><Result xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\">"
+	private final String expectedSoapBody12 = "<FindDocuments_Response xmlns=\"http://api.nn.nl/FindDocuments\" xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\"><Result xmlns=\"http://nn.nl/XSD/Generic/MessageHeader/1\">"
 			+ "<Status>OK</Status></Result></FindDocuments_Response>";
 
-	@Test
-	public void getBody11() throws ConfigurationException {
-		SoapWrapper soapWrapper = SoapWrapper.getInstance();
-		String soapMessage = soapMessageSoap11;
-		String expectedSoapBody = expectedSoapBody11;
-		String soapBody = null;
-		try {
-			soapBody = soapWrapper.getBody(new Message(soapMessage)).asString();
-		} catch (Exception e) {
-			soapBody = e.getMessage();
-		}
-		assertEquals(expectedSoapBody, soapBody);
+	private final SoapWrapper soapWrapper = SoapWrapper.getInstance();
+
+	public SoapWrapperTest() throws ConfigurationException {
 	}
 
 	@Test
-	public void getBody12() throws ConfigurationException {
-		SoapWrapper soapWrapper = SoapWrapper.getInstance();
-		String soapMessage = soapMessageSoap12;
-		String expectedSoapBody = expectedSoapBody12;
-		String soapBody = null;
+	public void getBody11() {
+		String soapBody;
 		try {
-			soapBody = soapWrapper.getBody(new Message(soapMessage)).asString();
+			soapBody = soapWrapper.getBody(new Message(soapMessageSoap11), false, null, null).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
-		assertEquals(expectedSoapBody, soapBody);
+		assertEquals(expectedSoapBody11, soapBody);
 	}
 
 	@Test
-	public void getBodyXml() throws ConfigurationException {
-		SoapWrapper soapWrapper = SoapWrapper.getInstance();
-		String soapMessage = xmlMessage;
-		String expectedSoapBody = "";
-		String soapBody = null;
+	public void getBody12() {
+		String soapBody;
 		try {
-			soapBody = soapWrapper.getBody(new Message(soapMessage)).asString();
+			soapBody = soapWrapper.getBody(new Message(soapMessageSoap12), false, null, null).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
-		assertEquals(expectedSoapBody, soapBody);
+		assertEquals(expectedSoapBody12, soapBody);
 	}
 
 	@Test
-	public void getBody11AndStoreSoapNamespace() throws ConfigurationException {
-		SoapWrapper soapWrapper = SoapWrapper.getInstance();
-		String soapMessage = soapMessageSoap11;
-		String expectedSoapBody = expectedSoapBody11;
-		String soapBody = null;
+	void testGetFaultCountSoap11() throws IOException, TransformerException, SAXException {
+		assertEquals(1, soapWrapper.getFaultCount(new Message(soapFaultMessage11)));
+		assertEquals(0, soapWrapper.getFaultCount(new Message(soapMessageSoap11)));
+		assertEquals(0, soapWrapper.getFaultCount(Message.nullMessage()));
+	}
+
+	@Test
+	void testGetFaultCountSoap12() throws IOException, TransformerException, SAXException {
+		assertEquals(1, soapWrapper.getFaultCount(new Message(soapFaultMessage12)));
+		assertEquals(0, soapWrapper.getFaultCount(new Message(soapMessageSoap12)));
+	}
+
+	@Test
+	void testGetFaultCodeSoap11() throws IOException, TransformerException, SAXException {
+		assertEquals("SOAP-ENV:Client", soapWrapper.getFaultCode(new Message(soapFaultMessage11), null));
+		assertNull(soapWrapper.getFaultCode(new Message(soapMessageSoap11), null));
+	}
+
+	@Test
+	void testGetFaultCodeSoap12() throws IOException, TransformerException, SAXException {
+		assertEquals("env:Sender", soapWrapper.getFaultCode(new Message(soapFaultMessage12), null));
+		assertNull(soapWrapper.getFaultCode(new Message(soapMessageSoap12), null));
+	}
+
+	@Test
+	void testGetFaultStringSoap11() throws IOException, TransformerException, SAXException {
+		assertEquals("Message does not have necessary info", soapWrapper.getFaultString(new Message(soapFaultMessage11), null));
+		assertNull(soapWrapper.getFaultString(new Message(soapMessageSoap11), null));
+	}
+
+	@Test
+	void testGetFaultStringSoap12() throws IOException, TransformerException, SAXException {
+		assertEquals("Message does not have necessary info", soapWrapper.getFaultString(new Message(soapFaultMessage12), null));
+		assertNull(soapWrapper.getFaultString(new Message(soapMessageSoap12), null));
+	}
+
+	@Test
+	void testCheckForSoapFault() throws SenderException {
+		assertThrows(SenderException.class, () -> soapWrapper.checkForSoapFault(new Message(soapFaultMessage11), null, null));
+		soapWrapper.checkForSoapFault(new Message(soapMessageSoap11), null, null);
+
+		assertThrows(SenderException.class, () -> soapWrapper.checkForSoapFault(new Message(soapFaultMessage12), null, null));
+		soapWrapper.checkForSoapFault(new Message(soapMessageSoap12), null, null);
+
+		// Same tests, now with a session1, to store the SOAP version, discovered at the first check
+		PipeLineSession session1 = new PipeLineSession();
+		assertThrows(SenderException.class, () -> soapWrapper.checkForSoapFault(new Message(soapFaultMessage11), null, session1));
+		soapWrapper.checkForSoapFault(new Message(soapMessageSoap11), null, session1);
+
+		PipeLineSession session2 = new PipeLineSession();
+		assertThrows(SenderException.class, () -> soapWrapper.checkForSoapFault(new Message(soapFaultMessage12), null, session2));
+		soapWrapper.checkForSoapFault(new Message(soapMessageSoap12), null, session2);
+	}
+
+	@Test
+	void testGetBodyXmlWithPlainXMLMessageNotAllowed() throws Exception {
+		Message message = soapWrapper.getBody(new Message(xmlMessage), false, null, null);
+		assertTrue(message.isNull());
+	}
+
+	@Test
+	void testGetBodyXmlWithPlainXMLMessageAllowed() throws Exception {
+		Message message = soapWrapper.getBody(new Message(xmlMessage), true, null, null);
+		assertEquals(xmlMessage, message.asString());
+	}
+
+	@Test
+	void testGetBodyXmlWithoutProcessingXML() throws Exception {
+		PipeLineSession session = new PipeLineSession();
+		session.put(SoapWrapper.SOAP_VERSION_SESSION_KEY, SoapVersion.NONE);
+		Message messageMock = mock(Message.class);
+
+		Message message = soapWrapper.getBody(messageMock, true, session, null);
+
+		verify(messageMock, times(0)).asSource();
+		assertEquals(message, messageMock);
+	}
+
+	@Test
+	public void getBody11AndStoreSoapNamespace() {
+		String soapBody;
 		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
 		try {
-			soapBody = soapWrapper.getBody(new Message(soapMessage), true, session, sessionKey).asString();
+			soapBody = soapWrapper.getBody(new Message(soapMessageSoap11), true, session, sessionKey).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
-		assertEquals(expectedSoapBody, soapBody);
-		String soapVersion = (String)session.get(sessionKey);
-		assertEquals(SoapVersion.SOAP11.namespace,soapVersion);
+		assertEquals(expectedSoapBody11, soapBody);
+		String soapVersion = session.getString(sessionKey);
+		assertEquals(SoapVersion.SOAP11.namespace, soapVersion);
 	}
 
 	@Test
-	public void getBody12AndStoreSoapNamespace() throws ConfigurationException {
-		SoapWrapper soapWrapper = SoapWrapper.getInstance();
-		String soapMessage = soapMessageSoap12;
-		String expectedSoapBody = expectedSoapBody12;
-		String soapBody = null;
+	public void getBody12AndStoreSoapNamespace() {
+		String soapBody;
 		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
 		try {
-			soapBody = soapWrapper.getBody(new Message(soapMessage), true, session, sessionKey).asString();
+			soapBody = soapWrapper.getBody(new Message(soapMessageSoap12), true, session, sessionKey).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
-		assertEquals(expectedSoapBody, soapBody);
-		String soapVersion = (String)session.get(sessionKey);
-		assertEquals(SoapVersion.SOAP12.namespace,soapVersion);
+		assertEquals(expectedSoapBody12, soapBody);
+		String soapVersion = session.getString(sessionKey);
+		assertEquals(SoapVersion.SOAP12.namespace, soapVersion);
 	}
 
 	@Test
-	public void getBodyXmlAndStoreSoapNamespace() throws ConfigurationException {
-		SoapWrapper soapWrapper = SoapWrapper.getInstance();
-		String soapMessage = xmlMessage;
-		String expectedSoapBody = xmlMessage;
-		String soapBody = null;
+	public void getBodyXmlAndStoreSoapNamespace() {
+		String soapBody;
 		PipeLineSession session = new PipeLineSession();
 		String sessionKey = "SoapVersion";
 		try {
-			soapBody = soapWrapper.getBody(new Message(soapMessage), true, session, sessionKey).asString();
+			soapBody = soapWrapper.getBody(new Message(xmlMessage), true, session, sessionKey).asString();
 		} catch (Exception e) {
 			soapBody = e.getMessage();
 		}
-		assertEquals(expectedSoapBody, soapBody);
-		String soapVersion = (String)session.get(sessionKey);
-		assertEquals(SoapVersion.NONE.namespace,soapVersion);
+		assertEquals(xmlMessage, soapBody);
+		String soapVersion = session.getString(sessionKey);
+		assertEquals(SoapVersion.NONE.namespace, soapVersion);
 	}
 
 	@Test
 	public void signSoap11MessageDigestPassword() throws Exception {
 		resetWSConfig();
 
-		SoapWrapper soapWrapper = SoapWrapper.getInstance();
-		String soapMessage = soapMessageSoap11;
 		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_passwordDigest_mock.xml");
-		Message soapBody = soapWrapper.signMessage(new Message(soapMessage), "dummy-username", "dummy-password", true);
+		Message soapBody = soapWrapper.signMessage(new Message(soapMessageSoap11), "dummy-username", "dummy-password", true);
 		String result = replaceDynamicElements(soapBody);
 		MatchUtils.assertXmlEquals(expectedSoapBody, result);
 
@@ -196,9 +268,7 @@ public class SoapWrapperTest {
 	public void signSoap11Message() throws Exception {
 		resetWSConfig();
 
-		SoapWrapper soapWrapper = SoapWrapper.getInstance();
-		String soapMessage = soapMessageSoap11;
-		Message soapBody = soapWrapper.signMessage(new Message(soapMessage), "dummy-username", "dummy-password", false);
+		Message soapBody = soapWrapper.signMessage(new Message(soapMessageSoap11), "dummy-username", "dummy-password", false);
 		String result = replaceDynamicElements(soapBody);
 
 		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_mock.xml");
@@ -287,7 +357,7 @@ public class SoapWrapperTest {
 			System.out.println("   Provided digest: " + passwordDigest);
 			return digestString.equals(passwordDigest);
 		} catch (Exception e) {
-			e.printStackTrace();
+			fail();
 		}
 		return false;
 	}
@@ -300,12 +370,10 @@ public class SoapWrapperTest {
 
 		@Override
 		public KeySelectorResult select(KeyInfo keyInfo, KeySelector.Purpose purpose, AlgorithmMethod method, XMLCryptoContext context) throws KeySelectorException {
-
 			if (keyInfo == null) {
 				throw new KeySelectorException("no KeyInfo supplied!");
 			}
 
-			SignatureMethod sm = (SignatureMethod) method;
 			List list = keyInfo.getContent();
 
 			for (int i = 0; i < list.size(); i++) {
@@ -313,8 +381,7 @@ public class SoapWrapperTest {
 				if (xmlStructure instanceof DOMStructure && purpose.equals(KeySelector.Purpose.VERIFY)) {
 					DOMStructure dom = (DOMStructure) xmlStructure;
 					Node wsse = dom.getNode();
-					Element reference = XmlUtils.getFirstChildTag((Element) wsse, "wsse:Reference");
-					String uri = reference.getAttribute("URI"); //reference to the UsernameTokenElement
+					XmlUtils.getFirstChildTag((Element) wsse, "wsse:Reference");
 
 					Document document = wsse.getOwnerDocument();
 					NodeList utl = document.getElementsByTagNameNS(WSS4JConstants.WSSE_NS, "UsernameToken");
@@ -343,7 +410,7 @@ public class SoapWrapperTest {
 				String created = XmlUtils.getChildTagAsString(usernameTokenElement, "wsu:Created");
 
 				String key = UsernameTokenUtil.doPasswordDigest(decodedNonce, created, password);
-				return key.getBytes("UTF-8");
+				return key.getBytes(StandardCharsets.UTF_8);
 			} catch (Exception e) {
 				throw new KeySelectorException(e);
 			}
@@ -351,11 +418,9 @@ public class SoapWrapperTest {
 	}
 
 	@Test
-	public void signSoap11MessageBadFlow() throws ConfigurationException, IOException, TransformerException, SAXException {
-		SoapWrapper soapWrapper = SoapWrapper.getInstance();
-
+	public void signSoap11MessageBadFlow() {
 		String soapMessage = "noSOAP";
-		String soapBody = null;
+		String soapBody;
 		try {
 			soapBody = soapWrapper.signMessage(new Message(soapMessage), "test", "test", false).asString();
 		} catch (Exception e) {
@@ -372,7 +437,8 @@ public class SoapWrapperTest {
 	}
 
 	private static class RemoveDynamicElements extends FullXmlFilter {
-		private enum Namespace { Timestamp, Nonce, Password, SignatureValue };
+		private enum Namespace {Timestamp, Nonce, Password, SignatureValue}
+
 		private Namespace ns = null;
 
 		public RemoveDynamicElements(ContentHandler writer) {
@@ -381,58 +447,62 @@ public class SoapWrapperTest {
 
 		@Override
 		public void startElement(String uri, String localName, String qName, org.xml.sax.Attributes atts) throws SAXException {
-			if(uri.equals(WSConstants.WSU_NS)) {
+			if (uri.equals(WSConstants.WSU_NS)) {
 				ns = Namespace.Timestamp;
 			}
-			if(uri.equals(WSConstants.WSSE_NS) && localName.equals("Nonce")) {
+			if (uri.equals(WSConstants.WSSE_NS) && localName.equals("Nonce")) {
 				ns = Namespace.Nonce;
 			}
-			if(uri.equals(WSConstants.WSSE_NS) && localName.equals("Password")) {
+			if (uri.equals(WSConstants.WSSE_NS) && localName.equals("Password")) {
 				ns = Namespace.Password;
 			}
-			if(uri.equals(WSConstants.SIG_NS) && localName.equals("SignatureValue")) {
+			if (uri.equals(WSConstants.SIG_NS) && localName.equals("SignatureValue")) {
 				ns = Namespace.SignatureValue;
 			}
-			if(uri.equals(WSConstants.WSSE_NS) && localName.equals("SecurityTokenReference")) {
+			if (uri.equals(WSConstants.WSSE_NS) && localName.equals("SecurityTokenReference")) {
 				atts = new AttributesWrapper(atts, "Id");
 			}
-			if(uri.equals(WSConstants.SIG_NS) && localName.equals("KeyInfo")) {
+			if (uri.equals(WSConstants.SIG_NS) && localName.equals("KeyInfo")) {
 				atts = new AttributesWrapper(atts, "Id");
 			}
 
 			super.startElement(uri, localName, qName, atts);
 		}
+
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
-			if(ns != null && length > 1) {
-				String replaceWith = "fake-"+ns.name();
+			if (ns != null && length > 1) {
+				String replaceWith = "fake-" + ns.name();
 				super.characters(replaceWith.toCharArray(), 0, replaceWith.length());
 				return;
 			}
 			super.characters(ch, start, length);
 		}
+
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
-			if(ns != null) {
+			if (ns != null) {
 				ns = null;
 			}
 			super.endElement(uri, localName, qName);
-		};
+		}
+
+		;
 	}
 
 	private void resetWSConfig() throws Exception {
 		SoapWrapper.getInstance().setIdAllocator(new WsuIdAllocator() {
-			AtomicInteger i = new AtomicInteger(1);
+			final AtomicInteger i = new AtomicInteger(1);
 
 			@Override
 			public String createId(String prefix, Object o) {
-				if(prefix.equals("TS-")) {
+				if (prefix.equals("TS-")) {
 					prefix = "Timestamp-";
 				}
-				if(prefix.equals("SIG-")) {
+				if (prefix.equals("SIG-")) {
 					prefix = "Signature-";
 				}
-				return StringUtil.concat("", prefix, ""+i.getAndIncrement());
+				return StringUtil.concat("", prefix, "" + i.getAndIncrement());
 			}
 
 			@Override

@@ -143,21 +143,21 @@ public class WebServiceSender extends HttpSender {
 
 	@Override
 	protected Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
-		Message httpResult = null;
+		Message httpResult;
 		try {
 			httpResult = super.extractResult(responseHandler, session);
 			httpResult.preserve();
 		} catch (SenderException e) {
-			soapWrapper.checkForSoapFault(getResponseBody(responseHandler), e);
+			soapWrapper.checkForSoapFault(getResponseBody(responseHandler), e, session);
 			throw e;
 		}
 
 		if (isThrowApplicationFaults()) {
-			soapWrapper.checkForSoapFault(httpResult, null);
+			soapWrapper.checkForSoapFault(httpResult, null, session);
 		}
 		try {
 			if (isSoap()) {
-				return soapWrapper.getBody(httpResult);
+				return soapWrapper.getBody(httpResult, false, session, null);
 			}
 			return httpResult;
 		} catch (Exception e) {

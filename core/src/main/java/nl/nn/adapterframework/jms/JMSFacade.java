@@ -59,6 +59,7 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.core.IbisTransaction;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
@@ -768,14 +769,23 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		message.preserve();
 		Message messageText=extractMessageBody(message, context, soapWrapper);
 		if (StringUtils.isNotEmpty(soapHeaderSessionKey)) {
-			String soapHeader=soapWrapper.getHeader(message);
-			context.put(soapHeaderSessionKey,soapHeader);
+			String soapHeader;
+			if (context instanceof PipeLineSession) {
+				soapHeader = soapWrapper.getHeader(message, (PipeLineSession) context);
+			} else {
+				soapHeader = soapWrapper.getHeader(message, null);
+			}
+
+			context.put(soapHeaderSessionKey, soapHeader);
 		}
 		return messageText;
 	}
 
-	protected Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
-		return soapWrapper.getBody(message);
+	protected Message extractMessageBody(Message message, Map<String, Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
+		if (context instanceof PipeLineSession) {
+			return soapWrapper.getBody(message, false, (PipeLineSession) context, null);
+		}
+		return soapWrapper.getBody(message, false, null, null);
 	}
 
 	public void checkTransactionManagerValidity() {

@@ -1,10 +1,16 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import javax.xml.soap.SOAPConstants;
 
+import org.junit.jupiter.api.Test;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IWrapperPipe.Direction;
+import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -17,7 +23,9 @@ import nl.nn.adapterframework.testutil.TestAssertions;
 
 public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase<P> {
 
-	private String TARGET_NAMESPACE="urn:fakenamespace";
+	private static final String TARGET_NAMESPACE = "urn:fakenamespace";
+	private static final String DEFAULT_BODY_END = "<root xmlns=\"" + TARGET_NAMESPACE + "\">\n<attrib>1</attrib>\n<attrib>2</attrib>\n"
+			+ "</root></soapenv:Body></soapenv:Envelope>";
 
 	@Override
 	public P createPipe() {
@@ -34,21 +42,123 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		String input = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>"
-				+"<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root></soapenv:Body></soapenv:Envelope>";
-		String expected = "<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root>";
+		String input = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>"
+				+ DEFAULT_BODY_END;
+		String expected = "<root xmlns=\"" + TARGET_NAMESPACE + "\">\n"
+				+ "<attrib>1</attrib>\n"
+				+ "<attrib>2</attrib>\n"
+				+ "</root>";
 
-		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
+		PipeRunResult prr = doPipe(pipe, input, new PipeLineSession());
 
 		String actual = prr.getResult().asString();
 
 		TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
+	}
+
+	@Test
+	public void testShouldKeepPipeSoapConfigurationSoap11VersionWhileWrapping() throws Exception {
+		pipe.setDirection(Direction.UNWRAP);
+		pipe.registerForward(new PipeForward("pipe2", "READY"));
+		pipe.setRemoveOutputNamespaces(true);
+		pipe.configure();
+		pipe.start();
+
+		P wrapPipeSoap = createWrapperSoapPipe();
+		wrapPipeSoap.setSoapVersion(SoapVersion.SOAP11);
+		wrapPipeSoap.configure();
+		wrapPipeSoap.start();
+
+		// Arrange
+		String inputSoap12 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
+
+		PipeLineSession pipeLineSession = new PipeLineSession();
+		// Act
+		PipeRunResult prr = doPipe(pipe, inputSoap12, pipeLineSession);
+		PipeRunResult pipeRunResult = doPipe(wrapPipeSoap, prr.getResult(), pipeLineSession);
+
+		// Assert
+		String actual = pipeRunResult.getResult().asString();
+		assertNotNull(actual);
+		assertTrue(actual.contains(SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE));
+		pipeLineSession.close();
+		wrapPipeSoap.stop();
+	}
+
+	@Test
+	public void testShouldKeepPipeSoapConfigurationSoap12VersionWhileWrapping() throws Exception {
+		pipe.setDirection(Direction.UNWRAP);
+		pipe.registerForward(new PipeForward("pipe2", "READY"));
+		pipe.setRemoveOutputNamespaces(true);
+		pipe.configure();
+		pipe.start();
+
+		P wrapPipeSoap = createWrapperSoapPipe();
+		wrapPipeSoap.setSoapVersion(SoapVersion.SOAP12);
+		wrapPipeSoap.configure();
+		wrapPipeSoap.start();
+
+		// Arrange
+		String inputSoap11 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
+
+		PipeLineSession pipeLineSession = new PipeLineSession();
+
+		// Act
+		PipeRunResult prr = doPipe(pipe, inputSoap11, pipeLineSession);
+		PipeRunResult pipeRunResult = doPipe(wrapPipeSoap, prr.getResult(), pipeLineSession);
+
+		// Assert
+		String actual = pipeRunResult.getResult().asString();
+		assertNotNull(actual);
+		assertTrue(actual.contains(SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE));
+		pipeLineSession.close();
+		wrapPipeSoap.stop();
+	}
+
+	private P createWrapperSoapPipe() throws ConfigurationException {
+		P wrapPipeSoap = createPipe();
+		wrapPipeSoap.setDirection(Direction.WRAP);
+		autowireByType(wrapPipeSoap);
+		wrapPipeSoap.registerForward(new PipeForward("success", "READY"));
+		wrapPipeSoap.setName("pipe2");
+		pipeline.addPipe(wrapPipeSoap);
+		return wrapPipeSoap;
+	}
+
+	@Test
+	public void testKeepSessionKeyHeaderContent() throws Exception {
+		pipe.setDirection(Direction.UNWRAP);
+		pipe.setStoreResultInSessionKey("originalMessage_unwrapped");
+		pipe.setRemoveOutputNamespaces(true);
+		pipe.setSoapHeaderSessionKey("key");
+		pipe.configure();
+		pipe.start();
+
+		// Arrange
+		String inputSoap11 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\">" +
+				"<soapenv:Header><trans>234</trans></soapenv:Header>" +
+				"<soapenv:Body>" + DEFAULT_BODY_END;
+		PipeLineSession pipeLineSession = new PipeLineSession();
+
+		// Act
+		doPipe(pipe, inputSoap11, pipeLineSession);
+		pipeLineSession.close();
+
+		// Assert
+		assertTrue(pipeLineSession.get("key").toString().contains(">234</trans>"));
+
+		// Arrange 2
+		String inputSoap12 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE + "\">" +
+				"<soapenv:Header><trans>234</trans></soapenv:Header>" +
+				"<soapenv:Body>" + DEFAULT_BODY_END;
+		pipeLineSession = new PipeLineSession();
+
+		// Act 2
+		doPipe(pipe, inputSoap12, pipeLineSession);
+		pipeLineSession.close();
+
+		// Assert 2
+		assertTrue(pipeLineSession.get("key").toString().contains(">234</trans>"));
 	}
 
 	@Test
@@ -58,17 +168,13 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		String input = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>"
-				+"<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root></soapenv:Body></soapenv:Envelope>";
+		String input = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
 		String expected = "<root>\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root>";
+				+ "<attrib>1</attrib>\n"
+				+ "<attrib>2</attrib>\n"
+				+ "</root>";
 
-		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
+		PipeRunResult prr = doPipe(pipe, input, new PipeLineSession());
 
 		String actual = prr.getResult().asString();
 
@@ -82,17 +188,13 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		String input = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>"
-				+"<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root></soapenv:Body></soapenv:Envelope>";
-		String expected = "<OtherRoot xmlns=\""+TARGET_NAMESPACE+"\">"
-				+"<attrib>1</attrib>"
-				+"<attrib>2</attrib>"
-				+"</OtherRoot>";
+		String input = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
+		String expected = "<OtherRoot xmlns=\"" + TARGET_NAMESPACE + "\">"
+				+ "<attrib>1</attrib>"
+				+ "<attrib>2</attrib>"
+				+ "</OtherRoot>";
 
-		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
+		PipeRunResult prr = doPipe(pipe, input, new PipeLineSession());
 
 		String actual = prr.getResult().asString();
 
@@ -107,17 +209,13 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		String input = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>"
-				+"<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root></soapenv:Body></soapenv:Envelope>";
+		String input = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
 		String expected = "<OtherRoot>"
-				+"<attrib>1</attrib>"
-				+"<attrib>2</attrib>"
-				+"</OtherRoot>";
+				+ "<attrib>1</attrib>"
+				+ "<attrib>2</attrib>"
+				+ "</OtherRoot>";
 
-		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
+		PipeRunResult prr = doPipe(pipe, input, new PipeLineSession());
 
 		String actual = prr.getResult().asString();
 
@@ -131,17 +229,10 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		String input = "<root>\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root>";
-		String expected = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>"
-				+"<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root></soapenv:Body></soapenv:Envelope>";
+		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
+		String expected = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
 
-		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
+		PipeRunResult prr = doPipe(pipe, input, new PipeLineSession());
 
 		String actual = prr.getResult().asString();
 
@@ -155,17 +246,10 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		String input = "<root>\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root>";
-		String expected = "<soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\"><soapenv:Body>"
-				+"<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root></soapenv:Body></soapenv:Envelope>";
+		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
+		String expected = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
 
-		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
+		PipeRunResult prr = doPipe(pipe, input, new PipeLineSession());
 
 		String actual = prr.getResult().asString();
 
@@ -179,16 +263,13 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		String input = "<root>\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root>";
-		String expected = "<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root>";
+		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
+		String expected = "<root xmlns=\"" + TARGET_NAMESPACE + "\">\n"
+				+ "<attrib>1</attrib>\n"
+				+ "<attrib>2</attrib>\n"
+				+ "</root>";
 
-		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
+		PipeRunResult prr = doPipe(pipe, input, new PipeLineSession());
 
 		String actual = prr.getResult().asString();
 
@@ -202,17 +283,10 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		session.put("soapNamespace","http://schemas.xmlsoap.org/soap/envelope/");
+		session.put("soapNamespace", SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE);
 
-		String input = "<root>\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root>";
-		String expected = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>"
-				+"<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root></soapenv:Body></soapenv:Envelope>";
+		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
+		String expected = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 
@@ -228,17 +302,10 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		session.put("soapNamespace","http://www.w3.org/2003/05/soap-envelope");
+		session.put("soapNamespace", SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE);
 
-		String input = "<root>\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root>";
-		String expected = "<soapenv:Envelope xmlns:soapenv=\"http://www.w3.org/2003/05/soap-envelope\"><soapenv:Body>"
-				+"<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root></soapenv:Body></soapenv:Envelope>";
+		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
+		String expected = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 
@@ -254,17 +321,10 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		session.put("soapNamespace","");
+		session.put("soapNamespace", "");
 
-		String input = "<root>\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root>";
-		String expected = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>"
-				+"<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root></soapenv:Body></soapenv:Envelope>";
+		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
+		String expected = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 
@@ -280,17 +340,14 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		String input = "<root>\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root>";
-		String expected = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>"
-				+"<OtherRoot xmlns=\""+TARGET_NAMESPACE+"\">"
-				+"<attrib>1</attrib>"
-				+"<attrib>2</attrib>"
-				+"</OtherRoot></soapenv:Body></soapenv:Envelope>";
+		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
+		String expected = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>"
+				+ "<OtherRoot xmlns=\"" + TARGET_NAMESPACE + "\">"
+				+ "<attrib>1</attrib>"
+				+ "<attrib>2</attrib>"
+				+ "</OtherRoot></soapenv:Body></soapenv:Envelope>";
 
-		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
+		PipeRunResult prr = doPipe(pipe, input, new PipeLineSession());
 
 		String actual = prr.getResult().asString();
 
@@ -302,15 +359,11 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		String input = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>"
-				+"<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root></soapenv:Body></soapenv:Envelope>";
-		String expected = "<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root>";
+		String input = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
+		String expected = "<root xmlns=\"" + TARGET_NAMESPACE + "\">\n"
+				+ "<attrib>1</attrib>\n"
+				+ "<attrib>2</attrib>\n"
+				+ "</root>";
 
 		InputOutputPipeProcessor ioProcessor = new InputOutputPipeProcessor();
 		CorePipeProcessor coreProcessor = new CorePipeProcessor();
@@ -406,17 +459,10 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.setSoapVersion(SoapVersion.SOAP11);
 		pipe.start();
 
-		String input = "<root>\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root>";
-		String expected = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>"
-				+"<root xmlns=\""+TARGET_NAMESPACE+"\">\n"
-				+"<attrib>1</attrib>\n"
-				+"<attrib>2</attrib>\n"
-				+"</root></soapenv:Body></soapenv:Envelope>";
+		String input = "<root>\n<attrib>1</attrib>\n<attrib>2</attrib>\n</root>";
+		String expected = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
 
-		PipeRunResult prr = doPipe(pipe, input,new PipeLineSession());
+		PipeRunResult prr = doPipe(pipe, input, new PipeLineSession());
 
 		String actual = prr.getResult().asString();
 
