@@ -82,7 +82,7 @@ public class SoapWrapper {
 	private static final String EXTRACT_FAULTCODE_XPATH_SOAP12 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/soapenv:Code";
 	private static final String EXTRACT_FAULTSTRING_XPATH_SOAP11 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
 	private static final String EXTRACT_FAULTSTRING_XPATH_SOAP12 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/soapenv:Reason";
-	public static final String SOAP_VERSION_SESSION_KEY = "messageSoapVersion";
+	public static final String SOAP_VERSION_SESSION_KEY = "SoapWrapper.SoapVersion";
 
 	private static SoapWrapper self = null;
 	private @Setter WsuIdAllocator idAllocator = null; //Only used for testing purposes
