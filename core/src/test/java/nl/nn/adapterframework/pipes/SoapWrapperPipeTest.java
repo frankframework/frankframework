@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.xml.soap.SOAPConstants;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.IWrapperPipe.Direction;
@@ -357,7 +357,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		if (expectUnwrap) {
 			TestAssertions.assertEqualsIgnoreCRLF(expected, actual);
 		} else {
-			Assertions.assertEquals(input, actual);
+			assertEquals(input, actual);
 		}
 	}
 

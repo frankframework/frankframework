@@ -73,8 +73,8 @@ public class SoapWrapper {
 	private TransformerPool extractFaultCode12;
 	private TransformerPool extractFaultString11;
 	private TransformerPool extractFaultString12;
-	private static final String NAMESPACE_DEFS_SOAP11 = "soapenv="+SoapVersion.SOAP11.namespace;
-	private static final String NAMESPACE_DEFS_SOAP12 = "soapenv="+SoapVersion.SOAP12.namespace;
+	private static final String NAMESPACE_DEFS_SOAP11 = "soapenv=" + SoapVersion.SOAP11.namespace;
+	private static final String NAMESPACE_DEFS_SOAP12 = "soapenv=" + SoapVersion.SOAP12.namespace;
 	private static final String EXTRACT_BODY_XPATH = "/soapenv:Envelope/soapenv:Body/*";
 	private static final String EXTRACT_HEADER_XPATH = "/soapenv:Envelope/soapenv:Header/*";
 	private static final String EXTRACT_FAULTCOUNTER_XPATH = "count(/soapenv:Envelope/soapenv:Body/soapenv:Fault)";
@@ -89,7 +89,6 @@ public class SoapWrapper {
 
 	private SoapWrapper() {
 		super();
-
 		JCEMapper.registerDefaultAlgorithms();
 	}
 
@@ -131,7 +130,7 @@ public class SoapWrapper {
 				faultString = getFaultString(responseBody, session);
 				log.debug("faultCode={}, faultString={}", faultCode, faultString);
 			}
-		} catch (SAXException|IOException e) {
+		} catch (SAXException | IOException e) {
 			log.debug("IOException extracting fault message", e);
 		} catch (TransformerException e) {
 			log.debug("TransformerException extracting fault message: {}", e.getMessageAndLocation());
@@ -143,7 +142,7 @@ public class SoapWrapper {
 		}
 	}
 
-	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
+	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException {
 		message.preserve();
 
 		// First try with Soap 1.1 transform pool, when no result, try with Soap 1.2 transform pool
@@ -152,10 +151,15 @@ public class SoapWrapper {
 			return new Message(extractedBody);
 		}
 
-		if (session != null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
-			session.put(soapNamespaceSessionKey, SoapVersion.NONE.namespace);
+		if (session != null) {
+			if (StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
+				session.putIfAbsent(soapNamespaceSessionKey, SoapVersion.NONE.namespace);
+			}
+			if (allowPlainXml) {
+				session.putIfAbsent(SOAP_VERSION_SESSION_KEY, SoapVersion.NONE);
+			}
 		}
-		return allowPlainXml ? message : new Message(""); // could replace "" with nullMessage(), but then tests fail.
+		return allowPlainXml ? message : Message.nullMessage();
 	}
 
 	private String extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session, String soapNamespaceSessionKey) throws IOException, TransformerException, SAXException {
@@ -164,6 +168,8 @@ public class SoapWrapper {
 		String extractedMessage;
 		if (soapVersion == SoapVersion.SOAP12) {
 			extractedMessage = transformerS12.transform(message.asSource());
+		} else if (soapVersion == SoapVersion.NONE) {
+			return null;
 		} else {
 			extractedMessage = transformerS11.transform(message.asSource());
 			if (StringUtils.isNotEmpty(extractedMessage)) {
@@ -206,7 +212,7 @@ public class SoapWrapper {
 			log.warn("getFaultCount(): message is empty");
 			return 0;
 		}
-		// Do not optimize transformer with extractMessageWithTransformer() method, since session storage fails retrieving counts
+		// Do not optimize transformer with extractMessageWithTransformers() method, since the output is always "0", even though fault parts are not found at all.
 		String faultCount = extractFaultCount11.transform(message.asSource());
 		if (StringUtils.isEmpty(faultCount) || "0".equals(faultCount)) {
 			faultCount = extractFaultCount12.transform(message.asSource());
@@ -284,7 +290,7 @@ public class SoapWrapper {
 	public Message createSoapFaultMessage(String faultcode, String faultstring) {
 		String faultCdataString = "<![CDATA[" + faultstring + "]]>";
 		String fault = "<soapenv:Fault>" + "<faultcode>" + faultcode + "</faultcode>" +
-						"<faultstring>" + faultCdataString + "</faultstring>" + "</soapenv:Fault>";
+				"<faultstring>" + faultCdataString + "</faultstring>" + "</soapenv:Fault>";
 		try {
 			return putInEnvelope(new Message(fault), null, null, null);
 		} catch (IOException e) {

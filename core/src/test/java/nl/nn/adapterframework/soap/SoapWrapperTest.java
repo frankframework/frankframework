@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -181,15 +184,27 @@ public class SoapWrapperTest {
 	}
 
 	@Test
-	public void getBodyXml() {
-		String expectedSoapBody = "";
-		String soapBody;
-		try {
-			soapBody = soapWrapper.getBody(new Message(xmlMessage), false, null, null).asString();
-		} catch (Exception e) {
-			soapBody = e.getMessage();
-		}
-		assertEquals(expectedSoapBody, soapBody);
+	void testGetBodyXmlWithPlainXMLMessageNotAllowed() throws Exception {
+		Message message = soapWrapper.getBody(new Message(xmlMessage), false, null, null);
+		assertTrue(message.isNull());
+	}
+
+	@Test
+	void testGetBodyXmlWithPlainXMLMessageAllowed() throws Exception {
+		Message message = soapWrapper.getBody(new Message(xmlMessage), true, null, null);
+		assertEquals(xmlMessage, message.asString());
+	}
+
+	@Test
+	void testGetBodyXmlWithoutProcessingXML() throws Exception {
+		PipeLineSession session = new PipeLineSession();
+		session.put(SoapWrapper.SOAP_VERSION_SESSION_KEY, SoapVersion.NONE);
+		Message messageMock = mock(Message.class);
+
+		Message message = soapWrapper.getBody(messageMock, true, session, null);
+
+		verify(messageMock, times(0)).asSource();
+		assertEquals(message, messageMock);
 	}
 
 	@Test
@@ -203,7 +218,7 @@ public class SoapWrapperTest {
 			soapBody = e.getMessage();
 		}
 		assertEquals(expectedSoapBody11, soapBody);
-		String soapVersion = (String) session.get(sessionKey);
+		String soapVersion = session.getString(sessionKey);
 		assertEquals(SoapVersion.SOAP11.namespace, soapVersion);
 	}
 
@@ -218,7 +233,7 @@ public class SoapWrapperTest {
 			soapBody = e.getMessage();
 		}
 		assertEquals(expectedSoapBody12, soapBody);
-		String soapVersion = (String) session.get(sessionKey);
+		String soapVersion = session.getString(sessionKey);
 		assertEquals(SoapVersion.SOAP12.namespace, soapVersion);
 	}
 
@@ -233,7 +248,7 @@ public class SoapWrapperTest {
 			soapBody = e.getMessage();
 		}
 		assertEquals(xmlMessage, soapBody);
-		String soapVersion = (String) session.get(sessionKey);
+		String soapVersion = session.getString(sessionKey);
 		assertEquals(SoapVersion.NONE.namespace, soapVersion);
 	}
 
