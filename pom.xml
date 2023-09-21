@@ -747,6 +747,7 @@
 					<configuration>
 						<source>${maven.compiler.source}</source>
 						<doclint>none</doclint>
+						<quiet>true</quiet>
 						<tags>
 							<tag>
 								<name>ff.parameters</name>
@@ -1258,6 +1259,7 @@
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>
+							<quiet>true</quiet>
 							<doclet>org.frankframework.frankdoc.doclet.DocletBuilder</doclet>
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
