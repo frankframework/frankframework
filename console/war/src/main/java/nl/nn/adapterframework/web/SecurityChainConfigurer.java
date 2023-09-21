@@ -78,6 +78,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		ServletRegistration servlet = applicationContext.getBean("backendServletBean", ServletRegistration.class);
 		IAuthenticator authenticator = createAuthenticator();
 		authenticator.registerServlet(servlet.getServletConfiguration());
+		//TODO: register frontend here as well
 		return authenticator.configureHttpSecurity(http);
 	}
 }
