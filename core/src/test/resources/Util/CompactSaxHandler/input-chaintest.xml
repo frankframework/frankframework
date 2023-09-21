@@ -8,7 +8,7 @@
 				<StUF:entiteittype>EDC</StUF:entiteittype>
 			</ZKN:stuurgegevens>
 			<ZKN:parameters>
-				<StUF:mutatiesoort>{sessionKey:ref_mutatiesoort}</StUF:mutatiesoort>
+				<StUF:mutatiesoort>T</StUF:mutatiesoort>
 				<StUF:indicatorOvername>V</StUF:indicatorOvername>
 			</ZKN:parameters>
 			<ZKN:object StUF:entiteittype="EDC" StUF:verwerkingssoort="T">
@@ -19,6 +19,7 @@
 				<ZKN:identificatie>DC2022-012345</ZKN:identificatie>
 				<ZKN:dct.omschrijving>Email</ZKN:dct.omschrijving>
 			</ZKN:object>
+			<ZKN:identificatie>DC2022-012345</ZKN:identificatie>
 		</ZKN:edcLk01>
 	</SOAP-ENV:Body>
 </SOAP-ENV:Envelope>

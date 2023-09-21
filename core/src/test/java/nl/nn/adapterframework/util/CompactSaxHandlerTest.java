@@ -80,7 +80,7 @@ class CompactSaxHandlerTest {
 		// Arrange
 		handler.setChompLength(32);
 		handler.setContext(new PipeLineSession());
-		handler.setElementToMove("edcLk01");
+		handler.setElementToMove("mutatiesoort");
 
 		// Act
 		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
@@ -94,8 +94,9 @@ class CompactSaxHandlerTest {
 	void testElementToMoveFeatureSessionKey() throws IOException, SAXException {
 		// Arrange
 		handler.setChompCharSize("1KB");
-		handler.setContext(new PipeLineSession());
-		handler.setElementToMove("stuurgegevens");
+		PipeLineSession session = new PipeLineSession();
+		handler.setContext(session);
+		handler.setElementToMove("identificatie");
 		handler.setElementToMoveSessionKey("sessionKey");
 
 		// Act
@@ -104,6 +105,8 @@ class CompactSaxHandlerTest {
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-moved2.xml");
 		assertEquals(testOutputFile, handler.getXmlString());
+		assertEquals("DC2023-00020", session.get("sessionKey"));
+		assertEquals("DC2022-012345", session.get("sessionKey2"));
 	}
 
 	@Test
@@ -126,9 +129,9 @@ class CompactSaxHandlerTest {
 		// Arrange
 		handler.setChompLength(80);
 		handler.setRemoveCompactMsgNamespaces(true);
+		PipeLineSession session = new PipeLineSession();
+		handler.setContext(session);
 		handler.setElementToMoveChain("Envelope;Body;edcLk01;object;identificatie");
-
-		handler.setContext(new PipeLineSession());
 
 		// Act
 		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
@@ -136,6 +139,40 @@ class CompactSaxHandlerTest {
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest.xml");
 		assertEquals(testOutputFile, handler.getXmlString());
+		assertEquals("DC2023-00020", session.get("ref_identificatie"));
+		assertEquals("DC2022-012345", session.get("ref_identificatie2"));
+
+		// Act 2: retry with already parsed input
+		handler = new CompactSaxHandler();
+		handler.setChompLength(80);
+		handler.setRemoveCompactMsgNamespaces(true);
+		handler.setContext(session);
+		handler.setElementToMoveChain("Envelope;Body;edcLk01;object;identificatie");
+		XmlUtils.parseXml(testOutputFile, handler);
+
+		// Assert 2: everything should be still the same
+		assertEquals(testOutputFile, handler.getXmlString());
+		assertEquals("DC2023-00020", session.get("ref_identificatie"));
+		assertEquals("DC2022-012345", session.get("ref_identificatie2"));
+	}
+
+	@Test
+	void testElementToMoveChainOnlyRightLocation() throws IOException, SAXException {
+		// Arrange
+		handler.setChompLength(80);
+		handler.setRemoveCompactMsgNamespaces(true);
+		PipeLineSession session = new PipeLineSession();
+		handler.setContext(session);
+		handler.setElementToMoveChain("Envelope;Body;edcLk01;object;identificatie");
+
+		// Act
+		XmlUtils.parseXml(MessageTestUtils.getMessage("/Util/CompactSaxHandler/input-chaintest.xml").asInputSource(), handler);
+
+		// Assert
+		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest2.xml");
+		assertEquals(testOutputFile, handler.getXmlString());
+		assertEquals("DC2023-00020", session.get("ref_identificatie"));
+		assertEquals("DC2022-012345", session.get("ref_identificatie2"));
 	}
 
 }

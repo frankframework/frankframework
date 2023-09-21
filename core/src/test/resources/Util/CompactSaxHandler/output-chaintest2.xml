@@ -19,6 +19,7 @@
 				<identificatie>{sessionKey:ref_identificatie2}</identificatie>
 				<dct.omschrijving>Email</dct.omschrijving>
 			</object>
+			<identificatie>DC2022-012345</identificatie>
 		</edcLk01>
 	</Body>
 </Envelope>
