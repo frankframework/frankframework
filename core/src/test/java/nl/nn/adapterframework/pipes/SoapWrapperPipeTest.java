@@ -14,6 +14,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.processors.InputOutputPipeProcessor;
@@ -70,10 +71,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.setRemoveOutputNamespaces(true);
 		configureAndStartPipe();
 
-		P wrapPipeSoap = createWrapperSoapPipe();
-		wrapPipeSoap.setSoapVersion(SoapVersion.SOAP11);
-		wrapPipeSoap.configure();
-		wrapPipeSoap.start();
+		P wrapPipeSoap = createWrapperSoapPipe(SoapVersion.SOAP11);
 
 		// Arrange
 		String inputSoap12 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
@@ -99,10 +97,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		P wrapPipeSoap = createWrapperSoapPipe();
-		wrapPipeSoap.setSoapVersion(SoapVersion.SOAP12);
-		wrapPipeSoap.configure();
-		wrapPipeSoap.start();
+		P wrapPipeSoap = createWrapperSoapPipe(SoapVersion.SOAP12);
 
 		// Arrange
 		String inputSoap11 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
@@ -121,13 +116,16 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		wrapPipeSoap.stop();
 	}
 
-	private P createWrapperSoapPipe() throws ConfigurationException {
+	private P createWrapperSoapPipe(final SoapVersion soapVersion) throws ConfigurationException, PipeStartException {
 		P wrapPipeSoap = createPipe();
 		wrapPipeSoap.setDirection(Direction.WRAP);
 		autowireByType(wrapPipeSoap);
 		wrapPipeSoap.registerForward(new PipeForward("success", "READY"));
-		wrapPipeSoap.setName("pipe2");
+		wrapPipeSoap.setName(PipeLine.OUTPUT_WRAPPER_NAME);
+		wrapPipeSoap.setSoapVersion(soapVersion);
 		pipeline.addPipe(wrapPipeSoap);
+		wrapPipeSoap.configure();
+		wrapPipeSoap.start();
 		return wrapPipeSoap;
 	}
 
@@ -464,63 +462,68 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	}
 
 	@Test
-	void shouldUseConfiguredPipelineSoapVersion() throws Exception {
+	void shouldUseConfiguredPipelineSoapVersion11() throws Exception {
+		// Arrange: Simulate soapOutputWrapper having soap version 1.1 (expecting soap 1.1 namespace in the output)
+		setupUnwrapAutoPipe();
+		P outputWrapper = createWrapperSoapPipe(SoapVersion.SOAP11);
+
+		// Act: message through unwrap & wrap pipes
+		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap12), session);
+		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
+
+		// Assert: message is determined as SOAP 1.2
+		assertEquals(SoapVersion.SOAP12, session.get(SoapWrapper.SOAP_VERSION_SESSION_KEY));
+
+		// Assert: but the output is determined as SOAP 1.1 instead, as configured
+		String result = pipeRunResult2.getResult().asString();
+		assert result != null;
+		assertTrue(result.contains(SoapVersion.SOAP11.namespace), "result should have the same namespace as configured to be 1.1 namespace");
+		outputWrapper.stop();
+	}
+
+	@Test
+	void shouldUseConfiguredPipelineSoapVersion12() throws Exception {
+		// Arrange: Simulate soapOutputWrapper having soap version 1.2 (expecting soap 1.2 namespace in the output)
+		setupUnwrapAutoPipe();
+		P outputWrapper = createWrapperSoapPipe(SoapVersion.SOAP12);
+		session = new PipeLineSession();
+
+		// Act: message SOAP11 through unwrap & wrap pipes
+		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap11), session);
+		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
+
+		// Assert: but the output is determined as SOAP 1.2 instead, as configured
+		String result = pipeRunResult2.getResult().asString();
+		assert result != null;
+		assertTrue(result.contains(SoapVersion.SOAP12.namespace), "result should have the same namespace as configured to be 1.2 namespace");
+		outputWrapper.stop();
+	}
+
+	@Test
+	void shouldUseConfiguredPipelineSoapVersionAuto() throws Exception {
+		// Arrange: Wrapper pipe SoapVersion not set. Should go to AUTO.
+		setupUnwrapAutoPipe();
+		P outputWrapper = createWrapperSoapPipe(null);
+		session = new PipeLineSession();
+
+		// Act: message SOAP12 through unwrap & wrap pipes
+		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap12), session);
+		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
+
+		// Assert: but the output is determined as SOAP 1.2 instead, as configured
+		String result = pipeRunResult2.getResult().asString();
+		assert result != null;
+		assertTrue(result.contains(SoapVersion.SOAP12.namespace), "result should have the same namespace as configured to be 1.2 namespace");
+		outputWrapper.stop();
+	}
+
+	private void setupUnwrapAutoPipe() throws ConfigurationException, PipeStartException {
 		// Arrange - Simulate soapInputWrapper unwrapping the input and creating soapNamespace sessionKey using the namespace from the input
 		pipe.setDirection(Direction.UNWRAP);
 		pipe.setSoapVersion(SoapVersion.AUTO);
 		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
 		pipe.configure();
 		pipe.start();
-
-		// Simulate soapOutputWrapper having soap version 1.1 (expecting soap 1.1 namespace in the output)
-		P outputWrapper = createPipe();
-		outputWrapper.setSoapVersion(SoapVersion.SOAP11);
-		outputWrapper.registerForward(new PipeForward("success", "READY"));
-		outputWrapper.setName(PipeLine.OUTPUT_WRAPPER_NAME);
-		outputWrapper.configure();
-		outputWrapper.start();
-
-		// Act 1: message through unwrap & wrap pipes
-		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap12), session);
-		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
-
-		// Assert 1: message is determined as SOAP 1.2
-		assertEquals(SoapVersion.SOAP12, session.get(SoapWrapper.SOAP_VERSION_SESSION_KEY));
-
-		// Assert 1: but the output is determined as SOAP 1.1 instead, as configured
-		String result = pipeRunResult2.getResult().asString();
-		assert result != null;
-		assertTrue(result.contains(SoapVersion.SOAP11.namespace), "result should have the same namespace as configured to be 1.1 namespace");
-
-
-		// Arrange 2: Now change wrapper pipe to SOAP12
-		outputWrapper.setSoapVersion(SoapVersion.SOAP12);
-		outputWrapper.configure();
-		session = new PipeLineSession();
-
-		// Act 2: message SOAP11 through unwrap & wrap pipes
-		PipeRunResult pipeRunResult3 = doPipe(pipe, Message.asMessage(soapMessageSoap11), session);
-		PipeRunResult pipeRunResult4 = doPipe(outputWrapper, pipeRunResult3.getResult(), session);
-
-		// Assert 2: but the output is determined as SOAP 1.2 instead, as configured
-		result = pipeRunResult4.getResult().asString();
-		assert result != null;
-		assertTrue(result.contains(SoapVersion.SOAP12.namespace), "result should have the same namespace as configured to be 1.2 namespace");
-
-
-		// Arrange 3: Now change wrapper pipe to SoapVersion not set! Should go to AUTO.
-		outputWrapper.setSoapVersion(null);
-		outputWrapper.configure();
-		session = new PipeLineSession();
-
-		// Act 3: message SOAP12 through unwrap & wrap pipes
-		PipeRunResult pipeRunResult5 = doPipe(pipe, Message.asMessage(soapMessageSoap12), session);
-		PipeRunResult pipeRunResult6 = doPipe(outputWrapper, pipeRunResult5.getResult(), session);
-
-		// Assert 3: but the output is determined as SOAP 1.2 instead, as configured
-		result = pipeRunResult6.getResult().asString();
-		assert result != null;
-		assertTrue(result.contains(SoapVersion.SOAP12.namespace), "result should have the same namespace as configured to be 1.2 namespace");
 	}
 
 }
