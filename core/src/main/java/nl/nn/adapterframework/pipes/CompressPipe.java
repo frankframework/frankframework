@@ -54,6 +54,8 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class CompressPipe extends StreamingPipe {
 
+	private static final int CHUNK_SIZE = 16384;
+
 	private @Getter boolean messageIsContent;
 	private @Getter boolean resultIsContent;
 	private @Getter String outputDirectory;
@@ -93,14 +95,13 @@ public class CompressPipe extends StreamingPipe {
 				in = message.asInputStream();
 			} else {
 				filename = message.asString();
-				if (compress) {
-					zipMultipleFiles = StringUtils.contains(filename, ";");
-				} else {
+				zipMultipleFiles = StringUtils.contains(filename, ";");
+				if (!compress || !zipMultipleFiles) {
 					in = new FileInputStream(filename);
 				}
 			}
 
-			if (resultIsContent) {
+			if (resultIsContent) { // if true, result returns an OutputStream
 				try (MessageOutputStream target = getTargetStream(session)) {
 					try (OutputStream stream = convert2String ? new WriterOutputStream(target.asWriter(), StreamUtil.DEFAULT_CHARSET) : target.asStream()){
 						processStream(stream, in, zipMultipleFiles, filename, session);
@@ -141,32 +142,36 @@ public class CompressPipe extends StreamingPipe {
 					String fn = st.nextToken();
 					String zipEntryName = getZipEntryName(fn, session);
 					zipper.putNextEntry(new ZipEntry(zipEntryName));
-					in = new FileInputStream(fn);
-					try {
-						StreamUtil.copyStream(in, zipper, 4096);
+
+					try (InputStream fin = new FileInputStream(fn)) {
+						StreamUtil.copyStream(fin, zipper, CHUNK_SIZE);
 					} finally {
 						zipper.closeEntry();
 					}
 				}
 			}
 		} else {
-			try {
-				if (compress) {
-					if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && resultIsContent) {
-						out = new GZIPOutputStream(out);
-					} else {
-						ZipOutputStream zipper = new ZipOutputStream(out);
-						String zipEntryName = getZipEntryName(filename, session);
-						zipper.putNextEntry(new ZipEntry(zipEntryName));
-						out = zipper;
+			if (compress) {
+				if ((getFileFormat() == FileFormat.GZ || getFileFormat() == null) && resultIsContent) {
+					try (OutputStream copyTo = new GZIPOutputStream(out); InputStream copyFrom = in;) {
+						StreamUtil.copyStream(copyFrom, copyTo, CHUNK_SIZE);
 					}
 				} else {
-					if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && messageIsContent) {
-						in = new GZIPInputStream(in);
-					} else {
-						ZipInputStream zipper = new ZipInputStream(in);
+					try (ZipOutputStream zipper = new ZipOutputStream(out); InputStream copyFrom = in;) {
 						String zipEntryName = getZipEntryName(filename, session);
-						if (zipEntryName.equals("")) {
+						zipper.putNextEntry(new ZipEntry(zipEntryName));
+						StreamUtil.copyStream(copyFrom, zipper, CHUNK_SIZE);
+					}
+				}
+			} else {
+				if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && messageIsContent) {
+					try (InputStream copyFrom = new GZIPInputStream(in); OutputStream copyTo = out;) {
+						StreamUtil.copyStream(copyFrom, copyTo, CHUNK_SIZE);
+					}
+				} else {
+					try (ZipInputStream zipper = new ZipInputStream(in); OutputStream copyTo = out;) {
+						String zipEntryName = getZipEntryName(filename, session);
+						if (zipEntryName.isEmpty()) {
 							// Use first entry found
 							zipper.getNextEntry();
 						} else {
@@ -176,14 +181,9 @@ public class CompressPipe extends StreamingPipe {
 								zipEntry = zipper.getNextEntry();
 							}
 						}
-						in = zipper;
+						StreamUtil.copyStream(zipper, copyTo, CHUNK_SIZE);
 					}
 				}
-
-				StreamUtil.copyStream(in, out, 4096);
-			} finally {
-				in.close();
-				out.close();
 			}
 		}
 	}
