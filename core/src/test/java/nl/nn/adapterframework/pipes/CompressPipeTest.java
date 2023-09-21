@@ -8,11 +8,17 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
+import java.util.zip.ZipInputStream;
 
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -23,6 +29,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.CompressPipe.FileFormat;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -58,6 +65,36 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
 		assertFalse(prr.getResult().isBinary());
 		assertEquals("bbb", prr.getResult().asString());
+	}
+
+	@Test
+	public void testCompressWithPattern() throws Exception {
+		// Arrange
+		File folder = tempFolder.newFolder();
+		pipe.setOutputDirectory(folder.getAbsolutePath());
+		pipe.setCompress(true);
+		pipe.setFilenamePattern("blaat-{now,date,yyyy}.zip");
+		configureAndStartPipe();
+		URL input = TestFileUtils.getTestFileURL("/Util/FileUtils/copyFile.txt");
+		assertNotNull(input);
+
+		// Act
+		PipeRunResult prr = doPipe(input.getPath());
+
+		// Assert
+		assertFalse(prr.getResult().isBinary());
+
+		GregorianCalendar cal = new GregorianCalendar();
+		String path = prr.getResult().asString();
+		String expectedName = "blaat-"+cal.get(Calendar.YEAR)+".zip";
+		assertTrue("path ["+path+"] does not end with ["+expectedName+"]", path.endsWith(expectedName));
+
+		try (ZipInputStream zipin = new ZipInputStream(new FileInputStream(path))) {
+			ZipEntry entry = zipin.getNextEntry();
+			assertNotNull(entry);
+			assertEquals("copyFile.txt", entry.getName());
+			assertEquals(Message.asString(input), StreamUtil.readerToString(new InputStreamReader(zipin), null));
+		}
 	}
 
 	@Test
@@ -129,6 +166,24 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		String input=TestFileUtils.getTestFilePath("/Util/FileUtils/copyFile.txt")+";"+TestFileUtils.getTestFilePath("/Util/FileUtils/copyFrom.txt");
 		PipeRunResult prr = doPipe(input);
 		assertEquals("success", prr.getPipeForward().getName());
+
+		try (ZipInputStream zipin = new ZipInputStream(prr.getResult().asInputStream())) {
+			ZipEntry entry = zipin.getNextEntry();
+			assertNotNull(entry);
+			assertEquals("copyFile.txt", entry.getName());
+
+			URL url = TestFileUtils.getTestFileURL("/Util/FileUtils/"+entry.getName());
+			assertNotNull(url);
+			assertEquals(Message.asString(url), StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+
+			entry = zipin.getNextEntry();
+			assertNotNull(entry);
+			assertEquals("copyFrom.txt", entry.getName());
+
+			URL url2 = TestFileUtils.getTestFileURL("/Util/FileUtils/"+entry.getName());
+			assertNotNull(url2);
+			assertEquals(Message.asString(url2), StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+		}
 	}
 
 	@Test
