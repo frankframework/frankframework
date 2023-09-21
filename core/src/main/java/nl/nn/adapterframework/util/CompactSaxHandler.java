@@ -45,7 +45,7 @@ public class CompactSaxHandler extends DefaultHandler {
 	@Getter private boolean removeCompactMsgNamespaces = true;
 
 	private final StringBuilder messageBuilder = new StringBuilder();
-	private final StringBuilder stringBuilder = new StringBuilder();
+	private final StringBuilder charDataBuilder = new StringBuilder();
 	private final StringBuilder namespaceBuilder = new StringBuilder();
 	private final List<String> elements = new ArrayList<>();
 	private Map<String, Object> context = null;
