@@ -32,23 +32,22 @@ import lombok.Setter;
  *
  * @author Peter Leeuwenburgh
  */
-@Setter
 public class CompactSaxHandler extends DefaultHandler {
 	private static final String VALUE_MOVE_START = "{sessionKey:";
 	private static final String VALUE_MOVE_END = "}";
 
 	@Getter private String chompCharSize = null;
-	@Getter private int chompLength = -1;
-	@Getter private String elementToMove = null;
-	@Getter private String elementToMoveSessionKey = null;
-	@Getter private String elementToMoveChain = null;
-	@Getter private boolean removeCompactMsgNamespaces = true;
+	@Getter @Setter private int chompLength = -1;
+	@Getter @Setter private String elementToMove = null;
+	@Getter @Setter private String elementToMoveSessionKey = null;
+	@Getter @Setter private String elementToMoveChain = null;
+	@Getter @Setter private boolean removeCompactMsgNamespaces = true;
 
 	private final StringBuilder messageBuilder = new StringBuilder();
 	private final StringBuilder charDataBuilder = new StringBuilder();
 	private final StringBuilder namespaceBuilder = new StringBuilder();
 	private final List<String> elements = new ArrayList<>();
-	private Map<String, Object> context = null;
+	@Setter private Map<String, Object> context = null;
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
