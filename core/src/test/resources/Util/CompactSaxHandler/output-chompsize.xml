@@ -4,7 +4,7 @@
 		<edcLk01>
 			<stuurgegevens>
 				<berichtcode>Lk01</berichtcode>
-				<tijdstipBericht>20230825095316895</tijdstipBericht>
+				<tijdstipBericht>*** character data size [17] exceeds [null] and is chomped ***20230825...(9 characters more)</tijdstipBericht>
 				<entiteittype>EDC</entiteittype>
 			</stuurgegevens>
 			<parameters>
@@ -12,11 +12,11 @@
 				<indicatorOvername>V</indicatorOvername>
 			</parameters>
 			<object entiteittype="EDC" verwerkingssoort="T">
-				<identificatie>DC2023-00020</identificatie>
+				<identificatie>*** character data size [12] exceeds [null] and is chomped ***DC2023-0...(4 characters more)</identificatie>
 				<dct.omschrijving>Brief</dct.omschrijving>
 			</object>
 			<object entiteittype="EDC" verwerkingssoort="E">
-				<identificatie>DC2022-012345</identificatie>
+				<identificatie>*** character data size [13] exceeds [null] and is chomped ***DC2022-0...(5 characters more)</identificatie>
 				<dct.omschrijving>Email</dct.omschrijving>
 			</object>
 		</edcLk01>

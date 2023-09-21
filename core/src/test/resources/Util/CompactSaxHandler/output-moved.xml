@@ -8,7 +8,7 @@
 				<StUF:entiteittype>EDC</StUF:entiteittype>
 			</ZKN:stuurgegevens>
 			<ZKN:parameters>
-				<StUF:mutatiesoort>T</StUF:mutatiesoort>
+				<StUF:mutatiesoort>{sessionKey:ref_mutatiesoort}</StUF:mutatiesoort>
 				<StUF:indicatorOvername>V</StUF:indicatorOvername>
 			</ZKN:parameters>
 			<ZKN:object StUF:entiteittype="EDC" StUF:verwerkingssoort="T">

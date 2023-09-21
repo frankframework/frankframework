@@ -19,6 +19,7 @@
 				<ZKN:identificatie>DC2022-012345</ZKN:identificatie>
 				<ZKN:dct.omschrijving>Email</ZKN:dct.omschrijving>
 			</ZKN:object>
+			<ZKN:identificatie>DC2022-012345</ZKN:identificatie>
 		</ZKN:edcLk01>
 	</SOAP-ENV:Body>
 </SOAP-ENV:Envelope>

@@ -12,11 +12,11 @@
 				<StUF:indicatorOvername>V</StUF:indicatorOvername>
 			</ZKN:parameters>
 			<ZKN:object StUF:entiteittype="EDC" StUF:verwerkingssoort="T">
-				<ZKN:identificatie>DC2023-00020</ZKN:identificatie>
+				<ZKN:identificatie>{sessionKey:sessionKey}</ZKN:identificatie>
 				<ZKN:dct.omschrijving>Brief</ZKN:dct.omschrijving>
 			</ZKN:object>
 			<ZKN:object StUF:entiteittype="EDC" StUF:verwerkingssoort="E">
-				<ZKN:identificatie>DC2022-012345</ZKN:identificatie>
+				<ZKN:identificatie>{sessionKey:sessionKey2}</ZKN:identificatie>
 				<ZKN:dct.omschrijving>Email</ZKN:dct.omschrijving>
 			</ZKN:object>
 		</ZKN:edcLk01>

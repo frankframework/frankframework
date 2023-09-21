@@ -12,11 +12,11 @@
 				<indicatorOvername>V</indicatorOvername>
 			</parameters>
 			<object entiteittype="EDC" verwerkingssoort="T">
-				<identificatie>DC2023-00020</identificatie>
+				<identificatie>{sessionKey:ref_identificatie}</identificatie>
 				<dct.omschrijving>Brief</dct.omschrijving>
 			</object>
 			<object entiteittype="EDC" verwerkingssoort="E">
-				<identificatie>DC2022-012345</identificatie>
+				<identificatie>{sessionKey:ref_identificatie2}</identificatie>
 				<dct.omschrijving>Email</dct.omschrijving>
 			</object>
 		</edcLk01>
