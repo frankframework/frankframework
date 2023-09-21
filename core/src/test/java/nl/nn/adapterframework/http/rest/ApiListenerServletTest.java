@@ -762,7 +762,7 @@ public class ApiListenerServletTest extends Mockito {
 		// Assert
 		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(400, result.getStatus());
-		assertEquals("Could not read mime multipart response", result.getErrorMessage());
+		assertEquals("Could not read mime multipart request", result.getErrorMessage());
 	}
 
 	@Test
