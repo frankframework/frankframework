@@ -681,7 +681,7 @@ public class Message implements Serializable, Closeable {
 		}
 		if (request instanceof Node) {
 			try {
-				LOG.warn("returning Node {} as byte[]", this::getObjectId);
+				LOG.debug("returning Node {} as byte[]", this::getObjectId);
 				return XmlUtils.nodeToByteArray((Node) request);
 			} catch (TransformerException e) {
 				throw new IOException("Could not convert Node " + getObjectId() + " to byte[]", e);
@@ -719,7 +719,7 @@ public class Message implements Serializable, Closeable {
 		}
 		if (request instanceof Node) {
 			try {
-				LOG.warn("returning Node {} as String", this::getObjectId);
+				LOG.debug("returning Node {} as String", this::getObjectId);
 				return XmlUtils.nodeToString((Node) request);
 			} catch (TransformerException e) {
 				throw new IOException("Could not convert type Node " + getObjectId() + " to String", e);
