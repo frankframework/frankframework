@@ -17,6 +17,8 @@
 			</column>
 			<column name="TCHAR" type="java.sql.Types.CHAR(1)"/>
 			<column name="TMESSAGE" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="TCLOB" type="java.sql.Types.CLOB"/>
+			<column name="TBLOB" type="java.sql.Types.BLOB"/>
 		</createTable>
 	</changeSet>
 
@@ -138,6 +140,54 @@
 				SELECT COUNT(*), COUNT(*), COUNT(*) INTO CNT_INT, CNT_BIGINT, CNT_DECIMAL FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE;
 			END;
 		</createProcedure>
+		<createProcedure
+			procedureName="SET_BLOB"
+			replaceIfExists="true"
+		>
+			CREATE PROCEDURE SET_BLOB(
+				IN ID BIGINT,
+				IN DATA BLOB
+			) LANGUAGE SQL
+			BEGIN
+				UPDATE SP_TESTDATA SET TBLOB = DATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure
+			procedureName="SET_CLOB"
+			replaceIfExists="true"
+		>
+			CREATE PROCEDURE SET_CLOB(
+				IN ID BIGINT,
+				IN DATA LONGTEXT
+			) LANGUAGE SQL
+			BEGIN
+				UPDATE SP_TESTDATA SET TCLOB = DATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure
+			procedureName="GET_BLOB"
+			replaceIfExists="true"
+		>
+			CREATE PROCEDURE GET_BLOB(
+				IN ID BIGINT,
+				OUT DATA BLOB
+			) LANGUAGE SQL
+			BEGIN
+				SELECT TBLOB INTO DATA FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure
+			procedureName="GET_CLOB"
+			replaceIfExists="true"
+		>
+			CREATE PROCEDURE GET_CLOB(
+				IN ID BIGINT,
+				OUT DATA LONGTEXT
+			) LANGUAGE SQL
+			BEGIN
+				SELECT TCLOB INTO DATA FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
 		<rollback>
 			<sql>
 				DROP PROCEDURE IF EXISTS INSERT_MESSAGE;
@@ -145,6 +195,10 @@
 				DROP PROCEDURE IF EXISTS GET_MESSAGE_AND_TYPE_BY_ID;
 				DROP PROCEDURE IF EXISTS GET_MESSAGES_BY_CONTENT;
 				DROP PROCEDURE IF EXISTS COUNT_MESSAGES_BY_CONTENT;
+				DROP PROCEDURE IF EXISTS SET_BLOB;
+				DROP PROCEDURE IF EXISTS SET_CLOB;
+				DROP PROCEDURE IF EXISTS GET_BLOB;
+				DROP PROCEDURE IF EXISTS GET_CLOB;
 			</sql>
 		</rollback>
 	</changeSet>
@@ -198,6 +252,42 @@
 				SELECT @CNT_INT = COUNT(*), @CNT_BIGINT = COUNT(*), @CNT_DECIMAL = COUNT(*) FROM SP_TESTDATA WHERE TMESSAGE = @MESSAGE;
 			END;
 		</createProcedure>
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE SET_BLOB(
+				@ID BIGINT,
+				@DATA VARBINARY(MAX)
+			) AS
+			BEGIN
+				UPDATE SP_TESTDATA SET TBLOB = @DATA WHERE TKEY = @ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE SET_CLOB(
+				@ID BIGINT,
+				@DATA VARCHAR(MAX)
+			) AS
+			BEGIN
+				UPDATE SP_TESTDATA SET TCLOB = @DATA WHERE TKEY = @ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE GET_BLOB(
+				@ID BIGINT,
+				@DATA VARBINARY(MAX) OUT
+			) AS
+			BEGIN
+				SELECT @DATA = TBLOB FROM SP_TESTDATA WHERE TKEY = @ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR ALTER PROCEDURE GET_CLOB(
+				@ID BIGINT,
+				@DATA VARCHAR(MAX) OUT
+			) AS
+			BEGIN
+				SELECT @DATA = TCLOB FROM SP_TESTDATA WHERE TKEY = @ID;
+			END;
+		</createProcedure>
 		<rollback>
 			<sql>
 				DROP PROCEDURE IF EXISTS INSERT_MESSAGE;
@@ -205,6 +295,10 @@
 				DROP PROCEDURE IF EXISTS GET_MESSAGE_AND_TYPE_BY_ID;
 				DROP PROCEDURE IF EXISTS GET_MESSAGES_BY_CONTENT;
 				DROP PROCEDURE IF EXISTS COUNT_MESSAGES_BY_CONTENT;
+				DROP PROCEDURE IF EXISTS SET_BLOB;
+				DROP PROCEDURE IF EXISTS SET_CLOB;
+				DROP PROCEDURE IF EXISTS GET_BLOB;
+				DROP PROCEDURE IF EXISTS GET_CLOB;
 			</sql>
 		</rollback>
 	</changeSet>
@@ -260,6 +354,42 @@
 				SELECT COUNT(*), COUNT(*), COUNT(*) INTO CNT_INT, CNT_BIGINT, CNT_DECIMAL FROM SP_TESTDATA WHERE TMESSAGE = MESSAGE;
 			END;
 		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE SET_BLOB(
+				IN ID BIGINT,
+				OUT DATA BLOB
+			) LANGUAGE SQL
+			BEGIN
+				UPDATE SP_TESTDATA SET TBLOB = DATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE SET_CLOB(
+				IN ID BIGINT,
+				OUT DATA CLOB
+			) LANGUAGE SQL
+			BEGIN
+				UPDATE SP_TESTDATA SET TCLOB = DATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE GET_BLOB(
+				IN ID BIGINT,
+				OUT DATA BLOB
+			) LANGUAGE SQL
+			BEGIN
+				SELECT TBLOB INTO DATA FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE GET_CLOB(
+				IN ID BIGINT,
+				OUT DATA CLOB
+			) LANGUAGE SQL
+			BEGIN
+				SELECT TCLOB INTO DATA FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
 		<rollback>
 			<sql>
 				DROP PROCEDURE INSERT_MESSAGE;
@@ -267,6 +397,10 @@
 				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
 				DROP PROCEDURE GET_MESSAGES_BY_CONTENT;
 				DROP PROCEDURE COUNT_MESSAGES_BY_CONTENT;
+				DROP PROCEDURE SET_BLOB;
+				DROP PROCEDURE SET_CLOB;
+				DROP PROCEDURE GET_BLOB;
+				DROP PROCEDURE GET_CLOB;
 			</sql>
 		</rollback>
 
@@ -319,6 +453,42 @@
 				RETURN a + b;
 			END;
 		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE SET_BLOB(
+				ID IN NUMBER,
+				DATA IN BLOB
+			) AS
+			BEGIN
+				UPDATE SP_TESTDATA SET TBLOB = DATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE SET_CLOB(
+				ID IN NUMBER,
+				DATA IN CLOB
+			) AS
+			BEGIN
+				UPDATE SP_TESTDATA SET TCLOB = DATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE GET_BLOB(
+				ID IN NUMBER,
+				DATA OUT BLOB
+			) AS
+			BEGIN
+				SELECT TBLOB INTO DATA FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
+		<createProcedure>
+			CREATE OR REPLACE PROCEDURE GET_CLOB(
+				ID IN NUMBER,
+				DATA OUT CLOB
+			) AS
+			BEGIN
+				SELECT TCLOB INTO DATA FROM SP_TESTDATA WHERE TKEY = ID;
+			END;
+		</createProcedure>
 		<rollback>
 			<sql>
 				DROP PROCEDURE INSERT_MESSAGE;
@@ -326,6 +496,10 @@
 				DROP PROCEDURE GET_MESSAGE_AND_TYPE_BY_ID;
 				DROP PROCEDURE COUNT_MESSAGES_BY_CONTENT;
 				DROP FUNCTION add_number;
+				DROP PROCEDURE SET_BLOB;
+				DROP PROCEDURE SET_CLOB;
+				DROP PROCEDURE GET_BLOB;
+				DROP PROCEDURE GET_CLOB;
 			</sql>
 		</rollback>
 
