@@ -41,9 +41,8 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
  *
- * @ff.parameters Any parameters defined on the pipe will be applied to the created transformer.
- *
  * @author Peter Leeuwenburgh
+ * @ff.parameters Any parameters defined on the pipe will be applied to the created transformer.
  */
 public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	protected static final String DEFAULT_SOAP_HEADER_SESSION_KEY = "soapHeader";
@@ -99,8 +98,8 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				setSoapNamespaceSessionKey(DEFAULT_SOAP_NAMESPACE_SESSION_KEY);
 			}
 		}
-		if (getSoapVersion()==null) {
-			soapVersion=SoapVersion.AUTO;
+		if (getSoapVersion() == null) {
+			soapVersion = SoapVersion.AUTO;
 		}
 		if (StringUtils.isNotEmpty(getSoapHeaderStyleSheet())) {
 			soapHeaderTp = TransformerPool.configureStyleSheetTransformer(this, getSoapHeaderStyleSheet(), 0);
@@ -208,18 +207,16 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				if (outputNamespaceTp != null) {
 					payload = new Message(outputNamespaceTp.transform(payload.asSource()));
 				}
-				Map<String,Object> parameterValues = null;
+				Map<String, Object> parameterValues = null;
 				if (!getParameterList().isEmpty() && (soapHeaderTp != null || soapBodyTp != null)) {
 					parameterValues = getParameterList().getValues(payload, session).getValueMap();
 				}
-				String soapHeader = null;
+				String soapHeader;
 				if (soapHeaderTp != null) {
 					payload.preserve();
 					soapHeader = soapHeaderTp.transform(payload, parameterValues);
 				} else {
-					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
-						soapHeader = session.getString(getSoapHeaderSessionKey());
-					}
+					soapHeader = session.getString(getSoapHeaderSessionKey());
 				}
 				if (soapBodyTp != null) {
 					payload = new Message(soapBodyTp.transform(payload, parameterValues));
@@ -255,21 +252,28 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	private String determineSoapNamespaceFromSession(PipeLineSession session) {
-		String soapNamespace = getSoapNamespace();
-		if (StringUtils.isEmpty(soapNamespace)) {
-			String savedSoapNamespace = session.getString(getSoapNamespaceSessionKey());
-			if (StringUtils.isNotEmpty(savedSoapNamespace)) {
-				soapNamespace = savedSoapNamespace;
-			} else {
-				SoapVersion soapVersion = getSoapVersion();
-				if (soapVersion==SoapVersion.AUTO) {
-					soapVersion=DEFAULT_SOAP_VERSION_FOR_WRAPPING;
-				}
-				soapNamespace = soapVersion.namespace;
-			}
+	/**
+	 * Determines the SOAP namespace for wrapping a message. Used order:
+	 * 1) soapNamespace configuration setting
+	 * 2) soapVersion configuration setting
+	 * 3) saved soapNamespace from session
+	 * 4) default soap version namespace fall back
+	 *
+	 * @param session to fetch namespace from
+	 * @return full SOAP namespace URL
+	 */
+	private String determineSoapNamespace(PipeLineSession session) {
+		if (StringUtils.isNotEmpty(getSoapNamespace())) {
+			return getSoapNamespace();
 		}
-		return soapNamespace;
+		if (getSoapVersion() != SoapVersion.AUTO) {
+			return getSoapVersion().namespace;
+		}
+		String savedSoapNamespace = session.getString(getSoapNamespaceSessionKey());
+		if (StringUtils.isNotEmpty(savedSoapNamespace)) {
+			return savedSoapNamespace;
+		}
+		return DEFAULT_SOAP_VERSION_FOR_WRAPPING.namespace;
 	}
 
 	protected Message unwrapMessage(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException {
@@ -277,20 +281,21 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	}
 
 	protected Message wrapMessage(Message message, String soapHeader, PipeLineSession session) throws IOException {
-		String soapNamespace = determineSoapNamespaceFromSession(session);
-		if (soapNamespace==null) {
+		String soapNamespace = determineSoapNamespace(session);
+		if (soapNamespace == null) {
 			return message;
 		}
 		return soapWrapper.putInEnvelope(message, getEncodingStyle(), getServiceNamespace(), soapHeader, null, soapNamespace, wssCredentialFactory, isWssPasswordDigest());
 	}
 
-	@Default ("wrap")
+	@Default("wrap")
 	public void setDirection(Direction value) {
 		direction = value;
 	}
 
 	/**
 	 * Soap version to use
+	 *
 	 * @ff.default auto
 	 */
 	public void setSoapVersion(SoapVersion value) {
@@ -299,14 +304,16 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * (only used when direction=<code>wrap</code>) Namespace of the soap envelope
+	 *
 	 * @ff.default auto determined from soapVersion
 	 */
-	public void setSoapNamespace(String string) {
-		soapNamespace = string;
+	public void setSoapNamespace(String soapNamespace) {
+		this.soapNamespace = soapNamespace;
 	}
 
 	/**
 	 * Key of session variable to store auto detected soapNamespace
+	 *
 	 * @ff.default If configured as Pipeline Input Wrapper or PipeLine Output Wrapper: {@value #DEFAULT_SOAP_NAMESPACE_SESSION_KEY}
 	 */
 	public void setSoapNamespaceSessionKey(String string) {
@@ -315,6 +322,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * Key of session variable to store soap header
+	 *
 	 * @ff.default If configured as Pipeline Input Wrapper and direction=<code>unwrap</code>: {@value #DEFAULT_SOAP_HEADER_SESSION_KEY}
 	 */
 	public void setSoapHeaderSessionKey(String string) {
@@ -332,17 +340,18 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	}
 
 	/** (only used when direction=<code>wrap</code>) Stylesheet to create the content of the soap header. As input for this stylesheet a dummy xml string is used. Note: outputType=<code>xml</code> and xsltVersion= */
-	public void setSoapHeaderStyleSheet(String string){
+	public void setSoapHeaderStyleSheet(String string) {
 		this.soapHeaderStyleSheet = string;
 	}
 
 	/** (only used when direction=<code>wrap</code>) Stylesheet to apply to the input message. Note: outputType=<code>xml</code> and xsltVersion=2 */
-	public void setSoapBodyStyleSheet(String string){
+	public void setSoapBodyStyleSheet(String string) {
 		this.soapBodyStyleSheet = string;
 	}
 
 	/**
 	 * (only used when direction=<code>unwrap</code>) If <code>true</code>, namespaces (and prefixes) in the content of the soap body are removed
+	 *
 	 * @ff.default false
 	 */
 	public void setRemoveOutputNamespaces(boolean b) {
@@ -351,6 +360,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * (only used when direction=<code>unwrap</code> and <code>removeoutputnamespaces=false</code>) If <code>true</code>, unused namespaces in the content of the soap body are removed
+	 *
 	 * @ff.default true
 	 */
 	public void setRemoveUnusedOutputNamespaces(boolean b) {
@@ -369,6 +379,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * (only used when direction=<code>unwrap</code>) If <code>false</code> and the soap body contains a soap fault, a PipeRunException is thrown
+	 *
 	 * @ff.default false
 	 */
 	public void setIgnoreSoapFault(boolean b) {
@@ -377,6 +388,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * For direction=<code>unwrap</code> only: if true, allow unwrapped xml too
+	 *
 	 * @ff.default false
 	 */
 	public void setAllowPlainXml(boolean allowPlainXml) {
@@ -390,6 +402,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * Default username for WebServiceSecurity
+	 *
 	 * @ff.default
 	 */
 	public void setWssUserName(String string) {
@@ -398,6 +411,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * Default password for WebServiceSecurity
+	 *
 	 * @ff.default
 	 */
 	public void setWssPassword(String string) {
@@ -406,6 +420,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	/**
 	 * If true, the password is sent digested; Otherwise it is sent in clear text
+	 *
 	 * @ff.default true
 	 */
 	public void setWssPasswordDigest(boolean b) {
