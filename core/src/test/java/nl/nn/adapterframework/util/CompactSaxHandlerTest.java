@@ -79,7 +79,8 @@ class CompactSaxHandlerTest {
 	void testElementToMoveFeature() throws IOException, SAXException {
 		// Arrange
 		handler.setChompLength(32);
-		handler.setContext(new PipeLineSession());
+		PipeLineSession session = new PipeLineSession();
+		handler.setContext(session);
 		handler.setElementToMove("mutatiesoort");
 
 		// Act
@@ -88,6 +89,7 @@ class CompactSaxHandlerTest {
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-moved.xml");
 		assertEquals(testOutputFile, handler.getXmlString());
+		assertEquals("T", session.get("ref_mutatiesoort"));
 	}
 
 	@Test
