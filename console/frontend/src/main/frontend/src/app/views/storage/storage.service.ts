@@ -88,8 +88,9 @@ export class StorageService {
   }
 
   updateTable() {
-    var table = $('#datatable').DataTable();
-    if (table)
-      table.draw();
+    throw new Error("Method not working yet.");
+    // var table = $('#datatable').DataTable();
+    // if (table)
+    //   table.draw();
   }
 }

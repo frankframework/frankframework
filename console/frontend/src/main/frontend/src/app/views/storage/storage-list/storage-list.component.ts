@@ -90,7 +90,8 @@ export class StorageListComponent {
         <button title="Download Message" ng-click="$ctrl.onDownloadMessage({messageId: message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>
       </div>`;
 
-    var columns: DataTable['options']['columns'] = [
+   /*  var columns: DataTable['options']['columns'] = [
+      {  }
       { "data": null, defaultContent, className: "m-b-xxs storageActions", orderable: false },
       { "name": "pos", "data": "position", orderable: false, defaultContent: "" },
       { "name": "id", "data": "messageId", orderable: false, defaultContent: "" },
@@ -101,15 +102,31 @@ export class StorageListComponent {
       { "name": "comment", "data": "comment", orderable: false, defaultContent: "" },
       { "name": "expiryDate", "data": "expiryDate", className: "date", orderable: false, defaultContent: "" },
       { "name": "label", "data": "label", orderable: false, defaultContent: "" },
-    ];
+    ]; */
 
     const table = new DataTable(this.dtElement.nativeElement, {
-      columns: columns,
+      // columns: columns,
       searchable: false,
       paging: true,
     });
 
-    const dtOptions = {
+    table.data = {
+      headings: [
+        { text: '', data: defaultContent, type: 'html' },
+        { text: "pos", data: "position", type: 'string'  },
+        { text: "id", data: "messageId", type: 'string' },
+        { text: "insertDate", data: "insertDate", type: 'string' },
+        { text: "host", data: "host", type: 'string' },
+        { text: "originalId", data: "originalId", type: 'string' },
+        { text: "correlationId", data: "correlationId", type: 'string' },
+        { text: "comment", data: "comment", type: 'string' },
+        { text: "expiryDate", data: "expiryDate", type: 'string' },
+        { text: "label", data: "label", type: 'string' },
+      ],
+      data: []
+    }
+
+    /* const dtOptions = {
       stateSave: true,
       stateSaveCallback: (settings, data: Record<any, any>) => {
         data["columns"] = columns;
@@ -198,15 +215,15 @@ export class StorageListComponent {
           this.clearSearchLadda = false;
         });
       }
-    }
+    } */
 
     var filterCookie = this.Cookies.get(this.storageParams.processState + "Filter");
     if (filterCookie) {
-      for (let column of columns) {
+      /* for (let column of columns) {
         if (column.name && filterCookie[column.name] === false) {
           column.visible = false;
         }
-      }
+      } */
       this.displayColumn = filterCookie;
     } else {
       this.displayColumn = {
