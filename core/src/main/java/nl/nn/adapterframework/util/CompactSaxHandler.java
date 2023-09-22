@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -42,6 +43,7 @@ public class CompactSaxHandler extends DefaultHandler {
 	@Getter @Setter private String elementToMoveSessionKey = null;
 	@Getter @Setter private String elementToMoveChain = null;
 	@Getter @Setter private boolean removeCompactMsgNamespaces = true;
+	private boolean sessionKeyFound = false;
 
 	private final StringBuilder messageBuilder = new StringBuilder();
 	private final StringBuilder charDataBuilder = new StringBuilder();
@@ -51,7 +53,7 @@ public class CompactSaxHandler extends DefaultHandler {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		printCharData();
+		printCharData(true);
 		elements.add(localName);
 
 		StringBuilder attributeBuffer = new StringBuilder();
@@ -94,7 +96,7 @@ public class CompactSaxHandler extends DefaultHandler {
 			throw new SAXException("expected end element [" + lastElement + "] but got end element [" + localName + "]");
 		}
 
-		printCharData();
+		printCharData(false);
 		if (isRemoveCompactMsgNamespaces()) {
 			messageBuilder.append("</").append(localName).append(">");
 		} else {
@@ -106,16 +108,23 @@ public class CompactSaxHandler extends DefaultHandler {
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		charDataBuilder.append(ch, start, length);
+
+		// Detection of MOVE_START element data
+		if (length < VALUE_MOVE_START.length())
+			return;
+		char[] startPart = Arrays.copyOfRange(ch, start, start + VALUE_MOVE_START.length());
+		if (Arrays.equals(startPart, VALUE_MOVE_START.toCharArray())) {
+			sessionKeyFound = true;
+		}
 	}
 
-	private void printCharData() {
+	private void printCharData(boolean startElement) {
 		if (charDataBuilder.length() == 0) {
 			return;
 		}
 
 		String before = "";
 		String after = "";
-
 		if (chompLength >= 0 && charDataBuilder.length() > chompLength) {
 			before = "*** character data size [" + charDataBuilder.length() + "] exceeds [" + getChompCharSize() + "] and is chomped ***";
 			after = "...(" + (charDataBuilder.length() - chompLength) + " characters more)";
@@ -125,24 +134,19 @@ public class CompactSaxHandler extends DefaultHandler {
 		int lastIndex = elements.size() - 1;
 		String lastElement = elements.get(lastIndex);
 
-		if (context != null
+		// Detection of MOVE_END token, while in sessionKeyFound state
+		int length = charDataBuilder.length();
+		boolean stoppedWithReplacing = false;
+		if (sessionKeyFound && charDataBuilder.substring(length - 1, length).equals(VALUE_MOVE_END)) {
+			sessionKeyFound = false;
+			stoppedWithReplacing = true;
+		}
+
+		if (context != null && !startElement && !stoppedWithReplacing
 				&& (getElementToMove() != null && lastElement.equals(getElementToMove()) ||
-				(getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain())))
-				&& !(charDataBuilder.toString().startsWith(VALUE_MOVE_START) && charDataBuilder.toString().endsWith(VALUE_MOVE_END))) {
-			String elementToMoveSK;
-			if (getElementToMoveSessionKey() == null) {
-				elementToMoveSK = "ref_" + lastElement;
-			} else {
-				elementToMoveSK = getElementToMoveSessionKey();
-			}
-			if (context.containsKey(elementToMoveSK)) {
-				String etmsk = elementToMoveSK;
-				int counter = 1;
-				while (context.containsKey(elementToMoveSK)) {
-					counter++;
-					elementToMoveSK = etmsk + counter;
-				}
-			}
+				(getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain())))) {
+
+			String elementToMoveSK = determineElementToMoveSessionKey(lastElement);
 			context.put(elementToMoveSK, before + charDataBuilder + after);
 			messageBuilder.append(VALUE_MOVE_START).append(elementToMoveSK).append(VALUE_MOVE_END);
 		} else {
@@ -152,6 +156,23 @@ public class CompactSaxHandler extends DefaultHandler {
 		charDataBuilder.setLength(0);
 	}
 
+	private String determineElementToMoveSessionKey(final String lastElement) {
+		String elementToMoveSK;
+		if (getElementToMoveSessionKey() == null) {
+			elementToMoveSK = "ref_" + lastElement;
+		} else {
+			elementToMoveSK = getElementToMoveSessionKey();
+		}
+		if (context.containsKey(elementToMoveSK)) {
+			String baseName = elementToMoveSK;
+			int counter = 1;
+			while (context.containsKey(elementToMoveSK)) {
+				counter++;
+				elementToMoveSK = baseName + counter;
+			}
+		}
+		return elementToMoveSK;
+	}
 
 	private String elementsToString() {
 		String chain = null;
