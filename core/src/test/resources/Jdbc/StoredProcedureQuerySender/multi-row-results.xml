@@ -5,26 +5,36 @@
             <field name="TKEY">MSG-ID</field>
             <field name="TCHAR">E</field>
             <field name="TMESSAGE">MESSAGE-CONTENTS</field>
+			<field name="TCLOB" null="true"/>
+			<field name="TBLOB" null="true"/>
         </row>
         <row number="1">
             <field name="TKEY">MSG-ID</field>
             <field name="TCHAR">E</field>
             <field name="TMESSAGE">MESSAGE-CONTENTS</field>
+			<field name="TCLOB" null="true"/>
+			<field name="TBLOB" null="true"/>
         </row>
         <row number="2">
             <field name="TKEY">MSG-ID</field>
             <field name="TCHAR">E</field>
             <field name="TMESSAGE">MESSAGE-CONTENTS</field>
+			<field name="TCLOB" null="true"/>
+			<field name="TBLOB" null="true"/>
         </row>
         <row number="3">
             <field name="TKEY">MSG-ID</field>
             <field name="TCHAR">E</field>
             <field name="TMESSAGE">MESSAGE-CONTENTS</field>
+			<field name="TCLOB" null="true"/>
+			<field name="TBLOB" null="true"/>
         </row>
         <row number="4">
             <field name="TKEY">MSG-ID</field>
             <field name="TCHAR">E</field>
             <field name="TMESSAGE">MESSAGE-CONTENTS</field>
+			<field name="TCLOB" null="true"/>
+			<field name="TBLOB" null="true"/>
         </row>
     </rowset>
 </result>

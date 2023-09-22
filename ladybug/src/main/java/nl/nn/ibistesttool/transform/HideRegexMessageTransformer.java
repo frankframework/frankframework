@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,12 @@
 */
 package nl.nn.ibistesttool.transform;
 
+import java.util.Set;
+
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.util.StringUtil;
+import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.transform.MessageTransformer;
-
-import java.util.Set;
 
 /**
  * Hide the same data as is hidden in the Ibis logfiles based on the
@@ -35,7 +36,7 @@ public class HideRegexMessageTransformer implements MessageTransformer {
 	}
 
 	@Override
-	public String transform(String message) {
+	public String transform(Checkpoint checkpoint, String message) {
 		if (message != null) {
 			message = StringUtil.hideAll(message, hideRegex);
 

@@ -16,12 +16,13 @@ import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 @RunWith(Parameterized.class)
-public class ToCsv {
+public class ToJsonTest {
 	private static final String FOLDER = "/Jdbc.transformer/";
 	private static final String SRC = "src/test/resources" + FOLDER;
-	private File xmlFile, expectedFile;
+	private final File xmlFile;
+	private final File expectedFile;
 
-	public ToCsv(File xmlFile, File expectedFile) {
+	public ToJsonTest(File xmlFile, File expectedFile) {
 		this.xmlFile = xmlFile;
 		this.expectedFile = expectedFile;
 	}
@@ -31,14 +32,14 @@ public class ToCsv {
 		List<Object[]> files = new ArrayList<>();
 		int i = 0;
 		File xml = new File(SRC, i + ".xml");
-		File csv = new File(SRC, i + ".csv");
+		File json = new File(SRC, i + ".json");
 		System.out.println(xml.getAbsolutePath());
-		while (xml.exists() && csv.exists()) {
-			System.out.println(String.format("Added [%s] and [%s]", xml.getName(), csv.getName()));
-			files.add(new File[] {xml, csv});
+		while (xml.exists() && json.exists()) {
+			System.out.println(String.format("Added [%s] and [%s]", xml.getName(), json.getName()));
+			files.add(new File[] {xml, json});
 			i++;
 			xml = new File(SRC, i + ".xml");
-			csv = new File(SRC, i + ".csv");
+			json = new File(SRC, i + ".json");
 		}
 
 		return files;
@@ -48,7 +49,7 @@ public class ToCsv {
 	public void doTest() throws IOException, SAXException {
 		String expected = TestFileUtils.getTestFile(FOLDER + expectedFile.getName());
 
-		QueryOutputToCSV transformer = new QueryOutputToCSV();
+		QueryOutputToJson transformer = new QueryOutputToJson();
 		String output = transformer.parse(new FileMessage(xmlFile));
 
 		Assert.assertEquals(expected, output);

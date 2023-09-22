@@ -26,11 +26,11 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 
 public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>> extends ConfiguredTestBase {
-	
+
 	protected FS fileSystem;
 
 	/**
-	 * Returns the file system 
+	 * Returns the file system
 	 * @return fileSystem
 	 * @throws ConfigurationException
 	 */
@@ -48,18 +48,12 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 		fileSystem.open();
 		log.debug("setUp finished");
 	}
-	
+
 	@AfterEach
 	public void tearDown() throws Exception {
 		log.debug("tearDown start");
 		fileSystem.close();
 		log.debug("tearDown finished");
-	}
-
-
-
-	protected void equalsCheck(String content, String actual) {
-		assertEquals(content, actual);
 	}
 
 	@Test
@@ -79,12 +73,11 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 			return null;
 		}
 	}
-	
+
 	/**
 	 * asserts a number of files to be present in folder.
 	 */
 	public void fileSystemTestListFile(int numFilesExpected, String folder) throws Exception {
-		
 		Set<F> files = new HashSet<F>();
 		Set<String> filenames = new HashSet<String>();
 		int count = 0;
@@ -103,16 +96,16 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 			assertEquals(numFilesExpected, count, "number of files found by listFiles()");
 			assertEquals(numFilesExpected, files.size(), "Size of set of files");
 			assertEquals(numFilesExpected, filenames.size(), "Size of set of filenames");
-			
+
 			for (String filename:filenames) {
 				F f=fileSystem.toFile(folder, filename);
 				assertNotNull(f, "file must be found by filename ["+filename+"]");
 				assertTrue(fileSystem.exists(f), "file must exist when referred to by filename ["+filename+"]");
 			}
-			
+
 			// read each the files
 			for(F f: files) {
-				Message in=fileSystem.readFile(f, null); 
+				Message in=fileSystem.readFile(f, null);
 				log.debug("reading file ["+fileSystem.getName(f)+"]");
 				String contentsString= in.asString();
 				log.debug("contents ["+contentsString+"]");
@@ -122,7 +115,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 				log.debug("canonicalname ["+canonicalname+"]");
 				Date modificationTime=fileSystem.getModificationTime(f);
 				log.debug("modificationTime ["+(modificationTime==null?null:DateUtils.format(modificationTime))+"]");
-	
+
 				Map<String,Object> properties=fileSystem.getAdditionalFileProperties(f);
 				for (Entry<String,Object>entry:properties.entrySet()) {
 					String key=entry.getKey();
@@ -141,7 +134,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 								valueList+=", "+list.get(i);
 							}
 							log.debug("property ["+key+"] value list ["+valueList+"]");
-						}	
+						}
 					} else if (value instanceof Map) {
 						Map<Object,Object> map=(Map)value;
 						if (map.isEmpty()) {
@@ -150,7 +143,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 							for (Entry subentry:map.entrySet()) {
 								log.debug("property ["+key+"."+subentry.getKey()+"] value ["+subentry.getValue()+"]");
 							}
-						}	
+						}
 					} else if (value instanceof Date) {
 						log.debug("property ["+key+"] date value ["+value+"]");
 					} else {

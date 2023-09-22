@@ -36,6 +36,7 @@ import nl.nn.adapterframework.jms.JMSFacade.DeliveryMode;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.EnumUtils;
 
@@ -261,7 +262,7 @@ public class QueueCreator {
 
 						deleteQuerySender.configure();
 						deleteQuerySender.open();
-						deleteQuerySender.sendMessageOrThrow(TestTool.TESTTOOL_DUMMY_MESSAGE, null);
+						deleteQuerySender.sendMessageOrThrow(TestTool.TESTTOOL_DUMMY_MESSAGE, null).close();
 						deleteQuerySender.close();
 					} catch(ConfigurationException e) {
 						closeQueues(queues, properties, writers, correlationId);
@@ -306,12 +307,13 @@ public class QueueCreator {
 						}
 					}
 					if (queues != null) {
-						try {
-							PipeLineSession session = new PipeLineSession();
+						try (PipeLineSession session = new PipeLineSession()) {
 							session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-							String result = prePostFixedQuerySender.sendMessageOrThrow(TestTool.TESTTOOL_DUMMY_MESSAGE, session).asString();
+							Message message = prePostFixedQuerySender.sendMessageOrThrow(TestTool.TESTTOOL_DUMMY_MESSAGE, session);
+							String result = message.asString();
 							querySendersInfo.put("prePostQueryFixedQuerySender", prePostFixedQuerySender);
 							querySendersInfo.put("prePostQueryResult", result);
+							message.close();
 						} catch(TimeoutException e) {
 							closeQueues(queues, properties, writers, correlationId);
 							queues = null;
@@ -327,7 +329,7 @@ public class QueueCreator {
 			if (queues != null) {
 				String readQuery = (String)properties.get(name + ".readQuery");
 				if (readQuery != null) {
-					FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+					FixedQuerySender readQueryFixedQuerySender = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 					readQueryFixedQuerySender.setName("Test Tool query sender");
 
 					try {

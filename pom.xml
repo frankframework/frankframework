@@ -17,21 +17,21 @@
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
 		<jackson.version>2.15.2</jackson.version>
-		<cxf.version>3.5.6</cxf.version>
-		<spring.version>5.3.29</spring.version>
-		<spring-security.version>5.8.6</spring-security.version>
-		<spring-integration.version>5.5.18</spring-integration.version>
+		<cxf.version>3.5.7</cxf.version>
+		<spring.version>5.3.30</spring.version>
+		<spring-security.version>5.8.7</spring-security.version>
+		<spring-integration.version>5.5.19</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.12.7.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
-		<micrometer.version>1.11.3</micrometer.version>
+		<micrometer.version>1.11.4</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
 
 		<!-- DB Driver Versions -->
-		<h2.driver.version>2.2.222</h2.driver.version>
+		<h2.driver.version>2.2.224</h2.driver.version>
 		<db2.driver.version>11.5.8.0</db2.driver.version>
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
@@ -104,6 +104,11 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-commons</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-security</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -237,6 +242,24 @@
 				<version>2.0.1</version>
 			</dependency>
 
+			<!-- Lock transient dependency versions to fix CVE's -->
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>1.9.4</version>
+			</dependency>
+			<dependency>
+				<groupId>net.minidev</groupId>
+				<artifactId>json-smart</artifactId>
+				<version>2.5.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jdom</groupId>
+				<artifactId>jdom2</artifactId>
+				<version>2.0.6.1</version>
+			</dependency>
+			<!-- End Lock transient deps -->
+
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-core</artifactId>
@@ -355,23 +378,10 @@
 			<!-- explicitly define Spring dependencies, to avoid version conflicts with Spring Security (https://www.baeldung.com/spring-security-with-maven) -->
 			<dependency>
 				<groupId>org.springframework.security</groupId>
-				<artifactId>spring-security-core</artifactId>
+				<artifactId>spring-security-bom</artifactId>
 				<version>${spring-security.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.security</groupId>
-				<artifactId>spring-security-web</artifactId>
-				<version>${spring-security.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.security</groupId>
-				<artifactId>spring-security-config</artifactId>
-				<version>${spring-security.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.security</groupId>
-				<artifactId>spring-security-ldap</artifactId>
-				<version>${spring-security.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 
 			<!-- Jackson dependencies -->
@@ -463,7 +473,7 @@
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.28</version>
+				<version>1.18.30</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -491,8 +501,9 @@
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
-				<artifactId>hamcrest-all</artifactId>
-				<version>1.3</version>
+				<artifactId>hamcrest</artifactId>
+				<version>2.2</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.awaitility</groupId>
@@ -719,10 +730,11 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.5.0</version>
+					<version>3.6.0</version>
 					<configuration>
 						<source>${maven.compiler.source}</source>
 						<doclint>none</doclint>
+						<quiet>true</quiet>
 						<tags>
 							<tag>
 								<name>ff.parameters</name>
@@ -731,7 +743,7 @@
 							</tag>
 							<!-- The ff.parameter tag can occur multiple times in the same JavaDoc comment.
 								 The standard doclet does not properly format JavaDoc tags in this case. This
-								 can be solved with a taglet, but WeAreFrank! does not want that complexity.
+								 can be solved with a taglet, but we do not want that complexity.
 								 We therefore accept that all occurrences of ff.parameter are formatted on the
 								 same line.
 
@@ -903,7 +915,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.4.1</version>
 					<executions>
 						<execution>
 							<id>enforce-lib-ban</id>
@@ -970,6 +982,7 @@
 											<exclude>org.apache.geronimo.specs:geronimo-jta_1.1_spec:*:jar:compile</exclude>
 											<exclude>javax.servlet:javax.servlet-api:*:jar:compile</exclude>
 											<exclude>jakarta.servlet:jakarta.servlet-api:*:jar:compile</exclude>
+											<exclude>jakarta.transaction:jakarta.transaction-api:*:jar:compile</exclude>
 										</excludes>
 										<message>These dependencies should be provided by the Application Server!</message>
 									</bannedDependencies>
@@ -1003,7 +1016,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.6.0</version>
 				<reportSets>
 					<reportSet>
 						<id>default</id>
@@ -1120,6 +1133,7 @@
 			</activation>
 			<modules>
 				<module>iaf-commons</module>
+				<module>security</module>
 				<module>credentialProvider</module>
 				<module>management-gateway</module>
 				<module>core</module>
@@ -1232,6 +1246,7 @@
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>
+							<quiet>true</quiet>
 							<doclet>org.frankframework.frankdoc.doclet.DocletBuilder</doclet>
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>

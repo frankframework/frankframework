@@ -546,8 +546,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String getLdapPrincipalDescription(String principal, LdapSender ldapSender) {
 		String principalDescription = null;
 		nl.nn.adapterframework.stream.Message ldapRequest = new nl.nn.adapterframework.stream.Message("<req>" + principal + "</req>");
-		try {
-			String ldapResult = ldapSender.sendMessageOrThrow(ldapRequest, null).asString();
+		try (Message message = ldapSender.sendMessageOrThrow(ldapRequest, null)) {
+			String ldapResult = message.asString();
 			if (ldapResult != null) {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(ldapResult,"attributes/attribute[@name='description']/@value");
 				if (c != null && c.size() > 0) {

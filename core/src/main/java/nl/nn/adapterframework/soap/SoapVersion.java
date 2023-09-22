@@ -78,7 +78,7 @@ public enum SoapVersion implements DocumentedEnum {
 		case SOAP12:
 			return toString();
 		case AUTO:
-			return SOAP11.toString()+" "+SOAP12.toString();
+			return SOAP11 + " " + SOAP12;
 		default:
 			return "";
 		}

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns:input="http://wearefrank.nl/manual/exercise/mundo"
-    targetNamespace="http://wearefrank.nl/manual/exercise/mundo"
+    xmlns:input="http://frankframework.org/manual/exercise/mundo"
+    targetNamespace="http://frankframework.org/manual/exercise/mundo"
     elementFormDefault="qualified">
     <xs:element name="document">
         <xs:complexType>

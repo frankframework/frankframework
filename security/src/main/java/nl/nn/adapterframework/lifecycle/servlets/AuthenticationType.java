@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,13 +12,25 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 package nl.nn.adapterframework.lifecycle.servlets;
 
-//SecurityContextHolder.getContext().getAuthentication(); can be used to retrieve the username (when available)
-public interface IAuthenticator {
+import lombok.Getter;
 
-	void registerServlet(ServletConfiguration config);
+//LdapAuthenticationProvider
+public enum AuthenticationType {
+	AD(ActiveDirectoryAuthenticator.class),
+	CONTAINER(JeeAuthenticator.class),
+	IN_MEMORY(InMemoryAuthenticator.class),
+	OAUTH2(OAuth2Authenticator.class),
+	NONE(NoOpAuthenticator.class);
 
-	void build();
+	/**
+	 * NB. Should be initialized with a Spring AutoWired /Value enabled PostProcessor.
+	 */
+	private final @Getter Class<? extends IAuthenticator> authenticator;
+
+	private AuthenticationType(Class<? extends IAuthenticator> clazz) {
+		authenticator = clazz;
+	}
 }

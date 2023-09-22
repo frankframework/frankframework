@@ -96,7 +96,9 @@ public class Nashorn implements JavascriptEngine<ScriptEngine> {
 		ThrowingFunction<String, String, JavascriptException> method = (param) -> {
 			try {
 				Message msg = Message.asMessage(param);
-				return sender.sendMessageOrThrow(msg, session).asString();
+				try (Message message = sender.sendMessageOrThrow(msg, session)) {
+					return message.asString();
+				}
 			} catch (Exception e) {
 				throw new JavascriptException(e);
 			}

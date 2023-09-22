@@ -109,18 +109,6 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	protected abstract ExchangeMailListener createExchangeMailListener();
 
 	@Override
-	protected void equalsCheck(String content, String actual) {
-		assertEquals(content, actual);
-	}
-
-//	public void testReadFile(Item file, String expectedContents) throws IOException, FileSystemException {
-//		InputStream in = fileSystem.readFile(file);
-//		String actual = StreamUtil.getReaderContents(new InputStreamReader(in));
-//		// test
-//		equalsCheck(expectedContents.trim(), actual.trim());
-//	}
-
-	@Override
 	public void waitForActionToFinish() throws FileSystemException {
 		try {
 			((MailSendingTestHelper)helper)._commitFile();

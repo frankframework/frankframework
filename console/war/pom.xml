@@ -13,19 +13,19 @@
 	<packaging>war</packaging>
 
 	<properties>
-		<spring-security.version>5.8.6</spring-security.version>
-		<spring.boot.version>2.7.15</spring.boot.version>
+		<spring-security.version>5.8.7</spring-security.version>
+		<spring.boot.version>2.7.16</spring.boot.version>
 		<m2eclipse.wtp.contextRoot>iaf-console</m2eclipse.wtp.contextRoot>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-console-frontend</artifactId>
+			<artifactId>ibis-adapterframework-commons</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-console-backend</artifactId>
+			<artifactId>ibis-adapterframework-security</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -33,7 +33,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-commons</artifactId>
+			<artifactId>ibis-adapterframework-console-frontend</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-console-backend</artifactId>
 		</dependency>
 
 		<dependency>
@@ -104,7 +108,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>2.7.14</version>
+				<version>2.7.16</version>
 				<configuration>
 					<mainClass>nl.nn.adapterframework.runner.StandaloneInitializer</mainClass>
 					<layout>WAR</layout>

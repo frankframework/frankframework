@@ -56,8 +56,6 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	private final Logger log = LogUtil.getLogger(this);
 
 	private static final String STUB_STRATEGY_STUB_ALL_SENDERS = "Stub all senders";
-	protected static final String STUB_STRATEGY_NEVER = "Never";
-	private static final String STUB_STRATEGY_ALWAYS = "Always";
 
 	private TestTool testTool;
 	protected @Setter @Getter IbisManager ibisManager;
@@ -325,8 +323,8 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 	public List<String> getStubStrategies() {
 		List<String> stubStrategies = new ArrayList<String>();
 		stubStrategies.add(STUB_STRATEGY_STUB_ALL_SENDERS);
-		stubStrategies.add(STUB_STRATEGY_NEVER);
-		stubStrategies.add(STUB_STRATEGY_ALWAYS);
+		stubStrategies.add(TestTool.STUB_STRATEGY_NEVER);
+		stubStrategies.add(TestTool.STUB_STRATEGY_ALWAYS);
 		return stubStrategies;
 	}
 
@@ -391,7 +389,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 			// to a sender, so stub when senders should be stubbed.
 			return (checkpointName.startsWith("Sender ") || checkpointName.startsWith("Listener ")) && isEndpoint;
 		}
-		if (STUB_STRATEGY_ALWAYS.equals(stubStrategy)
+		if (TestTool.STUB_STRATEGY_ALWAYS.equals(stubStrategy)
 			// Don't stub messageId as IbisDebuggerAdvice will read it as correlationId from PipeLineSession and
 			// use it as correlationId parameter for checkpoints, hence these checkpoint will not be correlated to
 			// the report with the correlationId used by the rerun method

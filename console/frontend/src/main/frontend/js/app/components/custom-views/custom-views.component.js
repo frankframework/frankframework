@@ -7,16 +7,16 @@ const CustomViewsController = function ($scope, appConstants) {
 
 	ctrl.$onInit = function () {
 		$scope.$on('appConstants', function () {
-			var customViews = appConstants["customViews.names"];
+			let customViews = appConstants["customViews.names"];
 			if (customViews == undefined)
 				return;
 
 			if (customViews.length > 0) {
-				var views = customViews.split(",");
-				for (i in views) {
-					var viewId = views[i];
-					var name = appConstants["customViews." + viewId + ".name"];
-					var url = appConstants["customViews." + viewId + ".url"];
+				let views = customViews.split(",");
+				for (let i in views) {
+					let viewId = views[i];
+					let name = appConstants["customViews." + viewId + ".name"];
+					let url = appConstants["customViews." + viewId + ".url"];
 					if (name && url) ctrl.customViews.push({
 						view: viewId,
 						name: name,
@@ -30,7 +30,9 @@ const CustomViewsController = function ($scope, appConstants) {
 
 appModule.component('customViews', {
 	controller: ['$scope', 'appConstants', CustomViewsController],
-	template: '<li ng-repeat="view in customViews" ui-sref-active="active">' +
-		'<a ui-sref="pages.customView(view)"><i class="fa fa-desktop"></i> <span class="nav-label">{{view.name}}</span></a>' +
-		'</li>'
+	template: `<ul class="nav">
+		<li ng-repeat="view in $ctrl.customViews" ui-sref-active="active">
+			<a ui-sref="pages.customView(view)"><i class="fa fa-desktop"></i> <span class="nav-label">{{view.name}}</span></a>
+		</li>
+	</ul>`
 });

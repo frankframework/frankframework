@@ -15,44 +15,16 @@
 */
 package nl.nn.adapterframework.web;
 
-import java.util.Map;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import lombok.Setter;
-import nl.nn.adapterframework.lifecycle.DynamicRegistration.ServletWithParameters;
 import nl.nn.adapterframework.management.web.ServletDispatcher;
-import nl.nn.adapterframework.util.SpringUtils;
 
 @Configuration
-public class ConsoleBackend implements ApplicationContextAware {
-	private final Logger log = LogManager.getLogger(ConsoleBackend.class);
-
-	private @Setter ApplicationContext applicationContext;
+public class ConsoleBackend {
 
 	@Bean
-	public ServletRegistrationBean<ServletWithParameters> createBackendServletBean() {
-		ServletWithParameters servlet = SpringUtils.createBean(applicationContext, ServletDispatcher.class);
-		log.info("registering servlet [{}]", servlet::getName);
-
-		ServletRegistrationBean<ServletWithParameters> bean = new ServletRegistrationBean<>(servlet);
-		Map<String, String> initParams = servlet.getParameters();
-		for(Map.Entry<String, String> entry : initParams.entrySet()) {
-			String key = entry.getKey();
-			String val = entry.getValue();
-			bean.addInitParameter(key, val);
-		}
-		bean.setName(servlet.getName());
-		bean.addUrlMappings("/iaf/api/*");
-
-		log.info("created IAF API servlet endpoint {}", bean::getUrlMappings);
-
-		return bean;
+	public ServletRegistration backendServletBean() {
+		return new ServletRegistration(ServletDispatcher.class);
 	}
 }

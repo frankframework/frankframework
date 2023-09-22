@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -54,18 +55,18 @@ public class LiquibaseResourceAccessor implements ResourceAccessor {
 	@Override
 	public List<liquibase.resource.Resource> search(String path, boolean recursive) throws IOException {
 		if (path.equals(resource.getSystemId())) {
-			return asResourceList(path, null, ()->resource.openStream());
+			return asResourceList(path, null, resource::openStream);
 		}
 		URL url = ClassLoaderUtils.getResourceURL(resource, path);
 		if (url==null) {
-			return null;
+			return Collections.emptyList();
 		}
 		try {
-			return asResourceList(path, url.toURI(), ()->url.openStream());
+			return asResourceList(path, url.toURI(), url::openStream);
 		} catch (URISyntaxException e) {
 			LogUtil.getLogger(this).warn("unable to convert resource url ["+url+"]", e);
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 	protected List<liquibase.resource.Resource> asResourceList(String path, URI uri, ThrowingSupplier<InputStream,IOException> inputStreamSupplier) {

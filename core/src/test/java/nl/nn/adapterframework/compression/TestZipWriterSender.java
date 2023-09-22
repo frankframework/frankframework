@@ -1,14 +1,14 @@
 package nl.nn.adapterframework.compression;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.InputStreamReader;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.collection.Collection;
 import nl.nn.adapterframework.collection.TestCollector;
@@ -18,7 +18,7 @@ import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
 
-public class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
+class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 
 	@Override
 	public ZipWriterSender createSender() throws Exception {
@@ -27,8 +27,8 @@ public class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 		return zipSender;
 	}
 
-	@Before
-	public void setup() {
+	@BeforeEach
+	void setup() {
 		ZipWriter collector = new ZipWriter(false);
 		Collection<ZipWriter, MessageZipEntry> collection = new Collection<>(collector);
 		session.put("zipwriterhandle", collection);
@@ -43,14 +43,14 @@ public class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 	}
 
 	@Test
-	public void testCollectionName() throws Exception {
+	void testCollectionName() throws Exception {
 		sender.addParameter(new Parameter("filename","fakeFilename"));
 		sender.configure();
 		assertEquals("zipwriterhandle", sender.getCollectionName());
 	}
 
 	@Test
-	public void testChangeCollectionName() throws Exception {
+	void testChangeCollectionName() throws Exception {
 		sender.addParameter(new Parameter("filename","fakeFilename"));
 		sender.setZipWriterHandle("test123");
 		sender.configure();
@@ -58,7 +58,7 @@ public class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 	}
 
 	@Test
-	public void testWrite() throws Exception {
+	void testWrite() throws Exception {
 		sender.addParameter(new Parameter("filename","fakeFilename"));
 		sender.configure();
 		sender.open();
@@ -77,7 +77,7 @@ public class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 	}
 
 	@Test
-	public void testWriteWithContentsParameter() throws Exception {
+	void testWriteWithContentsParameter() throws Exception {
 		String fileContents = "some text to be compressed";
 		String senderInput = "pipe input";
 		String filename = "fakeFilename";
