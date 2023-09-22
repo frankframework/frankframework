@@ -1,0 +1,50 @@
+string: "This is a string"
+integer: 42
+float: 3.14
+boolean: true
+array:
+    - "item1"
+    - "item2"
+    - "item3"
+object:
+    key1: value1
+    key2: value2
+nested_object:
+    parent_key:
+        child_key1: child_value1
+        child_key2: child_value2
+date: 2023-09-15
+time: 15:30:00
+datetime: 2023-09-15T15:30:00Z
+list_of_integers:
+    - 1
+    - 2
+    - 3
+list_of_strings:
+    - apple
+    - banana
+    - cherry
+list_of_objects:
+    - name: Alice
+      age: 30
+      description: "Alice is a nice person"
+    - name: Bob
+      age: 35
+      description: "Bob is a nice person"
+mapping:
+    key1: value1
+    key2: value2
+boolean_string: "true"
+nested_properties:
+    level1:
+        level2:
+            - item1
+            - item2
+        another_level2:
+            key1: value1
+            key2: value2
+    another_level1:
+        key: "nested value"
+        nested_list:
+            - nested_item1
+            - nested_item2

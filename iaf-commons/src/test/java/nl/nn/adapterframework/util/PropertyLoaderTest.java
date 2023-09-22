@@ -182,6 +182,18 @@ public class PropertyLoaderTest {
 		assertEquals("Pat", yamlConstants.getProperty("InverseResolve3"));
 	}
 
+	@Test
+	public void testYamlTypes() {
+		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/Types.yaml");
+
+		String p2y = PropertiesParser.parseFile(property2Reader(yamlConstants));
+
+		Properties yamlProperties = new YamlParser(new StringReader(p2y));
+
+		assertThat( yamlConstants.entrySet(), everyItem(isIn(yamlProperties.entrySet())));
+		assertThat( yamlProperties.entrySet(), everyItem(isIn(yamlConstants.entrySet())));
+	}
+
 	private StringReader property2Reader(PropertyLoader constants) {
 		// convert the AppConstants to string, so that it can be read as a file
 		StringBuilder stringBuilder = new StringBuilder();

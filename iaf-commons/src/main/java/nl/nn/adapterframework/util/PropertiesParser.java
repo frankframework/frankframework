@@ -16,39 +16,16 @@
 package nl.nn.adapterframework.util;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.yaml.snakeyaml.Yaml;
 
 public class PropertiesParser {
-	public static String parseFile(String inputFilePath) {
-
-		Map<String, Object> accumulation = new LinkedHashMap<>();
-
-		try (BufferedReader bufferedReader = new BufferedReader(new FileReader(inputFilePath))) {
-			String line;
-			while ((line = bufferedReader.readLine()) != null) {
-				if (line.startsWith("#") || line.isEmpty()) {
-					continue;
-				}
-				String[] keys = line.split("\\.(?=[^=]*=)");
-				addPropertyToMap(accumulation, keys);
-			}
-		} catch (IOException exception) {
-			exception.printStackTrace();
-		}
-
-		Yaml yaml = new Yaml();
-		return yaml.dump(accumulation);
-	}
 
 	public static String parseFile(Reader reader) {
 
@@ -79,12 +56,6 @@ public class PropertiesParser {
 			Object currentValue = propertiesMap.get(currentKey);
 			if (currentValue instanceof Map) {
 				addPropertyToMap((Map<String, Object>) currentValue, restOfProperty);
-			} else if (currentValue instanceof String) {
-				createListFromStringAndAddMap(propertiesMap, currentKey, currentValue, restOfProperty);
-			} else if (currentValue instanceof ArrayList) {
-				addMapToList(propertiesMap, currentKey, currentValue, restOfProperty, propertyParts);
-			} else if (currentValue instanceof String[]) {
-				mergeMapAndStringList(propertiesMap, currentKey, (String[]) currentValue, restOfProperty);
 			}
 		} else {
 			if (propertyParts.length == 1) {
@@ -93,44 +64,6 @@ public class PropertiesParser {
 				addMapToPropertiesMap(propertiesMap, currentKey, restOfProperty);
 			}
 		}
-	}
-
-	static void createListFromStringAndAddMap(Map<String, Object> propertiesMap, String currentKey, Object currentValue, String[] restOfProperty) {
-		Map<String, Object> newSubMap = new HashMap<>();
-		ArrayList<Object> arrayList = new ArrayList<>();
-		arrayList.add(currentValue);
-		arrayList.add(newSubMap);
-		addPropertyToMap(newSubMap, restOfProperty);
-		propertiesMap.put(currentKey, arrayList);
-	}
-
-	static void addMapToList(Map<String, Object> propertiesMap, String currentKey, Object currentValue, String[] restOfProperty, String[] keys){
-		for (Object listValue : (ArrayList<?>) currentValue) {
-			if (listValue instanceof Map && ((Map<?, ?>) listValue).containsKey(keys[1])) {
-					addPropertyToMap((Map<String, Object>) listValue, restOfProperty);
-					return;
-			}
-		}
-
-		((ArrayList<?>) currentValue).remove(restOfProperty[0]);
-
-		Map<String, Object> newSubMap = new HashMap<>();
-		((ArrayList<Object>) currentValue).add(newSubMap);
-		addPropertyToMap(newSubMap, restOfProperty);
-		propertiesMap.put(currentKey, currentValue);
-	}
-
-	static void mergeMapAndStringList(Map<String, Object> propertiesMap, String currentKey, String[] currentValue, String[] restOfProperty) {
-		Map<String, Object> newSubMap = new HashMap<>();
-		ArrayList<Object> arrayList = new ArrayList<>();
-
-		List<String> list = new ArrayList<>(Arrays.asList(currentValue));
-		list.remove(restOfProperty[0]);
-
-		arrayList.addAll(Arrays.asList(list.toArray(new String[0])));
-		arrayList.add(newSubMap);
-		addPropertyToMap(newSubMap, restOfProperty);
-		propertiesMap.put(currentKey, arrayList);
 	}
 
 	private static void addValueToPropertiesMap(Map<String, Object> propertiesMap, String currentKey) {
