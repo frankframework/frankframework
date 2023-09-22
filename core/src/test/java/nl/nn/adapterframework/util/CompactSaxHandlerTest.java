@@ -10,6 +10,8 @@ import javax.xml.soap.SOAPConstants;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -196,6 +198,31 @@ class CompactSaxHandlerTest {
 		assertEquals(testOutputFile, handler.getXmlString());
 		assertEquals("DC2023-00020", session.get("ref_identificatie"));
 		assertEquals("DC2022-012345", session.get("ref_identificatie2"));
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings= {
+			"/Util/CompactSaxHandler/input-invalid-moved-ref-1.xml",
+			"/Util/CompactSaxHandler/input-invalid-moved-ref-2.xml",
+			"/Util/CompactSaxHandler/input-invalid-moved-ref-3.xml",
+			"/Util/CompactSaxHandler/input-invalid-moved-ref-4.xml",
+			"/Util/CompactSaxHandler/input-invalid-moved-ref-5.xml",
+			"/Util/CompactSaxHandler/input-invalid-moved-ref-6.xml"
+	})
+	void testElementToMoveEdgeCases(String inputUri) throws IOException, SAXException {
+		// Arrange
+		handler.setRemoveCompactMsgNamespaces(false);
+		PipeLineSession session = new PipeLineSession();
+		handler.setContext(session);
+		handler.setElementToMove("identificatie");
+		handler.setElementToMoveSessionKey("sessionKey");
+
+		// Act
+		XmlUtils.parseXml(MessageTestUtils.getMessage(inputUri).asInputSource(), handler);
+
+		// Assert
+		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-moved2.xml");
+		assertEquals(testOutputFile, handler.getXmlString());
 	}
 
 }
