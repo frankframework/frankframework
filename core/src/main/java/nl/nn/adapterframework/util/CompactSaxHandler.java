@@ -34,22 +34,25 @@ import lombok.Setter;
  * @author Peter Leeuwenburgh
  */
 public class CompactSaxHandler extends DefaultHandler {
-	private static final String VALUE_MOVE_START = "{sessionKey:";
+	private static final char[] VALUE_MOVE_START = "{sessionKey:".toCharArray();
 	private static final String VALUE_MOVE_END = "}";
 
-	@Getter private String chompCharSize = null;
 	@Getter @Setter private int chompLength = -1;
 	@Getter @Setter private String elementToMove = null;
 	@Getter @Setter private String elementToMoveSessionKey = null;
 	@Getter @Setter private String elementToMoveChain = null;
 	@Getter @Setter private boolean removeCompactMsgNamespaces = true;
-	private boolean sessionKeyFound = false;
 
 	private final StringBuilder messageBuilder = new StringBuilder();
 	private final StringBuilder charDataBuilder = new StringBuilder();
 	private final StringBuilder namespaceBuilder = new StringBuilder();
 	private final List<String> elements = new ArrayList<>();
 	@Setter private Map<String, Object> context = null;
+	private MoveState state = MoveState.DEFAULT;
+
+	private enum MoveState {
+		DEFAULT, SESSION_KEY_FOUND, STOPPED_REPLACING;
+	}
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -109,12 +112,15 @@ public class CompactSaxHandler extends DefaultHandler {
 	public void characters(char[] ch, int start, int length) throws SAXException {
 		charDataBuilder.append(ch, start, length);
 
-		// Detection of MOVE_START element data
-		if (length < VALUE_MOVE_START.length())
+		if (state != MoveState.DEFAULT)
 			return;
-		char[] startPart = Arrays.copyOfRange(ch, start, start + VALUE_MOVE_START.length());
-		if (Arrays.equals(startPart, VALUE_MOVE_START.toCharArray())) {
-			sessionKeyFound = true;
+
+		// Detection of MOVE_START element data
+		if (length < VALUE_MOVE_START.length)
+			return;
+		char[] startPart = Arrays.copyOfRange(ch, start, start + VALUE_MOVE_START.length);
+		if (Arrays.equals(startPart, VALUE_MOVE_START)) {
+			state = MoveState.SESSION_KEY_FOUND;
 		}
 	}
 
@@ -126,7 +132,7 @@ public class CompactSaxHandler extends DefaultHandler {
 		String before = "";
 		String after = "";
 		if (chompLength >= 0 && charDataBuilder.length() > chompLength) {
-			before = "*** character data size [" + charDataBuilder.length() + "] exceeds [" + getChompCharSize() + "] and is chomped ***";
+			before = "*** character data size [" + charDataBuilder.length() + "] exceeds [" + chompLength + "] and is chomped ***";
 			after = "...(" + (charDataBuilder.length() - chompLength) + " characters more)";
 			charDataBuilder.setLength(chompLength);
 		}
@@ -136,13 +142,11 @@ public class CompactSaxHandler extends DefaultHandler {
 
 		// Detection of MOVE_END token, while in sessionKeyFound state
 		int length = charDataBuilder.length();
-		boolean stoppedWithReplacing = false;
-		if (sessionKeyFound && charDataBuilder.substring(length - 1, length).equals(VALUE_MOVE_END)) {
-			sessionKeyFound = false;
-			stoppedWithReplacing = true;
+		if (state == MoveState.SESSION_KEY_FOUND && charDataBuilder.substring(length - 1, length).equals(VALUE_MOVE_END)) {
+			state = MoveState.STOPPED_REPLACING;
 		}
 
-		if (context != null && !startElement && !stoppedWithReplacing
+		if (context != null && !startElement && state != MoveState.STOPPED_REPLACING
 				&& (getElementToMove() != null && lastElement.equals(getElementToMove()) ||
 				(getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain())))) {
 
@@ -151,6 +155,7 @@ public class CompactSaxHandler extends DefaultHandler {
 			messageBuilder.append(VALUE_MOVE_START).append(elementToMoveSK).append(VALUE_MOVE_END);
 		} else {
 			messageBuilder.append(before).append(XmlEncodingUtils.encodeChars(charDataBuilder.toString())).append(after);
+			state = MoveState.DEFAULT;
 		}
 
 		charDataBuilder.setLength(0);
@@ -191,8 +196,7 @@ public class CompactSaxHandler extends DefaultHandler {
 	}
 
 	public void setChompCharSize(String input) {
-		chompCharSize = input;
-		chompLength = (int) Misc.toFileSize(chompCharSize, -1);
+		chompLength = (int) Misc.toFileSize(input, -1);
 	}
 
 }
