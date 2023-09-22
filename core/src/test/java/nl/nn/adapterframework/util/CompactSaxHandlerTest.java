@@ -159,6 +159,27 @@ class CompactSaxHandlerTest {
 	}
 
 	@Test
+	void testElementToMoveBigData() throws IOException, SAXException {
+		// Arrange
+		handler.setChompLength(200_000);
+		handler.setRemoveCompactMsgNamespaces(true);
+		PipeLineSession session = new PipeLineSession();
+		handler.setContext(session);
+		handler.setElementToMove("message");
+		String expectedOutput = "<event timestamp=\"0\" level=\"DEBUG\">\n" +
+				"  <message>{sessionKey:ref_message}</message>\n" +
+				"</event>";
+
+		// Act
+		Message bigInputMessage = MessageTestUtils.getMessage("/Logging/xml-of-pdf-file.log");
+		XmlUtils.parseXml(bigInputMessage.asInputSource(), handler);
+
+		// Assert
+		assertEquals(expectedOutput, handler.getXmlString());
+		assertEquals(101_541, ((String) session.get("ref_message")).length());
+	}
+
+	@Test
 	void testElementToMoveChainOnlyRightLocation() throws IOException, SAXException {
 		// Arrange
 		handler.setChompLength(80);
