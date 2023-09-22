@@ -16,7 +16,7 @@
 				<ZKN:dct.omschrijving>Brief</ZKN:dct.omschrijving>
 			</ZKN:object>
 			<ZKN:object StUF:entiteittype="EDC" StUF:verwerkingssoort="E">
-				<ZKN:identificatie>{sessionKey:DC2022}-012345</ZKN:identificatie>
+				<ZKN:identificatie>DC2022{sessionKey:-012345}</ZKN:identificatie>
 				<ZKN:dct.omschrijving>Email</ZKN:dct.omschrijving>
 			</ZKN:object>
 		</ZKN:edcLk01>
