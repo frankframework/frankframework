@@ -75,10 +75,11 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 	@Bean
 	public SecurityFilterChain configureChain(HttpSecurity http) {
-		ServletRegistration servlet = applicationContext.getBean("backendServletBean", ServletRegistration.class);
 		IAuthenticator authenticator = createAuthenticator();
-		authenticator.registerServlet(servlet.getServletConfiguration());
-		//TODO: register frontend here as well
+
+		authenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
+		authenticator.registerServlet(applicationContext.getBean("frontendServletBean", ServletRegistration.class).getServletConfiguration());
+
 		return authenticator.configureHttpSecurity(http);
 	}
 }

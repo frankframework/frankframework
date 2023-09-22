@@ -18,13 +18,21 @@ package nl.nn.adapterframework.web;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import nl.nn.adapterframework.console.ConsoleFrontend;
 import nl.nn.adapterframework.management.web.ServletDispatcher;
 
 @Configuration
-public class ConsoleBackend {
+public class RegisterServletEndpoints {
 
 	@Bean
 	public ServletRegistration backendServletBean() {
 		return new ServletRegistration(ServletDispatcher.class);
+	}
+
+	@Bean
+	public ServletRegistration frontendServletBean() {
+		ServletRegistration registration = new ServletRegistration(ConsoleFrontend.class);
+		registration.addUrlMappings("/");
+		return registration;
 	}
 }

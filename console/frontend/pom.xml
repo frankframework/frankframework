@@ -10,6 +10,27 @@
 	<artifactId>ibis-adapterframework-console-frontend</artifactId>
 	<name>Frank Console Frontend</name>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-commons</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<defaultGoal>generate-resources</defaultGoal>
 		<plugins>
@@ -60,7 +81,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.outputDirectory}/META-INF/resources/iaf/gui</outputDirectory>
+							<outputDirectory>${project.build.outputDirectory}/console</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${basedir}/target/frontend</directory>
