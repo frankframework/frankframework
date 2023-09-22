@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!
+   Copyright 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ import nl.nn.adapterframework.util.StringResolver;
 /**
  * This ConfigurationFactory is loaded after the log4j2.properties file has been initialised.
  * Both Configurations are then combined via a CompositeConfiguration
- * 
+ *
  * @author Murat Kaan Meral
  * @author Niels Meijer
  */
@@ -99,16 +99,25 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 			}
 			ThreadContext.putAll(substitutions); // Only add the substituted variables to the ThreadContext
 
+			initLogExpressionHiding(properties);
+
 			return new XmlConfiguration(loggerContext, source.resetInputStream()) { //We have to 'reset' the source as the old stream has been read.
 
 				@Override // Add hashcode to toString() so we can differentiate the XmlConfigurations in the startup log
 				public String toString() {
-					return this.getClass().getCanonicalName() + "@" + Integer.toHexString(this.hashCode()) + "[location=" + getConfigurationSource() + "]";
+					return this.getClass().getSuperclass().getCanonicalName() + "@" + Integer.toHexString(this.hashCode()) + "[location=" + getConfigurationSource() + "]";
 				}
 			};
 		} catch (IOException e) {
 			System.err.println(LOG_PREFIX + "unable to configure Log4J2");
 			throw new IllegalStateException(LOG_PREFIX + "unable to configure Log4J2", e);
+		}
+	}
+
+	private static void initLogExpressionHiding(Properties properties) {
+		String logHideRegex = properties.getProperty("log.hideRegex");
+		if (StringUtils.isNotBlank(logHideRegex)) {
+			IbisMaskingLayout.addToGlobalReplace(logHideRegex);
 		}
 	}
 

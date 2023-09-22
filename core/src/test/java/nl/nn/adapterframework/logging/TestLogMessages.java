@@ -166,6 +166,24 @@ public class TestLogMessages {
 	}
 
 	@Test
+	public void testHideRegexMatchInMessage() {
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			log.debug("my beautiful log with <password>TO BE HIDDEN</password> hidden value");
+
+			List<String> logEvents = appender.getLogLines();
+			assertEquals(1, logEvents.size(), "found messages "+logEvents);
+			String message = logEvents.get(0);
+			assertEquals("DEBUG - my beautiful log with <password>************</password> hidden value", message);
+		}
+		finally {
+			IbisMaskingLayout.cleanGlobalReplace();
+			TestAppender.removeAppender(appender);
+		}
+	}
+
+	@Test
 	public void testXmlLayoutWithUnicodeAndCdata() {
 		TestAppender appender = TestAppender.newBuilder().useIbisXmlLayout().build();
 		TestAppender.addToRootLogger(appender);
@@ -267,7 +285,7 @@ public class TestLogMessages {
 	public void testChangeLogLevel() {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
 		TestAppender.addToRootLogger(appender);
-		String rootLoggerName = LogUtil.getLogger(this).getName(); //For tests we use the `nl.nn` logger instead of the rootlogger
+		String rootLoggerName = LogUtil.getLogger(this).getName(); //For tests, we use the `nl.nn` logger instead of the rootlogger
 
 		try {
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);

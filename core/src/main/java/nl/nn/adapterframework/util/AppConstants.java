@@ -70,10 +70,10 @@ public final class AppConstants extends PropertyLoader {
 	 * Retrieve an instance based on a ClassLoader. This should be used by
 	 * classes which are part of the Ibis configuration (like pipes and senders)
 	 * because the configuration might be loaded from outside the webapp
-	 * classpath. Hence the Thread.currentThread().getContextClassLoader() at
+	 * classpath. Hence, the Thread.currentThread().getContextClassLoader() at
 	 * the time the class was instantiated should be used.
 	 *
-	 * @param cl ClassLoader to retrieve AppConstants from
+	 * @param classLoader ClassLoader to retrieve AppConstants from
 	 * @return AppConstants instance
 	 */
 	public static synchronized AppConstants getInstance(final ClassLoader classLoader) {
@@ -169,6 +169,7 @@ public final class AppConstants extends PropertyLoader {
 	 */
 	private synchronized Object setProperty(String key, String value, boolean local) {
 		if(local) {
+			//noinspection deprecation
 			return super.put(key, value);
 		} else {
 			for (java.util.Map.Entry<ClassLoader, AppConstants> mapElement : appConstantsMap.entrySet()) {
