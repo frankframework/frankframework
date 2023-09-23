@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.web;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -55,9 +56,13 @@ public class ServletRegistration extends ServletRegistrationBean<Servlet> implem
 			addInitParameter(key, val);
 		}
 		setName(servletConfiguration.getName());
-		setUrlMappings(servletConfiguration.getUrlMapping());
+		addUrlMappings(servletConfiguration.getUrlMapping());
 		super.setServlet(servlet);
 
 		log.info("created servlet {} endpoint {}", this::getServletName, this::getUrlMappings);
+	}
+
+	private void addUrlMappings(List<String> urlMapping) {
+		urlMapping.stream().forEach(this::addUrlMappings);
 	}
 }

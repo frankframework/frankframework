@@ -32,7 +32,7 @@ public class RegisterServletEndpoints {
 	@Bean
 	public ServletRegistration frontendServletBean() {
 		ServletRegistration registration = new ServletRegistration(ConsoleFrontend.class);
-		registration.addUrlMappings("/");
+		registration.addUrlMappings("/*"); //Also host the console on the ROOT
 		return registration;
 	}
 }

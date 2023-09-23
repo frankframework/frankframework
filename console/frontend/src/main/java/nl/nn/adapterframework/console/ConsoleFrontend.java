@@ -56,7 +56,7 @@ import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.Servlet, EnvironmentAware, InitializingBean {
 
 	private static final long serialVersionUID = 1L;
-	private static final String WELCOME_FILE = "/index.html";
+	private static final String WELCOME_FILE = "index.html";
 	private static final String DEFAULT_CONSOLE_PATH = "classpath:/console";
 
 	private transient String frontendPath = null;
@@ -83,16 +83,12 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 		String path = req.getPathInfo();
 		if(StringUtils.isBlank(path)) { //getPathInfo may return null, redirect to {base}+'/' when that happens.
 			String fullPath = req.getRequestURI();
-			if(StringUtils.isNotBlank(req.getContextPath())) {
-				fullPath = fullPath.substring(req.getContextPath().length());
+			if(!fullPath.endsWith("/")) {
+				resp.sendRedirect(fullPath+"/");
+				return;
 			}
-			System.err.println(fullPath);
-//			String redirectUrl = req.getRequestURL().append("/").toString();
-//			if(!fullPath.equals("/")) {
-//				resp.sendRedirect(fullPath);
-//				return;
-//			}
-			path = fullPath;
+			log.warn("unable to redirect request");
+			resp.sendError(404);
 		}
 		if(path.equals("/")) {
 			path += WELCOME_FILE;
@@ -104,7 +100,7 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 			log.info("looked up [{}]", resource);
 		} catch (IOException e) {
 			log.warn("unable to locate file [{}]", path, e);
-			resp.sendError(404, "file not found");
+			resp.sendError(404);
 			return;
 		}
 
