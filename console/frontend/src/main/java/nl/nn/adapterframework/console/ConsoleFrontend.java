@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -79,7 +78,15 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
+		try {
+			doGetSafely(req, resp);
+		} catch (IOException e) {
+			log.error("unable to process request", e);
+		}
+	}
+
+	private void doGetSafely(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String path = req.getPathInfo();
 		if(StringUtils.isBlank(path)) { //getPathInfo may return null, redirect to {base}+'/' when that happens.
 			String fullPath = req.getRequestURI();
