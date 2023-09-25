@@ -58,7 +58,7 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 	private static final String WELCOME_FILE = "index.html";
 	private static final String DEFAULT_CONSOLE_PATH = "classpath:/console";
 
-	private transient String frontendPath = null;
+	private String frontendPath = null;
 	@Setter private transient Environment environment;
 
 	@Override
@@ -103,8 +103,9 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 
 		URL resource;
 		try {
-			resource = new URL(frontendPath+path);
-			log.info("looked up [{}]", resource);
+			String normalized = FilenameUtils.normalize(frontendPath+path, true);
+			resource = new URL(normalized);
+			log.info("looked up [{}]", normalized);
 		} catch (IOException e) {
 			log.warn("unable to locate file [{}]", path, e);
 			resp.sendError(404);
