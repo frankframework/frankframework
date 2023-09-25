@@ -88,7 +88,7 @@ public final class AppConstants extends Properties implements Serializable {
 	 * Retrieve an instance based on a ClassLoader. This should be used by
 	 * classes which are part of the Ibis configuration (like pipes and senders)
 	 * because the configuration might be loaded from outside the webapp
-	 * classpath. Hence the Thread.currentThread().getContextClassLoader() at
+	 * classpath. Hence, the Thread.currentThread().getContextClassLoader() at
 	 * the time the class was instantiated should be used.
 	 *
 	 * @see IbisContext#init()
