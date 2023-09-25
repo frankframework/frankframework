@@ -43,10 +43,10 @@ import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 
 /**
  * Contains the component annotation so it will be picked up by the core (SpringEnvironmentContext.xml).
- * When using Spring boot (and the FrankConsoleContext.xml), where classpath scanning is enabled, 
+ * When using Spring boot (and the FrankConsoleContext.xml), where classpath scanning is enabled,
  * it will directly try to configure this servlet without any configuration.
- * Hence it should use the RegisterServletEndpoints which uses a ServletConfiguration to initialize the Servlet.
- * 
+ * Hence, it should use the RegisterServletEndpoints which uses a ServletConfiguration to initialize the Servlet.
+ *
  * @author Niels Meijer
  */
 @Log4j2
@@ -91,7 +91,7 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 		if(StringUtils.isBlank(path)) { //getPathInfo may return null, redirect to {base}+'/' when that happens.
 			String fullPath = req.getRequestURI();
 			if(!fullPath.endsWith("/")) {
-				resp.sendRedirect(fullPath+"/");
+				resp.sendRedirect(req.getContextPath() + req.getServletPath() + "/");
 				return;
 			}
 			log.warn("unable to redirect request");
