@@ -11,8 +11,6 @@
 
 	<context:property-placeholder location="classpath:application.properties"/>
 
-	<bean class="nl.nn.adapterframework.runner.ConsoleFrontendBean"/>
-
 	<context:component-scan base-package="nl.nn.adapterframework.web" />
 
 	<!-- Messaging Gateway -->

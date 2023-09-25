@@ -61,7 +61,7 @@ public class JwtKeyGenerator implements InitializingBean {
 			ECKey key = new ECKeyGenerator(Curve.SECP256K1).keyIDFromThumbprint(true).generate();
 
 			String version = Environment.getModuleVersion("iaf-management-gateway");
-			log.info("initializing foo bar version [{}]", version);
+			log.info("initializing JWT KeyGenerator version [{}]", version);
 			generateJWSHeader(key, version);
 
 			// Store the public key

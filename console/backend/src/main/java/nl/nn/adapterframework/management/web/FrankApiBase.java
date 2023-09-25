@@ -43,6 +43,7 @@ import org.springframework.messaging.Message;
 import lombok.Getter;
 import nl.nn.adapterframework.management.bus.OutboundGateway;
 import nl.nn.adapterframework.util.ResponseUtils;
+import nl.nn.adapterframework.web.filters.DeprecationFilter;
 
 /**
  * Base class for API endpoints.
