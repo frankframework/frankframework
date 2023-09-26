@@ -68,6 +68,7 @@ import { FlowComponent } from './views/status/flow/flow.component';
 import { StorageComponent } from './views/storage/storage.component';
 import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
 import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
+import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -136,7 +137,8 @@ appModule
     FlowComponent,
     StorageComponent,
     StorageListComponent,
-    StorageViewComponent
+    StorageViewComponent,
+    AdapterstatisticsComponent
   ],
   imports: [
     BrowserModule,

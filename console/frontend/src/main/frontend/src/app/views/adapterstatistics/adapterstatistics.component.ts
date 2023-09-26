@@ -1,10 +1,12 @@
+import { Component, Inject, OnInit } from '@angular/core';
 import { StateParams } from '@uirouter/angularjs';
-import { AppConstants, appModule } from "../../app.module";
-import { AppService, Receiver } from "../../app.service";
-import { ApiService } from "../../services/api.service";
-import { SweetAlertService } from '../../services/sweetalert.service';
-import { DebugService } from '../../services/debug.service';
-import { MiscService } from '../../services/misc.service';
+import { AppConstants } from 'src/angularjs/app/app.module';
+import { AppService } from 'src/angularjs/app/app.service';
+import { ApiService } from 'src/angularjs/app/services/api.service';
+import { DebugService } from 'src/angularjs/app/services/debug.service';
+import { MiscService } from 'src/angularjs/app/services/misc.service';
+import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
+import { APPCONSTANTS } from 'src/app/app.module';
 
 type StatisticDetails = {
   name: string,
@@ -54,8 +56,12 @@ type Statistics = {
   labels: string[]
 }
 
-class AdapterstatisticsController {
-
+@Component({
+  selector: 'app-adapterstatistics',
+  templateUrl: './adapterstatistics.component.html',
+  styleUrls: ['./adapterstatistics.component.scss']
+})
+export class AdapterstatisticsComponent implements OnInit {
   defaults = { "name": "Name", "count": "Count", "min": "Min", "max": "Max", "avg": "Average", "stdDev": "StdDev", "sum": "Sum", "first": "First", "last": "Last" };
   adapterName = this.$stateParams['name'];
   configuration = this.$stateParams['configuration'];
@@ -65,8 +71,8 @@ class AdapterstatisticsController {
     data: [],
   };
   stats?: Statistics;
-  statisticsTimeBoundaries: Record<string, string> = {...this.defaults};
-  statisticsSizeBoundaries: Record<string, string> = {...this.defaults};
+  statisticsTimeBoundaries: Record<string, string> = { ...this.defaults };
+  statisticsSizeBoundaries: Record<string, string> = { ...this.defaults };
   statisticsNames = [];
   dataset = {
     fill: false,
@@ -105,15 +111,13 @@ class AdapterstatisticsController {
     private Api: ApiService,
     private $stateParams: StateParams,
     private SweetAlert: SweetAlertService,
-    private $timeout: angular.ITimeoutService,
-    private $filter: angular.IFilterService,
-    private appConstants: AppConstants,
+    @Inject(APPCONSTANTS) private appConstants: AppConstants,
     private Debug: DebugService,
     private Misc: MiscService
-  ) {}
+  ) { }
 
-  $onInit() {
-    if (!this.adapterName){
+  ngOnInit() {
+    if (!this.adapterName) {
       this.SweetAlert.Warning("Adapter not found!");
       return;
     }
@@ -125,7 +129,7 @@ class AdapterstatisticsController {
       this.appService.appConstants$.subscribe(() => this.populateBoundaries()); //Wait for appConstants trigger to load
     }
 
-    this.$timeout(() => {
+    window.setTimeout(() => {
       this.refresh();
     }, 1000);
   };
@@ -145,7 +149,7 @@ class AdapterstatisticsController {
       this.hourlyStatistics.labels = labels;
       this.hourlyStatistics.data = chartData;
 
-      this.$timeout(() => {
+      window.setTimeout(() => {
         this.refreshing = false;
       }, 500);
     });
@@ -178,10 +182,5 @@ class AdapterstatisticsController {
         this.statisticsSizeBoundaries[j] = j;
       }
     }
-  };
-};
-
-appModule.component('adapterstatistics', {
-  controller: ['appService', 'Api', '$stateParams', 'SweetAlert', '$timeout', '$filter', 'appConstants', 'Debug', 'Misc', AdapterstatisticsController],
-  templateUrl: 'js/app/views/adapterstatistics/adapterstatistics.component.html'
-});
+  }
+}
