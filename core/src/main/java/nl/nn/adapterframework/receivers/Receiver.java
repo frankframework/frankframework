@@ -120,6 +120,7 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
@@ -1454,7 +1455,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	private Message compactMessage(Message message, PipeLineSession session) {
-		CompactSaxHandler handler = new CompactSaxHandler();
+		XmlWriter xmlWriter = new XmlWriter();
+		CompactSaxHandler handler = new CompactSaxHandler(xmlWriter);
 		handler.setChompCharSize(getChompCharSize());
 		handler.setElementToMove(getElementToMove());
 		handler.setElementToMoveChain(getElementToMoveChain());
@@ -1464,7 +1466,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 		try {
 			XmlUtils.parseXml(message.asInputSource(), handler);
-			return new Message(handler.getXmlString());
+			return new Message(xmlWriter.toString());
 		} catch (Exception e) {
 			warn("received message could not be compacted: " + e.getMessage());
 			return message;

@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.util;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,18 +23,21 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.xml.FullXmlFilter;
+import nl.nn.adapterframework.xml.NamespaceRemovingAttributesWrapper;
 
 /**
  * SAX2 event handler to compact XML messages.
  *
  * @author Peter Leeuwenburgh
  */
-public class CompactSaxHandler extends DefaultHandler {
+public class CompactSaxHandler extends FullXmlFilter {
 	private static final char[] VALUE_MOVE_START = "{sessionKey:".toCharArray();
 	private static final String VALUE_MOVE_END = "}";
 
@@ -43,9 +47,7 @@ public class CompactSaxHandler extends DefaultHandler {
 	@Getter @Setter private String elementToMoveChain = null;
 	@Getter @Setter private boolean removeCompactMsgNamespaces = true;
 
-	private final StringBuilder messageBuilder = new StringBuilder();
 	private final StringBuilder charDataBuilder = new StringBuilder();
-	private final StringBuilder namespaceBuilder = new StringBuilder();
 	private final List<String> elements = new ArrayList<>();
 	@Setter private Map<String, Object> context = null;
 	private MoveState state = MoveState.DEFAULT;
@@ -54,40 +56,33 @@ public class CompactSaxHandler extends DefaultHandler {
 		DEFAULT, SESSION_KEY_FOUND, STOPPED_REPLACING
 	}
 
-	@Override
-	public void startElement(String uri, String localName, String qName, Attributes attributes) {
-		printCharData(true);
-		elements.add(localName);
-
-		StringBuilder attributeBuffer = new StringBuilder();
-		for (int i = 0; i < attributes.getLength(); i++) {
-			attributeBuffer.append(" ");
-			if (isRemoveCompactMsgNamespaces()) {
-				attributeBuffer.append(attributes.getLocalName(i));
-			} else {
-				attributeBuffer.append(attributes.getQName(i));
-			}
-			attributeBuffer.append("=\"");
-			attributeBuffer.append(attributes.getValue(i));
-			attributeBuffer.append("\"");
-		}
-
-		if (isRemoveCompactMsgNamespaces()) {
-			messageBuilder.append("<").append(localName).append(attributeBuffer).append(">");
-		} else {
-			messageBuilder.append("<").append(qName).append(namespaceBuilder).append(attributeBuffer).append(">");
-		}
-		namespaceBuilder.setLength(0);
+	public CompactSaxHandler(ContentHandler handler) {
+		super(handler);
 	}
 
 	@Override
-	public void startPrefixMapping(String prefix, String uri) {
-		String thisPrefix = "";
-		if (StringUtils.isNotEmpty(prefix)) {
-			thisPrefix = ":" + prefix;
+	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		printCharData(true);
+		elements.add(localName);
+
+		if (isRemoveCompactMsgNamespaces()) {
+			super.startElement(uri, localName, localName, new NamespaceRemovingAttributesWrapper(attributes));
+		} else {
+			super.startElement(uri, localName, qName, attributes);
 		}
-		if (StringUtils.isNotEmpty(uri)) {
-			namespaceBuilder.append(" xmlns").append(thisPrefix).append("=\"").append(uri).append("\"");
+	}
+
+	@Override
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		if (!isRemoveCompactMsgNamespaces()) {
+			super.startPrefixMapping(prefix, uri);
+		}
+	}
+
+	@Override
+	public void endPrefixMapping(String prefix) throws SAXException {
+		if (!isRemoveCompactMsgNamespaces()) {
+			super.endPrefixMapping(prefix);
 		}
 	}
 
@@ -101,9 +96,9 @@ public class CompactSaxHandler extends DefaultHandler {
 
 		printCharData(false);
 		if (isRemoveCompactMsgNamespaces()) {
-			messageBuilder.append("</").append(localName).append(">");
+			super.endElement(uri, localName, localName);
 		} else {
-			messageBuilder.append("</").append(qName).append(">");
+			super.endElement(uri, localName, qName);
 		}
 		elements.remove(lastIndex);
 	}
@@ -124,17 +119,9 @@ public class CompactSaxHandler extends DefaultHandler {
 		}
 	}
 
-	private void printCharData(boolean startElement) {
+	private void printCharData(boolean startElement) throws SAXException {
 		if (charDataBuilder.length() == 0) {
 			return;
-		}
-
-		String before = "";
-		String after = "";
-		if (chompLength >= 0 && charDataBuilder.length() > chompLength) {
-			before = "*** character data size [" + charDataBuilder.length() + "] exceeds [" + chompLength + "] and is chomped ***";
-			after = "...(" + (charDataBuilder.length() - chompLength) + " characters more)";
-			charDataBuilder.setLength(chompLength);
 		}
 
 		int lastIndex = elements.size() - 1;
@@ -150,11 +137,34 @@ public class CompactSaxHandler extends DefaultHandler {
 				&& (getElementToMove() != null && lastElement.equals(getElementToMove()) ||
 				(getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain())))) {
 
+			Message message = Message.asMessage(charDataBuilder.toString());
+			try {
+				message.preserve();
+			} catch (IOException e) {
+				throw new SAXException(e);
+			}
 			String elementToMoveSK = determineElementToMoveSessionKey(lastElement);
-			context.put(elementToMoveSK, before + charDataBuilder + after);
-			messageBuilder.append(VALUE_MOVE_START).append(elementToMoveSK).append(VALUE_MOVE_END);
+			context.put(elementToMoveSK, message);
+			super.characters(VALUE_MOVE_START, 0, VALUE_MOVE_START.length);
+			super.characters(elementToMoveSK.toCharArray(), 0, elementToMoveSK.length());
+			super.characters(VALUE_MOVE_END.toCharArray(), 0, 1);
 		} else {
-			messageBuilder.append(before).append(XmlEncodingUtils.encodeChars(charDataBuilder.toString())).append(after);
+			String before = "";
+			String after = "";
+			if (chompLength >= 0 && charDataBuilder.length() > chompLength) {
+				before = "*** character data size [" + charDataBuilder.length() + "] exceeds [" + chompLength + "] and is chomped ***";
+				after = "...(" + (charDataBuilder.length() - chompLength) + " characters more)";
+				charDataBuilder.setLength(chompLength);
+			}
+
+			if (StringUtils.isNotEmpty(before)) {
+				super.characters(before.toCharArray(), 0, before.length());
+			}
+			char[] encodedChars = XmlEncodingUtils.encodeChars(charDataBuilder.toString()).toCharArray();
+			super.characters(encodedChars, 0, encodedChars.length);
+			if (StringUtils.isNotEmpty(after)) {
+				super.characters(after.toCharArray(), 0, after.length());
+			}
 			state = MoveState.DEFAULT;
 		}
 
@@ -191,8 +201,9 @@ public class CompactSaxHandler extends DefaultHandler {
 		return chain;
 	}
 
-	public String getXmlString() {
-		return messageBuilder.toString();
+	@Override
+	public String toString() {
+		return getContentHandler().toString();
 	}
 
 	public void setChompCharSize(String input) {
