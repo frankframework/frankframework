@@ -51,11 +51,11 @@ public class CompactSaxHandler extends DefaultHandler {
 	private MoveState state = MoveState.DEFAULT;
 
 	private enum MoveState {
-		DEFAULT, SESSION_KEY_FOUND, STOPPED_REPLACING;
+		DEFAULT, SESSION_KEY_FOUND, STOPPED_REPLACING
 	}
 
 	@Override
-	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+	public void startElement(String uri, String localName, String qName, Attributes attributes) {
 		printCharData(true);
 		elements.add(localName);
 
@@ -109,15 +109,15 @@ public class CompactSaxHandler extends DefaultHandler {
 	}
 
 	@Override
-	public void characters(char[] ch, int start, int length) throws SAXException {
+	public void characters(char[] ch, int start, int length) {
+		int startLength = charDataBuilder.length();
 		charDataBuilder.append(ch, start, length);
 
-		if (state != MoveState.DEFAULT)
+		if (startLength != 0) {
 			return;
+		}
 
 		// Detection of MOVE_START element data
-		if (length < VALUE_MOVE_START.length)
-			return;
 		char[] startPart = Arrays.copyOfRange(ch, start, start + VALUE_MOVE_START.length);
 		if (Arrays.equals(startPart, VALUE_MOVE_START)) {
 			state = MoveState.SESSION_KEY_FOUND;
