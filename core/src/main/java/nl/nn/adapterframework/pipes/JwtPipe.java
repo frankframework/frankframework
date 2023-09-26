@@ -17,6 +17,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
@@ -48,8 +49,10 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
- * Creates a JWT
+ * Creates a JWT with a shared secret using the HmacSHA256 algorithm.
  *
+ * @ff.parameter {@value #SHARED_SECRET_PARAMETER_NAME} overrides attribute <code>sharedSecret</code>
+ * 
  * @author Niels Meijer
  * @since 7.9
  */
@@ -91,7 +94,7 @@ public class JwtPipe extends FixedForwardPipe {
 		Builder claimsSetBuilder = new JWTClaimsSet.Builder();
 
 		Map<String, Object> parameterMap = getParameterValueMap(message, session);
-		if(parameterMap != null) {
+		if(parameterMap.size() > 0) {
 			Object sharedKey = parameterMap.remove(SHARED_SECRET_PARAMETER_NAME);
 			parameterMap.forEach(claimsSetBuilder::claim);
 
@@ -121,7 +124,7 @@ public class JwtPipe extends FixedForwardPipe {
 		return globalSigner;
 	}
 
-	private Map<String, Object> getParameterValueMap(Message message, PipeLineSession session) throws PipeRunException {
+	private @Nonnull Map<String, Object> getParameterValueMap(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterList parameterList = getParameterList();
 		if(parameterList != null) {
 			ParameterValueList pvl;
@@ -132,7 +135,7 @@ public class JwtPipe extends FixedForwardPipe {
 			}
 			return pvl.getValueMap();
 		}
-		return null;
+		return Collections.emptyMap();
 	}
 
 	private @Nonnull String createAndSignJwtToken(@Nonnull JWSSigner signer, @Nonnull JWTClaimsSet claims) throws PipeRunException {
@@ -149,17 +152,17 @@ public class JwtPipe extends FixedForwardPipe {
 		return jwt;
 	}
 
-	/** Authentication alias used for the SharedSecret */
+	/** Alias for the SharedSecret to be used when signing the JWT (using the HmacSHA256 algorithm) */
 	public void setAuthAlias(String alias) {
 		this.sharedSecretAlias = alias;
 	}
-	/** Authentication alias used for authentication to the host */
+	/** Shared secret to be used when signing the JWT (using the HmacSHA256 algorithm) */
 	public void setSharedSecret(String sharedSecret) {
 		this.sharedSecret = sharedSecret;
 	}
 
 	/**
-	 * ExpirationTime in seconds, 0 to disable
+	 * JWT expirationTime in seconds, 0 to disable
 	 * @ff.default 600
 	 */
 	public void setExpirationTime(int expirationTime) {
