@@ -14,7 +14,7 @@ export class JmsBrowseQueueComponent implements OnInit {
     numberOfMessages = -1;
     processing = false;
     error = "";
-    connectionFactories = [];
+    connectionFactories: string[] = [];
 
     constructor(
         private apiService: ApiService,
@@ -26,7 +26,7 @@ export class JmsBrowseQueueComponent implements OnInit {
         if (browseJmsQueue) this.form = browseJmsQueue;
 
         this.apiService.Get("jms", (data) => {
-            $.extend(this, data);
+            this.connectionFactories = data["connectionFactories"];
             angular.element("select[name='type']").val(this.destinationTypes[0]);
         });
     };
@@ -44,7 +44,7 @@ export class JmsBrowseQueueComponent implements OnInit {
         if (!formData.type) formData.type = this.destinationTypes[0] || false;
 
         this.apiService.Post("jms/browse", JSON.stringify(formData), (data) => {
-            $.extend(this, data);
+            this.connectionFactories = data["connectionFactories"];
             if (!data.messages) this.messages = [];
             this.error = "";
             this.processing = false;

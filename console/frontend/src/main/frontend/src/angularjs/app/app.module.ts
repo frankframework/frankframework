@@ -52,6 +52,7 @@ export const appConstants: AppConstants = {
 export const appModule = angular.module('iaf.beheerconsole', [
   'ngCookies',                    // Angular Cookies
   'ui.router',                    // Routing
+  'ui.router.upgrade',
   'ui.bootstrap',                 // Ui Bootstrap
   'ngIdle',                       // Idle timer
   'ngSanitize',                   // ngSanitize

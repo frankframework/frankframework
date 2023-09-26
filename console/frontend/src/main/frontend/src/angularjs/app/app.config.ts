@@ -1,5 +1,6 @@
 import { AppConstants, appModule } from "./app.module";
 import { StateProvider, UrlRouterProvider } from "@uirouter/angularjs";
+import { UrlService } from '@uirouter/core';
 import { StateService, Trace } from "@uirouter/angularjs";
 import { DebugService } from "./services/debug.service";
 import { MiscService } from "./services/misc.service";
@@ -152,7 +153,6 @@ appModule.config(['$httpProvider', function ($httpProvider: angular.IHttpProvide
 					configuration: { value: '', squash: true },
 					adapter: { value: '', squash: true },
 					storageSourceName: { value: '', squash: true },
-					processState: { value: '', squash: true },
 					storageSource: { value: '', squash: true },
 				},
 				data: {
@@ -163,11 +163,15 @@ appModule.config(['$httpProvider', function ($httpProvider: angular.IHttpProvide
 			.state('pages.storage.list', {
 				url: "stores/:processState",
 				component: "storageList",
+        params: {
+          processState: { value: '', squash: true },
+        }
 			})
 			.state('pages.storage.view', {
 				url: "stores/:processState/messages/:messageId",
 				component: "storageView",
-				params: {
+        params: {
+          processState: { value: '', squash: true },
 					messageId: { value: '', squash: true },
 				},
 			})
@@ -469,7 +473,9 @@ appModule.config(['$httpProvider', function ($httpProvider: angular.IHttpProvide
 				component: "error",
 			});
 
-	}]).run(['$rootScope', '$state', 'Debug', '$trace', function ($rootScope: angular.IRootScopeService, $state: StateService, Debug: DebugService, $trace: Trace) {
+  }]).config(
+    ['$urlServiceProvider', ($urlService: UrlService) => $urlService.deferIntercept()]
+  ).run(['$rootScope', '$state', 'Debug', '$trace', function ($rootScope: angular.IRootScopeService, $state: StateService, Debug: DebugService, $trace: Trace) {
 		// Set this asap on localhost to capture all debug data
 		if (location.hostname == "localhost")
 			Debug.setLevel(3);

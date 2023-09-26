@@ -15,6 +15,7 @@ export class LiquibaseComponent implements OnInit {
     error = "";
     result = "";
     configurations: Configuration[] = [];
+    filteredConfigurations: Configuration[] = [];
 
     constructor(
         private apiService: ApiService,
@@ -25,8 +26,9 @@ export class LiquibaseComponent implements OnInit {
     ngOnInit(): void {
         let findFirstAvailabeConfiguration = () => {
             this.configurations = this.appService.configurations;
+            this.filteredConfigurations = this.configurations.filter((item) => item.jdbcMigrator === true);
 
-            for (let i in this.configurations) {
+            for (let i in this.filteredConfigurations) {
                 let configuration = this.configurations[i];
 
                 if (configuration.jdbcMigrator) {
@@ -58,7 +60,7 @@ export class LiquibaseComponent implements OnInit {
         this.apiService.Post("jdbc/liquibase", fd, (returnData) => {
             this.error = "";
             this.generateSql = false;
-            $.extend(this, returnData);
+            Object.assign(this, returnData);
         }, (errorData, status, errorMsg) => {
             this.generateSql = false;
             var error = (errorData) ? errorData.error : errorMsg;

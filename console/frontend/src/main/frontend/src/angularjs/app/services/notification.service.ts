@@ -1,5 +1,6 @@
 import * as Tinycon from 'tinycon';
 import { appModule } from "../app.module";
+import { Subject } from 'rxjs';
 
 type Notification = {
   icon: string,
@@ -11,8 +12,11 @@ type Notification = {
 }
 
 export class NotificationService {
+  private onCountUpdateSource = new Subject<void>();
+
   list: Notification[] = [];
   count: number = 0;
+  onCountUpdate$ = this.onCountUpdateSource.asObservable();
 
   constructor(private $rootScope: angular.IRootScopeService, private $timeout: angular.ITimeoutService){
     Tinycon.setOptions({
@@ -31,6 +35,7 @@ export class NotificationService {
     this.list.unshift(obj);
     obj.id = this.list.length;
     this.count++;
+    this.onCountUpdateSource.next();
 
     Tinycon.setBubble(this.count);
   }
@@ -55,6 +60,7 @@ export class NotificationService {
   resetCount(): void {
     Tinycon.setBubble(0);
     this.count = 0;
+    this.onCountUpdateSource.next();
   }
 
   getCount(): number {

@@ -1,5 +1,5 @@
 <div class="fit-height" style="margin: 0 -15px;" *ngIf="url.length > 0">
-    <iframe [src]="url" style="width:100%; height:100%; border:none; overflow:hidden;"></iframe>
+    <iframe [src]="iframeSrc" style="width:100%; height:100%; border:none; overflow:hidden;"></iframe>
 </div>
 
 <div class="row" *ngIf="redirectURL && redirectURL.length > 0">

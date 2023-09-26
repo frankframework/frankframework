@@ -10,7 +10,7 @@ export class JmsSendMessageComponent implements OnInit {
     destinationTypes = ["QUEUE", "TOPIC"];
     processing = false;
     file = null;
-    connectionFactories = [];
+    connectionFactories: string[] = [];
     error = "";
     form: Record<string, any> = {};
 
@@ -20,7 +20,7 @@ export class JmsSendMessageComponent implements OnInit {
 
     ngOnInit(): void {
         this.apiService.Get("jms", (data) => {
-            Object.assign(this, data);
+            this.connectionFactories = data["connectionFactories"];
             angular.element("select[name='type']").val(this.destinationTypes[0]);
         });
     };

@@ -1,6 +1,6 @@
 import * as angular from "angular";
 import { AppConstants, appModule } from "../../../app.module";
-import { StateService } from "angular-ui-router";
+import { StateService } from "@uirouter/angularjs";
 import { AppService } from "src/angularjs/app/app.service";
 import { ApiService } from "src/angularjs/app/services/api.service";
 

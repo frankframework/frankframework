@@ -51,6 +51,27 @@
               "src/angularjs/plugins/iCheck/icheck.min.js",
               "node_modules/datatables.net/js/jquery.dataTables.min.js",
               "node_modules/chart.js/dist/Chart.js"
+            ],
+            "allowedCommonJsDependencies": [
+              "angular",
+              "sweetalert2",
+              "angular-animate",
+              "angular-aria",
+              "angular-chart.js",
+              "angular-cookies",
+              "angular-datatables/dist/angular-datatables",
+              "angular-datatables/dist/plugins/buttons/angular-datatables.buttons",
+              "angular-ladda",
+              "angular-messages",
+              "angular-parse-ext",
+              "angular-resource",
+              "angular-route",
+              "angular-sanitize",
+              "angular-touch",
+              "angular-ui-bootstrap",
+              "angularjs-toaster",
+              "pace-js",
+              "prismjs"
             ]
           },
           "configurations": {

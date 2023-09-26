@@ -39,19 +39,19 @@
                         <div class="row form-group">
                             <label class="col-sm-5 col-md-3 control-label label-height-30">Number of messages only</label>
                             <div class="col-sm-7 col-md-9">
-                                <span class="form-control" style="border: none;"><input type="checkbox" [(ngModel)]="form['rowNumbersOnly']" /></span>
+                                <span class="form-control" style="border: none;"><input type="checkbox" name="rowNumbersOnly" [(ngModel)]="form['rowNumbersOnly']" /></span>
                             </div>
                         </div>
                         <div class="row form-group">
                             <label class="col-sm-5 col-md-3 control-label label-height-30">Show message payload</label>
                             <div class="col-sm-7 col-md-9">
-                                <span class="form-control" style="border: none;"><input type="checkbox" [(ngModel)]="form['payload']" /></span>
+                                <span class="form-control" style="border: none;"><input type="checkbox" name="payload" [(ngModel)]="form['payload']" /></span>
                             </div>
                         </div>
                         <div class="row form-group">
                             <label class="col-sm-5 col-md-3 control-label label-height-30">Lookup Destination</label>
                             <div class="col-sm-7 col-md-9">
-                                <span class="form-control" style="border: none;"><input type="checkbox" [(ngModel)]="form['lookupDestination']" /></span>
+                                <span class="form-control" style="border: none;"><input type="checkbox" name="lookupDestination" [(ngModel)]="form['lookupDestination']" /></span>
                             </div>
                         </div>
                         <div class="row form-group">
@@ -85,7 +85,7 @@
                         <tbody>
                             <tr *ngFor="let message of messages; let i = index">
                                 <td>{{ i + 1 }}</td>
-                                <td to-date>{{message['insertDate']}}</td>
+                                <!--TODO: <td to-date time="{{::message.insertDate}}"></td> --> 
                                 <td>{{message['id']}}</td>
                                 <td>{{message['correlationId']}}</td>
                                 <td *ngIf="message['text']">{{message['text']}}</td>

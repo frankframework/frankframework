@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { AppConstants } from 'src/angularjs/app/app.module';
 import { AppService } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
-import { APP_APPCONSTANTS } from 'src/app/app.module';
+import { APPCONSTANTS } from 'src/app/app.module';
 
 @Component({
   selector: 'app-ibisstore-summary',
@@ -17,9 +17,8 @@ export class IbisstoreSummaryComponent implements OnInit {
 
   constructor(
     private appService: AppService,
-    @Inject(APP_APPCONSTANTS) private appConstants: AppConstants,
+    @Inject(APPCONSTANTS) private appConstants: AppConstants,
     private apiService: ApiService,
-    private location: Location
   ) { };
 
   ngOnInit(): void {
@@ -32,10 +31,12 @@ export class IbisstoreSummaryComponent implements OnInit {
       this.form["datasource"] = (this.appConstants['jdbc.datasource.default'] != undefined) ? this.appConstants['jdbc.datasource.default'] : data.datasources[0];
     });
 
-    if (this.location.search() && this.location.search().datasource != null) {
-      var datasource = this.location.search().datasource;
-      this.fetch(datasource);
-    };
+    // TODO
+    // if (this.$location.search() && this.$location.search().datasource != null) {
+    //   var datasource = this.$location.search().datasource;
+    //   this.fetch(datasource);
+    // };
+    console.warn("Location search doesn't exist anymore, needs angular new router module to recreate functionality")
   }
 
   fetch(datasource: []) {
@@ -53,12 +54,12 @@ export class IbisstoreSummaryComponent implements OnInit {
     if (!formData) formData = {};
 
     if (!formData.datasource) formData.datasource = this.datasources[0] || false;
-    this.location.search('datasource', formData.datasource);
+    // TODO this.$location.search('datasource', formData.datasource);
     this.fetch(formData.datasource);
   };
 
   reset() {
-    this.location.search('datasource', null);
+    // TODO this.$location.search('datasource', null);
     this.result = "";
     this.error = "";
   };

@@ -11,6 +11,9 @@ import { PollerService } from "src/angularjs/app/services/poller.service";
 import { SessionService } from "src/angularjs/app/services/session.service";
 import { SweetAlertService } from "src/angularjs/app/services/sweetalert.service";
 import { ToastrService } from "src/angularjs/app/services/toastr.service";
+import { appConstants } from "src/angularjs/app/app.module";
+import { FactoryProvider, ValueProvider } from "@angular/core";
+import { APPCONSTANTS } from "./app.module";
 
 export function alertServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('Alert');
@@ -64,79 +67,83 @@ export function toastrServiceFactory($injector: angular.auto.IInjectorService) {
   return $injector.get('Toastr');
 }
 
-export const alertServiceProvider = {
+export function appConstantsFactory($injector: angular.auto.IInjectorService) {
+  return $injector.get('appConstants');
+}
+
+export const alertServiceProvider: FactoryProvider = {
   provide: AlertService,
   useFactory: alertServiceFactory,
   deps: ['$injector']
 };
 
-export const apiServiceProvider = {
+export const apiServiceProvider: FactoryProvider = {
   provide: ApiService,
   useFactory: apiServiceFactory,
   deps: ['$injector']
 };
 
-export const authServiceProvider = {
+export const authServiceProvider: FactoryProvider = {
   provide: AuthService,
   useFactory: authServiceFactory,
   deps: ['$injector']
 };
 
-export const base64ServiceProvider = {
+export const base64ServiceProvider: FactoryProvider = {
   provide: Base64Service,
   useFactory: base64ServiceFactory,
   deps: ['$injector']
 };
 
-export const cookiesServiceProvider = {
+export const cookiesServiceProvider: FactoryProvider = {
   provide: CookiesService,
   useFactory: cookiesServiceFactory,
   deps: ['$injector']
 };
 
-export const debugServiceProvider = {
+export const debugServiceProvider: FactoryProvider = {
   provide: DebugService,
   useFactory: debugServiceFactory,
   deps: ['$injector']
 };
 
-export const gdprServiceProvider = {
+export const gdprServiceProvider: FactoryProvider = {
   provide: GDPRService,
   useFactory: gdprServiceFactory,
   deps: ['$injector']
 };
 
-export const miscServiceProvider = {
+export const miscServiceProvider: FactoryProvider = {
   provide: MiscService,
   useFactory: miscServiceFactory,
   deps: ['$injector']
 };
 
-export const notificationServiceProvider = {
+export const notificationServiceProvider: FactoryProvider = {
   provide: NotificationService,
   useFactory: notificationServiceFactory,
   deps: ['$injector']
 };
 
-export const pollerServiceProvider = {
+export const pollerServiceProvider: FactoryProvider = {
   provide: PollerService,
   useFactory: pollerServiceFactory,
   deps: ['$injector']
 };
 
-export const sessionServiceProvider = {
+export const sessionServiceProvider: FactoryProvider = {
   provide: SessionService,
   useFactory: sessionServiceFactory,
   deps: ['$injector']
 };
 
-export const sweetalertServiceProvider = {
+export const sweetalertServiceProvider: FactoryProvider = {
   provide: SweetAlertService,
   useFactory: sweetalertServiceFactory,
   deps: ['$injector']
 };
 
-export const toastrServiceProvider = {
+export const toastrServiceProvider: FactoryProvider = {
   provide: ToastrService,
   useFactory: toastrServiceFactory,
   deps: ['$injector']

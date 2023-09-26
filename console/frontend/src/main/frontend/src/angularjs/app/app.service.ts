@@ -5,6 +5,7 @@ import { Subject } from "rxjs";
 export type RunState = 'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED';
 export type RunStateRuntime = RunState | 'loading'
 export type MessageLevel = 'INFO' | 'WARN' | 'ERROR';
+export type AdapterStatus = 'started' | 'warning' | 'stopped';
 
 export type Receiver = {
   isEsbJmsFFListener: boolean,
@@ -22,6 +23,9 @@ export type Receiver = {
     received: number
   },
   state: Lowercase<RunStateRuntime>,
+  threadCount?: number,
+  maxThreadCount?: number,
+  threadCountControllable?: true
 }
 
 type Message = {
@@ -57,10 +61,16 @@ export type Adapter = {
   messages?: AdapterMessage[],
   pipes?: Pipe[],
   hasSender?: boolean,
-  status?: 'started' | 'warning' | 'stopped',
+  status?: AdapterStatus,
   sendersMessageLogCount?: number,
   senderTransactionalStorageMessageCount?: number,
   receiverReachedMaxExceptions?: boolean
+  lastMessage?: number,
+  messagesInProcess?: number,
+  messagesProcessed?: number,
+  messagesInError?: number,
+  messageLogMessageCount?: number,
+  errorStoreMessageCount?: number,
 }
 
 export type Configuration = {
@@ -84,13 +94,7 @@ export type MessageLog = {
   messageLevel: MessageLevel,
 }
 
-export type Summary = {
-  started: number,
-  stopped: number,
-  starting: number,
-  stopping: number,
-  error: number
-}
+export type Summary = Record<Lowercase<RunState>, number>;
 
 export type MessageSummary = {
   info: number,
@@ -137,6 +141,8 @@ export class AppService {
     stopped: 0,
     starting: 0,
     stopping: 0,
+    exception_starting: 0,
+    exception_stopping: 0,
     error: 0
   };
   receiverSummary: Summary = {
@@ -144,6 +150,8 @@ export class AppService {
     stopped: 0,
     starting: 0,
     stopping: 0,
+    exception_starting: 0,
+    exception_stopping: 0,
     error: 0
   };
   messageSummary: MessageSummary = {
@@ -308,6 +316,13 @@ export class AppService {
       default:
         return "danger";
     }
+  }
+
+  getUserLocale() {
+    if (window.navigator.languages) {
+      return window.navigator.languages[0];
+    }
+    return window.navigator.language;
   }
 }
 
