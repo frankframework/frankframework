@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,6 +33,11 @@ public class NoOpAuthenticator extends ServletAuthenticatorBase {
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 		http.anonymous().authorities(getAuthorities());
 		return http.build();
+	}
+
+	@Override
+	protected boolean authorizationRequestMatcher(HttpServletRequest request) {
+		return false;
 	}
 
 	private List<GrantedAuthority> getAuthorities() {
