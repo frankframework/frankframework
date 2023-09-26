@@ -63,8 +63,7 @@ import {
   toastrServiceProvider
 } from './ajs-upgraded-services';
 
-import { AppConstants, appConstants, appModule } from '../angularjs/app/app.module';
-import { LiquibaseComponent } from './views/liquibase/liquibase.component';
+import { AppConstants, appConstants, appModule } from '../angularjs/app/app.module'; import { LiquibaseComponent } from './views/liquibase/liquibase.component';
 import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
 import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
 import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
@@ -74,129 +73,131 @@ import { FlowComponent } from './views/status/flow/flow.component';
 import { StorageComponent } from './views/storage/storage.component';
 import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
 import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
-import { SecurityItemsComponent } from './views/security-items/security-items.component';
+import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
+// import { SecurityItemsComponent } from './views/security-items/security-items.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
 const appConstantsProvider: ValueProvider = {
-    provide: APPCONSTANTS,
-    useValue: appConstants
+  provide: APPCONSTANTS,
+  useValue: appConstants
 }
 const windowProvider: ValueProvider = {
-    provide: Window,
-    useValue: window
+  provide: Window,
+  useValue: window
 }
 
 appModule
-    .directive('environmentVariables', downgradeComponent({ component: EnvironmentVariablesComponent }) as angular.IDirectiveFactory)
-    .directive('flow', downgradeComponent({ component: FlowComponent }) as angular.IDirectiveFactory)
-    .directive('hamburger', downgradeComponent({ component: HamburgerComponent }) as angular.IDirectiveFactory)
-    .directive('ibisStoreSummary', downgradeComponent({ component: IbisstoreSummaryComponent }) as angular.IDirectiveFactory)
-    .directive('inlineStore', downgradeComponent({ component: InlinestoreComponent }) as angular.IDirectiveFactory)
-    .directive('iframeCustomView', downgradeComponent({ component: IframeCustomViewComponent }) as angular.IDirectiveFactory)
-    .directive('iframeLadybug', downgradeComponent({ component: IframeLadybugComponent }) as angular.IDirectiveFactory)
-    .directive('iframeLadybugBeta', downgradeComponent({ component: IframeLadybugBetaComponent }) as angular.IDirectiveFactory)
-    .directive('iframeLarva', downgradeComponent({ component: IframeLarvaComponent }) as angular.IDirectiveFactory)
-    .directive('inlinestore', downgradeComponent({ component: InlinestoreComponent }) as angular.IDirectiveFactory)
-    .directive('inputFileUpload', downgradeComponent({ component: InputFileUploadComponent }) as angular.IDirectiveFactory)
-    .directive('jdbcBrowseTables', downgradeComponent({ component: JdbcBrowseTablesComponent }) as angular.IDirectiveFactory)
-    .directive('jdbcExecuteQuery', downgradeComponent({ component: JdbcExecuteQueryComponent }) as angular.IDirectiveFactory)
-    .directive('jmsBrowseQueue', downgradeComponent({ component: JmsBrowseQueueComponent }) as angular.IDirectiveFactory)
-    .directive('jmsSendMessage', downgradeComponent({ component: JmsSendMessageComponent }) as angular.IDirectiveFactory)
-    .directive('liquibase', downgradeComponent({ component: LiquibaseComponent }) as angular.IDirectiveFactory)
-    .directive('logout', downgradeComponent({ component: LogoutComponent }) as angular.IDirectiveFactory)
-    .directive('minimalizaSidebar', downgradeComponent({ component: MinimalizaSidebarComponent }) as angular.IDirectiveFactory)
-    .directive('pagesFooter', downgradeComponent({ component: PagesFooterComponent }) as angular.IDirectiveFactory)
-    .directive('pagesNavigation', downgradeComponent({ component: PagesNavigationComponent }) as angular.IDirectiveFactory)
-    .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
-    .directive('pagesTopnavbar', downgradeComponent({ component: PagesTopnavbarComponent }) as angular.IDirectiveFactory)
-    .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory)
-    .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
-    .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory);
+  .directive('environmentVariables', downgradeComponent({ component: EnvironmentVariablesComponent }) as angular.IDirectiveFactory)
+  .directive('flow', downgradeComponent({ component: FlowComponent }) as angular.IDirectiveFactory)
+  .directive('hamburger', downgradeComponent({ component: HamburgerComponent }) as angular.IDirectiveFactory)
+  .directive('ibisstoreSummary', downgradeComponent({ component: IbisstoreSummaryComponent }) as angular.IDirectiveFactory)
+  .directive('inlineStore', downgradeComponent({ component: InlinestoreComponent }) as angular.IDirectiveFactory)
+  .directive('iframeCustomView', downgradeComponent({ component: IframeCustomViewComponent }) as angular.IDirectiveFactory)
+  .directive('iframeLadybug', downgradeComponent({ component: IframeLadybugComponent }) as angular.IDirectiveFactory)
+  .directive('iframeLadybugBeta', downgradeComponent({ component: IframeLadybugBetaComponent }) as angular.IDirectiveFactory)
+  .directive('iframeLarva', downgradeComponent({ component: IframeLarvaComponent }) as angular.IDirectiveFactory)
+  .directive('inputFileUpload', downgradeComponent({ component: InputFileUploadComponent }) as angular.IDirectiveFactory)
+  .directive('jdbcBrowseTables', downgradeComponent({ component: JdbcBrowseTablesComponent }) as angular.IDirectiveFactory)
+  .directive('jdbcExecuteQuery', downgradeComponent({ component: JdbcExecuteQueryComponent }) as angular.IDirectiveFactory)
+  .directive('jmsBrowseQueue', downgradeComponent({ component: JmsBrowseQueueComponent }) as angular.IDirectiveFactory)
+  .directive('jmsSendMessage', downgradeComponent({ component: JmsSendMessageComponent }) as angular.IDirectiveFactory)
+  .directive('liquibase', downgradeComponent({ component: LiquibaseComponent }) as angular.IDirectiveFactory)
+  .directive('logout', downgradeComponent({ component: LogoutComponent }) as angular.IDirectiveFactory)
+  .directive('minimalizaSidebar', downgradeComponent({ component: MinimalizaSidebarComponent }) as angular.IDirectiveFactory)
+  .directive('pagesFooter', downgradeComponent({ component: PagesFooterComponent }) as angular.IDirectiveFactory)
+  .directive('pagesNavigation', downgradeComponent({ component: PagesNavigationComponent }) as angular.IDirectiveFactory)
+  .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
+  .directive('pagesTopnavbar', downgradeComponent({ component: PagesTopnavbarComponent }) as angular.IDirectiveFactory)
+  .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory)
+  // .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
+  .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory);
+
 
 @NgModule({
-    declarations: [
-        CustomViewsComponent,
-        EnvironmentVariablesComponent,
-        HamburgerComponent,
-        IbisstoreSummaryComponent,
-        IframeCustomViewComponent,
-        IframeLadybugComponent,
-        IframeLadybugBetaComponent,
-        IframeLarvaComponent,
-        InlinestoreComponent,
-        InputFileUploadComponent,
-        JdbcBrowseTablesComponent,
-        JdbcExecuteQueryComponent,
-        JmsBrowseQueueComponent,
-        JmsSendMessageComponent,
-        LiquibaseComponent,
-        LogoutComponent,
-        MinimalizaSidebarComponent,
-        PagesFooterComponent,
-        PagesNavigationComponent,
-        PagesTopinfobarComponent,
-        PagesTopnavbarComponent,
-        ScrollToTopComponent,
-        StatusComponent,
+  declarations: [
+    CustomViewsComponent,
+    EnvironmentVariablesComponent,
+    FlowComponent,
+    HamburgerComponent,
+    IbisstoreSummaryComponent,
+    IframeCustomViewComponent,
+    IframeLadybugComponent,
+    IframeLadybugBetaComponent,
+    IframeLarvaComponent,
+    InlinestoreComponent,
+    InputFileUploadComponent,
+    JdbcBrowseTablesComponent,
+    JdbcExecuteQueryComponent,
+    JmsBrowseQueueComponent,
+    JmsSendMessageComponent,
+    LiquibaseComponent,
+    LogoutComponent,
+    MinimalizaSidebarComponent,
+    PagesFooterComponent,
+    PagesNavigationComponent,
+    PagesTopinfobarComponent,
+    PagesTopnavbarComponent,
+    ScrollToTopComponent,
+    StatusComponent,
+    StorageComponent,
+    StorageListComponent,
+    StorageViewComponent,
+    // SecurityItemsComponent,
 
-        // pipes
-        OrderByPipe,
-        ConfigurationFilterPipe,
-        SearchFilterPipe,
-        TruncatePipe,
-        VariablesFilterPipe,
+    // pipes
+    ConfigurationFilterPipe,
+    DropLastCharPipe,
+    OrderByPipe,
+    SearchFilterPipe,
+    TruncatePipe,
+    VariablesFilterPipe,
 
-        // directives
-        ToDateDirective,
-        TimeSinceDirective,
-        FlowComponent,
-        StorageComponent,
-        StorageListComponent,
-        StorageViewComponent,
-        SecurityItemsComponent
-    ],
-    imports: [
-        BrowserModule,
-        FormsModule,
-        HttpClientModule,
-        LaddaModule,
-        NgbModule,
-        UpgradeModule,
-        AppRoutingModule,
-        UIRouterUpgradeModule.forRoot(),
-        NgIdleModule.forRoot(),
-    ],
-    providers: [
-        alertServiceProvider,
-        apiServiceProvider,
-        appConstantsProvider,
-        authServiceProvider,
-        base64ServiceProvider,
-        cookiesServiceProvider,
-        debugServiceProvider,
-        gdprServiceProvider,
-        miscServiceProvider,
-        notificationServiceProvider,
-        pollerServiceProvider,
-        sessionServiceProvider,
-        sweetalertServiceProvider,
-        toastrServiceProvider,
-        windowProvider,
+    // directives
+    ToDateDirective,
+    TimeSinceDirective,
+  ],
+  imports: [
+      BrowserModule,
+      FormsModule,
+      HttpClientModule,
+      LaddaModule,
+      NgbModule,
+      UpgradeModule,
+      AppRoutingModule,
+      UIRouterUpgradeModule.forRoot(),
+      NgIdleModule.forRoot(),
+  ],
+  providers: [
+    alertServiceProvider,
+    apiServiceProvider,
+    appConstantsProvider,
+    authServiceProvider,
+    base64ServiceProvider,
+    cookiesServiceProvider,
+    debugServiceProvider,
+    gdprServiceProvider,
+    miscServiceProvider,
+    notificationServiceProvider,
+    pollerServiceProvider,
+    sessionServiceProvider,
+    sweetalertServiceProvider,
+    toastrServiceProvider,
+    windowProvider,
 
-        // deps
-        $stateServiceProvider,
+    // deps
+    $stateServiceProvider,
 
-        // scoped services
-        appServiceProvider,
-        sidebarServiceProvider,
-    ]
+    // scoped services
+    appServiceProvider,
+    sidebarServiceProvider,
+  ]
 })
 
 export class AppModule implements DoBootstrap {
-    constructor(private upgrade: UpgradeModule) { }
-    ngDoBootstrap() {
-        this.upgrade.bootstrap(document.documentElement, ['iaf.beheerconsole']);
-        // this.upgrade.bootstrap(document.body, ['iaf.beheerconsole'], { strictDi: true });
-    }
+  constructor(private upgrade: UpgradeModule) { }
+  ngDoBootstrap() {
+    this.upgrade.bootstrap(document.documentElement, ['iaf.beheerconsole']);
+    // this.upgrade.bootstrap(document.body, ['iaf.beheerconsole'], { strictDi: true });
+  }
 }
