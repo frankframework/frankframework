@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.HttpConstraintElement;
+import javax.servlet.HttpMethodConstraintElement;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
@@ -39,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.Environment;
 
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.servlets.AuthenticationType;
@@ -86,6 +88,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	private Map<String, ServletConfiguration> servlets = new HashMap<>();
 	private Map<String, IAuthenticator> authenticators = new HashMap<>();
 	private @Setter ApplicationContext applicationContext;
+	private boolean allowUnsecureOptionsRequest = false;
 
 	protected ServletContext getServletContext() {
 		return servletContext;
@@ -100,7 +103,9 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 	@Override // After initialization but before other servlets are wired
 	public void afterPropertiesSet() throws Exception {
-		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
+		Environment env = applicationContext.getEnvironment();
+		SecuritySettings.setupDefaultSecuritySettings(env);
+		allowUnsecureOptionsRequest = env.getProperty(ServletAuthenticatorBase.ALLOW_OPTIONS_REQUESTS_KEY, boolean.class, false);
 
 		addDefaultAuthenticator(AuthenticationType.CONTAINER);
 		addDefaultAuthenticator(AuthenticationType.NONE);
@@ -241,7 +246,11 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		}
 		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(config.getTransportGuarantee(), roles);
 
-		return new ServletSecurityElement(httpConstraintElement);
+		List<HttpMethodConstraintElement> methodConstraints = new ArrayList<>();
+		if(allowUnsecureOptionsRequest) {
+			methodConstraints.add(new HttpMethodConstraintElement("OPTIONS"));
+		}
+		return new ServletSecurityElement(httpConstraintElement, methodConstraints);
 	}
 
 	private void log(String msg, Level level) {
