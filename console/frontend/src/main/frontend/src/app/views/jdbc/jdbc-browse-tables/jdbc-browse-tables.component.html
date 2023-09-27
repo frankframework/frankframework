@@ -2,96 +2,96 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content animated fadeInRight">
-    <div class="alert alert-warning" role="alert" type="warning" *ngIf="error">
-        <span class="ng-binding ng-scope" [innerHTML]="error"></span>
-    </div>
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="ibox float-e-margins">
-                <div class="ibox-title">
-                    <h4>Browse a JDBC Table</h4>
-                </div>
-                <div class="ibox-content">
-                    <form role="form">
-                        <div class="row form-group">
-                            <label class="col-sm-3 control-label label-height-30">Datasource</label>
-                            <div class="col-sm-9">
-                                <select class="form-control" name="datasource" [(ngModel)]="form['datasource']">
-                                    <option *ngFor="let datasource of datasources">{{datasource}}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row form-group">
-                            <label class="col-sm-3 control-label label-height-30">Table name</label>
-                            <div class="col-sm-9">
-                                <input class="form-control" name="table" type="text" [(ngModel)]="form['table']" />
-                            </div>
-                        </div>
-                        <div class="row form-group">
-                            <label class="col-sm-3 control-label label-height-30">Where</label>
-                            <div class="col-sm-9">
-                                <input class="form-control" name="where" type="text" [(ngModel)]="form['where']" />
-                            </div>
-                        </div>
-                        <div class="row form-group">
-                            <label class="col-sm-3 control-label label-height-30">Order by</label>
-                            <div class="col-sm-9">
-                                <input class="form-control" name="order" type="text" [(ngModel)]="form['order']" />
-                            </div>
-                        </div>
-                        <div class="row form-group">
-                            <label class="col-sm-3 control-label label-height-30">Number of rows only</label>
-                            <div class="col-sm-9">
-                                <span class="form-control" style="border: none;"><input icheck type="checkbox" name="numberOfRowsOnly" [(ngModel)]="form['numberOfRowsOnly']" /></span>
-                            </div>
-                        </div>
-                        <div class="row form-group">
-                            <label class="col-sm-3 control-label label-height-30">Rownum min</label>
-                            <div class="col-sm-9">
-                                <input class="form-control" name="minrow" type="number" [(ngModel)]="form['minRow']" />
-                            </div>
-                        </div>
-                        <div class="row form-group">
-                            <label class="col-sm-3 control-label label-height-30">Rownum max</label>
-                            <div class="col-sm-9">
-                                <input class="form-control" name="maxrow" type="number" [(ngModel)]="form['maxRow']" />
-                            </div>
-                        </div>
-                        <div class="row form-group">
-                            <div class="col-sm-3 m-t-md">
-                                <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
-                            </div>
-                            <div class="col-sm-3 m-t-md">
-                                <button [ladda]="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit(form)">Send</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+  <div class="alert alert-warning" role="alert" type="warning" *ngIf="error">
+    <span class="ng-binding ng-scope" [innerHTML]="error"></span>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins">
+        <div class="ibox-title">
+          <h4>Browse a JDBC Table</h4>
         </div>
-        <div class="col-lg-12" *ngIf="query">
-            <div class="ibox float-e-margins">
-                <div class="ibox-title">
-                    <h4>Result</h4>
-                </div>
-                <div class="ibox-content">
-                    {{query}}
-                </div>
-                <div class="ibox-content">
-                    <table class="table jdbcBrowse">
-                        <thead>
-                            <tr>
-                                <th *ngFor="let columnName of columnNames | orderby:'id'" [title]="columnName.desc">{{ columnName.name }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr *ngFor="let row of result">
-                                <td *ngFor="let column of row; let rowIndex = index">{{ column }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+        <div class="ibox-content">
+          <form role="form">
+            <div class="row form-group">
+              <label class="col-sm-3 control-label label-height-30">Datasource</label>
+              <div class="col-sm-9">
+                <select class="form-control" name="datasource" [(ngModel)]="form['datasource']">
+                  <option *ngFor="let datasource of datasources">{{datasource}}</option>
+                </select>
+              </div>
             </div>
+            <div class="row form-group">
+              <label class="col-sm-3 control-label label-height-30">Table name</label>
+              <div class="col-sm-9">
+                <input class="form-control" name="table" type="text" [(ngModel)]="form['table']" />
+              </div>
+            </div>
+            <div class="row form-group">
+              <label class="col-sm-3 control-label label-height-30">Where</label>
+              <div class="col-sm-9">
+                <input class="form-control" name="where" type="text" [(ngModel)]="form['where']" />
+              </div>
+            </div>
+            <div class="row form-group">
+              <label class="col-sm-3 control-label label-height-30">Order by</label>
+              <div class="col-sm-9">
+                <input class="form-control" name="order" type="text" [(ngModel)]="form['order']" />
+              </div>
+            </div>
+            <div class="row form-group">
+              <label class="col-sm-3 control-label label-height-30">Number of rows only</label>
+              <div class="col-sm-9">
+                <span class="form-control" style="border: none;"><input icheck type="checkbox" name="numberOfRowsOnly" [(ngModel)]="form['numberOfRowsOnly']" /></span>
+              </div>
+            </div>
+            <div class="row form-group">
+              <label class="col-sm-3 control-label label-height-30">Rownum min</label>
+              <div class="col-sm-9">
+                <input class="form-control" name="minrow" type="number" [(ngModel)]="form['minRow']" />
+              </div>
+            </div>
+            <div class="row form-group">
+              <label class="col-sm-3 control-label label-height-30">Rownum max</label>
+              <div class="col-sm-9">
+                <input class="form-control" name="maxrow" type="number" [(ngModel)]="form['maxRow']" />
+              </div>
+            </div>
+            <div class="row form-group">
+              <div class="col-sm-3 m-t-md">
+                <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
+              </div>
+              <div class="col-sm-3 m-t-md">
+                <button [ladda]="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit(form)">Send</button>
+              </div>
+            </div>
+          </form>
         </div>
+      </div>
     </div>
+    <div class="col-lg-12" *ngIf="query">
+      <div class="ibox float-e-margins">
+        <div class="ibox-title">
+          <h4>Result</h4>
+        </div>
+        <div class="ibox-content">
+          {{query}}
+        </div>
+        <div class="ibox-content">
+          <table class="table jdbcBrowse">
+            <thead>
+              <tr>
+                <th *ngFor="let columnName of columnNames | orderby:'id'" [title]="columnName['desc']">{{ columnName['name'] }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of result">
+                <td *ngFor="let column of row; let rowIndex = index">{{ column }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
