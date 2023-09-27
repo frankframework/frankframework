@@ -46,7 +46,16 @@ export type Pipe = {
   isJdbcSender: boolean,
   hasMessageLog?: boolean,
   messageLogCount?: 'error' | string,
-  isSenderTransactionalStorage?: boolean
+  isSenderTransactionalStorage?: boolean,
+  certificate?: Certificate
+}
+
+export type File = {
+  name: string
+}
+
+export type Certificate = {
+  name: string
 }
 
 export type Adapter = {
@@ -105,7 +114,7 @@ export type MessageSummary = {
 export class AppService {
   constructor(
     private $state: StateService
-  ){}
+  ) { }
 
   private loadingSubject = new Subject<boolean>();
   private appConstantsSubject = new Subject<void>();
@@ -167,25 +176,25 @@ export class AppService {
     this.loadingSubject.next(loading);
   }
 
-  triggerAppConstants(){
+  triggerAppConstants() {
     this.appConstantsSubject.next();
   }
 
-  triggerGDPR(){
+  triggerGDPR() {
     this.GDPRSubject.next();
   }
 
-	updateAdapters(adapters: Record<string, Adapter>) {
+  updateAdapters(adapters: Record<string, Adapter>) {
     this.adapters = adapters;
     this.adaptersSubject.next(adapters);
   }
 
-	updateAlerts(alerts: Alert[]) {
+  updateAlerts(alerts: Alert[]) {
     this.alerts = alerts;
     this.alertsSubject.next(alerts);
   }
 
-	startupError: string | null = null;
+  startupError: string | null = null;
   updateStartupError(startupError: string) {
     this.startupError = startupError;
     this.startupErrorSubject.next(startupError);
@@ -205,31 +214,31 @@ export class AppService {
     this.configurationsSubject.next(updatedConfigurations);
   }
 
-	messageLog: Record<string, MessageLog> = {};
+  messageLog: Record<string, MessageLog> = {};
   updateMessageLog(messageLog: Record<string, MessageLog>) {
     this.messageLog = messageLog;
     this.messageLogSubject.next(messageLog);
   }
 
-	instanceName = "";
-	updateInstanceName(instanceName: string) {
+  instanceName = "";
+  updateInstanceName(instanceName: string) {
     this.instanceName = instanceName;
     this.instanceNameSubject.next(instanceName);
   }
 
-	dtapStage = "";
+  dtapStage = "";
   updateDtapStage(dtapStage: string) {
     this.dtapStage = dtapStage;
     this.dtapStageSubject.next(dtapStage);
   }
 
-	databaseSchedulesEnabled = false;
-	updateDatabaseSchedulesEnabled(databaseSchedulesEnabled: boolean) {
+  databaseSchedulesEnabled = false;
+  updateDatabaseSchedulesEnabled(databaseSchedulesEnabled: boolean) {
     this.databaseSchedulesEnabled = databaseSchedulesEnabled;
     this.databaseSchedulesEnabledSubject.next(databaseSchedulesEnabled);
   }
 
-	updateAdapterSummary(configurationName?: string) {
+  updateAdapterSummary(configurationName?: string) {
     var updated = (new Date().getTime());
     if (updated - 3000 < this.lastUpdated && !configurationName) { //3 seconds
       clearTimeout(this.timeout);
@@ -327,5 +336,5 @@ export class AppService {
 }
 
 appModule.factory('appService', ['$state', function ($state: StateService) {
-	return new AppService($state);
+  return new AppService($state);
 }]);

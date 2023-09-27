@@ -1,5 +1,20 @@
 import { Component, OnInit } from '@angular/core';
+import { File } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
+
+interface Form {
+    destination: string
+    replyTo: string
+    message: string
+    persistent: boolean
+    propertyValue: string
+    propertyKey: string
+    type: string
+    connectionFactory: string
+    synchronous: boolean
+    lookupDestination: boolean
+    encoding: string
+}
 
 @Component({
     selector: 'app-jms-send-message',
@@ -7,12 +22,26 @@ import { ApiService } from 'src/angularjs/app/services/api.service';
     styleUrls: ['./jms-send-message.component.scss']
 })
 export class JmsSendMessageComponent implements OnInit {
-    destinationTypes = ["QUEUE", "TOPIC"];
-    processing = false;
-    file = null;
+    destinationTypes: string[] = ["QUEUE", "TOPIC"];
+    processing: boolean = false;
+    file: File = {
+        name: ""
+    };
     connectionFactories: string[] = [];
-    error = "";
-    form: Record<string, any> = {};
+    error: string = "";
+    form: Form = {
+        destination: "",
+        replyTo: "",
+        message: "",
+        persistent: false,
+        propertyValue: "",
+        propertyKey: "",
+        type: "",
+        connectionFactory: "",
+        synchronous: false,
+        lookupDestination: false,
+        encoding: ""
+    };
 
     constructor(
         private apiService: ApiService
@@ -25,7 +54,7 @@ export class JmsSendMessageComponent implements OnInit {
         });
     };
 
-    submit(formData: any) {
+    submit(formData: Form) {
         this.processing = true;
         if (!formData) return;
 
@@ -42,12 +71,12 @@ export class JmsSendMessageComponent implements OnInit {
             fd.append("type", this.destinationTypes[0]);
         if (formData.replyTo && formData.replyTo != "")
             fd.append("replyTo", formData.replyTo);
-        if (formData.persistent && formData.persistent != "")
-            fd.append("persistent", formData.persistent);
-        if (formData.synchronous && formData.synchronous != "")
-            fd.append("synchronous", formData.synchronous);
-        if (formData.lookupDestination && formData.lookupDestination != "")
-            fd.append("lookupDestination", formData.lookupDestination);
+        if (formData.persistent)
+            fd.append("persistent", formData.persistent.toString());
+        if (formData.synchronous)
+            fd.append("synchronous", formData.synchronous.toString());
+        if (formData.lookupDestination)
+            fd.append("lookupDestination", formData.lookupDestination.toString());
 
         if (formData.propertyKey && formData.propertyKey != "" && formData.propertyValue && formData.propertyValue != "")
             fd.append("property", formData.propertyKey + "," + formData.propertyValue);
@@ -56,7 +85,7 @@ export class JmsSendMessageComponent implements OnInit {
             fd.append("message", new Blob([formData.message], { type: "text/plain" + encoding }), 'message');
         }
         if (this.file)
-            fd.append("file", this.file, this.file['name']);
+            fd.append("file", this.file as any, this.file['name']);
         if (formData.encoding && formData.encoding != "")
             fd.append("encoding", formData.encoding);
 
@@ -86,7 +115,7 @@ export class JmsSendMessageComponent implements OnInit {
         if (this.form["message"])
             this.form["message"] = "";
         if (this.form["persistent"])
-            this.form["persistent"] = "";
+            this.form["persistent"] = false;
         if (this.form["propertyValue"])
             this.form["propertyValue"] = "";
         if (this.form["propertyKey"])

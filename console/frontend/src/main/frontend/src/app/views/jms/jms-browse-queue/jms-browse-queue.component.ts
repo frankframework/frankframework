@@ -2,18 +2,40 @@ import { Component, OnInit } from '@angular/core';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { CookiesService } from 'src/angularjs/app/services/cookies.service';
 
+interface Form {
+    destination: string
+    connectionFactory: string
+    type: string
+    rowNumbersOnly: boolean
+    payload: boolean
+    lookupDestination: boolean
+}
+
+interface Message {
+    id: string
+    correlationId: string
+    text: string
+}
+
 @Component({
     selector: 'app-jms-browse-queue',
     templateUrl: './jms-browse-queue.component.html',
     styleUrls: ['./jms-browse-queue.component.scss']
 })
 export class JmsBrowseQueueComponent implements OnInit {
-    destinationTypes = ["QUEUE", "TOPIC"];
-    form: Record<string, any> = {};
-    messages = [];
-    numberOfMessages = -1;
-    processing = false;
-    error = "";
+    destinationTypes: string[] = ["QUEUE", "TOPIC"];
+    form: Form = {
+        destination: "",
+        connectionFactory: "",
+        type: "",
+        rowNumbersOnly: false,
+        payload: false,
+        lookupDestination: false
+    };
+    messages: Message[] = [];
+    numberOfMessages: number = -1;
+    processing: boolean = false;
+    error: string = "";
     connectionFactories: string[] = [];
 
     constructor(
@@ -31,7 +53,7 @@ export class JmsBrowseQueueComponent implements OnInit {
         });
     };
 
-    submit(formData: any) {
+    submit(formData: Form) {
         this.processing = true;
 
         if (!formData || !formData.destination) {
@@ -40,8 +62,8 @@ export class JmsBrowseQueueComponent implements OnInit {
         };
 
         this.cookiesService.set("browseJmsQueue", formData);
-        if (!formData.connectionFactory) formData.connectionFactory = this.connectionFactories[0] || false;
-        if (!formData.type) formData.type = this.destinationTypes[0] || false;
+        if (!formData.connectionFactory) formData.connectionFactory = this.connectionFactories[0] || "";
+        if (!formData.type) formData.type = this.destinationTypes[0] || "";
 
         this.apiService.Post("jms/browse", JSON.stringify(formData), (data) => {
             this.connectionFactories = data["connectionFactories"];
@@ -59,9 +81,9 @@ export class JmsBrowseQueueComponent implements OnInit {
         this.error = "";
         if (!this.form) return;
         if (this.form["destination"]) this.form["destination"] = "";
-        if (this.form["rowNumbersOnly"]) this.form["rowNumbersOnly"] = "";
-        if (this.form["payload"]) this.form["payload"] = "";
-        if (this.form["lookupDestination"]) this.form["lookupDestination"] = "";
+        if (this.form["rowNumbersOnly"]) this.form["rowNumbersOnly"] = false;
+        if (this.form["payload"]) this.form["payload"] = false;
+        if (this.form["lookupDestination"]) this.form["lookupDestination"] = false;
         if (this.form["type"]) this.form["type"] = this.destinationTypes[0];
 
         this.messages = [];

@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { AppConstants } from 'src/angularjs/app/app.module';
-import { AppService } from 'src/angularjs/app/app.service';
+import { AppService, Configuration } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { APPCONSTANTS } from 'src/app/app.module';
 
@@ -15,13 +15,12 @@ interface keyValProperty {
     styleUrls: ['./environment-variables.component.scss']
 })
 export class EnvironmentVariablesComponent implements OnInit {
-    variables = {};
-    searchFilter = "";
-    selectedConfiguration = null;
+    searchFilter: string = "";
+    selectedConfiguration: string = "";
     configProperties: keyValProperty[] = [];
     environmentProperties: keyValProperty[] = [];
     systemProperties: keyValProperty[] = [];
-    configurations: any[] = [];
+    configurations: Configuration[] = [];
 
     constructor(
         private appService: AppService,
@@ -58,7 +57,7 @@ export class EnvironmentVariablesComponent implements OnInit {
         });
     };
 
-    changeConfiguration(name: any) {
+    changeConfiguration(name: string) {
         this.selectedConfiguration = name;
         this.configProperties = this.appConstants[name];
     };

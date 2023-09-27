@@ -8,7 +8,7 @@ import { MiscService } from 'src/angularjs/app/services/misc.service';
   styleUrls: ['./iframe-larva.component.scss']
 })
 export class IframeLarvaComponent implements OnInit {
-  url = "";
+  url: string = "";
   iframeSrc?: SafeResourceUrl;
   redirectURL?: string;
 

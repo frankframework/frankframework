@@ -1,7 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { AppService, Configuration } from 'src/angularjs/app/app.service';
+import { AppService, Configuration, File } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { MiscService } from 'src/angularjs/app/services/misc.service';
+
+interface Form {
+    configuration: string
+}
 
 @Component({
     selector: 'app-liquibase',
@@ -9,11 +13,15 @@ import { MiscService } from 'src/angularjs/app/services/misc.service';
     styleUrls: ['./liquibase.component.scss']
 })
 export class LiquibaseComponent implements OnInit {
-    form: Record<string, any> = {};
-    file = null;
-    generateSql = false;
-    error = "";
-    result = "";
+    form: Form = {
+        configuration: ""
+    };
+    file: File = {
+        name: ""
+    };
+    generateSql: boolean = false;
+    error: string = "";
+    result: string = "";
     configurations: Configuration[] = [];
     filteredConfigurations: Configuration[] = [];
 
@@ -46,13 +54,13 @@ export class LiquibaseComponent implements OnInit {
         window.open(this.miscService.getServerPath() + "iaf/api/jdbc/liquibase/");
     };
 
-    submit(formData: any) {
-        if (!formData) formData = {};
+    submit(formData: Form) {
+        if (!formData) formData = { configuration: "" };
         var fd = new FormData();
         this.generateSql = true;
 
         if (this.file != null) {
-            fd.append("file", this.file);
+            fd.append("file", this.file as any);
         };
 
         fd.append("configuration", formData.configuration);

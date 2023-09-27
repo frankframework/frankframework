@@ -48,18 +48,18 @@
                         <div class="row form-group">
                             <label class="col-sm-3 control-label label-height-30">Rownum min</label>
                             <div class="col-sm-9">
-                                <input class="form-control" name="minrow" type="text" [(ngModel)]="form['minRow']" />
+                                <input class="form-control" name="minrow" type="number" [(ngModel)]="form['minRow']" />
                             </div>
                         </div>
                         <div class="row form-group">
                             <label class="col-sm-3 control-label label-height-30">Rownum max</label>
                             <div class="col-sm-9">
-                                <input class="form-control" name="maxrow" type="text" [(ngModel)]="form['maxRow']" />
+                                <input class="form-control" name="maxrow" type="number" [(ngModel)]="form['maxRow']" />
                             </div>
                         </div>
                         <div class="row form-group">
                             <div class="col-sm-3 m-t-md">
-                                <button class="btn btn-info btn-w-m font-bold" type="button" ng-click="$ctrl.reset()">Reset</button>
+                                <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
                             </div>
                             <div class="col-sm-3 m-t-md">
                                 <button [ladda]="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit(form)">Send</button>

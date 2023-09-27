@@ -8,7 +8,7 @@ import { MiscService } from 'src/angularjs/app/services/misc.service';
   styleUrls: ['./iframe-ladybug-beta.component.scss']
 })
 export class IframeLadybugBetaComponent implements OnInit {
-  url = "";
+  url: string = "";
   iframeSrc?: SafeResourceUrl;
   redirectURL?: string;
 

@@ -14,9 +14,9 @@ interface stateItemItem {
   styleUrls: ['./inlinestore.component.scss'],
 })
 export class InlinestoreComponent implements OnInit {
-  result: { [key: string]: { items: stateItemItem[], totalMessageCount: number } } = {};
-  getProcessStateIcon?: (processState: string) => "fa-server" | "fa-gears" | "fa-sign-in" | "fa-pause-circle" | "fa-times-circle";
-  getProcessStateIconColor?: (processState: string) => "success" | "warning" | "danger";
+  result: Record<string, { items: stateItemItem[], totalMessageCount: number }> = {};
+  getProcessStateIcon = (processState: string) => this.appService.getProcessStateIcon(processState);
+  getProcessStateIconColor = (processState: string) => this.appService.getProcessStateIconColor(processState)
 
   constructor(
     private apiService: ApiService,
@@ -27,8 +27,5 @@ export class InlinestoreComponent implements OnInit {
     this.apiService.Get("inlinestores/overview", (data) => {
       this.result = data;
     });
-
-    this.getProcessStateIcon = this.appService["getProcessStateIcon"];
-    this.getProcessStateIconColor = this.appService["getProcessStateIconColor"];
   };
 }
