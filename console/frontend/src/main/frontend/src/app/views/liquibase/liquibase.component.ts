@@ -16,7 +16,7 @@ export class LiquibaseComponent implements OnInit {
     form: Form = {
         configuration: ""
     };
-    file: File = {
+    file: File | null = {
         name: ""
     };
     generateSql: boolean = false;
