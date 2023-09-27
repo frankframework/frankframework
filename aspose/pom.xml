@@ -23,6 +23,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Explicit dependency to mitigate CVE-2022-3171 -->
