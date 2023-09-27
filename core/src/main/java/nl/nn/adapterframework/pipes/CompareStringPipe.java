@@ -35,7 +35,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Pipe that compares lexicographically two strings.
+ * Pipe that lexicographically compares two strings, that must NOT be empty.
  *
  * @ff.parameter operand1 The first operand, holds v1. Defaults to input message
  * @ff.parameter operand2 The second operand, holds v2. Defaults to input message

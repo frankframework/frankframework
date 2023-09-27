@@ -94,14 +94,10 @@ public class JwtPipe extends FixedForwardPipe {
 		Builder claimsSetBuilder = new JWTClaimsSet.Builder();
 
 		Map<String, Object> parameterMap = getParameterValueMap(message, session);
-		if(parameterMap.size() > 0) {
-			Object sharedKey = parameterMap.remove(SHARED_SECRET_PARAMETER_NAME);
-			parameterMap.forEach(claimsSetBuilder::claim);
+		Object sharedKey = parameterMap.remove(SHARED_SECRET_PARAMETER_NAME); //Remove the SharedKey, else it will be added as a JWT Claim
+		parameterMap.forEach(claimsSetBuilder::claim);
 
-			signer = getSigner(sharedKey);
-		} else {
-			signer = globalSigner;
-		}
+		signer = getSigner(sharedKey);
 
 		if(expirationTime > 0) {
 			Date expirationDate = Date.from(Instant.now().plusSeconds(expirationTime));
