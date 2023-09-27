@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -116,6 +117,20 @@ class CompactSaxHandlerTest {
 	}
 
 	@Test
+	void testElementToMoveFeatureOnNestedElement() throws IOException, SAXException {
+		// Arrange
+		handler.setChompLength(32);
+		handler.setElementToMove("edcLk01");
+
+		// Act
+		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
+
+		// Assert
+		assertEquals(Objects.requireNonNull(defaultInputMessage.asString()).trim(), handler.toString());
+		assertNull(session.getString("edcLk01"));
+	}
+
+	@Test
 	void testElementChompSizeTooLong() throws IOException, SAXException {
 		// Arrange
 		handler.setChompLength(8);
@@ -175,7 +190,7 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		assertEquals(expectedOutput, handler.toString());
-		assertEquals(101_541, session.getString("ref_message").length());
+		assertEquals(101_541, Objects.requireNonNull(session.getString("ref_message")).length());
 	}
 
 	@Test

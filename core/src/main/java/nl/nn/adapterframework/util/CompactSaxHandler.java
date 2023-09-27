@@ -17,11 +17,9 @@ package nl.nn.adapterframework.util;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -38,7 +36,7 @@ import nl.nn.adapterframework.xml.NamespaceRemovingAttributesWrapper;
  * @author Peter Leeuwenburgh
  */
 public class CompactSaxHandler extends FullXmlFilter {
-	private static final char[] VALUE_MOVE_START = "{sessionKey:".toCharArray();
+	private static final String VALUE_MOVE_START = "{sessionKey:";
 	private static final String VALUE_MOVE_END = "}";
 
 	@Getter @Setter private int chompLength = -1;
@@ -50,11 +48,7 @@ public class CompactSaxHandler extends FullXmlFilter {
 	private final StringBuilder charDataBuilder = new StringBuilder();
 	private final List<String> elements = new ArrayList<>();
 	@Setter private Map<String, Object> context = null;
-	private MoveState state = MoveState.DEFAULT;
-
-	private enum MoveState {
-		DEFAULT, SESSION_KEY_FOUND, STOPPED_REPLACING
-	}
+	private boolean moveElementFound = false;
 
 	public CompactSaxHandler(ContentHandler handler) {
 		super(handler);
@@ -64,6 +58,9 @@ public class CompactSaxHandler extends FullXmlFilter {
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		printCharData(true);
 		elements.add(localName);
+
+		moveElementFound = getElementToMove() != null && localName.equals(getElementToMove()) ||
+				(getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain()));
 
 		if (isRemoveCompactMsgNamespaces()) {
 			super.startElement(uri, localName, localName, new NamespaceRemovingAttributesWrapper(attributes));
@@ -105,18 +102,7 @@ public class CompactSaxHandler extends FullXmlFilter {
 
 	@Override
 	public void characters(char[] ch, int start, int length) {
-		int startLength = charDataBuilder.length();
 		charDataBuilder.append(ch, start, length);
-
-		if (startLength != 0) {
-			return;
-		}
-
-		// Detection of MOVE_START element data
-		char[] startPart = Arrays.copyOfRange(ch, start, start + VALUE_MOVE_START.length);
-		if (Arrays.equals(startPart, VALUE_MOVE_START)) {
-			state = MoveState.SESSION_KEY_FOUND;
-		}
 	}
 
 	private void printCharData(boolean startElement) throws SAXException {
@@ -124,48 +110,45 @@ public class CompactSaxHandler extends FullXmlFilter {
 			return;
 		}
 
-		int lastIndex = elements.size() - 1;
-		String lastElement = elements.get(lastIndex);
-
-		// Detection of MOVE_END token, while in sessionKeyFound state
+		// Detection of MOVE_START and MOVE_END session key fragments, on end-Element phase
 		int length = charDataBuilder.length();
-		if (state == MoveState.SESSION_KEY_FOUND && charDataBuilder.substring(length - 1, length).equals(VALUE_MOVE_END)) {
-			state = MoveState.STOPPED_REPLACING;
+		if (!startElement
+				&& length > VALUE_MOVE_START.length()
+				&& charDataBuilder.substring(length - 1, length).equals(VALUE_MOVE_END)
+				&& charDataBuilder.substring(0, VALUE_MOVE_START.length()).equals(VALUE_MOVE_START)) {
+			moveElementFound = false;
 		}
 
-		if (context != null && !startElement && state != MoveState.STOPPED_REPLACING
-				&& (getElementToMove() != null && lastElement.equals(getElementToMove()) ||
-				(getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain())))) {
-
+		if (context != null && !startElement && moveElementFound) {
 			Message message = Message.asMessage(charDataBuilder.toString());
 			try {
 				message.preserve();
 			} catch (IOException e) {
 				throw new SAXException(e);
 			}
+
+			int lastIndex = elements.size() - 1;
+			String lastElement = elements.get(lastIndex);
 			String elementToMoveSK = determineElementToMoveSessionKey(lastElement);
 			context.put(elementToMoveSK, message);
-			super.characters(VALUE_MOVE_START, 0, VALUE_MOVE_START.length);
+
+			super.characters(VALUE_MOVE_START.toCharArray(), 0, VALUE_MOVE_START.length());
 			super.characters(elementToMoveSK.toCharArray(), 0, elementToMoveSK.length());
 			super.characters(VALUE_MOVE_END.toCharArray(), 0, 1);
+			moveElementFound = false;
 		} else {
-			String before = "";
-			String after = "";
+			String after = null;
 			if (chompLength >= 0 && charDataBuilder.length() > chompLength) {
-				before = "*** character data size [" + charDataBuilder.length() + "] exceeds [" + chompLength + "] and is chomped ***";
+				String before = "*** character data size [" + charDataBuilder.length() + "] exceeds [" + chompLength + "] and is chomped ***";
 				after = "...(" + (charDataBuilder.length() - chompLength) + " characters more)";
 				charDataBuilder.setLength(chompLength);
-			}
-
-			if (StringUtils.isNotEmpty(before)) {
 				super.characters(before.toCharArray(), 0, before.length());
 			}
 			char[] encodedChars = XmlEncodingUtils.encodeChars(charDataBuilder.toString()).toCharArray();
 			super.characters(encodedChars, 0, encodedChars.length);
-			if (StringUtils.isNotEmpty(after)) {
+			if (after != null) {
 				super.characters(after.toCharArray(), 0, after.length());
 			}
-			state = MoveState.DEFAULT;
 		}
 
 		charDataBuilder.setLength(0);
