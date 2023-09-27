@@ -21,6 +21,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -111,13 +113,13 @@ public class ParameterList extends ArrayList<Parameter> {
 		return false;
 	}
 
-	public ParameterValueList getValues(Message message, PipeLineSession session) throws ParameterException {
+	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session) throws ParameterException {
 		return getValues(message, session, true);
 	}
 	/**
 	 * Returns a List of <link>ParameterValue<link> objects
 	 */
-	public ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		if(inputValueRequiredForResolution && message!=null) {
 			try {
 				message.preserve();
