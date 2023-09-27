@@ -90,14 +90,11 @@ public class JwtPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		final JWSSigner signer;
 		Builder claimsSetBuilder = new JWTClaimsSet.Builder();
 
 		Map<String, Object> parameterMap = getParameterValueMap(message, session);
 		Object sharedKey = parameterMap.remove(SHARED_SECRET_PARAMETER_NAME); //Remove the SharedKey, else it will be added as a JWT Claim
 		parameterMap.forEach(claimsSetBuilder::claim);
-
-		signer = getSigner(sharedKey);
 
 		if(expirationTime > 0) {
 			Date expirationDate = Date.from(Instant.now().plusSeconds(expirationTime));
@@ -105,10 +102,14 @@ public class JwtPipe extends FixedForwardPipe {
 		}
 		claimsSetBuilder.issueTime(Date.from(Instant.now()));
 
+		final JWSSigner signer = getSigner(sharedKey);
 		String jwtToken = createAndSignJwtToken(signer, claimsSetBuilder.build());
 		return new PipeRunResult(getSuccessForward(), Message.asMessage(jwtToken));
 	}
 
+	/**
+	 * Get Signer based on the SharedKey parameter if it exists, else use the Global signer.
+	 */
 	private JWSSigner getSigner(Object sharedKey) throws PipeRunException {
 		if(Objects.nonNull(sharedKey)) {
 			try {
