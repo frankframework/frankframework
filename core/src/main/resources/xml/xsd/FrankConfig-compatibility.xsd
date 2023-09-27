@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8.1">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8.2">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -1715,6 +1715,16 @@
     <xs:attribute name="proxyPort" type="frankInt">
       <xs:annotation>
         <xs:documentation>setting proxy port</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxConnections" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>maximum concurrent connections towards S3 Default: 50</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="serviceEndpoint" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>name of the region that the client will be created from</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6251,7 +6261,7 @@
     </xs:attribute>
     <xs:attribute name="updateEtag" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Automatically generate and validate etags Default: &lt;code&gt;true&lt;/code&gt; for repeatable responses</xs:documentation>
+        <xs:documentation>Automatically generate and validate etags Default: &lt;code&gt;false&lt;/code&gt;, can be changed by setting the property &lt;code&gt;api.etag.enabled&lt;/code&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="authenticationMethod">
@@ -14002,9 +14012,11 @@
         <xs:union memberTypes="DirectionAttributeValuesType_6 variableRef" />
       </xs:simpleType>
     </xs:attribute>
+    <xs:attribute name="version" type="xs:string" />
     <xs:attribute name="addXmlRootElement" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When true, and direction is json2xml, it wraps a root element around the converted message Default: true</xs:documentation>
+        <xs:documentation>When direction is JSON2XML, it wraps a root element around the converted message. 
+ When direction is XML2JSON, it includes the name of the root element as a key in the converted message. Default: TRUE when JSON2XML and FALSE when XML2JSON</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -16441,7 +16453,7 @@
     <xs:attribute name="receiverName" type="xs:string" />
     <xs:attribute name="message" type="xs:string">
       <xs:annotation>
-        <xs:documentation>message to be send into the pipeline</xs:documentation>
+        <xs:documentation>message to be sent into the pipeline</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
