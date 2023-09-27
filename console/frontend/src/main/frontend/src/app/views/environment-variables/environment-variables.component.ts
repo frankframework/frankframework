@@ -29,7 +29,7 @@ export class EnvironmentVariablesComponent implements OnInit {
     ) { };
 
     ngOnInit() {
-        function convertPropertiesToArray(propertyList: any) {
+        function convertPropertiesToArray(propertyList: keyValProperty[]) {
             var tmp = new Array();
             for (var variableName in propertyList) {
                 tmp.push({
