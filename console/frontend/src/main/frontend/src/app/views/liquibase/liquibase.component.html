@@ -30,7 +30,7 @@
                         <div class="row form-group">
                             <label class="col-sm-3 control-label label-height-30">Upload Changeset</label>
                             <div class="col-sm-5">
-                                <!-- TODO: <input-file-upload [file]="file" (onUpdateFile)="updateFile($event)" accept=".zip,.xml" title="changelog file(s) to be translated into SQL script can be single xml file or a zip file with multiple xml files." /> -->
+                              <app-input-file-upload (onUpdateFile)="file = $event" accept=".zip,.xml" title="changelog file(s) to be translated into SQL script can be single xml file or a zip file with multiple xml files." />
                             </div>
                         </div>
                         <div class="row form-group">

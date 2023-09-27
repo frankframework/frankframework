@@ -74,6 +74,7 @@ import { StorageComponent } from './views/storage/storage.component';
 import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
 import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
 import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
+import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
@@ -156,6 +157,7 @@ appModule
     // directives
     ToDateDirective,
     TimeSinceDirective,
+    QuickSubmitFormDirective,
   ],
   imports: [
       BrowserModule,
