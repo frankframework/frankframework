@@ -64,13 +64,15 @@
                 <tr>
                   <th>Receiver</th>
                   <th># Threads Processing</th>
-                  <th *ngFor="let name of statisticsTimeBoundaries" ng-if="$index > 0">{{name}}</th>
+                  <ng-template ngFor let-boundary [ngForOf]="statisticsTimeBoundaries | keyvalue" let-$index="index">
+                    <th *ngIf="$index > 0">{{boundary.key}}</th>
+                  </ng-template>
                 </tr>
               </thead>
               <tbody *ngFor="let receiver of stats?.receivers">
                 <tr *ngFor="let threadsProcessing of receiver.processing">
                   <td>{{receiver.name}}</td>
-                  <td *ngFor="let values in threadsProcessing | formatStatistics:statisticsTimeBoundaries">{{values}}</td>
+                  <td *ngFor="let thread of threadsProcessing | formatStatistics:statisticsTimeBoundaries | keyvalue">{{thread.value}}</td>
                 </tr>
               </tbody>
             </table>
@@ -80,12 +82,12 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th *ngFor="let name of statisticsTimeBoundaries">{{name}}</th>
+                  <th *ngFor="let boundary of statisticsTimeBoundaries | keyvalue">{{boundary.key}}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let pipe of stats?.durationPerPipe">
-                  <td *ngFor="let values of pipe | formatStatistics:statisticsTimeBoundaries">{{values}}</td>
+                  <td *ngFor="let pipeKV of pipe | formatStatistics:statisticsTimeBoundaries | keyvalue">{{pipeKV.value}}</td>
                 </tr>
               </tbody>
             </table>
@@ -95,12 +97,12 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th *ngFor="let name of statisticsSizeBoundaries">{{name}}</th>
+                  <th *ngFor="let boundary of statisticsSizeBoundaries | keyvalue">{{boundary.key}}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr *ngFor="let pipe of stats?.sizePerPipe">
-                  <td *ngFor="let values of pipe | formatStatistics:statisticsSizeBoundaries">{{values}}</td>
+                  <td *ngFor="let pipeKV of pipe | formatStatistics:statisticsSizeBoundaries | keyvalue">{{pipeKV.value}}</td>
                 </tr>
               </tbody>
             </table>

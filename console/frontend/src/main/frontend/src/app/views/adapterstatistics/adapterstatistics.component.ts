@@ -8,7 +8,7 @@ import { MiscService } from 'src/angularjs/app/services/misc.service';
 import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
 import { APPCONSTANTS } from 'src/app/app.module';
 
-type StatisticDetails = {
+type StatisticsKeeper = {
   name: string,
   count: number,
   min: number | null,
@@ -18,6 +18,9 @@ type StatisticDetails = {
   sum: number | null,
   first: number | null,
   last: number | null,
+}
+
+type StatisticDetails = StatisticsKeeper & {
   "p50": number | null,
   "p90": number | null,
   "p95": number | null,
@@ -45,7 +48,7 @@ type Statistics = {
     messagesReceived: number,
     messagesRetried: number,
     name: string,
-    processing: unknown[]
+    processing: StatisticsKeeper[]
   }[],
   durationPerPipe: StatisticDetailsTime[],
   hourly: {

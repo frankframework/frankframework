@@ -6,6 +6,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { $stateServiceProvider } from './ajs-deps-services';
 import { UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
 import { NgIdleModule } from '@ng-idle/core';
+import { NgChartsModule } from 'ng2-charts';
 
 import { AppRoutingModule } from './app-routing.module';
 
@@ -69,6 +70,7 @@ import { StorageComponent } from './views/storage/storage.component';
 import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
 import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
 import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
+import { FormatStatisticsPipe } from './views/adapterstatistics/format-statistics.pipe';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -138,7 +140,8 @@ appModule
     StorageComponent,
     StorageListComponent,
     StorageViewComponent,
-    AdapterstatisticsComponent
+    AdapterstatisticsComponent,
+    FormatStatisticsPipe
   ],
   imports: [
     BrowserModule,
@@ -150,6 +153,7 @@ appModule
     AppRoutingModule,
     UIRouterUpgradeModule.forRoot(),
     NgIdleModule.forRoot(),
+    NgChartsModule.forRoot()
   ],
   providers: [
     alertServiceProvider,
