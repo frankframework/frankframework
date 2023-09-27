@@ -83,7 +83,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("pipe", pipe.getName())) {
 			if (pe!=null) {
 				if (StringUtils.isNotEmpty(pe.getGetInputFromSessionKey())) {
-					if (log.isDebugEnabled()) log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with contents of sessionKey [{}]", owner.getName(), pe.getName(), pe.getGetInputFromSessionKey());
+					log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with contents of sessionKey [{}]", owner::getName, pe::getName, pe::getGetInputFromSessionKey);
 					message.closeOnCloseOf(pipeLineSession, owner);
 					if (!pipeLineSession.containsKey(pe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pe.getEmptyInputReplacement())) {
 						throw new PipeRunException(pe, "getInputFromSessionKey ["+pe.getGetInputFromSessionKey()+"] is not present in session");
@@ -91,13 +91,13 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 					message=Message.asMessage(pipeLineSession.get(pe.getGetInputFromSessionKey()));
 				}
 				if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
-					if (log.isDebugEnabled()) log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with fixed value [{}]", owner.getName(), pe.getName(), pe.getGetInputFromFixedValue());
+					log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with fixed value [{}]", owner::getName, pe::getName, pe::getGetInputFromFixedValue);
 					message.closeOnCloseOf(pipeLineSession, owner);
 					message = Message.asMessage(pe.getGetInputFromFixedValue());
 				}
 
 				if (Message.isEmpty(message) && StringUtils.isNotEmpty(pe.getEmptyInputReplacement())) {
-					if (log.isDebugEnabled()) log.debug("Pipeline of adapter [{}] replacing empty input for pipe [{}] with fixed value [{}]", owner.getName(), pe.getName(), pe.getEmptyInputReplacement());
+					log.debug("Pipeline of adapter [{}] replacing empty input for pipe [{}] with fixed value [{}]", owner::getName, pe::getName, pe::getEmptyInputReplacement);
 					message = Message.asMessage(pe.getEmptyInputReplacement());
 				}
 			}
@@ -119,7 +119,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 
 			if (pe !=null) {
 				if (pe.isRestoreMovedElements()) {
-					if (log.isDebugEnabled()) log.debug("Pipeline of adapter [{}] restoring from compacted result for pipe [{}]", owner.getName(), pe.getName());
+					log.debug("Pipeline of adapter [{}] restoring from compacted result for pipe [{}]", owner::getName, pe::getName);
 					Message result = pipeRunResult.getResult();
 					if (!result.isEmpty()) {
 						try {
@@ -132,7 +132,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				}
 
 				if (pe.getChompCharSize() != null || pe.getElementToMove() != null || pe.getElementToMoveChain() != null) {
-					log.debug("Pipeline of adapter [{}] compact received message", owner.getName());
+					log.debug("Pipeline of adapter [{}] compact received message", owner::getName);
 					Message result = pipeRunResult.getResult();
 					if (result!=null && !result.isEmpty()) {
 						try {
@@ -163,7 +163,7 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 				}
 
 				if (StringUtils.isNotEmpty(pe.getStoreResultInSessionKey())) {
-					if (log.isDebugEnabled()) log.debug("Pipeline of adapter [{}] storing result for pipe [{}] under sessionKey [{}]", owner.getName(), pe.getName(), pe.getStoreResultInSessionKey());
+					log.debug("Pipeline of adapter [{}] storing result for pipe [{}] under sessionKey [{}]", owner::getName, pe::getName, pe::getStoreResultInSessionKey);
 					Message result = pipeRunResult.getResult();
 					pipeLineSession.put(pe.getStoreResultInSessionKey(),result);
 					if (!pe.isPreserveInput() && !result.isRepeatable()) {

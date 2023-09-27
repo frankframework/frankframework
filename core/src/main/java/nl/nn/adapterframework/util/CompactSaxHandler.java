@@ -59,7 +59,8 @@ public class CompactSaxHandler extends FullXmlFilter {
 		printCharData(true);
 		elements.add(localName);
 
-		moveElementFound = getElementToMove() != null && localName.equals(getElementToMove()) ||
+		moveElementFound = context != null &&
+				(getElementToMove() != null && localName.equals(getElementToMove())) ||
 				(getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain()));
 
 		if (isRemoveCompactMsgNamespaces()) {
@@ -110,16 +111,16 @@ public class CompactSaxHandler extends FullXmlFilter {
 			return;
 		}
 
-		// Detection of MOVE_START and MOVE_END session key fragments, on end-Element phase
+		// Detection Moving elements; only when not already moved session key is found
 		int length = charDataBuilder.length();
-		if (!startElement
-				&& length > VALUE_MOVE_START.length()
+		moveElementFound = moveElementFound
+				&& context != null
+				&& !startElement
+				&& !(length > VALUE_MOVE_START.length()
 				&& charDataBuilder.substring(length - 1, length).equals(VALUE_MOVE_END)
-				&& charDataBuilder.substring(0, VALUE_MOVE_START.length()).equals(VALUE_MOVE_START)) {
-			moveElementFound = false;
-		}
+				&& charDataBuilder.substring(0, VALUE_MOVE_START.length()).equals(VALUE_MOVE_START));
 
-		if (context != null && !startElement && moveElementFound) {
+		if (moveElementFound) {
 			Message message = Message.asMessage(charDataBuilder.toString());
 			try {
 				message.preserve();
@@ -184,8 +185,7 @@ public class CompactSaxHandler extends FullXmlFilter {
 		return chain;
 	}
 
-	@Override
-	public String toString() {
+	public String getXmlString() {
 		return getContentHandler().toString();
 	}
 

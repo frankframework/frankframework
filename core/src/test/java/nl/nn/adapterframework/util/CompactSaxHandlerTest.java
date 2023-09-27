@@ -69,7 +69,7 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output.xml");
-		assertEquals(testOutputFile, handler.toString());
+		assertEquals(testOutputFile, xmlWriter.toString());
 	}
 
 	@Test
@@ -81,7 +81,7 @@ class CompactSaxHandlerTest {
 		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
 
 		// Assert
-		assertEquals(Objects.requireNonNull(defaultInputMessage.asString()).trim(), handler.toString());
+		assertEquals(Objects.requireNonNull(defaultInputMessage.asString()).trim(), xmlWriter.toString());
 	}
 
 	@Test
@@ -95,7 +95,7 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-moved.xml");
-		assertEquals(testOutputFile, handler.toString());
+		assertEquals(testOutputFile, xmlWriter.toString());
 		assertEquals("T", session.getString("ref_mutatiesoort"));
 	}
 
@@ -111,7 +111,7 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-moved2.xml");
-		assertEquals(testOutputFile, handler.toString());
+		assertEquals(testOutputFile, xmlWriter.toString());
 		assertEquals("DC2023-00020", session.getString("sessionKey"));
 		assertEquals("DC2022-012345", session.getString("sessionKey2"));
 	}
@@ -126,7 +126,7 @@ class CompactSaxHandlerTest {
 		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
 
 		// Assert
-		assertEquals(Objects.requireNonNull(defaultInputMessage.asString()).trim(), handler.toString());
+		assertEquals(Objects.requireNonNull(defaultInputMessage.asString()).trim(), xmlWriter.toString());
 		assertNull(session.getString("edcLk01"));
 	}
 
@@ -141,7 +141,7 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chompsize.xml");
-		assertEquals(testOutputFile, handler.toString());
+		assertEquals(testOutputFile, handler.getXmlString());
 	}
 
 	@Test
@@ -156,7 +156,7 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest.xml");
-		assertEquals(testOutputFile, handler.toString());
+		assertEquals(testOutputFile, handler.getXmlString());
 		assertEquals("DC2023-00020", session.getString("ref_identificatie"));
 		assertEquals("DC2022-012345", session.getString("ref_identificatie2"));
 
@@ -169,7 +169,7 @@ class CompactSaxHandlerTest {
 		XmlUtils.parseXml(testOutputFile, handler);
 
 		// Assert 2: everything should be still the same
-		assertEquals(testOutputFile, handler.toString());
+		assertEquals(testOutputFile, xmlWriter.toString());
 		assertEquals("DC2023-00020", session.getString("ref_identificatie"));
 		assertEquals("DC2022-012345", session.getString("ref_identificatie2"));
 	}
@@ -189,7 +189,7 @@ class CompactSaxHandlerTest {
 		XmlUtils.parseXml(bigInputMessage.asInputSource(), handler);
 
 		// Assert
-		assertEquals(expectedOutput, handler.toString());
+		assertEquals(expectedOutput, handler.getXmlString());
 		assertEquals(101_541, Objects.requireNonNull(session.getString("ref_message")).length());
 	}
 
@@ -205,7 +205,7 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest2.xml");
-		assertEquals(testOutputFile, handler.toString());
+		assertEquals(testOutputFile, handler.getXmlString());
 		assertEquals("DC2023-00020", session.getString("ref_identificatie"));
 		assertEquals("DC2022-012345", session.getString("ref_identificatie2"));
 	}
@@ -230,7 +230,8 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-moved2.xml");
-		assertEquals(testOutputFile, handler.toString());
+		assertEquals(testOutputFile, handler.getXmlString());
+		assertEquals(2, session.size());
 	}
 
 }
