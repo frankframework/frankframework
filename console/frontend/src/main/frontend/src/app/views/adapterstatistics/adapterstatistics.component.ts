@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { StateParams } from '@uirouter/angularjs';
+import type { ChartData, ChartType } from 'chart.js';
 import { AppConstants } from 'src/angularjs/app/app.module';
 import { AppService } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
@@ -69,9 +70,13 @@ export class AdapterstatisticsComponent implements OnInit {
   adapterName = this.$stateParams['name'];
   configuration = this.$stateParams['configuration'];
   refreshing = false;
-  hourlyStatistics: { labels: Statistics["hourly"][0]["time"][]; data: Statistics["hourly"][0]["count"][] } = {
+  hourlyStatistics: /* {
+    labels: Statistics["hourly"][0]["time"][];
+    data: Statistics["hourly"][0]["count"][]
+    // data: ChartData[];
+  } */ ChartData<'line', Statistics["hourly"][0]["count"][], Statistics["hourly"][0]["time"][]> = {
     labels: [],
-    data: [],
+    datasets: [],
   };
   stats?: Statistics;
   statisticsTimeBoundaries: Record<string, string> = { ...this.defaults };
@@ -149,8 +154,11 @@ export class AdapterstatisticsComponent implements OnInit {
         labels.push(a["time"]);
         chartData.push(a["count"]);
       }
-      this.hourlyStatistics.labels = labels;
-      this.hourlyStatistics.data = chartData;
+      this.hourlyStatistics.labels = [labels];
+      this.hourlyStatistics.datasets = [{
+        data: chartData,
+        ...this.dataset
+      }];
 
       window.setTimeout(() => {
         this.refreshing = false;

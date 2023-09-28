@@ -21,10 +21,11 @@
           <div class="col-md-12 table-responsive">
             <h4>Adapter statistics by the hour</h4>
             <div style="height:300px;">
-              <canvas id="line" class="chart chart-line" chart-options="options"
-                chart-data="hourlyStatistics.data" chart-labels="hourlyStatistics.labels"
-                chart-dataset-override="dataset" chart-series="series">
-              </canvas>
+              <canvas id="line" class="chart chart-line"
+                baseChart
+                [options]="options"
+                [data]="hourlyStatistics"
+              ></canvas>
             </div>
           </div>
           <div class="col-md-4 m-t-md table-responsive">
