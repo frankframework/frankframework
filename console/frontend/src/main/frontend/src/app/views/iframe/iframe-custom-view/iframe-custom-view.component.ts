@@ -9,9 +9,9 @@ import { MiscService } from 'src/angularjs/app/services/misc.service';
   styleUrls: ['./iframe-custom-view.component.scss']
 })
 export class IframeCustomViewComponent implements OnInit {
-  url = "";
+  url: string = "";
   iframeSrc?: SafeResourceUrl;
-  redirectURL = "";
+  redirectURL: string = "";
 
   constructor(
     private sanitizer: DomSanitizer,
@@ -30,6 +30,6 @@ export class IframeCustomViewComponent implements OnInit {
     }
     else
       this.url = this.miscService.getServerPath() + this.$state.params["url"];
-      this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
+    this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
   }
 }

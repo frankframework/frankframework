@@ -22,7 +22,12 @@
     <ng-template ngFor let-alert [ngForOf]="alerts">
       <li class="list-group-item" [ngClass]="['alert-' + alert.type]"
         *ngIf="alert.configuration == '' || selectedConfiguration==alert.configuration || selectedConfiguration=='All'">
-        <div [ngClass]="{pointer: alert.link}" uiSref="pages.configuration(alert.link)" [attr.disabled]="!alert.link ? true : null">
+        <div
+          [ngClass]="{pointer: alert.link}" `
+          uiSref="pages.configuration"
+          [uiParams]="alert.link"
+          [attr.disabled]="!alert.link ? true : null"
+        >
           <i class="m-r-md fa" [ngClass]="['fa-' + ((alert.type=='warning') ? 'warning' : 'times')]"></i>
           <span *ngIf="selectedConfiguration=='All' && alert.configuration!=''">Configuration
             [{{alert.configuration}}] - </span>
@@ -304,9 +309,12 @@
             <div class="col-md-6">
               <!-- adapter information -->
               <span class="pull-right">
-                <button uiSref="pages.adapterstatistics({configuration: adapter.configuration, name: adapter.name})"
-                  class="btn btn-xs btn-info pull-right m-r-xs" type="button"><i class="fa fa-bar-chart m-r-xs"
-                    aria-hidden="true"></i>More statistics</button>
+                <button
+                  uiSref="pages.adapterstatistics"
+                  [uiParams]="{configuration: adapter.configuration, name: adapter.name}"
+                  class="btn btn-xs btn-info pull-right m-r-xs"
+                  type="button"
+                ><i class="fa fa-bar-chart m-r-xs" aria-hidden="true"></i>More statistics</button>
               </span>
               <h4>Adapter information</h4>
               <table class="table">

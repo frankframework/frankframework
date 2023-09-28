@@ -1,14 +1,15 @@
 import { appModule } from "../../app.module";
+import { AppService } from "../../app.service";
 import { ApiService } from "../../services/api.service";
 
 class InlineStoreController {
 	result: any;
-	getProcessStateIcon?: "fa-server" | "fa-gears" | "fa-sign-in" | "fa-pause-circle" | "fa-times-circle";
-	getProcessStateIconColor?: "success" | "warning" | "danger";
+	getProcessStateIcon?: (processState: string) => "fa-server" | "fa-gears" | "fa-sign-in" | "fa-pause-circle" | "fa-times-circle";
+	getProcessStateIconColor?: (processState: string) => "success" | "warning" | "danger";
 
 	constructor(
 		private Api: ApiService,
-		private appService: any
+		private appService: AppService
 	) { };
 
 	$onInit() {

@@ -22,16 +22,16 @@ export class CustomViewsComponent {
 
   $onInit() {
     this.appService.appConstants$.subscribe(() => {
-      var customViews = this.appConstants["customViews.names"];
+      let customViews = this.appConstants["customViews.names"];
       if (customViews == undefined)
         return;
 
       if (customViews.length > 0) {
-        var views = customViews.split(",");
+        let views = customViews.split(",");
         for (const i in views) {
-          var viewId = views[i];
-          var name = this.appConstants["customViews." + viewId + ".name"];
-          var url = this.appConstants["customViews." + viewId + ".url"];
+          let viewId = views[i];
+          let name = this.appConstants["customViews." + viewId + ".name"];
+          let url = this.appConstants["customViews." + viewId + ".url"];
           if (name && url) this.customViews.push({
             view: viewId,
             name: name,
