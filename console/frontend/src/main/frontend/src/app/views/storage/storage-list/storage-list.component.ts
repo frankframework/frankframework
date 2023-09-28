@@ -292,13 +292,13 @@ export class StorageListComponent {
   updateFilter(column: string) {
     this.Cookies.set(this.storageParams.processState + "Filter", this.displayColumn);
 
-    let table = $('#datatable').DataTable();
-    if (table) {
-      let tableColumn = table.column(column + ":name");
-      if (tableColumn && tableColumn.length == 1)
-        tableColumn.visible(this.displayColumn[column as keyof typeof this.displayColumn]);
-      table.draw();
-    }
+    // let table = $('#datatable').DataTable();
+    // if (table) {
+    //   let tableColumn = table.column(column + ":name");
+    //   if (tableColumn && tableColumn.length == 1)
+    //     tableColumn.visible(this.displayColumn[column as keyof typeof this.displayColumn]);
+    //   table.draw();
+    // }
   }
 
   selectAll() {
@@ -384,7 +384,7 @@ export class StorageListComponent {
   }
 
   isSelectedMessages(data: FormData) {
-    let selectedMessages = data.get("messageIds");
+    let selectedMessages = data.get("messageIds") as any as string[];
     if (!selectedMessages || selectedMessages.length == 0) {
       this.SweetAlert.Warning("No message selected!");
       return false;

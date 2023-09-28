@@ -1,10 +1,10 @@
 import './app/app.component';
 
-import './app/components/custom-views/custom-views.component';
-import './app/components/input-file-upload/input-file-upload.component';
-import './app/components/logout/logout.component';
+// import './app/components/custom-views/custom-views.component';
+// import './app/components/input-file-upload/input-file-upload.component';
+// import './app/components/logout/logout.component';
 
-import './app/views/adapterstatistics/adapterstatistics.component';
+// import './app/views/adapterstatistics/adapterstatistics.component';
 import './app/views/configurations/configurations-manage/configurations-manage.component';
 import './app/views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 import './app/views/configurations/configurations-show/configurations-show.component';

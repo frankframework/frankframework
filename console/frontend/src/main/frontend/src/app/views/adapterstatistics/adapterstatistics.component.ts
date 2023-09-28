@@ -1,6 +1,7 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { StateParams } from '@uirouter/angularjs';
-import type { ChartData, ChartType } from 'chart.js';
+import type { ChartData, ChartDataset, ChartOptions, ChartType } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
 import { AppConstants } from 'src/angularjs/app/app.module';
 import { AppService } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
@@ -70,11 +71,20 @@ export class AdapterstatisticsComponent implements OnInit {
   adapterName = this.$stateParams['name'];
   configuration = this.$stateParams['configuration'];
   refreshing = false;
+  dataset: Partial<ChartDataset<"line", number[]>> = {
+    fill: false,
+    backgroundColor: "#2f4050",
+    pointBackgroundColor: "#2f4050",
+    borderColor: "#2f4050",
+    pointBorderColor: "#2f4050",
+    // hoverBackgroundColor: "#2f4050",
+    hoverBorderColor: "#2f4050",
+  };
   hourlyStatistics: /* {
     labels: Statistics["hourly"][0]["time"][];
     data: Statistics["hourly"][0]["count"][]
     // data: ChartData[];
-  } */ ChartData<'line', Statistics["hourly"][0]["count"][], Statistics["hourly"][0]["time"][]> = {
+  } */ ChartData<'line', Statistics["hourly"][0]["count"][], Statistics["hourly"][0]["time"]> = {
     labels: [],
     datasets: [],
   };
@@ -82,37 +92,47 @@ export class AdapterstatisticsComponent implements OnInit {
   statisticsTimeBoundaries: Record<string, string> = { ...this.defaults };
   statisticsSizeBoundaries: Record<string, string> = { ...this.defaults };
   statisticsNames = [];
-  dataset = {
-    fill: false,
-    backgroundColor: "#2f4050",
-    borderColor: "#2f4050",
-  };
-  options = {
+  options: ChartOptions<'line'> = {
+    elements: {
+      line: {
+        tension: 0.5,
+      },
+    },
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-      yAxes: [{
+      yAxis: {
         display: true,
-        scaleLabel: {
+        title: {
           display: true,
-          labelString: 'Messages Per Hour'
+          text: 'Messages Per Hour'
         },
-        ticks: {
-          beginAtZero: true,
-          suggestedMax: 10
-        }
-      }]
+        beginAtZero: true,
+        suggestedMax: 10
+      }
     },
-    tooltips: {
-      mode: 'index',
-      intersect: false,
-      displayColors: false,
-    },
+    // tooltips: {
+    //   mode: 'index',
+    //   intersect: false,
+    //   displayColors: false,
+    // },
     hover: {
       mode: 'nearest',
       intersect: true
+    },
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        displayColors: false,
+      }
     }
   };
+
+  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   constructor(
     private appService: AppService,
@@ -154,11 +174,13 @@ export class AdapterstatisticsComponent implements OnInit {
         labels.push(a["time"]);
         chartData.push(a["count"]);
       }
-      this.hourlyStatistics.labels = [labels];
+      this.hourlyStatistics.labels = labels;
       this.hourlyStatistics.datasets = [{
         data: chartData,
         ...this.dataset
       }];
+
+      this.chart?.update();
 
       window.setTimeout(() => {
         this.refreshing = false;

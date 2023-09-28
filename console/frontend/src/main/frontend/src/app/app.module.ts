@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { UpgradeModule, downgradeComponent } from '@angular/upgrade/static';
 import { HttpClientModule } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { $stateServiceProvider } from './ajs-deps-services';
+import { $stateParamsServiceProvider, $stateServiceProvider } from './ajs-deps-services';
 import { UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
 import { NgIdleModule } from '@ng-idle/core';
 import { NgChartsModule } from 'ng2-charts';
@@ -115,7 +115,8 @@ appModule
   .directive('pagesTopnavbar', downgradeComponent({ component: PagesTopnavbarComponent }) as angular.IDirectiveFactory)
   .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory)
   // .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
-  .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory);
+  .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory)
+  .directive('adapterstatistics', downgradeComponent({ component: AdapterstatisticsComponent }) as angular.IDirectiveFactory);
 
 
 @NgModule({
@@ -195,6 +196,7 @@ appModule
 
     // deps
     $stateServiceProvider,
+    $stateParamsServiceProvider,
 
     // scoped services
     appServiceProvider,

@@ -23,6 +23,7 @@
             <div style="height:300px;">
               <canvas id="line" class="chart chart-line"
                 baseChart
+                type="line"
                 [options]="options"
                 [data]="hourlyStatistics"
               ></canvas>
@@ -32,7 +33,7 @@
             <h4>Total message processing duration (in ms)</h4>
             <table class="table">
               <tbody>
-                <ng-template let-totalMsgProcTime [ngForOf]="stats.totalMessageProccessingTime | formatStatistics:statisticsTimeBoundaries | keyvalue" let-$index="index">
+                <ng-template ngFor let-totalMsgProcTime [ngForOf]="stats?.totalMessageProccessingTime ?? {} | formatStatistics:statisticsTimeBoundaries | keyvalue" let-$index="index">
                   <tr *ngIf="$index > 0">
                     <td>{{statisticsTimeBoundaries[totalMsgProcTime.key]}}</td>
                     <td>{{totalMsgProcTime.value}}</td>
