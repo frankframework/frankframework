@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
@@ -146,7 +147,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				String extractNamespaceDefs = "soapenv=" + getSoapNamespace();
 				String extractBodyXPath     = "/soapenv:Envelope/soapenv:Body/*";
 				try {
-					transformerPoolExtractSoapBody = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, OutputType.XML));
+					transformerPoolExtractSoapBody = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(extractNamespaceDefs, extractBodyXPath, OutputType.XML));
 				} catch (TransformerConfigurationException te) {
 					throw new ConfigurationException("got error creating transformer from getSoapBody", te);
 				}
@@ -222,7 +223,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 			Message messageToValidate;
 			input.preserve();
 			if (StringUtils.isNotEmpty(getSoapNamespace())) {
-				messageToValidate = getMessageToValidate(input, session);
+				messageToValidate = getMessageToValidate(input);
 			} else {
 				messageToValidate = input;
 			}
@@ -274,8 +275,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return new PipeRunResult(forward, Message.nullMessage());
 	}
 
-	@Deprecated
-	private Message getMessageToValidate(Message message, PipeLineSession session) throws PipeRunException {
+	private Message getMessageToValidate(Message message) throws PipeRunException {
 		String input;
 		try {
 			input = message.asString();
@@ -514,7 +514,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		}
 
 		@Override
-		public void setApplicationContext(ApplicationContext applicationContext) {
+		public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
 			//Can ignore this as it's not set through Spring
 		}
 
@@ -666,16 +666,16 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 
-	@Override
 	/** Name of the root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used */
+	@Override
 	public void setRoot(String root) {
 		super.setRoot(root);
 		if (StringUtils.isNotEmpty(root)) {
 			addRequestRootValidation(new RootValidation(root));
 		}
 	}
-	@Override
 	/** Name of the response root element, or a comma separated list of element names. The validation fails if the root element is not present in the list. N.B. for WSDL generation only the first element is used */
+	@Override
 	public void setResponseRoot(String responseRoot) {
 		super.setResponseRoot(responseRoot);
 		if (StringUtils.isNotEmpty(responseRoot)) {

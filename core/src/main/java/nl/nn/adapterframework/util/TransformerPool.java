@@ -158,6 +158,14 @@ public class TransformerPool {
 	 * Special utility method to create a new TransformerPool without a ClassLoader.
 	 * Utility pools should never use configuration classloaders, instead always read from the classpath!
 	 */
+	public static TransformerPool getUtilityInstance(String xsltString) throws TransformerConfigurationException {
+		return getUtilityInstance(xsltString, 0);
+	}
+
+	/**
+	 * Special utility method to create a new TransformerPool without a ClassLoader.
+	 * Utility pools should never use configuration classloaders, instead always read from the classpath!
+	 */
 	public static TransformerPool getUtilityInstance(String xsltString, int xsltVersion) throws TransformerConfigurationException {
 		return new TransformerPool(xsltString, null, xsltVersion, null) {
 			@Override
