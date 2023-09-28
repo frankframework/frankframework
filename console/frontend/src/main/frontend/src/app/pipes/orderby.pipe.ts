@@ -5,7 +5,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 /**@Deprecated Replace with component code */
 export class OrderByPipe implements PipeTransform {
-  transform<T extends Record<string, U>, U>(array: T[], field: keyof T): T[] {
+  transform<T>(array: T[], field: keyof T): T[] {
     if (!array || !field) {
       return array;
     }
