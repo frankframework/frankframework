@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import java.security.Principal;
+import java.sql.ResultSet;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,6 +25,9 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import javax.jms.Session;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -118,7 +122,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			to.putAll(this);                                      // ... all keys will be copied
 		}
 		Set<AutoCloseable> closeablesInDestination = to.values().stream()
-				.filter(v -> v instanceof AutoCloseable)
+				.filter(v -> shouldCloseSessionResource(v))
 				.map(v -> (AutoCloseable) v)
 				.collect(Collectors.toSet());
 		if (to instanceof PipeLineSession) {
@@ -136,10 +140,17 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	@Override
 	public Object put(String key, Object value) {
-		if (value instanceof AutoCloseable) {
+		if (shouldCloseSessionResource(value)) {
 			closeables.put((AutoCloseable) value, "Session key [" + key + "]");
 		}
 		return super.put(key, value);
+	}
+
+	private static boolean shouldCloseSessionResource(final Object value) {
+		return value instanceof AutoCloseable &&
+			!(value instanceof HttpSession || value instanceof Session
+			|| value instanceof javax.jms.Connection || value instanceof java.sql.Connection
+			|| value instanceof ResultSet);
 	}
 
 	@Override
@@ -359,8 +370,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			Entry<AutoCloseable, String> entry = it.next();
 			AutoCloseable closeable = entry.getKey();
 			try {
-				LOG.debug("messageId [{}] auto closing resource {}", this::getMessageId, entry::getValue);
-				closeable.close();
+				if (shouldCloseSessionResource(closeable)) {
+					LOG.debug("messageId [{}] auto closing resource {}", this::getMessageId, entry::getValue);
+					closeable.close();
+				} else {
+					LOG.debug("messageId [{}] resource {} not closed", this::getMessageId, entry::getValue);
+				}
 			} catch (Exception e) {
 				LOG.warn("Exception closing resource", e);
 			} finally {
