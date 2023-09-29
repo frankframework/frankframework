@@ -1,4 +1,5 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
+import { first } from 'rxjs';
 import { AppConstants } from 'src/angularjs/app/app.module';
 import { AppService } from 'src/angularjs/app/app.service';
 import { APPCONSTANTS } from 'src/app/app.module';
@@ -8,7 +9,7 @@ import { APPCONSTANTS } from 'src/app/app.module';
   templateUrl: './custom-views.component.html',
   styleUrls: ['./custom-views.component.scss']
 })
-export class CustomViewsComponent {
+export class CustomViewsComponent implements OnInit {
   appConstants: AppConstants;
   customViews: {
     view: string,
@@ -20,8 +21,8 @@ export class CustomViewsComponent {
     this.appConstants = appConstants;
   }
 
-  $onInit() {
-    this.appService.appConstants$.subscribe(() => {
+  ngOnInit() {
+    this.appService.appConstants$.pipe(first()).subscribe(() => {
       let customViews = this.appConstants["customViews.names"];
       if (customViews == undefined)
         return;
