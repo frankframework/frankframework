@@ -17,6 +17,8 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import nl.nn.adapterframework.dbms.JdbcException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

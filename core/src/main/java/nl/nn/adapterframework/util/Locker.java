@@ -37,7 +37,7 @@ import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.doc.Mandatory;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;

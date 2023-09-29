@@ -379,7 +379,7 @@ public class LockerTest extends TransactionManagerTestBase {
 	}
 
 	public int getRowCount() throws Exception {
-		return JdbcUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
+		return DbmsUtil.executeIntQuery(connection, "SELECT COUNT(*) FROM IBISLOCK");
 	}
 
 	private class LockerTester extends ConcurrentManagedTransactionTester {

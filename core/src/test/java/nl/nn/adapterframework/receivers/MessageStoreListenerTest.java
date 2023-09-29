@@ -29,7 +29,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.MessageStoreListener;
-import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
+import nl.nn.adapterframework.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.stream.Message;
 

@@ -22,7 +22,8 @@ import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
+import nl.nn.adapterframework.dbms.Dbms;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 

@@ -32,6 +32,8 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 
+import nl.nn.adapterframework.util.DbmsUtil;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +47,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentJdbcActionTester;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
+import nl.nn.adapterframework.dbms.Dbms;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Semaphore;
@@ -604,7 +607,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		if (useStatusInProcess) {
 			listener.changeProcessState(connection, rawMessage, ProcessState.AVAILABLE, "test");
 		}
-		String status = JdbcUtil.executeStringQuery(connection, "SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=10");
+		String status = DbmsUtil.executeStringQuery(connection, "SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=10");
 		assertEquals("status should be returned to available, to be able to try again", "1", status);
 	}
 

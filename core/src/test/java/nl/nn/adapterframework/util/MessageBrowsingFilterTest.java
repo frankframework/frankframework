@@ -16,7 +16,7 @@ import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
+import nl.nn.adapterframework.dbms.Dbms;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;

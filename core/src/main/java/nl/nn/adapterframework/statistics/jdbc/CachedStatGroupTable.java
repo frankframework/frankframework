@@ -20,11 +20,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.DbmsException;
+import nl.nn.adapterframework.dbms.JdbcException;
 
 /**
  * @author  Gerrit van Brakel
- * @since  
+ * @since
  */
 public class CachedStatGroupTable extends StatGroupTable {
 
@@ -43,7 +44,7 @@ public class CachedStatGroupTable extends StatGroupTable {
 		}
 	}
 
-	public int findOrInsert(Connection connection, int parentKey, int instanceKey, String name, String type) throws JdbcException {
+	public int findOrInsert(Connection connection, int parentKey, int instanceKey, String name, String type) throws JdbcException, DbmsException {
 		Integer result;
 		Map tableCache=(Map)cache.get(mapKey);
 		String valueKey=parentKey+"/"+type+"/"+name;

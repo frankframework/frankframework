@@ -53,7 +53,7 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.lifecycle.ApplicationMessageEvent;
 import nl.nn.adapterframework.util.AppConstants;
