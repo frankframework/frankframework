@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,22 +13,32 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc.dbms;
+package nl.nn.adapterframework.dbms;
 
-import javax.sql.DataSource;
+import nl.nn.adapterframework.core.IbisException;
 
 /**
- * @author  Gerrit van Brakel
+ * Wrapper for JDBC related exceptions.
+ *
+ * @author Gerrit van Brakel
+ * @since 4.1
  */
-public interface IDbmsSupportFactory {
+public class JdbcException extends IbisException {
 
-	final int DBMS_GENERIC=0;
-	final int DBMS_ORACLE=1;
-	final int DBMS_MSSQLSERVER=2;
-	final int DBMS_DB2=3;
-	final int DBMS_H2=4;
-	final int DBMS_MYSQL=5;
+	public JdbcException() {
+		super();
+	}
 
-	IDbmsSupport getDbmsSupport(DataSource datasource);
+	public JdbcException(String arg1) {
+		super(arg1);
+	}
+
+	public JdbcException(String arg1, Throwable arg2) {
+		super(arg1, arg2);
+	}
+
+	public JdbcException(Throwable arg1) {
+		super(arg1);
+	}
 
 }

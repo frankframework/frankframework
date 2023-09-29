@@ -1,3 +1,4 @@
+package nl.nn.adapterframework.dbms;
 /*
    Copyright 2020 WeAreFrank!
 
@@ -13,7 +14,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc.dbms;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,42 +25,43 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import nl.nn.adapterframework.util.StreamUtil;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.util.ClassLoaderUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Sql syntax translator to translate queries
  * for different database management systems (e.g. Oracle to MsSql or PostgreSql to MySql)
  */
 public class SqlTranslator implements ISqlTranslator {
-	private final Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogManager.getLogger(this);
 
 	private static final String PATTERN_FILE = "SqlTranslationPatterns.properties";
 
-	private Map<String,Pattern> sources;
-	private Map<String,String>  targets;
+	private Map<String, Pattern> sources;
+	private Map<String, String> targets;
 	private String target;
 
-	private boolean configured=false;
 
-	public SqlTranslator(String source, String target) throws JdbcException {
+
+	private boolean configured = false;
+
+	public SqlTranslator(String source, String target) throws DbmsException {
 		if (StringUtils.isEmpty(source) || StringUtils.isEmpty(target))
 			throw new IllegalArgumentException("Can not translate from [" + source + "] to [" + target + "]");
 		if (source.equalsIgnoreCase(target)) {
-			log.warn("Same source and target for SqlTranslator. Skipping pattern generation.");
+			log.warn("Same source and target for nl.nn.adapterframework.dbms.SqlTranslator. Skipping pattern generation.");
 			return;
 		}
 		try {
-			if (!readPatterns(source,target)) {
+			if (!readPatterns(source, target)) {
 				return;
 			}
 		} catch (Exception e) {
-			throw new JdbcException("cannot create SqlTranslator",e);
+			throw new DbmsException("cannot create nl.nn.adapterframework.dbms.SqlTranslator", e);
 		}
 		this.target = target;
 		configured = true;
@@ -81,11 +82,11 @@ public class SqlTranslator implements ISqlTranslator {
 	@Override
 	public String translate(String original) {
 		String query = original;
-		if (sources!=null) {
-			for (String label:sources.keySet()) {
+		if (sources != null) {
+			for (String label : sources.keySet()) {
 				Matcher matcher = sources.get(label).matcher(query);
 				if (matcher.find()) {
-					if (log.isTraceEnabled()) log.trace(String.format("Found a match for label [%s] pattern [%s]",label, sources.get(label)));
+					if (log.isTraceEnabled()) log.trace(String.format("Found a match for label [%s] pattern [%s]", label, sources.get(label)));
 					String replacement = targets.get(label);
 					if (StringUtils.isNotEmpty(replacement)) {
 						query = matcher.replaceAll(replacement);
@@ -103,6 +104,7 @@ public class SqlTranslator implements ISqlTranslator {
 
 	/**
 	 * Compiles a pattern with necessary flags.
+	 *
 	 * @param str String to be compiled.
 	 * @return Output pattern.
 	 */
@@ -116,51 +118,52 @@ public class SqlTranslator implements ISqlTranslator {
 	/**
 	 * Reads data from PATTERN_FILE.
 	 * Puts the data in memory to be used later.
+	 *
 	 * @throws IOException If database name can not be found or file can not be read.
 	 */
 	private boolean readPatterns(String sourceDialect, String targetDialect) throws IOException {
 		sources = new LinkedHashMap<>();
 		targets = new LinkedHashMap<>();
 
-		String sourceMatch=(".source."+sourceDialect.replace(" ", "_")).toLowerCase();
-		String targetMatch=(".target."+targetDialect.replace(" ", "_")).toLowerCase();
+		String sourceMatch = (".source." + sourceDialect.replace(" ", "_")).toLowerCase();
+		String targetMatch = (".target." + targetDialect.replace(" ", "_")).toLowerCase();
 
-		URL resourceUrl = ClassLoaderUtils.getResourceURL(PATTERN_FILE);
-		if(resourceUrl == null) {
+		URL resourceUrl = getClass().getClassLoader().getResource(PATTERN_FILE);
+		if (resourceUrl == null) {
 			throw new IOException("unable to find SQL Pattern File");
 		}
 		Reader streamReader = StreamUtil.getCharsetDetectingInputStreamReader(resourceUrl.openStream());
 		try (BufferedReader reader = new BufferedReader(streamReader)) {
-			String line= reader.readLine();
-			while (line!=null) {
+			String line = reader.readLine();
+			while (line != null) {
 				int equalsPos = line.indexOf("=");
-				if (!line.startsWith("#") && equalsPos>=0) {
-					String key = line.substring(0,equalsPos).trim().toLowerCase();
-					String value = line.substring(equalsPos+1).trim();
-					if (log.isTraceEnabled()) log.trace("read key ["+key+"] value ["+value+"]");
+				if (!line.startsWith("#") && equalsPos >= 0) {
+					String key = line.substring(0, equalsPos).trim().toLowerCase();
+					String value = line.substring(equalsPos + 1).trim();
+					if (log.isTraceEnabled()) log.trace("read key [" + key + "] value [" + value + "]");
 					int sourceMatchPos = key.indexOf(sourceMatch);
-					if (sourceMatchPos>0) {
-						String label = key.substring(0,sourceMatchPos);
+					if (sourceMatchPos > 0) {
+						String label = key.substring(0, sourceMatchPos);
 						sources.put(label, toPattern(value));
 					} else {
 						int targetMatchPos = key.indexOf(targetMatch);
-						if (targetMatchPos>0) {
-							String label = key.substring(0,targetMatchPos);
+						if (targetMatchPos > 0) {
+							String label = key.substring(0, targetMatchPos);
 							targets.put(label, value);
 						}
 					}
 				}
-				line= reader.readLine();
+				line = reader.readLine();
 			}
 		}
-		for (Iterator<String> it=sources.keySet().iterator();it.hasNext();) {
+		for (Iterator<String> it = sources.keySet().iterator(); it.hasNext(); ) {
 			String label = it.next();
 			String source = sources.get(label).toString();
 			String target = targets.get(label);
-			if (target==null || target.equals(source) || target.equals("$0")) {
+			if (target == null || target.equals(source) || target.equals("$0")) {
 				it.remove();
 			} else {
-				log.debug(String.format("configured translation pattern label [%s] source [%s] target [%s]", label,  source,  target));
+				log.debug(String.format("configured translation pattern label [%s] source [%s] target [%s]", label, source, target));
 			}
 		}
 		return true;

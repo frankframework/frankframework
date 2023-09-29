@@ -1,4 +1,4 @@
-/*
+package nl.nn.adapterframework.dbms;/*
    Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,11 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc.dbms;
 
+import lombok.Getter;
+
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.util.LogUtil;
 
 public enum Dbms {
 
@@ -31,10 +32,10 @@ public enum Dbms {
 	MARIADB("MariaDB", MariaDbDbmsSupport.class),
 	POSTGRESQL("PostgreSQL", PostgresqlDbmsSupport.class);
 
-	protected static Logger log = LogUtil.getLogger(Dbms.class);
+	protected static Logger log = LogManager.getLogger(Dbms.class);
 
-	private String key;
-	private String productName;
+	private @Getter String key;
+	private @Getter String productName;
 	private Class<? extends IDbmsSupport> dbmsSupportClass;
 
 	private Dbms(String key, Class<? extends IDbmsSupport> dbmsSupportClass) {
@@ -47,42 +48,34 @@ public enum Dbms {
 		this.dbmsSupportClass = dbmsSupportClass;
 	}
 
-	public String getKey() {
-		return key;
-	}
-
-	public String getProductName() {
-		return productName;
-	}
-
 	public static IDbmsSupport findDbmsSupportByProduct(String product, String productVersion) {
 		if (MYSQL.getProductName().equals(product) && productVersion.contains("MariaDB")) {
 			log.debug("Setting databasetype to MARIADB (using MySQL driver)");
 			return new MariaDbDbmsSupport(productVersion);
 		}
 		if (product.startsWith("DB2/")) {
-			log.debug("Setting databasetype to DB2 for product ["+product+"]");
+			log.debug("Setting databasetype to DB2 for product [" + product + "]");
 			return new Db2DbmsSupport();
 		}
-		for (Dbms dbms: values()) {
+		for (Dbms dbms : values()) {
 			if (dbms.getProductName().equals(product)) {
-				log.debug("Setting databasetype to ["+dbms+"]");
+				log.debug("Setting databasetype to [" + dbms + "]");
 				IDbmsSupport result;
 				try {
 					result = dbms.dbmsSupportClass.newInstance();
 					log.debug("Returning built-in DBMS [" + dbms + "] found for product [" + product + "]");
 					return result;
 				} catch (IllegalAccessException | InstantiationException e) {
-					log.warn("Could not instantiate DbmsSupport for DBMS ["+dbms+"] found for product ["+product+"]", e);
+					log.warn("Could not instantiate DbmsSupport for DBMS [" + dbms + "] found for product [" + product + "]", e);
 				}
 			}
 		}
-		log.debug("Returning GenericDbmsSupport for product ["+product+"]");
+		log.debug("Returning nl.nn.adapterframework.dbms.GenericDbmsSupport for product [" + product + "]");
 		return new GenericDbmsSupport();
 	}
 
 	public IDbmsSupport getDbmsSupport() throws IllegalAccessException, InstantiationException {
-		if (dbmsSupportClass==null) {
+		if (dbmsSupportClass == null) {
 			return null;
 		}
 		return dbmsSupportClass.newInstance();

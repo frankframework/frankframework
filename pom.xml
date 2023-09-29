@@ -5,6 +5,9 @@
 	<artifactId>ibis-adapterframework-parent</artifactId>
 	<version>${revision}</version>
 	<packaging>pom</packaging>
+	<modules>
+		<module>dbms</module>
+	</modules>
 
 	<properties>
 		<revision>7.9-SNAPSHOT</revision>

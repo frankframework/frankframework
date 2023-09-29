@@ -1,3 +1,4 @@
+package nl.nn.adapterframework.dbms;
 /*
 Copyright 2020, 2021, 2023 WeAreFrank!
 
@@ -13,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,12 +21,10 @@ import java.sql.SQLException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
 
 /**
-* Support for MariaDB.
-*
-*/
+ * Support for MariaDB.
+ */
 public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 
 	private Boolean dbmsHasSkipLockedFunctionality;
@@ -52,7 +50,7 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 
 	@Override
 	public boolean hasSkipLockedFunctionality() {
-		if (dbmsHasSkipLockedFunctionality==null) {
+		if (dbmsHasSkipLockedFunctionality == null) {
 			if (StringUtils.isNotEmpty(productVersion)) {
 				dbmsHasSkipLockedFunctionality = determineSkipLockedCapability(productVersion);
 			} else {
@@ -64,7 +62,7 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 
 	private boolean determineSkipLockedCapability(String productVersion) {
 		String[] productVersionArr = productVersion.split("-");
-		String strippedProductVersion = productVersionArr.length>1 ? productVersionArr[1] : productVersion;
+		String strippedProductVersion = productVersionArr.length > 1 ? productVersionArr[1] : productVersion;
 		DefaultArtifactVersion thisVersion = new DefaultArtifactVersion(strippedProductVersion);
 		DefaultArtifactVersion targetVersion = new DefaultArtifactVersion("10.6.0");
 		boolean result = thisVersion.compareTo(targetVersion) >= 0;
@@ -74,51 +72,52 @@ public class MariaDbDbmsSupport extends MySqlDbmsSupport {
 
 
 	@Override
-	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
+	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws DbmsException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
-			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+			throw new DbmsException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT + "]");
 		}
 		if (wait < 0) {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE "+ (hasSkipLockedFunctionality() ? "SKIP LOCKED" : "WAIT 1"); // Mariadb used to have no 'skip locked', WAIT 1 is next best
+			return selectQuery + (batchSize > 0 ? " LIMIT " + batchSize : "") + " FOR UPDATE " + (hasSkipLockedFunctionality() ? "SKIP LOCKED" : "WAIT 1"); // Mariadb used to have no 'skip locked', WAIT 1 is next best
 		}
-		return selectQuery+(batchSize>0?" LIMIT "+batchSize:"")+" FOR UPDATE WAIT "+wait;
+		return selectQuery + (batchSize > 0 ? " LIMIT " + batchSize : "") + " FOR UPDATE WAIT " + wait;
 	}
 
 	/*
 	 * See: https://dev.mysql.com/doc/refman/8.0/en/innodb-consistent-read.html
-	 * 
+	 *
 	 * Consistent read is the default mode in which InnoDB processes SELECT statements in
 	 * READ COMMITTED and REPEATABLE READ isolation levels. A consistent read does not set
 	 * any locks on the tables it accesses, and therefore other sessions are free to modify
 	 * those tables at the same time a consistent read is being performed on the table.
 	 */
 	@Override
-	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws DbmsException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
-			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+			throw new DbmsException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT + "]");
 		}
 		if (wait < 0) {
-			return selectQuery+(batchSize>0?" LIMIT "+batchSize:"");
+			return selectQuery + (batchSize > 0 ? " LIMIT " + batchSize : "");
 		}
-		throw new IllegalArgumentException(getDbms()+" does not support setting lock wait timeout in query");
+		throw new IllegalArgumentException(getDbms() + " does not support setting lock wait timeout in query");
 	}
 
 	@Override
-	public Object getClobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+	public Object getClobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createClob();
 	}
 
 	@Override
-	public Object getClobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+	public Object getClobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createClob();
 	}
 
 	@Override
-	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createBlob();
 	}
+
 	@Override
-	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createBlob();
 	}
 

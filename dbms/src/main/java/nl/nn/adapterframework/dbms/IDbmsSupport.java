@@ -1,4 +1,4 @@
-/*
+package nl.nn.adapterframework.dbms;/*
    Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc.dbms;
+
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,12 +29,10 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
-
 /**
  * Interface to define DBMS specific SQL implementations.
  *
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  * @since
  */
 public interface IDbmsSupport {
@@ -43,14 +41,18 @@ public interface IDbmsSupport {
 	 * Numeric value defining database type, defined in {@link DbmsSupportFactory}.
 	 */
 	Dbms getDbms();
+
 	String getDbmsName();
 
 	boolean isParameterTypeMatchRequired();
+
 	boolean hasSkipLockedFunctionality();
+
 	/**
 	 * SQL String returning current date and time of dbms.
 	 */
 	String getSysDate();
+
 	String getDateAndOffset(String dateValue, int daysOffset);
 
 	String getNumericKeyFieldType();
@@ -61,65 +63,101 @@ public interface IDbmsSupport {
 	String getFromForTablelessSelect();
 
 	String getAutoIncrementKeyFieldType();
+
 	boolean autoIncrementKeyMustBeInserted();
+
 	String autoIncrementInsertValue(String sequenceName);
+
 	boolean autoIncrementUsesSequenceObject();
+
 	String getInsertedAutoIncrementValueQuery(String sequenceName);
 
 	String getTimestampFieldType();
+
 	String getDatetimeLiteral(Date date);
+
 	String getTimestampAsDate(String columnName);
 
 	String getClobFieldType();
+
 	boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
+
 	boolean mustInsertEmptyClobBeforeData();
+
 	String emptyClobValue();
-	Reader getClobReader(ResultSet rs, int column) throws SQLException, JdbcException;
-	Reader getClobReader(ResultSet rs, String column) throws SQLException, JdbcException;
+
+	Reader getClobReader(ResultSet rs, int column) throws SQLException, DbmsException;
+
+	Reader getClobReader(ResultSet rs, String column) throws SQLException, DbmsException;
 
 	// CLOB update methods, to support updating ResultSets using SELECT ... FOR UPDATE statements
 	String getUpdateClobQuery(String table, String clobField, String keyField);
-	Object getClobHandle(ResultSet rs, int column) throws SQLException, JdbcException;
-	Object getClobHandle(ResultSet rs, String column) throws SQLException, JdbcException;
-	Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException;
-	Writer getClobWriter(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException;
-	void updateClob(ResultSet rs, int column, Object clobHandle) throws SQLException, JdbcException;
-	void updateClob(ResultSet rs, String column, Object clobHandle) throws SQLException, JdbcException;
+
+	Object getClobHandle(ResultSet rs, int column) throws SQLException, DbmsException;
+
+	Object getClobHandle(ResultSet rs, String column) throws SQLException, DbmsException;
+
+	Writer getClobWriter(ResultSet rs, int column, Object clobHandle) throws SQLException, DbmsException;
+
+	Writer getClobWriter(ResultSet rs, String column, Object clobHandle) throws SQLException, DbmsException;
+
+	void updateClob(ResultSet rs, int column, Object clobHandle) throws SQLException, DbmsException;
+
+	void updateClob(ResultSet rs, String column, Object clobHandle) throws SQLException, DbmsException;
 
 	// CLOB insert/update methods, to support applying parameters for INSERT and UPDATE statements
-	Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException;
-	Writer getClobWriter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException;
-	void applyClobParameter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, JdbcException;
+	Object getClobHandle(PreparedStatement stmt, int column) throws SQLException, DbmsException;
+
+	Writer getClobWriter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, DbmsException;
+
+	void applyClobParameter(PreparedStatement stmt, int column, Object clobHandle) throws SQLException, DbmsException;
 
 
 	String getBlobFieldType();
+
 	boolean isBlobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException;
+
 	boolean mustInsertEmptyBlobBeforeData();
+
 	String emptyBlobValue();
-	InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException;
-	InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException;
+
+	InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, DbmsException;
+
+	InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, DbmsException;
 
 	// BLOB update methods, to support updating ResultSets using SELECT ... FOR UPDATE statements
 	String getUpdateBlobQuery(String table, String clobField, String keyField);
-	Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException;
-	Object getBlobHandle(ResultSet rs, String column) throws SQLException, JdbcException;
-	OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobHandle) throws SQLException, JdbcException;
-	OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobHandle) throws SQLException, JdbcException;
-	void updateBlob(ResultSet rs, int column, Object blobHandle) throws SQLException, JdbcException;
-	void updateBlob(ResultSet rs, String column, Object blobHandle) throws SQLException, JdbcException;
+
+	Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException;
+
+	Object getBlobHandle(ResultSet rs, String column) throws SQLException, DbmsException;
+
+	OutputStream getBlobOutputStream(ResultSet rs, int column, Object blobHandle) throws SQLException, DbmsException;
+
+	OutputStream getBlobOutputStream(ResultSet rs, String column, Object blobHandle) throws SQLException, DbmsException;
+
+	void updateBlob(ResultSet rs, int column, Object blobHandle) throws SQLException, DbmsException;
+
+	void updateBlob(ResultSet rs, String column, Object blobHandle) throws SQLException, DbmsException;
 
 	// BLOB insert/update methods, to support applying parameters for INSERT and UPDATE statements
-	Object getBlobHandle(PreparedStatement stmt, int column) throws SQLException, JdbcException;
-	OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException;
-	void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, JdbcException;
+	Object getBlobHandle(PreparedStatement stmt, int column) throws SQLException, DbmsException;
+
+	OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, DbmsException;
+
+	void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, DbmsException;
 
 	String getTextFieldType();
 
-	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException;
-	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException;
-	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery) throws JdbcException;
-	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException;
-	String getFirstRecordQuery(String tableName) throws JdbcException;
+	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws DbmsException;
+
+	String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws DbmsException;
+
+	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery) throws DbmsException;
+
+	String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws DbmsException;
+
+	String getFirstRecordQuery(String tableName) throws DbmsException;
 
 	/**
 	 * Modify the provided selectQuery in such a way that the resulting query will not be blocked by locks, and will avoid placing locks itself as much as possible.
@@ -127,33 +165,47 @@ public interface IDbmsSupport {
 	 * Should return the query unmodified if no special action is required.
 	 * For an example, see {@link MsSqlServerDbmsSupport#prepareQueryTextForNonLockingRead(String)}
 	 */
-	String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException;
+	String prepareQueryTextForNonLockingRead(String selectQuery) throws DbmsException;
 
 	String provideIndexHintAfterFirstKeyword(String tableName, String indexName);
+
 	String provideFirstRowsHintAfterFirstKeyword(int rowCount);
+
 	String provideTrailingFirstRowsHint(int rowCount);
 
-	String getSchema(Connection conn) throws JdbcException;
+	String getSchema(Connection conn) throws DbmsException;
 
 	@Nonnull
-	String convertQuery(@Nonnull String query, @Nonnull String sqlDialectFrom) throws SQLException, JdbcException;
+	String convertQuery(@Nonnull String query, @Nonnull String sqlDialectFrom) throws SQLException, DbmsException;
 
-	ResultSet getTableColumns(Connection conn, String tableName) throws JdbcException;
-	ResultSet getTableColumns(Connection conn, String schemaName, String tableName) throws JdbcException;
-	ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws JdbcException;
-	boolean isTablePresent(Connection conn, String tableName) throws JdbcException;
-	boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException;
-	boolean isColumnPresent(Connection conn, String tableName, String columnName) throws JdbcException;
-	boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException;
+	ResultSet getTableColumns(Connection conn, String tableName) throws DbmsException;
+
+	ResultSet getTableColumns(Connection conn, String schemaName, String tableName) throws DbmsException;
+
+	ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws DbmsException;
+
+	boolean isTablePresent(Connection conn, String tableName) throws DbmsException;
+
+	boolean isTablePresent(Connection conn, String schemaName, String tableName) throws DbmsException;
+
+	boolean isColumnPresent(Connection conn, String tableName, String columnName) throws DbmsException;
+
+	boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws DbmsException;
+
 	boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName);
+
 	boolean isSequencePresent(Connection conn, String schemaOwner, String tableName, String sequenceName);
-	boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) throws JdbcException;
-	boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws JdbcException;
-	String getSchemaOwner(Connection conn) throws SQLException, JdbcException;
+
+	boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) throws DbmsException;
+
+	boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws DbmsException;
+
+	String getSchemaOwner(Connection conn) throws SQLException, DbmsException;
 
 	boolean isConstraintViolation(SQLException e);
 
 	String getRowNumber(String order, String sort);
+
 	String getRowNumberShortName();
 
 	String getLength(String column);
@@ -161,7 +213,9 @@ public interface IDbmsSupport {
 	String getIbisStoreSummaryQuery();
 
 	String getBooleanFieldType();
+
 	String getBooleanValue(boolean value);
+
 	String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows);
 
 	/**
@@ -178,7 +232,7 @@ public interface IDbmsSupport {
 	 * Can only be true if {@link #isStoredProceduresSupported()} is true.
 	 *
 	 * @return true if you can use stored procedures with {@code OUT} parameters with this database.
-	 * H2 does not support this by design. Oracle does not currently support this.
+	 * 		H2 does not support this by design. Oracle does not currently support this.
 	 */
 	boolean isStoredProcedureOutParametersSupported();
 

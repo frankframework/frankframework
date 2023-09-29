@@ -1,4 +1,4 @@
-/*
+package nl.nn.adapterframework.dbms;/*
    Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc.dbms;
 
 public interface ISqlTranslator {
 
