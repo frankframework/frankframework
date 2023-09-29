@@ -78,6 +78,7 @@ import { AdapterstatisticsComponent } from './views/adapterstatistics/adaptersta
 import { FormatStatisticsPipe } from './views/adapterstatistics/format-statistics.pipe';
 import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
 import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
+import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
@@ -164,6 +165,7 @@ appModule
     ToDateDirective,
     TimeSinceDirective,
     QuickSubmitFormDirective,
+    FormatStatKeysPipe,
   ],
   imports: [
     BrowserModule,

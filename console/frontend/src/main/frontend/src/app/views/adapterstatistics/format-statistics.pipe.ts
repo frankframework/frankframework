@@ -1,3 +1,4 @@
+import { KeyValue } from '@angular/common';
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
@@ -5,8 +6,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class FormatStatisticsPipe implements PipeTransform {
 
-  transform<T extends Record<string, any>>(input: T, format: Record<string, any>): T {
-    let formatted: T = {} as T;
+  transform(input: Record<string, any>, format: Record<string, any>): KeyValue<string, any>[] {
+    let formatted: KeyValue<string, any>[] = [];
     for (const key in format) {
       let value = input[key];
       if (!value && value !== 0) { // if no value, return a dash
@@ -15,7 +16,7 @@ export class FormatStatisticsPipe implements PipeTransform {
       if ((key.endsWith("ms") || key.endsWith("B")) && value != "-") {
         value += "%";
       }
-      formatted[key as keyof T] = value;
+      formatted.push({ key, value: value });
     }
     // Uncomment if really needed, but figure out how angular2+ handles this first
     // formatted["$$hashKey"] = input["$$hashKey"]; //Copy the hashKey over so Angular doesn't trigger another digest cycle

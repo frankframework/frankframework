@@ -80,11 +80,7 @@ export class AdapterstatisticsComponent implements OnInit {
     // hoverBackgroundColor: "#2f4050",
     hoverBorderColor: "#2f4050",
   };
-  hourlyStatistics: /* {
-    labels: Statistics["hourly"][0]["time"][];
-    data: Statistics["hourly"][0]["count"][]
-    // data: ChartData[];
-  } */ ChartData<'line', Statistics["hourly"][0]["count"][], Statistics["hourly"][0]["time"]> = {
+  hourlyStatistics: ChartData<'line', Statistics["hourly"][0]["count"][], Statistics["hourly"][0]["time"]> = {
     labels: [],
     datasets: [],
   };
@@ -111,11 +107,6 @@ export class AdapterstatisticsComponent implements OnInit {
         suggestedMax: 10
       }
     },
-    // tooltips: {
-    //   mode: 'index',
-    //   intersect: false,
-    //   displayColors: false,
-    // },
     hover: {
       mode: 'nearest',
       intersect: true
@@ -200,20 +191,25 @@ export class AdapterstatisticsComponent implements OnInit {
 
     this.Debug.info("appending Statistic.boundaries", timeBoundaries, sizeBoundaries, percBoundaries);
 
+    const statisticsTimeBoundariesAdditive: Record<string, string> = {};
+    const statisticsSizeBoundariesAdditive: Record<string, string> = {};
+
     for (const i in timeBoundaries) {
       let j = timeBoundaries[i];
-      this.statisticsTimeBoundaries[j + "ms"] = "< " + j + "ms";
+      statisticsTimeBoundariesAdditive[j + "ms"] = "< " + j + "ms";
     }
     for (const i in sizeBoundaries) {
       let j = sizeBoundaries[i];
-      this.statisticsSizeBoundaries[j + "B"] = "< " + j + "B";
+      statisticsSizeBoundariesAdditive[j + "B"] = "< " + j + "B";
     }
     if (displayPercentiles) {
       for (const i in percBoundaries) {
         let j = "p" + percBoundaries[i];
-        this.statisticsTimeBoundaries[j] = j;
-        this.statisticsSizeBoundaries[j] = j;
+        statisticsTimeBoundariesAdditive[j] = j;
+        statisticsSizeBoundariesAdditive[j] = j;
       }
     }
+    this.statisticsTimeBoundaries = { ...this.defaults, ...statisticsTimeBoundariesAdditive };
+    this.statisticsSizeBoundaries = { ...this.defaults, ...statisticsSizeBoundariesAdditive };
   }
 }
