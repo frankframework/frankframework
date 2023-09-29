@@ -449,17 +449,6 @@
 			<version>1.6</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.xmlbeans</groupId>
-			<artifactId>xmlbeans</artifactId>
-			<version>5.1.1</version>
-			<exclusions>
-				<exclusion><!-- Java 8 scoped profile -->
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>cglib</groupId>
 			<artifactId>cglib-nodep</artifactId>
 			<version>3.3.0</version>
