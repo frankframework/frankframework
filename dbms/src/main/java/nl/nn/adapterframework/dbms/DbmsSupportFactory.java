@@ -1,4 +1,4 @@
-/*
+package nl.nn.adapterframework.dbms;/*
    Copyright 2013, 2018 Nationale-Nederlanden, 2020-2021 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -24,22 +23,24 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
+import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.LogUtil;
+
 
 /**
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 public class DbmsSupportFactory implements IDbmsSupportFactory {
-	private Logger log = LogUtil.getLogger(this.getClass());
+	private Logger log = LogManager.getLogger(this.getClass());
 
 	private Map<DataSource, IDbmsSupport> dbmsSupport = new ConcurrentHashMap<>();
 
-	private Properties dbmsSupportMap;
+	private @Getter Properties dbmsSupportMap;
 
 	@Override
 	public IDbmsSupport getDbmsSupport(DataSource datasource) {
@@ -48,16 +49,11 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 
 	private IDbmsSupport compute(DataSource datasource) {
 		try {
-			if(datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
-				Map<String, String> md = ((TransactionalDbmsSupportAwareDataSourceProxy) datasource).getMetaData();
-				return getDbmsSupport(md.get("product"), md.get("product-version"));
-			}
-
-			try(Connection connection = datasource.getConnection()) {
+			try (Connection connection = datasource.getConnection()) {
 				return getDbmsSupport(connection);
 			}
 		} catch (SQLException e) {
-			log.warn("SQL exception while trying to get a connection from datasource ["+datasource+"]", e);
+			log.warn("SQL exception while trying to get a connection from datasource [" + datasource + "]", e);
 			return new GenericDbmsSupport();
 		}
 	}
@@ -77,34 +73,31 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 		if (StringUtils.isEmpty(product)) {
 			log.warn("no product found from connection metadata");
 		} else {
-			Properties supportMap=getDbmsSupportMap();
-			if (supportMap==null) {
+			Properties supportMap = getDbmsSupportMap();
+			if (supportMap == null) {
 				log.debug("no dbmsSupportMap specified, reverting to built-in types");
 			} else {
 				if (!supportMap.containsKey(product)) {
-					log.debug("product ["+product+"] not configured in dbmsSupportMap, will search in built-in types");
+					log.debug("product [" + product + "] not configured in dbmsSupportMap, will search in built-in types");
 				} else {
-					String dbmsSupportClass=supportMap.getProperty(product);
+					String dbmsSupportClass = supportMap.getProperty(product);
 					if (StringUtils.isEmpty(dbmsSupportClass)) {
-						log.warn("product ["+product+"] configured empty in dbmsSupportMap, will search in built-in types");
+						log.warn("product [" + product + "] configured empty in dbmsSupportMap, will search in built-in types");
 					} else {
 						try {
-							if (log.isDebugEnabled()) log.debug("creating dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"] productVersion ["+productVersion+"]");
-							return (IDbmsSupport)ClassUtils.newInstance(dbmsSupportClass);
+							if (log.isDebugEnabled())
+								log.debug("creating dbmsSupportClass [" + dbmsSupportClass + "] for product [" + product + "] productVersion [" + productVersion + "]");
+							return (IDbmsSupport) ClassUtils.newInstance(dbmsSupportClass);
 						} catch (Exception e) {
-							throw new RuntimeException("Cannot create dbmsSupportClass ["+dbmsSupportClass+"] for product ["+product+"] productVersion ["+productVersion+"]",e);
+							throw new RuntimeException("Cannot create dbmsSupportClass [" + dbmsSupportClass + "] for product [" + product + "] productVersion [" + productVersion + "]", e);
 						}
 					}
 				}
 			}
 			return Dbms.findDbmsSupportByProduct(product, productVersion);
 		}
-		log.debug("Setting databasetype to GENERIC, productName ["+product+"]");
+		log.debug("Setting databasetype to GENERIC, productName [" + product + "]");
 		return new GenericDbmsSupport();
-	}
-
-	public Properties getDbmsSupportMap() {
-		return dbmsSupportMap;
 	}
 
 	public void setDbmsSupportMap(Properties dbmsSupportMap) {

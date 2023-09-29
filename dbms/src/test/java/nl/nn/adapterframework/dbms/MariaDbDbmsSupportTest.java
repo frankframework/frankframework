@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.jdbc.dbms;
+package nl.nn.adapterframework.dbms;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

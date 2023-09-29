@@ -1,3 +1,4 @@
+package nl.nn.adapterframework.dbms;
 /*
    Copyright 2015, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
@@ -13,7 +14,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc.dbms;
+
+import nl.nn.adapterframework.util.DbmsUtil;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -23,8 +25,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * Support for H2.
@@ -39,8 +39,8 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getSchema(Connection conn) throws JdbcException {
-		return JdbcUtil.executeStringQuery(conn, "SELECT SCHEMA()");
+	public String getSchema(Connection conn) throws DbmsException {
+		return DbmsUtil.executeStringQuery(conn, "SELECT SCHEMA()");
 	}
 
 	@Override
@@ -52,32 +52,33 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getTimestampAsDate(String columnName) {
-		return "formatdatetime("+columnName+",'yyyy-MM-dd')";
+		return "formatdatetime(" + columnName + ",'yyyy-MM-dd')";
 	}
 
 	@Override
-	public Object getClobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+	public Object getClobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createClob();
 	}
 
 	@Override
-	public Object getClobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+	public Object getClobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createClob();
 	}
 
 
 	@Override
-	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, JdbcException {
+	public Object getBlobHandle(ResultSet rs, int column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createBlob();
 	}
+
 	@Override
-	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, JdbcException {
+	public Object getBlobHandle(ResultSet rs, String column) throws SQLException, DbmsException {
 		return rs.getStatement().getConnection().createBlob();
 	}
 
 //	@Override
 //	// 2020-07-13 GvB: Did not get "SET SESSION CHARACTERISTICS" to work
-//	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws JdbcException {
+//	public JdbcSession prepareSessionForDirtyRead(Connection conn) throws DbmsException {
 //		JdbcUtil.executeStatement(conn, "SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
 //		return new AutoCloseable() {
 //
@@ -90,28 +91,28 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 //	}
 
 	@Override
-	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws JdbcException {
-		return super.getTableColumns(conn, schemaName, tableName.toUpperCase(), columnNamePattern!=null ? columnNamePattern.toUpperCase() : null);
+	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws DbmsException {
+		return super.getTableColumns(conn, schemaName, tableName.toUpperCase(), columnNamePattern != null ? columnNamePattern.toUpperCase() : null);
 	}
 
 	@Override
-	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws DbmsException {
 		return super.isTablePresent(conn, schemaName, tableName.toUpperCase());
 	}
 
 	@Override
-	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws DbmsException {
 		return super.isColumnPresent(conn, schemaName, tableName.toUpperCase(), columnName.toUpperCase());
 	}
 
 	@Override
-	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) throws DbmsException {
 		return super.hasIndexOnColumn(conn, schemaName, tableName.toUpperCase(), columnName.toUpperCase());
 	}
 
 	@Override
 	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
-		List<String> columnsUC = columns.stream().map(c -> c.toUpperCase()).collect(Collectors.toList());
+		List<String> columnsUC = columns.stream().map(String::toUpperCase).collect(Collectors.toList());
 		return doHasIndexOnColumns(conn, "PUBLIC", tableName.toUpperCase(), columnsUC,
 				"INFORMATION_SCHEMA.INDEXES", "INFORMATION_SCHEMA.INDEX_COLUMNS",
 				"TABLE_SCHEMA", "TABLE_NAME", "INDEX_NAME", "COLUMN_NAME", "ORDINAL_POSITION");

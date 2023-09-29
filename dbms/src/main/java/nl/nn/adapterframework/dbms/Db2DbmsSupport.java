@@ -1,3 +1,4 @@
+package nl.nn.adapterframework.dbms;
 /*
    Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
@@ -13,7 +14,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -21,10 +21,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import nl.nn.adapterframework.util.DbmsUtil;
+
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * Support for DB2.
@@ -60,53 +60,52 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
+	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws DbmsException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
-			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+			throw new DbmsException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT + "]");
 		}
-		return selectQuery+" FOR UPDATE SKIP LOCKED DATA";
+		return selectQuery + " FOR UPDATE SKIP LOCKED DATA";
 	}
 
 	@Override
-	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws JdbcException {
-		return selectQuery+ " SKIP LOCKED DATA";
+	public String prepareQueryTextForWorkQueuePeeking(int batchSize, String selectQuery, int wait) throws DbmsException {
+		return selectQuery + " SKIP LOCKED DATA";
 	}
 
 	@Override
-	public String getFirstRecordQuery(String tableName) throws JdbcException {
-		String query="select * from "+tableName+" fetch first 1 rows only";
-		return query;
+	public String getFirstRecordQuery(String tableName) throws DbmsException {
+		return "select * from " + tableName + " fetch first 1 rows only";
 	}
 
 	@Override
-	public String getSchema(Connection conn) throws JdbcException {
-		return JdbcUtil.executeStringQuery(conn, "SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1");
+	public String getSchema(Connection conn) throws DbmsException {
+		return DbmsUtil.executeStringQuery(conn, "SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1");
 	}
 
 	@Override
-	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws DbmsException {
 		return super.isTablePresent(conn, schemaName, tableName.toUpperCase());
 	}
 
 	@Override
-	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws JdbcException {
-		return super.getTableColumns(conn, schemaName, tableName.toUpperCase(), columnNamePattern!=null ? columnNamePattern.toUpperCase(): null);
+	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws DbmsException {
+		return super.getTableColumns(conn, schemaName, tableName.toUpperCase(), columnNamePattern != null ? columnNamePattern.toUpperCase() : null);
 	}
 
 	@Override
-	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws DbmsException {
 		return doIsColumnPresent(conn, "syscat.columns", schemaName, "tabname", "colname", null, tableName.toUpperCase(), columnName.toUpperCase());
 	}
 
-	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) throws DbmsException {
 		List<String> columns = new LinkedList<>();
 		columns.add(columnName);
 		return hasIndexOnColumns(conn, schemaName, tableName, columns);
 	}
 
 	@Override
-	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws JdbcException {
-		return doHasIndexOnColumns(conn, schemaOwner, tableName.toUpperCase(), columns.stream().map(s->s.toUpperCase()).collect(Collectors.toList()),
+	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws DbmsException {
+		return doHasIndexOnColumns(conn, schemaOwner, tableName.toUpperCase(), columns.stream().map(String::toUpperCase).collect(Collectors.toList()),
 				"syscat.indexes", "syscat.indexcoluse", null, "tabname", "indname", "colname", "colseq");
 	}
 

@@ -1,12 +1,10 @@
-package nl.nn.adapterframework.jdbc.dbms;
+package nl.nn.adapterframework.dbms;
 
 import static org.junit.Assert.assertEquals;
 
 import java.sql.SQLException;
 
 import org.junit.Test;
-
-import nl.nn.adapterframework.jdbc.JdbcException;
 
 public class H2DbmsSupportTest {
 

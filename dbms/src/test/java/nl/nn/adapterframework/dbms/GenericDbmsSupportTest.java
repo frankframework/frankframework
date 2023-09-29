@@ -1,11 +1,9 @@
-package nl.nn.adapterframework.jdbc.dbms;
+package nl.nn.adapterframework.dbms;
 
 import static org.junit.Assert.assertEquals;
 
 import java.sql.SQLException;
 import java.util.List;
-
-import nl.nn.adapterframework.jdbc.JdbcException;
 
 import org.junit.Test;
 

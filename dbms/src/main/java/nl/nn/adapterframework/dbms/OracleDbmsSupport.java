@@ -1,3 +1,4 @@
+package nl.nn.adapterframework.dbms;
 /*
    Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
@@ -13,7 +14,6 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -21,13 +21,12 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import nl.nn.adapterframework.util.DbmsUtil;
+
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.util.JdbcUtil;
-
 /**
- * @author  Gerrit van Brakel
+ * @author Gerrit van Brakel
  */
 public class OracleDbmsSupport extends GenericDbmsSupport {
 
@@ -68,7 +67,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String autoIncrementInsertValue(String sequenceName) {
-		return sequenceName+".NEXTVAL";
+		return sequenceName + ".NEXTVAL";
 	}
 
 	@Override
@@ -78,7 +77,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
-		return "SELECT "+sequenceName+".CURRVAL FROM DUAL";
+		return "SELECT " + sequenceName + ".CURRVAL FROM DUAL";
 	}
 
 	@Override
@@ -95,15 +94,17 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	public boolean mustInsertEmptyBlobBeforeData() {
 		return true;
 	}
+
 	@Override
 	public String getUpdateBlobQuery(String table, String blobField, String keyField) {
-		return "SELECT "+blobField+ " FROM "+table+ " WHERE "+keyField+"=?"+ " FOR UPDATE";
+		return "SELECT " + blobField + " FROM " + table + " WHERE " + keyField + "=?" + " FOR UPDATE";
 	}
 
 	@Override
 	public String emptyBlobValue() {
 		return "empty_blob()";
 	}
+
 	@Override
 	public String getTextFieldType() {
 		return "VARCHAR2";
@@ -111,9 +112,9 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 
 
 	@Override
-	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
+	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws DbmsException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
-			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+			throw new DbmsException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT + "]");
 		}
 		/*
 		 * see:
@@ -123,27 +124,27 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		 * http://forums.oracle.com/forums/thread.jspa?threadID=664986
 		 */
 		if (wait < 0) {
-			return selectQuery+" FOR UPDATE SKIP LOCKED";
+			return selectQuery + " FOR UPDATE SKIP LOCKED";
 		} else {
-			return selectQuery+" FOR UPDATE WAIT " + wait;
+			return selectQuery + " FOR UPDATE WAIT " + wait;
 		}
 	}
 
 
 	@Override
-	public String getFirstRecordQuery(String tableName) throws JdbcException {
-		String query="select * from "+tableName+" where ROWNUM=1";
+	public String getFirstRecordQuery(String tableName) {
+		String query = "select * from " + tableName + " where ROWNUM=1";
 		return query;
 	}
 
 	@Override
 	public String provideIndexHintAfterFirstKeyword(String tableName, String indexName) {
-		return " /*+ INDEX ( "+tableName+ " "+indexName+" ) */ ";
+		return " /*+ INDEX ( " + tableName + " " + indexName + " ) */ ";
 	}
 
 	@Override
 	public String provideFirstRowsHintAfterFirstKeyword(int rowCount) {
-		return " /*+ FIRST_ROWS( "+rowCount+" ) */ ";
+		return " /*+ FIRST_ROWS( " + rowCount + " ) */ ";
 	}
 
 	@Override
@@ -151,6 +152,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		// updateClob is not required for Oracle
 		// rs.updateClob(column, (Clob)clobUpdateHandle);
 	}
+
 	@Override
 	public void updateClob(ResultSet rs, String column, Object clobUpdateHandle) throws SQLException {
 		// updateClob is not required for Oracle
@@ -162,6 +164,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		// updateBlob is not required for Oracle
 		// rs.updateBlob(column, (Blob)blobUpdateHandle);
 	}
+
 	@Override
 	public void updateBlob(ResultSet rs, String column, Object blobUpdateHandle) throws SQLException {
 		// updateBlob is not required for Oracle
@@ -169,13 +172,13 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getSchema(Connection conn) throws JdbcException {
-		return JdbcUtil.executeStringQuery(conn, "SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL");
+	public String getSchema(Connection conn) throws DbmsException {
+		return DbmsUtil.executeStringQuery(conn, "SELECT SYS_CONTEXT('USERENV','CURRENT_SCHEMA') FROM DUAL");
 	}
 
 	@Override
 	public String getRowNumber(String order, String sort) {
-		return "row_number() over (order by "+order+(sort==null?"":" "+sort)+") "+getRowNumberShortName();
+		return "row_number() over (order by " + order + (sort == null ? "" : " " + sort) + ") " + getRowNumberShortName();
 	}
 
 	@Override
@@ -194,44 +197,44 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws JdbcException {
-		return super.getTableColumns(conn, schemaName, tableName.toUpperCase(), columnNamePattern!=null ? columnNamePattern.toUpperCase() : null);
+	public ResultSet getTableColumns(Connection conn, String schemaName, String tableName, String columnNamePattern) throws DbmsException {
+		return super.getTableColumns(conn, schemaName, tableName.toUpperCase(), columnNamePattern != null ? columnNamePattern.toUpperCase() : null);
 	}
 
 	@Override
-	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws JdbcException {
+	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws DbmsException {
 		return super.isTablePresent(conn, schemaName, tableName.toUpperCase());
 	}
 
 	@Override
-	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+	public boolean isColumnPresent(Connection conn, String schemaName, String tableName, String columnName) throws DbmsException {
 		return super.isColumnPresent(conn, schemaName, tableName.toUpperCase(), columnName.toUpperCase());
 	}
 
 	@Override
 	public boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName) {
-		String query="select count(*) from all_indexes where owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"'";
+		String query = "select count(*) from all_indexes where owner='" + schemaOwner.toUpperCase() + "' and table_name='" + tableName.toUpperCase() + "' and index_name='" + indexName.toUpperCase() + "'";
 		try {
-			if (JdbcUtil.executeIntQuery(conn, query)>=1) {
+			if (DbmsUtil.executeIntQuery(conn, query) >= 1) {
 				return true;
 			}
 			return false;
 		} catch (Exception e) {
-			log.warn("could not determine presence of index ["+indexName+"] on table ["+tableName+"]",e);
+			log.warn("could not determine presence of index [" + indexName + "] on table [" + tableName + "]", e);
 			return false;
 		}
 	}
 
 	@Override
 	public boolean isSequencePresent(Connection conn, String schemaOwner, String tableName, String sequenceName) {
-		String query="select count(*) from all_sequences where sequence_owner='"+schemaOwner.toUpperCase()+"' and sequence_name='"+sequenceName.toUpperCase()+"'";
+		String query = "select count(*) from all_sequences where sequence_owner='" + schemaOwner.toUpperCase() + "' and sequence_name='" + sequenceName.toUpperCase() + "'";
 		try {
-			if (JdbcUtil.executeIntQuery(conn, query)>=1) {
+			if (DbmsUtil.executeIntQuery(conn, query) >= 1) {
 				return true;
 			}
 			return false;
 		} catch (Exception e) {
-			log.warn("could not determine presence of sequence ["+sequenceName+"]",e);
+			log.warn("could not determine presence of sequence [" + sequenceName + "]", e);
 			return false;
 		}
 	}
@@ -240,7 +243,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 //	public boolean isIndexColumnPresent(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
 //		String query="select count(*) from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
 //		try {
-//			if (JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
+//			if (DbmsUtil.executeIntQuery(conn, query, columnName.toUpperCase())>=1) {
 //				return true;
 //			}
 //			return false;
@@ -254,7 +257,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 //	public int getIndexColumnPosition(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
 //		String query="select column_position from all_ind_columns where index_owner='"+schemaOwner.toUpperCase()+"' and table_name='"+tableName.toUpperCase()+"' and index_name='"+indexName.toUpperCase()+"' and column_name=?";
 //		try {
-//			return JdbcUtil.executeIntQuery(conn, query, columnName.toUpperCase());
+//			return DbmsUtil.executeIntQuery(conn, query, columnName.toUpperCase());
 //		} catch (Exception e) {
 //			log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]",e);
 //			return -1;
@@ -262,7 +265,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 //	}
 
 	@Override
-	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) throws JdbcException {
+	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) throws DbmsException {
 		return super.hasIndexOnColumn(conn, schemaOwner.toUpperCase(), tableName.toUpperCase(), columnName.toUpperCase());
 	}
 

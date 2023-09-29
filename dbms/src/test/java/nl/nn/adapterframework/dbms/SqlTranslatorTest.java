@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.jdbc.dbms;
+package nl.nn.adapterframework.dbms;
 
 import static org.junit.Assert.assertEquals;
 
@@ -13,7 +13,7 @@ import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
 public class SqlTranslatorTest {
-	
+
 	private String source;
 	private String target;
 	private String query;
