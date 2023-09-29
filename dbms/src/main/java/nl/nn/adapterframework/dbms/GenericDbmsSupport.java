@@ -29,7 +29,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -653,8 +652,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	protected List<String> splitQuery(String query) {
 		// A query can contain multiple queries separated by a semicolon
-		List<String> splittedQueries = Arrays.asList(query.split(";"));
-
+		List<String> splittedQueries = new ArrayList<>();
 		if (!query.contains(";")) {
 			splittedQueries.add(query);
 		} else {

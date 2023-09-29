@@ -22,6 +22,8 @@ import java.sql.SQLException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import nl.nn.adapterframework.dbms.JdbcException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -32,8 +34,8 @@ import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;

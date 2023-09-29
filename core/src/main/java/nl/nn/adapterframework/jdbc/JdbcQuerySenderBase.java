@@ -40,6 +40,8 @@ import javax.annotation.Nullable;
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.dbms.JdbcException;
+
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.ContentHandler;

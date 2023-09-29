@@ -20,7 +20,7 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.batch.IResultHandler;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 
 
 /**
