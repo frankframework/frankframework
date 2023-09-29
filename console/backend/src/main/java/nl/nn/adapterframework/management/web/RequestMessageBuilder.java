@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -85,7 +86,17 @@ public class RequestMessageBuilder {
 	}
 
 	public Message<?> build() {
-		SEC_LOG.always().log(createLogMessage());
+		if(SEC_LOG.isInfoEnabled()) {
+			String method = base.getServletRequest().getMethod();
+			if((method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("OPTIONS"))) {
+				SEC_LOG.debug("created bus request from URI [{}:{}] issued by{}", method, base.getUriInfo().getRequestUri(), HttpUtils.getCommandIssuedBy(base.getServletRequest()));
+			} else {
+				String headers = customHeaders.entrySet().stream()
+						.map(e -> e.getKey() + "=" +e.getValue())
+						.collect(Collectors.joining (", "));
+				SEC_LOG.info("created bus request from URI [{}:{}] issued by{} with headers [{}] payload [{}]", method, base.getUriInfo().getRequestUri(), HttpUtils.getCommandIssuedBy(base.getServletRequest()), headers, payload);
+			}
+		}
 
 		DefaultMessageBuilderFactory factory = base.getApplicationContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
 		MessageBuilder<?> builder = factory.withPayload(payload);
@@ -101,12 +112,5 @@ public class RequestMessageBuilder {
 		}
 
 		return builder.build();
-	}
-
-	private String createLogMessage() {
-		StringBuilder securityLogLine = new StringBuilder("created request from URI [");
-		securityLogLine.append(base.getServletRequest().getMethod()).append(":").append(base.getUriInfo().getRequestUri());
-		securityLogLine.append("] issued by").append(HttpUtils.getCommandIssuedBy(base.getServletRequest()));
-		return securityLogLine.toString();
 	}
 }
