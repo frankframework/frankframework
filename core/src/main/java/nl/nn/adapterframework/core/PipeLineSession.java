@@ -374,7 +374,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 					LOG.debug("messageId [{}] auto closing resource {}", this::getMessageId, entry::getValue);
 					closeable.close();
 				} else {
-					LOG.debug("messageId [{}] resource {} not closed", this::getMessageId, entry::getValue);
+					LOG.debug("messageId [{}] system resource {} not closed", this::getMessageId, entry::getValue);
 				}
 			} catch (Exception e) {
 				LOG.warn("Exception closing resource", e);
