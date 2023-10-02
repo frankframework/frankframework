@@ -18,10 +18,13 @@ mvn install -P docker,Tomcat
 
 First make sure that you can access the auxiliary images. This can be done by building them yourself, or by using the prebuild images in the private Docker registry `private.docker.nexus.frankframework.org`. The private repository requires [login](https://docs.docker.com/engine/reference/commandline/login/).
 
-Use Docker compose to run any combination of test image, database and MQ.
-The properties will be resolved automatically.
-Combine the YAML files in this folder to start your test environment. 
+Use Docker compose to run any combination of test image, database and MQ. The properties will be resolved automatically.
+For example, to start Tomcat with the default H2 in-memory database:
+```shell
+docker compose -f tomcat.yml up
+```
 
+Combine the YAML files in this folder to start a more enhanced test environment. 
 For example, if you want to run WildFly with MariaDB and Artemis, run this command:
 
 ```shell
@@ -29,6 +32,25 @@ docker compose -f wildfly.yml -f mariadb.yml -f artemis.yml up
 ```
 
 FF!Test will be available at http://localhost/iaf-test
+
+## Debugging inside a Docker image
+
+It is possible to attach your Java debugger to a Docker image. You can place breakpoints but also live update classes to work on fixes easily, without the whole Maven build and Docker compose cycle. 
+- First, build the basic image as described above with Maven, to build the test image. 
+- Second, start the image with the following command, from the current 'docker' folder:
+```shell
+export VERSION=7.9-SNAPSHOT
+docker run -it --rm \
+-e JPDA_ADDRESS=8001 -e JPDA_TRANSPORT=dt_socket \
+-p 8080:8080 -p 8001:8001 \
+--volume "$(pwd)/../test/src/test/testtool:/opt/frank/testtool-ext" \
+--mount type=bind,source="$(pwd)"/../core/target/ibis-adapterframework-core-$VERSION.jar,target=/usr/local/tomcat/webapps/iaf-test/WEB-INF/lib/ibis-adapterframework-core-$VERSION.jar,readonly \
+ff-test:$VERSION-tomcat \
+/usr/local/tomcat/bin/catalina.sh jpda run
+```
+- Third, attach to your running process, inside your IDE. In IntelliJ, choose `Remote JVM Debug` and use port 8001 at localhost.
+- You can use breakpoints and if you update/save/compile a class inside your IDE, it is automatically updated inside your attached Docker image. Unfortunately, this has [limitations](https://www.jetbrains.com/help/idea/altering-the-program-s-execution-flow.html#hotswap-limitations).
+- Hint: the above (optional) line with `--mount` links your locally build core.jar file to the Tomcat instance. So, upon an image restart, you get the latest code. By performing `mvn package -pl core -am -DskipTests` in the root of your project, you have a new `core.jar` to use, once you restart your Docker image. This method is possible with all jar files used by FF.  
 
 ### Running a different version
  
