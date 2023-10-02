@@ -142,7 +142,7 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chompsize.xml");
-		assertEquals(testOutputFile, handler.getXmlString());
+		assertEquals(testOutputFile, xmlWriter.toString());
 	}
 
 	@Test
@@ -157,7 +157,7 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest.xml");
-		assertEquals(testOutputFile, handler.getXmlString());
+		assertEquals(testOutputFile, xmlWriter.toString());
 		assertEquals("DC2023-00020", session.getString("ref_identificatie"));
 		assertEquals("DC2022-012345", session.getString("ref_identificatie2"));
 
@@ -187,7 +187,7 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chainchomptest.xml");
-		assertEquals(testOutputFile, handler.getXmlString());
+		assertEquals(testOutputFile, xmlWriter.toString());
 		assertTrue(session.isEmpty());
 	}
 
@@ -206,7 +206,7 @@ class CompactSaxHandlerTest {
 		XmlUtils.parseXml(bigInputMessage.asInputSource(), handler);
 
 		// Assert
-		assertEquals(expectedOutput, handler.getXmlString());
+		assertEquals(expectedOutput, xmlWriter.toString());
 		assertEquals(101_541, Objects.requireNonNull(session.getString("ref_message")).length());
 	}
 
@@ -222,7 +222,7 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest2.xml");
-		assertEquals(testOutputFile, handler.getXmlString());
+		assertEquals(testOutputFile, xmlWriter.toString());
 		assertEquals("DC2023-00020", session.getString("ref_identificatie"));
 		assertEquals("DC2022-012345", session.getString("ref_identificatie2"));
 	}
@@ -247,7 +247,7 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-moved2.xml");
-		assertEquals(testOutputFile, handler.getXmlString());
+		assertEquals(testOutputFile, xmlWriter.toString());
 		assertEquals(2, session.size());
 	}
 

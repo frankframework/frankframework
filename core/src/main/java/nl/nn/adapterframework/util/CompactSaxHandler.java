@@ -186,10 +186,6 @@ public class CompactSaxHandler extends FullXmlFilter {
 		return chain;
 	}
 
-	public String getXmlString() {
-		return getContentHandler().toString();
-	}
-
 	public void setChompCharSize(String input) {
 		chompLength = (int) Misc.toFileSize(input, -1);
 	}
