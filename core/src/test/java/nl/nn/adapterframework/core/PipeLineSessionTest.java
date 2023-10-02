@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -237,14 +239,15 @@ public class PipeLineSessionTest {
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
 		Message message = Message.asMessage("a message");
-		BufferedReader closeable = new BufferedReader(new StringReader("a closeable"));
+		BufferedReader closeable1 = new BufferedReader(new StringReader("a closeable"));
+		Message closeable2 = Message.asMessage("a message is closeable");
 		from.put("a", 15);
 		from.put("b", 16);
 		from.put("c", message);
-		from.put("d", closeable);
+		from.put("d", closeable1);
+		from.put("__e", closeable2);
 
 		from.scheduleCloseOnSessionExit(message, "test-c");
-		from.scheduleCloseOnSessionExit(closeable, "test-d");
 
 		// Act
 		from.mergeToParentSession(keysToCopy, to);
@@ -255,7 +258,7 @@ public class PipeLineSessionTest {
 		assertEquals(from,to);
 
 		assertTrue(to.getCloseables().containsKey(message));
-		assertTrue(to.getCloseables().containsKey(closeable));
+		assertTrue(to.getCloseables().containsKey(closeable1));
 		assertNotNull(((Message) to.get("c")).asObject());
 		assertEquals("a message", ((Message) to.get("c")).asString());
 		assertEquals("a closeable", ((BufferedReader) to.get("d")).readLine());
@@ -265,6 +268,7 @@ public class PipeLineSessionTest {
 
 		// Assert
 		assertNull(((Message) to.get("c")).asObject());
+		assertNotNull(((Message) to.get("__e")).asObject());
 	}
 
 	@Test
@@ -322,34 +326,20 @@ public class PipeLineSessionTest {
 	public void testNotCloseSystemCloseables() throws Exception {
 		// Arrange
 		javax.jms.Session jmsSession = mock(AutoCloseableJmsSession.class);
-		session.put("JmsSession", jmsSession);
+		session.put("__JmsSession", jmsSession);
 		doAnswer((params) -> fail("Should not close JMS Session")).when(jmsSession).close();
 
-		javax.jms.Connection jmsConnection = mock(AutoCloseableJmsConnection.class);
-		session.put("JmsConnection", jmsConnection);
-		doAnswer((params) -> fail("Should not close JMS Connection")).when(jmsConnection).close();
-
 		java.sql.Connection jdbcConnection = mock(java.sql.Connection.class);
-		session.scheduleCloseOnSessionExit(jdbcConnection, "jdbcConnection");
-		doAnswer((params) -> fail("Should not close JDBC Connection")).when(jdbcConnection).close();
-
-		AutoCloseableHttpSession httpSession = mock(AutoCloseableHttpSession.class);
-		session.put("HttpSession", httpSession);
-		doAnswer((params) -> fail("Should not close HTTP Session")).when(httpSession).close();
+		session.put("CloseThis", jdbcConnection);
 
 		// Act
 		session.close();
+
+		// Assert
+		verify(jdbcConnection, times(1)).close();
 	}
 
 	private interface AutoCloseableJmsSession extends javax.jms.Session, AutoCloseable {
-		// No methods added
-	}
-
-	private interface AutoCloseableJmsConnection extends javax.jms.Connection, AutoCloseable {
-		// No methods added
-	}
-
-	private interface AutoCloseableHttpSession extends javax.servlet.http.HttpSession, AutoCloseable {
 		// No methods added
 	}
 }

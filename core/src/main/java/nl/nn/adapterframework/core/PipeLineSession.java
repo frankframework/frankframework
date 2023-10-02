@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.core;
 
 import java.security.Principal;
-import java.sql.ResultSet;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,9 +24,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import javax.jms.Session;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +44,8 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
 	private static final Logger LOG = LogUtil.getLogger(PipeLineSession.class);
+
+	public static final String SYSTEM_MANAGED_RESOURCE_PREFIX = "__";
 
 	public static final String originalMessageKey="originalMessage";
 	public static final String originalMessageIdKey="id";
@@ -121,9 +119,10 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
 			to.putAll(this);                                      // ... all keys will be copied
 		}
-		Set<AutoCloseable> closeablesInDestination = to.values().stream()
-				.filter(v -> shouldCloseSessionResource(v))
-				.map(v -> (AutoCloseable) v)
+		Set<AutoCloseable> closeablesInDestination = to.entrySet().stream()
+				.filter(entry -> shouldCloseSessionResource(entry.getKey(), entry.getValue()))
+				.map(Entry::getValue)
+				.map(AutoCloseable.class::cast)
 				.collect(Collectors.toSet());
 		if (to instanceof PipeLineSession) {
 			PipeLineSession toSession = (PipeLineSession) to;
@@ -140,17 +139,15 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	@Override
 	public Object put(String key, Object value) {
-		if (shouldCloseSessionResource(value)) {
+		if (shouldCloseSessionResource(key, value)) {
 			closeables.put((AutoCloseable) value, "Session key [" + key + "]");
 		}
 		return super.put(key, value);
 	}
 
-	private static boolean shouldCloseSessionResource(final Object value) {
+	private static boolean shouldCloseSessionResource(final String key, final Object value) {
 		return value instanceof AutoCloseable &&
-			!(value instanceof HttpSession || value instanceof Session
-			|| value instanceof javax.jms.Connection || value instanceof java.sql.Connection
-			|| value instanceof ResultSet);
+			!key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
 	}
 
 	@Override
@@ -370,12 +367,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			Entry<AutoCloseable, String> entry = it.next();
 			AutoCloseable closeable = entry.getKey();
 			try {
-				if (shouldCloseSessionResource(closeable)) {
-					LOG.debug("messageId [{}] auto closing resource {}", this::getMessageId, entry::getValue);
-					closeable.close();
-				} else {
-					LOG.debug("messageId [{}] system resource {} not closed", this::getMessageId, entry::getValue);
-				}
+				LOG.debug("messageId [{}] auto closing resource {}", this::getMessageId, entry::getValue);
+				closeable.close();
 			} catch (Exception e) {
 				LOG.warn("Exception closing resource", e);
 			} finally {
