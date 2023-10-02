@@ -116,6 +116,7 @@ public class CompactSaxHandler extends FullXmlFilter {
 		moveElementFound = moveElementFound
 				&& context != null
 				&& !startElement
+				&& (chompLength < 0 || length <= chompLength)
 				&& !(length > VALUE_MOVE_START.length()
 				&& charDataBuilder.substring(length - 1, length).equals(VALUE_MOVE_END)
 				&& charDataBuilder.substring(0, VALUE_MOVE_START.length()).equals(VALUE_MOVE_START));

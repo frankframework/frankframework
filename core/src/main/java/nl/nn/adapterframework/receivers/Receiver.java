@@ -1702,8 +1702,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		}
 	}
 
-
-
 	@Override
 	public boolean isThreadCountReadable() {
 		if (getListener() instanceof IThreadCountControllable) {
@@ -1969,15 +1967,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return lastMessageDate;
 	}
 
-//	public StatisticsKeeper getRequestSizeStatistics() {
-//		return requestSizeStatistics;
-//	}
-//	public StatisticsKeeper getResponseSizeStatistics() {
-//		return responseSizeStatistics;
-//	}
-
-
-
 	public void resetNumberOfExceptionsCaughtWithoutMessageBeingReceived() {
 		if(log.isDebugEnabled()) log.debug("resetting [numberOfExceptionsCaughtWithoutMessageBeingReceived] to 0");
 		numberOfExceptionsCaughtWithoutMessageBeingReceived.setValue(0);
@@ -2042,13 +2031,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		this.messageLog = messageLog;
 	}
 
-
 	/**
-	 * Sets the name of the Receiver.
+	 * Sets the name of the Receiver, as known to the Adapter.
 	 * If the listener implements the {@link INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
-	/** Name of the Receiver as known to the Adapter */
 	@Override
 	public void setName(String newName) {
 		name = newName;
@@ -2063,9 +2050,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		this.onError = value;
 	}
 
-	/**
-	 * The number of threads that this receiver is configured to work with.
-	 */
 	/**
 	 * The number of threads that may execute a Pipeline concurrently (only for pulling listeners)
 	 * @ff.default 1
@@ -2083,7 +2067,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	/**
-	 * The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners
+	 * The number of seconds waited after an unsuccessful poll attempt, before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners
 	 * @ff.default 10
 	 */
 	public void setPollInterval(int i) {
@@ -2180,13 +2164,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		chompCharSize = string;
 	}
 
-	/** If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementToMoveSessionKey</code> + } */
+	/** If set, the character data in this XML element is stored inside a session key and in the message it is replaced by a reference to this session key: {sessionKey: + <code>elementToMoveSessionKey</code> + } */
 	public void setElementToMove(String string) {
 		elementToMove = string;
 	}
 
 	/**
-	 * (Only used when <code>elementToMove</code> is set) Name of the session key under which the character data is stored
+	 * (Only used when <code>elementToMove</code> or <code>elementToMoveChain</code> is set) Name of the session key wherein the character data is stored
 	 * @ff.default ref_ + the name of the element
 	 */
 	public void setElementToMoveSessionKey(String string) {
@@ -2229,7 +2213,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	/**
-	 * Number of connection attemps to put the adapter in warning status
+	 * Number of connection attempts to put the adapter in warning status
 	 * @ff.default 5
 	 */
 	public void setNumberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold(int number) {

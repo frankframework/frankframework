@@ -1,0 +1,24 @@
+<Envelope>
+	<Header/>
+	<Body>
+		<edcLk01>
+			<stuurgegevens>
+				<berichtcode>Lk01</berichtcode>
+				<tijdstipBericht>*** character data size [17] exceeds [10] and is chomped ***2023082509...(7 characters more)</tijdstipBericht>
+				<entiteittype>EDC</entiteittype>
+			</stuurgegevens>
+			<parameters>
+				<mutatiesoort>T</mutatiesoort>
+				<indicatorOvername>V</indicatorOvername>
+			</parameters>
+			<object entiteittype="EDC" verwerkingssoort="T">
+				<identificatie>*** character data size [12] exceeds [10] and is chomped ***DC2023-000...(2 characters more)</identificatie>
+				<dct.omschrijving>Brief</dct.omschrijving>
+			</object>
+			<object entiteittype="EDC" verwerkingssoort="E">
+				<identificatie>*** character data size [13] exceeds [10] and is chomped ***DC2022-012...(3 characters more)</identificatie>
+				<dct.omschrijving>Email</dct.omschrijving>
+			</object>
+		</edcLk01>
+	</Body>
+</Envelope>
