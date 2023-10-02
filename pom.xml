@@ -7,10 +7,10 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>7.9-SNAPSHOT</revision>
+		<revision>8.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.source>11</maven.compiler.source>
 		<log4j2.version>2.20.0</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
@@ -565,7 +565,7 @@
 					<excludes>
 						<exclude>it.**</exclude>
 					</excludes>
-					<argLine>@{argLine} -Dfile.encoding=CP-1252</argLine>
+					<argLine>@{argLine} -Dfile.encoding=CP-1252 --illegal-access=permit</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -600,6 +600,7 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.11.0</version>
 					<configuration>
+						<release>${maven.compiler.target}</release>
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
 					</configuration>
@@ -1322,44 +1323,6 @@
 					</plugin>
 				</plugins>
 			</reporting>
-		</profile>
-		<profile><!-- This profile should only activate when explicitly specified, and running on JDK11 -->
-			<id>jdk11</id>
-			<activation>
-				<jdk>11</jdk>
-				<property>
-					<name>jdk11</name>
-				</property>
-			</activation>
-			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<artifactId>maven-compiler-plugin</artifactId>
-							<configuration>
-								<release>11</release>
-							</configuration>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-				<plugins>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<version>2.22.2</version>
-						<configuration>
-							<redirectTestOutputToFile>true</redirectTestOutputToFile>
-							<reuseForks>true</reuseForks>
-							<includes>
-								<include>**/*.java</include>
-							</includes>
-							<excludes>
-								<exclude>it.**</exclude>
-							</excludes>
-							<argLine>@{argLine} -Dfile.encoding=CP-1252 --illegal-access=permit</argLine>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
 		</profile>
 		<profile><!-- https://stackoverflow.com/a/12598554/17193564 -->
 			<id>alternateBuildDir</id>
