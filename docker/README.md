@@ -1,6 +1,8 @@
 # Frank!Framework - Docker
 
-This module contains Docker images for various appservers to test the Frank!Framework with.
+This module contains Docker images for various appservers to **test** the Frank!Framework with. This is not meant for
+developing Franks! nor to run in production. For that, refer to the ["Frank!Framework with Docker"](../Docker.md)
+documentation.
 The Docker images have been customized to run without needing much configuration.
 The images contain the test configurations and secrets to connect with
 our [auxiliary images](https://github.com/ibissource/iaf-ci-images) which include the databases and MQs.
