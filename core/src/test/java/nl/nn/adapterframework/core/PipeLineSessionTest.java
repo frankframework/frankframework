@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -259,6 +260,7 @@ public class PipeLineSessionTest {
 
 		assertTrue(to.getCloseables().containsKey(message));
 		assertTrue(to.getCloseables().containsKey(closeable1));
+		assertFalse(to.getCloseables().containsKey(closeable2));
 		assertNotNull(((Message) to.get("c")).asObject());
 		assertEquals("a message", ((Message) to.get("c")).asString());
 		assertEquals("a closeable", ((BufferedReader) to.get("d")).readLine());

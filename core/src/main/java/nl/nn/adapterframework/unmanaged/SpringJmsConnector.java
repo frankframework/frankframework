@@ -357,7 +357,6 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		}
 	}
 
-
 	public String getLogPrefix() {
 		String result="SpringJmsConnector ";
 		if (getListener()!=null && getListener().getReceiver()!=null) {
@@ -365,6 +364,4 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		}
 		return result;
 	}
-
-
 }
