@@ -16,3 +16,5 @@ services:
             - run
         environment:
             larva.adapter.active: false
+            JPDA_ADDRESS: 8001
+            JPDA_TRANSPORT: dt_socket
