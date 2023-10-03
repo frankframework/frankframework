@@ -38,7 +38,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {{JavaScriptEngines.J2V8}, {JavaScriptEngines.NASHORN}, {JavaScriptEngines.RHINO}});
+		return Arrays.asList(new Object[][] {{JavaScriptEngines.J2V8}, {JavaScriptEngines.NASHORN}});
 	}
 
 	//Test without a given jsFunctionName. Will call the javascript function main as default

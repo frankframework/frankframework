@@ -33,7 +33,6 @@ import nl.nn.adapterframework.extensions.javascript.J2V8;
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
 import nl.nn.adapterframework.extensions.javascript.JavascriptException;
 import nl.nn.adapterframework.extensions.javascript.Nashorn;
-import nl.nn.adapterframework.extensions.javascript.Rhino;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -42,7 +41,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * Sender used to run javascript code using J2V8 or Rhino
+ * Sender used to run javascript code using J2V8
  *
  * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
  * The parameters of the javascript function to run are given as parameters by the adapter configuration
@@ -68,7 +67,7 @@ public class JavascriptSender extends SenderSeries {
 	private String fileInput;
 
 	public enum JavaScriptEngines {
-		J2V8(J2V8.class), NASHORN(Nashorn.class), RHINO(Rhino.class);
+		J2V8(J2V8.class), NASHORN(Nashorn.class);
 
 		private Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
 		private JavaScriptEngines(Class<? extends JavascriptEngine<?>> engine) {
