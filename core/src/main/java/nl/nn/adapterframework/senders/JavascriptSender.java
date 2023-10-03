@@ -32,7 +32,6 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.extensions.javascript.J2V8;
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
 import nl.nn.adapterframework.extensions.javascript.JavascriptException;
-import nl.nn.adapterframework.extensions.javascript.Nashorn;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -67,17 +66,17 @@ public class JavascriptSender extends SenderSeries {
 	private String fileInput;
 
 	public enum JavaScriptEngines {
-		J2V8(J2V8.class), NASHORN(Nashorn.class);
+		J2V8(J2V8.class);
 
-		private Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
+		private final Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
 		private JavaScriptEngines(Class<? extends JavascriptEngine<?>> engine) {
 			this.engine = engine;
 		}
 
 		public JavascriptEngine<?> create() {
 			try {
-				return engine.newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
+				return engine.getDeclaredConstructor().newInstance();
+			} catch (Exception e) {
 				throw new IllegalStateException("Javascript engine [" + engine.getSimpleName() + "] could not be initialized.", e);
 			}
 		}
