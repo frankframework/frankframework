@@ -20,9 +20,6 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionObject;
 
-import bitronix.tm.BitronixTransaction;
-import bitronix.tm.internal.XAResourceManager;
-import bitronix.tm.utils.Uid;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -238,14 +235,6 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 			Object suspendedResources = ClassUtils.getDeclaredFieldValue(resources, "suspendedResources");
 			if (suspendedResources!=null) {
 				System.out.println("-> suspendedResources: "+ToStringBuilder.reflectionToString(suspendedResources, ToStringStyle.MULTI_LINE_STYLE));
-
-				if (suspendedResources instanceof BitronixTransaction) {
-					BitronixTransaction bt = (BitronixTransaction)suspendedResources;
-					XAResourceManager rm = bt.getResourceManager();
-					System.out.println("-> XAResourceManager: "+ToStringBuilder.reflectionToString(rm, ToStringStyle.MULTI_LINE_STYLE));
-					Uid gtrid = rm.getGtrid();
-					System.out.println("-> gtrid: "+gtrid);
-				}
 			}
 		}
 	}

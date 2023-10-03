@@ -19,7 +19,6 @@ import org.junit.rules.Timeout;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.StreamUtils;
 
-import bitronix.tm.TransactionManagerServices;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -61,9 +60,6 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Status
 		if (transactionManager != null) {
 			transactionManager.shutdownTransactionManager();
 			transactionManager = null;
-		}
-		if (TransactionManagerServices.isTransactionManagerRunning()) {
-			TransactionManagerServices.getTransactionManager().shutdown();
 		}
 	}
 

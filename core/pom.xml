@@ -510,12 +510,7 @@
 			<version>9.43.3</version>
 		</dependency>
 
-		<!-- TransactionManagers: BTM + NARAYANA -->
-		<dependency>
-			<groupId>com.github.marcus-nl.btm</groupId>
-			<artifactId>btm</artifactId>
-			<version>${btm.version}</version>
-		</dependency>
+		<!-- TransactionManagers: NARAYANA -->
 		<dependency>
 			<groupId>org.jboss.narayana.jta</groupId>
 			<artifactId>narayana-jta</artifactId>

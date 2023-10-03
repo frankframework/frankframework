@@ -75,7 +75,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import bitronix.tm.TransactionManagerServices;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -121,9 +120,6 @@ public class ReceiverTest {
 			configuration.stop();
 			configuration.close();
 			configuration = null;
-		}
-		if (TransactionManagerServices.isTransactionManagerRunning()) {
-			TransactionManagerServices.getTransactionManager().shutdown();
 		}
 	}
 
@@ -228,17 +224,8 @@ public class ReceiverTest {
 
 	public static Stream<Arguments> transactionManagers() {
 		return Stream.of(
-			Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManagerConfiguration)),
-			Arguments.of(supplier(ReceiverTest::buildBtmTransactionManagerConfiguration))
+			Arguments.of(supplier(ReceiverTest::buildNarayanaTransactionManagerConfiguration))
 		);
-	}
-
-	private static TestConfiguration buildBtmTransactionManagerConfiguration() {
-		if (TransactionManagerServices.isTransactionManagerRunning()) {
-			TransactionManagerServices.getTransactionManager().shutdown();
-		}
-		TestConfiguration configuration = buildConfiguration(TransactionManagerType.BTM);
-		return configuration;
 	}
 
 	private static TestConfiguration buildNarayanaTransactionManagerConfiguration() {
