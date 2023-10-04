@@ -17,9 +17,9 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.xml.validation.ValidatorHandler;
@@ -30,7 +30,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import jakarta.json.Json;
-import jakarta.json.JsonObject;
 import jakarta.json.JsonStructure;
 import lombok.Getter;
 import nl.nn.adapterframework.align.Json2Xml;
@@ -198,10 +197,10 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				}
 			}
 			if (!isAllowJson() && !responseMode) {
-				return getErrorResult(ValidationResult.PARSER_ERROR, "message is not XML, because it starts with ["+firstChar+"] and not with '<'", session, responseMode);
+				return getErrorResult("message is not XML, because it starts with ["+firstChar+"] and not with '<'", session, responseMode);
 			}
 			if (firstChar!='{' && firstChar!='[') {
-				return getErrorResult(ValidationResult.PARSER_ERROR, "message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['", session, responseMode);
+				return getErrorResult("message is not XML or JSON, because it starts with ["+firstChar+"] and not with '<', '{' or '['", session, responseMode);
 			}
 			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
 		}
@@ -249,8 +248,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		ValidationResult validationResult= validator.validate(messageToValidate, session, validatorHandler, xml2json, context);
 		String out=xml2json.toString();
 		PipeForward forward=determineForward(validationResult, session, responseMode);
-		PipeRunResult result=new PipeRunResult(forward,out);
-		return result;
+		return new PipeRunResult(forward,out);
 	}
 
 	protected PipeRunResult alignJson(String messageToValidate, PipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
@@ -276,16 +274,10 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			aligner.setIgnoreUndeclaredElements(isIgnoreUndeclaredElements());
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
-				Map<String,Object> parametervalues = null;
-				parametervalues = parameterList.getValues(new Message(messageToValidate), session).getValueMap();
+				Map<String, Object> parameterValues = parameterList.getValues(new Message(messageToValidate), session).getValueMap();
 				// remove parameters with null values, to support optional request parameters
-				for(Iterator<String> it=parametervalues.keySet().iterator();it.hasNext();) {
-					String key=it.next();
-					if (parametervalues.get(key)==null) {
-						it.remove();
-					}
-				}
-				aligner.setOverrideValues(parametervalues);
+				parameterValues.values().removeIf(Objects::isNull);
+				aligner.setOverrideValues(parameterValues);
 			}
 			JsonStructure jsonStructure = Json.createReader(new StringReader(messageToValidate)).read();
 
@@ -327,18 +319,15 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		if (StringUtils.isEmpty(xml) || xml.indexOf("xmlns")>0) {
 			return xml;
 		}
-		String namespace=null;
+		String namespace;
 		if (StringUtils.isNotEmpty(getTargetNamespace())) {
 			namespace = getTargetNamespace();
+		} else if (StringUtils.isNotEmpty(getSchemaLocation())) {
+			namespace = getSchemaLocation().split(" ")[0];
 		} else {
-			if (StringUtils.isNotEmpty(getSchemaLocation())) {
-				namespace = getSchemaLocation().split(" ")[0];
-			}
-		}
-		if (namespace==null) {
 			return xml;
 		}
-		if (log.isDebugEnabled()) log.debug("setting namespace ["+namespace+"]");
+		log.debug("setting namespace [{}]", namespace);
 		int startPos=0;
 		if (xml.trim().startsWith("<?")) {
 			startPos=xml.indexOf("?>")+2;
@@ -353,46 +342,34 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return xml.substring(0, elementEnd)+" xmlns=\""+namespace+"\""+xml.substring(elementEnd);
 	}
 
-	public JsonStructure createRequestJsonSchema() {
-		return createJsonSchema(getRoot());
-	}
-	public JsonStructure createResponseJsonSchema() {
-		return createJsonSchema(getResponseRoot());
-	}
-
-	public JsonObject createJsonSchemaDefinitions(String definitionsPath) {
-		List<XSModel> models = validator.getXSModels();
-		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), getSchemaLocation(), definitionsPath);
-		JsonObject jsonschema = converter.getDefinitions();
-		return jsonschema;
-	}
 	public JsonStructure createJsonSchema(String elementName) {
 		return createJsonSchema(elementName, getTargetNamespace());
 	}
 	public JsonStructure createJsonSchema(String elementName, String namespace) {
 		List<XSModel> models = validator.getXSModels();
 		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), getSchemaLocation());
-		JsonStructure jsonschema = converter.createJsonSchema(elementName, namespace);
-		return jsonschema;
+		return converter.createJsonSchema(elementName, namespace);
 	}
 
 
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String result=null;
+		StringBuilder result = new StringBuilder();
 		if (StringUtils.isNotEmpty(getRoot())) {
-			result="request message ["+getRoot()+"]";
+			result.append("request message [")
+					.append(getRoot())
+					.append("]");
 		}
 		if (StringUtils.isNotEmpty(getResponseRoot())) {
-			if (result==null) {
-				result = "";
-			} else {
-				result += "; ";
+			if (result.length() > 0) {
+				result.append("; ");
 			}
-			result+="response message ["+getResponseRoot()+"]";
+			result.append("response message [")
+					.append(getResponseRoot())
+					.append("]");
 		}
-		return result;
+		return result.toString();
 	}
 
 
