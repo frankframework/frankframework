@@ -258,6 +258,11 @@
 				<artifactId>jdom2</artifactId>
 				<version>2.0.6.1</version>
 			</dependency>
+			<dependency>
+				<groupId>com.google.protobuf</groupId>
+				<artifactId>protobuf-java</artifactId>
+				<version>3.24.3</version>
+			</dependency>
 			<!-- End Lock transient deps -->
 
 			<dependency>
@@ -950,7 +955,7 @@
 										<message>Prevent the use of STAX1, use STAX 2 (org.codehaus.woodstox:stax2-api) instead!</message>
 									</bannedDependencies>
 									<bannedDependencies>
-										<!-- the activation framework was renamed to the jarkata activation framework -->
+										<!-- the activation framework was renamed to the jakarta activation framework -->
 										<excludes>
 											<exclude>javax.activation:javax.activation-api</exclude>
 											<exclude>com.sun.activation:javax.activation</exclude>
