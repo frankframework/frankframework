@@ -353,6 +353,7 @@ class AppController {
         var serverTime = Date.parse(new Date(data.serverTime).toUTCString());
         var localTime = Date.parse(new Date().toUTCString());
         this.appConstants['timeOffset'] = serverTime - localTime;
+        this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
 
         const updateTime = () => {
           var serverDate = new Date();

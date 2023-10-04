@@ -160,10 +160,17 @@ export class AdapterstatisticsComponent implements OnInit {
 
       let labels: string[] = [];
       let chartData: number[] = [];
-      for (const i in data["hourly"]) {
-        let a = data["hourly"][i];
-        labels.push(a["time"]);
-        chartData.push(a["count"]);
+      for (const index in data["hourly"]) {
+        let hour = data["hourly"][index];
+        labels.push(hour["time"]);
+        if (this.appConstants["timezoneOffset"] != 0){
+          const offsetInHours = this.appConstants["timezoneOffset"] / 60;
+          const offsetIndex = +index + offsetInHours;
+          const wrapCutoff = 24;
+          const wrappedOffsetIndex = (wrapCutoff + offsetIndex % wrapCutoff) % wrapCutoff
+          hour = data["hourly"][wrappedOffsetIndex];
+        }
+        chartData.push(hour["count"]);
       }
       this.hourlyStatistics.labels = labels;
       this.hourlyStatistics.datasets = [{
