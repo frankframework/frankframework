@@ -55,13 +55,13 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class EsbJmsListener extends JmsListener implements ITransactionRequirements {
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private final String MSGLOG_KEYS = APP_CONSTANTS.getProperty("msg.log.keys");
+	private static final String MSGLOG_KEYS = APP_CONSTANTS.getProperty("msg.log.keys");
 
 	private @Getter MessageProtocol messageProtocol = null;
 	private @Getter boolean copyAEProperties = false;
 	private @Getter String xPathLoggingKeys=null;
 
-	private final Map<String, String> xPathLogMap = new HashMap<String, String>();
+	private final Map<String, String> xPathLogMap = new HashMap<>();
 
 	public enum MessageProtocol {
 		/** Fire & Forget protocol */
@@ -73,7 +73,9 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	@Override
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == MessageProtocol.RR) {
-			setForceMessageIdAsCorrelationId(true);
+			if (getForceMessageIdAsCorrelationId() == null) {
+				setForceMessageIdAsCorrelationId(true);
+			}
 			if (getCacheMode()==CacheMode.CACHE_CONSUMER) {
 				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CacheMode.CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, getReceiver().getAdapter());
 			}

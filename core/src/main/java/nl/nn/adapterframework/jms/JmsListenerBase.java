@@ -69,7 +69,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	private @Getter ISender sender;
 
 
-	private @Getter boolean forceMessageIdAsCorrelationId = false;
+	private @Getter Boolean forceMessageIdAsCorrelationId = null;
 
 	private @Getter boolean soap = false;
 	private @Getter String replyEncodingStyleURI = null;
@@ -85,10 +85,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (isSoap()) {
-			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			//String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
-			//configWarnings.add(log, msg);
-			soapWrapper=SoapWrapper.getInstance();
+			soapWrapper = SoapWrapper.getInstance();
 		}
 		ISender sender = getSender();
 		if (sender != null) {
@@ -97,6 +94,9 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 		if (paramList != null) {
 			paramList.configure();
+		}
+		if (forceMessageIdAsCorrelationId == null) {
+			forceMessageIdAsCorrelationId = false;
 		}
 	}
 
@@ -241,7 +241,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<javax.jms.Message> rawMessageWrapper, PipeLineSession session) throws ListenerException {
 		String replyCid = null;
 
-		if (!isForceMessageIdAsCorrelationId()) {
+		if (Boolean.FALSE.equals(forceMessageIdAsCorrelationId)) {
 			replyCid = session.getCorrelationId();
 		}
 		if (StringUtils.isEmpty(replyCid)) {
