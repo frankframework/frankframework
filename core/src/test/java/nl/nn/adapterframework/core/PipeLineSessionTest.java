@@ -5,6 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -306,14 +311,15 @@ public class PipeLineSessionTest {
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
 		Message message = Message.asMessage("a message");
-		BufferedReader closeable = new BufferedReader(new StringReader("a closeable"));
+		BufferedReader closeable1 = new BufferedReader(new StringReader("a closeable"));
+		Message closeable2 = Message.asMessage("a message is closeable");
 		from.put("a", 15);
 		from.put("b", 16);
 		from.put("c", message);
-		from.put("d", closeable);
+		from.put("d", closeable1);
+		from.put("__e", closeable2);
 
 		from.scheduleCloseOnSessionExit(message, "test-c");
-		from.scheduleCloseOnSessionExit(closeable, "test-d");
 
 		// Act
 		from.mergeToParentSession(keysToCopy, to);
@@ -324,7 +330,8 @@ public class PipeLineSessionTest {
 		assertEquals(from,to);
 
 		assertTrue(to.getCloseables().containsKey(message));
-		assertTrue(to.getCloseables().containsKey(closeable));
+		assertTrue(to.getCloseables().containsKey(closeable1));
+		assertFalse(to.getCloseables().containsKey(closeable2));
 		assertNotNull(((Message) to.get("c")).asObject());
 		assertEquals("a message", ((Message) to.get("c")).asString());
 		assertEquals("a closeable", ((BufferedReader) to.get("d")).readLine());
@@ -334,6 +341,7 @@ public class PipeLineSessionTest {
 
 		// Assert
 		assertNull(((Message) to.get("c")).asObject());
+		assertNotNull(((Message) to.get("__e")).asObject());
 	}
 
 	@Test
@@ -385,5 +393,26 @@ public class PipeLineSessionTest {
 		from.put("b", 16);
 		from.mergeToParentSession("", to);
 		assertEquals(0,to.size());
+	}
+
+	@Test
+	public void testNotCloseSystemCloseables() throws Exception {
+		// Arrange
+		javax.jms.Session jmsSession = mock(AutoCloseableJmsSession.class);
+		session.put("__JmsSession", jmsSession);
+		doAnswer((params) -> fail("Should not close JMS Session")).when(jmsSession).close();
+
+		java.sql.Connection jdbcConnection = mock(java.sql.Connection.class);
+		session.put("CloseThis", jdbcConnection);
+
+		// Act
+		session.close();
+
+		// Assert
+		verify(jdbcConnection, times(1)).close();
+	}
+
+	private interface AutoCloseableJmsSession extends javax.jms.Session, AutoCloseable {
+		// No methods added
 	}
 }
