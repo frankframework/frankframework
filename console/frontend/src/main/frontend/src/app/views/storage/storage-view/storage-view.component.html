@@ -23,11 +23,11 @@
               <strong>{{metadata?.correlationId ?? ''}}</strong></span> <span *ngIf="metadata?.insertDate"> issued at:
               <strong><span appToDate [time]="metadata?.insertDate ?? 0" ></span></strong>
             </span>
-            <button *ngIf="storageParams.processState=='Error'" [ladda]="message?.resending" data-style="slide-down"
+            <button *ngIf="storageParams.processState=='Error'" [ladda]="message.resending" data-style="slide-down"
               title="Resend Message" (click)="resendMessage(message)"
               class="btn btn-warning btn-xs m-r-xs pull-right" type="button"><i class="fa fa-repeat"></i>
               Resend</button>
-            <button *ngIf="storageParams.processState=='Error'" [ladda]="message?.deleting" data-style="slide-down"
+            <button *ngIf="storageParams.processState=='Error'" [ladda]="message.deleting" data-style="slide-down"
               title="Delete Message" (click)="deleteMessage(message)"
               class="btn btn-danger btn-xs m-r-xs pull-right" type="button"><i class="fa fa-times"></i> Delete</button>
             <button title="Download Message" (click)="downloadMessage(message.id)"

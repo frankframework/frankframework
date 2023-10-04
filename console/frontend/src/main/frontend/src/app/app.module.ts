@@ -3,9 +3,10 @@ import { BrowserModule } from '@angular/platform-browser';
 import { UpgradeModule, downgradeComponent } from '@angular/upgrade/static';
 import { HttpClientModule } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { $stateServiceProvider } from './ajs-deps-services';
+import { $stateParamsServiceProvider, $stateServiceProvider } from './ajs-deps-services';
 import { UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
 import { NgIdleModule } from '@ng-idle/core';
+import { NgChartsModule } from 'ng2-charts';
 
 import { AppRoutingModule } from './app-routing.module';
 
@@ -73,8 +74,11 @@ import { FlowComponent } from './views/status/flow/flow.component';
 import { StorageComponent } from './views/storage/storage.component';
 import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
 import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
+import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
+import { FormatStatisticsPipe } from './views/adapterstatistics/format-statistics.pipe';
 import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
 import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
+import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
@@ -112,7 +116,8 @@ appModule
   .directive('pagesTopnavbar', downgradeComponent({ component: PagesTopnavbarComponent }) as angular.IDirectiveFactory)
   .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory)
   // .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
-  .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory);
+  .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory)
+  .directive('adapterstatistics', downgradeComponent({ component: AdapterstatisticsComponent }) as angular.IDirectiveFactory);
 
 
 @NgModule({
@@ -144,6 +149,7 @@ appModule
     StorageComponent,
     StorageListComponent,
     StorageViewComponent,
+    AdapterstatisticsComponent,
     // SecurityItemsComponent,
 
     // pipes
@@ -153,22 +159,25 @@ appModule
     SearchFilterPipe,
     TruncatePipe,
     VariablesFilterPipe,
+    FormatStatisticsPipe,
 
     // directives
     ToDateDirective,
     TimeSinceDirective,
     QuickSubmitFormDirective,
+    FormatStatKeysPipe,
   ],
   imports: [
-      BrowserModule,
-      FormsModule,
-      HttpClientModule,
-      LaddaModule,
-      NgbModule,
-      UpgradeModule,
-      AppRoutingModule,
-      UIRouterUpgradeModule.forRoot(),
-      NgIdleModule.forRoot(),
+    BrowserModule,
+    FormsModule,
+    HttpClientModule,
+    LaddaModule,
+    NgbModule,
+    UpgradeModule,
+    AppRoutingModule,
+    UIRouterUpgradeModule.forRoot(),
+    NgIdleModule.forRoot(),
+    NgChartsModule.forRoot()
   ],
   providers: [
     alertServiceProvider,
@@ -189,6 +198,7 @@ appModule
 
     // deps
     $stateServiceProvider,
+    $stateParamsServiceProvider,
 
     // scoped services
     appServiceProvider,

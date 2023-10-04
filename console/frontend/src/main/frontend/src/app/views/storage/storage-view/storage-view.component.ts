@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { StateService } from "@uirouter/angularjs";
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
-import { Message, StorageService } from '../storage.service';
+import { Message, StorageService, PartialMessage } from '../storage.service';
 
 @Component({
   selector: 'app-storage-view',
@@ -10,7 +10,11 @@ import { Message, StorageService } from '../storage.service';
   styleUrls: ['./storage-view.component.scss']
 })
 export class StorageViewComponent {
-  message = { id: this.$state.params["messageId"] };
+  message: PartialMessage = {
+    id: this.$state.params["messageId"],
+    resending: false,
+    deleting: false
+  };
   metadata?: Message = {
     id: "",
     originalId: "",
@@ -60,14 +64,14 @@ export class StorageViewComponent {
     return this.storageService.notes;
   }
 
-  resendMessage(message: Message) {
+  resendMessage(message: PartialMessage) {
     this.storageService.doResendMessage(message, (messageId: string) => {
       //Go back to the storage list if successful
       this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
     });
   };
 
-  deleteMessage(message: Message) {
+  deleteMessage(message: PartialMessage) {
     this.storageService.doDeleteMessage(message, (messageId: string) => {
       //Go back to the storage list if successful
       this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });

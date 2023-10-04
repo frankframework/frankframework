@@ -59,7 +59,7 @@ export const appModule = angular.module('iaf.beheerconsole', [
   'angular-ladda',                // Ladda
   'toaster',                       // Toastr
   'datatables',
-  'chart.js',
+  // 'chart.js',
   'angular-mermaid'
 ]).constant("appConstants", appConstants);
 export type AppConstants = Record<string, string | any> // typeof appConstants;

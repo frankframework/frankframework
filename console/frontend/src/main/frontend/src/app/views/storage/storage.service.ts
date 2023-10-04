@@ -16,9 +16,10 @@ export type Message = {
   position?: number;
 }
 
-export type MessageRuntime = Message & {
-  deleting?: boolean;
-  resending?: boolean;
+export type PartialMessage = {
+  id: string;
+  resending: boolean;
+  deleting: boolean;
 }
 
 @Injectable({
@@ -52,7 +53,7 @@ export class StorageService {
     this.notes = [];
   }
 
-  doDeleteMessage(message: MessageRuntime, callback: (messageId: string) => void) {
+  doDeleteMessage(message: PartialMessage, callback: (messageId: string) => void) {
     message.deleting = true;
     let messageId = message.id;
     this.Api.Delete(this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId)), () => {
@@ -71,7 +72,7 @@ export class StorageService {
     window.open(this.Misc.getServerPath() + "iaf/api/" + this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId)) + "/download");
   };
 
-  doResendMessage(message: MessageRuntime, callback?: (messageId: string) => void) {
+  doResendMessage(message: PartialMessage, callback?: (messageId: string) => void) {
     message.resending = true;
     let messageId = message.id;
     this.Api.Put(this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId)), false, () => {
