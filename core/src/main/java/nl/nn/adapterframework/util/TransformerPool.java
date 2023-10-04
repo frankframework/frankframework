@@ -156,7 +156,7 @@ public class TransformerPool {
 	 * Utility pools should never use configuration classloaders, instead always read from the classpath!
 	 */
 	public static TransformerPool getUtilityInstance(String xsltString) throws TransformerConfigurationException {
-		return getUtilityInstance(xsltString, 0);
+		return getUtilityInstance(xsltString, 2);
 	}
 
 	/**
