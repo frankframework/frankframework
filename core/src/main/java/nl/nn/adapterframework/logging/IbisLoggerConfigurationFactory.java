@@ -65,7 +65,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	 * Hierarchy of log directories to search for. Strings will be split by "/".
 	 * Before "/" split will be assumed to be a property, and after split will be a sub-directory.
 	 */
-	private static String[] logDirectoryHierarchy = new String[] {
+	private static final String[] logDirectoryHierarchy = new String[] {
 			"site.logdir",
 			"user.dir/logs",
 			"user.dir/log",
@@ -87,7 +87,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 			String configuration = readLog4jConfiguration(source.getInputStream());
 			Properties properties = getProperties();
-			Matcher m = Pattern.compile("\\$\\{(?:ctx:)?(.*?)(?:}|:-.*})").matcher(configuration); //Look for properties in the Log4J2 XML
+			Matcher m = Pattern.compile("\\$\\{(?:ctx:)?(.*?)(?:}|:-.*?})").matcher(configuration); //Look for properties in the Log4J2 XML
 			Map<String, String> substitutions = new HashMap<>();
 			while (m.find()) {
 				String key = m.group(1);
@@ -228,7 +228,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	 * https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
 	 * */
 	private static String fixLogDirectorySlashes(String directory) {
-		return directory.replaceAll("\\\\", "/");
+		return directory.replace("\\", "/");
 	}
 
 	/**
