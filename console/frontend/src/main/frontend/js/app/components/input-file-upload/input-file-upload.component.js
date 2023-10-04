@@ -10,7 +10,6 @@ const InputFileUploadController = function ($element) {
 		});
 	}
 
-	/** @param {FileList} files */
 	ctrl.handleFile = function (files) {
 		if (files.length == 0) {
 			ctrl.onUpdateFile({ file: null });

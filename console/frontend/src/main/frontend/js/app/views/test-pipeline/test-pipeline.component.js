@@ -53,7 +53,6 @@ const TestPipelineController = function ($scope, Api, Alert, $rootScope, appServ
     };
 
     ctrl.updateFile = function (file) {
-		console.log("incoming file:" + file.name)
         ctrl.file = file;
     };
 
