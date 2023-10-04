@@ -22,10 +22,10 @@ import java.util.Map;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
@@ -44,15 +44,14 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * @author Jaco de Groot
  */
+@Log4j2
 public class CorePipeLineProcessor implements PipeLineProcessor {
-	private Logger log = LogUtil.getLogger(this);
 	private @Setter PipeProcessor pipeProcessor;
 	private @Setter AdapterManager adapterManager;
 
