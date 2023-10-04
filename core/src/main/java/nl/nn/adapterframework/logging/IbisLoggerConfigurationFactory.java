@@ -87,7 +87,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 			String configuration = readLog4jConfiguration(source.getInputStream());
 			Properties properties = getProperties();
-			Matcher m = Pattern.compile("\\$\\{(?:ctx:)?([^}]*)\\}").matcher(configuration); //Look for properties in the Log4J2 XML
+			Matcher m = Pattern.compile("\\$\\{(?:ctx:)?(.*?)(?:}|:-.*})").matcher(configuration); //Look for properties in the Log4J2 XML
 			Map<String, String> substitutions = new HashMap<>();
 			while (m.find()) {
 				String key = m.group(1);
