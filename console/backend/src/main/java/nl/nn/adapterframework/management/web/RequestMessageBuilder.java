@@ -54,12 +54,26 @@ public class RequestMessageBuilder {
 		this.action = action;
 	}
 
-	public RequestMessageBuilder addHeader(String key, Object value) {
+	public RequestMessageBuilder addHeader(String key, String value) {
+		addCustomHeader(key, value);
+		return this;
+	}
+
+	public RequestMessageBuilder addHeader(String key, Integer value) {
+		addCustomHeader(key, value);
+		return this;
+	}
+
+	public RequestMessageBuilder addHeader(String key, Boolean value) {
+		addCustomHeader(key, value);
+		return this;
+	}
+
+	private void addCustomHeader(String key, Object value) {
 		if(BusTopic.TOPIC_HEADER_NAME.equals(key)) {
 			throw new IllegalStateException("unable to override topic header");
 		}
 		customHeaders.put(key, value);
-		return this;
 	}
 
 	public RequestMessageBuilder setJsonPayload(Object payload) {
@@ -88,13 +102,14 @@ public class RequestMessageBuilder {
 	public Message<?> build() {
 		if(SEC_LOG.isInfoEnabled()) {
 			String method = base.getServletRequest().getMethod();
+			String issuedBy = sanitizeForLog(HttpUtils.getCommandIssuedBy(base.getServletRequest()));
 			if((method.equalsIgnoreCase("GET") || method.equalsIgnoreCase("OPTIONS"))) {
-				SEC_LOG.debug("created bus request from URI [{}:{}] issued by{}", method, base.getUriInfo().getRequestUri(), HttpUtils.getCommandIssuedBy(base.getServletRequest()));
+				SEC_LOG.debug("created bus request from URI [{}:{}] issued by{}", method, base.getUriInfo().getRequestUri(), issuedBy);
 			} else {
 				String headers = customHeaders.entrySet().stream()
-						.map(e -> e.getKey() + "=" +e.getValue())
+						.map(this::mapHeaderForLog)
 						.collect(Collectors.joining (", "));
-				SEC_LOG.info("created bus request from URI [{}:{}] issued by{} with headers [{}] payload [{}]", method, base.getUriInfo().getRequestUri(), HttpUtils.getCommandIssuedBy(base.getServletRequest()), headers, payload);
+				SEC_LOG.info("created bus request from URI [{}:{}] issued by{} with headers [{}] payload [{}]", method, base.getUriInfo().getRequestUri(), issuedBy, headers, payload);
 			}
 		}
 
@@ -112,5 +127,19 @@ public class RequestMessageBuilder {
 		}
 
 		return builder.build();
+	}
+
+	private String mapHeaderForLog(Entry<String, Object> entry) {
+		StringBuilder builder = new StringBuilder(entry.getKey());
+		builder.append("=");
+
+		Object value = entry.getValue();
+		builder.append((value instanceof String) ? sanitizeForLog((String) value) : value);
+
+		return builder.toString();
+	}
+
+	private String sanitizeForLog(String value) {
+		return value.replace("\b\n\t\f\r", "");
 	}
 }
