@@ -2,7 +2,6 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -75,9 +74,6 @@ class CompactSaxHandlerTest {
 
 	@Test
 	void testRemoveCompactNamespacesDisabled() throws IOException, SAXException {
-		// Arrange
-		handler.setRemoveCompactMsgNamespaces(false);
-
 		// Act
 		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
 
@@ -176,7 +172,7 @@ class CompactSaxHandlerTest {
 	}
 
 	@Test
-	void testElementToMoveChainChomped() throws IOException, SAXException {
+	void testElementToMoveChainNotChomped() throws IOException, SAXException {
 		// Arrange
 		handler.setChompLength(10);
 		handler.setRemoveCompactMsgNamespaces(true);
@@ -188,7 +184,7 @@ class CompactSaxHandlerTest {
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chainchomptest.xml");
 		assertEquals(testOutputFile, xmlWriter.toString());
-		assertTrue(session.isEmpty());
+		assertEquals("20230825095316895", session.getString("ref_tijdstipBericht"));
 	}
 
 	@Test

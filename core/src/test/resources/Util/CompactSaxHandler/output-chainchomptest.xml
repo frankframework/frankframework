@@ -4,7 +4,7 @@
 		<edcLk01>
 			<stuurgegevens>
 				<berichtcode>Lk01</berichtcode>
-				<tijdstipBericht>*** character data size [17] exceeds [10] and is chomped ***2023082509...(7 characters more)</tijdstipBericht>
+				<tijdstipBericht>{sessionKey:ref_tijdstipBericht}</tijdstipBericht>
 				<entiteittype>EDC</entiteittype>
 			</stuurgegevens>
 			<parameters>
