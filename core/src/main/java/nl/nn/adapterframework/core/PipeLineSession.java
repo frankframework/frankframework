@@ -45,6 +45,8 @@ import nl.nn.adapterframework.util.LogUtil;
 public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
 	private static final Logger LOG = LogUtil.getLogger(PipeLineSession.class);
 
+	public static final String SYSTEM_MANAGED_RESOURCE_PREFIX = "__";
+
 	public static final String originalMessageKey="originalMessage";
 	public static final String originalMessageIdKey="id";
 	public static final String messageIdKey="messageId";
@@ -117,9 +119,10 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
 			to.putAll(this);                                      // ... all keys will be copied
 		}
-		Set<AutoCloseable> closeablesInDestination = to.values().stream()
-				.filter(v -> v instanceof AutoCloseable)
-				.map(v -> (AutoCloseable) v)
+		Set<AutoCloseable> closeablesInDestination = to.entrySet().stream()
+				.filter(entry -> shouldCloseSessionResource(entry.getKey(), entry.getValue()))
+				.map(Entry::getValue)
+				.map(AutoCloseable.class::cast)
 				.collect(Collectors.toSet());
 		if (to instanceof PipeLineSession) {
 			PipeLineSession toSession = (PipeLineSession) to;
@@ -136,10 +139,15 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	@Override
 	public Object put(String key, Object value) {
-		if (value instanceof AutoCloseable) {
+		if (shouldCloseSessionResource(key, value)) {
 			closeables.put((AutoCloseable) value, "Session key [" + key + "]");
 		}
 		return super.put(key, value);
+	}
+
+	private static boolean shouldCloseSessionResource(final String key, final Object value) {
+		return value instanceof AutoCloseable &&
+			!key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX);
 	}
 
 	@Override

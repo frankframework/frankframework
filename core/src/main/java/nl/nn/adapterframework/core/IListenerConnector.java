@@ -23,13 +23,13 @@ import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  * Interface specifying method to configure a JMS receiver or some sort.
- * 
+ *
  * @author  Tim van der Leeuw
  * @since   4.8
  */
 public interface IListenerConnector<M> {
 
-	public static final String THREAD_CONTEXT_SESSION_KEY="JmsSession";
+	String THREAD_CONTEXT_SESSION_KEY = PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX + "JmsSession";
 
 	void configureEndpointConnection(IPortConnectedListener<M> listener, ConnectionFactory connectionFactory,
 			CredentialFactory credentialFactory, Destination destination, IbisExceptionListener exceptionListener, String cacheMode,
