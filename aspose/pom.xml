@@ -25,13 +25,6 @@
 			<artifactId>lombok</artifactId>
 		</dependency>
 
-		<!-- Explicit dependency to mitigate CVE-2022-3171 -->
-		<dependency>
-			<groupId>com.google.protobuf</groupId>
-			<artifactId>protobuf-java</artifactId>
-			<version>3.24.3</version>
-		</dependency>
-
 		<!-- Tika library -->
 		<dependency>
 			<groupId>org.apache.tika</groupId>
