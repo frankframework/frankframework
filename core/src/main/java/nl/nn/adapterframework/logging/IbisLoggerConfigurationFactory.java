@@ -30,6 +30,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -38,6 +40,7 @@ import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
 
 /**
@@ -62,7 +65,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	 * Hierarchy of log directories to search for. Strings will be split by "/".
 	 * Before "/" split will be assumed to be a property, and after split will be a sub-directory.
 	 */
-	private static String[] logDirectoryHierarchy = new String[] {
+	private static final String[] logDirectoryHierarchy = new String[] {
 			"site.logdir",
 			"user.dir/logs",
 			"user.dir/log",
@@ -84,7 +87,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 			String configuration = readLog4jConfiguration(source.getInputStream());
 			Properties properties = getProperties();
-			Matcher m = Pattern.compile("\\$\\{(?:ctx:)?(.*?)(?:}|:-.*})").matcher(configuration); //Look for properties in the Log4J2 XML
+			Matcher m = Pattern.compile("\\$\\{(?:ctx:)?(.*?)(?:}|:-.*?})").matcher(configuration); //Look for properties in the Log4J2 XML
 			Map<String, String> substitutions = new HashMap<>();
 			while (m.find()) {
 				String key = m.group(1);
@@ -127,12 +130,18 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		if(StringResolver.needsResolution(value)) {
 			value = StringResolver.substVars(value, properties);
 		}
+
+		if("log.dir".equals(key)) {
+			value = fixLogDirectorySlashes(value);
+		}
+
 		return value;
 	}
 
 	private Properties getProperties() throws IOException {
 		Properties log4jProperties = getProperties(LOG4J_PROPS_FILE);
 		if(log4jProperties == null) {
+			log4jProperties = new Properties();
 			System.out.println(LOG_PREFIX + "did not find " + LOG4J_PROPS_FILE + ", leaving it up to log4j's default initialization procedure");
 		}
 
@@ -147,15 +156,19 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 		return log4jProperties;
 	}
-	private Properties getProperties(String filename) throws IOException {
+
+	private @Nullable Properties getProperties(String filename) throws IOException {
 		URL url = this.getClass().getClassLoader().getResource(filename);
 		if(url != null) {
 			Properties properties = new Properties();
-			properties.load(url.openStream());
+			try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+				properties.load(reader);
+			}
 			return properties;
 		}
 		return null;
 	}
+
 	private static void setInstanceNameLc(Properties log4jProperties) {
 		String instanceNameLowerCase = log4jProperties.getProperty("instance.name");
 		if (instanceNameLowerCase != null) {
@@ -200,16 +213,22 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		if (System.getProperty("log.dir") == null) {
 			File logDir = findLogDir();
 			if (logDir != null) {
-				// Replace backslashes because log.dir is used in log4j2.xml
-				// on which substVars is done (see below) which will replace
-				// double backslashes into one backslash and after that the same
-				// is done by Log4j:
-				// https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
-				System.setProperty("log.dir", logDir.getPath().replaceAll("\\\\", "/"));
+				System.setProperty("log.dir", fixLogDirectorySlashes(logDir.getPath()));
 			} else {
 				System.out.println(LOG_PREFIX + "did not find system property log.dir and unable to locate it automatically");
 			}
 		}
+	}
+
+	/**
+	 * Replace backslashes because log.dir is used in log4j2.xml
+	 * on which substVars is done (see below) which will replace
+	 * double backslashes into one backslash and after that the same
+	 * is done by Log4j:
+	 * https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
+	 * */
+	private static String fixLogDirectorySlashes(String directory) {
+		return directory.replace("\\", "/");
 	}
 
 	/**
