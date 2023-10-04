@@ -98,10 +98,10 @@ Generated log files are stored in `/usr/local/tomcat/logs`.
 
 ## Environment variables
 
-Environment variables can be used to set parameters. Environment variables have the highest precedence and override
-parameters set in .property files supplied by Tomcat, resources and configurations.
+Environment variables can be used to set properties. Environment variables have the highest precedence and override
+application properties set in .property files supplied by Tomcat, resources and configurations.
 
-Environment variables can be used to replace parameters set inside Tomcat configuration files such as `server.xml` and `context.xml`.
+Environment variables can also be used to replace properties set inside Tomcat configuration files such as `server.xml` and `context.xml`.
 
 Do not use environment variables for secrets!
 
