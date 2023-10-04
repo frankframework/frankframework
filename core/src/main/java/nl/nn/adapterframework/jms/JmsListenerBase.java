@@ -407,7 +407,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * When set to <code>true</code>, the messageID is used as Correlation-ID of the reply.
 	 * @ff.default false
 	 */
-	public void setForceMessageIdAsCorrelationId(boolean force){
+	public void setForceMessageIdAsCorrelationId(Boolean force){
 		forceMessageIdAsCorrelationId = force;
 	}
 

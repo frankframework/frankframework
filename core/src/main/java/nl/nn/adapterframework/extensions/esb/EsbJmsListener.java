@@ -233,7 +233,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	@Override
 	@Default("if messageProtocol=<code>RR</code>: </td><td><code>true</code>")
-	public void setForceMessageIdAsCorrelationId(boolean force) {
+	public void setForceMessageIdAsCorrelationId(Boolean force) {
 		super.setForceMessageIdAsCorrelationId(force);
 	}
 
