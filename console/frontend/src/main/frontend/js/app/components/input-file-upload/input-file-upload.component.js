@@ -10,6 +10,7 @@ const InputFileUploadController = function ($element) {
 		});
 	}
 
+	/** @param {FileList} files */
 	ctrl.handleFile = function (files) {
 		if (files.length == 0) {
 			ctrl.onUpdateFile({ file: null });
@@ -21,7 +22,6 @@ const InputFileUploadController = function ($element) {
 
 appModule.component('inputFileUpload', {
 	bindings: {
-		file: '<',
 		onUpdateFile: '&',
 		accept: '@',
 		title: '@'
