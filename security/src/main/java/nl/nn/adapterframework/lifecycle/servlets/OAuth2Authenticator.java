@@ -108,7 +108,6 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 				.userAuthoritiesMapper(new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties())).and()
 			.loginProcessingUrl(oauthBaseUrl + "/oauth2/code/*");
 
-		http.authorizeHttpRequests().anyRequest().authenticated();
 		return http.build();
 	}
 

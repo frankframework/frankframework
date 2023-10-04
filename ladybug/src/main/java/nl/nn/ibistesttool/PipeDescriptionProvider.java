@@ -188,7 +188,8 @@ public class PipeDescriptionProvider {
 		}
 	}
 
-	private void addResourceNamesToPipeDescription(Node element, PipeDescription pipeDescription) {
+	//Protected for tests
+	protected void addResourceNamesToPipeDescription(Node element, PipeDescription pipeDescription) {
 		NamedNodeMap attributes = element.getAttributes();
 		for (int i = 0, size = attributes.getLength(); i < size; i++) {
 			Attr attribute = (Attr) attributes.item(i);
@@ -197,11 +198,15 @@ public class PipeDescriptionProvider {
 					|| "schema".equals(attribute.getName())
 					|| "wsdl".equals(attribute.getName())
 					|| "fileName".equals(attribute.getName())
+					|| "filename".equals(attribute.getName())
 					|| "schemaLocation".equals(attribute.getName())) {
 				if ("schemaLocation".equals(attribute.getName())) {
-					StringUtil.splitToStream(attribute.getValue(), ", \t\r\n\f")
-							.filter(pipeDescription::doesNotContainResourceName)
-							.forEach(pipeDescription::addResourceName);
+					int index = 0;
+					for(String resourceName : StringUtil.split(attribute.getValue(), ", \t\r\n\f")) {
+						if(index++ % 2 == 1 && pipeDescription.doesNotContainResourceName(resourceName)) {
+							pipeDescription.addResourceName(resourceName);
+						}
+					}
 				} else {
 					String resourceName = attribute.getValue();
 					if (pipeDescription.doesNotContainResourceName(resourceName)) {

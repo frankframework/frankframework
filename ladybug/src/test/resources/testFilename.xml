@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LocalFileSystemPipe
+	name="ValidateInput"
+	filename="HelloLines/xsd/Lines.xsd"
+	>
+	<Forward name="failure" path="Create example plain text message"/>
+	<Forward name="parserError" path="Transform plain text message to XML"/>
+</LocalFileSystemPipe>

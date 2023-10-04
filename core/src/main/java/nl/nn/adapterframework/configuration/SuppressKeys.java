@@ -29,7 +29,7 @@ public enum SuppressKeys {
 	DEPRECATION_SUPPRESS_KEY("warnings.suppress.deprecated", true),
 	DEFAULT_VALUE_SUPPRESS_KEY("warnings.suppress.defaultvalue", true),
 	TRANSACTION_SUPPRESS_KEY("warnings.suppress.transaction"),
-	INTEGRITY_CHECK_SUPPRESS_KEY("warnings.suppress.integrityCheck"),
+	INTEGRITY_CHECK_SUPPRESS_KEY("warnings.suppress.integrityCheck", true),
 	RESULT_SET_HOLDABILITY("warnings.suppress.resultSetHoldability", true),
 	CONFIGURATION_VALIDATION("warnings.suppress.configurations.validation"),
 	FLOW_GENERATION_ERROR("warnings.suppress.flow.generation", true),

@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -29,6 +31,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
@@ -41,16 +44,21 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 	public static final List<String> DEFAULT_IBIS_ROLES = Collections.unmodifiableList(Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"));
 
+	public static final String ALLOW_OPTIONS_REQUESTS_KEY = "application.security.http.allowUnsecureOptionsRequests";
+
 	protected final Logger log = LogManager.getLogger(this);
 
 	private Set<String> endpoints = new HashSet<>();
 	private @Getter ApplicationContext applicationContext;
 	private @Getter Set<String> securityRoles = new HashSet<>();
 	private Properties applicationConstants = null;
+	private boolean allowUnsecureOptionsRequest = false;
 
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
+		Environment env = applicationContext.getEnvironment();
+		allowUnsecureOptionsRequest = env.getProperty(ALLOW_OPTIONS_REQUESTS_KEY, boolean.class, false);
 	}
 
 	protected final synchronized Properties getEnvironmentProperties() {
@@ -124,16 +132,25 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
 			http.csrf().disable(); //Disable because the front-end doesn't support CSFR tokens (yet!)
-			http.securityMatcher(new URLRequestMatcher(endpoints));
+			http.securityMatcher(new URLRequestMatcher(endpoints)); //Triggers the SecurityFilterChain
 			http.formLogin().disable(); //Disable the form login filter
 			http.anonymous().disable(); //Disable the default anonymous filter
 			http.logout().disable(); //Disable the logout endpoint on every filter
 //			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); //Disables cookies
+			http.authorizeHttpRequests().requestMatchers(this::authorizationRequestMatcher).authenticated();
 
 			return configure(http);
 		} catch (Exception e) {
 			throw new IllegalStateException("unable to configure Spring Security", e);
 		}
+	}
+
+	/**
+	 * RequestMatcher which determines when a client has to log in.
+	 * @return when !(property {@value #ALLOW_OPTIONS_REQUESTS_KEY} == true, and request == OPTIONS).
+	 */
+	protected boolean authorizationRequestMatcher(HttpServletRequest request) {
+		return !(allowUnsecureOptionsRequest && "OPTIONS".equals(request.getMethod()));
 	}
 
 	/** Before building, configure the FilterChain. */

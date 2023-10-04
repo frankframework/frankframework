@@ -29,6 +29,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.core.env.Environment;
 
 import nl.nn.adapterframework.util.TestAppender;
+import nl.nn.adapterframework.web.filters.DeprecationFilter;
 
 public class TestDeprecationFilter {
 

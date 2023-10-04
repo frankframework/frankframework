@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -41,9 +42,12 @@ public class TestLogMessages {
 	private static String PATTERN = "%level - %m";
 
 	@Test
-	public void hidePasswordInLogMessages() {
+	public void testHideRegexMatchInLogMessage() {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
 		TestAppender.addToRootLogger(appender);
+		Set<String> globalReplace = IbisMaskingLayout.getGlobalReplace();
+		IbisMaskingLayout.cleanGlobalReplace();
+		// Password matching regex that is intentionally different from the default
 		IbisMaskingLayout.addToGlobalReplace("(?<=password=\").+?(?=\")");
 		try {
 			log.debug(TEST_REGEX_IN);
@@ -55,6 +59,24 @@ public class TestLogMessages {
 		}
 		finally {
 			IbisMaskingLayout.cleanGlobalReplace();
+			globalReplace.forEach(IbisMaskingLayout::addToGlobalReplace);
+			TestAppender.removeAppender(appender);
+		}
+	}
+
+	@Test
+	public void testLogHideRegexPropertyAppliedFromConfig() {
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			log.debug("my beautiful log with <password>TO BE HIDDEN</password> hidden value");
+
+			List<String> logEvents = appender.getLogLines();
+			assertEquals(1, logEvents.size(), "found messages "+logEvents);
+			String message = logEvents.get(0);
+			assertEquals("DEBUG - my beautiful log with <password>************</password> hidden value", message);
+		}
+		finally {
 			TestAppender.removeAppender(appender);
 		}
 	}
@@ -142,7 +164,6 @@ public class TestLogMessages {
 			assertEquals("DEBUG - my beautiful <![CDATA[debug]]> for me & you --> \"world\"", message);
 		}
 		finally {
-			IbisMaskingLayout.cleanGlobalReplace();
 			TestAppender.removeAppender(appender);
 		}
 	}
@@ -160,7 +181,6 @@ public class TestLogMessages {
 			assertEquals("DEBUG - my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"", message);
 		}
 		finally {
-			IbisMaskingLayout.cleanGlobalReplace();
 			TestAppender.removeAppender(appender);
 		}
 	}
@@ -267,7 +287,7 @@ public class TestLogMessages {
 	public void testChangeLogLevel() {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
 		TestAppender.addToRootLogger(appender);
-		String rootLoggerName = LogUtil.getLogger(this).getName(); //For tests we use the `nl.nn` logger instead of the rootlogger
+		String rootLoggerName = LogUtil.getLogger(this).getName(); //For tests, we use the `nl.nn` logger instead of the rootlogger
 
 		try {
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);

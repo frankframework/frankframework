@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.senders;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -82,7 +84,7 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 		return attributeValue;
 	}
 
-	protected ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws SenderException {
+	protected @Nullable ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws SenderException {
 		try {
 			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
 		} catch (ParameterException e) {
