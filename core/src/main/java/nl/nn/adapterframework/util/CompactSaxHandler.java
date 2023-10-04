@@ -15,74 +15,72 @@
  */
 package nl.nn.adapterframework.util;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.xml.FullXmlFilter;
+import nl.nn.adapterframework.xml.NamespaceRemovingAttributesWrapper;
 
 /**
  * SAX2 event handler to compact XML messages.
  *
  * @author Peter Leeuwenburgh
  */
-public class CompactSaxHandler extends DefaultHandler {
+public class CompactSaxHandler extends FullXmlFilter {
 	private static final String VALUE_MOVE_START = "{sessionKey:";
 	private static final String VALUE_MOVE_END = "}";
 
-	@Getter private String chompCharSize = null;
 	@Getter @Setter private int chompLength = -1;
 	@Getter @Setter private String elementToMove = null;
 	@Getter @Setter private String elementToMoveSessionKey = null;
 	@Getter @Setter private String elementToMoveChain = null;
 	@Getter @Setter private boolean removeCompactMsgNamespaces = true;
 
-	private final StringBuilder messageBuilder = new StringBuilder();
 	private final StringBuilder charDataBuilder = new StringBuilder();
-	private final StringBuilder namespaceBuilder = new StringBuilder();
 	private final List<String> elements = new ArrayList<>();
 	@Setter private Map<String, Object> context = null;
+	private boolean moveElementFound = false;
 
-	@Override
-	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		printCharData();
-		elements.add(localName);
-
-		StringBuilder attributeBuffer = new StringBuilder();
-		for (int i = 0; i < attributes.getLength(); i++) {
-			attributeBuffer.append(" ");
-			if (isRemoveCompactMsgNamespaces()) {
-				attributeBuffer.append(attributes.getLocalName(i));
-			} else {
-				attributeBuffer.append(attributes.getQName(i));
-			}
-			attributeBuffer.append("=\"");
-			attributeBuffer.append(attributes.getValue(i));
-			attributeBuffer.append("\"");
-		}
-
-		if (isRemoveCompactMsgNamespaces()) {
-			messageBuilder.append("<").append(localName).append(attributeBuffer).append(">");
-		} else {
-			messageBuilder.append("<").append(qName).append(namespaceBuilder).append(attributeBuffer).append(">");
-		}
-		namespaceBuilder.setLength(0);
+	public CompactSaxHandler(ContentHandler handler) {
+		super(handler);
 	}
 
 	@Override
-	public void startPrefixMapping(String prefix, String uri) {
-		String thisPrefix = "";
-		if (StringUtils.isNotEmpty(prefix)) {
-			thisPrefix = ":" + prefix;
+	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		printCharData(true);
+		elements.add(localName);
+
+		moveElementFound = context != null &&
+				(getElementToMove() != null && localName.equals(getElementToMove())) ||
+				(getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain()));
+
+		if (isRemoveCompactMsgNamespaces()) {
+			super.startElement(uri, localName, localName, new NamespaceRemovingAttributesWrapper(attributes));
+		} else {
+			super.startElement(uri, localName, qName, attributes);
 		}
-		if (StringUtils.isNotEmpty(uri)) {
-			namespaceBuilder.append(" xmlns").append(thisPrefix).append("=\"").append(uri).append("\"");
+	}
+
+	@Override
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		if (!isRemoveCompactMsgNamespaces()) {
+			super.startPrefixMapping(prefix, uri);
+		}
+	}
+
+	@Override
+	public void endPrefixMapping(String prefix) throws SAXException {
+		if (!isRemoveCompactMsgNamespaces()) {
+			super.endPrefixMapping(prefix);
 		}
 	}
 
@@ -94,64 +92,86 @@ public class CompactSaxHandler extends DefaultHandler {
 			throw new SAXException("expected end element [" + lastElement + "] but got end element [" + localName + "]");
 		}
 
-		printCharData();
+		printCharData(false);
 		if (isRemoveCompactMsgNamespaces()) {
-			messageBuilder.append("</").append(localName).append(">");
+			super.endElement(uri, localName, localName);
 		} else {
-			messageBuilder.append("</").append(qName).append(">");
+			super.endElement(uri, localName, qName);
 		}
 		elements.remove(lastIndex);
 	}
 
 	@Override
-	public void characters(char[] ch, int start, int length) throws SAXException {
+	public void characters(char[] ch, int start, int length) {
 		charDataBuilder.append(ch, start, length);
 	}
 
-	private void printCharData() {
+	private void printCharData(boolean startElement) throws SAXException {
 		if (charDataBuilder.length() == 0) {
 			return;
 		}
 
-		String before = "";
-		String after = "";
+		// Detection Moving elements; only when not already moved session key is found
+		int length = charDataBuilder.length();
+		moveElementFound = moveElementFound
+				&& context != null
+				&& !startElement
+				&& !(length > VALUE_MOVE_START.length()
+				&& charDataBuilder.substring(length - 1, length).equals(VALUE_MOVE_END)
+				&& charDataBuilder.substring(0, VALUE_MOVE_START.length()).equals(VALUE_MOVE_START));
 
-		if (chompLength >= 0 && charDataBuilder.length() > chompLength) {
-			before = "*** character data size [" + charDataBuilder.length() + "] exceeds [" + getChompCharSize() + "] and is chomped ***";
-			after = "...(" + (charDataBuilder.length() - chompLength) + " characters more)";
-			charDataBuilder.setLength(chompLength);
-		}
-
-		int lastIndex = elements.size() - 1;
-		String lastElement = elements.get(lastIndex);
-
-		if (context != null
-				&& (getElementToMove() != null && lastElement.equals(getElementToMove()) ||
-				(getElementToMoveChain() != null && elementsToString().equals(getElementToMoveChain())))
-				&& !(charDataBuilder.toString().startsWith(VALUE_MOVE_START) && charDataBuilder.toString().endsWith(VALUE_MOVE_END))) {
-			String elementToMoveSK;
-			if (getElementToMoveSessionKey() == null) {
-				elementToMoveSK = "ref_" + lastElement;
-			} else {
-				elementToMoveSK = getElementToMoveSessionKey();
+		if (moveElementFound) {
+			Message message = Message.asMessage(charDataBuilder.toString());
+			try {
+				message.preserve();
+			} catch (IOException e) {
+				throw new SAXException(e);
 			}
-			if (context.containsKey(elementToMoveSK)) {
-				String etmsk = elementToMoveSK;
-				int counter = 1;
-				while (context.containsKey(elementToMoveSK)) {
-					counter++;
-					elementToMoveSK = etmsk + counter;
-				}
-			}
-			context.put(elementToMoveSK, before + charDataBuilder + after);
-			messageBuilder.append(VALUE_MOVE_START).append(elementToMoveSK).append(VALUE_MOVE_END);
+
+			int lastIndex = elements.size() - 1;
+			String lastElement = elements.get(lastIndex);
+			String elementToMoveSK = determineElementToMoveSessionKey(lastElement);
+			context.put(elementToMoveSK, message);
+
+			super.characters(VALUE_MOVE_START.toCharArray(), 0, VALUE_MOVE_START.length());
+			super.characters(elementToMoveSK.toCharArray(), 0, elementToMoveSK.length());
+			super.characters(VALUE_MOVE_END.toCharArray(), 0, 1);
+			moveElementFound = false;
 		} else {
-			messageBuilder.append(before).append(XmlEncodingUtils.encodeChars(charDataBuilder.toString())).append(after);
+			String after = null;
+			if (chompLength >= 0 && charDataBuilder.length() > chompLength) {
+				String before = "*** character data size [" + charDataBuilder.length() + "] exceeds [" + chompLength + "] and is chomped ***";
+				after = "...(" + (charDataBuilder.length() - chompLength) + " characters more)";
+				charDataBuilder.setLength(chompLength);
+				super.characters(before.toCharArray(), 0, before.length());
+			}
+			char[] encodedChars = XmlEncodingUtils.encodeChars(charDataBuilder.toString()).toCharArray();
+			super.characters(encodedChars, 0, encodedChars.length);
+			if (after != null) {
+				super.characters(after.toCharArray(), 0, after.length());
+			}
 		}
 
 		charDataBuilder.setLength(0);
 	}
 
+	private String determineElementToMoveSessionKey(final String lastElement) {
+		String elementToMoveSK;
+		if (getElementToMoveSessionKey() == null) {
+			elementToMoveSK = "ref_" + lastElement;
+		} else {
+			elementToMoveSK = getElementToMoveSessionKey();
+		}
+		if (context.containsKey(elementToMoveSK)) {
+			String baseName = elementToMoveSK;
+			int counter = 1;
+			while (context.containsKey(elementToMoveSK)) {
+				counter++;
+				elementToMoveSK = baseName + counter;
+			}
+		}
+		return elementToMoveSK;
+	}
 
 	private String elementsToString() {
 		String chain = null;
@@ -165,13 +185,8 @@ public class CompactSaxHandler extends DefaultHandler {
 		return chain;
 	}
 
-	public String getXmlString() {
-		return messageBuilder.toString();
-	}
-
 	public void setChompCharSize(String input) {
-		chompCharSize = input;
-		chompLength = (int) Misc.toFileSize(chompCharSize, -1);
+		chompLength = (int) Misc.toFileSize(input, -1);
 	}
 
 }
