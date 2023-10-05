@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,6 +41,7 @@ import org.springframework.util.ResourceUtils;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
+import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Contains the component annotation so it will be picked up by the core (SpringEnvironmentContext.xml).
@@ -56,7 +58,7 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 
 	private static final long serialVersionUID = 1L;
 	private static final String WELCOME_FILE = "index.html";
-	private static final String DEFAULT_CONSOLE_PATH = "classpath:/console";
+	private static final String DEFAULT_CONSOLE_PATH = "console"; //WebSphere doesn't like the classpath: protocol and resources should not start with a slash?
 
 	private String frontendPath = null;
 	@Setter private transient Environment environment;
@@ -96,22 +98,22 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 			if(!fullPath.endsWith("/")) {
 				resp.sendRedirect(req.getContextPath() + req.getServletPath() + "/");
 				return;
+			} else {
+				//WebSphere likes to add a slash to the requestURI but leaves it out of the pathInfo
+				if(path == null) {
+					path = "/";
+				} else {
+					resp.sendError(404);
+					return;
+				}
 			}
-			log.warn("unable to redirect request");
-			resp.sendError(404);
-			return;
 		}
 		if(path.equals("/")) {
 			path += WELCOME_FILE;
 		}
 
-		URL resource;
-		try {
-			String normalized = FilenameUtils.normalize(frontendPath+path, true);
-			resource = new URL(normalized);
-			log.info("looked up [{}]", normalized);
-		} catch (IOException e) {
-			log.warn("unable to locate file [{}]", path, e);
+		URL resource = findResource(path);
+		if(resource == null) {
 			resp.sendError(404);
 			return;
 		}
@@ -126,6 +128,21 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 		} catch (IOException e) {
 			// Either something has gone wrong, or the request has been cancelled
 			log.debug("error reading resource [{}]", resource, e);
+		}
+	}
+
+	private @Nullable URL findResource(String path) {
+		try {
+			String normalized = FilenameUtils.normalize(frontendPath+path, true);
+			log.trace("trying to find resource [{}]", normalized);
+			URL resource = ClassUtils.getResourceURL(normalized);
+			if(resource == null) {
+				log.debug("unable to locate resource [{}]", path);
+			}
+			return resource;
+		} catch (IOException e) {
+			log.warn("exception while locating file [{}]", path, e);
+			return null;
 		}
 	}
 
