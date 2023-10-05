@@ -30,6 +30,9 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -38,6 +41,7 @@ import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
 
 /**
@@ -53,6 +57,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	public static final String LOG_PREFIX = "IbisLoggerConfigurationFactory class ";
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
+	public static final String LOG4J_PROPERTY_REGEX = "(?<=\\$\\{ctx:)([^:].*?)(?=(:-[^}]*+)?})";
 
 	static {
 		System.setProperty("java.util.logging.manager", org.apache.logging.log4j.jul.LogManager.class.getCanonicalName());
@@ -62,7 +67,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	 * Hierarchy of log directories to search for. Strings will be split by "/".
 	 * Before "/" split will be assumed to be a property, and after split will be a sub-directory.
 	 */
-	private static String[] logDirectoryHierarchy = new String[] {
+	private static final String[] logDirectoryHierarchy = new String[] {
 			"site.logdir",
 			"user.dir/logs",
 			"user.dir/log",
@@ -84,16 +89,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 			String configuration = readLog4jConfiguration(source.getInputStream());
 			Properties properties = getProperties();
-			Matcher m = Pattern.compile("\\$\\{(?:ctx:)?([^}]*)\\}").matcher(configuration); //Look for properties in the Log4J2 XML
-			Map<String, String> substitutions = new HashMap<>();
-			while (m.find()) {
-				String key = m.group(1);
-				String value = resolveValueRecursively(properties, key);
-
-				if(value != null) {
-					substitutions.put(key, value);
-				}
-			}
+			Map<String, String> substitutions = populateThreadContextProperties(configuration, properties);
 			ThreadContext.putAll(substitutions); // Only add the substituted variables to the ThreadContext
 
 			initLogExpressionHiding(properties);
@@ -111,6 +107,21 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		}
 	}
 
+	@Nonnull
+	protected static Map<String, String> populateThreadContextProperties(final String configuration, final Properties properties) {
+		Matcher m = Pattern.compile(LOG4J_PROPERTY_REGEX).matcher(configuration); //Look for properties in the Log4J2 XML
+		Map<String, String> substitutions = new HashMap<>();
+		while (m.find()) {
+			String key = m.group(1);
+			String value = resolveValueRecursively(properties, key);
+
+			if(value != null) {
+				substitutions.put(key, value);
+			}
+		}
+		return substitutions;
+	}
+
 	private static void initLogExpressionHiding(Properties properties) {
 		String logHideRegex = properties.getProperty("log.hideRegex");
 		if (StringUtils.isNotBlank(logHideRegex)) {
@@ -118,7 +129,8 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		}
 	}
 
-	private String resolveValueRecursively(Properties properties, String key) {
+	@Nullable
+	private static String resolveValueRecursively(Properties properties, String key) {
 		String value = properties.getProperty(key);
 		if(StringUtils.isEmpty(value)) {
 			return null;
@@ -127,12 +139,19 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		if(StringResolver.needsResolution(value)) {
 			value = StringResolver.substVars(value, properties);
 		}
+
+		if("log.dir".equals(key)) {
+			value = fixLogDirectorySlashes(value);
+		}
+
 		return value;
 	}
 
+	@Nonnull
 	private Properties getProperties() throws IOException {
 		Properties log4jProperties = getProperties(LOG4J_PROPS_FILE);
 		if(log4jProperties == null) {
+			log4jProperties = new Properties();
 			System.out.println(LOG_PREFIX + "did not find " + LOG4J_PROPS_FILE + ", leaving it up to log4j's default initialization procedure");
 		}
 
@@ -147,15 +166,19 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 
 		return log4jProperties;
 	}
-	private Properties getProperties(String filename) throws IOException {
+
+	private @Nullable Properties getProperties(String filename) throws IOException {
 		URL url = this.getClass().getClassLoader().getResource(filename);
 		if(url != null) {
 			Properties properties = new Properties();
-			properties.load(url.openStream());
+			try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+				properties.load(reader);
+			}
 			return properties;
 		}
 		return null;
 	}
+
 	private static void setInstanceNameLc(Properties log4jProperties) {
 		String instanceNameLowerCase = log4jProperties.getProperty("instance.name");
 		if (instanceNameLowerCase != null) {
@@ -200,12 +223,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		if (System.getProperty("log.dir") == null) {
 			File logDir = findLogDir();
 			if (logDir != null) {
-				// Replace backslashes because log.dir is used in log4j2.xml
-				// on which substVars is done (see below) which will replace
-				// double backslashes into one backslash and after that the same
-				// is done by Log4j:
-				// https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
-				System.setProperty("log.dir", logDir.getPath().replaceAll("\\\\", "/"));
+				System.setProperty("log.dir", fixLogDirectorySlashes(logDir.getPath()));
 			} else {
 				System.out.println(LOG_PREFIX + "did not find system property log.dir and unable to locate it automatically");
 			}
@@ -213,14 +231,26 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 	}
 
 	/**
-	 * Checks if the log.level is set on system level.
-	 * If not set, sets it based on dtap.stage
+	 * Replace backslashes because log.dir is used in log4j2.xml
+	 * on which substVars is done (see below) which will replace
+	 * double backslashes into one backslash and after that the same
+	 * is done by Log4j:
+	 * https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
+	 * */
+	private static String fixLogDirectorySlashes(String directory) {
+		return directory.replace("\\", "/");
+	}
+
+	/**
+	 * Checks if the {@code log.level} is set in the system properties.
+	 * If not set, sets it based on {@code dtap.stage}: When system property {@code dtap.stage}
+	 * is {@code ACC} or {@code PRD} then the log level is set to {@code WARN}, otherwise to {@code DEBUG}.
 	 */
 	private static void setLevel() {
 		if (System.getProperty("log.level") == null) {
 			// In the log4j4ibis.xml the rootlogger contains the loglevel: ${log.level}
 			// You can set this property in the log4j4ibis.properties, or as system property.
-			// To make sure the IBIS can startup if no log.level property has been found, it has to be explicitly set
+			// To make sure the IBIS can start up if no log.level property has been found, it has to be explicitly set
 			String stage = System.getProperty("dtap.stage");
 			String logLevel = "DEBUG";
 			if("ACC".equalsIgnoreCase(stage) || "PRD".equalsIgnoreCase(stage)) {
