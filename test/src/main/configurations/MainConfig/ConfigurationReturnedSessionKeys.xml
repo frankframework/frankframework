@@ -12,7 +12,7 @@
 			<pipe name="GuardAgainstFallThrough" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="Oops">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			
+
 			<pipe name="IbisJavaSender" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReturnedSessionKeys" returnedSessionKeys="returnCode,reasonCode,dataStream" />
 				<forward name="success" path="Reply_success" />
@@ -25,6 +25,17 @@
 				<forward name="400" path="Reply_400" />
 				<forward name="exception" path="Reply_exception" />
 			</pipe>
+
+			<pipe name="IbisLocalSenderPreservedMessage" className="nl.nn.adapterframework.pipes.SenderPipe" preserveInput="true">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ReturnedSessionKeys-Local" returnedSessionKeys="returnCode,reasonCode,dataStream" />
+				<forward name="success" path="echopipe2" />
+				<forward name="400" path="Reply_400" />
+				<forward name="exception" path="Reply_exception" />
+			</pipe>
+			<EchoPipe name="echopipe2">
+				<forward name="success" path="EXIT" />
+			</EchoPipe>
+
 			<pipe name="IbisJavaSenderNoReceiverLimit" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReturnedSessionKeysNoLimit" returnedSessionKeys="returnCode,reasonCode,dataStream" />
 				<forward name="success" path="Reply_success" />
