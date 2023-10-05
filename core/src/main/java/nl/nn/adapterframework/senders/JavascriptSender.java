@@ -208,7 +208,8 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	/**
-	 * the name of the JavaScript engine to be used. Nashorn and Rhino are deprecated.
+	 * the name of the JavaScript engine to be used.
+	 * @deprecated Both Nashorn and Rhino are deprecated. Use J2V8 instead.
 	 * @ff.default J2V8
 	 */
 	@Deprecated
