@@ -1,4 +1,4 @@
-FROM tomcat:8.5.93-jre11
+FROM tomcat:9.0.80-jre11
 ARG GID=1000
 ARG UID=1000
 
