@@ -25,19 +25,20 @@ class IbisLoggerConfigurationFactoryTest {
 	@ParameterizedTest
 	@CsvSource({
 			"${ctx:security.log.level:-INFO},security.log.level",
-			"${ctx:security.level.log:-INFO},security.level.log",
-			"${ctx:security.level:-INFO},security.level",
+			"${ctx:security.level.log:INFO},security.level.log:INFO",
+			"${ctx:security.level},security.level",
 			"${ctx::-},",
-			"${ctx:d:-},d",
 			"${ctx::-X},",
+			"${ctx:d:-},d",
 			"${ctx:e},e",
 			"${ctx:},",
 			"${ctx:,",
 			"${ctx:f:-F,",
+			"${ctx:fail:-F,",
 			"${ctx:f,",
+			"${ctx:fail,",
 			"${ctx.log},",
 			"${log.dir},",
-			"${ctx:security.log},security.log",
 	})
 	void testExtractPropertyNameRegex(String expression, String expected) {
 		// Act
