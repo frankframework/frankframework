@@ -53,7 +53,7 @@ class IbisLoggerConfigurationFactoryTest {
 				"<test-xml>\n" +
 				"    <tag>${ctx:log.dir}</tag>\n" +
 				"    <tag>${ctx:security.log.level:-INFO}</tag>\n" +
-				"    <tag>${ctx:config.log.level:DEBUG}</tag>\n" +
+				"    <tag>${ctx:config.log.level:DEBUG}</tag>\n" + // This entry not picked up b/c not correctly specified
 				"    <tag attrib=\"${ctx:log.maxFileSize}\"/>\n" +
 				"</test-xml>\n";
 
