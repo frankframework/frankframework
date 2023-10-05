@@ -211,6 +211,7 @@ public class JavascriptSender extends SenderSeries {
 	 * the name of the JavaScript engine to be used. Nashorn and Rhino are deprecated.
 	 * @ff.default J2V8
 	 */
+	@Deprecated
 	@ConfigurationWarning("JavaScript engines Nashorn and Rhino deprecated. Use \"J2V8\" instead")
 	public void setEngineName(JavaScriptEngines engineName) {
 		this.engine = engineName;
