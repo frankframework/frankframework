@@ -80,17 +80,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		return "SELECT " + sequenceName + ".CURRVAL FROM DUAL";
 	}
 
-	@Override
-	public String getTimestampFieldType() {
-		return "TIMESTAMP";
-	}
-
-	@Override
-	public String getBlobFieldType() {
-		return "BLOB";
-	}
-
-	@Override
+    @Override
 	public boolean mustInsertEmptyBlobBeforeData() {
 		return true;
 	}

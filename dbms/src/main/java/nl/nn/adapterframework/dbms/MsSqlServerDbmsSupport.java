@@ -66,18 +66,8 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getNumericKeyFieldType() {
-		return "INT";
-	}
-
-	@Override
 	public String getAutoIncrementKeyFieldType() {
 		return "INT IDENTITY";
-	}
-
-	@Override
-	public boolean autoIncrementKeyMustBeInserted() {
-		return false;
 	}
 
 	@Override
@@ -121,12 +111,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public boolean isClobType(final ResultSetMetaData rsmeta, final int colNum) throws SQLException {
 		return (rsmeta.getColumnType(colNum) == Types.VARCHAR || rsmeta.getColumnType(colNum) == Types.NVARCHAR) && rsmeta.getPrecision(colNum) > CLOB_SIZE_TRESHOLD;
-	}
-
-
-	@Override
-	public String getTextFieldType() {
-		return "VARCHAR";
 	}
 
 
@@ -271,16 +255,5 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String getBooleanValue(boolean value) {
 		return value ? "1" : "0";
-	}
-
-
-	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
-		return true;
-	}
-
-	@Override
-	public boolean isStoredProcedureResultSetSupported() {
-		return true;
 	}
 }

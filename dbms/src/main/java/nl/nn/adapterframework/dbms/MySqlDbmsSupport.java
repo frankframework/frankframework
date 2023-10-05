@@ -156,14 +156,4 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 				+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " LIMIT " + maxRows : ""));
 		return query;
 	}
-
-	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
-		return true;
-	}
-
-	@Override
-	public boolean isStoredProcedureResultSetSupported() {
-		return true;
-	}
 }

@@ -108,14 +108,4 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 		return doHasIndexOnColumns(conn, schemaOwner, tableName.toUpperCase(), columns.stream().map(String::toUpperCase).collect(Collectors.toList()),
 				"syscat.indexes", "syscat.indexcoluse", null, "tabname", "indname", "colname", "colseq");
 	}
-
-	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
-		return true;
-	}
-
-	@Override
-	public boolean isStoredProcedureResultSetSupported() {
-		return true;
-	}
 }
