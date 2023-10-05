@@ -16,10 +16,10 @@ package nl.nn.adapterframework.dbms;/*
 
 import lombok.Getter;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
 
+@Log4j2
 public enum Dbms {
 
 	NONE("none", null),
@@ -31,8 +31,6 @@ public enum Dbms {
 	MYSQL("MySQL", MySqlDbmsSupport.class),
 	MARIADB("MariaDB", MariaDbDbmsSupport.class),
 	POSTGRESQL("PostgreSQL", PostgresqlDbmsSupport.class);
-
-	protected static Logger log = LogManager.getLogger(Dbms.class);
 
 	private @Getter String key;
 	private @Getter String productName;
