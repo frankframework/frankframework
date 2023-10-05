@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
+
 public class Dir2Map {
 	private File directory;
 	private String wildcard = "*.*";

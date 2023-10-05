@@ -15,9 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.aspose;
 
-import java.awt.Font;
-import java.awt.FontFormatException;
-import java.awt.GraphicsEnvironment;
+import java.awt.*;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +30,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -43,7 +42,6 @@ import com.aspose.words.FontSourceBase;
 
 import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class AsposeFontManager {
@@ -79,7 +77,7 @@ public class AsposeFontManager {
 			fontDirectory = new File(tmpdir, FONTS_RESOURCE_DIR);
 		}
 
-		// If this fonts (sub-)directory does not exist, try to create it 
+		// If this fonts (sub-)directory does not exist, try to create it
 		if(!fontDirectory.exists()) {
 			fontDirectory.mkdirs();
 		}
@@ -190,7 +188,7 @@ public class AsposeFontManager {
 	/**
 	 * Get the font. When retrieving the font fails it is logged and
 	 * <code>null</code> is returned.
-	 * 
+	 *
 	 * @param fontFile File location of the font to be loaded
 	 * @return the font or <code>null</code>.
 	 */
