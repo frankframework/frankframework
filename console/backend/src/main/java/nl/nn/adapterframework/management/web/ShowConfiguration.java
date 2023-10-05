@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.management.web;
 
 import java.io.InputStream;
-import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -72,7 +72,7 @@ public final class ShowConfiguration extends FrankApiBase {
 	@Path("/configurations")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response fullReload(LinkedHashMap<String, Object> json) throws ApiException {
+	public Response fullReload(Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
 		if(value instanceof String && "reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
@@ -119,7 +119,7 @@ public final class ShowConfiguration extends FrankApiBase {
 	@Path("/configurations/{configuration}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response reloadConfiguration(@PathParam("configuration") String configurationName, LinkedHashMap<String, Object> json) throws ApiException {
+	public Response reloadConfiguration(@PathParam("configuration") String configurationName, Map<String, Object> json) throws ApiException {
 		Object value = json.get("action");
 		if(value instanceof String && "reload".equals(value)) {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.IBISACTION);
@@ -148,14 +148,24 @@ public final class ShowConfiguration extends FrankApiBase {
 	@Path("/configurations/{configuration}/versions/{version}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String encodedVersion, @QueryParam("datasourceName") String datasourceName, LinkedHashMap<String, Object> json) throws ApiException {
+	public Response manageConfiguration(@PathParam("configuration") String configurationName, @PathParam("version") String encodedVersion, @QueryParam("datasourceName") String datasourceName, Map<String, Object> json) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.CONFIGURATION, BusAction.MANAGE);
 		builder.addHeader("configuration", configurationName);
 		builder.addHeader("version", HttpUtils.urlDecode(encodedVersion));
 		if(json.containsKey("activate")) {
-			builder.addHeader("activate", json.get("activate"));
+			Object obj = json.get("activate");
+			if(obj instanceof Boolean) {
+				builder.addHeader("activate", (Boolean) json.get("activate"));
+			} else {
+				throw new ApiException("activate must be of type boolean");
+			}
 		} else if(json.containsKey("autoreload")) {
-			builder.addHeader("autoreload", json.get("autoreload"));
+			Object obj = json.get("autoreload");
+			if(obj instanceof Boolean) {
+				builder.addHeader("autoreload", (Boolean) json.get("autoreload"));
+			} else {
+				throw new ApiException("autoreload must be of type boolean");
+			}
 		}
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, datasourceName);
 		return callSyncGateway(builder);

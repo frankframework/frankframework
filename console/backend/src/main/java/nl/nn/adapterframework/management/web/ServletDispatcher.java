@@ -83,7 +83,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 		 */
 		final String method = request.getMethod();
 		if(!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("OPTIONS")) {
-			secLog.info(HttpUtils.getExtendedCommandIssuedBy(request));
+			secLog.debug("received http request from URI [{}:{}] issued by [{}]", method, request.getRequestURI(), HttpUtils.getCommandIssuedBy(request));
 		}
 
 		//TODO add X-Rate-Limit to prevent possible clients to flood the IAF API
