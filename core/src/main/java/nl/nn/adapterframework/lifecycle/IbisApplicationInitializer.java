@@ -54,6 +54,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		System.setProperty(EndpointImpl.CHECK_PUBLISH_ENDPOINT_PERMISSON_PROPERTY_WITH_SECURITY_MANAGER, "false");
 		APPLICATION_LOG.debug("Starting IBIS WebApplicationInitializer");
 
+		checkAndCorrectLegacyServerTypes();
 		determineApplicationServerType(servletContext);
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
@@ -78,7 +79,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		if(fileURL == null) {
 			LOG.warn("unable to locate TestTool configuration [{}] using classloader [{}]", file, classLoader);
 		} else {
-			if(!file.contains(":")) {
+			if(file.indexOf(":") == -1) {
 				file = ResourceUtils.CLASSPATH_URL_PREFIX+file;
 			}
 
@@ -110,6 +111,21 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 			LOG.fatal("IBIS ApplicationInitializer failed to initialize", e);
 			APPLICATION_LOG.fatal("IBIS ApplicationInitializer failed to initialize", e);
 			throw e;
+		}
+	}
+
+	//TODO: remove this in 8.0
+	private void checkAndCorrectLegacyServerTypes() {
+		//In case the property is explicitly set with an unsupported value, E.g. 'applName + number'
+		String applicationServerType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
+		if (StringUtils.isNotEmpty(applicationServerType)) {
+			if (applicationServerType.equalsIgnoreCase("WAS5") || applicationServerType.equalsIgnoreCase("WAS6")) {
+				LOG.warn("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [WAS]");
+				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "WAS");
+			} else if (applicationServerType.equalsIgnoreCase("TOMCAT6")) {
+				LOG.warn("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [TOMCAT]");
+				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "TOMCAT");
+			}
 		}
 	}
 
