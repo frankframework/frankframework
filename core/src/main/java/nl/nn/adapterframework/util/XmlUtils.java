@@ -856,7 +856,7 @@ public class XmlUtils {
 		try {
 			TransformerPool tpVersion = XmlUtils.getDetectXsltVersionTransformerPool();
 			StreamSource stylesource = new StreamSource(xsltUrl.openStream());
-			stylesource.setSystemId(ClassUtils.getCleanedFilePath(xsltUrl.toExternalForm()));
+			stylesource.setSystemId(xsltUrl.toExternalForm());
 
 			return interpretXsltVersion(tpVersion.transform(stylesource));
 		} catch (Exception e) {
@@ -890,7 +890,7 @@ public class XmlUtils {
 
 	public static Transformer createTransformer(URL url, int xsltVersion) throws TransformerConfigurationException, IOException {
 		StreamSource stylesource = new StreamSource(url.openStream());
-		stylesource.setSystemId(ClassUtils.getCleanedFilePath(url.toExternalForm()));
+		stylesource.setSystemId(url.toExternalForm());
 
 		return createTransformer(stylesource, xsltVersion);
 	}

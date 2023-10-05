@@ -88,10 +88,8 @@
 	LEGACY URL-based security configuration, now superseded by dynamic servlet configuration.
 	See nl.nn.adapterframework.lifecycle.ServletManager
 
-	When a security-constraint element is present Tomcat will authenticate the
-	user for all url's whereas WebSphere does this only for the url's mentioned
-	in the security constraint(s). The PublicAccess security constraint will
-	make Tomcat behave the same as WebSphere.
+	When a security-constraint element is present, Tomcat will authenticate the
+	user for all url's.
 	-->
 
 	<!-- security-constraint>
