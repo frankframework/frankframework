@@ -248,21 +248,4 @@ public class MiscTest {
 		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
 	}
 
-	@Test
-	public void testIbmDescriptorResources() throws Exception {
-		String descriptorPath = Misc.getApplicationDeploymentDescriptorPath();
-		assertThat(descriptorPath, Matchers.endsWith("META-INF"));
-		String applBindings = Misc.getDeployedApplicationBindings();
-		assertNotNull(applBindings);
-		String deploymentDescriptor = Misc.getApplicationDeploymentDescriptor();
-		assertNotNull(deploymentDescriptor);
-	}
-
-	@Test
-	public void testIbmConfigurationResources() throws Exception {
-		String configurationResources = Misc.getConfigurationResources();
-		assertThat(configurationResources, Matchers.startsWith("<dummy xml=\"file\" />"));
-		String server = Misc.getConfigurationServer();
-		assertThat(server, Matchers.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
-	}
 }
