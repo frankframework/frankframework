@@ -380,8 +380,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public String getFirstRecordQuery(String tableName) throws DbmsException {
 		log.warn("don't know how to perform getFirstRecordQuery for this database type, doing a guess...");
-		String query = "select * from " + tableName + " where ROWNUM=1";
-		return query;
+		return "select * from " + tableName + " where ROWNUM=1";
 	}
 
 	@Override
@@ -681,10 +680,9 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows) {
-		String query = ("DELETE FROM " + tableName + " WHERE " + keyField + " IN (SELECT " + keyField + " FROM " + tableName
+        return ("DELETE FROM " + tableName + " WHERE " + keyField + " IN (SELECT " + keyField + " FROM " + tableName
 				+ " WHERE " + typeField + " IN ('" + "L" + "','" + "A"
 				+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " FETCH FIRST " + maxRows + " ROWS ONLY" : "") + ")");
-		return query;
 	}
 
 	@Override
