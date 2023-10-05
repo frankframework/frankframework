@@ -21,6 +21,7 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 
 	ctrl.isConfigStubbed = {};
 	ctrl.isConfigReloading = {};
+	ctrl.unregister$on = [];
 
 	ctrl.$onInit = function () {
 		var hash = $location.hash();
@@ -52,15 +53,15 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 		ctrl.alerts = appService.alerts;
 		ctrl.messageLog = appService.messageLog;
 		ctrl.adapters = appService.adapters;
-		$rootScope.$on('configurations', ctrl.check4StubbedConfigs);
-		$rootScope.$on('summaries', function () {
+		ctrl.unregister$on.push($rootScope.$on('configurations', ctrl.check4StubbedConfigs));
+		ctrl.unregister$on.push($rootScope.$on('summaries', function () {
 			ctrl.adapterSummary = appService.adapterSummary;
 			ctrl.receiverSummary = appService.receiverSummary;
 			ctrl.messageSummary = appService.messageSummary;
-		});
-		$rootScope.$on('alerts', function () { ctrl.alerts = appService.alerts; }, true);
-		$rootScope.$on('messageLog', function () { ctrl.messageLog = appService.messageLog; });
-		$rootScope.$on('adapters', function () { ctrl.adapters = appService.adapters; });
+		}));
+		ctrl.unregister$on.push($rootScope.$on('alerts', function () { ctrl.alerts = appService.alerts; }, true));
+		ctrl.unregister$on.push($rootScope.$on('messageLog', function () { ctrl.messageLog = appService.messageLog; }));
+		ctrl.unregister$on.push($rootScope.$on('adapters', function () { ctrl.adapters = appService.adapters; }));
 
 		ctrl.getProcessStateIcon = appService.getProcessStateIcon;
 		ctrl.getProcessStateIconColor = appService.getProcessStateIconColor;
@@ -68,6 +69,11 @@ const StatusController = function ($scope, $rootScope, Api, Poller, $filter, $st
 		if ($state.params.configuration != "All")
 			ctrl.changeConfiguration($state.params.configuration);
 	};
+
+	ctrl.$onDestroy = function () {
+		for (const unregister of ctrl.unregister$on)
+			unregister();
+	}
 
 	ctrl.showContent = function (adapter) {
 		if (adapter.status == "stopped") {
