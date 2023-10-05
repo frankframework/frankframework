@@ -1,5 +1,5 @@
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
-	<SOAP-ENV:Header></SOAP-ENV:Header>
+	<SOAP-ENV:Header/>
 	<SOAP-ENV:Body>
 		<ZKN:edcLk01 xmlns:StUF="http://www.egem.nl/StUF/StUF0301" xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310">
 			<ZKN:stuurgegevens>

@@ -156,7 +156,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		String found = "";
 		if(message != null && !message.isEmpty() && (XmlUtils.isWellFormed(message))) {
 			try {
-				TransformerPool test = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false), 0);
+				TransformerPool test = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false));
 				found = test.transform(message, null);
 
 				//xPath not found and message length is 0 but not null nor ""

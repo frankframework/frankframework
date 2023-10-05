@@ -70,7 +70,7 @@ public class SoapValidator extends Json2XmlValidator {
 			if (StringUtils.isEmpty(getSchemaLocation())) {
 				throw new ConfigurationException("schemaLocation must be specified");
 			}
-			super.setSchemaLocation(getSchemaLocation() + (getSchemaLocation().length() > 0 ? " " : "") + soapVersion.getSchemaLocation());
+			super.setSchemaLocation(getSchemaLocation() + (!getSchemaLocation().isEmpty() ? " " : "") + soapVersion.getSchemaLocation());
 		}
 
 		if (!isAllowPlainXml()) {
@@ -80,8 +80,7 @@ public class SoapValidator extends Json2XmlValidator {
 			}
 			addRequestRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader));
 
-			List<String> soapRootNamespaces = new ArrayList<>();
-			soapRootNamespaces.addAll(soapVersion.getNamespaces());
+			List<String> soapRootNamespaces = new ArrayList<>(soapVersion.getNamespaces());
 			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_BODY_ELEMENT_NAME, soapBody), soapRootNamespaces);
 			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader), soapRootNamespaces);
 		}
