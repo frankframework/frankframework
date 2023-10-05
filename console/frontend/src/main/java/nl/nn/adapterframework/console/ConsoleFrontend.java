@@ -86,6 +86,9 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 		}
 	}
 
+	/**
+	 * @throws IOException only when sendError or sendRedirect cannot process the request.
+	 */
 	private void doGetSafely(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String path = req.getPathInfo();
 		if(StringUtils.isBlank(path)) { //getPathInfo may return null, redirect to {base}+'/' when that happens.
@@ -96,6 +99,7 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 			}
 			log.warn("unable to redirect request");
 			resp.sendError(404);
+			return;
 		}
 		if(path.equals("/")) {
 			path += WELCOME_FILE;
@@ -117,13 +121,12 @@ public class ConsoleFrontend extends HttpServlet implements DynamicRegistration.
 
 		try(InputStream in = resource.openStream()) {
 			IOUtils.copy(in, resp.getOutputStream());
-		} catch (IOException e) {
-			log.warn("error reading resource [{}]", resource, e);
-			resp.sendError(500);
-			return;
-		}
 
-		resp.flushBuffer();
+			resp.flushBuffer();
+		} catch (IOException e) {
+			// Either something has gone wrong, or the request has been cancelled
+			log.debug("error reading resource [{}]", resource, e);
+		}
 	}
 
 	@Override
