@@ -25,20 +25,18 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.util.StreamUtil;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 
 /**
  * Sql syntax translator to translate queries
  * for different database management systems (e.g. Oracle to MsSql or PostgreSql to MySql)
  */
+@Log4j2
 public class SqlTranslator implements ISqlTranslator {
-	private final Logger log = LogManager.getLogger(this);
-
 	private static final String PATTERN_FILE = "SqlTranslationPatterns.properties";
 
 	private Map<String, Pattern> sources;

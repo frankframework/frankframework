@@ -25,9 +25,9 @@ import javax.sql.DataSource;
 
 import lombok.Getter;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -35,9 +35,8 @@ import nl.nn.adapterframework.util.ClassUtils;
 /**
  * @author Gerrit van Brakel
  */
+@Log4j2
 public class DbmsSupportFactory implements IDbmsSupportFactory {
-	private Logger log = LogManager.getLogger(this.getClass());
-
 	private Map<DataSource, IDbmsSupport> dbmsSupport = new ConcurrentHashMap<>();
 
 	private @Getter Properties dbmsSupportMap;
