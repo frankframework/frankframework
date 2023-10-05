@@ -20,31 +20,4 @@ public class MsSqlServerTest {
 		// dbmssupport.mssql.queuereading.rowlock=false by default now, to avoid thinking we can outsmart the mssql query optimizer
 		assertEquals("select TOP 1 * from ibisstore WITH (updlock,readpast)", query);
 	}
-
-//	@Test
-//	public void testPrepareQueryTextForWorkQueueReadingWithoutRowlock() throws JdbcException {
-//		AppConstants.getInstance().setProperty("dbmssupport.mssql.queuereading.rowlock", "false");
-//
-//		String query = createDbmsSupport().prepareQueryTextForWorkQueueReading(1, selectQuery);
-//
-//		assertEquals("select TOP 1 * from ibisstore WITH (updlock,readpast)", query);
-//	}
-//
-//	@Test
-//	public void testPrepareQueryTextForWorkQueueReadingWithRowlockProperty() throws JdbcException {
-//		AppConstants.getInstance().setProperty("dbmssupport.mssql.queuereading.rowlock", "true");
-//
-//		String query = createDbmsSupport().prepareQueryTextForWorkQueueReading(1, selectQuery);
-//
-//		assertEquals("select TOP 1 * from ibisstore WITH (rowlock,updlock,readpast)", query);
-//	}
-//
-//	@Test
-//	public void testPrepareQueryTextForWorkQueueReadingWithEmptyRowlockProperty() throws JdbcException {
-//		AppConstants.getInstance().setProperty("dbmssupport.mssql.queuereading.rowlock", "");
-//
-//		String query = createDbmsSupport().prepareQueryTextForWorkQueueReading(1, selectQuery);
-//
-//		assertEquals("select TOP 1 * from ibisstore WITH (updlock,readpast)", query);
-//	}
 }
