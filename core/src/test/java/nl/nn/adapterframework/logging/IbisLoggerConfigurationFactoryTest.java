@@ -24,16 +24,16 @@ class IbisLoggerConfigurationFactoryTest {
 		// Arrange
 		String config =
 				"${ctx:security.log.level:-INFO}\n" + // Should Match
-				"${ctx:security.level.log:-}\n" + // Should Match
-				"${ctx:security.level:x}\n" + // Should Match
-				"${ctx::-}\n" + // Shouldn't Match
-				"${ctx:d:-}\n" + // Should Match
-				"${ctx::-X}\n" + // Shouldn't Match
-				"${ctx:e}\n" + // Should Match
-				"${ctx:}\n" + // Shouldn't Match
-				"${ctx.log}\n" + // Shouldn't Match
-				"${log.dir}\n" + // Shouldn't Match
-				"${ctx:security.log}"; // Should Match
+				"${ctx:security.level.log:-}\n" +     // Should Match
+				"${ctx:security.level:x}\n" +         // Should Match
+				"${ctx::-}\n" +                       // Shouldn't Match
+				"${ctx:d:-}\n" +                      // Should Match
+				"${ctx::-X}\n" +                      // Shouldn't Match
+				"${ctx:e}\n" +                        // Should Match
+				"${ctx:}\n" +                         // Shouldn't Match
+				"${ctx.log}\n" +                      // Shouldn't Match
+				"${log.dir}\n" +                      // Shouldn't Match
+				"${ctx:security.log}";                // Should Match
 
 		// Act
 		Matcher m = Pattern.compile(LOG4J_PROPERTY_REGEX).matcher(config);
