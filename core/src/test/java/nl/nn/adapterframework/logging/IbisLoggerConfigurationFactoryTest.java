@@ -1,10 +1,11 @@
 package nl.nn.adapterframework.logging;
 
 import static nl.nn.adapterframework.logging.IbisLoggerConfigurationFactory.LOG4J_PROPERTY_REGEX;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,34 +17,38 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class IbisLoggerConfigurationFactoryTest {
 
-	@Test
-	void testExtractPropertyNameRegex() {
-		// Arrange
-		String config =
-				"${ctx:security.log.level:-INFO}\n" + // Should Match
-				"${ctx:security.level.log:-}\n" +     // Should Match
-				"${ctx:security.level:x}\n" +         // Should Match
-				"${ctx::-}\n" +                       // Shouldn't Match
-				"${ctx:d:-}\n" +                      // Should Match
-				"${ctx::-X}\n" +                      // Shouldn't Match
-				"${ctx:e}\n" +                        // Should Match
-				"${ctx:}\n" +                         // Shouldn't Match
-				"${ctx.log}\n" +                      // Shouldn't Match
-				"${log.dir}\n" +                      // Shouldn't Match
-				"${ctx:security.log}";                // Should Match
-
+	@ParameterizedTest
+	@CsvSource({
+			"${ctx:security.log.level:-INFO},security.log.level",
+			"${ctx:security.level.log:-INFO},security.level.log",
+			"${ctx:security.level:-INFO},security.level",
+			"${ctx::-},",
+			"${ctx:d:-},d",
+			"${ctx::-X},",
+			"${ctx:e},e",
+			"${ctx:},",
+			"${ctx.log},",
+			"${log.dir},",
+			"${ctx:security.log},security.log",
+	})
+	void testExtractPropertyNameRegex(String expression, String expected) {
 		// Act
-		Matcher m = Pattern.compile(LOG4J_PROPERTY_REGEX).matcher(config);
-		List<String> matches = new ArrayList<>();
-		while (m.find()) {
-			matches.add(m.group(1));
-		}
+		Matcher m = Pattern.compile(LOG4J_PROPERTY_REGEX).matcher(expression);
 
 		// Assert
-		assertIterableEquals(Arrays.asList("security.log.level", "security.level.log", "security.level:x", "d", "e", "security.log"), matches);
+		boolean found = m.find();
+		if (expected == null) {
+			assertFalse(found, "Should not have found a match in expression [" + expression + "]");
+			return;
+		}
+		assertTrue(found, "Should have found a match in expression [" + expression + "]");
+		String match = m.group(1);
+		assertEquals(expected, match);
 	}
 
 	@Test
