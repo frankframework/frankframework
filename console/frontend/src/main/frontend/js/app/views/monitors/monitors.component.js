@@ -11,18 +11,22 @@ const MonitorsController = function (Api, $state, Misc, $rootScope, appService) 
 
 	ctrl.$onInit = function () {
 		ctrl.configurations = appService.configurations;
-		$rootScope.$on('configurations', function () {
+		ctrl.unregister$on = $rootScope.$on('configurations', function () {
 			ctrl.configurations = appService.configurations;
 
 			if (ctrl.configurations.length > 0) {
 				ctrl.updateConfigurations();
 			}
 		});
-		
+
 		if (ctrl.configurations.length > 0) {
 			ctrl.updateConfigurations();
 		}
 	};
+
+	ctrl.$onDestroy = function(){
+		ctrl.unregister$on();
+	}
 
 	ctrl.updateConfigurations = function(){
 		var configName = $state.params.configuration; //See if the configuration query param is populated
@@ -32,8 +36,7 @@ const MonitorsController = function (Api, $state, Misc, $rootScope, appService) 
 
 	ctrl.changeConfiguration = function (name) {
 		ctrl.selectedConfiguration = name;
-
-		if ($state.params.configuration == "" || $state.params.configuration != name) { //Update the URL
+		if ($state.current.component === "monitors" && ($state.params.configuration == "" || $state.params.configuration != name)) { //Update the URL
 			$state.transitionTo('pages.monitors', { configuration: name }, { notify: false, reload: false });
 		}
 

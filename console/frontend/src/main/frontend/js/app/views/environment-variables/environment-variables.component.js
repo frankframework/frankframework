@@ -24,7 +24,7 @@ const EnvironmentVariablesController = function ($scope, Api, appConstants, $roo
 		}
 
         ctrl.configurations = appService.configurations;
-        $rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
+        ctrl.unregister$on = $rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
 
         Api.Get("environmentvariables", function (data) {
             var instanceName = null;
@@ -39,6 +39,10 @@ const EnvironmentVariablesController = function ($scope, Api, appConstants, $roo
             ctrl.systemProperties = convertPropertiesToArray(data["System Properties"]);
         });
     };
+
+	ctrl.$onDestroy = function(){
+		ctrl.unregister$on();
+	}
 
     ctrl.changeConfiguration = function (name) {
         ctrl.selectedConfiguration = name;

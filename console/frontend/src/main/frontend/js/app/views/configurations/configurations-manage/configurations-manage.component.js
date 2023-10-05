@@ -6,11 +6,15 @@ const ConfigurationsManagaController = function ($rootScope, Api, appService) {
 
 	ctrl.$onInit = function () {
 		ctrl.configurations = appService.configurations;
-		$rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
+		ctrl.unregister$on = $rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
 		Api.Get("server/configurations", function (data) {
 			appService.updateConfigurations(data);
 		});
 	};
+
+	ctrl.$onDestroy = function(){
+		ctrl.unregister$on();
+	}
 };
 
 appModule.component('configurationsManage', {
