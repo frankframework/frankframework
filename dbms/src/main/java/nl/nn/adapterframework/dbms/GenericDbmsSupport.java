@@ -320,18 +320,18 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, DbmsException {
+	public OutputStream getBlobOutputStream(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException {
 		return ((Blob) blobInsertHandle).setBinaryStream(1L);
 	}
 
 	@Override
-	public void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException, DbmsException {
+	public void applyBlobParameter(PreparedStatement stmt, int column, Object blobInsertHandle) throws SQLException {
 		stmt.setBlob(column, (Blob) blobInsertHandle);
 	}
 
 
 	@Override
-	public InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, DbmsException {
+	public InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException {
 		Blob blob = rs.getBlob(column);
 		if (blob == null) {
 			return null;
@@ -340,7 +340,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, DbmsException {
+	public InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException {
 		Blob blob = rs.getBlob(column);
 		if (blob == null) {
 			return null;
