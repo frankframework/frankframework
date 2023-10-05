@@ -123,8 +123,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getFirstRecordQuery(String tableName) {
-		String query = "select * from " + tableName + " where ROWNUM=1";
-		return query;
+        return "select * from " + tableName + " where ROWNUM=1";
 	}
 
 	@Override
@@ -205,11 +204,8 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	public boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName) {
 		String query = "select count(*) from all_indexes where owner='" + schemaOwner.toUpperCase() + "' and table_name='" + tableName.toUpperCase() + "' and index_name='" + indexName.toUpperCase() + "'";
 		try {
-			if (DbmsUtil.executeIntQuery(conn, query) >= 1) {
-				return true;
-			}
-			return false;
-		} catch (Exception e) {
+            return DbmsUtil.executeIntQuery(conn, query) >= 1;
+        } catch (Exception e) {
 			log.warn("could not determine presence of index [" + indexName + "] on table [" + tableName + "]", e);
 			return false;
 		}
@@ -219,11 +215,8 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	public boolean isSequencePresent(Connection conn, String schemaOwner, String tableName, String sequenceName) {
 		String query = "select count(*) from all_sequences where sequence_owner='" + schemaOwner.toUpperCase() + "' and sequence_name='" + sequenceName.toUpperCase() + "'";
 		try {
-			if (DbmsUtil.executeIntQuery(conn, query) >= 1) {
-				return true;
-			}
-			return false;
-		} catch (Exception e) {
+            return DbmsUtil.executeIntQuery(conn, query) >= 1;
+        } catch (Exception e) {
 			log.warn("could not determine presence of sequence [" + sequenceName + "]", e);
 			return false;
 		}

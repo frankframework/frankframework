@@ -151,9 +151,8 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows) {
-		String query = ("DELETE FROM " + tableName
+        return ("DELETE FROM " + tableName
 				+ " WHERE " + typeField + " IN ('" + "L" + "','" + "A"
 				+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " LIMIT " + maxRows : ""));
-		return query;
 	}
 }
