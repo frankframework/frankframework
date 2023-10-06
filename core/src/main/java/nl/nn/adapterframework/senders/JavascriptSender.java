@@ -68,10 +68,18 @@ public class JavascriptSender extends SenderSeries {
 
 	private String fileInput;
 
+
 	public enum JavaScriptEngines {
-		J2V8(J2V8.class), @Deprecated NASHORN(Nashorn.class), @Deprecated RHINO(Rhino.class);
+		J2V8(J2V8.class),
+
+		@ConfigurationWarning("Engine Nashorn is deprecated. Use J2V8 instead.")
+		@Deprecated NASHORN(Nashorn.class),
+
+		@ConfigurationWarning("Engine Rhino is deprecated. Use J2V8 instead.")
+		@Deprecated RHINO(Rhino.class);
 
 		private Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
+
 		private JavaScriptEngines(Class<? extends JavascriptEngine<?>> engine) {
 			this.engine = engine;
 		}
@@ -129,36 +137,36 @@ public class JavascriptSender extends SenderSeries {
 		}
 
 		//Create a Parameter Value List
-		ParameterValueList pvl=null;
+		ParameterValueList pvl = null;
 		try {
-			if (getParameterList() !=null) {
-				pvl=getParameterList().getValues(message, session);
+			if (getParameterList() != null) {
+				pvl = getParameterList().getValues(message, session);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+" exception extracting parameters", e);
+			throw new SenderException(getLogPrefix() + " exception extracting parameters", e);
 		}
-		if(pvl != null) {
+		if (pvl != null) {
 			numberOfParameters = pvl.size();
 		}
 
 		//This array will contain the parameters given in the configuration
 		Object[] jsParameters = new Object[numberOfParameters];
-		for (int i=0; i<numberOfParameters; i++) {
+		for (int i = 0; i < numberOfParameters; i++) {
 			ParameterValue pv = pvl.getParameterValue(i);
 			Object value = pv.getValue();
 			try {
-				jsParameters[i] = value instanceof Message ? ((Message)value).asString() : value;
+				jsParameters[i] = value instanceof Message ? ((Message) value).asString() : value;
 			} catch (IOException e) {
-				throw new SenderException(getLogPrefix(),e);
+				throw new SenderException(getLogPrefix(), e);
 			}
 		}
 
-		for (ISender sender: getSenders()) {
+		for (ISender sender : getSenders()) {
 			jsInstance.registerCallback(sender, session);
 		}
 
 		try {
-		//Compile the given Javascript and execute the given Javascript function
+			//Compile the given Javascript and execute the given Javascript function
 			jsInstance.executeScript(adaptES6Literals(fileInput));
 			jsResult = jsInstance.executeFunction(jsFunctionName, jsParameters);
 		} catch (JavascriptException e) {
@@ -170,7 +178,7 @@ public class JavascriptSender extends SenderSeries {
 		// Pass jsResult, the result of the Javascript function.
 		// It is recommended to have the result of the Javascript function be of type String, which will be the output of the sender
 		String result = String.valueOf(jsResult);
-		if(StringUtils.isEmpty(result) || "null".equals(result) || "undefined".equals(result)) {
+		if (StringUtils.isEmpty(result) || "null".equals(result) || "undefined".equals(result)) {
 			return new SenderResult(Message.nullMessage());
 		}
 		return new SenderResult(result);
@@ -186,7 +194,7 @@ public class JavascriptSender extends SenderSeries {
 	private String adaptES6Literals(final String source) {
 		Matcher m = es6VarPattern.matcher(source);
 		StringBuffer sb = new StringBuffer();
-		while(m.find()) {
+		while (m.find()) {
 			StringBuilder buf = new StringBuilder(m.group());
 			buf.replace(m.start(1) - m.start(), m.end(1) - m.start(), "var");
 			m.appendReplacement(sb, buf.toString());
