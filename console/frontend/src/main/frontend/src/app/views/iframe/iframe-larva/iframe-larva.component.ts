@@ -4,8 +4,8 @@ import { MiscService } from 'src/angularjs/app/services/misc.service';
 
 @Component({
   selector: 'app-iframe-larva',
-  templateUrl: './iframe-larva.component.html',
-  styleUrls: ['./iframe-larva.component.scss']
+  templateUrl: '../iframe.component.html',
+  styleUrls: ['../iframe.component.scss']
 })
 export class IframeLarvaComponent implements OnInit {
   url: string = "";

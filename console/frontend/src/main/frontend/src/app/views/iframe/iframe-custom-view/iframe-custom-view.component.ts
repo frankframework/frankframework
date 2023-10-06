@@ -5,8 +5,8 @@ import { MiscService } from 'src/angularjs/app/services/misc.service';
 
 @Component({
   selector: 'app-iframe-custom-view',
-  templateUrl: './iframe-custom-view.component.html',
-  styleUrls: ['./iframe-custom-view.component.scss']
+  templateUrl: '../iframe.component.html',
+  styleUrls: ['../iframe.component.scss']
 })
 export class IframeCustomViewComponent implements OnInit {
   url: string = "";

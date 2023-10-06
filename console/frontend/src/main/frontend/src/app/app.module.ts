@@ -79,6 +79,7 @@ import { FormatStatisticsPipe } from './views/adapterstatistics/format-statistic
 import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
 import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
 import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
+import { FitHeightDirective } from './views/iframe/fit-height.directive';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
@@ -169,6 +170,7 @@ appModule
     TimeSinceDirective,
     QuickSubmitFormDirective,
     FormatStatKeysPipe,
+    FitHeightDirective,
   ],
   imports: [
     BrowserModule,

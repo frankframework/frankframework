@@ -4,8 +4,8 @@ import { MiscService } from 'src/angularjs/app/services/misc.service';
 
 @Component({
   selector: 'app-iframe-ladybug',
-  templateUrl: './iframe-ladybug.component.html',
-  styleUrls: ['./iframe-ladybug.component.scss']
+  templateUrl: '../iframe.component.html',
+  styleUrls: ['../iframe.component.scss']
 })
 export class IframeLadybugComponent implements OnInit {
   url: string = "";
