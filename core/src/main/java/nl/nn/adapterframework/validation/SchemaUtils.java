@@ -151,17 +151,14 @@ public class SchemaUtils {
 			// perform the merge
 			for (IXSD xsd: xsds) {
 				i++;
-				boolean skipFirstElement = true;
-				boolean skipLastElement = true;
+				boolean skipFirstElement;
+				boolean skipLastElement;
 				if (xsds.size() == 1) {
 					skipFirstElement = false;
 					skipLastElement = false;
 				} else {
-					if (i == 1) {
-						skipFirstElement = false;
-					} else if (i == xsds.size()) {
-						skipLastElement = false;
-					}
+					skipFirstElement = (i != 1);
+					skipLastElement = (i < xsds.size());
 				}
 				xsdToXmlStreamWriter(xsd, w, false, true, skipFirstElement, skipLastElement, rootAttributes, rootNamespaceAttributes, imports, false);
 			}

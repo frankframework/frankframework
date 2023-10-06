@@ -203,7 +203,7 @@ public class ReceiverTest {
 		DummySender sender = configuration.createBean(DummySender.class);
 		receiver.setSender(sender);
 		receiver.setErrorStorage(errorStorage);
-
+		receiver.setNumThreads(2);
 		return receiver;
 	}
 

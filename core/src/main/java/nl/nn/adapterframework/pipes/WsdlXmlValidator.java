@@ -278,8 +278,8 @@ public class WsdlXmlValidator extends SoapValidator {
 
 	protected static void addNamespaces(Schema schema, Map<String, String> namespaces) {
 		for (Map.Entry<String,String> e : namespaces.entrySet()) {
-			String key = e.getKey().length() == 0 ? "xmlns" : ("xmlns:" + e.getKey());
-			if (schema.getElement().getAttribute(key).length() == 0) {
+			String key = e.getKey().isEmpty() ? "xmlns" : ("xmlns:" + e.getKey());
+			if (schema.getElement().getAttribute(key).isEmpty()) {
 				schema.getElement().setAttribute(key, e.getValue());
 			}
 		}
@@ -394,9 +394,9 @@ public class WsdlXmlValidator extends SoapValidator {
 }
 
 class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
-	private @Getter ClassLoader configurationClassLoader = null;
-	private String wsdl;
-	private @Getter URL url;
+	private @Getter ClassLoader configurationClassLoader;
+	private final String wsdl;
+	private final @Getter URL url;
 	private @Getter IOException iOException;
 	private @Getter String latestImportURI;
 
@@ -422,7 +422,7 @@ class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 			parentLocation = wsdl;
 		}
 		int i = parentLocation.lastIndexOf('/');
-		if (i == -1) {
+		if (i == -1 || importLocation.startsWith("/")) {
 			latestImportURI = importLocation;
 		} else {
 			latestImportURI = parentLocation.substring(0, i + 1) + importLocation;

@@ -367,7 +367,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 				x.setImportedNamespacesToIgnore(xsd.getImportedNamespacesToIgnore());
 				x.setParentLocation(xsd.getResourceBase());
 				x.setRootXsd(false);
-				x.initNamespace(namespace, xsd.getScopeProvider(), xsd.getResourceBase() + schemaLocationAttribute.getValue());
+				x.initNamespace(namespace, xsd.getScopeProvider(), getResourceRef(xsd.getResourceBase(), schemaLocationAttribute.getValue()));
 
 				String xsdKey = getXsdLoadingMapKey(x);
 				if (!xsds.containsKey(xsdKey)) {
@@ -388,6 +388,14 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 			String message = "XMLStreamException reading XSD";
 			LOG.error(message, e);
 			throw new ConfigurationException(message, e);
+		}
+	}
+
+	private static String getResourceRef(final String resourceBase, final String schemaLocation) {
+		if (schemaLocation.startsWith("/")) {
+			return schemaLocation;
+		} else {
+			return resourceBase + schemaLocation;
 		}
 	}
 

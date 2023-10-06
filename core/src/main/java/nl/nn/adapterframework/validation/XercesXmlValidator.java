@@ -112,7 +112,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static EhCache<PreparseResult> cache;
 	static {
 		if (maxInitialised != -1) {
-			cache = new EhCache<PreparseResult>();
+			cache = new EhCache<>();
 			cache.setMaxElementsInMemory(maxInitialised);
 			cache.setEternal(true);
 			try {
@@ -408,4 +408,3 @@ class PreparseResult {
 	}
 
 }
-

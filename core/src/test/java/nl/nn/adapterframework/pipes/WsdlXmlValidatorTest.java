@@ -13,8 +13,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
@@ -64,6 +66,58 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.configure();
 		val.start();
 		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
+	}
+
+	@Test
+	public void wsdlValidateWithMultiImportUseAbsolutePath() throws Exception {
+		// Arrange
+		WsdlXmlValidator validator = pipe;
+		validator.setWsdl("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/root-import-ok.wsdl");
+		validator.setSoapBody("Body");
+		validator.setSoapVersion(SoapVersion.AUTO);
+		validator.setIgnoreUnknownNamespaces(true);
+		validator.setThrowException(true);
+		validator.registerForward(new PipeForward("success", null));
+
+		// Act
+		validator.configure();
+		validator.start();
+
+		// Assert
+		assertEquals("Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()), 0, getConfigurationWarnings().size());
+	}
+
+	@Test
+	public void wsdlValidateWithMultiImportOfXsdDifferentPaths() throws Exception {
+		// Arrange
+		WsdlXmlValidator validator = pipe;
+		validator.setWsdl("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/root-import-not-ok.wsdl");
+		validator.setSoapBody("Body");
+		validator.setSoapVersion(SoapVersion.AUTO);
+		validator.setIgnoreUnknownNamespaces(true);
+		validator.setThrowException(true);
+		validator.registerForward(new PipeForward("success", null));
+
+		// Act
+		validator.configure();
+		validator.start();
+
+		// Assert
+		// TODO: This test should get more explicit configuration warnings
+		assertEquals("Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()), 5, getConfigurationWarnings().size());
+	}
+
+	private String collectionToString(ConfigurationWarnings c) {
+		StringBuilder result = new StringBuilder();
+		result.append('[');
+		for (String entry : c.getWarnings()) {
+			if (result.length() > 1) {
+				result.append(',');
+			}
+			result.append(entry);
+		}
+		result.append(']');
+		return result.toString();
 	}
 
 	@Test // when a Soap Fault is returned, it should also pass the validator. It's a XML native element, but has to be supplied as body regardless.
@@ -472,4 +526,3 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	}
 
 }
-
