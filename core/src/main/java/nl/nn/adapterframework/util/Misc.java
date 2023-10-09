@@ -50,6 +50,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
@@ -80,6 +81,7 @@ public class Misc {
 	public static final String DEFAULT_INPUT_STREAM_ENCODING=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
 	public static final String RESPONSE_BODY_SIZE_WARN_BY_DEFAULT_KEY = "response.body.size.warn.default";
+	private static final Pattern DEFAULT_SPLIT_PATTERN = Pattern.compile("\\s*,+\\s*");
 
 	private static Long messageSizeWarnByDefault = null;
 	private static Long responseBodySizeWarnByDefault = null;
@@ -1427,5 +1429,20 @@ public class Misc {
 		InputSource inputSource = new InputSource(url.openStream());
 		inputSource.setSystemId(url.toExternalForm());
 		return inputSource;
+	}
+
+	/**
+	 * Splits a string into a stream of substrings using default delimiter {@literal ','}.
+	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
+	 *
+	 * @param input the string to split, can be {@literal null}.
+	 * @return a {@link Stream} of strings. An empty stream if the input was {@literal null}.
+	 */
+	public static Stream<String> splitToStream(final String input) {
+		if (input == null) {
+			return Stream.empty();
+		}
+		return DEFAULT_SPLIT_PATTERN.splitAsStream(input.trim())
+				.filter(StringUtils::isNotBlank);
 	}
 }
