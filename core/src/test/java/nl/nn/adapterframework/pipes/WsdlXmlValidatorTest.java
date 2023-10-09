@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,13 +99,22 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		validator.setThrowException(true);
 		validator.registerForward(new PipeForward("success", null));
 
+		int nrOfWarningsBefore = getConfigurationWarnings().size();
+
 		// Act
 		validator.configure();
+
+		// Assert
+		assertEquals(nrOfWarningsBefore + 1, getConfigurationWarnings().size());
+		assertTrue("Expected configuration warning not found", getConfigurationWarnings().getWarnings()
+				.stream().anyMatch(w -> w.contains("Multiple XSDs for namespace 'http://www.w3.org/XML/1998/namespace'")));
+
+		// Act pt2
 		validator.start();
 
 		// Assert
 		// TODO: This test should get more explicit configuration warnings
-		assertEquals("Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()), 5, getConfigurationWarnings().size());
+		assertEquals("Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()), nrOfWarningsBefore + 6, getConfigurationWarnings().size());
 	}
 
 	private String collectionToString(ConfigurationWarnings c) {

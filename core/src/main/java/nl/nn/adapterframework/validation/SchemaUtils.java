@@ -52,6 +52,9 @@ import javanet.staxutils.XMLStreamUtils;
 import javanet.staxutils.events.AttributeEvent;
 import javanet.staxutils.events.StartElementEvent;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -127,6 +130,25 @@ public class SchemaUtils {
 		for (Map.Entry<String, Set<IXSD>> entry: xsdsGroupedByNamespace.entrySet()) {
 			String namespace = entry.getKey();
 			Set<IXSD> xsds = entry.getValue();
+
+			// If there are multiple XSDs for the namespace, give ConfigWarning that explains wherefrom
+			// each file is included.
+			if (xsds.size() > 1 && scopeProvider instanceof IConfigurationAware) {
+				StringBuilder message = new StringBuilder("Multiple XSDs for namespace '" + namespace + "' will be merged: ");
+				for (IXSD xsd: xsds) {
+					message.append("\n<br/> - XSD path '")
+							.append(xsd.getResourceTarget())
+							.append("'");
+
+					if (xsd.getImportParent() != null) {
+						message.append(", included from '")
+								.append(xsd.getImportParent().getResourceTarget()).append("'");
+					}
+				}
+				message.append("\n<br/>Please check that there are no overlapping definitions between these XSDs.");
+				ConfigurationWarnings.add((IConfigurationAware) scopeProvider, LOG, message.toString(), SuppressKeys.XSD_VALIDATION_WARNINGS_SUPPRESS_KEY);
+			}
+
 			// Get attributes of root elements and get import elements from all XSDs
 			List<Attribute> rootAttributes = new ArrayList<>();
 			List<Namespace> rootNamespaceAttributes = new ArrayList<>();
@@ -151,16 +173,16 @@ public class SchemaUtils {
 			// perform the merge
 			for (IXSD xsd: xsds) {
 				i++;
-				boolean skipFirstElement;
-				boolean skipLastElement;
+				boolean skipRootElementStart;
+				boolean skipRootElementEnd;
 				if (xsds.size() == 1) {
-					skipFirstElement = false;
-					skipLastElement = false;
+					skipRootElementStart = false;
+					skipRootElementEnd = false;
 				} else {
-					skipFirstElement = (i != 1);
-					skipLastElement = (i < xsds.size());
+					skipRootElementStart = (i != 1);
+					skipRootElementEnd = (i < xsds.size());
 				}
-				xsdToXmlStreamWriter(xsd, w, false, true, skipFirstElement, skipLastElement, rootAttributes, rootNamespaceAttributes, imports, false);
+				xsdToXmlStreamWriter(xsd, w, false, true, skipRootElementStart, skipRootElementEnd, rootAttributes, rootNamespaceAttributes, imports, false);
 			}
 			if (resultXsd != null) {
 				IXSD firstXsd = xsds.iterator().next();

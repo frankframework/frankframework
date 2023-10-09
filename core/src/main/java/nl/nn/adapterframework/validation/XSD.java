@@ -82,6 +82,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	private final @Getter Set<String> importedNamespaces = new HashSet<>();
 	private @Getter String xsdTargetNamespace;
 	private @Getter String xsdDefaultNamespace;
+	private @Getter @Setter IXSD importParent;
 
 	protected XSD() {
 		super();
@@ -361,6 +362,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 				}
 
 				ResourceXsd x = new ResourceXsd();
+				x.setImportParent(xsd);
 				x.setAddNamespaceToSchema(xsd.isAddNamespaceToSchema());
 				x.setImportedSchemaLocationsToIgnore(xsd.getImportedSchemaLocationsToIgnore());
 				x.setUseBaseImportedSchemaLocationsToIgnore(xsd.isUseBaseImportedSchemaLocationsToIgnore());
