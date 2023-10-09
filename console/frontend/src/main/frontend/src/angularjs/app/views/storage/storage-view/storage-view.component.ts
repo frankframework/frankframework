@@ -28,7 +28,7 @@ class StorageViewController {
     // @ts-expect-error binding
     this.onCloseNotes();
 
-    if (!this.message.id){
+    if (!this.message.id) {
       this.SweetAlert.Warning("Invalid URL", "No message id provided!");
       return;
     }
@@ -70,7 +70,7 @@ class StorageViewController {
     });
   };
 
-	goBack = function () {
+  goBack = function () {
     history.back();
   }
 };

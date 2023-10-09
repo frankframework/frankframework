@@ -1,5 +1,6 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { DataTable } from "simple-datatables"
+import { StateService } from "@uirouter/angularjs";
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { CookiesService } from 'src/angularjs/app/services/cookies.service';
 import { SessionService } from 'src/angularjs/app/services/session.service';
@@ -12,7 +13,7 @@ import { AppService } from 'src/angularjs/app/app.service';
   templateUrl: './storage-list.component.html',
   styleUrls: ['./storage-list.component.scss']
 })
-export class StorageListComponent {
+export class StorageListComponent implements OnInit {
   selectedMessages: boolean[] = [];
   targetStates: { name: string; }[] = [];
 
@@ -59,6 +60,7 @@ export class StorageListComponent {
 
   constructor(
     private Api: ApiService,
+    private $state: StateService,
     private Cookies: CookiesService,
     private Session: SessionService,
     private SweetAlert: SweetAlertService,
@@ -66,7 +68,17 @@ export class StorageListComponent {
     private appService: AppService
   ) { }
 
-  $onInit() {
+  ngOnInit() {
+    const storageParams = {
+      adapterName: this.$state.params["adapter"],
+      configuration: this.$state.params["configuration"],
+      processState: this.$state.params["processState"],
+      storageSource: this.$state.params["storageSource"],
+      storageSourceName: this.$state.params["storageSourceName"],
+    }
+    this.storageService.storageParams = storageParams;
+    this.storageParams = storageParams;
+
     this.storageService.closeNotes();
     let searchSession = this.Session.get('search');
 

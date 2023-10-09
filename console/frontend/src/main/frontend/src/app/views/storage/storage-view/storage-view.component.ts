@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { StateService } from "@uirouter/angularjs";
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
@@ -9,7 +9,7 @@ import { Message, StorageService, PartialMessage } from '../storage.service';
   templateUrl: './storage-view.component.html',
   styleUrls: ['./storage-view.component.scss']
 })
-export class StorageViewComponent {
+export class StorageViewComponent implements OnInit {
   message: PartialMessage = {
     id: this.$state.params["messageId"],
     resending: false,
@@ -38,7 +38,17 @@ export class StorageViewComponent {
     private storageService: StorageService
   ) { }
 
-  $onInit() {
+  ngOnInit() {
+    const storageParams = {
+      adapterName: this.$state.params["adapter"],
+      configuration: this.$state.params["configuration"],
+      processState: this.$state.params["processState"],
+      storageSource: this.$state.params["storageSource"],
+      storageSourceName: this.$state.params["storageSourceName"],
+    }
+    this.storageService.storageParams = storageParams;
+    this.storageParams = storageParams;
+
     this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List > View Message " + this.$state.params["messageId"];
     this.storageService.closeNotes();
 

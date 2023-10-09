@@ -4,7 +4,7 @@ import { UpgradeModule, downgradeComponent } from '@angular/upgrade/static';
 import { HttpClientModule } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { $stateParamsServiceProvider, $stateServiceProvider } from './ajs-deps-services';
-import { UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
+import { NgHybridStateDeclaration, UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
 import { NgIdleModule } from '@ng-idle/core';
 import { NgChartsModule } from 'ng2-charts';
 
@@ -119,9 +119,29 @@ appModule
   // .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
   .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory)
   .directive('adapterstatistics', downgradeComponent({ component: AdapterstatisticsComponent }) as angular.IDirectiveFactory)
-  .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
+  // .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
   .directive('storageList', downgradeComponent({ component: StorageListComponent }) as angular.IDirectiveFactory)
   .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory);
+
+const nestedRouterStates: NgHybridStateDeclaration[] = [
+  {
+    name: 'pages.storage.list',
+    url: "stores/:processState",
+    component: StorageListComponent,
+    params: {
+      processState: { value: '', squash: true },
+    }
+  },
+  {
+    name: 'pages.storage.view',
+    url: "stores/:processState/messages/:messageId",
+    component: StorageViewComponent,
+    params: {
+      processState: { value: '', squash: true },
+      messageId: { value: '', squash: true },
+    }
+  }
+];
 
 
 @NgModule({
@@ -180,7 +200,7 @@ appModule
     NgbModule,
     UpgradeModule,
     AppRoutingModule,
-    UIRouterUpgradeModule.forRoot(),
+    UIRouterUpgradeModule.forRoot(/* { states: nestedRouterStates } */),
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot()
   ],
