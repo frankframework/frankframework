@@ -864,7 +864,7 @@ public class ReceiverTest {
 	}
 
 	@Test
-	@Disabled
+	@Disabled // Java 11 maven run fails when testing multiple classes from CLI, on SlowListenerWithPollGuard class
 	public void testPollGuardStartTimeout() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
@@ -923,6 +923,7 @@ public class ReceiverTest {
 	}
 
 	@Test
+	@Disabled // Java 11 maven run fails when testing multiple classes from CLI, on SlowListenerWithPollGuard class
 	public void testPollGuardStopTimeout() throws Exception {
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		// Create listener without any delays in starting or stopping, they will be set later
