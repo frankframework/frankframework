@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -82,7 +83,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	private final @Getter Set<String> importedNamespaces = new HashSet<>();
 	private @Getter String xsdTargetNamespace;
 	private @Getter String xsdDefaultNamespace;
-	private @Getter @Setter IXSD importParent;
+	private @Getter(onMethod_ = {@Nullable, @Override}) @Setter IXSD importParent;
 
 	protected XSD() {
 		super();
@@ -362,13 +363,13 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 				}
 
 				ResourceXsd x = new ResourceXsd();
-				x.setImportParent(xsd);
 				x.setAddNamespaceToSchema(xsd.isAddNamespaceToSchema());
 				x.setImportedSchemaLocationsToIgnore(xsd.getImportedSchemaLocationsToIgnore());
 				x.setUseBaseImportedSchemaLocationsToIgnore(xsd.isUseBaseImportedSchemaLocationsToIgnore());
 				x.setImportedNamespacesToIgnore(xsd.getImportedNamespacesToIgnore());
 				x.setParentLocation(xsd.getResourceBase());
 				x.setRootXsd(false);
+				x.setImportParent(xsd);
 				x.initNamespace(namespace, xsd.getScopeProvider(), getResourceRef(xsd.getResourceBase(), schemaLocationAttribute.getValue()));
 
 				String xsdKey = getXsdLoadingMapKey(x);

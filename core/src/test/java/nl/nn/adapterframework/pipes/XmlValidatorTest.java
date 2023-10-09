@@ -409,7 +409,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 1);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/ImportInclude/root-ok.xml");
@@ -433,7 +433,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 2);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/ImportNestedInclude/root-ok.xml");
@@ -458,7 +458,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 1);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/ImportInclude/root-err.xml");
@@ -482,7 +482,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 1);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/Include/in-ok.xml");
@@ -507,7 +507,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 		validator.start();
 
 		// Assert
-		assertNoWarnings(configuration);
+		assertWarnings(configuration, 1);
 
 		// Arrange 2
 		String testXml = getTestXml("/Validation/Include/in-err.xml");

@@ -136,7 +136,7 @@ public class SchemaUtils {
 			if (xsds.size() > 1 && scopeProvider instanceof IConfigurationAware) {
 				StringBuilder message = new StringBuilder("Multiple XSDs for namespace '" + namespace + "' will be merged: ");
 				for (IXSD xsd: xsds) {
-					message.append("\n<br/> - XSD path '")
+					message.append("\n - XSD path '")
 							.append(xsd.getResourceTarget())
 							.append("'");
 
@@ -145,7 +145,7 @@ public class SchemaUtils {
 								.append(xsd.getImportParent().getResourceTarget()).append("'");
 					}
 				}
-				message.append("\n<br/>Please check that there are no overlapping definitions between these XSDs.");
+				message.append("\nPlease check that there are no overlapping definitions between these XSDs.");
 				ConfigurationWarnings.add((IConfigurationAware) scopeProvider, LOG, message.toString(), SuppressKeys.XSD_VALIDATION_WARNINGS_SUPPRESS_KEY);
 			}
 
