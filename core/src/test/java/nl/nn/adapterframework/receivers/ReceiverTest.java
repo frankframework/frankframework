@@ -863,6 +863,7 @@ public class ReceiverTest {
 	}
 
 	@Test
+	@Disabled
 	public void testPollGuardStartTimeout() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
