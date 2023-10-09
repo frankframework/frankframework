@@ -674,8 +674,9 @@
 			<artifactId>jackson-annotations</artifactId>
 		</dependency>
 
-		<!-- Bump dependency when moved to Jakarta namespaces -->
-		<dependency>
+		<!-- Using the default saaj-impl causes signed SOAP message problems.
+		Only bump dependency when moved to Jakarta namespaces -->
+		<!--<dependency>
 			<groupId>com.sun.xml.messaging.saaj</groupId>
 			<artifactId>saaj-impl</artifactId>
 			<version>1.5.3</version>
@@ -683,6 +684,22 @@
 				<exclusion>
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>-->
+
+		<!--
+			We cannot upgrade to a later version due to it forcing us to use com.sun.xerces
+			This version depends on the StAX1-API indirectly because of stax-ex.
+		-->
+		<dependency>
+			<groupId>org.apache.servicemix.bundles</groupId>
+			<artifactId>org.apache.servicemix.bundles.saaj-impl</artifactId>
+			<version>1.3.28_1</version>
+			<exclusions>
+				<exclusion><!-- excluded because we want the stax2 api -->
+					<groupId>javax.xml.stream</groupId>
+					<artifactId>stax-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
