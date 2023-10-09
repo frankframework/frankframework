@@ -72,10 +72,8 @@ public class JavascriptSender extends SenderSeries {
 	public enum JavaScriptEngines {
 		J2V8(J2V8.class),
 
-		@ConfigurationWarning("Engine Nashorn is deprecated. Use J2V8 instead.")
 		@Deprecated NASHORN(Nashorn.class),
 
-		@ConfigurationWarning("Engine Rhino is deprecated. Use J2V8 instead.")
 		@Deprecated RHINO(Rhino.class);
 
 		private Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
