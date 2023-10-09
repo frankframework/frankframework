@@ -105,16 +105,18 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		validator.configure();
 
 		// Assert
-		assertEquals(nrOfWarningsBefore + 1, getConfigurationWarnings().size());
+		assertEquals(nrOfWarningsBefore + 2, getConfigurationWarnings().size());
 		assertTrue("Expected configuration warning not found", getConfigurationWarnings().getWarnings()
 				.stream().anyMatch(w -> w.contains("Multiple XSDs for namespace 'http://www.w3.org/XML/1998/namespace'")));
+		assertTrue("Expected configuration warning not found", getConfigurationWarnings().getWarnings()
+				.stream().anyMatch(w -> w.contains("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: 'http://www.w3.org/XML/1998/namespace'")));
 
 		// Act pt2
 		validator.start();
 
 		// Assert
 		// TODO: This test should get more explicit configuration warnings
-		assertEquals("Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()), nrOfWarningsBefore + 6, getConfigurationWarnings().size());
+		assertEquals("Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()), nrOfWarningsBefore + 7, getConfigurationWarnings().size());
 	}
 
 	private String collectionToString(ConfigurationWarnings c) {
@@ -534,5 +536,4 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		assertThat(e.getMessage(), containsString("Invalid content was found starting with element"));
 		assertThat(e.getMessage(), containsString("CountryKode"));
 	}
-
 }

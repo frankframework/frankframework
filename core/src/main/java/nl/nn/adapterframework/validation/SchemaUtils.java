@@ -131,23 +131,7 @@ public class SchemaUtils {
 			String namespace = entry.getKey();
 			Set<IXSD> xsds = entry.getValue();
 
-			// If there are multiple XSDs for the namespace, give ConfigWarning that explains wherefrom
-			// each file is included.
-			if (xsds.size() > 1 && scopeProvider instanceof IConfigurationAware) {
-				StringBuilder message = new StringBuilder("Multiple XSDs for namespace '" + namespace + "' will be merged: ");
-				for (IXSD xsd: xsds) {
-					message.append("\n - XSD path '")
-							.append(xsd.getResourceTarget())
-							.append("'");
-
-					if (xsd.getImportParent() != null) {
-						message.append(", included from '")
-								.append(xsd.getImportParent().getResourceTarget()).append("'");
-					}
-				}
-				message.append("\nPlease check that there are no overlapping definitions between these XSDs.");
-				ConfigurationWarnings.add((IConfigurationAware) scopeProvider, LOG, message.toString(), SuppressKeys.XSD_VALIDATION_WARNINGS_SUPPRESS_KEY);
-			}
+			addXsdMergeWarnings(scopeProvider, xsds, namespace);
 
 			// Get attributes of root elements and get import elements from all XSDs
 			List<Attribute> rootAttributes = new ArrayList<>();
@@ -194,6 +178,52 @@ public class SchemaUtils {
 			}
 		}
 		return resultXsds;
+	}
+
+	private static void addXsdMergeWarnings(final IScopeProvider scopeProvider, final Set<IXSD> xsds, final String namespace) {
+		// If there are multiple XSDs for the namespace, give ConfigWarning that explains wherefrom
+		// each file is included.
+		if (xsds.size() <= 1 || !(scopeProvider instanceof IConfigurationAware)) {
+			return;
+		}
+		StringBuilder message = new StringBuilder("Multiple XSDs for namespace '" + namespace + "' will be merged: ");
+		for (IXSD xsd: xsds) {
+			message.append("\n - XSD path '")
+					.append(xsd.getResourceTarget())
+					.append("'");
+
+			if (xsd.getImportParent() != null) {
+				message.append(", included from '")
+						.append(xsd.getImportParent().getResourceTarget()).append("'");
+			}
+		}
+		message.append("\nPlease check that there are no overlapping definitions between these XSDs.");
+		ConfigurationWarnings.add((IConfigurationAware) scopeProvider, LOG, message.toString(), SuppressKeys.XSD_VALIDATION_WARNINGS_SUPPRESS_KEY);
+
+		// And check for duplicate XSDs included multiple times from multiple locations
+		for (IXSD xsd1: xsds) {
+			boolean pairAlreadyChecked = true;
+			for (IXSD xsd2: xsds) {
+				if (xsd1 == xsd2) {
+					pairAlreadyChecked = false;
+					continue;
+				}
+				if (pairAlreadyChecked) continue;
+				if (xsd1.compareToByContents(xsd2) == 0) {
+					StringBuilder duplicateXsdError = new StringBuilder("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: '");
+							duplicateXsdError.append(namespace)
+									.append("'.\n Path '").append(xsd1.getResourceTarget()).append("'");
+					if (xsd1.getImportParent() != null) {
+						duplicateXsdError.append(" imported from '").append(xsd1.getImportParent().getResourceTarget()).append("'");
+					}
+					duplicateXsdError.append(",\n and also Path '").append(xsd2.getResourceTarget()).append("'");
+					if (xsd2.getImportParent() != null) {
+						duplicateXsdError.append(" imported from '").append(xsd2.getImportParent().getResourceTarget()).append("'");
+					}
+					ConfigurationWarnings.add((IConfigurationAware) scopeProvider, LOG, duplicateXsdError.toString(), SuppressKeys.XSD_VALIDATION_ERROR_SUPPRESS_KEY);
+				}
+			}
+		}
 	}
 
 	public static void xsdToXmlStreamWriter(final IXSD xsd, XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {

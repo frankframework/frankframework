@@ -223,6 +223,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 
 	@Override
 	public boolean equals(Object o) {
+		if (this == o) return true;
 		if (o instanceof XSD) {
 			XSD other = (XSD) o;
 			return compareTo(other) == 0;
@@ -238,6 +239,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	@Override
 	public int compareTo(XSD other) { // CompareTo is required for WSDL generation
 		if (other == null) return 1;
+		if (this == other) return 0;
 		if (namespace != null && other.namespace != null) {
 			int c = namespace.compareTo(other.namespace);
 			if (c != 0) return c;
@@ -249,7 +251,8 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 		return compareToByContents(x);
 	}
 
-	protected int compareToByContents(XSD x) {
+	@Override
+	public int compareToByContents(IXSD x) {
 		try {
 			InputSource control = new InputSource(getReader());
 			InputSource test = new InputSource(x.getReader());

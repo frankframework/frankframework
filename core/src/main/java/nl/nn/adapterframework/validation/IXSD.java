@@ -57,4 +57,6 @@ public interface IXSD extends Schema {
 	String getResourceBase();
 
 	IScopeProvider getScopeProvider();
+
+	int compareToByContents(IXSD x);
 }
