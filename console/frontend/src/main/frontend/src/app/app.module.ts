@@ -80,6 +80,7 @@ import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
 import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
 import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
 import { FitHeightDirective } from './views/iframe/fit-height.directive';
+import { DataTablesModule } from 'angular-datatables';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
@@ -202,7 +203,8 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     AppRoutingModule,
     UIRouterUpgradeModule.forRoot(/* { states: nestedRouterStates } */),
     NgIdleModule.forRoot(),
-    NgChartsModule.forRoot()
+    NgChartsModule.forRoot(),
+    DataTablesModule
   ],
   providers: [
     alertServiceProvider,

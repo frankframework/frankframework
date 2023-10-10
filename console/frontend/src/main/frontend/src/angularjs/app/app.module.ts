@@ -58,7 +58,7 @@ export const appModule = angular.module('iaf.beheerconsole', [
   'ngSanitize',                   // ngSanitize
   'angular-ladda',                // Ladda
   'toaster',                       // Toastr
-  'datatables',
+  // 'datatables',
   // 'chart.js',
   'angular-mermaid'
 ]).constant("appConstants", appConstants);

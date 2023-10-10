@@ -43,14 +43,15 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
+              "src/styles.scss",
+              "node_modules/datatables.net-dt/css/jquery.dataTables.css"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.js",
               "node_modules/angular/angular.js",
               "src/angularjs/plugins/iCheck/icheck.min.js",
-              "node_modules/datatables.net/js/jquery.dataTables.min.js",
-              "node_modules/chart.js/dist/Chart.js"
+              "node_modules/chart.js/dist/Chart.js",
+              "node_modules/datatables.net/js/jquery.dataTables.js"
             ],
             "allowedCommonJsDependencies": [
               "angular",
@@ -123,7 +124,8 @@
           "options": {
             "browserTarget": "iaf-console-gui:build"
           }
-        },"test": {
+        },
+        "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "polyfills": [

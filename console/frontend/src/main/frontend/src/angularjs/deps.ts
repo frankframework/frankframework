@@ -24,8 +24,8 @@ import '@uirouter/angular-hybrid';
 import 'ng-idle/angular-idle.js';
 import 'angular-ladda';
 import 'angularjs-toaster';
-import 'angular-datatables/dist/angular-datatables';
-import 'angular-datatables/dist/plugins/buttons/angular-datatables.buttons';
+// import 'angular-datatables/dist/angular-datatables';
+// import 'angular-datatables/dist/plugins/buttons/angular-datatables.buttons';
 // import 'angular-chart.js';
 import './plugins/mermaid/ng-mermaid';
 

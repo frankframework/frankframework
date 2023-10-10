@@ -1,5 +1,5 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { DataTable } from "simple-datatables"
+import { Component, ElementRef, OnInit, TemplateRef, ViewChild } from '@angular/core';
+// import { DataTable } from "simple-datatables"
 import { StateService } from "@uirouter/angularjs";
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { CookiesService } from 'src/angularjs/app/services/cookies.service';
@@ -7,6 +7,7 @@ import { SessionService } from 'src/angularjs/app/services/session.service';
 import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
 import { StorageService } from '../storage.service';
 import { AppService } from 'src/angularjs/app/app.service';
+import { DataTableDirective } from 'angular-datatables';
 
 @Component({
   selector: 'app-storage-list',
@@ -50,13 +51,15 @@ export class StorageListComponent implements OnInit {
     expiryDate: true,
     label: true,
   }
+  dtOptions: DataTables.Settings = {};
 
   // service bindings
   storageParams = this.storageService.storageParams;
   closeNote = (index: number) => { this.storageService.closeNote(index); };
   getProcessStateIcon = (processState: string) => { this.appService.getProcessStateIcon(processState); }
 
-  @ViewChild('datatable') dtElement!: ElementRef<HTMLTableElement>;
+  // @ViewChild('datatable') dtElement!: ElementRef<HTMLTableElement>;
+  @ViewChild(DataTableDirective) dataTable!: DataTableDirective;
 
   constructor(
     private Api: ApiService,
@@ -102,8 +105,7 @@ export class StorageListComponent implements OnInit {
         <button title="Download Message" ng-click="$ctrl.onDownloadMessage({messageId: message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>
       </div>`;
 
-   /*  var columns: DataTable['options']['columns'] = [
-      {  }
+    const columns: DataTables.ColumnSettings[] = [
       { "data": null, defaultContent, className: "m-b-xxs storageActions", orderable: false },
       { "name": "pos", "data": "position", orderable: false, defaultContent: "" },
       { "name": "id", "data": "messageId", orderable: false, defaultContent: "" },
@@ -114,9 +116,10 @@ export class StorageListComponent implements OnInit {
       { "name": "comment", "data": "comment", orderable: false, defaultContent: "" },
       { "name": "expiryDate", "data": "expiryDate", className: "date", orderable: false, defaultContent: "" },
       { "name": "label", "data": "label", orderable: false, defaultContent: "" },
-    ]; */
+    ];
 
-    const table = new DataTable(this.dtElement.nativeElement, {
+    // simple-datatables
+    /* const table = new DataTable(this.dtElement.nativeElement, {
       // columns: columns,
       searchable: false,
       paging: true,
@@ -136,9 +139,9 @@ export class StorageListComponent implements OnInit {
         { text: "label", data: "label", type: 'string' },
       ],
       data: []
-    }
+    }; */
 
-    /* const dtOptions = {
+    this.dtOptions = {
       stateSave: true,
       stateSaveCallback: (settings, data: Record<any, any>) => {
         data["columns"] = columns;
@@ -147,7 +150,7 @@ export class StorageListComponent implements OnInit {
       stateLoadCallback: (settings) => {
         return this.Session.get('DataTable' + this.storageParams.processState);
       },
-      drawCallback: (settings) => {
+      /* drawCallback: (settings) => {
         // reset visited rows with all draw actions e.g. pagination, filter, search
         this.selectedMessages = [];
         var table = $('#datatable').DataTable();
@@ -169,10 +172,11 @@ export class StorageListComponent implements OnInit {
         this.messagesData[data["id"]] = data;
         this.selectedMessages[data["id"]] = false;
         this.$compile(rowNode as JQuery<HTMLElement>)(this.$scope);
-      },
+      }, */
       searching: false,
       scrollX: true,
       // bAutoWidth: false,
+      autoWidth: false,
       orderCellsTop: true,
       serverSide: true,
       processing: true,
@@ -180,7 +184,7 @@ export class StorageListComponent implements OnInit {
       lengthMenu: [10, 25, 50, 100, 500, 999],
       order: [[3, 'asc']],
       columns: columns,
-      columnDefs: [{
+      /* columnDefs: [{
         targets: 0,
         render: (data, type, row) => {
           if (type === 'display') {
@@ -195,7 +199,7 @@ export class StorageListComponent implements OnInit {
           }
           return data;
         }
-      }],
+      }], */
       // sAjaxDataProp: 'messages',
       ajax: (data: Record<any, any>, callback, settings) => {
         var start = data["start"];
@@ -216,10 +220,12 @@ export class StorageListComponent implements OnInit {
         }
         this.Session.set('search', searchSession);
         this.Api.Get(url, (response) => {
-          response.draw = data["draw"];
-          response.recordsTotal = response.totalMessages;
           this.targetStates = response.targetStates;
-          callback(response);
+          callback({
+            draw: data["draw"],
+            recordsTotal: response.totalMessages,
+            data: response.messages,
+          });
           this.searching = false;
           this.clearSearchLadda = false;
         }, (error) => {
@@ -227,15 +233,15 @@ export class StorageListComponent implements OnInit {
           this.clearSearchLadda = false;
         });
       }
-    } */
+    };
 
     var filterCookie = this.Cookies.get(this.storageParams.processState + "Filter");
     if (filterCookie) {
-      /* for (let column of columns) {
+      for (let column of columns) {
         if (column.name && filterCookie[column.name] === false) {
           column.visible = false;
         }
-      } */
+      }
       this.displayColumn = filterCookie;
     } else {
       this.displayColumn = {
@@ -304,13 +310,12 @@ export class StorageListComponent implements OnInit {
   updateFilter(column: string) {
     this.Cookies.set(this.storageParams.processState + "Filter", this.displayColumn);
 
-    // let table = $('#datatable').DataTable();
-    // if (table) {
-    //   let tableColumn = table.column(column + ":name");
-    //   if (tableColumn && tableColumn.length == 1)
-    //     tableColumn.visible(this.displayColumn[column as keyof typeof this.displayColumn]);
-    //   table.draw();
-    // }
+    this.dataTable.dtInstance.then(table => {
+      let tableColumn = table.column(column + ":name");
+      if (tableColumn && tableColumn.length == 1)
+        tableColumn.visible(this.displayColumn[column as keyof typeof this.displayColumn]);
+      table.draw();
+    });
   }
 
   selectAll() {
