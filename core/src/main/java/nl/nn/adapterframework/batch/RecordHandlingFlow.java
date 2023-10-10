@@ -22,17 +22,21 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * The flow contains the handlers to handle records of a specific type. 
+ * The flow contains the handlers to handle records of a specific type.
  * Each flow is registered to a manager using the recordHandlerManagerRef.
- *  
- * 
+ *
+ *
  * @author  John Dekker
+ * @deprecated Old and non-maintained functionality. Deprecated since v7.8
  */
+@Deprecated
 @FrankDocGroup(name = "Batch")
+@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -62,7 +66,7 @@ public final class RecordHandlingFlow {
 			!getRecordHandlerManagerRef().equals(manager.getName())) {
 				throw new ConfigurationException("recordHandlerManagerRef ["+getRecordHandlerManagerRef()+"] should be either equal to name of manager ["+manager.getName()+"], or left unspecified");
 		}
-		// obtain the named manager that is to be used after a specified record  
+		// obtain the named manager that is to be used after a specified record
 		IRecordHandlerManager nextManager = null;
 		if (StringUtils.isEmpty(getNextRecordHandlerManagerRef())) {
 			nextManager = manager;
@@ -74,7 +78,7 @@ public final class RecordHandlingFlow {
 		}
 		setNextRecordHandlerManager(nextManager);
 
-		// obtain the recordHandler 
+		// obtain the recordHandler
 		if (StringUtils.isNotEmpty(getRecordHandlerRef())) {
 			IRecordHandler recordHandler = registeredRecordHandlers.get(getRecordHandlerRef());
 			if (recordHandler!=null) {

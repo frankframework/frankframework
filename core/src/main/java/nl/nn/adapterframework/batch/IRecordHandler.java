@@ -17,17 +17,21 @@ package nl.nn.adapterframework.batch;
 
 import java.util.List;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 
 /**
- * Interface for transforming a record (= structured ASCII line). 
- * 
+ * Interface for transforming a record (= structured ASCII line).
+ *
  * @author John Dekker
+ * @deprecated Old and non-maintained functionality. Deprecated since v7.8
  */
+@Deprecated
 @FrankDocGroup(name = "Batch")
+@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
 public interface IRecordHandler extends IConfigurable {
 
 	public void open() throws SenderException;
@@ -35,14 +39,14 @@ public interface IRecordHandler extends IConfigurable {
 
 	/**
 	 * Parse the line into an array of fields.
-	 * 
+	 *
 	 * @return List with String values for each inputfield
 	 */
 	List<String> parse(PipeLineSession session, String record) throws Exception;
 
 	/**
 	 * Perform an action on the array of fields.
-	 * 
+	 *
 	 * @return transformed result
 	 */
 	String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception;

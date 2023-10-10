@@ -18,15 +18,19 @@ package nl.nn.adapterframework.batch;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 
 
 /**
  * Resulthandler that writes the transformed record to a String, that is passed to the next Pipe literally.
- * 
+ *
  * @author Gerrit van Brakel
  * @since   4.7
+ * @deprecated Old and non-maintained functionality. Deprecated since v7.8
  */
+@Deprecated
+@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
 public class Result2StringWriter extends ResultWriter {
 
 	@Override

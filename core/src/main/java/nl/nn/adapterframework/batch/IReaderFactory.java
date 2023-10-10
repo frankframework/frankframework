@@ -19,15 +19,19 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 
 /**
  * @author  Gerrit van Brakel
- * @since  
+ * @since
+ * @deprecated Old and non-maintained functionality. Deprecated since v7.8
  */
+@Deprecated
 @FrankDocGroup(name = "Batch")
+@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
 public interface IReaderFactory {
 
 	void configure() throws ConfigurationException;

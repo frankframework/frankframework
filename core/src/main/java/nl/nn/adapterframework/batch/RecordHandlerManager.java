@@ -23,16 +23,20 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Basic implementation of RecordHandlerManager, that allows only for a single flow.
  * The manager decides which handlers to be used for a specific record.
- * 
- * 
+ *
+ *
  * @author  John Dekker
+ * @deprecated Old and non-maintained functionality. Deprecated since v7.8
  */
+@Deprecated
+@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
 public class RecordHandlerManager implements IRecordHandlerManager {
 	protected Logger log = LogUtil.getLogger(this);
 

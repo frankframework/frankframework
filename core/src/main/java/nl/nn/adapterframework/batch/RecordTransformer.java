@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StringUtil;
@@ -56,7 +57,10 @@ import nl.nn.adapterframework.util.StringUtil;
  * </table>
  *
  * @author  John Dekker
+ * @deprecated Old and non-maintained functionality. Deprecated since v7.8
  */
+@Deprecated
+@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
 public class RecordTransformer extends AbstractRecordHandler {
 
 	private String outputSeparator;

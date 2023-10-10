@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -37,7 +38,10 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *
  *
  * @author  John Dekker / Gerrit van Brakel
+ * @deprecated Old and non-maintained functionality. Deprecated since v7.8
  */
+@Deprecated
+@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
 public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	private @Getter String rootTag="record";

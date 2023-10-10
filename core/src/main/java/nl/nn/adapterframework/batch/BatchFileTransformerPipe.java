@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -40,7 +41,10 @@ import nl.nn.adapterframework.util.FileUtils;
  * Each line will be handled by this recordHandler and resultHandler.
  *
  * @author  John Dekker
+ * @deprecated Old and non-maintained functionality. Deprecated since v7.8
  */
+@Deprecated
+@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
 
 	private @Getter String move2dirAfterTransform;

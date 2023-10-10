@@ -17,12 +17,16 @@ package nl.nn.adapterframework.batch;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 
 /**
  * @author  John Dekker
+ * @deprecated Old and non-maintained functionality. Deprecated since v7.8
  */
+@Deprecated
 @FrankDocGroup(name = "Batch")
+@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
 public class InputfieldsPart {
 
 	private @Getter @Setter String value;

@@ -16,16 +16,20 @@
 package nl.nn.adapterframework.batch;
 
 import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
- * Manager that decides the handlers based on the content of a field in the specified 
+ * Manager that decides the handlers based on the content of a field in the specified
  * position in a record. The fields in the record are separated by a separator.
  * The value of the specified field is taken as key in the flow-table.
- * 
- * 
+ *
+ *
  * @author John Dekker
+ * @deprecated Old and non-maintained functionality. Deprecated since v7.8
  */
+@Deprecated
+@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private @Getter int fieldNr;
