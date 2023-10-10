@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nonnull;
 import javax.jms.BytesMessage;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -86,9 +87,12 @@ import nl.nn.adapterframework.util.EnumUtils;
  */
 public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled {
 
+	public final static String JMS_MESSAGE_CLASS_DEFAULT = "jms.messageClass.default";
+
 	private final @Getter(onMethod = @__(@Override)) String domain = "JMS";
 	private boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", false);
 	private boolean useJms102 = AppConstants.getInstance().getBoolean("jms.useJms102", false);
+	private MessageClass messageClassDefault = AppConstants.getInstance().getOrDefault(JMS_MESSAGE_CLASS_DEFAULT, MessageClass.AUTO);
 
 	private @Getter boolean transacted = false;
 	private @Getter boolean jmsTransacted = false;
@@ -318,9 +322,36 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		}
 	}
 
+	@Nonnull
 	public javax.jms.Message createMessage(Session session, String correlationID, Message message) throws JMSException, IOException {
-		TextMessage textMessage;
-		textMessage = session.createTextMessage();
+		return createMessage(session, correlationID, message, messageClassDefault);
+	}
+
+	@Nonnull
+	public javax.jms.Message createMessage(Session session, String correlationID, Message message, MessageClass messageClass) throws JMSException, IOException {
+		switch (messageClass) {
+			case TEXT:
+				return createTextMessage(session, correlationID, message);
+			case BYTES:
+				return createBytesMessage(session, correlationID, message);
+			case AUTO:
+				return message.isBinary() ? createBytesMessage(session, correlationID, message) : createTextMessage(session, correlationID, message);
+			default:
+				throw new IllegalArgumentException("Unsupported messageClass value: [" + messageClass + "]");
+		}
+	}
+
+	@Nonnull
+	protected javax.jms.Message createBytesMessage(final Session session, final String correlationID, final Message message) throws JMSException, IOException {
+		BytesMessage bytesMessage = session.createBytesMessage();
+		setMessageCorrelationID(bytesMessage, correlationID);
+		bytesMessage.writeBytes(message.asByteArray());
+		return bytesMessage;
+	}
+
+	@Nonnull
+	protected TextMessage createTextMessage(final Session session, final String correlationID, final Message message) throws JMSException, IOException {
+		TextMessage textMessage = session.createTextMessage();
 		setMessageCorrelationID(textMessage, correlationID);
 		textMessage.setText(message.asString());
 		return textMessage;
@@ -342,13 +373,13 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 				}
 			}
 			if (correlationIdToHex && correlationID.startsWith(correlationIdToHexPrefix)) {
-				String hexCorrelationID = correlationIdToHexPrefix;
+				StringBuilder hexCorrelationID = new StringBuilder(correlationIdToHexPrefix);
 				int i;
 				for (i=correlationIdToHexPrefix.length();i<correlationID.length();i++) {
 					int c=correlationID.charAt(i);
-					hexCorrelationID+=Integer.toHexString(c);
+					hexCorrelationID.append(Integer.toHexString(c));
 				}
-				correlationID = hexCorrelationID;
+				correlationID = hexCorrelationID.toString();
 				if (log.isDebugEnabled()) log.debug("correlationId changed, based on hexidecimal values, to ["+correlationID+"]");
 			}
 			message.setJMSCorrelationID(correlationID);
@@ -737,10 +768,11 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		MessageContext result = new MessageContext();
 		result.withName(message.getJMSMessageID());
 		result.withModificationTime(message.getJMSTimestamp());
-		Enumeration<String> names=message.getPropertyNames();
-		while(names.hasMoreElements()) {
-			String name=names.nextElement();
-			result.put(name,message.getObjectProperty(name));
+		@SuppressWarnings("unchecked")
+		Enumeration<String> names = message.getPropertyNames();
+		while (names.hasMoreElements()) {
+			String name = names.nextElement();
+			result.put(name, message.getObjectProperty(name));
 		}
 		return result;
 	}
@@ -748,6 +780,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	/**
 	 * Extracts string from message obtained from getRawMessage(Map). May also extract
 	 * other parameters from the message and put those in the threadContext.
+	 * <br/><br/>
+	 * Supports only
+	 * {@link javax.jms.TextMessage}s and {@link javax.jms.BytesMessage}.<br/><br/>
 	 */
 	public Message extractMessage(javax.jms.Message jmsMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
 		Message message;
@@ -766,8 +801,10 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		if (!soap) {
 			return message;
 		}
+
+		// Only for SOAP messages we do a bit of extra work
 		message.preserve();
-		Message messageText=extractMessageBody(message, context, soapWrapper);
+		Message messageText = extractMessageBody(message, context, soapWrapper);
 		if (StringUtils.isNotEmpty(soapHeaderSessionKey)) {
 			String soapHeader;
 			if (context instanceof PipeLineSession) {

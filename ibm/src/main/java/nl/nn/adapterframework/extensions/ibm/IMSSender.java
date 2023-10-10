@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Session;
@@ -95,6 +96,7 @@ public class IMSSender extends MQSender {
 		super.configure();
 	}
 
+	@Nonnull
 	@Override
 	public javax.jms.Message createMessage(Session session, String correlationID, Message message) throws JMSException {
 		BytesMessage bytesMessage;
@@ -124,7 +126,8 @@ public class IMSSender extends MQSender {
 
 			byte[] data = message.asByteArray(CHARSET.name());
 
-			bos.write(shortToBytes(data.length + 13)); //LL, +13 is for LL, ZZ and transaction code bytes
+			int messageLength = data == null ? 0 : data.length;
+			bos.write(shortToBytes(messageLength + 13)); //LL, +13 is for LL, ZZ and transaction code bytes
 			bos.write(new byte[2]); //ZZ
 			bos.write((transactionCode + " ").getBytes(CHARSET));
 

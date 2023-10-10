@@ -62,6 +62,7 @@ import nl.nn.adapterframework.util.StringUtil;
 public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	private @Getter String replyToName = null;
 	private @Getter DeliveryMode deliveryMode = DeliveryMode.NOT_SET;
+	private @Getter MessageClass messageClass = MessageClass.AUTO;
 	private @Getter String messageType = null;
 	private @Getter int priority=-1;
 	private @Getter boolean synchronous=false;
@@ -147,22 +148,22 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		return new SenderResult(sendMessage(message, session, null));
 	}
 
-	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException, TimeoutException {
-		Session s = null;
+	public Message sendMessage(Message message, PipeLineSession pipeLineSession, String soapHeader) throws SenderException, TimeoutException {
+		Session jmsSession = null;
 		MessageProducer messageProducer = null;
 
 		checkTransactionManagerValidity();
 		ParameterValueList pvl=null;
 		if (paramList != null) {
 			try {
-				pvl=paramList.getValues(message, session);
+				pvl=paramList.getValues(message, pipeLineSession);
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix()+"cannot extract parameters",e);
 			}
 		}
 
 		try {
-			String correlationID = session == null ? null : session.getCorrelationId();
+			String correlationID = pipeLineSession == null ? null : pipeLineSession.getCorrelationId();
 			if (isSoap()) {
 				if (soapHeader == null && pvl != null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
 					ParameterValue soapHeaderParamValue = pvl.get(getSoapHeaderParam());
@@ -175,18 +176,18 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 				message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(), getServiceNamespaceURI(), soapHeader);
 				if (log.isDebugEnabled()) log.debug("{} correlationId [{}] soap message [{}]", getLogPrefix(), correlationID, message);
 			}
-			s = createSession();
-			messageProducer = getMessageProducer(s, getDestination(session, pvl));
+			jmsSession = createSession();
+			messageProducer = getMessageProducer(jmsSession, getDestination(pipeLineSession, pvl));
 
 			// create message to send
-			javax.jms.Message messageToSend = createMessage(s, correlationID, message);
-			enhanceMessage(messageToSend, messageProducer, pvl, s);
+			javax.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, messageClass);
+			enhanceMessage(messageToSend, messageProducer, pvl, jmsSession);
 			Destination replyQueue = messageToSend.getJMSReplyTo();
 
 			// send message
 			send(messageProducer, messageToSend);
 			if (isSynchronous()) {
-				return waitAndHandleResponseMessage(messageToSend, replyQueue, session, s);
+				return waitAndHandleResponseMessage(messageToSend, replyQueue, pipeLineSession, jmsSession);
 			}
 			return new Message(messageToSend.getJMSMessageID());
 		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException e) {
@@ -199,7 +200,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 					log.warn("JmsSender [{}] got exception closing message producer", getName(), e);
 				}
 			}
-			closeSession(s);
+			closeSession(jmsSession);
 		}
 	}
 
@@ -379,6 +380,16 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	 */
 	public void setMessageType(String string) {
 		messageType = string;
+	}
+
+	/**
+	 * The JMS {@link javax.jms.Message} class for the outgoing message.
+	 * Currently supported are {@link MessageClass#TEXT} for JMS {@link javax.jms.TextMessage},
+	 * {@link MessageClass#BYTES} for JMS {@link javax.jms.BytesMessage}, or AUTO for auto-determination
+	 * based on whether the input {@link Message} is binary or character.
+	 */
+	public void setMessageClass(MessageClass messageClass) {
+		this.messageClass = messageClass;
 	}
 
 	/**
