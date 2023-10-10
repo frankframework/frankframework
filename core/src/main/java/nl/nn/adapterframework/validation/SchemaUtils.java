@@ -138,9 +138,7 @@ public class SchemaUtils {
 			List<Namespace> rootNamespaceAttributes = new ArrayList<>();
 			List<XMLEvent> imports = new ArrayList<>();
 			for (IXSD xsd: xsds) {
-				StringWriter dummySchemaContentsWriter = new StringWriter();
-				XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(dummySchemaContentsWriter);
-				xsdToXmlStreamWriter(xsd, w, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports, true);
+				xsdToXmlStreamWriter(xsd, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports);
 			}
 			// Write XSD's with merged root element
 			StringXsd resultXsd = null;
@@ -228,6 +226,16 @@ public class SchemaUtils {
 
 	public static void xsdToXmlStreamWriter(final IXSD xsd, XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
 		xsdToXmlStreamWriter(xsd, xmlStreamWriter, true, false, false, false, null, null, null, false);
+	}
+
+	private static void xsdToXmlStreamWriter(final IXSD xsd, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports) throws IOException, ConfigurationException {
+		StringWriter dummySchemaContentsWriter = new StringWriter();
+		try {
+			XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(dummySchemaContentsWriter);
+			xsdToXmlStreamWriter(xsd, w, standalone, stripSchemaLocationFromImport, skipRootStartElement, skipRootEndElement, rootAttributes, rootNamespaceAttributes, imports, true);
+		} catch (XMLStreamException e) {
+			throw new ConfigurationException("unable to create stream writer", e);
+		}
 	}
 
 	/**

@@ -17,8 +17,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.soap.SoapVersion;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
@@ -93,7 +95,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		// Arrange
 		WsdlXmlValidator validator = pipe;
 		validator.setWsdl("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/root-import-not-ok.wsdl");
-		validator.setSoapBody("Body");
+		validator.setSoapBody("A");
 		validator.setSoapVersion(SoapVersion.AUTO);
 		validator.setIgnoreUnknownNamespaces(true);
 		validator.setThrowException(true);
@@ -107,16 +109,19 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		// Assert
 		assertEquals(nrOfWarningsBefore + 2, getConfigurationWarnings().size());
 		assertTrue("Expected configuration warning not found", getConfigurationWarnings().getWarnings()
-				.stream().anyMatch(w -> w.contains("Multiple XSDs for namespace 'http://www.w3.org/XML/1998/namespace'")));
+				.stream().anyMatch(w -> w.contains("Multiple XSDs for namespace 'http://xmlns/overlappendeNamespace'")));
 		assertTrue("Expected configuration warning not found", getConfigurationWarnings().getWarnings()
-				.stream().anyMatch(w -> w.contains("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: 'http://www.w3.org/XML/1998/namespace'")));
+				.stream().anyMatch(w -> w.contains("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: 'http://xmlns/overlappendeNamespace'")));
 
 		// Act pt2
 		validator.start();
+		Message soapMessage = MessageTestUtils.getMessage("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/soapInput.xml");
+		PipeRunResult prr = validator.doPipe(soapMessage, session);
 
 		// Assert
+		assertTrue(prr.isSuccessful());
 		// TODO: This test should get more explicit configuration warnings
-		assertEquals("Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()), nrOfWarningsBefore + 7, getConfigurationWarnings().size());
+		assertEquals("Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()), nrOfWarningsBefore + 3, getConfigurationWarnings().size());
 	}
 
 	private String collectionToString(ConfigurationWarnings c) {
