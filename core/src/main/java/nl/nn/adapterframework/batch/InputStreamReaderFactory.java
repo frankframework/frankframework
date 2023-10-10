@@ -30,10 +30,10 @@ import nl.nn.adapterframework.util.StreamUtil;
  *
  * @author  Gerrit van Brakel
  * @since   4.11
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class InputStreamReaderFactory implements IReaderFactory {
 
 	@Override

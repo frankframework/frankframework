@@ -22,11 +22,11 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
 
 /**
  * @author John Dekker
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
 @FrankDocGroup(name = "Batch")
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class OutputfieldsPart {
 
 	private @Getter @Setter String value;

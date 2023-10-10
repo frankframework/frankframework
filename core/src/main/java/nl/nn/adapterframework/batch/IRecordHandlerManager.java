@@ -32,11 +32,11 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
  * optionally, a next-manager.
  *
  * @author John Dekker
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
 @FrankDocGroup(order = 70, name = "Batch")
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public interface IRecordHandlerManager extends INamedObject {
 
 	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException;

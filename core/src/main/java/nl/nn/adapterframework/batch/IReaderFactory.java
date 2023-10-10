@@ -27,11 +27,11 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
 /**
  * @author  Gerrit van Brakel
  * @since
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
 @FrankDocGroup(name = "Batch")
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public interface IReaderFactory {
 
 	void configure() throws ConfigurationException;

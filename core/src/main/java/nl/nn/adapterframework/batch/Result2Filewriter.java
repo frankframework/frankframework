@@ -35,10 +35,10 @@ import nl.nn.adapterframework.util.FileUtils;
  *
  *
  * @author  John Dekker
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class Result2Filewriter extends ResultWriter {
 
 	private @Getter String outputDirectory;

@@ -30,10 +30,10 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  * @author  Gerrit van Brakel
  * @since   4.10
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class DelphiStringRecordReader extends Reader {
 	protected Logger log = LogUtil.getLogger(this);
 

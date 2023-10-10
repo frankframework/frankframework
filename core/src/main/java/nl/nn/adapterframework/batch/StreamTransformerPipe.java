@@ -53,11 +53,11 @@ import nl.nn.adapterframework.util.StreamUtil;
  *
  * @author John Dekker / Gerrit van Brakel
  * @since   4.7
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
 @ElementType(ElementTypes.TRANSLATOR)
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class StreamTransformerPipe extends FixedForwardPipe {
 
 	public static final String originalBlockKey = "originalBlock";

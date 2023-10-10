@@ -38,10 +38,10 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *
  *
  * @author  John Dekker / Gerrit van Brakel
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	private @Getter String rootTag="record";

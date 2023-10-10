@@ -26,10 +26,10 @@ import nl.nn.adapterframework.core.PipeLineSession;
  *
  *
  * @author John Dekker
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private @Getter int fieldNr;

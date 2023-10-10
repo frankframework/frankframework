@@ -27,10 +27,10 @@ import nl.nn.adapterframework.core.PipeLineSession;
  *
  * @author Gerrit van Brakel
  * @since   4.7
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class Result2StringWriter extends ResultWriter {
 
 	@Override

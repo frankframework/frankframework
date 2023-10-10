@@ -57,10 +57,10 @@ import nl.nn.adapterframework.util.StringUtil;
  * </table>
  *
  * @author  John Dekker
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class RecordTransformer extends AbstractRecordHandler {
 
 	private String outputSeparator;

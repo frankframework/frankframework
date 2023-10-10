@@ -28,10 +28,10 @@ import nl.nn.adapterframework.core.SenderException;
  *
  * @author  Gerrit van Brakel
  * @since   4.10
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class DelphiStringRecordReaderFactory implements IReaderFactory {
 
 	private int stringLength=50;

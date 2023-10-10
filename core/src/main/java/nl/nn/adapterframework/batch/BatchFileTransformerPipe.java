@@ -41,10 +41,10 @@ import nl.nn.adapterframework.util.FileUtils;
  * Each line will be handled by this recordHandler and resultHandler.
  *
  * @author  John Dekker
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
+ * @deprecated Warning: non-maintained functionality.
  */
 @Deprecated
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
 
 	private @Getter String move2dirAfterTransform;
