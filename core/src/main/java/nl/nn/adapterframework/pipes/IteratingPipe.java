@@ -422,10 +422,10 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 							if (senderResult.isSuccess()) {
 								itemResult = senderResult.getResult().asString();
 							} else {
-								itemResult = "<exception>"+ XmlEncodingUtils.encodeChars(senderResult.getResult().asString())+"</exception>";
+								throw new SenderException("Something went wrong during parallel execution of iterating pipe: " + senderResult.getResult().asString());
 							}
 						} else {
-							itemResult = "<exception>"+ XmlEncodingUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
+							throw new SenderException("Something went wrong during parallel execution of iterating pipe: " + pse.getThrowable().getMessage());
 						}
 						addResult(count, pse.getRequest(), itemResult);
 					}
