@@ -25,7 +25,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
@@ -33,10 +32,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
  *
  * @author  Gerrit van Brakel
  * @since   4.7
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
  */
-@Deprecated
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
 public abstract class ResultWriter extends AbstractResultHandler {
 
 	private @Getter String onOpenDocument="<document name=\"#name#\">";

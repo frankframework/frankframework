@@ -18,7 +18,6 @@ package nl.nn.adapterframework.batch;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -29,11 +28,8 @@ import nl.nn.adapterframework.pipes.AbstractPipe;
  * Interface for handling a transformed record.
  *
  * @author  John Dekker
- * @deprecated Old and non-maintained functionality. Deprecated since v7.8
  */
-@Deprecated
 @FrankDocGroup(name = "Batch")
-@ConfigurationWarning("Old and non-maintained functionality. Deprecated since v7.8")
 public interface IResultHandler extends IConfigurable {
 
 	public void setPipe(AbstractPipe pipe);
