@@ -421,12 +421,6 @@
 			<groupId>xalan</groupId>
 			<artifactId>serializer</artifactId>
 			<version>2.7.3</version>
-			<exclusions>
-				<exclusion><!-- Part of JDK nowadays, prevent conflicts -->
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
