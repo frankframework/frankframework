@@ -81,7 +81,8 @@ import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-
 import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
 import { FitHeightDirective } from './views/iframe/fit-height.directive';
 import { DataTablesModule } from 'angular-datatables';
-// import { SecurityItemsComponent } from './views/security-items/security-items.component';
+import { SecurityItemsComponent } from './views/security-items/security-items.component';
+// import { WebservicesComponent } from './views/webservices/webservices.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -117,12 +118,13 @@ appModule
   .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
   .directive('pagesTopnavbar', downgradeComponent({ component: PagesTopnavbarComponent }) as angular.IDirectiveFactory)
   .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory)
-  // .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
+  .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
   .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory)
   .directive('adapterstatistics', downgradeComponent({ component: AdapterstatisticsComponent }) as angular.IDirectiveFactory)
   // .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
   .directive('storageList', downgradeComponent({ component: StorageListComponent }) as angular.IDirectiveFactory)
-  .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory);
+  .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory)
+  // .directive('webservices', downgradeComponent({ component: WebservicesComponent }) as angular.IDirectiveFactory);
 
 const nestedRouterStates: NgHybridStateDeclaration[] = [
   {
@@ -175,7 +177,8 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     StorageListComponent,
     StorageViewComponent,
     AdapterstatisticsComponent,
-    // SecurityItemsComponent,
+    SecurityItemsComponent,
+    // WebservicesComponent,
 
     // pipes
     ConfigurationFilterPipe,
