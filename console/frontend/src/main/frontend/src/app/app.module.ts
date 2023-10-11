@@ -81,6 +81,7 @@ import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-
 import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
 import { FitHeightDirective } from './views/iframe/fit-height.directive';
 import { DataTablesModule } from 'angular-datatables';
+import { StorageListDtComponent } from './views/storage/storage-list/storage-list-dt/storage-list-dt.component';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
@@ -192,6 +193,7 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     QuickSubmitFormDirective,
     FormatStatKeysPipe,
     FitHeightDirective,
+    StorageListDtComponent,
   ],
   imports: [
     BrowserModule,
