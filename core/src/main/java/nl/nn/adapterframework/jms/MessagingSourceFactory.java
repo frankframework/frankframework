@@ -51,9 +51,7 @@ public abstract class MessagingSourceFactory {
 			result = createMessagingSource(id, authAlias, createDestination, useJms102);
 			log.debug("created new MessagingSource-object for ["+id+"]");
 		}
-		log.trace("Increase references to messaging-source, synchronize (lock) on {}", result::toString);
 		result.increaseReferences();
-		log.trace("References to messaging-source increased, lock released on {}", result::toString);
 		return result;
 	}
 

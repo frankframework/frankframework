@@ -27,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * {@link MessagingSource} for JMS connections.
- * 
+ *
  * @author 	Gerrit van Brakel
  * @since   4.4
  */
@@ -78,7 +78,7 @@ public class JmsMessagingSource extends MessagingSource {
 	}
 
 	public Destination createDestination(String destinationName) throws JmsException {
-		Destination dest = null;
+		Destination dest;
 		Session session = null;
 		try {
 			session = createSession(false, Session.AUTO_ACKNOWLEDGE);
