@@ -62,12 +62,12 @@ import javax.jms.TextMessage;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -864,8 +864,8 @@ public class ReceiverTest {
 	}
 
 	@Test
-	@Disabled // Java 11 maven run fails when testing multiple classes from CLI, on SlowListenerWithPollGuard class
 	public void testPollGuardStartTimeout() throws Exception {
+		Mockito.clearAllCaches(); // Needed to prevent mocking failures inside SlowListenerWithPollGuard class (when executing all Core tests)
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
 
@@ -923,8 +923,8 @@ public class ReceiverTest {
 	}
 
 	@Test
-	@Disabled // Java 11 maven run fails when testing multiple classes from CLI, on SlowListenerWithPollGuard class
 	public void testPollGuardStopTimeout() throws Exception {
+		Mockito.clearAllCaches(); // Needed to prevent mocking failures inside SlowListenerWithPollGuard class (when executing all Core tests)
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		// Create listener without any delays in starting or stopping, they will be set later
 		SlowListenerWithPollGuard listener = createSlowListener(SlowListenerWithPollGuard.class, 0, 0);
