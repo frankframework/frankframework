@@ -11,7 +11,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<log4j2.version>2.17.2</log4j2.version>
 		<cxf.version>3.5.5</cxf.version>
-		<h2.version>2.1.210</h2.version>
+		<h2.version>2.2.224</h2.version>
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.11.0.Final</narayana.version>
 		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
