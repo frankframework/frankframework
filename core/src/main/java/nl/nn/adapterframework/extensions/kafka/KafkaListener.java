@@ -76,7 +76,10 @@ public class KafkaListener extends KafkaFacade implements IPushingListener<Consu
 	@Override
 	public void open() throws ListenerException {
 		consumer = new KafkaConsumer<>(properties);
-		Arrays.stream(topics.split(",")).filter(StringUtils::isNotEmpty).map(Pattern::compile).forEach(consumer::subscribe);
+		Arrays.stream(topics.split(","))
+				.filter(StringUtils::isNotEmpty) //if topics is `abc` java will split it into `abc` and ``. The latter is not a valid topic.
+				.map(Pattern::compile) //Convert the topic to a regex pattern, to allow for wildcards in topic names.
+				.forEach(consumer::subscribe);
 		new Thread(this).start();
 	}
 
@@ -115,7 +118,7 @@ public class KafkaListener extends KafkaFacade implements IPushingListener<Consu
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<ConsumerRecord<String, byte[]>> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
-
+		// no-op
 	}
 
 	@Override
