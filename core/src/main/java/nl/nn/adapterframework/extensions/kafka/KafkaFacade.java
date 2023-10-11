@@ -45,8 +45,8 @@ public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurab
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(StringUtils.isEmpty(bootstrapServers)) throw new ConfigurationException("bootstrapUrls must be specified");
-		if(StringUtils.isEmpty(clientId)) throw new ConfigurationException("clientID must be specified");
+		if(StringUtils.isEmpty(bootstrapServers)) throw new ConfigurationException("bootstrapServers must be specified");
+		if(StringUtils.isEmpty(clientId)) throw new ConfigurationException("clientId must be specified");
 
 		properties = new Properties();
 		properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
