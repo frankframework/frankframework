@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,19 +17,22 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import jakarta.json.Json;
-import jakarta.json.JsonObject;
 import jakarta.json.JsonStructure;
 import lombok.Getter;
 import nl.nn.adapterframework.align.Json2Xml;
@@ -49,6 +52,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.RootValidations;
@@ -74,7 +78,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	private @Getter boolean deepSearch=false;
 	private @Getter boolean ignoreUndeclaredElements=false;
 	private @Getter String targetNamespace;
-	private @Getter DocumentFormat outputFormat=DocumentFormat.XML;
+	private @Getter DocumentFormat outputFormat = DocumentFormat.XML;
 	private @Getter boolean autoFormat=true;
 	private @Getter String inputFormatSessionKey=null;
 	private @Getter String outputFormatSessionKey="outputFormat";
@@ -153,13 +157,28 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			return detectedFormat.name();
 		}
 
-		String[] values = acceptHeaderValue.split(", ");
-		for(String value : values) {
-			if(!value.equals("*/*")) {
-				return value;
-			}
-		}
-		return detectedFormat.name();
+		Optional<String> value = Misc.splitToStream(acceptHeaderValue)
+				.filter(Json2XmlValidator::acceptableValues)
+				.sorted(Json2XmlValidator::sortByQualifier)
+				.findFirst();
+		return value.orElse(detectedFormat.name());
+	}
+
+	/** Filter on only potential 'acceptable' results */
+	private static boolean acceptableValues(String mimeType) {
+		return !mimeType.contains("*/*") && (mimeType.contains("xml") || mimeType.contains("json"));
+	}
+
+	/** Ensure q=1.0 wins over 0.8 */
+	private static int sortByQualifier(String o1, String o2) {
+		double q1 = getQuality(o1);
+		double q2 = getQuality(o2);
+		return Double.compare(q2, q1);
+	}
+
+	private static double getQuality(String mimeType) {
+		String q = MimeTypeUtils.parseMimeType(mimeType).getParameter("q");
+		return StringUtils.isNotBlank(q) ? Double.parseDouble(q) : 1.0;
 	}
 
 	/**
@@ -171,26 +190,27 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		String messageToValidate;
 		try {
-			messageToValidate = Message.isNull(input) ?"{}":input.asString();
+			messageToValidate = Message.isNull(input) ? "{}" : input.asString();
 		} catch (IOException e) {
 			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
 		}
 		int i=0;
-		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++;
-		if (i>=messageToValidate.length()) {
+		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++; //Trim leading whitespaces
+		if (i>=messageToValidate.length()) { // if Message is empty
 			messageToValidate="{}";
-			storeInputFormat(getOutputFormat(), input, session, responseMode);
+			storeInputFormat(getOutputFormat(), input, session, responseMode); //Message is empty, but could be either XML or JSON. Look at the accept header, and if not set fall back to the default OutputFormat.
 		} else {
 			char firstChar=messageToValidate.charAt(i);
 			if (firstChar=='<') {
 				// message is XML
 				if (isAcceptNamespacelessXml()) {
 					messageToValidate=addNamespace(messageToValidate); // TODO: do this via a filter
-					//if (log.isDebugEnabled()) log.debug("added namespace to message ["+messageToValidate+"]");
+					//log.debug("added namespace to message [{}]", messageToValidate);
 				}
 				storeInputFormat(DocumentFormat.XML, input, session, responseMode);
 				if (getOutputFormat(session,responseMode) != DocumentFormat.JSON) {
-					PipeRunResult result=super.doPipe(new Message(messageToValidate),session, responseMode, messageRoot);
+					final Message xmlInputMessage = createResultMessage(messageToValidate, MediaType.APPLICATION_XML);
+					PipeRunResult result=super.doPipe(xmlInputMessage, session, responseMode, messageRoot);
 					if (isProduceNamespacelessXml()) {
 						try {
 							result.setResult(XmlUtils.removeNamespaces(result.getResult().asString()));
@@ -214,6 +234,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			}
 			storeInputFormat(DocumentFormat.JSON, input, session, responseMode);
 		}
+
 		try {
 			return alignJson(messageToValidate, session, responseMode);
 		} catch (XmlValidatorException e) {
@@ -254,15 +275,13 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		aligner.setContentHandler(handler);
 		aligner.setErrorHandler(context.getErrorHandler());
 
-		ValidationResult validationResult= validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, xml2json, context);
-		String out=xml2json.toString();
-		PipeForward forward=determineForward(validationResult, session, responseMode);
-		PipeRunResult result=new PipeRunResult(forward,out);
-		return result;
+		ValidationResult validationResult = validator.validate(messageToValidate, session, getLogPrefix(session), validatorHandler, xml2json, context);
+		final Message jsonMessage = createResultMessage(xml2json.toString(), MediaType.APPLICATION_JSON);
+		PipeForward forward = determineForward(validationResult, session, responseMode);
+		return new PipeRunResult(forward, jsonMessage);
 	}
 
 	protected PipeRunResult alignJson(String messageToValidate, PipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
-
 		ValidationContext context;
 		ValidatorHandler validatorHandler;
 		try {
@@ -272,7 +291,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			throw new PipeRunException(this,"Cannot create ValidationContext",e);
 		}
 		ValidationResult validationResult;
-		String out=null;
+		Message resultMessage = null;
 		try {
 			Json2Xml aligner = new Json2Xml(validatorHandler, context.getXsModels(), isCompactJsonArrays(), getMessageRoot(responseMode), isStrictJsonArraySyntax());
 			if (StringUtils.isNotEmpty(getTargetNamespace())) {
@@ -284,16 +303,10 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			aligner.setIgnoreUndeclaredElements(isIgnoreUndeclaredElements());
 			ParameterList parameterList = getParameterList();
 			if (parameterList!=null) {
-				Map<String,Object> parametervalues = null;
-				parametervalues = parameterList.getValues(new Message(messageToValidate), session).getValueMap();
+				Map<String, Object> parameterValues = parameterList.getValues(new Message(messageToValidate), session).getValueMap();
 				// remove parameters with null values, to support optional request parameters
-				for(Iterator<String> it=parametervalues.keySet().iterator();it.hasNext();) {
-					String key=it.next();
-					if (parametervalues.get(key)==null) {
-						it.remove();
-					}
-				}
-				aligner.setOverrideValues(parametervalues);
+				parameterValues.values().removeIf(Objects::isNull);
+				aligner.setOverrideValues(parameterValues);
 			}
 			JsonStructure jsonStructure = Json.createReader(new StringReader(messageToValidate)).read();
 
@@ -310,7 +323,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 				sourceFilter.setContentHandler(xml2json);
 				aligner.startParse(jsonStructure);
-				out=xml2json.toString();
+				resultMessage = createResultMessage(xml2json.toString(), MediaType.APPLICATION_JSON);
 			} else {
 				XmlWriter xmlWriter = new XmlWriter();
 				xmlWriter.setIncludeXmlDeclaration(true);
@@ -320,33 +333,34 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				}
 				sourceFilter.setContentHandler(handler);
 				aligner.startParse(jsonStructure);
-				out = xmlWriter.toString();
+				resultMessage = createResultMessage(xmlWriter.toString(), MediaType.APPLICATION_XML);
 			}
 			validationResult = validator.finalizeValidation(context, session, null);
 		} catch (Exception e) {
 			validationResult = validator.finalizeValidation(context, session, e);
 		}
-		PipeForward forward=determineForward(validationResult, session, responseMode);
-		PipeRunResult result=new PipeRunResult(forward,out);
-		return result;
+
+		PipeForward forward = determineForward(validationResult, session, responseMode);
+		return new PipeRunResult(forward, resultMessage);
+	}
+
+	private Message createResultMessage(String content, MimeType mimeType) {
+		return new Message(content, new MessageContext().withMimeType(mimeType));
 	}
 
 	public String addNamespace(String xml) {
 		if (StringUtils.isEmpty(xml) || xml.indexOf("xmlns")>0) {
 			return xml;
 		}
-		String namespace=null;
+		String namespace;
 		if (StringUtils.isNotEmpty(getTargetNamespace())) {
 			namespace = getTargetNamespace();
+		} else if (StringUtils.isNotEmpty(getSchemaLocation())) {
+			namespace = getSchemaLocation().split(" ")[0];
 		} else {
-			if (StringUtils.isNotEmpty(getSchemaLocation())) {
-				namespace = getSchemaLocation().split(" ")[0];
-			}
-		}
-		if (namespace==null) {
 			return xml;
 		}
-		if (log.isDebugEnabled()) log.debug("setting namespace ["+namespace+"]");
+		log.debug("setting namespace [{}]", namespace);
 		int startPos=0;
 		if (xml.trim().startsWith("<?")) {
 			startPos=xml.indexOf("?>")+2;
@@ -361,46 +375,34 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		return xml.substring(0, elementEnd)+" xmlns=\""+namespace+"\""+xml.substring(elementEnd);
 	}
 
-	public JsonStructure createRequestJsonSchema() {
-		return createJsonSchema(getRoot());
-	}
-	public JsonStructure createResponseJsonSchema() {
-		return createJsonSchema(getResponseRoot());
-	}
-
-	public JsonObject createJsonSchemaDefinitions(String definitionsPath) {
-		List<XSModel> models = validator.getXSModels();
-		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), getSchemaLocation(), definitionsPath);
-		JsonObject jsonschema = converter.getDefinitions();
-		return jsonschema;
-	}
 	public JsonStructure createJsonSchema(String elementName) {
 		return createJsonSchema(elementName, getTargetNamespace());
 	}
 	public JsonStructure createJsonSchema(String elementName, String namespace) {
 		List<XSModel> models = validator.getXSModels();
 		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), getSchemaLocation());
-		JsonStructure jsonschema = converter.createJsonSchema(elementName, namespace);
-		return jsonschema;
+		return converter.createJsonSchema(elementName, namespace);
 	}
 
 
 
 	@Override
 	public String getPhysicalDestinationName() {
-		String result=null;
+		StringBuilder result = new StringBuilder();
 		if (StringUtils.isNotEmpty(getRoot())) {
-			result="request message ["+getRoot()+"]";
+			result.append("request message [")
+					.append(getRoot())
+					.append("]");
 		}
 		if (StringUtils.isNotEmpty(getResponseRoot())) {
-			if (result==null) {
-				result = "";
-			} else {
-				result += "; ";
+			if (result.length() > 0) {
+				result.append("; ");
 			}
-			result+="response message ["+getResponseRoot()+"]";
+			result.append("response message [")
+					.append(getResponseRoot())
+					.append("]");
 		}
-		return result;
+		return result.toString();
 	}
 
 
