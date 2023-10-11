@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.senders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
@@ -151,5 +152,10 @@ public class LogSenderTest extends SenderTestBase<LogSender> {
 		} finally {
 			TestAppender.removeAppender(appender);
 		}
+	}
+
+	@Test
+	public void testIfToStringWorks() {
+		assertNotNull(sender.toString()); //And no NPE
 	}
 }
