@@ -32,8 +32,8 @@ import org.apache.commons.lang3.StringUtils;
  * @since   4.4
  */
 public class JmsMessagingSource extends MessagingSource {
-	private String jndiContextPrefix;
-	private Map<String, String> proxiedDestinationNames;
+	private final String jndiContextPrefix;
+	private final Map<String, String> proxiedDestinationNames;
 
 	public JmsMessagingSource(String connectionFactoryName, String jndiContextPrefix, Context context,
 			ConnectionFactory connectionFactory, Map<String,MessagingSource> messagingSourceMap,

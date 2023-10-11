@@ -94,7 +94,7 @@ class JmsSenderTest {
 	void testSendMessageModeBytesWithTextMessage() throws Exception {
 		// Arrange
 		Message message = Message.asMessage("A Textual Message");
-		jmsSender.setMessageClass(MessageClass.BYTES);
+		jmsSender.setMessageClass(JMSFacade.MessageClass.BYTES);
 
 		// Act
 		jmsSender.sendMessage(message, pipeLineSession);
@@ -114,7 +114,7 @@ class JmsSenderTest {
 	void testSendMessageModeTextWithBinaryMessage() throws Exception {
 		// Arrange
 		Message message = Message.asMessage("A Textual Message".getBytes(StandardCharsets.UTF_8));
-		jmsSender.setMessageClass(MessageClass.TEXT);
+		jmsSender.setMessageClass(JMSFacade.MessageClass.TEXT);
 
 		// Act
 		jmsSender.sendMessage(message, pipeLineSession);
