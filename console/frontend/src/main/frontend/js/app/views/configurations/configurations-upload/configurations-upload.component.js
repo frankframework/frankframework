@@ -5,16 +5,6 @@ const ConfigurationsUploadController = function ($scope, Api, appConstants, $roo
 
 	ctrl.datasources = {};
 	ctrl.form = {};
-
-	$rootScope.$on('appConstants', function () {
-		ctrl.form.datasource = appConstants['jdbc.datasource.default'];
-	});
-
-	Api.Get("jdbc", function (data) {
-		$.extend(ctrl, data);
-		ctrl.form.datasource = (appConstants['jdbc.datasource.default'] != undefined) ? appConstants['jdbc.datasource.default'] : data.datasources[0];
-	});
-
 	ctrl.form = {
 		datasource: "",
 		encoding: "",
@@ -22,8 +12,22 @@ const ConfigurationsUploadController = function ($scope, Api, appConstants, $roo
 		activate_config: true,
 		automatic_reload: false,
 	};
-
 	ctrl.file = null;
+
+	ctrl.$onInit = function () {
+		ctrl.unregister$on = $rootScope.$on('appConstants', function () {
+			ctrl.form.datasource = appConstants['jdbc.datasource.default'];
+		});
+
+		Api.Get("jdbc", function (data) {
+			$.extend(ctrl, data);
+			ctrl.form.datasource = (appConstants['jdbc.datasource.default'] != undefined) ? appConstants['jdbc.datasource.default'] : data.datasources[0];
+		});
+	}
+
+	ctrl.$onDestroy = function () {
+		ctrl.unregister$on();
+	}
 
 	ctrl.updateFile = function (file) {
 		ctrl.file = file;

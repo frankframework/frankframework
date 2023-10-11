@@ -25,6 +25,7 @@ import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -50,6 +51,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @deprecated Please use {@link JavascriptSender} instead
  */
 @Deprecated
+@ConfigurationWarning("Will be deleted in v8.0. Please use the JavascriptSender class instead.")
 public class RhinoPipe extends FixedForwardPipe {
 
 	private String fileName;

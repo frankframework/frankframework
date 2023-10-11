@@ -55,13 +55,17 @@ const adapterstatisticsController = function ($rootScope, Api, $stateParams, Swe
 			ctrl.populateBoundaries(); //AppConstants already loaded
         }
         else {
-			$rootScope.$on('appConstants', ctrl.populateBoundaries); //Wait for appConstants trigger to load
+			ctrl.unregister$on = $rootScope.$on('appConstants', ctrl.populateBoundaries); //Wait for appConstants trigger to load
         }
 
         $timeout(function () {
             ctrl.refresh();
         }, 1000);
     };
+
+	ctrl.$onDestroy = function(){
+		if(ctrl.unregister$on) ctrl.unregister$on();
+	}
 
     ctrl.refresh = function () {
         ctrl.refreshing = true;

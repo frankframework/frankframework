@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -42,7 +43,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * Sender used to run javascript code using J2V8 or Rhino
+ * Sender used to run JavaScript code using J2V8, Rhino or Nashorn
  *
  * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
  * The parameters of the javascript function to run are given as parameters by the adapter configuration
@@ -67,10 +68,16 @@ public class JavascriptSender extends SenderSeries {
 
 	private String fileInput;
 
+
 	public enum JavaScriptEngines {
-		J2V8(J2V8.class), NASHORN(Nashorn.class), RHINO(Rhino.class);
+		J2V8(J2V8.class),
+
+		@Deprecated NASHORN(Nashorn.class),
+
+		@Deprecated RHINO(Rhino.class);
 
 		private Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
+
 		private JavaScriptEngines(Class<? extends JavascriptEngine<?>> engine) {
 			this.engine = engine;
 		}
@@ -128,36 +135,36 @@ public class JavascriptSender extends SenderSeries {
 		}
 
 		//Create a Parameter Value List
-		ParameterValueList pvl=null;
+		ParameterValueList pvl = null;
 		try {
-			if (getParameterList() !=null) {
-				pvl=getParameterList().getValues(message, session);
+			if (getParameterList() != null) {
+				pvl = getParameterList().getValues(message, session);
 			}
 		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+" exception extracting parameters", e);
+			throw new SenderException(getLogPrefix() + " exception extracting parameters", e);
 		}
-		if(pvl != null) {
+		if (pvl != null) {
 			numberOfParameters = pvl.size();
 		}
 
 		//This array will contain the parameters given in the configuration
 		Object[] jsParameters = new Object[numberOfParameters];
-		for (int i=0; i<numberOfParameters; i++) {
+		for (int i = 0; i < numberOfParameters; i++) {
 			ParameterValue pv = pvl.getParameterValue(i);
 			Object value = pv.getValue();
 			try {
-				jsParameters[i] = value instanceof Message ? ((Message)value).asString() : value;
+				jsParameters[i] = value instanceof Message ? ((Message) value).asString() : value;
 			} catch (IOException e) {
-				throw new SenderException(getLogPrefix(),e);
+				throw new SenderException(getLogPrefix(), e);
 			}
 		}
 
-		for (ISender sender: getSenders()) {
+		for (ISender sender : getSenders()) {
 			jsInstance.registerCallback(sender, session);
 		}
 
 		try {
-		//Compile the given Javascript and execute the given Javascript function
+			//Compile the given Javascript and execute the given Javascript function
 			jsInstance.executeScript(adaptES6Literals(fileInput));
 			jsResult = jsInstance.executeFunction(jsFunctionName, jsParameters);
 		} catch (JavascriptException e) {
@@ -169,7 +176,7 @@ public class JavascriptSender extends SenderSeries {
 		// Pass jsResult, the result of the Javascript function.
 		// It is recommended to have the result of the Javascript function be of type String, which will be the output of the sender
 		String result = String.valueOf(jsResult);
-		if(StringUtils.isEmpty(result) || "null".equals(result) || "undefined".equals(result)) {
+		if (StringUtils.isEmpty(result) || "null".equals(result) || "undefined".equals(result)) {
 			return new SenderResult(Message.nullMessage());
 		}
 		return new SenderResult(result);
@@ -185,7 +192,7 @@ public class JavascriptSender extends SenderSeries {
 	private String adaptES6Literals(final String source) {
 		Matcher m = es6VarPattern.matcher(source);
 		StringBuffer sb = new StringBuffer();
-		while(m.find()) {
+		while (m.find()) {
 			StringBuilder buf = new StringBuilder(m.group());
 			buf.replace(m.start(1) - m.start(), m.end(1) - m.start(), "var");
 			m.appendReplacement(sb, buf.toString());
@@ -207,9 +214,12 @@ public class JavascriptSender extends SenderSeries {
 	}
 
 	/**
-	 * the name of the javascript engine to be used
+	 * the name of the JavaScript engine to be used.
+	 * @deprecated Both Nashorn and Rhino are deprecated. Use J2V8 instead.
 	 * @ff.default J2V8
 	 */
+	@Deprecated
+	@ConfigurationWarning("JavaScript engines Nashorn and Rhino deprecated. Use \"J2V8\" instead")
 	public void setEngineName(JavaScriptEngines engineName) {
 		this.engine = engineName;
 	}

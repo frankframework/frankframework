@@ -21,9 +21,13 @@ const LiquibaseController = function ($rootScope, Api, Misc, appService) {
             };
         };
 
-		$rootScope.$on('configurations', findFirstAvailabeConfiguration);
+		ctrl.unregister$on = $rootScope.$on('configurations', findFirstAvailabeConfiguration);
         findFirstAvailabeConfiguration();
     };
+
+	ctrl.$onDestroy = function(){
+		ctrl.unregister$on();
+	}
 
     ctrl.download = function () {
         window.open(Misc.getServerPath() + "iaf/api/jdbc/liquibase/");
