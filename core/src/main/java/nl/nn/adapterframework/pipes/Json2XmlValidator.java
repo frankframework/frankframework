@@ -26,6 +26,9 @@ import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
 
@@ -74,7 +77,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	private @Getter boolean deepSearch=false;
 	private @Getter boolean ignoreUndeclaredElements=false;
 	private @Getter String targetNamespace;
-	private @Getter DocumentFormat outputFormat=DocumentFormat.XML;
+	private @Getter DocumentFormat outputFormat = DocumentFormat.XML;
 	private @Getter boolean autoFormat=true;
 	private @Getter String inputFormatSessionKey=null;
 	private @Getter String outputFormatSessionKey="outputFormat";
@@ -148,8 +151,28 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			return detectedFormat.name();
 		}
 
-		Optional<String> value = StringUtil.splitToStream(acceptHeaderValue).filter(t -> !t.equals("*/*")).findFirst();
+		Optional<String> value = StringUtil.splitToStream(acceptHeaderValue)
+				.filter(Json2XmlValidator::acceptableValues)
+				.sorted(Json2XmlValidator::sortByQualifier)
+				.findFirst();
 		return value.orElse(detectedFormat.name());
+	}
+
+	/** Filter on only potential 'acceptable' results */
+	private static boolean acceptableValues(String mimeType) {
+		return !mimeType.contains("*/*") && (mimeType.contains("xml") || mimeType.contains("json"));
+	}
+
+	/** Ensure q=1.0 wins over 0.8 */
+	private static int sortByQualifier(String o1, String o2) {
+		double q1 = getQuality(o1);
+		double q2 = getQuality(o2);
+		return Double.compare(q2, q1);
+	}
+
+	private static double getQuality(String mimeType) {
+		String q = MimeTypeUtils.parseMimeType(mimeType).getParameter("q");
+		return StringUtils.isNotBlank(q) ? Double.parseDouble(q) : 1.0;
 	}
 
 	/**
@@ -166,8 +189,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		int i=0;
-		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++;
-		if (i>=messageToValidate.length()) {
+		while (i<messageToValidate.length() && Character.isWhitespace(messageToValidate.charAt(i))) i++; //Trim leading whitespaces
+		if (i>=messageToValidate.length()) { // if Message is empty
 			messageToValidate="{}";
 			storeInputFormat(getOutputFormat(), input, session, responseMode); //Message is empty, but could be either XML or JSON. Look at the accept header, and if not set fall back to the default OutputFormat.
 		} else {
@@ -180,7 +203,8 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				}
 				storeInputFormat(DocumentFormat.XML, input, session, responseMode);
 				if (getOutputFormat(session,responseMode) != DocumentFormat.JSON) {
-					PipeRunResult result=super.doPipe(new Message(messageToValidate),session, responseMode, messageRoot);
+					final Message xmlInputMessage = createResultMessage(messageToValidate, MediaType.APPLICATION_XML);
+					PipeRunResult result=super.doPipe(xmlInputMessage, session, responseMode, messageRoot);
 					if (isProduceNamespacelessXml()) {
 						try {
 							result.setResult(XmlUtils.removeNamespaces(result.getResult().asString()));
@@ -245,14 +269,13 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		aligner.setContentHandler(handler);
 		aligner.setErrorHandler(context.getErrorHandler());
 
-		ValidationResult validationResult= validator.validate(messageToValidate, session, validatorHandler, xml2json, context);
-		String out=xml2json.toString();
-		PipeForward forward=determineForward(validationResult, session, responseMode);
-		return new PipeRunResult(forward,out);
+		ValidationResult validationResult = validator.validate(messageToValidate, session, validatorHandler, xml2json, context);
+		final Message jsonMessage = createResultMessage(xml2json.toString(), MediaType.APPLICATION_JSON);
+		PipeForward forward = determineForward(validationResult, session, responseMode);
+		return new PipeRunResult(forward, jsonMessage);
 	}
 
 	protected PipeRunResult alignJson(String messageToValidate, PipeLineSession session, boolean responseMode) throws PipeRunException, XmlValidatorException {
-
 		ValidationContext context;
 		ValidatorHandler validatorHandler;
 		try {
@@ -262,7 +285,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			throw new PipeRunException(this,"Cannot create ValidationContext",e);
 		}
 		ValidationResult validationResult;
-		String out=null;
+		Message resultMessage = null;
 		try {
 			Json2Xml aligner = new Json2Xml(validatorHandler, context.getXsModels(), isCompactJsonArrays(), getMessageRoot(responseMode), isStrictJsonArraySyntax());
 			if (StringUtils.isNotEmpty(getTargetNamespace())) {
@@ -294,7 +317,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				Xml2Json xml2json = new Xml2Json(aligner, isCompactJsonArrays(), !isJsonWithRootElements());
 				sourceFilter.setContentHandler(xml2json);
 				aligner.startParse(jsonStructure);
-				out=xml2json.toString();
+				resultMessage = createResultMessage(xml2json.toString(), MediaType.APPLICATION_JSON);
 			} else {
 				XmlWriter xmlWriter = new XmlWriter();
 				xmlWriter.setIncludeXmlDeclaration(true);
@@ -304,15 +327,19 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 				}
 				sourceFilter.setContentHandler(handler);
 				aligner.startParse(jsonStructure);
-				out = xmlWriter.toString();
+				resultMessage = createResultMessage(xmlWriter.toString(), MediaType.APPLICATION_XML);
 			}
 			validationResult = validator.finalizeValidation(context, session, null);
 		} catch (Exception e) {
 			validationResult = validator.finalizeValidation(context, session, e);
 		}
 
-		PipeForward forward=determineForward(validationResult, session, responseMode);
-		return new PipeRunResult(forward,out);
+		PipeForward forward = determineForward(validationResult, session, responseMode);
+		return new PipeRunResult(forward, resultMessage);
+	}
+
+	private Message createResultMessage(String content, MimeType mimeType) {
+		return new Message(content, new MessageContext().withMimeType(mimeType));
 	}
 
 	public String addNamespace(String xml) {
