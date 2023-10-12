@@ -40,7 +40,7 @@
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
 		<mariadb.driver.version>2.7.10</mariadb.driver.version>
 		<postgresql.driver.version>42.6.0</postgresql.driver.version>
-		<mongodb.driver.version>4.10.2</mongodb.driver.version>
+		<mongodb.driver.version>4.11.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>5.16.6</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
