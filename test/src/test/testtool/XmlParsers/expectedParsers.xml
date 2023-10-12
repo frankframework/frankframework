@@ -1,15 +1,15 @@
 <parsers>
-  <SAXParserFactory-class>org.apache.xerces.jaxp.SAXParserFactoryImpl</SAXParserFactory-class>
-  <DocumentBuilderFactory1-class>org.apache.xerces.jaxp.DocumentBuilderFactoryImpl</DocumentBuilderFactory1-class>
-  <DocumentBuilderFactory2-class>org.apache.xerces.jaxp.DocumentBuilderFactoryImpl</DocumentBuilderFactory2-class>
-  <TransformerFactory1-class>org.apache.xalan.processor.TransformerFactoryImpl</TransformerFactory1-class>
-  <TransformerFactory2-class>net.sf.saxon.TransformerFactoryImpl</TransformerFactory2-class>
-  <XMLEventFactory-class>org.apache.xerces.stax.XMLEventFactoryImpl</XMLEventFactory-class>
-  <XMLInputFactory-class>nl.nn.adapterframework.xml.StaxParserFactory</XMLInputFactory-class>
-  <XMLOutputFactory-class>com.sun.xml.stream.ZephyrWriterFactory</XMLOutputFactory-class>
-  <MessageFactory-class>com.sun.xml.messaging.saaj.soap.MessageFactoryImpl</MessageFactory-class>
-  <Xerces-Version>Xerces-J 2.12.1-xml-schema-1.1</Xerces-Version>
-  <Xalan-Version>Xalan Java 2.7.2</Xalan-Version>
-  <Saxon-Version>SAXON 9.4.0.7 from Saxonica</Saxon-Version>
-  <Woodstox-Version>woodstox 5.0; xml1.1 enabled</Woodstox-Version>
+	<SAXParserFactory-class>org.apache.xerces.jaxp.SAXParserFactoryImpl</SAXParserFactory-class>
+	<DocumentBuilderFactory1-class>org.apache.xerces.jaxp.DocumentBuilderFactoryImpl</DocumentBuilderFactory1-class>
+	<DocumentBuilderFactory2-class>org.apache.xerces.jaxp.DocumentBuilderFactoryImpl</DocumentBuilderFactory2-class>
+	<TransformerFactory1-class>org.apache.xalan.processor.TransformerFactoryImpl</TransformerFactory1-class>
+	<TransformerFactory2-class>net.sf.saxon.TransformerFactoryImpl</TransformerFactory2-class>
+	<XMLEventFactory-class>org.apache.xerces.stax.XMLEventFactoryImpl</XMLEventFactory-class>
+	<XMLInputFactory-class>nl.nn.adapterframework.xml.StaxParserFactory</XMLInputFactory-class>
+	<XMLOutputFactory-class>com.sun.xml.stream.ZephyrWriterFactory</XMLOutputFactory-class>
+	<MessageFactory-class>com.sun.xml.messaging.saaj.soap.MessageFactoryImpl</MessageFactory-class>
+	<Xerces-Version>Xerces-J 2.12.1-xml-schema-1.1</Xerces-Version>
+	<Xalan-Version>Xalan Java 2.7.3</Xalan-Version>
+	<Saxon-Version>SAXON 9.4.0.7 from Saxonica</Saxon-Version>
+	<Woodstox-Version>woodstox 5.0; xml1.1 enabled</Woodstox-Version>
 </parsers>
