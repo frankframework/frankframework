@@ -176,7 +176,7 @@
 				</datasource>
 				<!-- Framework datasources -->
 				<datasource jndi-name="java:/jdbc/ibis4test-h2" pool-name="h2-datasource" enabled="true" use-java-context="true">
-					<connection-url>jdbc:h2:file:./ibis4test;NON_KEYWORDS=VALUE;AUTO_SERVER=TRUE</connection-url>
+					<connection-url>jdbc:h2:file:/tmp/ibis4test;NON_KEYWORDS=VALUE;AUTO_SERVER=TRUE</connection-url>
 					<driver>h2</driver>
 				</datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-oracle" pool-name="ibis4test-oracle">

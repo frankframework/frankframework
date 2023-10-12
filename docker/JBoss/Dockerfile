@@ -29,3 +29,11 @@ COPY target/dependencies/frank /opt/frank
 
 # Copy war
 COPY target/dependencies/ibis-adapterframework-test.war /opt/jboss/standalone/deployments/iaf-test.war
+
+USER root
+RUN useradd -u 1001 jboss
+RUN chown jboss:jboss -R /opt/jboss/standalone/
+USER jboss
+
+EXPOSE 8080
+EXPOSE 9990
