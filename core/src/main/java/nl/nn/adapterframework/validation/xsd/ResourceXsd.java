@@ -43,7 +43,7 @@ public class ResourceXsd extends XSD {
 	public void initNamespace(String namespace, IScopeProvider scopeProvider, String resourceRef) throws ConfigurationException {
 		this.resourceRef = resourceRef.replace("%20", " ");
 
-		resource = Resource.getResource(scopeProvider, resourceRef);
+		resource = Resource.getResource(scopeProvider, this.resourceRef);
 		if (resource == null) {
 			throw new ConfigurationException("Cannot find resource [" + resourceRef + "] in scope [" + scopeProvider + "]");
 		}
