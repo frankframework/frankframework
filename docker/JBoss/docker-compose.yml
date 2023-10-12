@@ -1,8 +1,0 @@
-version: "3"
-services:
-    JBoss:
-        image: iaf-test-as-jboss
-        restart: unless-stopped
-        ports:
-            - "8080:8080"
-            - "9990:9990"
