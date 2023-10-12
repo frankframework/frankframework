@@ -4,7 +4,7 @@ import os
 moduleName = "module.frank-framework"
 
 # list of jar files
-path_to_jars="/home/jboss/jboss-eap-7.3/standalone/lib/ext/"
+path_to_jars="/opt/jboss/standalone/lib/ext/"
 jarList = os.listdir(path_to_jars)
 
 # resources that the module will be created upon
@@ -21,4 +21,4 @@ command="module add --name="+moduleName+" --resources="+resources
 
 print(command)
 
-os.system("/home/jboss/jboss-eap-7.3/bin/jboss-cli.sh --command='"+command+"'")
+os.system("/opt/jboss/bin/jboss-cli.sh --command='"+command+"'")

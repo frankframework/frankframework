@@ -4,4 +4,5 @@ services:
         image: iaf-test-as-jboss
         restart: unless-stopped
         ports:
-            - "80:8080"
+            - "8080:8080"
+            - "9990:9990"

@@ -2,7 +2,7 @@
 <jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<deployment>
-<!-- 
+<!--
 In order to find all modules:
 	sh/bash into the image
 	navigate to <server-root>/bin/jboss-cli.sh
@@ -15,6 +15,7 @@ In order to find all modules:
 			<module name="org.eclipse.yasson"/><!-- yasson contains javax json -->
 			<!-- Disable RestEasy (except resteasy-jaxrs); it's not used and could speed up the server startup time -->
 			<module name="org.jboss.resteasy.resteasy-atom-provider" />
+			<module name="org.jboss.resteasy.resteasy-client-microprofile" />
 			<module name="org.jboss.resteasy.resteasy-crypto" />
 			<module name="org.jboss.resteasy.resteasy-jackson2-provider" />
 			<module name="org.jboss.resteasy.resteasy-jaxb-provider" />
@@ -26,14 +27,14 @@ In order to find all modules:
 			<module name="org.jboss.resteasy.resteasy-validator-provider-11" />
 			<module name="org.jboss.resteasy.resteasy-yaml-provider" />
 			<module name="org.jboss.as.ee" />
+			<module name="io.undertow.js" />
+			<module name="org.eclipse.microprofile.restclient" />
+			<module name="org.hibernate.validator" />
 
 			<!-- Disable jackson, as it conflicts with spring integration -->
-			<module name="com.fasterxml.jackson.core.jackson-annotations" />
-			<module name="com.fasterxml.jackson.core.jackson-core" />
-			<module name="com.fasterxml.jackson.core.jackson-databind" />
-			<module name="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider" />
 			<module name="com.fasterxml.jackson.datatype.jackson-datatype-jdk8" />
 			<module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310" />
+			<module name="org.codehaus.jackson.jackson-core-asl" />
 		</exclusions>
 		<exports />
 		<module-alias name="deployment.iaf" />
