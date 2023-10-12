@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.naming.NamingException;
 
@@ -21,7 +23,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.jms.IConnectionFactoryFactory;
 
 public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFactory {
-	public static final String MOCK_CONNECTION_FACTORY_NAME = "MockConnectionFactory";
+	public static final String MOCK_CONNECTION_FACTORY_NAME = "dummyMockConnectionFactory";
 
 	private final @Getter DestinationManager destinationManager;
 	private final ConfigurationManager configurationManager;
@@ -72,5 +74,9 @@ public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFac
 			}
 		};
 		session.setMessageListener(ml);
+	}
+
+	public void addMessageOnQueue(String queueName, Message message) throws JMSException {
+		destinationManager.getQueue(queueName).addMessage(message);
 	}
 }

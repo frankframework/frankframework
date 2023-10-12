@@ -26,7 +26,7 @@ public class BusTestBase {
 
 	private Configuration configuration;
 	private ApplicationContext parentContext;
-	protected MockRunnerConnectionFactoryFactory connectionFactoryFactory;
+	protected MockRunnerConnectionFactoryFactory mockConnectionFactoryFactory;
 	private final QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 
 	private ApplicationContext getParentContext() {
@@ -73,7 +73,7 @@ public class BusTestBase {
 	@BeforeEach
 	public void setUp() throws Exception {
 		getConfiguration(); //Create configuration
-		connectionFactoryFactory = getParentContext().getBean(MockRunnerConnectionFactoryFactory.class);
+		mockConnectionFactoryFactory = getParentContext().getBean(MockRunnerConnectionFactoryFactory.class);
 	}
 
 	@AfterEach

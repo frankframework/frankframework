@@ -79,11 +79,11 @@ public class TestSendJmsMessage extends BusTestBase {
 		request.setHeader("destination", DUMMY_DESTINATION);
 		request.setHeader("type", DestinationType.QUEUE.name());
 
-		connectionFactoryFactory.addEchoReceiverOnQueue(DUMMY_DESTINATION);
+		mockConnectionFactoryFactory.addEchoReceiverOnQueue(DUMMY_DESTINATION);
 
 		assertNotNull(callSyncGateway(request).getPayload());
 
-		javax.jms.Message jmsResponse = connectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
+		javax.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
 		assertNotNull(jmsResponse, "expected a response");
 		assertTrue(jmsResponse instanceof javax.jms.BytesMessage);
 		String responseMessage = readBytesMessageToString((BytesMessage) jmsResponse);
@@ -104,11 +104,11 @@ public class TestSendJmsMessage extends BusTestBase {
 		request.setHeader("destination", DUMMY_DESTINATION);
 		request.setHeader("type", DestinationType.QUEUE.name());
 
-		connectionFactoryFactory.addEchoReceiverOnQueue(DUMMY_DESTINATION);
+		mockConnectionFactoryFactory.addEchoReceiverOnQueue(DUMMY_DESTINATION);
 
 		assertEquals(payload, callSyncGateway(request).getPayload());
 
-		javax.jms.Message jmsResponse = connectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
+		javax.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
 		assertNotNull(jmsResponse, "expected a response");
 		assertTrue(jmsResponse instanceof javax.jms.TextMessage);
 		String responseMessage = ((javax.jms.TextMessage) jmsResponse).getText();
@@ -125,7 +125,7 @@ public class TestSendJmsMessage extends BusTestBase {
 
 		callAsyncGateway(request);
 
-		javax.jms.Message jmsResponse = connectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
+		javax.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
 		assertNotNull(jmsResponse, "expected a response");
 		assertTrue(jmsResponse instanceof javax.jms.TextMessage);
 		String responseMessage = ((javax.jms.TextMessage) jmsResponse).getText();
