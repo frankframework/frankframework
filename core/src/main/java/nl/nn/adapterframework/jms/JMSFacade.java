@@ -381,31 +381,32 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	public void setMessageCorrelationID(javax.jms.Message message, String correlationID)
 			throws JMSException {
-		if (null != correlationID) {
-			if (correlationIdMaxLength>=0) {
-				int cidlen;
-				if (correlationID.startsWith(correlationIdToHexPrefix)) {
-					cidlen = correlationID.length()-correlationIdToHexPrefix.length();
-				} else {
-					cidlen = correlationID.length();
-				}
-				if (cidlen>correlationIdMaxLength) {
-					correlationID = correlationIdToHexPrefix+correlationID.substring(correlationID.length()-correlationIdMaxLength);
-					if (log.isDebugEnabled()) log.debug("correlationId shortened to ["+correlationID+"]");
-				}
-			}
-			if (correlationIdToHex && correlationID.startsWith(correlationIdToHexPrefix)) {
-				StringBuilder hexCorrelationID = new StringBuilder(correlationIdToHexPrefix);
-				int i;
-				for (i=correlationIdToHexPrefix.length();i<correlationID.length();i++) {
-					int c=correlationID.charAt(i);
-					hexCorrelationID.append(Integer.toHexString(c));
-				}
-				correlationID = hexCorrelationID.toString();
-				if (log.isDebugEnabled()) log.debug("correlationId changed, based on hexidecimal values, to ["+correlationID+"]");
-			}
-			message.setJMSCorrelationID(correlationID);
+		if (null == correlationID) {
+			return;
 		}
+		if (correlationIdMaxLength>=0) {
+			int cidlen;
+			if (correlationID.startsWith(correlationIdToHexPrefix)) {
+				cidlen = correlationID.length()-correlationIdToHexPrefix.length();
+			} else {
+				cidlen = correlationID.length();
+			}
+			if (cidlen>correlationIdMaxLength) {
+				correlationID = correlationIdToHexPrefix+correlationID.substring(correlationID.length()-correlationIdMaxLength);
+				if (log.isDebugEnabled()) log.debug("correlationId shortened to ["+correlationID+"]");
+			}
+		}
+		if (correlationIdToHex && correlationID.startsWith(correlationIdToHexPrefix)) {
+			StringBuilder hexCorrelationID = new StringBuilder(correlationIdToHexPrefix);
+			int i;
+			for (i=correlationIdToHexPrefix.length();i<correlationID.length();i++) {
+				int c=correlationID.charAt(i);
+				hexCorrelationID.append(Integer.toHexString(c));
+			}
+			correlationID = hexCorrelationID.toString();
+			if (log.isDebugEnabled()) log.debug("correlationId changed, based on hexidecimal values, to ["+correlationID+"]");
+		}
+		message.setJMSCorrelationID(correlationID);
 	}
 
 	public Destination getDestination() throws NamingException, JMSException, JmsException {

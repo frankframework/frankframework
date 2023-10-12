@@ -36,7 +36,6 @@ class JmsSenderTest {
 		jmsSender = new JmsSender();
 
 		mockFactory = new MockRunnerConnectionFactoryFactory();
-		mockFactory.init();
 
 		mockQueue = mockFactory.getDestinationManager().createQueue("TestQueue");
 

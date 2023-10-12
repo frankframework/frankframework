@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 
+import javax.jms.BytesMessage;
+import javax.jms.JMSException;
+
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
@@ -14,15 +17,17 @@ import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.mock.ConnectionFactoryFactoryMock;
+import nl.nn.adapterframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 
 public class TestSendJmsMessage extends BusTestBase {
+
+	public static final String DUMMY_DESTINATION = "dummyDestination";
 
 	@Test
 	public void noConnectionFactory() throws Exception {
 		String payload = "<dummy message=\"true\" />";
 		MessageBuilder<String> request = createRequestMessage(payload, BusTopic.QUEUE, BusAction.UPLOAD);
-		request.setHeader("destination", "dummyDestination");
+		request.setHeader("destination", DUMMY_DESTINATION);
 		request.setHeader("type", DestinationType.QUEUE.name());
 
 		try {
@@ -38,7 +43,7 @@ public class TestSendJmsMessage extends BusTestBase {
 	public void noDestination() throws Exception {
 		String payload = "<dummy message=\"true\" />";
 		MessageBuilder<String> request = createRequestMessage(payload, BusTopic.QUEUE, BusAction.UPLOAD);
-		request.setHeader("connectionFactory", ConnectionFactoryFactoryMock.MOCK_CONNECTION_FACTORY_NAME);
+		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
 		request.setHeader("type", DestinationType.QUEUE.name());
 
 		try {
@@ -54,8 +59,8 @@ public class TestSendJmsMessage extends BusTestBase {
 	public void noDestinationType() throws Exception {
 		String payload = "<dummy message=\"true\" />";
 		MessageBuilder<String> request = createRequestMessage(payload, BusTopic.QUEUE, BusAction.UPLOAD);
-		request.setHeader("connectionFactory", ConnectionFactoryFactoryMock.MOCK_CONNECTION_FACTORY_NAME);
-		request.setHeader("destination", "dummyDestination");
+		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
+		request.setHeader("destination", DUMMY_DESTINATION);
 
 		try {
 			callAsyncGateway(request);
@@ -70,30 +75,40 @@ public class TestSendJmsMessage extends BusTestBase {
 	public void putInputStreamMessageOnQueue() throws Exception {
 		Message payload = new Message("<dummy message=\"true\" />");
 		MessageBuilder<InputStream> request = createRequestMessage(payload.asInputStream(), BusTopic.QUEUE, BusAction.UPLOAD);
-		request.setHeader("connectionFactory", ConnectionFactoryFactoryMock.MOCK_CONNECTION_FACTORY_NAME);
-		request.setHeader("destination", "dummyDestination");
+		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
+		request.setHeader("destination", DUMMY_DESTINATION);
 		request.setHeader("type", DestinationType.QUEUE.name());
 
-		assertEquals(payload.asString(), callSyncGateway(request).getPayload());
+		connectionFactoryFactory.addEchoReceiverOnQueue(DUMMY_DESTINATION);
 
-		javax.jms.Message jmsResponse = ConnectionFactoryFactoryMock.getMessageHandler().receive();
+		assertNotNull(callSyncGateway(request).getPayload());
+
+		javax.jms.Message jmsResponse = connectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
 		assertNotNull(jmsResponse, "expected a response");
-		assertTrue(jmsResponse instanceof javax.jms.TextMessage);
-		String responseMessage = ((javax.jms.TextMessage) jmsResponse).getText();
+		assertTrue(jmsResponse instanceof javax.jms.BytesMessage);
+		String responseMessage = readBytesMessageToString((BytesMessage) jmsResponse);
 		assertEquals(payload.asString(), responseMessage);
+	}
+
+	private static String readBytesMessageToString(final BytesMessage jmsResponse) throws JMSException {
+		byte[] data = new byte[(int)jmsResponse.getBodyLength()];
+		jmsResponse.readBytes(data);
+		return new String(data);
 	}
 
 	@Test
 	public void putMessageOnQueueSynchronous() throws Exception {
 		String payload = "<dummy message=\"true\" />";
 		MessageBuilder<String> request = createRequestMessage(payload, BusTopic.QUEUE, BusAction.UPLOAD);
-		request.setHeader("connectionFactory", ConnectionFactoryFactoryMock.MOCK_CONNECTION_FACTORY_NAME);
-		request.setHeader("destination", "dummyDestination");
+		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
+		request.setHeader("destination", DUMMY_DESTINATION);
 		request.setHeader("type", DestinationType.QUEUE.name());
+
+		connectionFactoryFactory.addEchoReceiverOnQueue(DUMMY_DESTINATION);
 
 		assertEquals(payload, callSyncGateway(request).getPayload());
 
-		javax.jms.Message jmsResponse = ConnectionFactoryFactoryMock.getMessageHandler().receive();
+		javax.jms.Message jmsResponse = connectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
 		assertNotNull(jmsResponse, "expected a response");
 		assertTrue(jmsResponse instanceof javax.jms.TextMessage);
 		String responseMessage = ((javax.jms.TextMessage) jmsResponse).getText();
@@ -104,13 +119,13 @@ public class TestSendJmsMessage extends BusTestBase {
 	public void putMessageOnQueueAsynchronous() throws Exception {
 		String payload = "<dummy message=\"true\" />";
 		MessageBuilder<String> request = createRequestMessage(payload, BusTopic.QUEUE, BusAction.UPLOAD);
-		request.setHeader("connectionFactory", ConnectionFactoryFactoryMock.MOCK_CONNECTION_FACTORY_NAME);
-		request.setHeader("destination", "dummyDestination");
+		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
+		request.setHeader("destination", DUMMY_DESTINATION);
 		request.setHeader("type", DestinationType.QUEUE.name());
 
 		callAsyncGateway(request);
 
-		javax.jms.Message jmsResponse = ConnectionFactoryFactoryMock.getMessageHandler().receive();
+		javax.jms.Message jmsResponse = connectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
 		assertNotNull(jmsResponse, "expected a response");
 		assertTrue(jmsResponse instanceof javax.jms.TextMessage);
 		String responseMessage = ((javax.jms.TextMessage) jmsResponse).getText();

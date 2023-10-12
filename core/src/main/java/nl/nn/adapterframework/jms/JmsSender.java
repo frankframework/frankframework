@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.jms;
 
+import static nl.nn.adapterframework.functional.FunctionalUtil.logThrowingMethod;
+import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -252,8 +255,8 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 					throw new IllegalStateException("unknown linkMethod [" + getLinkMethod() + "]");
 			}
 		}
-		if (log.isDebugEnabled())
-			log.debug("[" + getName() + "] start waiting for reply on [" + replyQueue + "] requestMsgId [" + msg.getJMSMessageID() + "] replyCorrelationId [" + replyCorrelationId + "] for [" + getReplyTimeout() + "] ms");
+		log.debug("[{}] start waiting for reply on [{}] requestMsgId [{}] replyCorrelationId [{}] for [{}] ms",
+				this::getName, logValue(replyQueue), logThrowingMethod(msg::getJMSMessageID), logValue(replyCorrelationId), this::getReplyTimeout);
 		MessageConsumer mc = getMessageConsumerForCorrelationId(s, replyQueue, replyCorrelationId);
 		try {
 			javax.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
