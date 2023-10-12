@@ -1,4 +1,4 @@
-ARG WAS_VERSION=9.0.5.7
+ARG WAS_VERSION=9.0.5.14
 FROM ibmcom/websphere-traditional:${WAS_VERSION} AS iaf-test-as-websphere
 #COPY --chown=was:root 001-was-config.props /work/config/
 COPY --chown=was:root src/scripts/PASSWORD /tmp/
