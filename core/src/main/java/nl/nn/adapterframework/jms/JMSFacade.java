@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.jms;
 
+import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -93,6 +95,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private final boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", false);
 	private final boolean useJms102 = AppConstants.getInstance().getBoolean("jms.useJms102", false);
 	private final MessageClass messageClassDefault = AppConstants.getInstance().getOrDefault(JMS_MESSAGE_CLASS_DEFAULT, MessageClass.AUTO);
+	private @Getter MessageClass messageClass = MessageClass.AUTO;
 
 	private @Getter boolean transacted = false;
 	private @Getter boolean jmsTransacted = false;
@@ -132,6 +135,16 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private @Getter int correlationIdMaxLength = -1;
 	private @Getter @Setter PlatformTransactionManager txManager;
 	private boolean skipCheckForTransactionManagerValidity=false;
+
+	/**
+	 * The JMS {@link javax.jms.Message} class for the outgoing message.
+	 * Currently supported are {@link MessageClass#TEXT} for JMS {@link TextMessage},
+	 * {@link MessageClass#BYTES} for JMS {@link BytesMessage}, or AUTO for auto-determination
+	 * based on whether the input {@link Message} is binary or character.
+	 */
+	public void setMessageClass(MessageClass messageClass) {
+		this.messageClass = messageClass;
+	}
 
 	public enum AcknowledgeMode implements DocumentedEnum {
 		@EnumLabel("none") NOT_SET(0),
@@ -384,27 +397,27 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		if (null == correlationID) {
 			return;
 		}
-		if (correlationIdMaxLength>=0) {
+		if (correlationIdMaxLength >= 0) {
 			int cidlen;
 			if (correlationID.startsWith(correlationIdToHexPrefix)) {
-				cidlen = correlationID.length()-correlationIdToHexPrefix.length();
+				cidlen = correlationID.length() - correlationIdToHexPrefix.length();
 			} else {
 				cidlen = correlationID.length();
 			}
-			if (cidlen>correlationIdMaxLength) {
-				correlationID = correlationIdToHexPrefix+correlationID.substring(correlationID.length()-correlationIdMaxLength);
-				if (log.isDebugEnabled()) log.debug("correlationId shortened to ["+correlationID+"]");
+			if (cidlen > correlationIdMaxLength) {
+				correlationID = correlationIdToHexPrefix + correlationID.substring(correlationID.length() - correlationIdMaxLength);
+				log.debug("correlationId shortened to [{}]", logValue(correlationID));
 			}
 		}
 		if (correlationIdToHex && correlationID.startsWith(correlationIdToHexPrefix)) {
 			StringBuilder hexCorrelationID = new StringBuilder(correlationIdToHexPrefix);
 			int i;
-			for (i=correlationIdToHexPrefix.length();i<correlationID.length();i++) {
-				int c=correlationID.charAt(i);
+			for (i = correlationIdToHexPrefix.length(); i < correlationID.length(); i++) {
+				int c = correlationID.charAt(i);
 				hexCorrelationID.append(Integer.toHexString(c));
 			}
 			correlationID = hexCorrelationID.toString();
-			if (log.isDebugEnabled()) log.debug("correlationId changed, based on hexidecimal values, to ["+correlationID+"]");
+			log.debug("correlationId changed, based on hexidecimal values, to [{}]", logValue(correlationID));
 		}
 		message.setJMSCorrelationID(correlationID);
 	}
@@ -621,7 +634,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException, null);
 	}
 	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws JMSException, SenderException, IOException {
-		javax.jms.Message msg = createMessage(session, correlationId, message);
+		javax.jms.Message msg = createMessage(session, correlationId, message, messageClass);
 		MessageProducer mp;
 		try {
 			if (useJms102()) {

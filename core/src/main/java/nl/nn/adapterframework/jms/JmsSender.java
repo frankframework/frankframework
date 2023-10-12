@@ -65,7 +65,6 @@ import nl.nn.adapterframework.util.StringUtil;
 public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	private @Getter String replyToName = null;
 	private @Getter DeliveryMode deliveryMode = DeliveryMode.NOT_SET;
-	private @Getter MessageClass messageClass = MessageClass.AUTO;
 	private @Getter String messageType = null;
 	private @Getter int priority=-1;
 	private @Getter boolean synchronous=false;
@@ -183,7 +182,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 			messageProducer = getMessageProducer(jmsSession, getDestination(pipeLineSession, pvl));
 
 			// create message to send
-			javax.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, messageClass);
+			javax.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, getMessageClass());
 			enhanceMessage(messageToSend, messageProducer, pvl, jmsSession);
 			Destination replyQueue = messageToSend.getJMSReplyTo();
 
@@ -383,16 +382,6 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	 */
 	public void setMessageType(String string) {
 		messageType = string;
-	}
-
-	/**
-	 * The JMS {@link javax.jms.Message} class for the outgoing message.
-	 * Currently supported are {@link MessageClass#TEXT} for JMS {@link javax.jms.TextMessage},
-	 * {@link MessageClass#BYTES} for JMS {@link javax.jms.BytesMessage}, or AUTO for auto-determination
-	 * based on whether the input {@link Message} is binary or character.
-	 */
-	public void setMessageClass(MessageClass messageClass) {
-		this.messageClass = messageClass;
 	}
 
 	/**

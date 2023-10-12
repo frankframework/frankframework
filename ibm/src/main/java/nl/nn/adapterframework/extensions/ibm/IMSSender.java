@@ -98,7 +98,7 @@ public class IMSSender extends MQSender {
 
 	@Nonnull
 	@Override
-	public javax.jms.Message createMessage(Session session, String correlationID, Message message) throws JMSException {
+	public javax.jms.Message createMessage(Session session, String correlationID, Message message, MessageClass messageClass) throws JMSException {
 		BytesMessage bytesMessage;
 		bytesMessage = session.createBytesMessage();
 
