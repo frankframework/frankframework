@@ -144,6 +144,9 @@
               title="Delete Selected Messages" (click)="deleteMessages()" class="btn btn-danger btn-sm"
               type="button"><i class="fa fa-times"></i> Delete Selected</button>
           </div>
+          <ng-template #storageListDt let-data="adtData" let-emitter="captureEvents" let-userData="userData">
+            <app-storage-list-dt [message]="data" [userData]="userData" (emitter)="emitter($event)"></app-storage-list-dt>
+          </ng-template>
           <!-- <table id="datatable" class="table table-striped table-hover" #datatable> -->
           <table id="datatable" class="table table-striped table-hover" datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger">
             <thead>

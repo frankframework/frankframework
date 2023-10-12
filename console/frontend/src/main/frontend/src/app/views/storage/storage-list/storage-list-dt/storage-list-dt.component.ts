@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Message, PartialMessage } from '../../storage.service';
 
 @Component({
   selector: 'app-storage-list-dt',
@@ -6,7 +7,8 @@ import { Component, Input, OnInit } from '@angular/core';
   styleUrls: ['./storage-list-dt.component.scss']
 })
 export class StorageListDtComponent implements OnInit {
-  @Input() userData: any;
+  @Input() message!: PartialMessage;
+  @Input() userData!: any;
 
   constructor() { }
 

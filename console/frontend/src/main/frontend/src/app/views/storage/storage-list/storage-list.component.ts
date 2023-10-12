@@ -19,6 +19,8 @@ import { Subject } from 'rxjs';
 })
 export class StorageListComponent implements OnInit, AfterViewInit {
   selectedMessages: boolean[] = [];
+  selectedMessagesSource = new Subject<boolean[]>();
+  selectedMessages$ = this.selectedMessagesSource.asObservable();
   targetStates: { name: string; }[] = [];
 
   truncated = false;
@@ -62,9 +64,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     { "name": "expiryDate", "data": "expiryDate", className: "date", orderable: false, defaultContent: "" },
     { "name": "label", "data": "label", orderable: false, defaultContent: "" },
   ];
-  dtOptions: ADTSettings = {
-    columns: this.initialColumns,
-  };
+  dtOptions: ADTSettings = {};
   dtTrigger = new Subject<ADTSettings>();
 
   // service bindings
@@ -98,6 +98,54 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     this.storageParams = storageParams;
 
     this.storageService.closeNotes();
+
+    this.dtOptions = {
+      searching: false,
+      scrollX: true,
+      // bAutoWidth: false,
+      autoWidth: false,
+      orderCellsTop: true,
+      serverSide: true,
+      processing: true,
+      paging: true,
+      lengthMenu: [10, 25, 50, 100, 500, 999],
+      order: [[3, 'asc']],
+      columns: this.initialColumns,
+      // sAjaxDataProp: 'messages',
+      ajax: (data: Record<any, any>, callback, settings) => {
+        const start = data["start"];
+        const length = data["length"];
+        const order = data["order"][0];
+        const direction = order.dir; // asc or desc
+
+
+        let url = this.storageService.baseUrl + "?max=" + length + "&skip=" + start + "&sort=" + direction;
+        const search = this.search;
+        const searchSession: Record<keyof typeof search, string> = {};
+        for (let column in search) {
+          let text = search[column as keyof typeof search];
+          if (text) {
+            url += "&" + column + "=" + text;
+            searchSession[column as keyof typeof search] = text;
+          }
+        }
+        this.Session.set('search', searchSession);
+        this.Api.Get(url, (response) => {
+          this.targetStates = response.targetStates;
+          callback({
+            draw: data["draw"],
+            recordsTotal: response.totalMessages,
+            data: response.messages,
+          });
+          this.searching = false;
+          this.clearSearchLadda = false;
+        }, (error) => {
+          this.searching = false;
+          this.clearSearchLadda = false;
+        });
+      }
+    };
+
     let searchSession = this.Session.get('search');
 
     this.search = {
@@ -135,8 +183,82 @@ export class StorageListComponent implements OnInit, AfterViewInit {
 
         },
         userData: {
-          test: "Test"
+          selectedMessages: this.selectedMessages$
         }
+      }
+    }
+
+    this.dtOptions = {
+      ...this.dtOptions,
+      /* stateSave: true,
+      stateSaveCallback: (settings, data: Record<any, any>) => {
+        data["columns"] = columns;
+        this.Session.set('DataTable' + this.storageParams.processState, data);
+      },
+      stateLoadCallback: (settings) => {
+        return this.Session.get('DataTable' + this.storageParams.processState);
+      }, */
+      /* drawCallback: (settings) => {
+        // reset visited rows with all draw actions e.g. pagination, filter, search
+        this.selectedMessages = [];
+        var table = $('#datatable').DataTable();
+        var data = table.rows({ page: 'current' }).data();
+        // visit rows in the current page once (draw event is fired after rowcallbacks)
+        for (var i = 0; i < data.length; i++) {
+          this.selectedMessages[data[i].id] = false;
+        }
+
+
+      },
+      rowCallback: (row, data: Record<any, any>) => {
+        var rowNode = $(row);// .children("td:first").addClass("m-b-xxs");
+        rowNode.children("td.date").each((_, element) => {
+          var time = $(this).text();
+          if (time)
+            $(element).attr({ "to-date": "", "time": time });
+        });
+        this.messagesData[data["id"]] = data;
+        this.selectedMessages[data["id"]] = false;
+        this.$compile(rowNode as JQuery<HTMLElement>)(this.$scope);
+      }, */
+      columns: columns,
+      /* columnDefs: [{
+        targets: 0,
+        render: (data, type, row) => {
+          if (type === 'display') {
+            data["messageId"] = data["id"];
+            for (let i in data) {
+              if (i == "id") continue;
+              var columnData = data[i];
+              if (typeof columnData == 'string' && columnData.length > 30 && this.truncated) {
+                data[i] = '<span title="' + columnData.replace(/"/g, '&quot;') + '">' + columnData.substr(0, 15) + ' &#8230; ' + columnData.substr(-15) + '</span>';
+              }
+            }
+          }
+          return data;
+        }
+      }], */
+      // sAjaxDataProp: 'messages',
+    };
+
+    const filterCookie = this.Cookies.get(this.storageParams.processState + "Filter");
+    if (filterCookie) {
+      for (let column of columns) {
+        if (column.name && filterCookie[column.name] === false) {
+          column.visible = false;
+        }
+      }
+      this.displayColumn = filterCookie;
+    } else {
+      this.displayColumn = {
+        id: true,
+        insertDate: true,
+        host: true,
+        originalId: true,
+        correlationId: true,
+        comment: true,
+        expiryDate: true,
+        label: true,
       }
     }
 
@@ -162,121 +284,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       ],
       data: []
     }; */
-
-    this.dtOptions = {
-      stateSave: true,
-      stateSaveCallback: (settings, data: Record<any, any>) => {
-        data["columns"] = columns;
-        this.Session.set('DataTable' + this.storageParams.processState, data);
-      },
-      stateLoadCallback: (settings) => {
-        return this.Session.get('DataTable' + this.storageParams.processState);
-      },
-      /* drawCallback: (settings) => {
-        // reset visited rows with all draw actions e.g. pagination, filter, search
-        this.selectedMessages = [];
-        var table = $('#datatable').DataTable();
-        var data = table.rows({ page: 'current' }).data();
-        // visit rows in the current page once (draw event is fired after rowcallbacks)
-        for (var i = 0; i < data.length; i++) {
-          this.selectedMessages[data[i].id] = false;
-        }
-
-
-      },
-      rowCallback: (row, data: Record<any, any>) => {
-        var rowNode = $(row);// .children("td:first").addClass("m-b-xxs");
-        rowNode.children("td.date").each((_, element) => {
-          var time = $(this).text();
-          if (time)
-            $(element).attr({ "to-date": "", "time": time });
-        });
-        this.messagesData[data["id"]] = data;
-        this.selectedMessages[data["id"]] = false;
-        this.$compile(rowNode as JQuery<HTMLElement>)(this.$scope);
-      }, */
-      searching: false,
-      scrollX: true,
-      // bAutoWidth: false,
-      autoWidth: false,
-      orderCellsTop: true,
-      serverSide: true,
-      processing: true,
-      paging: true,
-      lengthMenu: [10, 25, 50, 100, 500, 999],
-      order: [[3, 'asc']],
-      columns: columns,
-      /* columnDefs: [{
-        targets: 0,
-        render: (data, type, row) => {
-          if (type === 'display') {
-            data["messageId"] = data["id"];
-            for (let i in data) {
-              if (i == "id") continue;
-              var columnData = data[i];
-              if (typeof columnData == 'string' && columnData.length > 30 && this.truncated) {
-                data[i] = '<span title="' + columnData.replace(/"/g, '&quot;') + '">' + columnData.substr(0, 15) + ' &#8230; ' + columnData.substr(-15) + '</span>';
-              }
-            }
-          }
-          return data;
-        }
-      }], */
-      // sAjaxDataProp: 'messages',
-      ajax: (data: Record<any, any>, callback, settings) => {
-        const start = data["start"];
-        const length = data["length"];
-        const order = data["order"][0];
-        const direction = order.dir; // asc or desc
-
-
-        let url = this.storageService.baseUrl + "?max=" + length + "&skip=" + start + "&sort=" + direction;
-        const search = this.search;
-        const searchSession: Record<keyof typeof search, string> = {};
-        for (let column in search) {
-          let text = search[column as keyof typeof search];
-          if (text) {
-            url += "&" + column + "=" + text;
-            searchSession[column as keyof typeof search] = text;
-          }
-        }
-        this.Session.set('search', searchSession);
-        this.Api.Get(url, (response) => {
-          this.targetStates = response.targetStates;
-          callback({
-            draw: data["draw"],
-            recordsTotal: response.totalMessages,
-            data: response.messages,
-          });
-          this.searching = false;
-          this.clearSearchLadda = false;
-        }, (error) => {
-          this.searching = false;
-          this.clearSearchLadda = false;
-        });
-      }
-    };
-
-    const filterCookie = this.Cookies.get(this.storageParams.processState + "Filter");
-    if (filterCookie) {
-      for (let column of columns) {
-        if (column.name && filterCookie[column.name] === false) {
-          column.visible = false;
-        }
-      }
-      this.displayColumn = filterCookie;
-    } else {
-      this.displayColumn = {
-        id: true,
-        insertDate: true,
-        host: true,
-        originalId: true,
-        correlationId: true,
-        comment: true,
-        expiryDate: true,
-        label: true,
-      }
-    }
 
     this.dtTrigger.next(this.dtOptions);
   }
