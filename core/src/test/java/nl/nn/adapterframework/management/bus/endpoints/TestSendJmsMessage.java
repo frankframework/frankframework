@@ -8,9 +8,11 @@ import java.io.InputStream;
 
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
+import javax.jms.TextMessage;
 
 import org.junit.jupiter.api.Test;
 
+import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusException;
@@ -87,6 +89,26 @@ public class TestSendJmsMessage extends BusTestBase {
 		assertNotNull(jmsResponse, "expected a response");
 		assertTrue(jmsResponse instanceof javax.jms.BytesMessage);
 		String responseMessage = readBytesMessageToString((BytesMessage) jmsResponse);
+		assertEquals(payload.asString(), responseMessage);
+	}
+
+	@Test
+	public void putInputStreamMessageOnQueueSendTextMessage() throws Exception {
+		Message payload = new Message("<dummy message=\"true\" />");
+		MessageBuilder<InputStream> request = createRequestMessage(payload.asInputStream(), BusTopic.QUEUE, BusAction.UPLOAD);
+		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
+		request.setHeader("destination", DUMMY_DESTINATION);
+		request.setHeader("type", DestinationType.QUEUE.name());
+		request.setHeader("messageClass", JMSFacade.MessageClass.TEXT.name());
+
+		mockConnectionFactoryFactory.addEchoReceiverOnQueue(DUMMY_DESTINATION);
+
+		assertEquals(payload.asString(), callSyncGateway(request).getPayload());
+
+		javax.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
+		assertNotNull(jmsResponse, "expected a response");
+		assertTrue(jmsResponse instanceof javax.jms.TextMessage);
+		String responseMessage = ((TextMessage) jmsResponse).getText();
 		assertEquals(payload.asString(), responseMessage);
 	}
 
