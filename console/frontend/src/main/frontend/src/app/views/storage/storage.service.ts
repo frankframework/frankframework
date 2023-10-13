@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { type } from 'jquery';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { MiscService } from 'src/angularjs/app/services/misc.service';
 
@@ -22,13 +23,21 @@ export type PartialMessage = {
   deleting: boolean;
 }
 
+export type StorageParams = {
+  adapterName: string,
+  configuration: string,
+  processState: string,
+  storageSource: string,
+  storageSourceName: string,
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class StorageService {
   baseUrl = "";
   notes: { type: string, message: string }[] = [];
-  storageParams = {
+  storageParams: StorageParams = {
     adapterName: "",
     configuration: "",
     processState: "",
@@ -40,6 +49,13 @@ export class StorageService {
     private Api: ApiService,
     private Misc: MiscService
   ) { }
+
+  updateStorageParams(params: Partial<StorageParams>) {
+    this.storageParams = { ...this.storageParams, ...params };
+    this.baseUrl = "configurations/" + this.Misc.escapeURL(this.storageParams.configuration) +
+      "/adapters/" + this.Misc.escapeURL(this.storageParams.adapterName) + "/" + this.storageParams.storageSource +
+      "/" + this.Misc.escapeURL(this.storageParams.storageSourceName) + "/stores/" + this.storageParams.processState;
+  }
 
   addNote(type: string, message: string) {
     this.notes.push({ type: type, message: message });
