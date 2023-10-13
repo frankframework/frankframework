@@ -75,14 +75,14 @@ export class StorageViewComponent implements OnInit {
   }
 
   resendMessage(message: PartialMessage) {
-    this.storageService.doResendMessage(message, (messageId: string) => {
+    this.storageService.resendMessage(message, (messageId: string) => {
       //Go back to the storage list if successful
       this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
     });
   };
 
   deleteMessage(message: PartialMessage) {
-    this.storageService.doDeleteMessage(message, (messageId: string) => {
+    this.storageService.deleteMessage(message, (messageId: string) => {
       //Go back to the storage list if successful
       this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
     });

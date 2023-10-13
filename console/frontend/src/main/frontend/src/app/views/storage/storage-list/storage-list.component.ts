@@ -18,9 +18,6 @@ import { Subject } from 'rxjs';
   styleUrls: ['./storage-list.component.scss']
 })
 export class StorageListComponent implements OnInit, AfterViewInit {
-  selectedMessages: boolean[] = [];
-  selectedMessagesSource = new Subject<boolean[]>();
-  selectedMessages$ = this.selectedMessagesSource.asObservable();
   targetStates: { name: string; }[] = [];
 
   truncated = false;
@@ -36,7 +33,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   searching = false;
   clearSearchLadda = false;
   messagesDownloading = false;
-  messagesData: Record<string, any> = {};
   displayColumn = {
     id: true,
     insertDate: true,
@@ -55,7 +51,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       orderable: false,
     },
     { "name": "pos", "data": "position", orderable: false, defaultContent: "" },
-    { "name": "id", "data": "messageId", orderable: false, defaultContent: "" },
+    { "name": "id", "data": "id", orderable: false, defaultContent: "" },
     { "name": "insertDate", "data": "insertDate", className: "date", defaultContent: "" },
     { "name": "host", "data": "host", orderable: false, defaultContent: "" },
     { "name": "originalId", "data": "originalId", orderable: false, defaultContent: "" },
@@ -75,6 +71,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   // @ViewChild('datatable') dtElement!: ElementRef<HTMLTableElement>;
   @ViewChild(DataTableDirective) dataTable!: DataTableDirective;
   @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;
+  @ViewChild('dateDt') dateDt!: TemplateRef<string>;
 
   constructor(
     private Api: ApiService,
@@ -82,7 +79,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     private Cookies: CookiesService,
     private Session: SessionService,
     private SweetAlert: SweetAlertService,
-    private storageService: StorageService,
+    public storageService: StorageService,
     private appService: AppService
   ) { }
 
@@ -139,6 +136,9 @@ export class StorageListComponent implements OnInit, AfterViewInit {
           });
           this.searching = false;
           this.clearSearchLadda = false;
+          for (const message of response.messages){
+            this.storageService.selectedMessages[message.id] = false;
+          }
         }, (error) => {
           this.searching = false;
           this.clearSearchLadda = false;
@@ -172,18 +172,34 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    this.storageService.dtElement = this.dataTable;
     const columns: ADTColumns[] = [
       ...this.initialColumns,
     ];
 
-    columns[0]["ngTemplateRef"] = {
-      ref: this.storageListDt,
-      context: {
-        captureEvents: (event: {}) => {
+    for(const column of columns){
+      if(column.data === null){
+        column["ngTemplateRef"] = {
+          ref: this.storageListDt,
+          context: {
+            captureEvents: (event: {}) => {
 
-        },
-        userData: {
-          selectedMessages: this.selectedMessages$
+            },
+            userData: {
+              // not used
+            }
+          }
+        }
+      }
+      if(column.className === "date"){
+        column["ngTemplateRef"] = {
+          ref: this.dateDt,
+          context: {
+            captureEvents: () => {},
+            userData: {
+              column: column.data
+            },
+          }
         }
       }
     }
@@ -197,29 +213,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       },
       stateLoadCallback: (settings) => {
         return this.Session.get('DataTable' + this.storageParams.processState);
-      }, */
-      /* drawCallback: (settings) => {
-        // reset visited rows with all draw actions e.g. pagination, filter, search
-        this.selectedMessages = [];
-        var table = $('#datatable').DataTable();
-        var data = table.rows({ page: 'current' }).data();
-        // visit rows in the current page once (draw event is fired after rowcallbacks)
-        for (var i = 0; i < data.length; i++) {
-          this.selectedMessages[data[i].id] = false;
-        }
-
-
-      },
-      rowCallback: (row, data: Record<any, any>) => {
-        var rowNode = $(row);// .children("td:first").addClass("m-b-xxs");
-        rowNode.children("td.date").each((_, element) => {
-          var time = $(this).text();
-          if (time)
-            $(element).attr({ "to-date": "", "time": time });
-        });
-        this.messagesData[data["id"]] = data;
-        this.selectedMessages[data["id"]] = false;
-        this.$compile(rowNode as JQuery<HTMLElement>)(this.$scope);
       }, */
       columns: columns,
       /* columnDefs: [{
@@ -238,7 +231,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
           return data;
         }
       }], */
-      // sAjaxDataProp: 'messages',
     };
 
     const filterCookie = this.Cookies.get(this.storageParams.processState + "Filter");
@@ -294,10 +286,10 @@ export class StorageListComponent implements OnInit, AfterViewInit {
 
   getFormData() {
     let messageIds: string[] = [];
-    for (const i in this.selectedMessages) {
-      if (this.selectedMessages[i]) {
+    for (const i in this.storageService.selectedMessages) {
+      if (this.storageService.selectedMessages[i]) {
         messageIds.push(i);
-        this.selectedMessages[i] = false; //unset the messageId
+        this.storageService.selectedMessages[i] = false; //unset the messageId
       }
     }
 
@@ -340,14 +332,14 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   }
 
   selectAll() {
-    for (const i in this.selectedMessages) {
-      this.selectedMessages[i] = true;
+    for (const i in this.storageService.selectedMessages) {
+      this.storageService.selectedMessages[i] = true;
     }
   }
 
   unselectAll() {
-    for (const i in this.selectedMessages) {
-      this.selectedMessages[i] = false;
+    for (const i in this.storageService.selectedMessages) {
+      this.storageService.selectedMessages[i] = false;
     }
   }
 

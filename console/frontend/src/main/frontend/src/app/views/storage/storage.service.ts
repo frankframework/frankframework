@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import type { DataTableDirective } from 'angular-datatables';
 import { type } from 'jquery';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { MiscService } from 'src/angularjs/app/services/misc.service';
@@ -44,6 +45,8 @@ export class StorageService {
     storageSource: "",
     storageSourceName: "",
   }
+  selectedMessages: Record<string, boolean> = {};
+  dtElement?: DataTableDirective | null;
 
   constructor(
     private Api: ApiService,
@@ -69,7 +72,7 @@ export class StorageService {
     this.notes = [];
   }
 
-  doDeleteMessage(message: PartialMessage, callback: (messageId: string) => void) {
+  deleteMessage(message: PartialMessage, callback?: (messageId: string) => void) {
     message.deleting = true;
     let messageId = message.id;
     this.Api.Delete(this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId)), () => {
@@ -88,7 +91,7 @@ export class StorageService {
     window.open(this.Misc.getServerPath() + "iaf/api/" + this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId)) + "/download");
   };
 
-  doResendMessage(message: PartialMessage, callback?: (messageId: string) => void) {
+  resendMessage(message: PartialMessage, callback?: (messageId: string) => void) {
     message.resending = true;
     let messageId = message.id;
     this.Api.Put(this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId)), false, () => {
@@ -105,9 +108,9 @@ export class StorageService {
   }
 
   updateTable() {
-    throw new Error("Method not working yet.");
-    // var table = $('#datatable').DataTable();
-    // if (table)
-    //   table.draw();
+    this.dtElement?.dtInstance.then(table => table.draw());
+    for(const index in this.selectedMessages){
+      this.selectedMessages[index] = false;
+    }
   }
 }
