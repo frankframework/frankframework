@@ -46,9 +46,13 @@ export class StorageComponent implements OnInit {
       return;
     }
 
-    this.storageService.baseUrl = "configurations/" + this.Misc.escapeURL(this.configuration) +
-      "/adapters/" + this.Misc.escapeURL(this.adapterName) + "/" + this.storageSource +
-      "/" + this.Misc.escapeURL(this.storageSourceName) + "/stores/" + this.processState;
+    this.storageService.updateStorageParams({
+      adapterName: this.adapterName,
+      configuration: this.configuration,
+      processState: this.processState,
+      storageSource: this.storageSource,
+      storageSourceName: this.storageSourceName,
+    });
   }
 
 }

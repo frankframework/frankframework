@@ -1,4 +1,5 @@
-import { Component, ElementRef, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import type { ADTColumns, ADTSettings } from 'angular-datatables/src/models/settings';
 // import { DataTable } from "simple-datatables"
 import { StateService } from "@uirouter/angularjs";
 import { ApiService } from 'src/angularjs/app/services/api.service';
@@ -8,14 +9,18 @@ import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service
 import { StorageService } from '../storage.service';
 import { AppService } from 'src/angularjs/app/app.service';
 import { DataTableDirective } from 'angular-datatables';
+import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-storage-list',
   templateUrl: './storage-list.component.html',
   styleUrls: ['./storage-list.component.scss']
 })
-export class StorageListComponent implements OnInit {
+export class StorageListComponent implements OnInit, AfterViewInit {
   selectedMessages: boolean[] = [];
+  selectedMessagesSource = new Subject<boolean[]>();
+  selectedMessages$ = this.selectedMessagesSource.asObservable();
   targetStates: { name: string; }[] = [];
 
   truncated = false;
@@ -32,16 +37,7 @@ export class StorageListComponent implements OnInit {
   clearSearchLadda = false;
   messagesDownloading = false;
   messagesData: Record<string, any> = {};
-  displayColumn: {
-    id: boolean,
-    insertDate: boolean,
-    host: boolean,
-    originalId: boolean,
-    correlationId: boolean,
-    comment: boolean,
-    expiryDate: boolean,
-    label: boolean,
-  } = {
+  displayColumn = {
     id: true,
     insertDate: true,
     host: true,
@@ -51,7 +47,25 @@ export class StorageListComponent implements OnInit {
     expiryDate: true,
     label: true,
   }
-  dtOptions: DataTables.Settings = {};
+  initialColumns: ADTColumns[] = [
+    {
+      "data": null,
+      defaultContent: "",
+      className: "m-b-xxs storageActions",
+      orderable: false,
+    },
+    { "name": "pos", "data": "position", orderable: false, defaultContent: "" },
+    { "name": "id", "data": "messageId", orderable: false, defaultContent: "" },
+    { "name": "insertDate", "data": "insertDate", className: "date", defaultContent: "" },
+    { "name": "host", "data": "host", orderable: false, defaultContent: "" },
+    { "name": "originalId", "data": "originalId", orderable: false, defaultContent: "" },
+    { "name": "correlationId", "data": "correlationId", orderable: false, defaultContent: "" },
+    { "name": "comment", "data": "comment", orderable: false, defaultContent: "" },
+    { "name": "expiryDate", "data": "expiryDate", className: "date", orderable: false, defaultContent: "" },
+    { "name": "label", "data": "label", orderable: false, defaultContent: "" },
+  ];
+  dtOptions: ADTSettings = {};
+  dtTrigger = new Subject<ADTSettings>();
 
   // service bindings
   storageParams = this.storageService.storageParams;
@@ -60,6 +74,7 @@ export class StorageListComponent implements OnInit {
 
   // @ViewChild('datatable') dtElement!: ElementRef<HTMLTableElement>;
   @ViewChild(DataTableDirective) dataTable!: DataTableDirective;
+  @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;
 
   constructor(
     private Api: ApiService,
@@ -79,100 +94,12 @@ export class StorageListComponent implements OnInit {
       storageSource: this.$state.params["storageSource"],
       storageSourceName: this.$state.params["storageSourceName"],
     }
-    this.storageService.storageParams = storageParams;
+    this.storageService.updateStorageParams(storageParams);
     this.storageParams = storageParams;
 
     this.storageService.closeNotes();
-    let searchSession = this.Session.get('search');
-
-    this.search = {
-      id: searchSession ? searchSession['id'] : "",
-      startDate: searchSession ? searchSession["startDate"] : "",
-      endDate: searchSession ? searchSession["endDate"] : "",
-      host: searchSession ? searchSession["host"] : "",
-      messageId: searchSession ? searchSession["messageId"] : "",
-      correlationId: searchSession ? searchSession["correlationId"] : "",
-      comment: searchSession ? searchSession["comment"] : "",
-      label: searchSession ? searchSession["label"] : "",
-      message: searchSession ? searchSession["message"] : ""
-    };
-
-    const defaultContent = `<input icheck type="checkbox" ng-model="$ctrl.selectedMessages[message.id]"/>
-      <div ng-show="!$ctrl.selectedMessages[message.id]">
-        <a ui-sref="pages.storage.view({processState:$ctrl.processState,messageId: message.id })" class="btn btn-info btn-xs" type="button"><i class="fa fa-file-text-o"></i> View</a>
-        <button ng-if="::processState=='Error'" ladda="message.resending" data-style="slide-down" title="Resend Message" ng-click="$ctrl.resendMessage({message: message})" class="btn btn-warning btn-xs" type="button"><i class="fa fa-repeat"></i> Resend</button>
-        <button ng-if="::processState=='Error'" ladda="message.deleting" data-style="slide-down" title="Delete Message" ng-click="$ctrl.deleteMessage({message: message})" class="btn btn-danger btn-xs" type="button"><i class="fa fa-times"></i> Delete</button>
-        <button title="Download Message" ng-click="$ctrl.onDownloadMessage({messageId: message.id})" class="btn btn-info btn-xs" type="button"><i class="fa fa-arrow-circle-o-down"></i> Download</button>
-      </div>`;
-
-    const columns: DataTables.ColumnSettings[] = [
-      { "data": null, defaultContent, className: "m-b-xxs storageActions", orderable: false },
-      { "name": "pos", "data": "position", orderable: false, defaultContent: "" },
-      { "name": "id", "data": "messageId", orderable: false, defaultContent: "" },
-      { "name": "insertDate", "data": "insertDate", className: "date", defaultContent: "" },
-      { "name": "host", "data": "host", orderable: false, defaultContent: "" },
-      { "name": "originalId", "data": "originalId", orderable: false, defaultContent: "" },
-      { "name": "correlationId", "data": "correlationId", orderable: false, defaultContent: "" },
-      { "name": "comment", "data": "comment", orderable: false, defaultContent: "" },
-      { "name": "expiryDate", "data": "expiryDate", className: "date", orderable: false, defaultContent: "" },
-      { "name": "label", "data": "label", orderable: false, defaultContent: "" },
-    ];
-
-    // simple-datatables
-    /* const table = new DataTable(this.dtElement.nativeElement, {
-      // columns: columns,
-      searchable: false,
-      paging: true,
-    });
-
-    table.data = {
-      headings: [
-        { text: '', data: defaultContent, type: 'html' },
-        { text: "pos", data: "position", type: 'string'  },
-        { text: "id", data: "messageId", type: 'string' },
-        { text: "insertDate", data: "insertDate", type: 'string' },
-        { text: "host", data: "host", type: 'string' },
-        { text: "originalId", data: "originalId", type: 'string' },
-        { text: "correlationId", data: "correlationId", type: 'string' },
-        { text: "comment", data: "comment", type: 'string' },
-        { text: "expiryDate", data: "expiryDate", type: 'string' },
-        { text: "label", data: "label", type: 'string' },
-      ],
-      data: []
-    }; */
 
     this.dtOptions = {
-      stateSave: true,
-      stateSaveCallback: (settings, data: Record<any, any>) => {
-        data["columns"] = columns;
-        this.Session.set('DataTable' + this.storageParams.processState, data);
-      },
-      stateLoadCallback: (settings) => {
-        return this.Session.get('DataTable' + this.storageParams.processState);
-      },
-      /* drawCallback: (settings) => {
-        // reset visited rows with all draw actions e.g. pagination, filter, search
-        this.selectedMessages = [];
-        var table = $('#datatable').DataTable();
-        var data = table.rows({ page: 'current' }).data();
-        // visit rows in the current page once (draw event is fired after rowcallbacks)
-        for (var i = 0; i < data.length; i++) {
-          this.selectedMessages[data[i].id] = false;
-        }
-
-
-      },
-      rowCallback: (row, data: Record<any, any>) => {
-        var rowNode = $(row);// .children("td:first").addClass("m-b-xxs");
-        rowNode.children("td.date").each((_, element) => {
-          var time = $(this).text();
-          if (time)
-            $(element).attr({ "to-date": "", "time": time });
-        });
-        this.messagesData[data["id"]] = data;
-        this.selectedMessages[data["id"]] = false;
-        this.$compile(rowNode as JQuery<HTMLElement>)(this.$scope);
-      }, */
       searching: false,
       scrollX: true,
       // bAutoWidth: false,
@@ -183,34 +110,18 @@ export class StorageListComponent implements OnInit {
       paging: true,
       lengthMenu: [10, 25, 50, 100, 500, 999],
       order: [[3, 'asc']],
-      columns: columns,
-      /* columnDefs: [{
-        targets: 0,
-        render: (data, type, row) => {
-          if (type === 'display') {
-            data["messageId"] = data["id"];
-            for (let i in data) {
-              if (i == "id") continue;
-              var columnData = data[i];
-              if (typeof columnData == 'string' && columnData.length > 30 && this.truncated) {
-                data[i] = '<span title="' + columnData.replace(/"/g, '&quot;') + '">' + columnData.substr(0, 15) + ' &#8230; ' + columnData.substr(-15) + '</span>';
-              }
-            }
-          }
-          return data;
-        }
-      }], */
+      columns: this.initialColumns,
       // sAjaxDataProp: 'messages',
       ajax: (data: Record<any, any>, callback, settings) => {
-        var start = data["start"];
-        var length = data["length"];
-        var order = data["order"][0];
-        var direction = order.dir; // asc or desc
+        const start = data["start"];
+        const length = data["length"];
+        const order = data["order"][0];
+        const direction = order.dir; // asc or desc
 
 
-        var url = this.storageService.baseUrl + "?max=" + length + "&skip=" + start + "&sort=" + direction;
-        let search = this.search;
-        let searchSession: Record<keyof typeof search, string> = {};
+        let url = this.storageService.baseUrl + "?max=" + length + "&skip=" + start + "&sort=" + direction;
+        const search = this.search;
+        const searchSession: Record<keyof typeof search, string> = {};
         for (let column in search) {
           let text = search[column as keyof typeof search];
           if (text) {
@@ -235,7 +146,102 @@ export class StorageListComponent implements OnInit {
       }
     };
 
-    var filterCookie = this.Cookies.get(this.storageParams.processState + "Filter");
+    let searchSession = this.Session.get('search');
+
+    this.search = {
+      id: searchSession ? searchSession['id'] : "",
+      startDate: searchSession ? searchSession["startDate"] : "",
+      endDate: searchSession ? searchSession["endDate"] : "",
+      host: searchSession ? searchSession["host"] : "",
+      messageId: searchSession ? searchSession["messageId"] : "",
+      correlationId: searchSession ? searchSession["correlationId"] : "",
+      comment: searchSession ? searchSession["comment"] : "",
+      label: searchSession ? searchSession["label"] : "",
+      message: searchSession ? searchSession["message"] : ""
+    };
+
+    let search = this.search;
+    if (search) {
+      for (let column in search) {
+        let value = search[column as keyof typeof search];
+        if (value && value != "") {
+          this.filterBoxExpanded = true;
+        }
+      }
+    }
+  }
+
+  ngAfterViewInit() {
+    const columns: ADTColumns[] = [
+      ...this.initialColumns,
+    ];
+
+    columns[0]["ngTemplateRef"] = {
+      ref: this.storageListDt,
+      context: {
+        captureEvents: (event: {}) => {
+
+        },
+        userData: {
+          selectedMessages: this.selectedMessages$
+        }
+      }
+    }
+
+    this.dtOptions = {
+      ...this.dtOptions,
+      /* stateSave: true,
+      stateSaveCallback: (settings, data: Record<any, any>) => {
+        data["columns"] = columns;
+        this.Session.set('DataTable' + this.storageParams.processState, data);
+      },
+      stateLoadCallback: (settings) => {
+        return this.Session.get('DataTable' + this.storageParams.processState);
+      }, */
+      /* drawCallback: (settings) => {
+        // reset visited rows with all draw actions e.g. pagination, filter, search
+        this.selectedMessages = [];
+        var table = $('#datatable').DataTable();
+        var data = table.rows({ page: 'current' }).data();
+        // visit rows in the current page once (draw event is fired after rowcallbacks)
+        for (var i = 0; i < data.length; i++) {
+          this.selectedMessages[data[i].id] = false;
+        }
+
+
+      },
+      rowCallback: (row, data: Record<any, any>) => {
+        var rowNode = $(row);// .children("td:first").addClass("m-b-xxs");
+        rowNode.children("td.date").each((_, element) => {
+          var time = $(this).text();
+          if (time)
+            $(element).attr({ "to-date": "", "time": time });
+        });
+        this.messagesData[data["id"]] = data;
+        this.selectedMessages[data["id"]] = false;
+        this.$compile(rowNode as JQuery<HTMLElement>)(this.$scope);
+      }, */
+      columns: columns,
+      /* columnDefs: [{
+        targets: 0,
+        render: (data, type, row) => {
+          if (type === 'display') {
+            data["messageId"] = data["id"];
+            for (let i in data) {
+              if (i == "id") continue;
+              var columnData = data[i];
+              if (typeof columnData == 'string' && columnData.length > 30 && this.truncated) {
+                data[i] = '<span title="' + columnData.replace(/"/g, '&quot;') + '">' + columnData.substr(0, 15) + ' &#8230; ' + columnData.substr(-15) + '</span>';
+              }
+            }
+          }
+          return data;
+        }
+      }], */
+      // sAjaxDataProp: 'messages',
+    };
+
+    const filterCookie = this.Cookies.get(this.storageParams.processState + "Filter");
     if (filterCookie) {
       for (let column of columns) {
         if (column.name && filterCookie[column.name] === false) {
@@ -256,23 +262,38 @@ export class StorageListComponent implements OnInit {
       }
     }
 
-    var search = this.search;
-    if (search) {
-      for (let column in search) {
-        let value = search[column as keyof typeof search];
-        if (value && value != "") {
-          this.filterBoxExpanded = true;
-        }
-      }
-    }
+    // simple-datatables
+    /* const table = new DataTable(this.dtElement.nativeElement, {
+      // columns: columns,
+      searchable: false,
+      paging: true,
+    });
+
+    table.data = {
+      headings: [
+        { text: '', data: defaultContent, type: 'html' },
+        { text: "pos", data: "position", type: 'string'  },
+        { text: "id", data: "messageId", type: 'string' },
+        { text: "insertDate", data: "insertDate", type: 'string' },
+        { text: "host", data: "host", type: 'string' },
+        { text: "originalId", data: "originalId", type: 'string' },
+        { text: "correlationId", data: "correlationId", type: 'string' },
+        { text: "comment", data: "comment", type: 'string' },
+        { text: "expiryDate", data: "expiryDate", type: 'string' },
+        { text: "label", data: "label", type: 'string' },
+      ],
+      data: []
+    }; */
+
+    this.dtTrigger.next(this.dtOptions);
   }
 
-  getNotes(){
+  getNotes() {
     return this.storageService.notes;
   }
 
   getFormData() {
-    var messageIds: string[] = [];
+    let messageIds: string[] = [];
     for (const i in this.selectedMessages) {
       if (this.selectedMessages[i]) {
         messageIds.push(i);
@@ -280,7 +301,7 @@ export class StorageListComponent implements OnInit {
       }
     }
 
-    var fd = new FormData();
+    let fd = new FormData();
     fd.append("messageIds", messageIds as any);
     return fd;
   }
