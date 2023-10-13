@@ -82,7 +82,7 @@ import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.p
 import { FitHeightDirective } from './views/iframe/fit-height.directive';
 import { DataTablesModule } from 'angular-datatables';
 import { SecurityItemsComponent } from './views/security-items/security-items.component';
-// import { WebservicesComponent } from './views/webservices/webservices.component';
+import { WebservicesComponent } from './views/webservices/webservices.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -124,7 +124,7 @@ appModule
   // .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
   .directive('storageList', downgradeComponent({ component: StorageListComponent }) as angular.IDirectiveFactory)
   .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory)
-  // .directive('webservices', downgradeComponent({ component: WebservicesComponent }) as angular.IDirectiveFactory);
+  .directive('webservices', downgradeComponent({ component: WebservicesComponent }) as angular.IDirectiveFactory);
 
 const nestedRouterStates: NgHybridStateDeclaration[] = [
   {
@@ -178,7 +178,7 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     StorageViewComponent,
     AdapterstatisticsComponent,
     SecurityItemsComponent,
-    // WebservicesComponent,
+    WebservicesComponent,
 
     // pipes
     ConfigurationFilterPipe,
