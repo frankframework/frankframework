@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
@@ -52,14 +53,13 @@ public class QueueCreator {
 
 		List<String> manuallyCreatedQueues = new ArrayList<>();
 
-		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
 			// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
-			DirectoryClassLoader directoryClassLoader = new DirectoryClassLoader(originalClassLoader);
+			DirectoryClassLoader directoryClassLoader = new RelativePathDirectoryClassLoader();
 			directoryClassLoader.setDirectory(scenarioDirectory);
+			System.err.println(scenarioDirectory);
 			directoryClassLoader.setBasePath(".");
 			directoryClassLoader.configure(null, "TestTool");
-			Thread.currentThread().setContextClassLoader(directoryClassLoader);
 
 			Iterator iterator = properties.keySet().iterator();
 			while (iterator.hasNext()) {
@@ -92,7 +92,9 @@ public class QueueCreator {
 								errorMessage("properties "+queueName+".requestTimeOut/"+queueName+".responseTimeOut have been replaced with "+queueName+".timeout", writers);
 							}
 
-							Queue queue = QueueWrapper.createQueue(className, queueProperties, parameterTimeout, correlationId);
+							IConfigurable configurable = QueueUtils.createInstance(directoryClassLoader, className);
+							Queue queue = QueueWrapper.create(configurable, queueProperties, parameterTimeout, correlationId);
+
 							queue.configure();
 							queue.open();
 							queues.put(queueName, queue);
@@ -101,6 +103,7 @@ public class QueueCreator {
 					}
 				}
 			}
+
 			createJmsSenders(queues, jmsSenders, properties, writers, ibisContext, correlationId);
 			createJmsListeners(queues, jmsListeners, properties, writers, ibisContext, correlationId, parameterTimeout);
 			createFixedQuerySenders(queues, jdbcFixedQuerySenders, properties, writers, ibisContext, correlationId);
@@ -108,10 +111,6 @@ public class QueueCreator {
 			closeQueues(queues, properties, writers, null);
 			queues = null;
 			errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e, writers);
-		} finally {
-			if (originalClassLoader != null) {
-				Thread.currentThread().setContextClassLoader(originalClassLoader);
-			}
 		}
 
 		return queues;
