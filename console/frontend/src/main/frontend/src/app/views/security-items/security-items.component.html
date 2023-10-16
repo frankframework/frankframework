@@ -1,0 +1,211 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="m-b-md float-e-margins">
+        <div class="col-md-12 m-t-md table-responsive" *ngIf="securityRoles">
+          <div class="ibox-title">
+            <h4>Security Role Bindings</h4>
+          </div>
+          <div class="ibox-content">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Access</th>
+                  <th>specialSubjects</th>
+                  <th>Groups</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let roleName, let role of securityRoles">
+                  <td>{{role["role-name"]}}</td>
+                  <td><i [ngClass]="role.allowed ? 'fa-check-square' : 'fa-times-circle'"></i></td>
+                  <td>
+                    <p *ngFor="let subject of role.specialSubjects">{{subject}}</p>
+                  </td>
+                  <td>
+                    <p *ngFor="let group of role.groups">{{group}}</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-5 m-t-md table-responsive" *ngIf="serverProps">
+          <div class="ibox-title">
+            <h4>Transaction Service</h4>
+          </div>
+          <div class="ibox-content">
+            <table class="table">
+              <tbody>
+                <tr>
+                  <td
+                    title="The default maximum time allowed for a transaction that is started on this server before the transaction service initiates timeout completion. Any transaction that does not begin completion processing before this timeout occurs is rolled back. This timeout is used only if the application component does not set its own transaction timeout. The upper-limit of this timeout is constrained by the maximum transaction timeout. For example, if you set a value of 500 for the total transaction lifetime timeout, and a value of 300 for the maximum transaction timeout, transactions will time out after 300 seconds.">
+                    Total transaction lifetime timeout (in seconds)</td>
+                  <td>{{serverProps.totalTransactionLifetimeTimeout}}</td>
+                </tr>
+                <tr>
+                  <td
+                    title="Specifies the upper limit of the transaction timeout for transactions that run in this server. This value should be greater than or equal to the total transaction lifetime timeout and greater than or equal to the application component timeout. If the maximum transaction timeout is set to a value less than either the total transaction lifetime timeout or the application component timeout, application component transactions that may require more time will timeout when the maximum transaction timeout is reached.">
+                    Maximum transaction timeout (in seconds)</td>
+                  <td>{{serverProps.maximumTransactionTimeout}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-5 m-t-md table-responsive" *ngIf="authEntries.length > 0">
+          <div class="ibox-title">
+            <h4>Used Authentication Entries</h4>
+          </div>
+          <div class="ibox-content">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Alias</th>
+                  <th>Username</th>
+                  <th>Password</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let alias of authEntries">
+                  <td>{{alias.alias}}</td>
+                  <td>{{alias.username}}</td>
+                  <td>{{alias.password}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-12 col-lg-6 m-t-md table-responsive" *ngIf="xmlComponents">
+          <div class="ibox-title">
+            <h4>XML Components</h4>
+          </div>
+          <div class="ibox-content">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Version</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of xmlComponents | keyvalue">
+                  <td>{{item.key}}</td>
+                  <td>{{item.value}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-4 m-t-md table-responsive" *ngIf="sapSystems.length > 0">
+          <div class="ibox-title">
+            <h4>Used Sap Systems</h4>
+          </div>
+          <div class="ibox-content">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Info</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let sap of sapSystems">
+                  <td>{{sap.name}}</td>
+                  <td>{{sap.info}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-4 m-t-md table-responsive" *ngIf="certificates.length > 0">
+          <div class="ibox-title">
+            <h4>Used Certificates</h4>
+          </div>
+          <div class="ibox-content">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Adapter</th>
+                  <th>Pipe</th>
+                  <th>Certificate</th>
+                  <th>Info</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let cert in certificates">
+                  <td>{{cert.adapter}}</td>
+                  <td>{{cert.pipe}}</td>
+                  <td>{{cert.certificate.name}}</td>
+                  <td>{{cert.certificate}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-12 m-t-md table-responsive" *ngIf="jmsRealms.length > 0">
+          <div class="ibox-title">
+            <h4>Used JmsRealms</h4>
+          </div>
+          <div class="ibox-content">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Datasource</th>
+                  <th>QueueConnectionFactory</th>
+                  <th>TopicConnectionFactory</th>
+                  <th>Info</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let realm of jmsRealms">
+                  <tr>
+                    <td rowspan="2">{{realm.name}}</td>
+                    <td rowspan="2">{{realm.datasourceName}}</td>
+                    <td rowspan="2">{{realm.queueConnectionFactoryName}}</td>
+                    <td rowspan="2">{{realm.topicConnectionFactoryName}}</td>
+                    <td>{{realm.info}}</td>
+                  </tr>
+                  <tr>
+                    <td>{{realm.connectionPoolProperties}}</td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-12 m-t-md table-responsive" *ngIf="datasources.length > 0">
+          <div class="ibox-title">
+            <h4>Used DataSources</h4>
+          </div>
+          <div class="ibox-content">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Datasource</th>
+                  <th>Info</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let datasource of datasources">
+                  <tr>
+                    <td rowspan="2">{{datasource.datasourceName}}</td>
+                    <td>{{datasource.info}}</td>
+                  </tr>
+                  <tr>
+                    <td>{{datasource.connectionPoolProperties}}</td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

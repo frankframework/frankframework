@@ -43,5 +43,5 @@ import './app/views/status/flow/flow-modal/flow-modal.component';
 // import './app/views/storage/storage-view/storage-view.component';
 import './app/views/test-pipeline/test-pipeline.component';
 import './app/views/test-service-listener/test-service-listener.component';
-import './app/views/webservices/webservices.component';
+// import './app/views/webservices/webservices.component';
 
