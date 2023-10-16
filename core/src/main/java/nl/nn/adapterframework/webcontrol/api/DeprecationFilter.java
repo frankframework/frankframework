@@ -32,8 +32,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 
-import lombok.Setter;
-
 /**
  * Manages deprecations per resource/collection.
  * 
@@ -52,7 +50,7 @@ public class DeprecationFilter implements ContainerRequestFilter, EnvironmentAwa
 	private static final Response SERVER_ERROR = Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 
 	private Logger log = LogManager.getLogger(this);
-	private @Setter Environment environment;
+	private boolean allowDeprecatedEndpoints = false;
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) {
@@ -64,11 +62,9 @@ public class DeprecationFilter implements ContainerRequestFilter, EnvironmentAwa
 			return;
 		}
 
-		if(method.isAnnotationPresent(Deprecated.class)) {
-			if(!allowDeprecatedEndpoints()) {
-				requestContext.abortWith(DEPRECATION_ERROR);
-			}
+		if(!allowDeprecatedEndpoints && method.isAnnotationPresent(Deprecated.class)) {
 			log.warn("endpoint [{}] has been deprecated, set property [{}=true] to restore functionality", getFullPath(method), ALLOW_DEPRECATED_ENDPOINTS_KEY);
+			requestContext.abortWith(DEPRECATION_ERROR);
 		}
 	}
 
@@ -92,13 +88,8 @@ public class DeprecationFilter implements ContainerRequestFilter, EnvironmentAwa
 		return pathToUse.toString();
 	}
 
-	/** Get a property from the Spring Environment. */
-	@SuppressWarnings("unchecked")
-	private <T> T getProperty(String key, T defaultValue) {
-		return environment.getProperty(key, (Class<T>) defaultValue.getClass(), defaultValue);
-	}
-
-	private boolean allowDeprecatedEndpoints() {
-		return getProperty(ALLOW_DEPRECATED_ENDPOINTS_KEY, false);
+	@Override
+	public void setEnvironment(Environment environment) {
+		allowDeprecatedEndpoints = environment.getProperty(ALLOW_DEPRECATED_ENDPOINTS_KEY, boolean.class, false);
 	}
 }

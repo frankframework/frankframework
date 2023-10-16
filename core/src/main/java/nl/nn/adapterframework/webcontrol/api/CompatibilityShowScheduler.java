@@ -38,7 +38,7 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
  * @author	Niels Meijer
  */
 @Path("/")
-public final class CompatibilityShowScheduler extends ShowScheduler {
+public final class CompatibilityShowScheduler extends ShowSchedulerBase {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -47,7 +47,7 @@ public final class CompatibilityShowScheduler extends ShowScheduler {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response getScheduleOld(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName) {
-		return getSchedule(jobName, groupName);
+		return findSchedule(jobName, groupName);
 	}
 
 	@PUT
@@ -58,7 +58,7 @@ public final class CompatibilityShowScheduler extends ShowScheduler {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response triggerOld(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName, Map<String, Object> json) {
-		return trigger(jobName, groupName, json);
+		return updateTrigger(jobName, groupName, json);
 	}
 
 
@@ -81,7 +81,7 @@ public final class CompatibilityShowScheduler extends ShowScheduler {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response createScheduleInJobGroupOld(@PathParam("groupName") String groupName, MultipartBody input) {
-		return createScheduleInJobGroup(groupName, input);
+		return createSchedule(groupName, input);
 	}
 
 	@DELETE
@@ -91,6 +91,6 @@ public final class CompatibilityShowScheduler extends ShowScheduler {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response deleteSchedulesOld(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName) {
-		return deleteSchedules(jobName, groupName);
+		return deleteSchedule(jobName, groupName);
 	}
 }
