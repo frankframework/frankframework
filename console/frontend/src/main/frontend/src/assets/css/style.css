@@ -77,7 +77,7 @@ h5 {
   border-color: #2f4050;
 }
 .navbar-top-links li {
-  display: inline-block;
+  display: inline-block!important;
   vertical-align: middle;
 }
 .navbar-top-links li:last-child {
@@ -117,7 +117,7 @@ h5 {
   font-weight: 600;
 }
 .navbar-top-links .dropdown-menu li {
-  display: block;
+  display: block!important;
 }
 .navbar-top-links .dropdown-menu li:last-child {
   margin-right: 0;
