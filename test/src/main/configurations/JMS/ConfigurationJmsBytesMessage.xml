@@ -1,0 +1,58 @@
+<module>
+	<adapter name="JmsBytesMessageTest" description="Test the functioning of the JmsSender with binary message and listener embedded response sender"
+			 active="${active.jms}">
+		<receiver >
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+					  serviceName="ibis4test-JmsBytesSender" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+
+			<pipe name="Load ZIP File"
+				  className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				  action="read"
+				  filename="/configurations/JMS/BinaryData/test-data.zip">
+
+			</pipe>
+
+			<pipe name="Send Binary Message"
+				  className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jms.JmsSender" messageClass="BYTES"
+						jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true"
+						replyToName="${jms.destination.i4testiaf_out}">
+					<param name="SOURCE" value="${hostname}_I4TIAF_bytes1" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="Extract From ZIP File"
+				  className="nl.nn.adapterframework.compression.ZipIteratorPipe"
+				  charset="ISO-8859-1" getInputFromSessionKey="originalMessage"
+			>
+				<sender className="nl.nn.adapterframework.senders.FixedResultSender"
+					returnString="${zipdata}"/>
+				<forward name="success" path="READY"/>
+			</pipe>
+
+		</pipeline>
+	</adapter>
+
+	<adapter name="JmsBinaryRRListener" description="Test the functioning of the JmsListener (RR) with BytesMessage"
+			 active="${active.jms}">
+		<receiver name="JmsRRListener for BytesMessage">
+			<listener className="nl.nn.adapterframework.jms.JmsListener" messageClass="BYTES"
+					  destinationName="${jms.destination.i4testiaf_in}" useReplyTo="true" jmsRealm="qcf"
+					  forceMessageIdAsCorrelationId="true" messageSelector="SOURCE='${hostname}_I4TIAF_bytes1'">
+			</listener>
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>
