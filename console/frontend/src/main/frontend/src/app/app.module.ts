@@ -121,7 +121,7 @@ appModule
   // .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
   .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory)
   .directive('adapterstatistics', downgradeComponent({ component: AdapterstatisticsComponent }) as angular.IDirectiveFactory)
-  // .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
+  .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
   .directive('storageList', downgradeComponent({ component: StorageListComponent }) as angular.IDirectiveFactory)
   .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory);
 

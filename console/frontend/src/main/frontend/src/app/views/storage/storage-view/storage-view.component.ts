@@ -39,16 +39,6 @@ export class StorageViewComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    const storageParams = {
-      adapterName: this.$state.params["adapter"],
-      configuration: this.$state.params["configuration"],
-      processState: this.$state.params["processState"],
-      storageSource: this.$state.params["storageSource"],
-      storageSourceName: this.$state.params["storageSourceName"],
-    }
-    this.storageService.storageParams = storageParams;
-    this.storageParams = storageParams;
-
     this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List > View Message " + this.$state.params["messageId"];
     this.storageService.closeNotes();
 

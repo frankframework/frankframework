@@ -20,17 +20,17 @@
       <span>Errorlog might contain records. This is unknown because errorStore.count.show is not set to true</span>
     </li>
     <ng-template ngFor let-alert [ngForOf]="alerts">
-      <li class="list-group-item" [ngClass]="['alert-' + alert.type]"
+      <li class="list-group-item" class="alert-{{alert.type}}"
         *ngIf="alert.configuration == '' || selectedConfiguration==alert.configuration || selectedConfiguration=='All'">
         <div
-          [ngClass]="{pointer: alert.link}" `
-          uiSref="pages.configuration"
+          [ngClass]="{pointer: alert.link ? true : false}"
+          [uiSref]="alert.link ? 'pages.configuration' : ''"
           [uiParams]="alert.link"
-          [attr.disabled]="!alert.link ? true : null"
         >
-          <i class="m-r-md fa" [ngClass]="['fa-' + ((alert.type=='warning') ? 'warning' : 'times')]"></i>
-          <span *ngIf="selectedConfiguration=='All' && alert.configuration!=''">Configuration
-            [{{alert.configuration}}] - </span>
+          <i class="m-r-md fa" class="fa-{{(alert.type=='warning') ? 'warning' : 'times'}}"></i>
+          <span
+            *ngIf="selectedConfiguration=='All' && alert.configuration!=''"
+          >Configuration [{{alert.configuration}}] - </span>
           <span>{{alert.message}}</span>
         </div>
       </li>
@@ -177,12 +177,24 @@
             <div class="ibox-left">
               <span style="font-weight:700;margin-right:4px;">Filter:</span>
               <div class="btn-group state">
-                <label class="btn btn-primary btn-outline btn-xs started" name="started" [(ngModel)]="filter.started"
-                  (click)="applyFilter(filter)" uib-btn-checkbox>Started</label>
-                <label class="btn btn-danger btn-outline btn-xs stopped" name="stopped" [(ngModel)]="filter.stopped"
-                  (click)="applyFilter(filter)" uib-btn-checkbox>Stopped</label>
-                <label class="btn btn-warning btn-outline btn-xs warning" name="warning" [(ngModel)]="filter.warning"
-                  (click)="applyFilter(filter)" uib-btn-checkbox>Warning</label>
+                <!-- [(ngModel)]="filter.started" -->
+                <label
+                  class="btn btn-primary btn-outline btn-xs started"
+                  (click)="applyFilter(filter)"
+                  uib-btn-checkbox
+                >Started</label>
+                <!-- [(ngModel)]="filter.stopped" -->
+                <label
+                  class="btn btn-danger btn-outline btn-xs stopped"
+                  (click)="applyFilter(filter)"
+                  uib-btn-checkbox
+                >Stopped</label>
+                <!-- [(ngModel)]="filter.warning" -->
+                <label
+                  class="btn btn-warning btn-outline btn-xs warning"
+                  (click)="applyFilter(filter)"
+                  uib-btn-checkbox
+                >Warning</label>
               </div>
             </div>
             <div class="ibox-stretch">

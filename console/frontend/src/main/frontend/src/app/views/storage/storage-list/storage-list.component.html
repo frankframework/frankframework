@@ -74,7 +74,7 @@
                 </tr>
                 <tr>
                   <th>Expires</th>
-                  <td><input icheck type="checkbox" class="full-width" (change)="updateFilter('expiryDate')"
+                  <td><input icheck type="checkbox" (change)="updateFilter('expiryDate')"
                       [(ngModel)]="displayColumn.expiryDate" /></td>
                   <td>&nbsp;</td>
                 </tr>
@@ -87,7 +87,7 @@
                 <tr>
                   <th>Message</th>
                   <td>&nbsp;</td>
-                  <td><input type="text" class="full-width"[(ngModel)]="search['message']" /></td>
+                  <td><input type="text" class="full-width" [(ngModel)]="search['message']" /></td>
                 </tr>
                 <tr>
                   <th>&nbsp;</th>

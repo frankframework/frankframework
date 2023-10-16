@@ -45,20 +45,20 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   }
   initialColumns: ADTColumns[] = [
     {
-      "data": null,
+      data: null,
       defaultContent: "",
       className: "m-b-xxs storageActions",
       orderable: false,
     },
-    { "name": "pos", "data": "position", orderable: false, defaultContent: "" },
-    { "name": "id", "data": "id", orderable: false, defaultContent: "" },
-    { "name": "insertDate", "data": "insertDate", className: "date", defaultContent: "" },
-    { "name": "host", "data": "host", orderable: false, defaultContent: "" },
-    { "name": "originalId", "data": "originalId", orderable: false, defaultContent: "" },
-    { "name": "correlationId", "data": "correlationId", orderable: false, defaultContent: "" },
-    { "name": "comment", "data": "comment", orderable: false, defaultContent: "" },
-    { "name": "expiryDate", "data": "expiryDate", className: "date", orderable: false, defaultContent: "" },
-    { "name": "label", "data": "label", orderable: false, defaultContent: "" },
+    { name: "pos", data: "position", orderable: false, defaultContent: "" },
+    { name: "id", data: "id", orderable: false, defaultContent: "" },
+    { name: "insertDate", data: "insertDate", className: "date", defaultContent: "" },
+    { name: "host", data: "host", orderable: false, defaultContent: "" },
+    { name: "originalId", data: "originalId", orderable: false, defaultContent: "" },
+    { name: "correlationId", data: "correlationId", orderable: false, defaultContent: "" },
+    { name: "comment", data: "comment", orderable: false, defaultContent: "" },
+    { name: "expiryDate", data: "expiryDate", className: "date", orderable: false, defaultContent: "" },
+    { name: "label", data: "label", orderable: false, defaultContent: "" },
   ];
   dtOptions: ADTSettings = {};
   dtTrigger = new Subject<ADTSettings>();
@@ -84,16 +84,6 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit() {
-    const storageParams = {
-      adapterName: this.$state.params["adapter"],
-      configuration: this.$state.params["configuration"],
-      processState: this.$state.params["processState"],
-      storageSource: this.$state.params["storageSource"],
-      storageSourceName: this.$state.params["storageSourceName"],
-    }
-    this.storageService.updateStorageParams(storageParams);
-    this.storageParams = storageParams;
-
     this.storageService.closeNotes();
 
     this.dtOptions = {
@@ -132,6 +122,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
           callback({
             draw: data["draw"],
             recordsTotal: response.totalMessages,
+            recordsFiltered: response.recordsFiltered,
             data: response.messages,
           });
           this.searching = false;
@@ -177,28 +168,20 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       ...this.initialColumns,
     ];
 
-    for(const column of columns){
+    for (const column of columns) {
       if(column.data === null){
         column["ngTemplateRef"] = {
           ref: this.storageListDt,
-          context: {
-            captureEvents: (event: {}) => {
-
-            },
-            userData: {
-              // not used
-            }
-          }
         }
       }
       if(column.className === "date"){
         column["ngTemplateRef"] = {
           ref: this.dateDt,
           context: {
-            captureEvents: () => {},
+            captureEvents: () => {}, // required for some weird reason
             userData: {
               column: column.data
-            },
+            }
           }
         }
       }
@@ -206,31 +189,33 @@ export class StorageListComponent implements OnInit, AfterViewInit {
 
     this.dtOptions = {
       ...this.dtOptions,
-      /* stateSave: true,
+      stateSave: true,
       stateSaveCallback: (settings, data: Record<any, any>) => {
-        data["columns"] = columns;
         this.Session.set('DataTable' + this.storageParams.processState, data);
       },
       stateLoadCallback: (settings) => {
         return this.Session.get('DataTable' + this.storageParams.processState);
-      }, */
+      },
       columns: columns,
-      /* columnDefs: [{
+      columnDefs: [{
         targets: 0,
+        // Targets is index 0 but render function goes over every column
         render: (data, type, row) => {
-          if (type === 'display') {
-            data["messageId"] = data["id"];
-            for (let i in data) {
-              if (i == "id") continue;
-              var columnData = data[i];
-              if (typeof columnData == 'string' && columnData.length > 30 && this.truncated) {
-                data[i] = '<span title="' + columnData.replace(/"/g, '&quot;') + '">' + columnData.substr(0, 15) + ' &#8230; ' + columnData.substr(-15) + '</span>';
+          if (type === 'display' && this.truncated) {
+            for (let index in data) {
+              if (index == "id") continue;
+              const columnData = data[index];
+              if (typeof columnData == 'string' && columnData.length > 30) {
+                const title = columnData.replaceAll('"', '&quot;');
+                const leftTrancate = columnData.substring(0, 15);
+                const rightTrancate = columnData.slice(-15);
+                data[index] = `<span title="${title}">${leftTrancate}&#8230;${rightTrancate}</span>`;
               }
             }
           }
           return data;
         }
-      }], */
+      }],
     };
 
     const filterCookie = this.Cookies.get(this.storageParams.processState + "Filter");
