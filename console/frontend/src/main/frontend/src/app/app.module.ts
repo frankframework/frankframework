@@ -84,6 +84,7 @@ import { DataTablesModule } from 'angular-datatables';
 import { SecurityItemsComponent } from './views/security-items/security-items.component';
 // import { WebservicesComponent } from './views/webservices/webservices.component';
 import { StorageListDtComponent } from './views/storage/storage-list/storage-list-dt/storage-list-dt.component';
+import { SideNavigationDirective } from './components/pages/side-navigation.directive';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -178,6 +179,7 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     StorageListComponent,
     StorageViewComponent,
     AdapterstatisticsComponent,
+    StorageListDtComponent,
     SecurityItemsComponent,
     // WebservicesComponent,
 
@@ -189,14 +191,14 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     TruncatePipe,
     VariablesFilterPipe,
     FormatStatisticsPipe,
+    FormatStatKeysPipe,
 
     // directives
     ToDateDirective,
     TimeSinceDirective,
     QuickSubmitFormDirective,
-    FormatStatKeysPipe,
     FitHeightDirective,
-    StorageListDtComponent,
+    SideNavigationDirective,
   ],
   imports: [
     BrowserModule,

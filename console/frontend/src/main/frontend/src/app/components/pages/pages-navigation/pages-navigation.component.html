@@ -1,6 +1,6 @@
 <nav class="navbar-default navbar-static-side" role="navigation">
   <div class="sidebar-collapse">
-    <ul side-navigation class="nav metismenu" id="side-menu">
+    <ul appSideNavigation class="nav metismenu" id="side-menu">
       <li class="nav-header">
 
         <div class="profile-element">
@@ -71,7 +71,8 @@
         <a uiSref="pages.monitors"><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a>
       </li>
       <li uiSrefActive="active">
-        <a uiSref="pages.environment_variables"><i class="fa fa-language"></i> <span class="nav-label">Environment Variables</span></a>
+        <a uiSref="pages.environment_variables"><i class="fa fa-language"></i> <span class="nav-label">Environment
+            Variables</span></a>
       </li>
       <li class="nav-group">
         <a href=""><i class="fa fa-sitemap"></i> <span class="nav-label">Overview</span> <span
@@ -94,8 +95,8 @@
             class="nav-label">Frank!Doc</span></a>
       </li>
       <li>
-        <a (click)="openFeedback()" class="pointer"><i class="fa fa-commenting-o"></i> <span
-            class="nav-label">Send Feedback!</span></a>
+        <a (click)="openFeedback()" class="pointer"><i class="fa fa-commenting-o"></i> <span class="nav-label">Send
+            Feedback!</span></a>
       </li>
       <li>
         <a target="_blank" href="https://github.com/ibissource/iaf" alt="github.com/ibissource/iaf"><i
