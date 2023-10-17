@@ -13,7 +13,6 @@
 	<packaging>war</packaging>
 
 	<properties>
-		<spring-security.version>5.8.8</spring-security.version>
 		<spring.boot.version>2.7.16</spring.boot.version>
 		<m2eclipse.wtp.contextRoot>iaf-console</m2eclipse.wtp.contextRoot>
 	</properties>
