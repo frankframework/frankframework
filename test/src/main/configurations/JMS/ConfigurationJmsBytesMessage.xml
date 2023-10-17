@@ -10,31 +10,48 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="Load ZIP File"
-				  className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
-				  action="read"
-				  filename="/configurations/JMS/BinaryData/test-data.zip">
+<!--			<pipe name="Load ZIP File"-->
+<!--				  className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"-->
+<!--				  action="read"-->
+<!--				  filename="/configurations/JMS/BinaryData/test-data.zip">-->
 
+<!--			</pipe>-->
+			<!-- Read binary file as bytes -->
+			<!-- Should ideally use LocalFileSystemPipe but cannot seem to get that working with classpath resources -->
+			<pipe
+					name="read binary file as bytes"
+					className="nl.nn.adapterframework.pipes.FilePipe"
+					actions="read"
+					outputType="bytes"
+					getInputFromFixedValue="BinaryData/test-data.zip"
+					fileSource="classpath">
 			</pipe>
-
 			<pipe name="Send Binary Message"
-				  className="nl.nn.adapterframework.pipes.SenderPipe">
+				  className="nl.nn.adapterframework.pipes.SenderPipe"
+				  storeResultInSessionKey="returnedMessage"
+			>
 				<sender className="nl.nn.adapterframework.jms.JmsSender" messageClass="BYTES"
 						jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true"
 						replyToName="${jms.destination.i4testiaf_out}">
 					<param name="SOURCE" value="${hostname}_I4TIAF_bytes1" />
 				</sender>
-				<forward name="success" path="EXIT" />
-			</pipe>
-			<pipe name="Extract From ZIP File"
-				  className="nl.nn.adapterframework.compression.ZipIteratorPipe"
-				  charset="ISO-8859-1" getInputFromSessionKey="originalMessage"
-			>
-				<sender className="nl.nn.adapterframework.senders.FixedResultSender"
-					returnString="${zipdata}"/>
-				<forward name="success" path="READY"/>
 			</pipe>
 
+			<!--
+				Response should be binary as well, validate correct sending and replying of binary
+				JMS messages by unzipping the returned message and sending back the contents.
+			 -->
+			<pipe name="Extract From ZIP File"
+				  className="nl.nn.adapterframework.compression.ZipIteratorPipe"
+				  streamingContents="false"
+				  charset="ISO-8859-1" getInputFromSessionKey="returnedMessage"
+			>
+				<sender className="nl.nn.adapterframework.senders.FixedResultSender"
+						substituteVars="true" returnString="%{zipdata}"
+						replaceFrom="%" replaceTo="$"
+				/>
+				<forward name="success" path="EXIT"/>
+			</pipe>
 		</pipeline>
 	</adapter>
 
