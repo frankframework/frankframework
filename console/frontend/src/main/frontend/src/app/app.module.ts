@@ -19,6 +19,7 @@ import '../angularjs/directives';
 import '../angularjs/controllers';
 import '../angularjs/components';
 
+// import { AppComponent } from './app.component';
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';
 import { sidebarServiceProvider } from './components/pages/ajs-sidebar-upgraded';
@@ -151,6 +152,7 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
 
 @NgModule({
   declarations: [
+    // AppComponent,
     CustomViewsComponent,
     EnvironmentVariablesComponent,
     FlowComponent,
@@ -237,7 +239,8 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     // scoped services
     appServiceProvider,
     sidebarServiceProvider,
-  ]
+  ],
+  // bootstrap: [AppComponent]
 })
 
 export class AppModule implements DoBootstrap {
