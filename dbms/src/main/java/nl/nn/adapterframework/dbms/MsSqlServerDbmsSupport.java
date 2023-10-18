@@ -235,18 +235,6 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows) {
-        return "DELETE " + (maxRows > 0 ? "TOP(" + maxRows + ") " : "")
-				+ "FROM " + tableName
-				/**
-				 * Used to be: 		+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-				 Removing IMessageBrowser like this removes dependencies: IMessageBrowser, IXAEnabled, RawMessageWrapper */
-				+ " WHERE " + typeField + " IN ('" + "L" + "','" + "A"
-				+ "') AND " + expiryDateField + " < ?";
-	}
-
-
-	@Override
 	public String getBooleanFieldType() {
 		return "BIT";
 	}

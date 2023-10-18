@@ -125,12 +125,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return null;
 	}
 
-	@Override
-	public String getIbisStoreSummaryQuery() {
-		// include a where clause, to make nl.nn.adapterframework.dbms.MsSqlServerDbmsSupport.prepareQueryTextForNonLockingRead() work
-		return "select type, slotid, " + getTimestampAsDate("MESSAGEDATE") + " msgdate, count(*) msgcount from IBISSTORE where 1=1 group by slotid, type, " + getTimestampAsDate("MESSAGEDATE") + " order by type, slotid, " + getTimestampAsDate("MESSAGEDATE");
-	}
-
 
 	@Override
 	public String getTimestampFieldType() {
@@ -676,13 +670,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 				splittedQueries.add(query.substring(i, j).trim());
 		}
 		return splittedQueries;
-	}
-
-	@Override
-	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows) {
-        return ("DELETE FROM " + tableName + " WHERE " + keyField + " IN (SELECT " + keyField + " FROM " + tableName
-				+ " WHERE " + typeField + " IN ('" + "L" + "','" + "A"
-				+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " FETCH FIRST " + maxRows + " ROWS ONLY" : "") + ")");
 	}
 
 	@Override
