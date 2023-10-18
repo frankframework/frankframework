@@ -148,11 +148,4 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 	public String getInsertedAutoIncrementValueQuery(String sequenceName) {
 		return "SELECT LAST_INSERT_ID()";
 	}
-
-	@Override
-	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows) {
-        return ("DELETE FROM " + tableName
-				+ " WHERE " + typeField + " IN ('" + "L" + "','" + "A"
-				+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " LIMIT " + maxRows : ""));
-	}
 }

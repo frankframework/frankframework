@@ -23,6 +23,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.dbms.IDbmsSupport;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
@@ -76,7 +78,7 @@ public class IbisstoreSummary extends BusEndpointBase {
 				qs.setAvoidLocking(true);
 				qs.configure(true);
 				qs.open();
-				try (nl.nn.adapterframework.stream.Message message = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query != null ? query : qs.getDbmsSupport().getIbisStoreSummaryQuery()), null)) {
+				try (nl.nn.adapterframework.stream.Message message = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query != null ? query : this.getIbisStoreSummaryQuery(qs.getDbmsSupport())), null)) {
 					result = message.asString();
 				}
 			} catch (Throwable t) {
@@ -149,6 +151,11 @@ public class IbisstoreSummary extends BusEndpointBase {
 			}
 		}
 		return slotmap;
+	}
+
+	public String getIbisStoreSummaryQuery(IDbmsSupport iDbmsSupport) {
+		// include a where clause, to make nl.nn.adapterframework.dbms.MsSqlServerDbmsSupport.prepareQueryTextForNonLockingRead() work
+		return "select type, slotid, " + iDbmsSupport.getTimestampAsDate("MESSAGEDATE") + " msgdate, count(*) msgcount from IBISSTORE where 1=1 group by slotid, type, " + iDbmsSupport.getTimestampAsDate("MESSAGEDATE") + " order by type, slotid, " + iDbmsSupport.getTimestampAsDate("MESSAGEDATE");
 	}
 }
 

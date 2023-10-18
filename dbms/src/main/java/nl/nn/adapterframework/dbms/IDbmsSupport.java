@@ -210,13 +210,9 @@ public interface IDbmsSupport {
 
 	String getLength(String column);
 
-	String getIbisStoreSummaryQuery();
-
 	String getBooleanFieldType();
 
 	String getBooleanValue(boolean value);
-
-	String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows);
 
 	/**
 	 * DBMS Feature flag: are stored procedures supported?

@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import nl.nn.adapterframework.core.IMessageBrowser;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -67,12 +69,12 @@ public class CleanupDatabaseJob extends JobDef {
 
 		@Override
 		public boolean equals(Object o) {
-			if(!(o instanceof MessageLogObject)) return false;
+			if (!(o instanceof MessageLogObject)) return false;
 
 			MessageLogObject mlo = (MessageLogObject) o;
 			return mlo.getDatasourceName().equals(datasourceName) &&
-				mlo.getTableName().equals(tableName) &&
-				mlo.expiryDateField.equals(expiryDateField);
+					mlo.getTableName().equals(tableName) &&
+					mlo.expiryDateField.equals(expiryDateField);
 		}
 
 		public String getDatasourceName() {
@@ -121,15 +123,15 @@ public class CleanupDatabaseJob extends JobDef {
 				try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
 					numberOfRowsAffected = Integer.parseInt(Objects.requireNonNull(result.asString()));
 				}
-				if(numberOfRowsAffected > 0) {
-					getMessageKeeper().add("deleted ["+numberOfRowsAffected+"] row(s) from [IBISLOCK] table. It implies that there have been process(es) that finished unexpectedly or failed to complete. Please investigate the log files!", MessageKeeperLevel.WARN);
+				if (numberOfRowsAffected > 0) {
+					getMessageKeeper().add("deleted [" + numberOfRowsAffected + "] row(s) from [IBISLOCK] table. It implies that there have been process(es) that finished unexpectedly or failed to complete. Please investigate the log files!", MessageKeeperLevel.WARN);
 				}
 			} catch (Exception e) {
 				String msg = "error while cleaning IBISLOCK table (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error(getLogPrefix()+msg, e);
+				log.error(getLogPrefix() + msg, e);
 			} finally {
-				if(qs != null) {
+				if (qs != null) {
 					qs.close();
 				}
 			}
@@ -145,12 +147,12 @@ public class CleanupDatabaseJob extends JobDef {
 
 		List<MessageLogObject> messageLogs = getAllMessageLogs();
 
-		for (MessageLogObject mlo: messageLogs) {
+		for (MessageLogObject mlo : messageLogs) {
 			FixedQuerySender qs = null;
 			try {
 				qs = SpringUtils.createBean(getApplicationContext(), FixedQuerySender.class);
 				qs.setDatasourceName(mlo.getDatasourceName());
-				qs.setName("cleanupDatabase-"+mlo.getTableName());
+				qs.setName("cleanupDatabase-" + mlo.getTableName());
 				qs.setQueryType("other");
 				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
@@ -159,13 +161,14 @@ public class CleanupDatabaseJob extends JobDef {
 				param.setType(ParameterType.TIMESTAMP);
 				qs.addParameter(param);
 
-				String query = qs.getDbmsSupport().getCleanUpIbisstoreQuery(mlo.getTableName(), mlo.getKeyField(), mlo.getTypeField(), mlo.getExpiryDateField(), maxRows);
+				String query = this.getCleanUpIbisstoreQuery(mlo.getTableName(), mlo.getKeyField(), mlo.getTypeField(), mlo.getExpiryDateField(), maxRows);
+				query = qs.getDbmsSupport().convertQuery(query, qs.getSqlDialect());
 				qs.setQuery(query);
 				qs.configure();
 				qs.open();
 
 				boolean deletedAllRecords = false;
-				while(!deletedAllRecords) {
+				while (!deletedAllRecords) {
 					int numberOfRowsAffected;
 					try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
 						String resultString = result.asString();
@@ -182,11 +185,11 @@ public class CleanupDatabaseJob extends JobDef {
 					}
 				}
 			} catch (Exception e) {
-				String msg = "error while deleting expired records from table ["+mlo.getTableName()+"] (as part of scheduled job execution): " + e.getMessage();
+				String msg = "error while deleting expired records from table [" + mlo.getTableName() + "] (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 				log.error("{} {}", getLogPrefix(), msg);
 			} finally {
-				if(qs != null) {
+				if (qs != null) {
 					qs.close();
 				}
 			}
@@ -195,6 +198,7 @@ public class CleanupDatabaseJob extends JobDef {
 
 	/**
 	 * Locate all Lockers, and find out which datasources are used.
+	 *
 	 * @return distinct list of all datasourceNames used by lockers
 	 */
 	protected Set<String> getAllLockerDatasourceNames() {
@@ -205,9 +209,9 @@ public class CleanupDatabaseJob extends JobDef {
 				continue;
 			}
 			for (IJob jobdef : configuration.getScheduledJobs()) {
-				if (jobdef.getLocker()!=null) {
+				if (jobdef.getLocker() != null) {
 					String datasourceName = jobdef.getLocker().getDatasourceName();
-					if(StringUtils.isNotEmpty(datasourceName)) {
+					if (StringUtils.isNotEmpty(datasourceName)) {
 						datasourceNames.add(datasourceName);
 					}
 				}
@@ -218,10 +222,10 @@ public class CleanupDatabaseJob extends JobDef {
 				if (pipeLine != null) {
 					for (IPipe pipe : pipeLine.getPipes()) {
 						if (pipe instanceof IExtendedPipe) {
-							IExtendedPipe extendedPipe = (IExtendedPipe)pipe;
+							IExtendedPipe extendedPipe = (IExtendedPipe) pipe;
 							if (extendedPipe.getLocker() != null) {
 								String datasourceName = extendedPipe.getLocker().getDatasourceName();
-								if(StringUtils.isNotEmpty(datasourceName)) {
+								if (StringUtils.isNotEmpty(datasourceName)) {
 									datasourceNames.add(datasourceName);
 								}
 							}
@@ -236,7 +240,7 @@ public class CleanupDatabaseJob extends JobDef {
 
 	private void collectMessageLogs(List<MessageLogObject> messageLogs, ITransactionalStorage<?> transactionalStorage) {
 		if (transactionalStorage instanceof JdbcTransactionalStorage) {
-			JdbcTransactionalStorage<?> messageLog = (JdbcTransactionalStorage<?>)transactionalStorage;
+			JdbcTransactionalStorage<?> messageLog = (JdbcTransactionalStorage<?>) transactionalStorage;
 			String datasourceName = messageLog.getDatasourceName();
 			String expiryDateField = messageLog.getExpiryDateField();
 			String tableName = messageLog.getTableName();
@@ -256,15 +260,15 @@ public class CleanupDatabaseJob extends JobDef {
 			if (!configuration.isActive()) {
 				continue;
 			}
-			for(IAdapter adapter : configuration.getRegisteredAdapters()) {
-				for (Receiver<?> receiver: adapter.getReceivers()) {
+			for (IAdapter adapter : configuration.getRegisteredAdapters()) {
+				for (Receiver<?> receiver : adapter.getReceivers()) {
 					collectMessageLogs(messageLogs, receiver.getMessageLog());
 				}
 				PipeLine pipeline = adapter.getPipeLine();
-				for (int i=0; i<pipeline.getPipes().size(); i++) {
+				for (int i = 0; i < pipeline.getPipes().size(); i++) {
 					IPipe pipe = pipeline.getPipe(i);
 					if (pipe instanceof MessageSendingPipe) {
-						MessageSendingPipe msp=(MessageSendingPipe)pipe;
+						MessageSendingPipe msp = (MessageSendingPipe) pipe;
 						collectMessageLogs(messageLogs, msp.getMessageLog());
 					}
 				}
@@ -275,9 +279,16 @@ public class CleanupDatabaseJob extends JobDef {
 
 	/**
 	 * The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout
+	 *
 	 * @ff.default 0
 	 */
 	public void setQueryTimeout(int i) {
 		queryTimeout = i;
+	}
+
+	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows) {
+		return ("DELETE FROM " + tableName + " WHERE " + keyField + " IN (SELECT " + keyField + " FROM " + tableName
+				+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+				+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " FETCH FIRST " + maxRows + " ROWS ONLY" : "") + ")");
 	}
 }
