@@ -613,7 +613,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 	}
 
 	/**
-	 * 
+	 *
 	 * @param path to the element from where to start validating namespaces
 	 * @param invalidRootNamespaces XML namespace that is not allowed on the current element
 	 */
@@ -633,7 +633,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 		return null;
 	}
 
-	public void setImplementation(Class<AbstractXmlValidator> clazz) throws IllegalAccessException, InstantiationException {
+	public void setImplementation(Class<? extends AbstractXmlValidator> clazz) throws IllegalAccessException, InstantiationException {
 		validator = clazz.newInstance();
 	}
 

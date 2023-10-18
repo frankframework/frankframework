@@ -70,7 +70,7 @@ import nl.nn.adapterframework.util.AppConstants;
  */
 public class XercesXmlValidator extends AbstractXmlValidator {
 
-	private String DEFAULT_XML_SCHEMA_VERSION="1.1";
+	private static final String DEFAULT_XML_SCHEMA_VERSION = "1.1";
 
 	/** Property identifier: grammar pool. */
 	public static final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
@@ -91,7 +91,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	protected static final String EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
 
 	/** Disallow doctype declarations feature id (http://apache.org/xml/features/disallow-doctype-decl). */
-	protected static final String DISSALLOW_DOCTYPE_DECL_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
+	protected static final String DISALLOW_DOCTYPE_DECL_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
 
 	/** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
 	protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
@@ -103,10 +103,10 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static final int maxInitialised = AppConstants.getInstance().getInt("xmlValidator.maxInitialised", -1);
 	private static final boolean sharedSymbolTable = AppConstants.getInstance().getBoolean("xmlValidator.sharedSymbolTable", false);
 	private static final int sharedSymbolTableSize = AppConstants.getInstance().getInt("xmlValidator.sharedSymbolTable.size", BIG_PRIME);
-	private int entityExpansionLimit = AppConstants.getInstance().getInt("xmlValidator.entityExpansionLimit", 100000);
+	private final int entityExpansionLimit = AppConstants.getInstance().getInt("xmlValidator.entityExpansionLimit", 100000);
 
-	private static AtomicLong counter = new AtomicLong();
-	private String preparseResultId;
+	private static final AtomicLong counter = new AtomicLong();
+	private final String preparseResultId;
 	private PreparseResult preparseResult;
 
 	private static EhCache<PreparseResult> cache;
@@ -293,7 +293,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			validatorHandler.setFeature(VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-			validatorHandler.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
+			validatorHandler.setFeature(DISALLOW_DOCTYPE_DECL_FEATURE_ID, true);
 
 
 			SecurityManager securityManager = new SecurityManager();
@@ -320,7 +320,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			// parser.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // this feature is not recognized
 //			parser.setFeature(EXTERNAL_GENERAL_ENTITIES_FEATURE_ID, false); // this one appears to be not working
 //			parser.setFeature(EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID, false);
-//			parser.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
+//			parser.setFeature(DISALLOW_DOCTYPE_DECL_FEATURE_ID, true);
 			parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
 			parser.setErrorHandler(context.getErrorHandler());
@@ -357,11 +357,11 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 class XercesValidationContext extends ValidationContext {
 
-	private PreparseResult preparseResult;
+	private final PreparseResult preparseResult;
 
 	XercesValidationContext(PreparseResult preparseResult) {
 		super();
-		this.preparseResult=preparseResult;
+		this.preparseResult = preparseResult;
 	}
 
 	@Override
@@ -394,14 +394,14 @@ class PreparseResult {
 	private @Getter @Setter SymbolTable symbolTable;
 	private @Getter @Setter XMLGrammarPool grammarPool;
 	private @Getter @Setter Set<String> namespaceSet;
-	private @Setter List<XSModel> xsModels=null;
+	private @Setter List<XSModel> xsModels = null;
 
 	public List<XSModel> getXsModels() {
-		if (xsModels==null) {
-			xsModels=new LinkedList<XSModel>();
-			Grammar[] grammars=grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
-			for(int i=0;i<grammars.length;i++) {
-				xsModels.add(((XSGrammar)grammars[i]).toXSModel());
+		if (xsModels == null) {
+			xsModels = new LinkedList<>();
+			Grammar[] grammars = grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
+			for (Grammar grammar : grammars) {
+				xsModels.add(((XSGrammar) grammar).toXSModel());
 			}
 		}
 		return xsModels;

@@ -166,6 +166,7 @@ public class SchemaUtils {
 				}
 				xsdToXmlStreamWriter(xsd, w, false, true, skipRootElementStart, skipRootElementEnd, rootAttributes, rootNamespaceAttributes, imports, false);
 			}
+			// TODO: After creating merged XSD, while we still know what the source files are, we should now validate for duplicate elements
 			if (resultXsd != null) {
 				IXSD firstXsd = xsds.iterator().next();
 				resultXsd.setImportedSchemaLocationsToIgnore(firstXsd.getImportedSchemaLocationsToIgnore());
@@ -181,7 +182,7 @@ public class SchemaUtils {
 	private static void addXsdMergeWarnings(final IScopeProvider scopeProvider, final Set<IXSD> xsds, final String namespace) {
 		// If there are multiple XSDs for the namespace, give ConfigWarning that explains wherefrom
 		// each file is included.
-		if (xsds.size() <= 1 || !(scopeProvider instanceof IConfigurationAware)) {
+		if (xsds.size() <= 1) {
 			return;
 		}
 		StringBuilder message = new StringBuilder("Multiple XSDs for namespace '" + namespace + "' will be merged: ");
@@ -196,29 +197,28 @@ public class SchemaUtils {
 			}
 		}
 		message.append("\nPlease check that there are no overlapping definitions between these XSDs.");
-		ConfigurationWarnings.add((IConfigurationAware) scopeProvider, LOG, message.toString(), SuppressKeys.XSD_VALIDATION_WARNINGS_SUPPRESS_KEY);
+		LOG.info(message);
 
 		// And check for duplicate XSDs included multiple times from multiple locations
-		for (IXSD xsd1: xsds) {
-			boolean pairAlreadyChecked = true;
-			for (IXSD xsd2: xsds) {
-				if (xsd1 == xsd2) {
-					pairAlreadyChecked = false;
-					continue;
-				}
-				if (pairAlreadyChecked) continue;
-				if (xsd1.compareToByContents(xsd2) == 0) {
-					StringBuilder duplicateXsdError = new StringBuilder("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: '");
-							duplicateXsdError.append(namespace)
-									.append("'.\n Path '").append(xsd1.getResourceTarget()).append("'");
-					if (xsd1.getImportParent() != null) {
-						duplicateXsdError.append(" imported from '").append(xsd1.getImportParent().getResourceTarget()).append("'");
+		if (scopeProvider instanceof IConfigurationAware) {
+			IXSD[] xsdList = xsds.toArray(new IXSD[0]);
+			for (int i = 0; i < xsdList.length - 1; i++) {
+				IXSD xsd1 = xsdList[i];
+				for (int j = i + 1; j < xsdList.length; j++) {
+					IXSD xsd2 = xsdList[j];
+					if (xsd1.compareToByContents(xsd2) == 0) {
+						StringBuilder duplicateXsdError = new StringBuilder("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: '");
+						duplicateXsdError.append(namespace)
+								.append("'.\n Path '").append(xsd1.getResourceTarget()).append("'");
+						if (xsd1.getImportParent() != null) {
+							duplicateXsdError.append(" imported from '").append(xsd1.getImportParent().getResourceTarget()).append("'");
+						}
+						duplicateXsdError.append(",\n and also Path '").append(xsd2.getResourceTarget()).append("'");
+						if (xsd2.getImportParent() != null) {
+							duplicateXsdError.append(" imported from '").append(xsd2.getImportParent().getResourceTarget()).append("'");
+						}
+						ConfigurationWarnings.add((IConfigurationAware) scopeProvider, LOG, duplicateXsdError.toString(), SuppressKeys.XSD_VALIDATION_ERROR_SUPPRESS_KEY);
 					}
-					duplicateXsdError.append(",\n and also Path '").append(xsd2.getResourceTarget()).append("'");
-					if (xsd2.getImportParent() != null) {
-						duplicateXsdError.append(" imported from '").append(xsd2.getImportParent().getResourceTarget()).append("'");
-					}
-					ConfigurationWarnings.add((IConfigurationAware) scopeProvider, LOG, duplicateXsdError.toString(), SuppressKeys.XSD_VALIDATION_ERROR_SUPPRESS_KEY);
 				}
 			}
 		}
