@@ -1,0 +1,40 @@
+<!-- Wrapper-->
+<div id="wrapper">
+  <!-- Navigation -->
+  <app-pages-navigation (onOpenInfo)="openInfoModel()" (onOpenFeedback)="sendFeedback()"></app-pages-navigation>
+
+  <!-- Page wraper -->
+  <!-- ng-class with current state name give you the ability to extended customization your view -->
+  <div id="page-wrapper" class="gray-bg {{$ctrl.$state.current.name}}">
+
+    <!-- Page wrapper -->
+    <app-pages-topnavbar
+      class="topnavbar"
+      (onOpenFeedback)="sendFeedback(rating)"
+      [serverTime]="serverTime"
+      [dtapSide]="$ctrl.dtapSide"
+      [dtapStage]="$ctrl.dtapStage"
+      [userName]="$ctrl.userName"
+      [loggedin]="$ctrl.loggedin"
+    ></app-pages-topnavbar>
+    <app-pages-topinfobar class="topinfobar"></app-pages-topinfobar>
+
+    <div
+      *ngIf="startupError"
+      class="m-sm alert alert-danger pointer"
+      role="alert" type="danger"
+      uiSref="pages.errorpage">
+      <h4>Startup error:</h4> <span [innerHtml]="startupError"></span>
+    </div>
+
+    <!-- Main view  -->
+    <ui-view></ui-view>
+
+    <!-- Footer -->
+    <app-pages-footer *ngIf="!$ctrl.$state.current.data.iframe"></app-pages-footer>
+
+  </div>
+  <!-- End page wrapper-->
+
+</div>
+<!-- End wrapper-->

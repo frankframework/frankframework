@@ -19,6 +19,7 @@ import '../angularjs/directives';
 import '../angularjs/controllers';
 import '../angularjs/components';
 
+// import { AppComponent } from './app.component';
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';
 import { sidebarServiceProvider } from './components/pages/ajs-sidebar-upgraded';
@@ -84,6 +85,8 @@ import { DataTablesModule } from 'angular-datatables';
 import { SecurityItemsComponent } from './views/security-items/security-items.component';
 import { WebservicesComponent } from './views/webservices/webservices.component';
 import { StorageListDtComponent } from './views/storage/storage-list/storage-list-dt/storage-list-dt.component';
+import { SideNavigationDirective } from './components/pages/side-navigation.directive';
+
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -122,7 +125,7 @@ appModule
   .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
   .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory)
   .directive('adapterstatistics', downgradeComponent({ component: AdapterstatisticsComponent }) as angular.IDirectiveFactory)
-  // .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
+  .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
   .directive('storageList', downgradeComponent({ component: StorageListComponent }) as angular.IDirectiveFactory)
   .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory)
   .directive('webservices', downgradeComponent({ component: WebservicesComponent }) as angular.IDirectiveFactory);
@@ -150,6 +153,7 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
 
 @NgModule({
   declarations: [
+    // AppComponent,
     CustomViewsComponent,
     EnvironmentVariablesComponent,
     FlowComponent,
@@ -178,6 +182,7 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     StorageListComponent,
     StorageViewComponent,
     AdapterstatisticsComponent,
+    StorageListDtComponent,
     SecurityItemsComponent,
     WebservicesComponent,
 
@@ -189,14 +194,14 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     TruncatePipe,
     VariablesFilterPipe,
     FormatStatisticsPipe,
+    FormatStatKeysPipe,
 
     // directives
     ToDateDirective,
     TimeSinceDirective,
     QuickSubmitFormDirective,
-    FormatStatKeysPipe,
     FitHeightDirective,
-    StorageListDtComponent,
+    SideNavigationDirective,
   ],
   imports: [
     BrowserModule,
@@ -235,7 +240,8 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     // scoped services
     appServiceProvider,
     sidebarServiceProvider,
-  ]
+  ],
+  // bootstrap: [AppComponent]
 })
 
 export class AppModule implements DoBootstrap {

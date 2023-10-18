@@ -53,7 +53,7 @@ class ErrorController {
     this.Api.Get("server/health", () => {
       this.$state.go("pages.status");
       this.$timeout(function () { window.location.reload(); }, 50);
-    }, (data) => this.cooldown(data));
+    }, (data, status, statusText) => this.cooldown({ error: data, status: statusText, stackTrace: [] }));
   };
 };
 

@@ -24,14 +24,20 @@
         <span class="m-r-sm stage">({{dtapSide}})</span>
       </li>
       <li ngbDropdown (click)="resetNotificationCount()">
-        <a class="count-info" href ngbDropdownToggle>
-          <i class="fa fa-bell"></i> <span *ngIf="notificationCount > 0"
-            class="label label-primary">{{(notificationCount > 5) ? "5+" : notificationCount}}</span>
+        <a class="count-info" ngbDropdownToggle>
+          <i class="fa fa-bell"></i>
+          <span
+            *ngIf="notificationCount > 0"
+            class="label label-primary"
+          >{{(notificationCount > 5) ? "5+" : notificationCount}}</span>
         </a>
         <ul class="dropdown-alerts" ngbDropdownMenu>
-          <ng-container *ngFor="let message of notificationList; let last = last">
-            <li>
-              <a uiSref="pages.notifications({id: message.id})" ngbDropdownItem>
+          <ng-template ngFor let-message [ngForOf]="notificationList" let-last="last">
+            <li ngbDropdownItem>
+              <a
+                uiSref="pages.notifications"
+                [uiParams]="{id: message.id}"
+              >
                 <div>
                   <i class="fa {{message.icon}} fa-fw"></i> {{message.title}}
                   <span class="pull-right text-muted small" appTimeSince [time]="message.time"></span>
@@ -39,7 +45,7 @@
               </a>
             </li>
             <li class="divider" *ngIf="!last"></li>
-          </ng-container>
+          </ng-template>
           <li class="text-center" *ngIf="notificationList.length <= 0">No notifications</li>
           <!-- <li>
                         <div class="text-center link-block">

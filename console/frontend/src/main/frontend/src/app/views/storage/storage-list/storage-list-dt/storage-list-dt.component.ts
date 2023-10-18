@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { Message, PartialMessage } from '../../storage.service';
+import { Message, PartialMessage, StorageService } from '../../storage.service';
 
 @Component({
   selector: 'app-storage-list-dt',
@@ -10,9 +10,7 @@ export class StorageListDtComponent implements OnInit {
   @Input() message!: PartialMessage;
   @Input() userData!: any;
 
-  constructor() { }
+  constructor(public storageService: StorageService) { }
 
-  ngOnInit() {
-    console.log(this.userData);
-  }
+  ngOnInit() {}
 }

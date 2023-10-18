@@ -44,14 +44,16 @@
             ],
             "styles": [
               "src/styles.scss",
-              "node_modules/datatables.net-dt/css/jquery.dataTables.css"
+              "node_modules/datatables.net-dt/css/jquery.dataTables.css",
+              "node_modules/metismenu/dist/metisMenu.css"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.js",
               "node_modules/angular/angular.js",
               "src/angularjs/plugins/iCheck/icheck.min.js",
               "node_modules/chart.js/dist/Chart.js",
-              "node_modules/datatables.net/js/jquery.dataTables.js"
+              "node_modules/datatables.net/js/jquery.dataTables.js",
+              "node_modules/metismenu/dist/metisMenu.js"
             ],
             "allowedCommonJsDependencies": [
               "angular",

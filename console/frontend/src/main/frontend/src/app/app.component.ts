@@ -1,17 +1,4 @@
-
-import { HooksService } from 'src/app/services.types';
-import { Pace } from '../deps';
-import { AppConstants, appModule } from "./app.module";
-import { Adapter, AppService, Configuration } from './app.service';
-import { StateService } from '@uirouter/angularjs';
-import { SessionService } from './services/session.service';
-import { ApiService } from './services/api.service';
-import { AuthService } from './services/authservice.service';
-import { DebugService } from './services/debug.service';
-import { MiscService } from './services/misc.service';
-import { NotificationService } from './services/notification.service';
-import { PollerService } from './services/poller.service';
-import { SweetAlertService } from './services/sweetalert.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 
 export type IAFRelease = {
@@ -55,8 +42,12 @@ export type IAFRelease = {
   reactions: Record<string, number>
 }
 
-class AppController {
-
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.scss']
+})
+export class AppComponent implements OnInit, OnDestroy {
   loading = true;
   serverInfo: Record<string, any> | null = {};
   loggedin = false;
@@ -71,7 +62,6 @@ class AppController {
   private _subscriptions = new Subscription();
 
   constructor(
-    private $scope: angular.IScope,
     private authService: AuthService,
     private appConstants: AppConstants,
     private Api: ApiService,
@@ -91,9 +81,9 @@ class AppController {
     private SweetAlert: SweetAlertService,
     private $timeout: angular.ITimeoutService,
     private appService: AppService
-  ) {}
+  ) { }
 
-  $onInit() {
+  ngOnInit() {
     /* state controller */
     this.authService.loggedin(); //Check if the user is logged in.
 
@@ -323,7 +313,7 @@ class AppController {
     });
   }
 
-  $onDestroy() {
+  ngOnDestroy() {
     this._subscriptions.unsubscribe();
   }
 
@@ -462,8 +452,3 @@ class AppController {
     });
   };
 }
-
-appModule.component('app', {
-  controller: ['$scope', 'authService', 'appConstants', 'Api', 'Hooks', '$state', '$location', 'Poller', 'Notification', 'dateFilter', '$interval', 'Idle', '$http', 'Misc', '$uibModal', 'Session', 'Debug', 'SweetAlert', '$timeout', 'appService', AppController],
-  templateUrl: 'angularjs/app/app.component.html'
-});

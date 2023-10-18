@@ -1,7 +1,8 @@
-import { Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { StateParams } from '@uirouter/angularjs';
 import type { ChartData, ChartDataset, ChartOptions, ChartType } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
+import { Subscription } from 'rxjs';
 import { AppConstants } from 'src/angularjs/app/app.module';
 import { AppService } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
@@ -66,7 +67,7 @@ type Statistics = {
   templateUrl: './adapterstatistics.component.html',
   styleUrls: ['./adapterstatistics.component.scss']
 })
-export class AdapterstatisticsComponent implements OnInit {
+export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   defaults = { "name": "Name", "count": "Count", "min": "Min", "max": "Max", "avg": "Average", "stdDev": "StdDev", "sum": "Sum", "first": "First", "last": "Last" };
   adapterName = this.$stateParams['name'];
   configuration = this.$stateParams['configuration'];
@@ -123,6 +124,8 @@ export class AdapterstatisticsComponent implements OnInit {
     }
   };
 
+  private _subscriptions = new Subscription();
+
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   constructor(
@@ -145,13 +148,18 @@ export class AdapterstatisticsComponent implements OnInit {
       this.populateBoundaries(); //AppConstants already loaded
     }
     else {
-      this.appService.appConstants$.subscribe(() => this.populateBoundaries()); //Wait for appConstants trigger to load
+      const appConstantsSubscription = this.appService.appConstants$.subscribe(() => this.populateBoundaries()); //Wait for appConstants trigger to load
+      this._subscriptions.add(appConstantsSubscription);
     }
 
     window.setTimeout(() => {
       this.refresh();
     }, 1000);
   };
+
+  ngOnDestroy() {
+    this._subscriptions.unsubscribe();
+  }
 
   refresh() {
     this.refreshing = true;
