@@ -178,7 +178,7 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 	}
 
 	private String computeBaseUrl() {
-		String baseUrl = getEndpoints().stream().findFirst().orElse("");
+		String baseUrl = getEndpoints().stream().filter(e -> !e.startsWith("!")).findFirst().orElse("");
 		if(baseUrl.endsWith("*")) { //Strip the '*' if the url ends with it
 			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
 		}

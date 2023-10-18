@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.lifecycle.servlets;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,30 +27,49 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class URLRequestMatcher implements RequestMatcher {
-	private final Set<String> endpoints;
+	private final Set<String> absoluteEndpoints;
+	private final Set<String> wildcardEndpoints;
+	private final Set<String> excludedEndpoints;
 
-	public URLRequestMatcher(Set<String> endpoints) {
-		this.endpoints = endpoints;
+	private boolean a = false;
+
+	public URLRequestMatcher(Set<String> rawEndpointsWithExcludes, boolean a) {
+		this.a = a;
+		absoluteEndpoints = new HashSet<>();
+		wildcardEndpoints = new HashSet<>();
+		excludedEndpoints = new HashSet<>();
+		for(String endpoint : rawEndpointsWithExcludes) {
+			if(endpoint.charAt(0) == '!') {
+				excludedEndpoints.add(endpoint.substring(1));
+			} else if(endpoint.charAt(endpoint.length()-1) == '*') {
+				wildcardEndpoints.add(endpoint.substring(0, endpoint.length()-1));
+			} else {
+				absoluteEndpoints.add(endpoint);
+			}
+		}
+
+		if(absoluteEndpoints.isEmpty() && wildcardEndpoints.isEmpty()) {
+			throw new IllegalArgumentException("must provided at least 1 endpoint");
+		}
 	}
 
 	@Override
 	public boolean matches(HttpServletRequest request) {
-		if(endpoints.isEmpty()) {
-			return false;
-		}
-
 		String path = getRequestPath(request);
-		for(String url : endpoints) {
-			if(!url.endsWith("*") && url.equals(path)) {//absolute match
-				log.trace("absolute match with url [{}] and path [{}]", url, path);
-				return true;
-			}
 
-			if(path.startsWith(url.substring(0, url.length()-1))) {//relative match
-				log.trace("relative match with url [{}] and path [{}]", url, path);
-				return true;
+		if(absoluteEndpoints.contains(path)) { //absolute match
+			log.trace("absolute match with path [{}]", path);
+			return true;
+		}
+
+		for(String url : wildcardEndpoints) {
+			if(path.startsWith(url)) { //wildcard match
+				boolean isExcluded = a && excludedEndpoints.contains(path);
+				log.trace("relative match with url [{}] and path [{}] is excluded [{}]", url, path, isExcluded);
+				return !isExcluded;
 			}
 		}
+
 		return false;
 	}
 
@@ -57,7 +77,7 @@ public class URLRequestMatcher implements RequestMatcher {
 		String url = request.getServletPath();
 		String pathInfo = request.getPathInfo();
 		if (pathInfo != null) {
-			url = StringUtils.isNoneEmpty(url) ? url + pathInfo : pathInfo;
+			url = StringUtils.isNotEmpty(url) ? url + pathInfo : pathInfo;
 		}
 		return url;
 	}
@@ -65,7 +85,9 @@ public class URLRequestMatcher implements RequestMatcher {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("RequestPatterns ").append(this.endpoints);
+		sb.append("Absolute RequestPatterns ").append(this.absoluteEndpoints);
+		sb.append(" Wildcard RequestPatterns ").append(this.wildcardEndpoints);
+		sb.append(" Excluded RequestPatterns ").append(this.excludedEndpoints);
 		return sb.toString();
 	}
 }

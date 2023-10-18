@@ -208,7 +208,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, config.getServlet());
 
 		serv.setLoadOnStartup(config.getLoadOnStartup());
-		serv.addMapping(config.getUrlMapping().toArray(new String[0]));
+		serv.addMapping(getEndpoints(config.getUrlMapping()));
 		serv.setServletSecurity(getServletSecurity(config));
 
 		if(!config.getInitParameters().isEmpty()) {
@@ -224,6 +224,13 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 		servlets.put(servletName, config);
 		logServletInfo(serv, config);
+	}
+
+	// Remove all endpoint excludes
+	private String[] getEndpoints(List<String> list) {
+		return list.stream()
+				.filter(e -> e.charAt(0) != '!')
+				.toArray(String[]::new);
 	}
 
 	private void logServletInfo(Dynamic serv, ServletConfiguration config) {

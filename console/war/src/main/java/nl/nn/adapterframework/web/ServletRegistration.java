@@ -63,6 +63,8 @@ public class ServletRegistration extends ServletRegistrationBean<Servlet> implem
 	}
 
 	private void addUrlMappings(List<String> urlMapping) {
-		urlMapping.stream().forEach(this::addUrlMappings);
+		urlMapping.stream()
+			.filter(e -> !e.startsWith("!"))
+			.forEach(this::addUrlMappings);
 	}
 }
