@@ -31,8 +31,6 @@ import org.apache.cxf.interceptor.security.AccessDeniedException;
 import org.apache.cxf.jaxrs.utils.JAXRSUtils;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageUtils;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 
@@ -67,12 +65,6 @@ public class AuthorizationFilter implements ContainerRequestFilter {
 			requestContext.abortWith(FORBIDDEN);
 			return;
 		}
-
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		System.out.println(authentication);
-//		if(method.isAnnotationPresent(PermitAll.class)) {
-//			return; //no authorization required.
-//		}
 
 		//Presume `PermitAll` when RolesAllowed annotation is not set
 		if(method.isAnnotationPresent(RolesAllowed.class)) {

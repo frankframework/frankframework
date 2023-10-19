@@ -85,16 +85,9 @@ public class URLRequestMatcherTest {
 	}
 
 	@Test
-	public void dontMatchWhenExcempt() {
+	public void noEndpoints() {
 		Set<String> endpoints = new HashSet<>();
-		endpoints.add("/servlet/*");
-		endpoints.add("!/servlet/testpath");
-		URLRequestMatcher matcher = new URLRequestMatcher(endpoints);
-
-		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/servlet/testpath");
-		request.setServletPath("/servlet/");
-		request.setPathInfo("testpath");
-		assertFalse(matcher.matches(request));
+		assertThrows(IllegalArgumentException.class, () -> new URLRequestMatcher(endpoints));
 	}
 
 	@Test

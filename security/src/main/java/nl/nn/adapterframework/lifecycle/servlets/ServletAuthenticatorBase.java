@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -143,21 +142,22 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
 			http.csrf().disable(); //Disable because the front-end doesn't support CSFR tokens (yet!)
-			RequestMatcher requestMatcher = new AndRequestMatcher(new URLRequestMatcher(privateEndpoints), this::authorizationRequestMatcher);
-//TODO does this works?			http.securityMatcher(requestMatcher); //Triggers the SecurityFilterChain
-			http.securityMatcher(new URLRequestMatcher(privateEndpoints)); //Triggers the SecurityFilterChain
+			RequestMatcher securityRequestMatcher = new URLRequestMatcher(privateEndpoints);
+			http.securityMatcher(securityRequestMatcher); //Triggers the SecurityFilterChain, also for OPTIONS requests!
 			http.formLogin().disable(); //Disable the form login filter
 			http.logout().disable(); //Disable the logout endpoint on every filter
 //			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); //Disables cookies
 
-			if(!publicEndpoints.isEmpty()) {
+			if(!publicEndpoints.isEmpty()) { //Enable anonymous access on public endpoints
 				http.authorizeHttpRequests().requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll();
-				http.anonymous(); //Enable 
+				http.anonymous();
 			} else {
-				http.anonymous().disable(); //Disable the default anonymous filter
+				http.anonymous().disable(); //Disable the default anonymous filter and thus disallow all anonymous access
 			}
 
-			http.authorizeHttpRequests().requestMatchers(requestMatcher).authenticated();
+			// Enables security for all servlet endpoints
+			RequestMatcher authorizationRequestMatcher = new AndRequestMatcher(securityRequestMatcher, this::authorizationRequestMatcher);
+			http.authorizeHttpRequests().requestMatchers(authorizationRequestMatcher).authenticated();
 
 			return configure(http);
 		} catch (Exception e) {

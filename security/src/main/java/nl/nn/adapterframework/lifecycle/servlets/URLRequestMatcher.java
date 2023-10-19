@@ -34,6 +34,9 @@ public class URLRequestMatcher implements RequestMatcher {
 		absoluteEndpoints = new HashSet<>();
 		wildcardEndpoints = new HashSet<>();
 		for(String endpoint : rawEndpointsWithExcludes) {
+			if(endpoint.charAt(0) == '!') {
+				throw new IllegalArgumentException("endpoint may not start with [!]");
+			}
 			if(endpoint.charAt(endpoint.length()-1) == '*') {
 				wildcardEndpoints.add(endpoint.substring(0, endpoint.length()-1));
 			} else {
