@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Idle } from '@ng-idle/core';
 import { Subscription } from 'rxjs';
 import { AppConstants } from 'src/angularjs/app/app.module';
-import { Adapter, AppService, Configuration } from 'src/angularjs/app/app.service';
+import { Adapter, AppService, Configuration } from './app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { AuthService } from 'src/angularjs/app/services/authservice.service';
 import { DebugService } from 'src/angularjs/app/services/debug.service';
@@ -12,47 +12,6 @@ import { PollerService } from 'src/angularjs/app/services/poller.service';
 import { SessionService } from 'src/angularjs/app/services/session.service';
 import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
 import { Pace } from 'src/angularjs/deps';
-
-export type IAFRelease = {
-  url: string,
-  assets_url: string,
-  upload_url: string,
-  html_url: string,
-  id: number,
-  author: {
-    login: string,
-    id: number,
-    node_id: string,
-    avatar_url: string,
-    gravatar_id: string,
-    url: string,
-    html_url: string,
-    followers_url: string,
-    following_url: string,
-    gists_url: string,
-    starred_url: string,
-    subscriptions_url: string,
-    organizations_url: string,
-    repos_url: string,
-    events_url: string,
-    received_events_url: string,
-    type: string,
-    site_admin: boolean
-  },
-  node_id: string,
-  tag_name: string,
-  target_commitish: string,
-  name: string,
-  draft: boolean,
-  prerelease: boolean,
-  created_at: string,
-  published_at: string,
-  assets: [],
-  tarball_url: string,
-  zipball_url: string,
-  body: string,
-  reactions: Record<string, number>
-}
 
 @Component({
   selector: 'app-root',
@@ -75,14 +34,14 @@ export class AppComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
-    private appConstants: AppConstants, // TODO make this a service
-    private Api: ApiService,
-    private Poller: PollerService,
-    private Notification: NotificationService,
-    private Misc: MiscService,
-    private Session: SessionService,
-    private Debug: DebugService,
-    private SweetAlert: SweetAlertService,
+    private appConstants: AppConstants, // TODO make this a service or put in AppService
+    private apiService: ApiService,
+    private pollerService: PollerService,
+    private notificationService: NotificationService,
+    private miscService: MiscService,
+    private sessionService: SessionService,
+    private debugService: DebugService,
+    private sweetAlertService: SweetAlertService,
     private appService: AppService,
     private idle: Idle
   ) { }
@@ -99,12 +58,12 @@ export class AppComponent implements OnInit, OnDestroy {
     window.setTimeout(() => this.initializeFrankConsole(), 250);
 
     const idleStartSubscription = this.idle.onIdleStart.subscribe(() => {
-      this.Poller.getAll().changeInterval(this.appConstants["console.idle.pollerInterval"]);
+      this.pollerService.getAll().changeInterval(this.appConstants["console.idle.pollerInterval"]);
 
       let idleTimeout = (parseInt(this.appConstants["console.idle.timeout"]) > 0) ? parseInt(this.appConstants["console.idle.timeout"]) : false;
       if (!idleTimeout) return;
 
-      this.SweetAlert.Warning({
+      this.sweetAlertService.Warning({
         title: "Idle timer...",
         text: "Your session will be terminated in <span class='idleTimer'>60:00</span> minutes.",
         showConfirmButton: false,
@@ -124,7 +83,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this._subscriptions.add(idleWarnSubscription);
 
     const idleTimeoutSubscription = this.idle.onTimeout.subscribe(() => {
-      this.SweetAlert.Info({
+      this.sweetAlertService.Info({
         title: "Idle timer...",
         text: "You have been logged out due to inactivity.",
         showCloseButton: true
@@ -137,7 +96,7 @@ export class AppComponent implements OnInit, OnDestroy {
       let elm = angular.element(".swal2-container").find(".swal2-close");
       elm.click();
 
-      this.Poller.getAll().changeInterval(this.appConstants["console.pollerInterval"]);
+      this.pollerService.getAll().changeInterval(this.appConstants["console.pollerInterval"]);
     });
     this._subscriptions.add(idleEndSubscription);
   }
@@ -149,18 +108,18 @@ export class AppComponent implements OnInit, OnDestroy {
   initializeFrankConsole() {
     if (this.appConstants['init'] === -1) {
       this.appConstants['init'] = 0;
-      this.Debug.log("Initializing Frank!Console");
+      this.debugService.log("Initializing Frank!Console");
     } else if (this.appConstants['init'] === 0) {
-      this.Debug.log("Cancelling 2nd initialization attempt");
+      this.debugService.log("Cancelling 2nd initialization attempt");
       Pace.stop();
       return;
     } else {
-      this.Debug.info("Loading Frank!Console", this.appConstants['init']);
+      this.debugService.info("Loading Frank!Console", this.appConstants['init']);
     }
 
     if (this.appConstants['init'] === 0) { //Only continue if the init state was -1
       this.appConstants['init'] = 1;
-      this.Api.Get("server/info", (data) => {
+      this.apiService.Get("server/info", (data) => {
         this.serverInfo = data;
 
         this.appConstants['init'] = 2;
@@ -196,7 +155,7 @@ export class AppComponent implements OnInit, OnDestroy {
         angular.element(".iaf-info").html(data.framework.name + " " + data.framework.version + ": " + data.instance.name + " " + data.instance.version);
 
         if (this.appService.dtapStage == "LOC") {
-          this.Debug.setLevel(3);
+          this.debugService.setLevel(3);
         }
 
         //Was it able to retrieve the serverinfo without logging in?
@@ -204,7 +163,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.idle.setTimeout(0);
         }
 
-        this.Api.Get("server/configurations", (data: Configuration[]) => {
+        this.apiService.Get("server/configurations", (data: Configuration[]) => {
           this.appService.updateConfigurations(data);
         });
         this.checkIafVersions();
@@ -214,7 +173,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.$state.go("pages.errorpage");
         }
       });
-      this.Api.Get("environmentletiables", (data) => {
+      this.apiService.Get("environmentletiables", (data) => {
         if (data["Application Constants"]) {
           this.appConstants = $.extend(this.appConstants, data["Application Constants"]["All"]); //make FF!Application Constants default
 
@@ -240,31 +199,29 @@ export class AppComponent implements OnInit, OnDestroy {
   checkIafVersions(){
     /* Check IAF version */
     console.log("Checking IAF version with remote...");
-    this.$http.get<IAFRelease[]>("https://ibissource.org/iaf/releases/?q=" + this.Misc.getUID(this.serverInfo!)).then((response) => {
-      if (!response || !response.data) return;
-      let release = response.data[0]; //Not sure what ID to pick, smallest or latest?
+    this.appService.getIafVersions(this.miscService.getUID(this.serverInfo!)).subscribe((response) => {
+      this.serverInfo = null;
+      if (!response || response.length === 0) return;
 
-      let newVersion = (release.tag_name.substr(0, 1) == "v") ? release.tag_name.substr(1) : release.tag_name;
-      let currentVersion = this.appConstants["application.version"];
-      let version = this.Misc.compare_version(newVersion, currentVersion) || 0;
+      const release = response[0]; //Not sure what ID to pick, smallest or latest?
+
+      const newVersion = (release.tag_name.substr(0, 1) == "v") ? release.tag_name.substr(1) : release.tag_name;
+      const currentVersion = this.appConstants["application.version"];
+      const version = this.miscService.compare_version(newVersion, currentVersion) || 0;
       console.log("Comparing version: '" + currentVersion + "' with latest release: '" + newVersion + "'.");
-      this.Session.remove("IAF-Release");
+      this.sessionService.remove("IAF-Release");
 
       if (+version > 0) {
-        this.Session.set("IAF-Release", release);
-        this.Notification.add('fa-exclamation-circle', "IAF update available!", false, () => {
+        this.sessionService.set("IAF-Release", release);
+        this.notificationService.add('fa-exclamation-circle', "IAF update available!", false, () => {
           this.$location.path("iaf-update");
         });
       }
-      this.serverInfo = null;
-    }).catch((error) => {
-      this.Debug.error("An error occured while comparing IAF versions", error);
-      this.serverInfo = null;
     });
   }
 
   initializeWarnings(){
-    this.Poller.add("server/warnings", (configurations) => {
+    this.pollerService.add("server/warnings", (configurations) => {
       this.appService.updateAlerts([]); //Clear all old alerts
 
       configurations['All'] = { messages: configurations.messages };
@@ -274,16 +231,16 @@ export class AppComponent implements OnInit, OnDestroy {
       delete configurations.totalErrorStoreCount;
 
       for (let x in configurations.warnings) {
-        this.addWarning('', configurations.warnings[x]);
+        this.appService.addWarning('', configurations.warnings[x]);
       }
 
       for (const i in configurations) {
         let configuration = configurations[i];
         if (configuration.exception)
-          this.addException(i, configuration.exception);
+          this.appService.addException(i, configuration.exception);
         if (configuration.warnings) {
           for (const x in configuration.warnings) {
-            this.addWarning(i, configuration.warnings[x]);
+            this.appService.addWarning(i, configuration.warnings[x]);
           }
         }
 
@@ -311,7 +268,7 @@ export class AppComponent implements OnInit, OnDestroy {
         if (!allAdapters[i]) {
           delete raw_adapter_data[i];
           delete this.appService.adapters[i];
-          this.Debug.log("removed adapter [" + i + "]");
+          this.debugService.log("removed adapter [" + i + "]");
         }
       }
       for (const adapterName in allAdapters) { //Add new adapter information
@@ -378,9 +335,9 @@ export class AppComponent implements OnInit, OnDestroy {
     };
 
     //Get base information first, then update it with more details
-    this.Api.Get("adapters", (data: Record<string, Adapter>) => pollerCallback(data));
+    this.apiService.Get("adapters", (data: Record<string, Adapter>) => pollerCallback(data));
     window.setTimeout(() => {
-      this.Poller.add("adapters?expanded=all", (data: Record<string, Adapter>) => { pollerCallback(data) }, true);
+      this.pollerService.add("adapters?expanded=all", (data: Record<string, Adapter>) => { pollerCallback(data) }, true);
       this.appService.updateLoading(false);
       this.loading = false;
     }, 3000);
@@ -404,7 +361,7 @@ export class AppComponent implements OnInit, OnDestroy {
         // TODO Receiver.started is not really a thing, maybe this should work differently?
         // @ts-ignore
         if (adapter.receivers[+x].started == false) {
-          this.Notification.add('fa-exclamation-circle', "Receiver '" + name + "' stopped!", false, () => {
+          this.notificationService.add('fa-exclamation-circle', "Receiver '" + name + "' stopped!", false, () => {
             this.$location.path("status");
             this.$location.hash(adapter.name);
           });
@@ -412,35 +369,12 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     }
     else {
-      this.Notification.add('fa-exclamation-circle', "Adapter '" + name + "' stopped!", false, () => {
+      this.notificationService.add('fa-exclamation-circle', "Adapter '" + name + "' stopped!", false, () => {
         this.$location.path("status");
         this.$location.hash(adapter.name);
       });
     }
   }
-
-  reloadRoute() {
-    this.$state.reload();
-  };
-
-  addAlert(type: string, configuration: string, message: string) {
-    let line = message.match(/line \[(\d+)\]/);
-    let isValidationAlert = message.indexOf("Validation") !== -1;
-    let link = (line && !isValidationAlert) ? { name: configuration, '#': 'L' + line[1] } : undefined;
-    this.appService.alerts.push({
-      link: link,
-      type: type,
-      configuration: configuration,
-      message: message
-    });
-    this.appService.updateAlerts(this.appService.alerts);
-  };
-  addWarning(configuration: string, message: string) {
-    this.addAlert("warning", configuration, message);
-  };
-  addException(configuration: string, message: string) {
-    this.addAlert("danger", configuration, message);
-  };
 
   openInfoModel() {
     this.$uibModal.open({
