@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -35,7 +36,7 @@ public class TestSendJmsMessage extends BusTestBase {
 		try {
 			callAsyncGateway(request);
 		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof BusException);
+			assertInstanceOf(BusException.class, e.getCause());
 			BusException be = (BusException) e.getCause();
 			assertEquals("a connectionFactory must be provided", be.getMessage());
 		}

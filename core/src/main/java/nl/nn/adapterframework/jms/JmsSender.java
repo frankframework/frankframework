@@ -42,7 +42,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -238,11 +237,14 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	private Message waitAndHandleResponseMessage(javax.jms.Message msg, Destination replyQueue, PipeLineSession session, Session s) throws JMSException, TimeoutException, IOException, TransformerException, SAXException {
-		String replyCorrelationId = null;
-		if (getReplyToName() != null) {
+		String jmsMessageID = msg.getJMSMessageID();
+		String replyCorrelationId;
+		if (getReplyToName() == null) {
+			replyCorrelationId = null;
+		} else {
 			switch (getLinkMethod()) {
 				case MESSAGEID:
-					replyCorrelationId = msg.getJMSMessageID();
+					replyCorrelationId = jmsMessageID;
 					break;
 				case CORRELATIONID:
 					replyCorrelationId = session == null ? null : session.getCorrelationId();
@@ -254,14 +256,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 					throw new IllegalStateException("unknown linkMethod [" + getLinkMethod() + "]");
 			}
 		}
-		ThrowingSupplier<String, JMSException> jmsMessageID = msg::getJMSMessageID;
 		log.debug("[{}] start waiting for reply on [{}] requestMsgId [{}] replyCorrelationId [{}] for [{}] ms",
 				this::getName, logValue(replyQueue), logValue(jmsMessageID), logValue(replyCorrelationId), this::getReplyTimeout);
 		MessageConsumer mc = getMessageConsumerForCorrelationId(s, replyQueue, replyCorrelationId);
 		try {
 			javax.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
 			if (rawReplyMsg == null) {
-				throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId [" + msg.getJMSMessageID() + "] replyCorrelationId [" + replyCorrelationId + "] within [" + getReplyTimeout() + "] ms");
+				throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId [" + jmsMessageID + "] replyCorrelationId [" + replyCorrelationId + "] within [" + getReplyTimeout() + "] ms");
 			}
 			StringBuilder receivedJMSProperties = new StringBuilder();
 			if (!getResponseHeadersList().isEmpty()) {
