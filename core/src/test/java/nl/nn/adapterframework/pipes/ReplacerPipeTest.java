@@ -62,8 +62,18 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 		pipe.setAllowUnicodeSupplementaryCharacters(true);
 		configureAndStartPipe();
 
-		PipeRunResult res = doPipe(pipe, "<test>\bolo</test>/jacjac:)", session);
-		assertEquals("<head>lolo</head>/jacjac:)", res.getResult().asString());
+		PipeRunResult res = doPipe(pipe, "<test>&\bolo\f&'</test>/jacjac:)", session);
+		assertEquals("<head>&lolol&'</head>/jacjac:)", res.getResult().asString());
+	}
+
+	@Test
+	public void stripNonXMLChar() throws Exception {
+		pipe.setReplaceNonXmlChars(true);
+		pipe.setAllowUnicodeSupplementaryCharacters(true);
+		configureAndStartPipe();
+
+		PipeRunResult res = doPipe(pipe, "<test>&\bolo\f'&</test>/jacjac:)", session);
+		assertEquals("<test>&olo'&</test>/jacjac:)", res.getResult().asString());
 	}
 
 	@Test

@@ -3,6 +3,7 @@ package nl.nn.adapterframework.management.web;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -39,7 +40,7 @@ public class TestDeprecationFilter {
 	public void testDefaultBehaviour() throws Exception {
 		DeprecationFilter filter = new DeprecationFilter();
 		Environment env = mock(Environment.class);
-		when(env.getProperty(any(), any(), any())).thenReturn(false);
+		when(env.getProperty(eq(DeprecationFilter.ALLOW_DEPRECATED_ENDPOINTS_KEY), any(), any())).thenReturn(false);
 		filter.setEnvironment(env);
 
 		ContainerRequestContext request = mock(ContainerRequestContext.class);
@@ -54,23 +55,32 @@ public class TestDeprecationFilter {
 
 	@Test
 	public void testDeprecatedMethodNotAllowed() throws Exception {
-		DeprecationFilter filter = new DeprecationFilter();
-		Environment env = mock(Environment.class);
-		when(env.getProperty(any(), any(), any())).thenReturn(false);
-		filter.setEnvironment(env);
+		TestAppender appender = TestAppender.newBuilder().build();
+		TestAppender.setRootLogLevel(Level.WARN);
+		TestAppender.addToRootLogger(appender);
+		try {
+			DeprecationFilter filter = new DeprecationFilter();
+			Environment env = mock(Environment.class);
+			when(env.getProperty(eq(DeprecationFilter.ALLOW_DEPRECATED_ENDPOINTS_KEY), any(), any())).thenReturn(false);
+			filter.setEnvironment(env);
 
-		ContainerRequestContext request = mock(ContainerRequestContext.class);
-		ArgumentCaptor<Response> messageCapture = ArgumentCaptor.forClass(Response.class);
-		doNothing().when(request).abortWith(messageCapture.capture());
+			ContainerRequestContext request = mock(ContainerRequestContext.class);
+			ArgumentCaptor<Response> messageCapture = ArgumentCaptor.forClass(Response.class);
+			doNothing().when(request).abortWith(messageCapture.capture());
 
-		setMethod(ClassWithSlash.class, "deprecatedMethod");
+			setMethod(ClassWithSlash.class, "deprecatedMethod");
 
-		// Act
-		filter.filter(request);
+			// Act
+			filter.filter(request);
 
-		// Assert
-		verify(request, times(1)).abortWith(any(Response.class));
-		assertEquals(400, messageCapture.getValue().getStatus());
+			// Assert
+			verify(request, times(1)).abortWith(any(Response.class));
+			assertEquals(400, messageCapture.getValue().getStatus());
+		} finally {
+			TestAppender.removeAppender(appender);
+			TestAppender.setRootLogLevel(Level.ERROR);
+		}
+		assertTrue(appender.contains("endpoint [/request/path2] has been deprecated"));
 	}
 
 	@Test
@@ -81,7 +91,7 @@ public class TestDeprecationFilter {
 		try {
 			DeprecationFilter filter = new DeprecationFilter();
 			Environment env = mock(Environment.class);
-			when(env.getProperty(any(), any(), any())).thenReturn(true);
+			when(env.getProperty(eq(DeprecationFilter.ALLOW_DEPRECATED_ENDPOINTS_KEY), any(), any())).thenReturn(true);
 			filter.setEnvironment(env);
 
 			ContainerRequestContext request = mock(ContainerRequestContext.class);
@@ -99,7 +109,7 @@ public class TestDeprecationFilter {
 			TestAppender.removeAppender(appender);
 			TestAppender.setRootLogLevel(Level.ERROR);
 		}
-		assertTrue(appender.contains("endpoint [/request/path2] has been deprecated"));
+		assertTrue(appender.getLogLines().isEmpty());
 	}
 
 	@Test
@@ -110,7 +120,7 @@ public class TestDeprecationFilter {
 		try {
 			DeprecationFilter filter = new DeprecationFilter();
 			Environment env = mock(Environment.class);
-			when(env.getProperty(any(), any(), any())).thenReturn(true);
+			when(env.getProperty(eq(DeprecationFilter.ALLOW_DEPRECATED_ENDPOINTS_KEY), any(), any())).thenReturn(true);
 			filter.setEnvironment(env);
 
 			ContainerRequestContext request = mock(ContainerRequestContext.class);
@@ -128,7 +138,7 @@ public class TestDeprecationFilter {
 			TestAppender.removeAppender(appender);
 			TestAppender.setRootLogLevel(Level.ERROR);
 		}
-		assertTrue(appender.contains("endpoint [/base/path/request] has been deprecated"));
+		assertTrue(appender.getLogLines().isEmpty());
 	}
 
 	private void setMethod(Class<?> targetClass, String methodName) throws Exception {

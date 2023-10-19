@@ -243,7 +243,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				throw new ConfigurationException("while configuring sender",e);
 			}
 			if (getSender() instanceof HasPhysicalDestination) {
-				log.debug("has sender on {}", () -> ((HasPhysicalDestination)getSender()).getPhysicalDestinationName());
+				log.debug("has sender on {}", ((HasPhysicalDestination)sender)::getPhysicalDestinationName);
 			}
 			if (getListener() != null) {
 				if (getSender().isSynchronous()) {
@@ -255,7 +255,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 					throw new ConfigurationException("while configuring listener",e);
 				}
 				if (getListener() instanceof HasPhysicalDestination) {
-					log.debug("has listener on {}", () -> ((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
+					log.debug("has listener on {}", ((HasPhysicalDestination)getListener()).getPhysicalDestinationName());
 				}
 			}
 
@@ -749,7 +749,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	}
 
 	private PipeRunResult postProcessOutput(Message output, PipeLineSession session) throws PipeRunException {
-		IPipe outputValidator = getOutputValidator();
 		if (outputValidator != null) {
 			log.debug("validating response");
 			PipeRunResult validationResult;
@@ -760,8 +759,9 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				}
 				output = validationResult.getResult();
 			}
+			log.debug("response after validating ({}) [{}]", () -> ClassUtils.nameOf(validationResult.getResult()), validationResult::getResult);
 		}
-		IPipe outputWrapper = getOutputWrapper();
+
 		if (outputWrapper!=null) {
 			log.debug("wrapping response");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, output, session);
@@ -772,7 +772,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 				return wrapResult;
 			}
 			output = wrapResult.getResult();
-			log.debug("response after wrapping  ({}) [{}]", ClassUtils.nameOf(output), output);
+			log.debug("response after wrapping ({}) [{}]", () -> ClassUtils.nameOf(wrapResult.getResult()), wrapResult::getResult);
 		}
 		return new PipeRunResult(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "dummy"), output);
 	}
@@ -1023,13 +1023,13 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	 */
 	protected void setSender(ISender sender) {
 		this.sender = sender;
-		log.debug("pipe [" + getName() + "] registered sender [" + sender.getName() + "] with properties [" + sender.toString() + "]");
+		log.debug("pipe [{}] registered sender [{}] with properties [{}]", this::getName, sender::getName, sender::toString);
 	}
 
 	/** Listener for responses on the request sent */
 	protected void setListener(ICorrelatedPullingListener listener) {
 		this.listener = listener;
-		log.debug("pipe [" + getName() + "] registered listener [" + listener.toString() + "]");
+		log.debug("pipe [{}] registered listener [{}]", this::getName, listener::toString);
 	}
 
 	/** log of all messages sent */

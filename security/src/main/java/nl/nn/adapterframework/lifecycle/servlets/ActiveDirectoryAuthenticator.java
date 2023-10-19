@@ -50,6 +50,8 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase {
 	private URL roleMappingURL = null;
 
 	private void configure() throws FileNotFoundException {
+		setDefaultValues();
+
 		if(StringUtils.isEmpty(url)) {
 			throw new IllegalArgumentException("url may not be empty");
 		}
@@ -59,15 +61,19 @@ public class ActiveDirectoryAuthenticator extends ServletAuthenticatorBase {
 			throw new FileNotFoundException("unable to find LDAP role-mapping file ["+roleMappingFile+"]");
 		}
 		log.info("found rolemapping file [{}]", roleMappingURL);
-
-		setDefaultValues();
 	}
 
-	/** Set default values for legacy properties to ease application upgrades, these values will be overwritten when the appropiate setter is called. */
+	/** Set default values for legacy properties to ease application upgrades, these values can be overwritten when the appropriate setter is called. */
 	private void setDefaultValues() {
 		Environment env = getApplicationContext().getEnvironment();
-		url = env.getProperty("ldap.auth.url");
-		baseDn = env.getProperty("ldap.auth.user.base");
+		String legacyURL = env.getProperty("ldap.auth.url");
+		if(StringUtils.isEmpty(url) && StringUtils.isNotBlank(legacyURL)) {
+			this.url = legacyURL;
+		}
+		String legacyBaseDn = env.getProperty("ldap.auth.user.base");
+		if(StringUtils.isEmpty(baseDn) && StringUtils.isNotBlank(legacyBaseDn)) {
+			this.baseDn = legacyBaseDn;
+		}
 	}
 
 	@Override
