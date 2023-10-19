@@ -69,30 +69,23 @@ public class FunctionalUtil {
 
 	/**
 	 * Helper function to create a Log4J {@link org.apache.logging.log4j.util.Supplier} to be able to use a method
-	 * as supplier that throws an exception.
+	 * as supplier in a row of mixed arguments.
 	 * <p>
 	 *     This function is useful when you need to pass a variable as constant which is not effectively final, or to disambiguate method-overloads
 	 *     when an array of mixed arguments should be passed all as type {@link org.apache.logging.log4j.util.Supplier}
 	 *     to a logger method (in particular the methods where an exception is passed as last argument).
 	 *     For example:
 	 *     <code>
-	 *         log.error("Error with message id [{}]", logThrowingMethod(jmsMessage::getJMSMessageID), e);
+	 *         log.error("Error with message id [{}]", logMethod(this::getLogPrefix), logValue(v), e);
 	 *     </code>
 	 * </p>
 	 *
 	 * @param method Single-argument Method to be invoked.
-	 * @return {@link org.apache.logging.log4j.util.Supplier} that will return the {@code value} parameter.
+	 * @return {@link org.apache.logging.log4j.util.Supplier} that will return the {@code method} parameter.
 	 * @param <T> Type of the value of the method argument.
-	 * @param <E> Type of Exception thrown by the method.
 	 */
-	public static <T,E extends Exception> org.apache.logging.log4j.util.Supplier<String> logThrowingMethod(ThrowingSupplier<T,E> method) {
-		return () -> {
-			try {
-				return String.valueOf(method.get());
-			} catch (Exception e) {
-				return e.getMessage();
-			}
-		};
+	public static <T> org.apache.logging.log4j.util.Supplier<T> logMethod(Supplier<T> method) {
+		return method::get;
 	}
 
 	/**

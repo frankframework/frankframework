@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.jms;
 
-import static nl.nn.adapterframework.functional.FunctionalUtil.logThrowingMethod;
 import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
 
 import java.io.IOException;
@@ -43,6 +42,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -254,8 +254,9 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 					throw new IllegalStateException("unknown linkMethod [" + getLinkMethod() + "]");
 			}
 		}
+		ThrowingSupplier<String, JMSException> jmsMessageID = msg::getJMSMessageID;
 		log.debug("[{}] start waiting for reply on [{}] requestMsgId [{}] replyCorrelationId [{}] for [{}] ms",
-				this::getName, logValue(replyQueue), logThrowingMethod(msg::getJMSMessageID), logValue(replyCorrelationId), this::getReplyTimeout);
+				this::getName, logValue(replyQueue), logValue(jmsMessageID), logValue(replyCorrelationId), this::getReplyTimeout);
 		MessageConsumer mc = getMessageConsumerForCorrelationId(s, replyQueue, replyCorrelationId);
 		try {
 			javax.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());

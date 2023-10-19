@@ -21,7 +21,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -89,12 +88,12 @@ import nl.nn.adapterframework.util.EnumUtils;
  */
 public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled {
 
-	public final static String JMS_MESSAGE_CLASS_DEFAULT = "jms.messageClass.default";
+	public static final String JMS_MESSAGECLASS_KEY = "jms.messageClass.default";
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "JMS";
 	private final boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", false);
 	private final boolean useJms102 = AppConstants.getInstance().getBoolean("jms.useJms102", false);
-	private final MessageClass messageClassDefault = AppConstants.getInstance().getOrDefault(JMS_MESSAGE_CLASS_DEFAULT, MessageClass.AUTO);
+	private final MessageClass messageClassDefault = AppConstants.getInstance().getOrDefault(JMS_MESSAGECLASS_KEY, MessageClass.AUTO);
 	private @Getter MessageClass messageClass = MessageClass.AUTO;
 
 	private @Getter boolean transacted = false;
@@ -112,7 +111,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private @Getter DestinationType destinationType = DestinationType.QUEUE; // QUEUE or TOPIC
 
 	protected MessagingSource messagingSource;
-	private Map<String,Destination> destinations = new ConcurrentHashMap<>();
+	private final Map<String,Destination> destinations = new ConcurrentHashMap<>();
 
 	private @Setter @Getter IConnectionFactoryFactory connectionFactoryFactory = null;
 	private @Setter @Getter Map<String, String> proxiedDestinationNames;
@@ -672,11 +671,11 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			mp.setTimeToLive(timeToLive);
 		}
 		if (properties!=null) {
-			for (Iterator<String> it = properties.keySet().iterator(); it.hasNext();) {
-				String key = it.next();
-				Object value = properties.get(key);
+			for (Map.Entry<String, Object> entry: properties.entrySet()) {
+				String key = entry.getKey();
+				Object value = entry.getValue();
 				if (value instanceof Message) {
-					value = ((Message)value).asString();
+					value = ((Message) value).asString();
 				}
 				msg.setObjectProperty(key, value);
 			}

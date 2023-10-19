@@ -353,7 +353,9 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	/**
 	 * Set additional message headers/properties on the JMS response, read after message has been processed!
 	 *
-	 * @param session@return a map with headers to set to the JMS response
+	 * @param session which has been built during the pipeline
+	 * @return a map with headers to set to the JMS response, or {@code null} if there was
+	 * no session or no parameters.
 	 */
 	protected Map<String, Object> getMessageProperties(PipeLineSession session) {
 

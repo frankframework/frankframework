@@ -44,7 +44,7 @@
 			<pipe name="Extract From ZIP File"
 				  className="nl.nn.adapterframework.compression.ZipIteratorPipe"
 				  streamingContents="false"
-				  charset="ISO-8859-1" getInputFromSessionKey="returnedMessage"
+				  getInputFromSessionKey="returnedMessage"
 			>
 				<sender className="nl.nn.adapterframework.senders.FixedResultSender"
 						substituteVars="true" returnString="%{zipdata}"

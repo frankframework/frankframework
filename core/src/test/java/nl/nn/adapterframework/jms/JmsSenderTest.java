@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.jms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -81,7 +82,7 @@ class JmsSenderTest {
 		// Assert
 		javax.jms.Message jmsMessage = mockQueue.getMessage();
 		assertNotNull(jmsMessage);
-		assertTrue(jmsMessage instanceof BytesMessage);
+		assertInstanceOf(BytesMessage.class, jmsMessage);
 
 		BytesMessage bytesMessage = (BytesMessage) jmsMessage;
 		byte[] data = new byte[(int) bytesMessage.getBodyLength()];

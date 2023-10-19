@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import static nl.nn.adapterframework.functional.FunctionalUtil.logThrowingMethod;
+import static nl.nn.adapterframework.functional.FunctionalUtil.logMethod;
 import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
 import static nl.nn.adapterframework.functional.FunctionalUtil.supplier;
 
@@ -969,7 +969,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		try {
 			txStatus = txManager.getTransaction(txDef);
 		} catch (RuntimeException e) {
-			log.error("{} Exception preparing to move input message with id [{}] correlationId [{}] to error sender", logThrowingMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), e);
+			log.error("{} Exception preparing to move input message with id [{}] correlationId [{}] to error sender", logMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), e);
 			// no use trying again to send message on errorSender, will cause same exception!
 
 			// NB: Why does this case return, instead of re-throwing?
@@ -993,13 +993,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			txManager.commit(txStatus);
 		} catch (Exception e) {
-			log.error("{} Exception moving message with id [{}] correlationId [{}] to error sender or error storage, original message: [{}]", logThrowingMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), logValue(rawMessageWrapper), e);
+			log.error("{} Exception moving message with id [{}] correlationId [{}] to error sender or error storage, original message: [{}]", logMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), logValue(rawMessageWrapper), e);
 			try {
 				if (!txStatus.isCompleted()) {
 					txManager.rollback(txStatus);
 				}
 			} catch (Exception rbe) {
-				log.error("{} Exception while rolling back transaction for message  with id [{}] correlationId [{}], original message: [{}]", logThrowingMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), logValue(rawMessageWrapper), rbe);
+				log.error("{} Exception while rolling back transaction for message  with id [{}] correlationId [{}], original message: [{}]", logMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), logValue(rawMessageWrapper), rbe);
 			}
 		}
 	}
