@@ -130,26 +130,6 @@ appModule
   .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory)
   .directive('webservices', downgradeComponent({ component: WebservicesComponent }) as angular.IDirectiveFactory);
 
-const nestedRouterStates: NgHybridStateDeclaration[] = [
-  {
-    name: 'pages.storage.list',
-    url: "stores/:processState",
-    component: StorageListComponent,
-    params: {
-      processState: { value: '', squash: true },
-    }
-  },
-  {
-    name: 'pages.storage.view',
-    url: "stores/:processState/messages/:messageId",
-    component: StorageViewComponent,
-    params: {
-      processState: { value: '', squash: true },
-      messageId: { value: '', squash: true },
-    }
-  }
-];
-
 
 @NgModule({
   declarations: [
