@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.lifecycle.servlets;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -38,8 +37,6 @@ import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -54,7 +51,8 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	protected final Logger log = LogManager.getLogger(this);
 
-	private Set<String> endpoints = new HashSet<>();
+	private Set<String> publicEndpoints = new HashSet<>();
+	private Set<String> privateEndpoints = new HashSet<>();
 	private @Getter ApplicationContext applicationContext;
 	private @Getter Set<String> securityRoles = new HashSet<>();
 	private Properties applicationConstants = null;
@@ -83,11 +81,11 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	@Override
 	public final void registerServlet(ServletConfiguration config) {
-		setEndpoints(config.getUrlMapping());
-		setSecurityRoles(config.getSecurityRoles());
+		addEndpoints(config.getUrlMapping());
+		addSecurityRoles(config.getSecurityRoles());
 	}
 
-	private void setSecurityRoles(List<String> securityRoles) {
+	private void addSecurityRoles(List<String> securityRoles) {
 		if(securityRoles == null || securityRoles.isEmpty()) {
 			this.securityRoles.addAll(DEFAULT_IBIS_ROLES);
 		} else {
@@ -95,22 +93,26 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		}
 	}
 
-	private void setEndpoints(List<String> urlMappings) {
+	private void addEndpoints(List<String> urlMappings) {
 		for(String url : urlMappings) {
-			if(endpoints.contains(url)) {
+			if(publicEndpoints.contains(url) || privateEndpoints.contains(url)) {
 				throw new IllegalStateException("endpoint already configured");
 			}
 
 			log.info("registering url pattern [{}]", url);
-			endpoints.add(url);
+			if(url.charAt(0) == '!') {
+				publicEndpoints.add(url.substring(1));
+			} else {
+				privateEndpoints.add(url);
+			}
 		}
 	}
 
 	/**
 	 * List of endpoints as well as potential exclusions.
 	 */
-	protected Set<String> getEndpoints() {
-		return Collections.unmodifiableSet(endpoints);
+	protected Set<String> getPrivateEndpoints() {
+		return Collections.unmodifiableSet(privateEndpoints);
 	}
 
 	@Override
@@ -118,7 +120,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		if(applicationContext == null) {
 			throw new IllegalStateException("Authenticator is not wired through local BeanFactory");
 		}
-		if(endpoints.isEmpty()) { //No servlets registered so no need to build/enable this Authenticator
+		if(privateEndpoints.isEmpty()) { //No servlets registered so no need to build/enable this Authenticator
 			log.info("no url matchers found, ignoring Authenticator [{}]", this::getClass);
 			return;
 		}
@@ -141,20 +143,21 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
 			http.csrf().disable(); //Disable because the front-end doesn't support CSFR tokens (yet!)
-//			RequestMatcher requestMatcher = new AndRequestMatcher(new URLRequestMatcher(endpoints), this::authorizationRequestMatcher);
-			http.securityMatcher(new URLRequestMatcher(endpoints, false)); //Triggers the SecurityFilterChain
+			RequestMatcher requestMatcher = new AndRequestMatcher(new URLRequestMatcher(privateEndpoints), this::authorizationRequestMatcher);
+//TODO does this works?			http.securityMatcher(requestMatcher); //Triggers the SecurityFilterChain
+			http.securityMatcher(new URLRequestMatcher(privateEndpoints)); //Triggers the SecurityFilterChain
 			http.formLogin().disable(); //Disable the form login filter
-			http.anonymous();//.authorities(getAuthorities()); //Disable the default anonymous filter
 			http.logout().disable(); //Disable the logout endpoint on every filter
 //			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); //Disables cookies
 
-//			http.authorizeHttpRequests().requestMatchers(requestMatcher).authenticated();
-			Set<String> nonAuthenticatedEndpoints = endpoints.stream().filter(e -> e.startsWith("!")).map(e -> e.substring(1)).collect(Collectors.toSet());
-			if(!nonAuthenticatedEndpoints.isEmpty()) {
-				http.authorizeHttpRequests().requestMatchers(new URLRequestMatcher(nonAuthenticatedEndpoints, false)).permitAll();
+			if(!publicEndpoints.isEmpty()) {
+				http.authorizeHttpRequests().requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll();
+				http.anonymous(); //Enable 
+			} else {
+				http.anonymous().disable(); //Disable the default anonymous filter
 			}
 
-			http.authorizeHttpRequests().requestMatchers(new AndRequestMatcher(new URLRequestMatcher(endpoints, false), this::authorizationRequestMatcher)).authenticated();
+			http.authorizeHttpRequests().requestMatchers(requestMatcher).authenticated();
 
 			return configure(http);
 		} catch (Exception e) {

@@ -29,19 +29,12 @@ import lombok.extern.log4j.Log4j2;
 public class URLRequestMatcher implements RequestMatcher {
 	private final Set<String> absoluteEndpoints;
 	private final Set<String> wildcardEndpoints;
-	private final Set<String> excludedEndpoints;
 
-	private boolean a = false;
-
-	public URLRequestMatcher(Set<String> rawEndpointsWithExcludes, boolean a) {
-		this.a = a;
+	public URLRequestMatcher(Set<String> rawEndpointsWithExcludes) {
 		absoluteEndpoints = new HashSet<>();
 		wildcardEndpoints = new HashSet<>();
-		excludedEndpoints = new HashSet<>();
 		for(String endpoint : rawEndpointsWithExcludes) {
-			if(endpoint.charAt(0) == '!') {
-				excludedEndpoints.add(endpoint.substring(1));
-			} else if(endpoint.charAt(endpoint.length()-1) == '*') {
+			if(endpoint.charAt(endpoint.length()-1) == '*') {
 				wildcardEndpoints.add(endpoint.substring(0, endpoint.length()-1));
 			} else {
 				absoluteEndpoints.add(endpoint);
@@ -64,9 +57,8 @@ public class URLRequestMatcher implements RequestMatcher {
 
 		for(String url : wildcardEndpoints) {
 			if(path.startsWith(url)) { //wildcard match
-				boolean isExcluded = a && excludedEndpoints.contains(path);
-				log.trace("relative match with url [{}] and path [{}] is excluded [{}]", url, path, isExcluded);
-				return !isExcluded;
+				log.trace("relative match with url [{}] and path [{}]", url, path);
+				return true;
 			}
 		}
 
@@ -87,7 +79,6 @@ public class URLRequestMatcher implements RequestMatcher {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Absolute RequestPatterns ").append(this.absoluteEndpoints);
 		sb.append(" Wildcard RequestPatterns ").append(this.wildcardEndpoints);
-		sb.append(" Excluded RequestPatterns ").append(this.excludedEndpoints);
 		return sb.toString();
 	}
 }
