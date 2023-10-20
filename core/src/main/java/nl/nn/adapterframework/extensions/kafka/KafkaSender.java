@@ -69,8 +69,8 @@ public class KafkaSender extends KafkaFacade implements ISender {
 		try {
 			messageBytes = message.asByteArray();
 		} catch (IOException e) {
-            throw new SenderException("Failed to convert message to byte array", e);
-        }
+			throw new SenderException("Failed to convert message to byte array", e);
+		}
 		producerRecord = new ProducerRecord<>(topic, messageBytes);
 		Future<RecordMetadata> future = producer.send(producerRecord);
 		try {

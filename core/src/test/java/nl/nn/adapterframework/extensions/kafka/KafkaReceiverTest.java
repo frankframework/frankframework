@@ -46,10 +46,10 @@ import java.util.stream.Stream;
 import nl.nn.adapterframework.stream.Message;
 
 public class KafkaReceiverTest {
+	IMessageHandler<ConsumerRecord<String, byte[]>> messageHandler = Mockito.mock(MessageHandler.class);
 	MockConsumer<String, byte[]> mockListener = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
 	KafkaListener listener;
 	private interface MessageHandler extends IMessageHandler<ConsumerRecord<String, byte[]>> {}
-	IMessageHandler<ConsumerRecord<String, byte[]>> messageHandler = Mockito.mock(MessageHandler.class);
 
 	@BeforeEach
 	@SneakyThrows
@@ -117,10 +117,11 @@ public class KafkaReceiverTest {
 		Mockito.verifyNoMoreInteractions(messageHandler);
 
 		InvocationOnMock invocationOnMock = invocation.get();
-		IListener<ConsumerRecord<String, byte[]>> origin = invocationOnMock.getArgument(0);
+//		IListener<ConsumerRecord<String, byte[]>> origin = invocationOnMock.getArgument(0);
 		RawMessageWrapper<ConsumerRecord<String, byte[]>> wrapper = invocationOnMock.getArgument(1);
-		PipeLineSession session = invocationOnMock.getArgument(2);
+//		PipeLineSession session = invocationOnMock.getArgument(2);
 		boolean duplicatesAlreadyChecked = invocationOnMock.getArgument(3);
+		Assertions.assertFalse(duplicatesAlreadyChecked);
 		Assertions.assertEquals(topic, wrapper.getContext().get("kafkaTopic"));
 
 		Message message = listener.extractMessage(wrapper, new HashMap<>());
