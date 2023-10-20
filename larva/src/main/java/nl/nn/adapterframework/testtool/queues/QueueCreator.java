@@ -57,7 +57,6 @@ public class QueueCreator {
 			// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
 			DirectoryClassLoader directoryClassLoader = new RelativePathDirectoryClassLoader();
 			directoryClassLoader.setDirectory(scenarioDirectory);
-			System.err.println(scenarioDirectory);
 			directoryClassLoader.setBasePath(".");
 			directoryClassLoader.configure(null, "TestTool");
 
