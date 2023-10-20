@@ -769,7 +769,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- bouncy-gpg uses an very old version publisched under a different artifact name -->
+		<!-- bouncy-gpg uses an very old version published under a different artifact name -->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>

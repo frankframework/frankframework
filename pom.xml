@@ -984,6 +984,13 @@
 										</excludes>
 										<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
 									</bannedDependencies>
+									<bannedDependencies>
+										<excludes>
+											<exclude>org.bouncycastle:bcpg-jdk15on</exclude>
+											<exclude>org.bouncycastle:bcprov-jdk15on</exclude>
+										</excludes>
+										<message>use the newer 'jdk18on' version of org.bouncycastle</message>
+									</bannedDependencies>
 								</rules>
 							</configuration>
 						</execution>
