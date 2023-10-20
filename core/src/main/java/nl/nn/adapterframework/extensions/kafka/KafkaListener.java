@@ -15,21 +15,24 @@
 */
 package nl.nn.adapterframework.extensions.kafka;
 
-import java.time.Duration;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
-
-import lombok.Setter;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 
+import lombok.AccessLevel;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPushingListener;
@@ -40,15 +43,11 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
-import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
-
-public class KafkaListener extends KafkaFacade implements IPushingListener<ConsumerRecord<String, byte[]>>, Runnable {
+public class KafkaListener extends KafkaFacade implements IPushingListener<ConsumerRecord<String, byte[]>> {
 	private IMessageHandler<ConsumerRecord<String, byte[]>> messageHandler;
 	private IbisExceptionListener ibisExceptionListener;
-	boolean shouldBeKilled = false;
-	private boolean running = false;
-	private Consumer<String, byte[]> consumer;
+	//setter is for testing purposes only.
+	private @Setter(AccessLevel.PACKAGE) Consumer<String, byte[]> consumer;
 	/** The group id of the consumer */
 	private @Setter String groupId;
 	/** Whether to start reading from the beginning of the topic. */
@@ -59,55 +58,43 @@ public class KafkaListener extends KafkaFacade implements IPushingListener<Consu
 	private @Setter String topics;
 	/** Kafka internal poll timeout (in MS) */
 	private @Setter int pollTimeout = 100;
+	private KafkaInternalConsumer poller;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(groupId)) throw new ConfigurationException("groupId must be specified");
 		if (StringUtils.isEmpty(topics)) throw new ConfigurationException("topics must be specified");
+		if(pollTimeout < 10) throw new ConfigurationException("pollTimeout should be at least 10");
 		if (pollTimeout > 1000) log.warn("pollTimeout is set to a high value, this may cause the listener to be slow to stop.");
+		if(patternRecheckInterval < 10) throw new ConfigurationException("patternRecheckInterval should be at least 10");
 		properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 		properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, fromBeginning ? "earliest" : "latest");
 		properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
 		properties.setProperty(ConsumerConfig.METADATA_MAX_AGE_CONFIG, String.valueOf(patternRecheckInterval));
+		consumer = new KafkaConsumer<>(properties);
+	}
+	private void onMessage(ConsumerRecord<String, byte[]> record) {
+		try (PipeLineSession session = new PipeLineSession()) {
+			messageHandler.processRawMessage(this, wrapRawMessage(record, session), session, false);
+		} catch (Exception e) {
+			ibisExceptionListener.exceptionThrown(this, e);
+		}
 	}
 
 	@Override
 	public void open() throws ListenerException {
-		consumer = new KafkaConsumer<>(properties);
 		Arrays.stream(topics.split(","))
 				.filter(StringUtils::isNotEmpty) //if topics is `abc` java will split it into `abc` and ``. The latter is not a valid topic.
 				.map(Pattern::compile) //Convert the topic to a regex pattern, to allow for wildcards in topic names.
 				.forEach(consumer::subscribe);
-		new Thread(this).start();
-	}
-
-	@Override
-	public void run() {
-		running = true;
-		while (!shouldBeKilled) {
-			for (ConsumerRecord<String, byte[]> record : consumer.poll(Duration.ofMillis(pollTimeout))) {
-				try (PipeLineSession session = new PipeLineSession()) {
-					messageHandler.processRawMessage(this, wrapRawMessage(record, session), session, false);
-				} catch (Exception e) {
-					ibisExceptionListener.exceptionThrown(this, e);
-				}
-			}
-		}
-		shouldBeKilled = false;
-		running = false;
+		poller = new KafkaInternalConsumer(consumer, pollTimeout, this::onMessage);
 	}
 
 	@Override
 	public void close() throws ListenerException {
-		shouldBeKilled = true;
-		try {
-			Thread.sleep(pollTimeout* 2L);
-		} catch(InterruptedException e) {
-			throw new ListenerException("Got a interruptException while waiting for KafkaListener to be closed.", e);
-		}
-		if(running) throw new ListenerException("Failed to close listener.");
+		poller.kill();
 	}
 
 	@Override
@@ -133,7 +120,22 @@ public class KafkaListener extends KafkaFacade implements IPushingListener<Consu
 
 	@Override
 	public RawMessageWrapper<ConsumerRecord<String, byte[]>> wrapRawMessage(ConsumerRecord<String, byte[]> rawMessage, PipeLineSession session) throws ListenerException {
-		return new RawMessageWrapper<>(rawMessage, null, null);
+		Map<String, String> headers=new HashMap<>();
+		Arrays.stream(rawMessage.headers().toArray()).forEach(header -> {
+			try {
+				headers.put(header.key(), new String(header.value(), StandardCharsets.UTF_8));
+			} catch(Exception e) {
+				log.warn("Failed to convert header key [{}] to string. Bytearray value: [{}]", header.key(), header.value(), e);
+			}
+		});
+		Map<String, Object> context = new HashMap<>();
+		context.put("kafkaTopic", rawMessage.topic());
+		context.put("kafkaKey", rawMessage.key());
+		context.put("kafkaPartition", rawMessage.partition());
+		context.put("kafkaOffset", rawMessage.offset());
+		context.put("kafkaTimestamp", rawMessage.timestamp());
+		context.put("kafkaHeaders", headers);
+		return new RawMessageWrapper<>(rawMessage, context);
 	}
 
 	@Override

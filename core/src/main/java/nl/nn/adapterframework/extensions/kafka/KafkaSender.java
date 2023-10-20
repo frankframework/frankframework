@@ -18,7 +18,10 @@ package nl.nn.adapterframework.extensions.kafka;
 import java.io.IOException;
 import java.util.concurrent.Future;
 
+import lombok.AccessLevel;
+
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -33,7 +36,8 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 
 public class KafkaSender extends KafkaFacade implements ISender {
-	private KafkaProducer<String, byte[]> producer;
+	//setter is for testing purposes only.
+	private @Setter(AccessLevel.PACKAGE) Producer<String, byte[]> producer;
 	/** The topic to send messages to. Only one topic per sender. Wildcards are not supported. */
 	private @Setter String topic;
 
