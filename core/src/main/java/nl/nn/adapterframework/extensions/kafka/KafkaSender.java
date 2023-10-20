@@ -79,7 +79,7 @@ public class KafkaSender extends KafkaFacade implements ISender {
 			throw new SenderException("Failed to send message", e);
 		}
 		return new SenderResult(message);
-    }
+	}
 
 	@Override
 	public String getPhysicalDestinationName() {

@@ -15,14 +15,11 @@
 */
 package nl.nn.adapterframework.extensions.kafka;
 
-import lombok.SneakyThrows;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IMessageHandler;
-
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.receivers.RawMessageWrapper;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
@@ -37,12 +34,10 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
+import lombok.SneakyThrows;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IMessageHandler;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 public class KafkaReceiverTest {
