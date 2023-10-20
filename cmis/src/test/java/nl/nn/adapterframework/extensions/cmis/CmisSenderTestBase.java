@@ -121,6 +121,11 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 		return sender;
 	}
 
+	@Override
+	public void testIfToStringWorks() {
+		// Disable this test, the CmisSender is tested in other classes.
+	}
+
 	public static class ObjectIdMock implements Answer<ObjectId> {
 		@Override
 		public ObjectId answer(InvocationOnMock invocation) throws Throwable {

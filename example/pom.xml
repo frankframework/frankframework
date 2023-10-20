@@ -44,6 +44,16 @@
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-larva</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -51,7 +61,7 @@
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<version>9.4.52.v20230823</version>
+				<version>9.4.53.v20231009</version>
 				<configuration>
 					<systemProperties>
 						<systemProperty>

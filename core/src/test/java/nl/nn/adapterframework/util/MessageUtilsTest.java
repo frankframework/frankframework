@@ -189,4 +189,19 @@ public class MessageUtilsTest {
 			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 		}
 	}
+
+	@Test
+	public void testJsonMessage() throws Exception {
+		Message json = Message.asMessage("{\"GUID\": \"ABC\"}");
+		MimeType mimeType = MessageUtils.computeMimeType(json);
+		assertNotNull(mimeType);
+		assertEquals("application/octet-stream", mimeType.toString()); //mime-type cannot be determined
+	}
+	@Test
+	public void testJsonMessageWithName() throws Exception {
+		Message json = new Message("{\"GUID\": \"ABC\"}", new MessageContext().withName("foo.json"));
+		MimeType mimeType = MessageUtils.computeMimeType(json);
+		assertNotNull(mimeType);
+		assertEquals("application/json", mimeType.toString()); //mime-type can be determined
+	}
 }

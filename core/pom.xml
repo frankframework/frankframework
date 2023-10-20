@@ -132,7 +132,7 @@
 		<dependency>
 			<groupId>org.messaginghub</groupId>
 			<artifactId>pooled-jms</artifactId>
-			<version>1.2.4</version>
+			<version>1.2.5</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.geronimo.specs</groupId>
@@ -421,12 +421,6 @@
 			<groupId>xalan</groupId>
 			<artifactId>serializer</artifactId>
 			<version>2.7.3</version>
-			<exclusions>
-				<exclusion><!-- Part of JDK nowadays, prevent conflicts -->
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -736,7 +730,7 @@
 		<dependency>
 			<groupId>org.codehaus.woodstox</groupId>
 			<artifactId>stax2-api</artifactId>
-			<version>4.2.1</version>
+			<version>4.2.2</version>
 		</dependency>
 
 		<dependency>
@@ -763,7 +757,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>9.36</version>
+			<version>9.37</version>
 		</dependency>
 
 		<dependency>

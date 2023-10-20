@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans
-	xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context"
-	default-autowire="byName"
-	xsi:schemaLocation="
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-	">
+		xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		default-autowire="byName"
+		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
 	<bean name="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" />
 
@@ -21,6 +17,8 @@
 
 	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings" />
 	<bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer" scope="prototype" />
-	<bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor" scope="singleton" />
+	<bean name="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor" scope="singleton">
+		<property name="queueCapacity" value="0"/>
+	</bean>
 
 </beans>
