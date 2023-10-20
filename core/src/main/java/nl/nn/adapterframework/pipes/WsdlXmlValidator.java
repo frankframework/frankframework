@@ -229,18 +229,27 @@ public class WsdlXmlValidator extends SoapValidator {
 		Map<QName, Binding> bindings = definition.getBindings();
 		return bindings.values().stream()
 				.flatMap(binding -> ((List<BindingOperation>) binding.getBindingOperations()).stream())
-				.filter(bindingOperation -> bindingOperation.getExtensibilityElements().stream()
-						.filter(SOAPOperation.class::isInstance)
-						.map(element -> ((SOAPOperation) element).getSoapActionURI())
-						.anyMatch(soapActionFromDefinition -> soapActionFromDefinition.equals(soapAction)))
+				.filter(bindingOperation -> isMatchingSoapAction(soapAction, bindingOperation))
 				.findFirst()
 				.map(bindingOperation -> responseMode ? bindingOperation.getOperation().getOutput().getMessage() : bindingOperation.getOperation().getInput().getMessage())
 				.map(message -> (Collection<Part>)message.getParts().values())
-				.map(parts -> parts.stream()
-						.map(Part::getElementName)
-						.map(QName::getLocalPart)
-						.collect(Collectors.joining(",")))
+				.map(WsdlXmlValidator::mapPartsToSoapBody)
 				.orElse(null);
+	}
+
+	private static String mapPartsToSoapBody(Collection<Part> parts) {
+		return parts.stream()
+				.map(Part::getElementName)
+				.map(QName::getLocalPart)
+				.collect(Collectors.joining(","));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static boolean isMatchingSoapAction(String soapAction, BindingOperation bindingOperation) {
+		return bindingOperation.getExtensibilityElements().stream()
+				.filter(SOAPOperation.class::isInstance)
+				.map(element -> ((SOAPOperation) element).getSoapActionURI())
+				.anyMatch(soapActionFromDefinition -> soapActionFromDefinition.equals(soapAction));
 	}
 
 	private static String getFormattedSchemaLocation(String schemaLocation) {
