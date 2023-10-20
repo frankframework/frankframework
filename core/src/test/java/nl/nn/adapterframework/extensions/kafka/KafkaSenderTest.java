@@ -69,17 +69,16 @@ public class KafkaSenderTest {
 		if(shouldSucceed) Assertions.assertDoesNotThrow(sender::configure, name);
 		else Assertions.assertThrows(ConfigurationException.class, sender::configure, name);
 	}
-	public static Consumer<KafkaFacade> wrap(Consumer<KafkaFacade> function) {
+	public static Consumer<KafkaSender> wrap(Consumer<KafkaSender> function) {
 		return function;
 	}
 	private static Stream<Arguments> validateParameters() {
 		return Stream.of(
-				Arguments.of(wrap(listener->listener.setBootstrapServers(null)), false, "null bootstrapServers"),
-				Arguments.of(wrap(listener->listener.setBootstrapServers("")), false, "empty bootstrapServers"),
-				Arguments.of(wrap(listener->listener.setBootstrapServers("example.com:9092")), true, "valid bootstrapServers"),
-				Arguments.of(wrap(listener->listener.setClientId(null)), false, "null clientId"),
-				Arguments.of(wrap(listener->listener.setClientId("")), false, "empty clientId"),
-				Arguments.of(wrap(listener->listener.setClientId("test")), true, "valid clientId")
+				Arguments.of(wrap(sender->sender.setTopic(null)), false, "null topic"),
+				Arguments.of(wrap(sender->sender.setTopic("")), false, "empty topic"),
+				Arguments.of(wrap(sender->sender.setTopic("test")), true, "valid topic"),
+				Arguments.of(wrap(sender->sender.setTopic("test,test2")), false, "multiple topics"),
+				Arguments.of(wrap(sender->sender.setTopic("test*")), false, "wildcard topic")
 		);
 	}
 }

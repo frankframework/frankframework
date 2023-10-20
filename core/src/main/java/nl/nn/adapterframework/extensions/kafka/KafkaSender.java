@@ -20,6 +20,7 @@ import java.util.concurrent.Future;
 
 import lombok.AccessLevel;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -44,6 +45,7 @@ public class KafkaSender extends KafkaFacade implements ISender {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		if (StringUtils.isEmpty(topic)) throw new ConfigurationException("topic must be specified");
 		if(topic.contains(",")) throw new ConfigurationException("Only one topic is allowed to be used for sender.");
 		if(topic.contains("*")) throw new ConfigurationException("Wildcards are not allowed to be used for sender.");
 		properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
