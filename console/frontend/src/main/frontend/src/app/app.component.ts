@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { Idle } from '@ng-idle/core';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { AppConstants } from 'src/angularjs/app/app.module';
 import { Adapter, AppService, Configuration } from './app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
@@ -12,6 +12,9 @@ import { PollerService } from 'src/angularjs/app/services/poller.service';
 import { SessionService } from 'src/angularjs/app/services/session.service';
 import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
 import { Pace } from 'src/angularjs/deps';
+import { ActivatedRoute, Router } from '@angular/router';
+import { formatDate } from '@angular/common';
+import { APPCONSTANTS } from './app.module';
 
 @Component({
   selector: 'app-root',
@@ -30,11 +33,15 @@ export class AppComponent implements OnInit, OnDestroy {
   startupError: string | null = null;
   userName?: string;
 
+  private urlHash$!: Observable<string | null>;
+  private routeData: Record<string, any> = {};
   private _subscriptions = new Subscription();
 
   constructor(
+    private router: Router,
+    private route: ActivatedRoute,
     private authService: AuthService,
-    private appConstants: AppConstants, // TODO make this a service or put in AppService
+    @Inject(APPCONSTANTS) private appConstants: AppConstants, // TODO make this a service or put in AppService
     private apiService: ApiService,
     private pollerService: PollerService,
     private notificationService: NotificationService,
@@ -47,6 +54,11 @@ export class AppComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+    this.urlHash$ = this.route.fragment;
+    this.route.data.subscribe((data) => {
+      this.routeData = data;
+    });
+
     /* state controller */
     this.authService.loggedin(); //Check if the user is logged in.
 
@@ -88,7 +100,7 @@ export class AppComponent implements OnInit, OnDestroy {
         text: "You have been logged out due to inactivity.",
         showCloseButton: true
       });
-      this.$location.path("logout");
+      this.router.navigate(['logout']);
     });
     this._subscriptions.add(idleTimeoutSubscription);
 
@@ -123,7 +135,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.serverInfo = data;
 
         this.appConstants['init'] = 2;
-        if (!(this.$location.path().indexOf("login") >= 0)) {
+        if (!(this.router.url.indexOf("login") >= 0)) {
           this.idle.watch();
           angular.element("body").removeClass("gray-bg");
           angular.element(".main").show();
@@ -144,9 +156,9 @@ export class AppComponent implements OnInit, OnDestroy {
         //this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
 
         const updateTime = () => {
-          let serverDate = new Date();
+          const serverDate = new Date();
           serverDate.setTime(serverDate.getTime() - this.appConstants['timeOffset']);
-          this.serverTime = this.dateFilter(serverDate, this.appConstants["console.dateFormat"]);
+          this.serverTime = formatDate(serverDate, this.appConstants["console.dateFormat"], this.appService.getUserLocale());
         }
         window.setInterval(updateTime, 1000);
         updateTime();
@@ -170,7 +182,7 @@ export class AppComponent implements OnInit, OnDestroy {
         this.initializeWarnings();
       }, (message, statusCode, statusText) => {
         if (statusCode == 500) {
-          this.$state.go("pages.errorpage");
+          this.router.navigate(['error']);
         }
       });
       this.apiService.Get("environmentletiables", (data) => {
@@ -214,7 +226,7 @@ export class AppComponent implements OnInit, OnDestroy {
       if (+version > 0) {
         this.sessionService.set("IAF-Release", release);
         this.notificationService.add('fa-exclamation-circle', "IAF update available!", false, () => {
-          this.$location.path("iaf-update");
+          this.router.navigate(['iaf-update']);
         });
       }
     });
@@ -344,12 +356,14 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   scrollToAdapter(){
-    if (this.$location.path() == "/status" && this.$location.hash()) {
-      let el = angular.element("#" + this.$location.hash());
-      if (el && el[0]) {
-        el[0].scrollIntoView();
+    this.urlHash$.subscribe((hash) => {
+      if (this.router.url == "/status" && hash) {
+        let el = angular.element("#" + hash);
+        if (el && el[0]) {
+          el[0].scrollIntoView();
+        }
       }
-    }
+    });
   }
 
   updateAdapterNotifications(adapter: Adapter){
@@ -362,26 +376,24 @@ export class AppComponent implements OnInit, OnDestroy {
         // @ts-ignore
         if (adapter.receivers[+x].started == false) {
           this.notificationService.add('fa-exclamation-circle', "Receiver '" + name + "' stopped!", false, () => {
-            this.$location.path("status");
-            this.$location.hash(adapter.name);
+            this.router.navigate(['status'], { fragment: adapter.name });
           });
         }
       }
     }
     else {
       this.notificationService.add('fa-exclamation-circle', "Adapter '" + name + "' stopped!", false, () => {
-        this.$location.path("status");
-        this.$location.hash(adapter.name);
+        this.router.navigate(['status'], { fragment: adapter.name });
       });
     }
   }
 
   openInfoModel() {
-    this.$uibModal.open({
-      templateUrl: 'js/app/components/pages/information-modal/information.html',
-      //            size: 'sm',
-      controller: 'InformationCtrl',
-    });
+    // this.$uibModal.open({
+    //   templateUrl: 'js/app/components/pages/information-modal/information.html',
+    //   //            size: 'sm',
+    //   controller: 'InformationCtrl',
+    // });
   };
 
   sendFeedback(rating: number) {
@@ -391,10 +403,10 @@ export class AppComponent implements OnInit, OnDestroy {
     $(".rating i").each(function (i, e) {
       $(e).addClass("fa-star-o").removeClass("fa-star");
     });
-    this.$uibModal.open({
-      templateUrl: 'angularjs/app/components/pages/feedback-modal/feedback.html',
-      controller: 'FeedbackCtrl',
-      resolve: { rating: function () { return rating; } },
-    });
+    // this.$uibModal.open({
+    //   templateUrl: 'angularjs/app/components/pages/feedback-modal/feedback.html',
+    //   controller: 'FeedbackCtrl',
+    //   resolve: { rating: function () { return rating; } },
+    // });
   };
 }
