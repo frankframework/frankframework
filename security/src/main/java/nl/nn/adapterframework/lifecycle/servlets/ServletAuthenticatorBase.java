@@ -98,10 +98,12 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 				throw new IllegalStateException("endpoint already configured");
 			}
 
-			log.info("registering url pattern [{}]", url);
 			if(url.charAt(0) == '!') {
-				publicEndpoints.add(url.substring(1));
+				String publicUrl = url.substring(1);
+				log.info("registering public endpoint with url [{}]", publicUrl);
+				publicEndpoints.add(publicUrl);
 			} else {
+				log.info("registering private endpoint with url pattern [{}]", url);
 				privateEndpoints.add(url);
 			}
 		}
