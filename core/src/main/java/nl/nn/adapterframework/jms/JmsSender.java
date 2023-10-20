@@ -80,7 +80,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	protected ParameterList paramList = null;
 	private SoapWrapper soapWrapper = null;
 	private String responseHeaders = null;
-	private @Getter List<String> responseHeadersList = new ArrayList<>();
+	private final @Getter List<String> responseHeadersList = new ArrayList<>();
 
 	public enum LinkMethod {
 		/** use the generated messageId as the correlationId in the selector for response messages */

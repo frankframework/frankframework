@@ -229,7 +229,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		if(connectionFactoryFactory == null) {
 			throw new ConfigurationException("no connectionFactoryFactory set");
 		}
-
 		try {
 			ConnectionFactory cf = connectionFactoryFactory.getConnectionFactory(getConnectionFactoryName(), getJndiEnv());
 			if("com.amazon.sqs.javamessaging.SQSConnectionFactory".equals(cf.getClass().getCanonicalName()) && StringUtils.isNotBlank(getMessageSelector())) {

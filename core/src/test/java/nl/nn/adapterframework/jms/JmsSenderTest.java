@@ -19,7 +19,6 @@ import com.mockrunner.mock.jms.MockQueue;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.mock.MockRunnerConnectionFactoryFactory;
-import nl.nn.adapterframework.util.AppConstants;
 
 class JmsSenderTest {
 
@@ -33,7 +32,6 @@ class JmsSenderTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		pipeLineSession = new PipeLineSession();
-		AppConstants.getInstance().setProperty("jms.createDestination", true);
 		jmsSender = new JmsSender();
 
 		mockFactory = new MockRunnerConnectionFactoryFactory();

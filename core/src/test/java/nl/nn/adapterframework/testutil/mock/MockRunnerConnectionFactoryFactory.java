@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.testutil.mock;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Collections;
@@ -20,21 +21,22 @@ import com.mockrunner.mock.jms.MockQueue;
 import com.mockrunner.mock.jms.MockSession;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.jms.IConnectionFactoryFactory;
 
+@Log4j2
 public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFactory {
 	public static final String MOCK_CONNECTION_FACTORY_NAME = "dummyMockConnectionFactory";
+	private static final JMSMockObjectFactory MOCK_FACTORY = new JMSMockObjectFactory();
 
 	private final @Getter DestinationManager destinationManager;
 	private final ConfigurationManager configurationManager;
 	private final ConnectionFactory connectionFactory;
 
 	public MockRunnerConnectionFactoryFactory() {
-		JMSMockObjectFactory mockFactory = new JMSMockObjectFactory();
-		destinationManager = mockFactory.getDestinationManager();
-		configurationManager = mockFactory.getConfigurationManager();
-
-		connectionFactory = mockFactory.getMockQueueConnectionFactory();
+		destinationManager = MOCK_FACTORY.getDestinationManager();
+		configurationManager = MOCK_FACTORY.getConfigurationManager();
+		connectionFactory = MOCK_FACTORY.getMockQueueConnectionFactory();
 	}
 
 	@Override
@@ -53,8 +55,11 @@ public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFac
 	}
 
 	public javax.jms.Message getLastMessageFromQueue(String queueName) {
+		MockQueue queue = getDestinationManager().getQueue(queueName);
 		@SuppressWarnings("unchecked")
-		List<MockMessage> receivedMessageList = getDestinationManager().getQueue(queueName).getReceivedMessageList();
+		List<MockMessage> receivedMessageList = queue.getReceivedMessageList();
+		log.debug("{} messages on queue [{}]", receivedMessageList.size(), queueName);
+		assertFalse(receivedMessageList.isEmpty(), "No messages received, expected at least a single message on queue [" + queueName + "]");
 		return receivedMessageList.get(receivedMessageList.size() - 1);
 	}
 
@@ -65,7 +70,9 @@ public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFac
 		queue.addSession(session);
 		MessageListener ml = message -> {
 			try {
+				log.debug("received message on queue [{}]", queueName);
 				MockQueue replyQueue = (MockQueue) message.getJMSReplyTo();
+				log.debug("reply queue = [{}]", replyQueue);
 				if (replyQueue != null) {
 					replyQueue.addMessage(message);
 				}
@@ -73,6 +80,7 @@ public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFac
 				fail(e);
 			}
 		};
+		log.debug("Add message listener to queue [{}]", queueName);
 		session.setMessageListener(ml);
 	}
 
