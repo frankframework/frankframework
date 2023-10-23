@@ -22,11 +22,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import nl.nn.adapterframework.core.IMessageBrowser;
-
-import nl.nn.adapterframework.dbms.Dbms;
-import nl.nn.adapterframework.dbms.MySqlDbmsSupport;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -35,10 +30,12 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IExtendedPipe;
+import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.dbms.Dbms;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.parameters.Parameter;
