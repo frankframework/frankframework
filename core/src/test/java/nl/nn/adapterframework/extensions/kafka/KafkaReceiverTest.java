@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.kafka;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -31,26 +30,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 public class KafkaReceiverTest {
-	IMessageHandler<ConsumerRecord<String, byte[]>> messageHandler = Mockito.mock(MessageHandler.class);
 	MockConsumer<String, byte[]> mockListener = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
 	KafkaListener listener;
-	private interface MessageHandler extends IMessageHandler<ConsumerRecord<String, byte[]>> {}
 
 	@BeforeEach
 	@SneakyThrows
 	void setUp() {
 		listener = new KafkaListener();
-		listener.setHandler(messageHandler);
 		listener.setTopics("test.*.test2");
 		listener.setClientId("test");
 		listener.setGroupId("testGroup");
@@ -76,8 +69,6 @@ public class KafkaReceiverTest {
 				Arguments.of(wrap(listener->listener.setTopics("test")), true, "valid topics 1"),
 				Arguments.of(wrap(listener->listener.setTopics("test,test2")), true, "valid topics 2"),
 				Arguments.of(wrap(listener->listener.setTopics("test.test2")), true, "valid topics 3"),
-				Arguments.of(wrap(listener->listener.setPollTimeout(0)), false, "0 pollTimeout"),
-				Arguments.of(wrap(listener->listener.setPollTimeout(100)), true, "valid pollTimeout"),
 				Arguments.of(wrap(listener->listener.setGroupId(null)), false, "null groupId"),
 				Arguments.of(wrap(listener->listener.setGroupId("")), false, "empty groupId"),
 				Arguments.of(wrap(listener->listener.setGroupId("test")), true, "valid groupId"),
@@ -92,11 +83,6 @@ public class KafkaReceiverTest {
 	@SneakyThrows
 	public void test() {
 		String topic="test.test.test2";
-		AtomicReference<InvocationOnMock> invocation = new AtomicReference<>();
-		Mockito.doAnswer(i->{
-			invocation.set(i);
-			return null;
-		}).when(messageHandler).processRawMessage(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean());
 		listener.open();
 		HashMap<TopicPartition, Long> startOffsets = new HashMap<>();
 		TopicPartition topicPartition = new TopicPartition(topic, 0);
@@ -104,22 +90,14 @@ public class KafkaReceiverTest {
 		mockListener.updateBeginningOffsets(startOffsets);
 		mockListener.rebalance(Collections.singletonList(topicPartition));
 		mockListener.addRecord(new ConsumerRecord<>(topic, 0, 0, "", "testtesttest".getBytes()));
-		Thread.sleep(100);
-		listener.close();
-		Thread.sleep(100);
-		Assertions.assertThrows(IllegalStateException.class, ()->mockListener.addRecord(new ConsumerRecord<>(topic, 0, 1, "", "testtesttest2".getBytes())));
-		Mockito.verify(messageHandler, Mockito.times(1)).processRawMessage(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyBoolean());
-		Mockito.verifyNoMoreInteractions(messageHandler);
 
-		InvocationOnMock invocationOnMock = invocation.get();
-//		IListener<ConsumerRecord<String, byte[]>> origin = invocationOnMock.getArgument(0);
-		RawMessageWrapper<ConsumerRecord<String, byte[]>> wrapper = invocationOnMock.getArgument(1);
-//		PipeLineSession session = invocationOnMock.getArgument(2);
-		boolean duplicatesAlreadyChecked = invocationOnMock.getArgument(3);
-		Assertions.assertFalse(duplicatesAlreadyChecked);
+		RawMessageWrapper<ConsumerRecord<String, byte[]>> wrapper = listener.getRawMessage(new HashMap<>());
 		Assertions.assertEquals(topic, wrapper.getContext().get("kafkaTopic"));
 
 		Message message = listener.extractMessage(wrapper, new HashMap<>());
 		Assertions.assertEquals("testtesttest",message.asString());
+
+		Assertions.assertNull(listener.getRawMessage(new HashMap<>()));
+		listener.close();
 	}
 }

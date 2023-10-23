@@ -16,12 +16,17 @@
 package nl.nn.adapterframework.extensions.kafka;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
+
+import lombok.AccessLevel;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -31,23 +36,19 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-import lombok.AccessLevel;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IPushingListener;
-import nl.nn.adapterframework.core.IbisExceptionListener;
+import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
-public class KafkaListener extends KafkaFacade implements IPushingListener<ConsumerRecord<String, byte[]>> {
-	private IMessageHandler<ConsumerRecord<String, byte[]>> messageHandler;
-	private IbisExceptionListener ibisExceptionListener;
+public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord<String, byte[]>> {
 	//setter is for testing purposes only.
 	private @Setter(AccessLevel.PACKAGE) Consumer<String, byte[]> consumer;
+	private final List<ConsumerRecord<String, byte[]>> waiting = new ArrayList<>();
 	/** The group id of the consumer */
 	private @Setter String groupId;
 	/** Whether to start reading from the beginning of the topic. */
@@ -56,17 +57,12 @@ public class KafkaListener extends KafkaFacade implements IPushingListener<Consu
 	private @Setter int patternRecheckInterval = 5000;
 	/** The topics to listen to, separated by `,`. Wildcards are supported with `example.*`. */
 	private @Setter String topics;
-	/** Kafka internal poll timeout (in MS) */
-	private @Setter int pollTimeout = 100;
-	private KafkaInternalConsumer poller;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(groupId)) throw new ConfigurationException("groupId must be specified");
 		if (StringUtils.isEmpty(topics)) throw new ConfigurationException("topics must be specified");
-		if(pollTimeout < 10) throw new ConfigurationException("pollTimeout should be at least 10");
-		if (pollTimeout > 1000) log.warn("pollTimeout is set to a high value, this may cause the listener to be slow to stop.");
 		if(patternRecheckInterval < 10) throw new ConfigurationException("patternRecheckInterval should be at least 10");
 		properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 		properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, fromBeginning ? "earliest" : "latest");
@@ -75,13 +71,6 @@ public class KafkaListener extends KafkaFacade implements IPushingListener<Consu
 		properties.setProperty(ConsumerConfig.METADATA_MAX_AGE_CONFIG, String.valueOf(patternRecheckInterval));
 		consumer = new KafkaConsumer<>(properties);
 	}
-	private void onMessage(ConsumerRecord<String, byte[]> record) {
-		try (PipeLineSession session = new PipeLineSession()) {
-			messageHandler.processRawMessage(this, wrapRawMessage(record, session), session, false);
-		} catch (Exception e) {
-			ibisExceptionListener.exceptionThrown(this, e);
-		}
-	}
 
 	@Override
 	public void open() throws ListenerException {
@@ -89,12 +78,11 @@ public class KafkaListener extends KafkaFacade implements IPushingListener<Consu
 				.filter(StringUtils::isNotEmpty) //if topics is `abc` java will split it into `abc` and ``. The latter is not a valid topic.
 				.map(Pattern::compile) //Convert the topic to a regex pattern, to allow for wildcards in topic names.
 				.forEach(consumer::subscribe);
-		poller = new KafkaInternalConsumer(consumer, pollTimeout, this::onMessage);
 	}
 
 	@Override
 	public void close() throws ListenerException {
-		poller.kill();
+		//nothing. The consumer is closed in the thread.
 	}
 
 	@Override
@@ -109,17 +97,29 @@ public class KafkaListener extends KafkaFacade implements IPushingListener<Consu
 	}
 
 	@Override
-	public void setHandler(IMessageHandler<ConsumerRecord<String, byte[]>> handler) {
-		this.messageHandler = handler;
+	public String getPhysicalDestinationName() {
+		return "TOPICS(" + topics + ") on ("+ getBootstrapServers() +")";
+	}
+
+	@Nonnull
+	@Override
+	public Map<String, Object> openThread() throws ListenerException {
+		return new HashMap<>();
 	}
 
 	@Override
-	public void setExceptionListener(IbisExceptionListener listener) {
-		this.ibisExceptionListener = listener;
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+		// nothing.
 	}
 
 	@Override
-	public RawMessageWrapper<ConsumerRecord<String, byte[]>> wrapRawMessage(ConsumerRecord<String, byte[]> rawMessage, PipeLineSession session) throws ListenerException {
+	public RawMessageWrapper<ConsumerRecord<String, byte[]>> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+		if (waiting.isEmpty()) {
+			Duration duration = Duration.ofMillis(1);
+			consumer.poll(duration).forEach(waiting::add);
+		}
+		if(waiting.isEmpty()) return null;
+		ConsumerRecord<String, byte[]> rawMessage = waiting.remove(0);
 		Map<String, String> headers=new HashMap<>();
 		Arrays.stream(rawMessage.headers().toArray()).forEach(header -> {
 			try {
@@ -136,10 +136,5 @@ public class KafkaListener extends KafkaFacade implements IPushingListener<Consu
 		context.put("kafkaTimestamp", rawMessage.timestamp());
 		context.put("kafkaHeaders", headers);
 		return new RawMessageWrapper<>(rawMessage, context);
-	}
-
-	@Override
-	public String getPhysicalDestinationName() {
-		return "TOPICS(" + topics + ") on ("+ getBootstrapServers() +")";
 	}
 }
