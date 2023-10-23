@@ -262,6 +262,11 @@
 				<artifactId>ibis-adapterframework-aws</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-kafka</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- explicit dependency to force version 1.1.1 -->
 			<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
@@ -1175,6 +1180,7 @@
 				<module>aws</module>
 				<module>cmis</module>
 				<module>aspose</module>
+				<module>kafka</module>
 			</modules>
 		</profile>
 		<profile>

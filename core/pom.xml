@@ -886,13 +886,6 @@
 			<artifactId>awaitility</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka-clients</artifactId>
-			<version>3.6.0</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>

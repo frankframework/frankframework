@@ -18,6 +18,8 @@ package nl.nn.adapterframework.extensions.kafka;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.extensions.kafka.KafkaFacade;
+import nl.nn.adapterframework.extensions.kafka.KafkaSender;
 import nl.nn.adapterframework.stream.Message;
 
 import org.apache.kafka.clients.producer.MockProducer;
