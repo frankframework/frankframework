@@ -13,11 +13,14 @@ import javax.jms.TextMessage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import com.mockrunner.mock.jms.MockQueue;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 
 class JmsSenderTest {
@@ -69,10 +72,11 @@ class JmsSenderTest {
 		assertEquals("A Textual Message", textMessage.getText());
 	}
 
-	@Test
-	void testSendMessageModeAutoWithBinaryMessage() throws Exception {
+	@ParameterizedTest
+	@EnumSource(MessageTestUtils.MessageType.class)
+	void testSendMessageModeAutoWithBinaryMessage(MessageTestUtils.MessageType messageType) throws Exception {
 		// Arrange
-		Message message = Message.asMessage("A Textual Message".getBytes(StandardCharsets.UTF_8));
+		Message message = MessageTestUtils.getMessage(messageType);
 
 		// Act
 		jmsSender.sendMessage(message, pipeLineSession);
@@ -85,7 +89,8 @@ class JmsSenderTest {
 		BytesMessage bytesMessage = (BytesMessage) jmsMessage;
 		byte[] data = new byte[(int) bytesMessage.getBodyLength()];
 		bytesMessage.readBytes(data);
-		assertEquals("A Textual Message", new String(data, StandardCharsets.UTF_8));
+		Message result = Message.asMessage(data);
+		assertEquals(message.asString(), result.asString());
 	}
 
 	@Test
