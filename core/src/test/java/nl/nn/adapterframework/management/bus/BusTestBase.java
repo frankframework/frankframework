@@ -19,12 +19,14 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.testutil.QuerySenderPostProcessor;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class BusTestBase {
 
 	private Configuration configuration;
 	private ApplicationContext parentContext;
+	protected MockRunnerConnectionFactoryFactory mockConnectionFactoryFactory;
 	private final QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 
 	private ApplicationContext getParentContext() {
@@ -71,6 +73,7 @@ public class BusTestBase {
 	@BeforeEach
 	public void setUp() throws Exception {
 		getConfiguration(); //Create configuration
+		mockConnectionFactoryFactory = getParentContext().getBean(MockRunnerConnectionFactoryFactory.class);
 	}
 
 	@AfterEach
