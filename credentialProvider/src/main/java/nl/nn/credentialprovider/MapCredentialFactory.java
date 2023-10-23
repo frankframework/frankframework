@@ -15,11 +15,12 @@
 */
 package nl.nn.credentialprovider;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -66,7 +67,7 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 			throw new IllegalStateException("No property ["+key+"] found for "+purpose);
 		}
 		try {
-			return new FileInputStream(filename);
+			return Files.newInputStream(Paths.get(filename));
 		} catch (Exception e) {
 			URL url = ClassUtils.getResourceURL(filename);
 			if (url == null) {

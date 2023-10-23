@@ -51,8 +51,8 @@ public class PropertyFileCredentialFactoryTest {
 		String alias = "straight";
 		String defaultUsername = "fakeDefaultUsername";
 		String defaultPassword = "fakeDefaultPassword";
-		String expectedUsername = "username from alias";
-		String expectedPassword = "password from alias";
+		String expectedUsername = "\\username from alias";
+		String expectedPassword = "passw\\urd from alias";
 
 		ICredentials mc = credentialFactory.getCredentials(alias, ()->defaultUsername, ()->defaultPassword);
 

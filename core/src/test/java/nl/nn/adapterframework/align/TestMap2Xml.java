@@ -25,7 +25,7 @@ public class TestMap2Xml extends AlignTestBase {
 		try {
 			Properties inProps=new Properties();
 			inProps.load(new StringReader(mapInStr));
-			Map<String,String> mapIn=new HashMap<String,String>();
+			Map<String,String> mapIn= new HashMap<>();
 			for (Object key:inProps.keySet()) {
 				mapIn.put((String)key, inProps.getProperty((String)key));
 			}
