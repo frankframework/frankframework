@@ -153,9 +153,9 @@ public class IbisstoreSummary extends BusEndpointBase {
 		return slotmap;
 	}
 
-	public String getIbisStoreSummaryQuery(IDbmsSupport iDbmsSupport) {
+	public String getIbisStoreSummaryQuery(IDbmsSupport dbmsSupport) {
 		// include a where clause, to make nl.nn.adapterframework.dbms.MsSqlServerDbmsSupport.prepareQueryTextForNonLockingRead() work
-		return "select type, slotid, " + iDbmsSupport.getTimestampAsDate("MESSAGEDATE") + " msgdate, count(*) msgcount from IBISSTORE where 1=1 group by slotid, type, " + iDbmsSupport.getTimestampAsDate("MESSAGEDATE") + " order by type, slotid, " + iDbmsSupport.getTimestampAsDate("MESSAGEDATE");
+		return "select type, slotid, " + dbmsSupport.getTimestampAsDate("MESSAGEDATE") + " msgdate, count(*) msgcount from IBISSTORE where 1=1 group by slotid, type, " + dbmsSupport.getTimestampAsDate("MESSAGEDATE") + " order by type, slotid, " + dbmsSupport.getTimestampAsDate("MESSAGEDATE");
 	}
 }
 
