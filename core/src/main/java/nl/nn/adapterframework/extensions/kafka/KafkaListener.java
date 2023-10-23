@@ -28,6 +28,8 @@ import javax.annotation.Nonnull;
 
 import lombok.AccessLevel;
 
+import nl.nn.adapterframework.stream.MessageContext;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -87,8 +89,23 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 
 	@Override
 	public Message extractMessage(
-			@Nonnull RawMessageWrapper<ConsumerRecord<String, byte[]>> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
-		return new Message(rawMessage.getRawMessage().value());
+			@Nonnull RawMessageWrapper<ConsumerRecord<String, byte[]>> wrappedMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		Map<String, String> headers=new HashMap<>();
+		ConsumerRecord<String, byte[]> rawMessage = wrappedMessage.getRawMessage();
+		Arrays.stream(rawMessage.headers().toArray()).forEach(header -> {
+			try {
+				headers.put(header.key(), new String(header.value(), StandardCharsets.UTF_8));
+			} catch(Exception e) {
+				log.warn("Failed to convert header key [{}] to string. Bytearray value: [{}]", header.key(), header.value(), e);
+			}
+		});
+		context.put("kafkaTopic", rawMessage.topic());
+		context.put("kafkaKey", rawMessage.key());
+		context.put("kafkaPartition", rawMessage.partition());
+		context.put("kafkaOffset", rawMessage.offset());
+		context.put("kafkaTimestamp", rawMessage.timestamp());
+		context.put("kafkaHeaders", headers);
+		return new Message(rawMessage.value(), new MessageContext(context));
 	}
 
 	@Override
@@ -120,21 +137,6 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 		}
 		if(waiting.isEmpty()) return null;
 		ConsumerRecord<String, byte[]> rawMessage = waiting.remove(0);
-		Map<String, String> headers=new HashMap<>();
-		Arrays.stream(rawMessage.headers().toArray()).forEach(header -> {
-			try {
-				headers.put(header.key(), new String(header.value(), StandardCharsets.UTF_8));
-			} catch(Exception e) {
-				log.warn("Failed to convert header key [{}] to string. Bytearray value: [{}]", header.key(), header.value(), e);
-			}
-		});
-		Map<String, Object> context = new HashMap<>();
-		context.put("kafkaTopic", rawMessage.topic());
-		context.put("kafkaKey", rawMessage.key());
-		context.put("kafkaPartition", rawMessage.partition());
-		context.put("kafkaOffset", rawMessage.offset());
-		context.put("kafkaTimestamp", rawMessage.timestamp());
-		context.put("kafkaHeaders", headers);
-		return new RawMessageWrapper<>(rawMessage, context);
+		return new RawMessageWrapper<>(rawMessage);
 	}
 }
