@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.testutil.junit;
 
 import static org.junit.platform.commons.util.AnnotationUtils.findAnnotatedFields;
 import static org.junit.platform.commons.util.ReflectionUtils.makeAccessible;
@@ -13,6 +13,8 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.platform.commons.util.ExceptionUtils;
 import org.junit.platform.commons.util.ReflectionUtils;
+
+import nl.nn.adapterframework.filesystem.LocalFileServer;
 
 public class JUnitFileServerExtension implements BeforeAllCallback, BeforeEachCallback {
 

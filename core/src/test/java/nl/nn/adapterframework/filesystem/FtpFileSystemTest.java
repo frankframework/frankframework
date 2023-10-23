@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.filesystem.LocalFileServer.FileSystemType;
 import nl.nn.adapterframework.ftp.FTPFileRef;
+import nl.nn.adapterframework.testutil.junit.LocalFileSystemMock;
 
 /**
  * @author Niels Meijer

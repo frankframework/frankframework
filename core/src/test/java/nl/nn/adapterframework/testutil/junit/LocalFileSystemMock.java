@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.testutil.junit;
 
 
 import java.lang.annotation.Documented;
@@ -7,6 +7,8 @@ import java.lang.annotation.RetentionPolicy;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import nl.nn.adapterframework.filesystem.LocalFileServer;
 
 /**
  * Creates a {@link LocalFileServer} with share 'home' @ 'localhost' : 'automatically-calculated-port'.

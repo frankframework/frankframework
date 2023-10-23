@@ -49,6 +49,7 @@ import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
 import org.springframework.extensions.config.ConfigElement;
 
 import nl.nn.adapterframework.filesystem.smb.Samba2FileSystemTest;
+import nl.nn.adapterframework.testutil.junit.LocalFileSystemMock;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;

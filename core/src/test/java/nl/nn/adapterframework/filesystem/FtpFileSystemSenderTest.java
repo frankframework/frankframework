@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import nl.nn.adapterframework.filesystem.LocalFileServer.FileSystemType;
 import nl.nn.adapterframework.ftp.FTPFileRef;
 import nl.nn.adapterframework.senders.FtpFileSystemSender;
+import nl.nn.adapterframework.testutil.junit.LocalFileSystemMock;
 
 /**
  * This test class is created to test both FtpFileSystem and FtpFileSystemSender classes.
