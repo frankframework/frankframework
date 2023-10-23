@@ -17,6 +17,7 @@ package nl.nn.credentialprovider;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -46,9 +47,11 @@ public class PropertyFileCredentialFactory extends MapCredentialFactory {
 
 	@Override
 	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
-		try (InputStream propertyStream = getInputStream(appConstants, FILE_PROPERTY, DEFAULT_PROPERTIES_FILE, "Credentials")) {
+		try (InputStream propertyStream = getInputStream(appConstants, FILE_PROPERTY, DEFAULT_PROPERTIES_FILE, "Credentials");
+			Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(propertyStream)) {
+
 			Properties properties = new Properties();
-			properties.load(StreamUtil.getCharsetDetectingInputStreamReader(propertyStream));
+			properties.load(reader);
 			Map<String,String> map = new LinkedHashMap<>();
 			properties.forEach((k,v) -> map.put((String)k, (String)v));
 			return map;
