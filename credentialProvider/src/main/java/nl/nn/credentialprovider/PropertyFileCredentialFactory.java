@@ -21,12 +21,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.credentialprovider.util.CredentialConstants;
 
 /**
  * CredentialFactory that reads its credentials from a plain (unencrypted) .properties file.
  * For adequate privacy in production environments, the source file should not be readable by unauthorised users.
- * 
+ *
  * @author Gerrit van Brakel
  *
  */
@@ -47,11 +48,10 @@ public class PropertyFileCredentialFactory extends MapCredentialFactory {
 	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
 		try (InputStream propertyStream = getInputStream(appConstants, FILE_PROPERTY, DEFAULT_PROPERTIES_FILE, "Credentials")) {
 			Properties properties = new Properties();
-			properties.load(propertyStream);
+			properties.load(StreamUtil.getCharsetDetectingInputStreamReader(propertyStream));
 			Map<String,String> map = new LinkedHashMap<>();
 			properties.forEach((k,v) -> map.put((String)k, (String)v));
 			return map;
 		}
 	}
-
 }

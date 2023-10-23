@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -25,7 +26,7 @@ public class AnsibleVaultCredentialFactoryTest {
 	public String ANSIBLE_VAULT_FILE="/credentials-vault.txt";
 	public String ANSIBLE_VAULT_KEY_FILE="/credentials-vault-key.txt";
 
-	public String ANSIBLE_VAULT_PASSWORD="GEHEIM";
+	public String ANSIBLE_VAULT_PASSWORD="GEHE\\uIM";
 
 	private AnsibleVaultCredentialFactory credentialFactory;
 
@@ -50,9 +51,10 @@ public class AnsibleVaultCredentialFactoryTest {
 		ByteArrayOutputStream credentialData = new ByteArrayOutputStream();
 		aliases.store(credentialData, title);
 
-		System.out.println("Vault data before encryption:\n"+new String(credentialData.toByteArray()));
+		String vaultData = new String(credentialData.toByteArray(), StandardCharsets.US_ASCII).replace("\\\\", "\\");
+		System.out.println("Vault data before encryption:\n"+ vaultData);
 
-		byte[] encryptedVault = VaultHandler.encrypt(credentialData.toByteArray(), ANSIBLE_VAULT_PASSWORD);
+		byte[] encryptedVault = VaultHandler.encrypt(vaultData.getBytes(StandardCharsets.US_ASCII), ANSIBLE_VAULT_PASSWORD);
 
 		System.out.println("Ansible Vault:\n"+new String(encryptedVault));
 
@@ -64,8 +66,8 @@ public class AnsibleVaultCredentialFactoryTest {
 	public void testSetupVault() throws IOException {
 		Properties aliases = new Properties();
 		aliases.put("noUsername/password","password from alias");
-		aliases.put("straight/username","username from alias");
-		aliases.put("straight/password","password from alias");
+		aliases.put("straight/username","\\username from alias");
+		aliases.put("straight/password","passw\\urd from alias");
 		aliases.put("singleValue","Plain Credential");
 		setupVault(aliases, "test data for Ansible Vault");
 	}
@@ -130,8 +132,8 @@ public class AnsibleVaultCredentialFactoryTest {
 		String alias = "straight";
 		String username = "fakeUsername";
 		String password = "fakePassword";
-		String expectedUsername = "username from alias";
-		String expectedPassword = "password from alias";
+		String expectedUsername = "\\username from alias";
+		String expectedPassword = "passw\\urd from alias";
 
 		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
 

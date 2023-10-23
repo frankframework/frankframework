@@ -18,7 +18,7 @@ package nl.nn.credentialprovider;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -30,13 +30,13 @@ import nl.nn.credentialprovider.util.CredentialConstants;
 
 public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 
-	public static final String PROPERTY_BASE="credentialFactory.ansibleVault";
+	public static final String PROPERTY_BASE = "credentialFactory.ansibleVault";
 
-	public static final String VAULT_PROPERTY=PROPERTY_BASE+".vaultFile";
-	public static final String VAULT_KEY_PROPERTY=PROPERTY_BASE+".keyFile";
+	public static final String VAULT_PROPERTY = PROPERTY_BASE + ".vaultFile";
+	public static final String VAULT_KEY_PROPERTY = PROPERTY_BASE + ".keyFile";
 
-	private String vaultFile = "catalina-secure-store.vault";
-	private String vaultKeyFile = ".secure-vault-keyfile";
+	private static final String DEFAULT_VAULT_FILE = "catalina-secure-store.vault";
+	private static final String DEFAULT_VAULT_KEY_FILE = ".secure-vault-keyfile";
 
 	@Override
 	public String getPropertyBase() {
@@ -45,31 +45,31 @@ public class AnsibleVaultCredentialFactory extends MapCredentialFactory {
 
 	@Override
 	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
-		try (InputStream vaultStream = getInputStream(appConstants, VAULT_PROPERTY, vaultFile, "Ansible Vault")) {
-			try (InputStream keyStream = getInputStream(appConstants, VAULT_KEY_PROPERTY, vaultKeyFile, "Ansible Vault Key")) {
+		try (InputStream vaultStream = getInputStream(appConstants, VAULT_PROPERTY, DEFAULT_VAULT_FILE, "Ansible Vault");
+			 InputStream keyStream = getInputStream(appConstants, VAULT_KEY_PROPERTY, DEFAULT_VAULT_KEY_FILE, "Ansible Vault Key")) {
 
-				String vaultKey = StreamUtil.readerToString(new InputStreamReader(keyStream), null).trim();
-				String encrypted = StreamUtil.readerToString(new InputStreamReader(vaultStream), null);
+			String vaultKey = StreamUtil.streamToString(keyStream).trim();
+			String encrypted = StreamUtil.streamToString(vaultStream);
 
-				VaultInfo vaultInfo = Util.getVaultInfo(encrypted);
-				if (!vaultInfo.isEncryptedVault()) {
-					throw new IOException("File is not an Ansible Encrypted Vault");
-				}
-
-				if (!vaultInfo.isValidVault()) {
-					throw new IOException("The vault is not a format we can handle - check the cypher.");
-				}
-
-				byte[] decryptedData = vaultInfo.getCypher().decrypt(Util.getVaultData(encrypted), vaultKey);
-
-				Properties properties = new Properties();
-				properties.load(new ByteArrayInputStream(decryptedData));
-
-				Map<String,String> result = new HashMap<>();
-				properties.forEach((k,v) -> result.put((String)k, (String)v));
-				return result;
+			VaultInfo vaultInfo = Util.getVaultInfo(encrypted);
+			if (!vaultInfo.isEncryptedVault()) {
+				throw new IOException("File is not an Ansible Encrypted Vault");
 			}
+
+			if (!vaultInfo.isValidVault()) {
+				throw new IOException("The vault is not a format we can handle - check the cypher.");
+			}
+
+			byte[] decryptedData = vaultInfo.getCypher().decrypt(Util.getVaultData(encrypted), vaultKey);
+
+			Properties properties = new Properties();
+			try (Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(new ByteArrayInputStream(decryptedData))) {
+				properties.load(reader);
+			}
+
+			Map<String, String> result = new HashMap<>();
+			properties.forEach((k, v) -> result.put((String) k, (String) v));
+			return result;
 		}
 	}
-
 }
