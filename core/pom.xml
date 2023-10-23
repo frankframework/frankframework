@@ -23,7 +23,6 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-dbms</artifactId>
-			<version>7.9-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>

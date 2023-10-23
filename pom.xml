@@ -5,9 +5,6 @@
 	<artifactId>ibis-adapterframework-parent</artifactId>
 	<version>${revision}</version>
 	<packaging>pom</packaging>
-	<modules>
-		<module>dbms</module>
-	</modules>
 
 	<properties>
 		<revision>7.9-SNAPSHOT</revision>
@@ -263,6 +260,11 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-aws</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-dbms</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -1178,6 +1180,7 @@
 				<module>aws</module>
 				<module>cmis</module>
 				<module>aspose</module>
+				<module>dbms</module>
 			</modules>
 		</profile>
 		<profile>
