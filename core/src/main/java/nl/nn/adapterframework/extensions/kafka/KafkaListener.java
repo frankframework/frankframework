@@ -84,7 +84,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 
 	@Override
 	public void close() throws ListenerException {
-		//nothing. The consumer is closed in the thread.
+		consumer.close();
 	}
 
 	@Override
