@@ -92,9 +92,9 @@ public class KafkaReceiverTest {
 		mockListener.addRecord(new ConsumerRecord<>(topic, 0, 0, "", "testtesttest".getBytes()));
 
 		RawMessageWrapper<ConsumerRecord<String, byte[]>> wrapper = listener.getRawMessage(new HashMap<>());
-		Assertions.assertEquals(topic, wrapper.getContext().get("kafkaTopic"));
-
 		Message message = listener.extractMessage(wrapper, new HashMap<>());
+
+		Assertions.assertEquals(topic, message.getContext().get("kafkaTopic"));
 		Assertions.assertEquals("testtesttest",message.asString());
 
 		Assertions.assertNull(listener.getRawMessage(new HashMap<>()));
