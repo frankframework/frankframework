@@ -34,14 +34,6 @@ const routes: Routes = [
   },
   /* /status?configuration&filter&search */
   {
-    path: 'status/:configuration',
-    component: StatusComponent,
-    title: 'Adapter Status',
-    data: {
-      breadcrumbs: 'Adapter > Status',
-    },
-  },
-  {
     path: 'status',
     component: StatusComponent,
     title: 'Adapter Status',

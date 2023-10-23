@@ -10,33 +10,34 @@
 	<meta http-equiv="pragma" content="no-cache">
 	<base href="">
 
-	<title page-title></title>
+	<title>Loading...</title>
 
 	<link rel="shortcut icon" href="favicon.ico">
 </head>
 
-<body ng-class="{'gray-bg': ($state.current.name.indexOf('pages.')===1) }" id="page-top">
+<body id="page-top">
 
-<div class="loading" style="z-index: 999; position: fixed; top: 0; bottom: 0; left: 0; background: #f8f8f8; right: 0; padding-top: 100px; display: none;">
-	<div class="middle-box text-center loginscreen  animated fadeInDown">
-		<div>
-			<div>
-				<h2>Loading</h2>
-			</div>
-			<div class="sk-spinner sk-spinner-wave">
-				<div class="sk-rect1"></div>
-				<div class="sk-rect2"></div>
-				<div class="sk-rect3"></div>
-				<div class="sk-rect4"></div>
-				<div class="sk-rect5"></div>
-			</div>
-		</div>
-	</div>
-</div>
-
-<toaster-container toaster-options="{'time-out':5500, 'close-button': true, 'prevent-duplicates':true}"></toaster-container>
-
-<ui-view style="display:none;" class="main"></ui-view>
+<app-root>
+  <div
+    class="loading"
+    style="z-index: 999; position: fixed; top: 0; bottom: 0; left: 0; background: #f8f8f8; right: 0; padding-top: 100px;"
+  >
+    <div class="middle-box text-center loginscreen  animated fadeInDown">
+      <div>
+        <div>
+          <h2>Loading</h2>
+        </div>
+        <div class="sk-spinner sk-spinner-wave">
+          <div class="sk-rect1"></div>
+          <div class="sk-rect2"></div>
+          <div class="sk-rect3"></div>
+          <div class="sk-rect4"></div>
+          <div class="sk-rect5"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-root>
 
 <script type="text/javascript" nonce="ffVersion">var ff_version = "1692630246971";</script> <!-- broken with angular cli, change manually if really needed -->
 

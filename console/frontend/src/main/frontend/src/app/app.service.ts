@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { ParamMap, Params } from '@angular/router';
 import { Subject, catchError, of } from 'rxjs';
 import { DebugService } from 'src/angularjs/app/services/debug.service';
 
@@ -153,6 +154,8 @@ export type IAFRelease = {
   reactions: Record<string, number>
 }
 
+export type AppConstants = Record<string, string | any>;
+
 @Injectable({
   providedIn: 'root'
 })
@@ -209,6 +212,40 @@ export class AppService {
     info: 0,
     warn: 0,
     error: 0
+  };
+
+  APP_CONSTANTS: AppConstants = {
+    //Configure these in the server AppConstants!!!
+    //The settings here are defaults and will be overwritten upon set in any .properties file.
+
+    //Server to connect to, defaults to local server.
+    "server": server,
+
+    //How often the interactive frontend should poll the IAF API for new data
+    "console.pollerInterval": 30000,
+
+    //How often the interactive frontend should poll during IDLE state
+    "console.idle.pollerInterval": 180000,
+
+    //After x minutes the app goes into 'idle' state (use 0 to disable)
+    "console.idle.time": 300,
+
+    //After x minutes the user will be forcefully logged out
+    "console.idle.timeout": 0,
+
+    //Time format in which to display the time and date.
+    "console.dateFormat": "yyyy-MM-dd HH:mm:ss",
+
+    //These will automatically be updated.
+    "timeOffset": 0,
+    "init": -1,
+    getString: function (variable: keyof AppConstants) {
+      return this[variable];
+    },
+    getBoolean: function (variable: keyof AppConstants, dfault: any) {
+      if (this[variable] != undefined) return (this[variable] === "true");
+      return dfault;
+    }
   };
 
   private lastUpdated = 0;
@@ -312,15 +349,15 @@ export class AppService {
       }));
   }
 
-  updateAdapterSummary(configurationName?: string) {
+  updateAdapterSummary(routeParams: ParamMap, configurationName?: string) {
     var updated = (new Date().getTime());
     if (updated - 3000 < this.lastUpdated && !configurationName) { //3 seconds
       clearTimeout(this.timeout);
-      this.timeout = window.setTimeout(() => this.updateAdapterSummary(), 1000);
+      this.timeout = window.setTimeout(() => this.updateAdapterSummary(routeParams), 1000);
       return;
     }
     if (configurationName == undefined)
-      configurationName = this.$state.params["configuration"];
+      configurationName = routeParams.get("configuration") ?? undefined;
 
     var adapterSummary: Record<Lowercase<RunState>, number> = {
       started: 0,

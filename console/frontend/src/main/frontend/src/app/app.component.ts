@@ -1,8 +1,7 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { Idle } from '@ng-idle/core';
 import { Observable, Subscription } from 'rxjs';
-import { AppConstants } from 'src/angularjs/app/app.module';
-import { Adapter, AppService, Configuration } from './app.service';
+import { Adapter, AppConstants, AppService, Configuration } from './app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { AuthService } from 'src/angularjs/app/services/authservice.service';
 import { DebugService } from 'src/angularjs/app/services/debug.service';
@@ -12,9 +11,8 @@ import { PollerService } from 'src/angularjs/app/services/poller.service';
 import { SessionService } from 'src/angularjs/app/services/session.service';
 import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
 import { Pace } from 'src/angularjs/deps';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { formatDate } from '@angular/common';
-import { APPCONSTANTS } from './app.module';
 
 @Component({
   selector: 'app-root',
@@ -32,16 +30,18 @@ export class AppComponent implements OnInit, OnDestroy {
   serverTime = "";
   startupError: string | null = null;
   userName?: string;
+  appConstants: AppConstants;
+  routeData: Record<string, any> = {};
 
   private urlHash$!: Observable<string | null>;
-  private routeData: Record<string, any> = {};
+  private routeParams!: ParamMap;
   private _subscriptions = new Subscription();
 
   constructor(
     private router: Router,
     private route: ActivatedRoute,
+    private renderer: Renderer2,
     private authService: AuthService,
-    @Inject(APPCONSTANTS) private appConstants: AppConstants, // TODO make this a service or put in AppService
     private apiService: ApiService,
     private pollerService: PollerService,
     private notificationService: NotificationService,
@@ -51,10 +51,20 @@ export class AppComponent implements OnInit, OnDestroy {
     private sweetAlertService: SweetAlertService,
     private appService: AppService,
     private idle: Idle
-  ) { }
+  ) {
+    this.appConstants = this.appService.APP_CONSTANTS;
+  }
 
   ngOnInit() {
     this.urlHash$ = this.route.fragment;
+    this.route.paramMap.subscribe(params => {
+      if(this.router.url !== '/login'){
+        this.renderer.addClass(document.body, 'gray-bg');
+      } else {
+        this.renderer.removeClass(document.body, 'gray-bg');
+      };
+      this.routeParams = params;
+    });
     this.route.data.subscribe((data) => {
       this.routeData = data;
     });
@@ -338,7 +348,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
           this.appService.adapters[adapter.name] = adapter;
 
-          this.appService.updateAdapterSummary();
+          this.appService.updateAdapterSummary(this.routeParams);
           this.scrollToAdapter();
           this.updateAdapterNotifications(adapter);
         }
@@ -396,7 +406,7 @@ export class AppComponent implements OnInit, OnDestroy {
     // });
   };
 
-  sendFeedback(rating: number) {
+  sendFeedback(rating?: number) {
     if (!this.appConstants["console.feedbackURL"])
       return;
 

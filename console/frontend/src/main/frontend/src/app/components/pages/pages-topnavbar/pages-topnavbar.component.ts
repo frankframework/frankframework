@@ -14,8 +14,8 @@ export class PagesTopnavbarComponent implements OnInit, OnDestroy{
   @Input() dtapSide: string = "";
   @Input() dtapStage: string = "";
   @Input() serverTime: string = "";
-  @Input() userName: string = "";
   @Input() loggedin: boolean = false;
+  @Input() userName?: string;
   @Output() onOpenFeedback = new EventEmitter<number>();
 
   private _subscriptions = new Subscription();

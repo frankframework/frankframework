@@ -1,3 +1,4 @@
+<!-- TODO <toaster-container toaster-options="{'time-out':5500, 'close-button': true, 'prevent-duplicates':true}"></toaster-container> -->
 <!-- Wrapper-->
 <div id="wrapper">
   <!-- Navigation -->
@@ -11,7 +12,7 @@
     <!-- Page wrapper -->
     <app-pages-topnavbar
       class="topnavbar"
-      (onOpenFeedback)="sendFeedback(rating)"
+      (onOpenFeedback)="sendFeedback($event)"
       [serverTime]="serverTime"
       [dtapSide]="dtapSide"
       [dtapStage]="dtapStage"
@@ -32,7 +33,7 @@
     <router-outlet></router-outlet>
 
     <!-- Footer -->
-    <app-pages-footer *ngIf="!routeData.iframe"></app-pages-footer>
+    <app-pages-footer *ngIf="!routeData['iframe']"></app-pages-footer>
 
   </div>
   <!-- End page wrapper-->

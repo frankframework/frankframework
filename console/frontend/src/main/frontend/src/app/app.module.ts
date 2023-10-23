@@ -1,6 +1,6 @@
 import { DoBootstrap, InjectionToken, NgModule, ValueProvider } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { UpgradeModule, downgradeComponent } from '@angular/upgrade/static';
+// import { UpgradeModule, downgradeComponent } from '@angular/upgrade/static';
 import { HttpClientModule } from '@angular/common/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { $stateParamsServiceProvider, $stateServiceProvider } from './ajs-deps-services';
@@ -11,15 +11,15 @@ import { NgChartsModule } from 'ng2-charts';
 import { AppRoutingModule } from './app-routing.module';
 
 import '../angularjs/main';
-import '../angularjs/app/app.module';
-import '../angularjs/app/app.config';
-import '../angularjs/services';
-import '../angularjs/filters';
-import '../angularjs/directives';
-import '../angularjs/controllers';
-import '../angularjs/components';
+// import '../angularjs/app/app.module';
+// import '../angularjs/app/app.config';
+// import '../angularjs/services';
+// import '../angularjs/filters';
+// import '../angularjs/directives';
+// import '../angularjs/controllers';
+// import '../angularjs/components';
 
-// import { AppComponent } from './app.component';
+import { AppComponent } from './app.component';
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';
 import { sidebarServiceProvider } from './components/pages/ajs-sidebar-upgraded';
@@ -65,7 +65,8 @@ import {
   toastrServiceProvider
 } from './ajs-upgraded-services';
 
-import { AppConstants, appConstants, appModule } from '../angularjs/app/app.module'; import { LiquibaseComponent } from './views/liquibase/liquibase.component';
+import { AppConstants, appConstants, appModule } from '../angularjs/app/app.module';
+import { LiquibaseComponent } from './views/liquibase/liquibase.component';
 import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
 import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
 import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
@@ -99,41 +100,41 @@ const windowProvider: ValueProvider = {
   useValue: window
 }
 
-appModule
-  .directive('environmentVariables', downgradeComponent({ component: EnvironmentVariablesComponent }) as angular.IDirectiveFactory)
-  .directive('flow', downgradeComponent({ component: FlowComponent }) as angular.IDirectiveFactory)
-  .directive('hamburger', downgradeComponent({ component: HamburgerComponent }) as angular.IDirectiveFactory)
-  .directive('ibisstoreSummary', downgradeComponent({ component: IbisstoreSummaryComponent }) as angular.IDirectiveFactory)
-  .directive('inlineStore', downgradeComponent({ component: InlinestoreComponent }) as angular.IDirectiveFactory)
-  .directive('iframeCustomView', downgradeComponent({ component: IframeCustomViewComponent }) as angular.IDirectiveFactory)
-  .directive('iframeLadybug', downgradeComponent({ component: IframeLadybugComponent }) as angular.IDirectiveFactory)
-  .directive('iframeLadybugBeta', downgradeComponent({ component: IframeLadybugBetaComponent }) as angular.IDirectiveFactory)
-  .directive('iframeLarva', downgradeComponent({ component: IframeLarvaComponent }) as angular.IDirectiveFactory)
-  .directive('inputFileUpload', downgradeComponent({ component: InputFileUploadComponent }) as angular.IDirectiveFactory)
-  .directive('jdbcBrowseTables', downgradeComponent({ component: JdbcBrowseTablesComponent }) as angular.IDirectiveFactory)
-  .directive('jdbcExecuteQuery', downgradeComponent({ component: JdbcExecuteQueryComponent }) as angular.IDirectiveFactory)
-  .directive('jmsBrowseQueue', downgradeComponent({ component: JmsBrowseQueueComponent }) as angular.IDirectiveFactory)
-  .directive('jmsSendMessage', downgradeComponent({ component: JmsSendMessageComponent }) as angular.IDirectiveFactory)
-  .directive('liquibase', downgradeComponent({ component: LiquibaseComponent }) as angular.IDirectiveFactory)
-  .directive('logout', downgradeComponent({ component: LogoutComponent }) as angular.IDirectiveFactory)
-  .directive('minimalizaSidebar', downgradeComponent({ component: MinimalizaSidebarComponent }) as angular.IDirectiveFactory)
-  .directive('pagesFooter', downgradeComponent({ component: PagesFooterComponent }) as angular.IDirectiveFactory)
-  .directive('pagesNavigation', downgradeComponent({ component: PagesNavigationComponent }) as angular.IDirectiveFactory)
-  .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
-  .directive('pagesTopnavbar', downgradeComponent({ component: PagesTopnavbarComponent }) as angular.IDirectiveFactory)
-  .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory)
-  .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
-  .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory)
-  .directive('adapterstatistics', downgradeComponent({ component: AdapterstatisticsComponent }) as angular.IDirectiveFactory)
-  .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
-  .directive('storageList', downgradeComponent({ component: StorageListComponent }) as angular.IDirectiveFactory)
-  .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory)
-  .directive('webservices', downgradeComponent({ component: WebservicesComponent }) as angular.IDirectiveFactory);
+// appModule
+//   .directive('environmentVariables', downgradeComponent({ component: EnvironmentVariablesComponent }) as angular.IDirectiveFactory)
+//   .directive('flow', downgradeComponent({ component: FlowComponent }) as angular.IDirectiveFactory)
+//   .directive('hamburger', downgradeComponent({ component: HamburgerComponent }) as angular.IDirectiveFactory)
+//   .directive('ibisstoreSummary', downgradeComponent({ component: IbisstoreSummaryComponent }) as angular.IDirectiveFactory)
+//   .directive('inlineStore', downgradeComponent({ component: InlinestoreComponent }) as angular.IDirectiveFactory)
+//   .directive('iframeCustomView', downgradeComponent({ component: IframeCustomViewComponent }) as angular.IDirectiveFactory)
+//   .directive('iframeLadybug', downgradeComponent({ component: IframeLadybugComponent }) as angular.IDirectiveFactory)
+//   .directive('iframeLadybugBeta', downgradeComponent({ component: IframeLadybugBetaComponent }) as angular.IDirectiveFactory)
+//   .directive('iframeLarva', downgradeComponent({ component: IframeLarvaComponent }) as angular.IDirectiveFactory)
+//   .directive('inputFileUpload', downgradeComponent({ component: InputFileUploadComponent }) as angular.IDirectiveFactory)
+//   .directive('jdbcBrowseTables', downgradeComponent({ component: JdbcBrowseTablesComponent }) as angular.IDirectiveFactory)
+//   .directive('jdbcExecuteQuery', downgradeComponent({ component: JdbcExecuteQueryComponent }) as angular.IDirectiveFactory)
+//   .directive('jmsBrowseQueue', downgradeComponent({ component: JmsBrowseQueueComponent }) as angular.IDirectiveFactory)
+//   .directive('jmsSendMessage', downgradeComponent({ component: JmsSendMessageComponent }) as angular.IDirectiveFactory)
+//   .directive('liquibase', downgradeComponent({ component: LiquibaseComponent }) as angular.IDirectiveFactory)
+//   .directive('logout', downgradeComponent({ component: LogoutComponent }) as angular.IDirectiveFactory)
+//   .directive('minimalizaSidebar', downgradeComponent({ component: MinimalizaSidebarComponent }) as angular.IDirectiveFactory)
+//   .directive('pagesFooter', downgradeComponent({ component: PagesFooterComponent }) as angular.IDirectiveFactory)
+//   .directive('pagesNavigation', downgradeComponent({ component: PagesNavigationComponent }) as angular.IDirectiveFactory)
+//   .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
+//   .directive('pagesTopnavbar', downgradeComponent({ component: PagesTopnavbarComponent }) as angular.IDirectiveFactory)
+//   .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory)
+//   .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
+//   .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory)
+//   .directive('adapterstatistics', downgradeComponent({ component: AdapterstatisticsComponent }) as angular.IDirectiveFactory)
+//   .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
+//   .directive('storageList', downgradeComponent({ component: StorageListComponent }) as angular.IDirectiveFactory)
+//   .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory)
+//   .directive('webservices', downgradeComponent({ component: WebservicesComponent }) as angular.IDirectiveFactory);
 
 
 @NgModule({
   declarations: [
-    // AppComponent,
+    AppComponent,
     CustomViewsComponent,
     EnvironmentVariablesComponent,
     FlowComponent,
@@ -189,7 +190,7 @@ appModule
     HttpClientModule,
     LaddaModule,
     NgbModule,
-    UpgradeModule,
+    // UpgradeModule,
     AppRoutingModule,
     UIRouterUpgradeModule.forRoot(/* { states: nestedRouterStates } */),
     NgIdleModule.forRoot(),
@@ -221,13 +222,15 @@ appModule
     appServiceProvider,
     sidebarServiceProvider,
   ],
-  // bootstrap: [AppComponent]
+  bootstrap: [AppComponent]
 })
+export class AppModule {}
 
-export class AppModule implements DoBootstrap {
+/* export class AppModule implements DoBootstrap {
   constructor(private upgrade: UpgradeModule) { }
   ngDoBootstrap() {
     this.upgrade.bootstrap(document.documentElement, ['iaf.beheerconsole']);
     // this.upgrade.bootstrap(document.body, ['iaf.beheerconsole'], { strictDi: true });
   }
-}
+} */
+
