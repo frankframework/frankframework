@@ -1605,28 +1605,21 @@ public class CalendarParser {
 		boolean needSpace = false;
 		StringBuilder buf = new StringBuilder();
 
-		if(calMonth >= 0 && calMonth < MONTHS.length) {
-			if(needSpace) {
-				buf.append(' ');
-			}
-			buf.append(MONTHS[calMonth][1]);
+		if(calMonth < MONTHS.length) {
+            buf.append(MONTHS[calMonth][1]);
 			needSpace = true;
 		}
-		if(calDay > 0) {
-			if(needSpace) {
-				buf.append(' ');
-			}
-			buf.append(calDay);
-			if(calYear > UNSET) {
-				buf.append(',');
-			}
-			needSpace = true;
-		}
-		if(calYear > UNSET) {
-			if(needSpace) {
-				buf.append(' ');
-			}
-			buf.append(calYear);
+        if (needSpace) {
+            buf.append(' ');
+        }
+        buf.append(calDay);
+        if(calYear > UNSET) {
+            buf.append(',');
+        }
+        needSpace = true;
+        if(calYear > UNSET) {
+            buf.append(' ');
+            buf.append(calYear);
 		}
 
 		appendTimeString(buf, cal, needSpace);
@@ -1650,31 +1643,19 @@ public class CalendarParser {
 		final int calMonth = cal.get(Calendar.MONTH);
 		final int calDay = cal.get(Calendar.DATE);
 
-		boolean needSpace = false;
 		StringBuilder buf = new StringBuilder();
 
-		if(calDay > 0) {
-			if(needSpace) {
-				buf.append(' ');
-			}
-			buf.append(calDay);
-			needSpace = true;
-		}
-		if(calMonth >= 0 && calMonth < MONTHS.length) {
-			if(needSpace) {
-				buf.append(' ');
-			}
-			buf.append(MONTHS[calMonth][1].substring(0, 3));
-			needSpace = true;
-		}
+        buf.append(calDay);
+        if(calMonth < MONTHS.length) {
+            buf.append(' ');
+            buf.append(MONTHS[calMonth][1], 0, 3);
+        }
 		if(calYear > UNSET) {
-			if(needSpace) {
-				buf.append(' ');
-			}
-			buf.append(calYear);
+            buf.append(' ');
+            buf.append(calYear);
 		}
 
-		appendTimeString(buf, cal, needSpace);
+		appendTimeString(buf, cal, true);
 
 		return buf.toString();
 	}
