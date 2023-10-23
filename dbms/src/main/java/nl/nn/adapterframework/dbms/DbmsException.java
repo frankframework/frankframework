@@ -1,4 +1,3 @@
-package nl.nn.adapterframework.dbms;
 /*
    Copyright 2023 WeAreFrank!
 
@@ -14,7 +13,7 @@ package nl.nn.adapterframework.dbms;
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-
+package nl.nn.adapterframework.dbms;
 
 public class DbmsException extends JdbcException {
 	public DbmsException() {

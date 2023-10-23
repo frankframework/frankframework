@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.dbms;/*
+/*
    Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,8 @@ package nl.nn.adapterframework.dbms;/*
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
+package nl.nn.adapterframework.dbms;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;

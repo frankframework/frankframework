@@ -1,4 +1,3 @@
-package nl.nn.adapterframework.util;
 /*
    Copyright 2023 WeAreFrank!
 
@@ -14,6 +13,8 @@ package nl.nn.adapterframework.util;
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+
+package nl.nn.adapterframework.util;
 
 import nl.nn.adapterframework.dbms.DbmsException;
 

@@ -1,4 +1,3 @@
-package nl.nn.adapterframework.dbms;
 /*
    Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
@@ -14,6 +13,7 @@ package nl.nn.adapterframework.dbms;
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+package nl.nn.adapterframework.dbms;
 
 import java.io.InputStream;
 import java.io.OutputStream;
