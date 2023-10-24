@@ -16,11 +16,6 @@
 
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.dbms.DbmsException;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -29,12 +24,12 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 
+import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.dbms.DbmsException;
 
 
+@Log4j2
 public class DbmsUtil {
-
-	protected static Logger log = LogManager.getLogger(DbmsUtil.class);
-
 
 	/**
 	 * Executes query that returns a string. Returns {@literal null} if no results are found.
