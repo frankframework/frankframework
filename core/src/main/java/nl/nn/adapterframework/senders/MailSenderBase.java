@@ -146,15 +146,16 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	private MailSessionBase readParameters(Message input, PipeLineSession session) throws SenderException {
-		EMail from = null;
-		String subject = null;
-		String threadTopic = null;
-		String messageType = null;
-		boolean messageBase64 = false;
-		String charset = null;
+		EMail from;
+		EMail replyTo;
+		String subject;
+		String threadTopic;
+		String messageType;
+		boolean messageBase64;
+		String charset;
 		List<EMail> recipients;
-		List<MailAttachmentStream> attachments = null;
-		ParameterValueList pvl=null;
+		List<MailAttachmentStream> attachments;
+		ParameterValueList pvl;
 		ParameterValue pv;
 
 		MailSessionBase mail = createMailSession();
@@ -165,6 +166,12 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 				from = new EMail(pv.asStringValue(null));
 				log.debug("MailSender [{}] retrieved from-parameter [{}]", getName(), from);
 				mail.setFrom(from);
+			}
+			pv = pvl.get("replyTo");
+			if (pv != null) {
+				replyTo = new EMail(pv.asStringValue(null));
+				log.debug("MailSender [{}] retrieved replyTo-parameter [{}]", getName(), replyTo);
+				mail.setReplyTo(replyTo);
 			}
 			pv = pvl.get("subject");
 			if (pv != null) {
@@ -320,7 +327,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		String charset;
 		Collection<Node> recipientList;
 		Collection<Node> attachments;
-		Element replyTo = null;
+		Element replyTo;
 
 		MailSessionBase mailSession = createMailSession();
 
@@ -355,7 +362,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		Collection<Node> headers = headersElement == null ? null : XmlUtils.getChildTags(headersElement, "header");
 
 		String bounceAddress = XmlUtils.getChildTagAsString(emailElement, "bounceAddress");
-		mailSession.setBounceAddress(bounceAddress);
+		if (StringUtils.isNotBlank(bounceAddress)) {
+			mailSession.setBounceAddress(bounceAddress);
+		}
 
 		mailSession.setFrom(getEmailAddress(from, "from"));
 		mailSession.setSubject(subject);
@@ -365,7 +374,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		mailSession.setMessageBase64(messageBase64);
 		mailSession.setCharSet(charset);
 		mailSession.setHeaders(headers);
-		mailSession.setReplyto(getEmailAddress(replyTo,"replyTo"));
+		mailSession.setReplyTo(getEmailAddress(replyTo,"replyTo"));
 
 		List<EMail> recipients = retrieveRecipients(recipientList);
 		mailSession.setRecipientList(recipients);
@@ -495,8 +504,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	 * Generic email class
 	 */
 	public abstract class MailSessionBase {
-		private EMail from = null;
-		private EMail replyto = null;
+		private EMail from;
+		private EMail replyTo = null;
 		private List<EMail> recipients = new ArrayList<>();
 		private List<MailAttachmentStream> attachmentList = new ArrayList<>();
 		private String subject = getDefaultSubject();
@@ -506,7 +515,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		private String threadTopic = null;
 		private Collection<Node> headers;
-		private String bounceAddress = getBounceAddress();
+		// TODO: FIX this, calls wrong getBounceAddress()
+		private String bounceAddress = MailSenderBase.this.getBounceAddress();
 
 		public MailSessionBase() throws SenderException {
 			from = new EMail(getDefaultFrom(),"from");
@@ -548,12 +558,12 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			this.from = from;
 		}
 
-		public EMail getReplyto() {
-			return replyto;
+		public EMail getReplyTo() {
+			return replyTo;
 		}
 
-		public void setReplyto(EMail replyto) {
-			this.replyto = replyto;
+		public void setReplyTo(EMail replyTo) {
+			this.replyTo = replyTo;
 		}
 
 		public List<EMail> getRecipientList() throws SenderException {

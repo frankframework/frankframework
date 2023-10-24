@@ -1,6 +1,6 @@
 Date: DATE
 From: "Me, Myself and I" <myself@address.org>
-Reply-To: to@address.com
+Reply-To: my@bounce.nl
 To: dummy <me@address.org>
 Message-ID: MESSAGE-ID
 Subject: My Subject

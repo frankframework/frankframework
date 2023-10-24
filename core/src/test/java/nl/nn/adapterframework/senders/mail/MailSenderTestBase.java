@@ -71,6 +71,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		String rawResult = new String(boas.toByteArray());
 		String expected = getResource(file).asString();
 		rawResult = rawResult.replace(message.getMessageID(), "MESSAGE-ID");
+		rawResult = rawResult.replaceAll(" +\\r?\\n", "\n");
 		rawResult = rawResult.replaceFirst("Date: (.+)", "Date: DATE");
 		int i = rawResult.indexOf("boundary=\"----");
 		if(i > 0) {
@@ -91,6 +92,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		String recipientsXml = "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "<recipient type=\"to\" name=\"two\">me2@address.org</recipient>";
 		sender.addParameter(new Parameter("from", "myself@address.org"));
+		sender.addParameter(new Parameter("replyTo", "to@address.com"));
 		sender.addParameter(new Parameter("subject", "My Subject"));
 		sender.addParameter(new Parameter("message", "My Message Goes Here"));
 		sender.addParameter(new Parameter("messageBase64", "false"));
@@ -489,9 +491,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<charset>UTF-8</charset>"
 			+ "</email>";
 
-		if(sender instanceof MailSender) {
-			((MailSender) sender).setBounceAddress("my@bounce.nl");
-		}
+		sender.setBounceAddress("my@bounce.nl");
 
 		sender.configure();
 		sender.open();
@@ -504,6 +504,36 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		validateAuthentication(mailSession);
 		validateNDR(mailSession, "my@bounce.nl");
 		compare("mailWithNDR.txt", message);
+	}
+
+	@Test
+	public void mailWithNDRNoReplyToShouldUseBounce() throws Exception {
+		if(!(sender instanceof MailSender)) return;
+
+		String mailInput = "<email>"
+				+ "<recipients>"
+					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
+				+ "</recipients>"
+				+ "<subject>My Subject</subject>"
+				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
+				+ "<message>My Message Goes Here</message>"
+				+ "<messageType>text/plain</messageType>"
+				+ "<charset>UTF-8</charset>"
+			+ "</email>";
+
+		sender.setBounceAddress("my@bounce.nl");
+
+		sender.configure();
+		sender.open();
+
+		sender.sendMessageOrThrow(new Message(mailInput), session);
+		Session mailSession = (Session) session.get("mailSession");
+		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
+
+		MimeMessage message = (MimeMessage) mailSession.getProperties().get("MimeMessage");
+		validateAuthentication(mailSession);
+		validateNDR(mailSession, "my@bounce.nl");
+		compare("mailWithNDRUsingBounceAddress.txt", message);
 	}
 
 	@Test
@@ -584,7 +614,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			futures.add(service.submit(task));
 		}
 
-		List<Session> sessions = new ArrayList<Session>();
+		List<Session> sessions = new ArrayList<>();
 		for (Future<Session> sessionFuture : futures) {
 			try {
 				Session session = sessionFuture.get();

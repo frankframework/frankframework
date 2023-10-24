@@ -128,9 +128,6 @@ public class MailSender extends MailSenderBase {
 		}
 		//Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if(StringUtils.isNotEmpty(getBounceAddress())) {
-			if(properties.containsValue("mail.smtp.from")){
-				properties.remove("mail.smtp.from"); //Make sure it's not set twice?
-			}
 			properties.put("mail.smtp.from", getBounceAddress());
 		}
 	}
@@ -257,6 +254,20 @@ public class MailSender extends MailSenderBase {
 			throw new SenderException("Error occurred while setting sender email", e);
 		}
 
+		if (mailSession.getReplyTo() != null) {
+			try {
+				msg.setReplyTo(new jakarta.mail.internet.InternetAddress[]{mailSession.getReplyTo().getInternetAddress()});
+			} catch (Exception e) {
+				throw new SenderException("Error occurred while setting replyTo email", e);
+			}
+		} else if (StringUtils.isNotBlank(mailSession.getBounceAddress())) {
+			try {
+				msg.setReplyTo(new jakarta.mail.internet.InternetAddress[]{new EMail(mailSession.getBounceAddress()).getInternetAddress()});
+			} catch (Exception e) {
+				throw new SenderException("Error occurred while setting replyTo email from bounceAddress", e);
+			}
+		}
+
 		try {
 			msg.setSubject(mailSession.getSubject(), mailSession.getCharSet());
 		} catch (MessagingException e) {
@@ -306,7 +317,9 @@ public class MailSender extends MailSenderBase {
 			throw new SenderException("Error occurred while setting header", e);
 		}
 
-		log.debug(logBuffer.toString());
+		if (log.isDebugEnabled()) {
+			log.debug(logBuffer.toString());
+		}
 		try {
 			msg.setSentDate(new Date());
 		} catch (MessagingException e) {
