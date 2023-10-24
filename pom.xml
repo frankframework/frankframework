@@ -11,7 +11,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
-		<log4j2.version>2.21.0</log4j2.version>
+		<log4j2.version>2.20.0</log4j2.version><!-- locked version, in newer versions our log configuration no longer works ... -->
 		<cxf.version>3.5.7</cxf.version>
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.12.7.Final</narayana.version>
