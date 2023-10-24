@@ -35,8 +35,7 @@
           <ng-template ngFor let-message [ngForOf]="notificationList" let-last="last">
             <li ngbDropdownItem>
               <a
-                uiSref="pages.notifications"
-                [uiParams]="{id: message.id}"
+                routerLink="/notifications"
               >
                 <div>
                   <i class="fa {{message.icon}} fa-fw"></i> {{message.title}}

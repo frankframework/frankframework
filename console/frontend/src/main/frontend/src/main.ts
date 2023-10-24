@@ -4,7 +4,7 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { NgZone } from '@angular/core';
 import { AppModule } from './app/app.module';
 // import { UIRouter, UrlService } from '@uirouter/core';
-import type * as angularjs from 'angular';
+// import type * as angularjs from 'angular';
 import type * as jQuery from 'jquery';
 
 try {
@@ -44,5 +44,5 @@ declare global {
   var server: string;
   // var jQuery: jQuery; already defined in @types/jquery (type import solves this for us?)
   // var $: jQuery;
-  var angular: angularjs.IAngularStatic;
+  // var angular: angularjs.IAngularStatic;
 }

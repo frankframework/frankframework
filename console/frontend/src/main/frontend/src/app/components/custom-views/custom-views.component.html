@@ -1,8 +1,7 @@
 <ul class="nav">
   <li *ngFor="let view of customViews" uiSrefActive="active">
     <a
-      uiSref="pages.customView"
-      [uiParams]="view"
+      [routerLink]="['customView', view]"
     ><i class="fa fa-desktop"></i> <span class="nav-label">{{view.name}}</span></a>
   </li>
 </ul>

@@ -1,7 +1,5 @@
 import { Directive, ElementRef, Inject, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { AppConstants } from 'src/angularjs/app/app.module';
-import { AppService } from 'src/angularjs/app/app.service';
-import { APPCONSTANTS } from '../app.module';
+import { AppConstants, AppService } from '../app.service';
 
 @Directive({
   selector: '[appTimeSince]'
@@ -10,11 +8,14 @@ export class TimeSinceDirective implements OnInit, OnChanges, OnDestroy {
   @Input() time!: number;
 
   private interval?: number;
+  private appConstants: AppConstants;
 
   constructor(
     private element: ElementRef<HTMLElement>,
-    @Inject(APPCONSTANTS) private appConstants: AppConstants,
-  ) { }
+    private appService: AppService
+  ) {
+    this.appConstants = this.appService.APP_CONSTANTS;
+  }
   ngOnInit() {
     this.interval = window.setInterval(() => this.updateTime(), 300000);
   }

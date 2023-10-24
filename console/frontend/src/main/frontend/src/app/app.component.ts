@@ -72,8 +72,8 @@ export class AppComponent implements OnInit, OnDestroy {
     /* state controller */
     this.authService.loggedin(); //Check if the user is logged in.
 
-    angular.element(".main").show();
-    angular.element(".loading").remove();
+    $(".main").show();
+    $(".loading").remove();
     /* state controller end */
 
     Pace.on("done", () => this.initializeFrankConsole());
@@ -99,7 +99,7 @@ export class AppComponent implements OnInit, OnDestroy {
       let seconds = Math.round(timeRemaining % 60);
       if (minutes < 10) minutes = +"0" + minutes;
       if (seconds < 10) seconds = +"0" + seconds;
-      let elm = angular.element(".swal2-container").find(".idleTimer");
+      let elm = $(".swal2-container").find(".idleTimer");
       elm.text(minutes + ":" + seconds);
     });
     this._subscriptions.add(idleWarnSubscription);
@@ -115,7 +115,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this._subscriptions.add(idleTimeoutSubscription);
 
     const idleEndSubscription = this.idle.onIdleEnd.subscribe(() => {
-      let elm = angular.element(".swal2-container").find(".swal2-close");
+      let elm = $(".swal2-container").find(".swal2-close");
       elm.click();
 
       this.pollerService.getAll().changeInterval(this.appConstants["console.pollerInterval"]);
@@ -147,9 +147,9 @@ export class AppComponent implements OnInit, OnDestroy {
         this.appConstants['init'] = 2;
         if (!(this.router.url.indexOf("login") >= 0)) {
           this.idle.watch();
-          angular.element("body").removeClass("gray-bg");
-          angular.element(".main").show();
-          angular.element(".loading").hide();
+          $("body").removeClass("gray-bg");
+          $(".main").show();
+          $(".loading").hide();
         }
 
         this.appService.dtapStage = data["dtap.stage"];
@@ -174,7 +174,7 @@ export class AppComponent implements OnInit, OnDestroy {
         updateTime();
 
         this.appService.updateInstanceName(data.instance.name);
-        angular.element(".iaf-info").html(data.framework.name + " " + data.framework.version + ": " + data.instance.name + " " + data.instance.version);
+        $(".iaf-info").html(data.framework.name + " " + data.framework.version + ": " + data.instance.name + " " + data.instance.version);
 
         if (this.appService.dtapStage == "LOC") {
           this.debugService.setLevel(3);
@@ -368,7 +368,7 @@ export class AppComponent implements OnInit, OnDestroy {
   scrollToAdapter(){
     this.urlHash$.subscribe((hash) => {
       if (this.router.url == "/status" && hash) {
-        let el = angular.element("#" + hash);
+        let el = $("#" + hash);
         if (el && el[0]) {
           el[0].scrollIntoView();
         }

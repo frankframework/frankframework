@@ -1,15 +1,13 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { first } from 'rxjs';
-import { AppConstants } from 'src/angularjs/app/app.module';
-import { AppService } from 'src/angularjs/app/app.service';
-import { APPCONSTANTS } from 'src/app/app.module';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { AppConstants, AppService } from 'src/app/app.service';
 
 @Component({
   selector: 'app-custom-views',
   templateUrl: './custom-views.component.html',
   styleUrls: ['./custom-views.component.scss']
 })
-export class CustomViewsComponent implements OnInit {
+export class CustomViewsComponent implements OnInit, OnDestroy {
   appConstants: AppConstants;
   customViews: {
     view: string,
@@ -17,12 +15,14 @@ export class CustomViewsComponent implements OnInit {
     url: string
   }[] = [];
 
-  constructor(private appService: AppService, @Inject(APPCONSTANTS) appConstants: AppConstants) {
-    this.appConstants = appConstants;
+  private _subscriptions = new Subscription();
+
+  constructor(private appService: AppService) {
+    this.appConstants = this.appService.APP_CONSTANTS;
   }
 
   ngOnInit() {
-    this.appService.appConstants$.pipe(first()).subscribe(() => {
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
       let customViews = this.appConstants["customViews.names"];
       if (customViews == undefined)
         return;
@@ -41,5 +41,10 @@ export class CustomViewsComponent implements OnInit {
         }
       }
     });
+    this._subscriptions.add(appConstantsSubscription);
+  }
+
+  ngOnDestroy() {
+    this._subscriptions.unsubscribe();
   }
 }

@@ -1,5 +1,5 @@
 import { Component } from "@angular/core";
-import { SidebarService } from "src/angularjs/app/components/pages/sidebar.service";
+import { SidebarService } from "../sidebar.service";
 
 @Component({
   selector: 'app-minimaliza-sidebar',

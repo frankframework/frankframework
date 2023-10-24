@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { StateService } from '@uirouter/angularjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-pages-navigation',
@@ -7,11 +7,10 @@ import { StateService } from '@uirouter/angularjs';
   styleUrls: ['./pages-navigation.component.scss']
 })
 export class PagesNavigationComponent {
-  routeState = this.$state
   @Output() onOpenInfo = new EventEmitter<void>();
   @Output() onOpenFeedback = new EventEmitter<void>();
 
-  constructor(private $state: StateService) { }
+  constructor(private router: Router) { }
 
   openInfo(){
     this.onOpenInfo.emit();
@@ -22,6 +21,6 @@ export class PagesNavigationComponent {
   }
 
   getClassByRoute(className: string, routeState: string){
-    return { [className]: this.$state.includes(routeState) }
+    return { [className]: this.router.url.includes(routeState) }
   }
 }
