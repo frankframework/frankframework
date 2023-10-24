@@ -880,6 +880,7 @@ public class Adapter implements IAdapter, NamedBean {
 					runState.setRunState(RunState.STOPPING);
 					log.debug("Adapter [{}] is stopping receivers", name);
 					for (Receiver<?> receiver: receivers) {
+						// Will not stop receivers that are in state "STARTING"
 						receiver.stopRunning();
 					}
 					// IPullingListeners might still be running, see also
@@ -889,6 +890,10 @@ public class Adapter implements IAdapter, NamedBean {
 							continue; // We don't need to stop the receiver as it's already stopped...
 						}
 						while (!receiver.isStopped()) {
+							if (receiver.getRunState() == RunState.STARTED || receiver.getRunState() == RunState.EXCEPTION_STARTING) {
+								log.debug("Adapter [{}] stopping receiver [{}] which was still starting when stop() command was received", name, receiver.getName());
+								receiver.stopRunning();
+							}
 							// Passing receiver.getRunState() as supplier could cause recursive log invocation so should be avoided
 							if (log.isDebugEnabled()) log.debug("Adapter [{}] waiting for receiver [{}] in state [{}] to stop", name, receiver.getName(), receiver.getRunState());
 							try {
@@ -911,9 +916,11 @@ public class Adapter implements IAdapter, NamedBean {
 					statsUpSince = 0;
 					runState.setRunState(RunState.STOPPED);
 					getMessageKeeper().add("Adapter [" + name + "] stopped");
+					log.debug("Adapter [{}] now in state STOPPED", name);
 				} catch (Throwable t) {
 					addErrorMessageToMessageKeeper("got error stopping Adapter", t);
 					runState.setRunState(RunState.ERROR);
+					log.warn("Adapter [{}] in state ERROR", name, t);
 				} finally {
 					configuration.removeStopAdapterThread(this);
 				}
