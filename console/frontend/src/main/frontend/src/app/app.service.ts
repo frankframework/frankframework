@@ -349,15 +349,15 @@ export class AppService {
       }));
   }
 
-  updateAdapterSummary(routeParams: ParamMap, configurationName?: string) {
+  updateAdapterSummary(routeQueryParams: ParamMap, configurationName?: string) {
     var updated = (new Date().getTime());
     if (updated - 3000 < this.lastUpdated && !configurationName) { //3 seconds
       clearTimeout(this.timeout);
-      this.timeout = window.setTimeout(() => this.updateAdapterSummary(routeParams), 1000);
+      this.timeout = window.setTimeout(() => this.updateAdapterSummary(routeQueryParams), 1000);
       return;
     }
     if (configurationName == undefined)
-      configurationName = routeParams.get("configuration") ?? undefined;
+      configurationName = routeQueryParams.get("configuration") ?? undefined;
 
     var adapterSummary: Record<Lowercase<RunState>, number> = {
       started: 0,

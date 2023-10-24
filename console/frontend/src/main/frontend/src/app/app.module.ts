@@ -43,7 +43,7 @@ import { HamburgerComponent } from './components/pages/pages-topnavbar/hamburger
 // import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
 // import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
 // import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
-// import { StatusComponent } from './views/status/status.component';
+import { StatusComponent } from './views/status/status.component';
 // import { LogoutComponent } from './components/logout/logout.component';
 // import { ConfigurationFilterPipe } from './pipes/configuration-filter.pipe';
 // import { SearchFilterPipe } from './pipes/search-filter.pipe';
@@ -156,7 +156,7 @@ import { TimeSinceDirective } from './components/time-since.directive';
     PagesTopinfobarComponent,
     PagesTopnavbarComponent,
     ScrollToTopComponent,
-    // StatusComponent,
+    StatusComponent,
     // StorageComponent,
     // StorageListComponent,
     // StorageViewComponent,

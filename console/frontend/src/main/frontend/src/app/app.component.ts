@@ -34,7 +34,7 @@ export class AppComponent implements OnInit, OnDestroy {
   routeData: Record<string, any> = {};
 
   private urlHash$!: Observable<string | null>;
-  private routeParams!: ParamMap;
+  private routeQueryParams!: ParamMap;
   private _subscriptions = new Subscription();
 
   constructor(
@@ -57,13 +57,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.urlHash$ = this.route.fragment;
-    this.route.paramMap.subscribe(params => {
+    this.route.queryParamMap.subscribe(params => {
       if(this.router.url !== '/login'){
         this.renderer.addClass(document.body, 'gray-bg');
       } else {
         this.renderer.removeClass(document.body, 'gray-bg');
       };
-      this.routeParams = params;
+      this.routeQueryParams = params;
     });
     this.route.data.subscribe((data) => {
       this.routeData = data;
@@ -348,7 +348,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
           this.appService.adapters[adapter.name] = adapter;
 
-          this.appService.updateAdapterSummary(this.routeParams);
+          this.appService.updateAdapterSummary(this.routeQueryParams);
           this.scrollToAdapter();
           this.updateAdapterNotifications(adapter);
         }

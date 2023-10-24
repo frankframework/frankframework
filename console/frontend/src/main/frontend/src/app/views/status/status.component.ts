@@ -1,14 +1,10 @@
 import { ViewportScroller } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { StateService } from "@uirouter/angularjs";
-import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog, MessageSummary, Receiver, Summary } from 'src/angularjs/app/app.service';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
-import { PollerService } from 'src/angularjs/app/services/poller.service';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
 import { StatusService } from './status.service';
-import { Subscription } from 'rxjs';
+import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog, MessageSummary, Receiver, Summary } from 'src/app/app.service';
 
 type Filter = Record<AdapterStatus, boolean>;
 
@@ -65,41 +61,49 @@ export class StatusComponent implements OnInit, OnDestroy {
   getProcessStateIcon = this.appService.getProcessStateIcon;
   getProcessStateIconColor = this.appService.getProcessStateIconColor;
 
+  private routeQueryParams!: ParamMap;
   private _subscriptions = new Subscription();
 
   constructor(
-    public $state: StateService,
-    private Api: ApiService,
+    // private Api: ApiService,
     private Poller: PollerService,
-    // private $filter: angular.IFilterService,
     private Misc: MiscService,
-    private viewportScroller: ViewportScroller, // private $anchorScroll: angular.IAnchorScrollService,
-    private route: ActivatedRoute, // private $location: angular.ILocationService,
+    private viewportScroller: ViewportScroller,
+    private route: ActivatedRoute,
     private router: Router,
-    private statusService: StatusService, // private $http: angular.IHttpService,
+    private statusService: StatusService,
     private appService: AppService
   ) { }
 
   ngOnInit() {
-    this.route.fragment.subscribe(fragment => {
-      const hash = fragment ?? ""; // var hash = this.$location.hash();
-      this.adapterName = this.$state.params["adapter"];
-      if (this.adapterName == "" && hash != "") { //If the adapter param hasn't explicitly been set
-        this.adapterName = hash;
-      } else {
-        this.router.navigate([], { relativeTo: this.route, fragment: hash }); // this.$location.hash(this.adapterName);
-      }
-    });
+    this.route.queryParamMap.subscribe(params => {
+      this.routeQueryParams = params;
+      this.route.fragment.subscribe(fragment => {
+        const hash = fragment ?? ""; // var hash = this.$location.hash();
+        this.adapterName = params.get("adapter") ?? "";
+        if (this.adapterName == "" && hash != "") { //If the adapter param hasn't explicitly been set
+          this.adapterName = hash;
+        } else {
+          this.router.navigate([], { relativeTo: this.route, fragment: hash }); // this.$location.hash(this.adapterName);
+        }
+      });
 
-    if (this.$state.params["filter"] != "") {
-      var filter = this.$state.params["filter"].split("+");
-      for (const f in this.filter) {
-        this.filter[f as keyof Filter] = (filter.indexOf(f) > -1);
+      const filterParam = params.get("filter");
+      if (filterParam && filterParam != "") {
+        const filter = filterParam.split("+");
+        for (const f in filter) {
+          this.filter[f as keyof Filter] = (filter.indexOf(f) > -1);
+        }
       }
-    }
-    if (this.$state.params["search"] != "") {
-      this.searchText = this.$state.params["search"];
-    }
+      const searchParam = params.get("search");
+      if (searchParam && searchParam != "") {
+        this.searchText = searchParam;
+      }
+
+      const configurationParam = params.get("configuration");
+      if (configurationParam && configurationParam != "All")
+        this.changeConfiguration(configurationParam);
+    });
 
     this.appService.appConstants$.subscribe(() => {
       this.updateConfigurationFlowDiagram(this.selectedConfiguration);
@@ -129,9 +133,6 @@ export class StatusComponent implements OnInit, OnDestroy {
       this.updateAdapterShownContent();
     });
     this._subscriptions.add(adaptersSubscription);
-
-    if (this.$state.params["configuration"] != "All")
-      this.changeConfiguration(this.$state.params["configuration"]);
   }
 
   ngOnDestroy() {
@@ -160,7 +161,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     if (this.searchText.length > 0)
       transitionObj["search"] = this.searchText;
 
-    this.$state.transitionTo('pages.status', transitionObj, { notify: false, reload: false });
+    this.router.navigate(['status'], { queryParams: transitionObj, preserveFragment: true });
   };
 
   collapseAll() {
@@ -258,7 +259,7 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   changeConfiguration(name: string) {
     this.selectedConfiguration = name;
-    this.appService.updateAdapterSummary(name);
+    this.appService.updateAdapterSummary(this.routeQueryParams, name);
     this.updateQueryParams();
     this.updateConfigurationFlowDiagram(name);
   }
