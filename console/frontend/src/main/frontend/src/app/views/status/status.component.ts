@@ -5,6 +5,8 @@ import { Subscription } from 'rxjs';
 import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
 import { StatusService } from './status.service';
 import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog, MessageSummary, Receiver, Summary } from 'src/app/app.service';
+import { MiscService } from 'src/app/services/misc.service';
+import { PollerService } from 'src/app/services/poller.service';
 
 type Filter = Record<AdapterStatus, boolean>;
 
@@ -79,7 +81,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.route.queryParamMap.subscribe(params => {
       this.routeQueryParams = params;
       this.route.fragment.subscribe(fragment => {
-        const hash = fragment ?? ""; // var hash = this.$location.hash();
+        const hash = fragment ?? ""; // let hash = this.$location.hash();
         this.adapterName = params.get("adapter") ?? "";
         if (this.adapterName == "" && hash != "") { //If the adapter param hasn't explicitly been set
           this.adapterName = hash;
@@ -105,6 +107,7 @@ export class StatusComponent implements OnInit, OnDestroy {
         this.changeConfiguration(configurationParam);
     });
 
+    this.updateConfigurationFlowDiagram(this.selectedConfiguration);
     this.appService.appConstants$.subscribe(() => {
       this.updateConfigurationFlowDiagram(this.selectedConfiguration);
     });
@@ -149,12 +152,12 @@ export class StatusComponent implements OnInit, OnDestroy {
   }
 
   updateQueryParams() {
-    var filterStr = [];
+    let filterStr = [];
     for (const f in this.filter) {
       if (this.filter[f as keyof Filter])
         filterStr.push(f);
     }
-    var transitionObj: Record<string, string> = {};
+    let transitionObj: Record<string, string> = {};
     transitionObj["filter"] = filterStr.join("+");
     if (this.selectedConfiguration != "All")
       transitionObj["configuration"] = this.selectedConfiguration;
@@ -206,9 +209,9 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.Poller.add("server/configurations", (configurations) => {
       this.appService.updateConfigurations(configurations);
 
-      var ready = true;
-      for (var i in configurations) {
-        var config = configurations[i];
+      let ready = true;
+      for (let i in configurations) {
+        let config = configurations[i];
         //When all configurations are in state STARTED or in state STOPPED with an exception, remove the poller
         if (config.state != "STARTED" && !(config.state == "STOPPED" && config.exception != null)) {
           ready = false;
@@ -244,8 +247,8 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   check4StubbedConfigs() {
     this.configurations = this.appService.configurations;
-    for (var i in this.appService.configurations) {
-      var config = this.appService.configurations[i];
+    for (let i in this.appService.configurations) {
+      let config = this.appService.configurations[i];
       this.isConfigStubbed[config.name] = config.stubbed;
       this.isConfigReloading[config.name] = config.state == "STARTING" || config.state == "STOPPING"; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
     }

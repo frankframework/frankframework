@@ -28,7 +28,7 @@ export class NotificationService {
   }
 
   add(icon: string, title: string, msg?: string | boolean, fn?: (notification: Notification) => void): void {
-    var obj: Notification = {
+    let obj: Notification = {
       icon: icon,
       title: title,
       message: (msg) ? msg : false,
@@ -44,8 +44,8 @@ export class NotificationService {
   }
 
   get(id: number): Notification | false {
-    for (var i = 0; i < this.list.length; i++) {
-      var notification = this.list[i];
+    for (let i = 0; i < this.list.length; i++) {
+      let notification = this.list[i];
       if (notification.id == id) {
         if (notification.fn) {
           window.setTimeout(() => {

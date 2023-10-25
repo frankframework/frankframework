@@ -23,6 +23,7 @@ export class CustomViewsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
       let customViews = this.appConstants["customViews.names"];
       if (customViews == undefined)
         return;
