@@ -58,7 +58,7 @@
 	stream can be read after the pipeline has finished (e.g. when Base64Pipe is the last pipe Ladybug would show an
 	empty string while test a pipeline would show the correct result).
 	-->
-	<bean name="closeReportsTask" class="nl.nn.testtool.CloseReportsTask">
+	<bean name="closeReportsTask" class="nl.nn.testtool.CloseReportsTask" autowire="byName">
 		<property name="messageCapturersTime" value="60000"/>
 		<property name="threadsTime" value="-1"/>
 	</bean>
