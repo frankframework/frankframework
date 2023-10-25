@@ -18,17 +18,15 @@ package nl.nn.adapterframework.extensions.kafka;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
-
-import lombok.AccessLevel;
-
-import nl.nn.adapterframework.stream.MessageContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -38,6 +36,8 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPullingListener;
@@ -46,11 +46,13 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
+import nl.nn.adapterframework.util.StringUtil;
 
 public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord<String, byte[]>> {
 	//setter is for testing purposes only.
 	private @Setter(AccessLevel.PACKAGE) Consumer<String, byte[]> consumer;
-	private final List<ConsumerRecord<String, byte[]>> waiting = new ArrayList<>();
+	private Iterator<ConsumerRecord<String, byte[]>> waiting = Collections.emptyIterator();
 	/** The group id of the consumer */
 	private @Setter String groupId;
 	/** Whether to start reading from the beginning of the topic. */
@@ -59,6 +61,8 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	private @Setter int patternRecheckInterval = 5000;
 	/** The topics to listen to, separated by `,`. Wildcards are supported with `example.*`. */
 	private @Setter String topics;
+	private @Getter(AccessLevel.PACKAGE) List<Pattern> topicPatterns = new ArrayList<>();
+	private final Duration pollDuration = Duration.ofMillis(1);
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -72,14 +76,15 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
 		properties.setProperty(ConsumerConfig.METADATA_MAX_AGE_CONFIG, String.valueOf(patternRecheckInterval));
 		consumer = new KafkaConsumer<>(properties);
+		topicPatterns = StringUtil.splitToStream(topics)
+				.map(Pattern::compile) //Convert the topic to a regex pattern, to allow for wildcards in topic names.
+				.collect(Collectors.toList());
+		if(topicPatterns.isEmpty()) throw new ConfigurationException("topics must contain at least one valid topic");
 	}
 
 	@Override
-	public void open() throws ListenerException {
-		Arrays.stream(topics.split(","))
-				.filter(StringUtils::isNotEmpty) //if topics is `abc` java will split it into `abc` and ``. The latter is not a valid topic.
-				.map(Pattern::compile) //Convert the topic to a regex pattern, to allow for wildcards in topic names.
-				.forEach(consumer::subscribe);
+	public void open() {
+		topicPatterns.forEach(consumer::subscribe);
 	}
 
 	@Override
@@ -89,10 +94,10 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 
 	@Override
 	public Message extractMessage(
-			@Nonnull RawMessageWrapper<ConsumerRecord<String, byte[]>> wrappedMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+			@Nonnull RawMessageWrapper<ConsumerRecord<String, byte[]>> wrappedMessage, @Nonnull Map<String, Object> context) {
 		Map<String, String> headers=new HashMap<>();
 		ConsumerRecord<String, byte[]> rawMessage = wrappedMessage.getRawMessage();
-		Arrays.stream(rawMessage.headers().toArray()).forEach(header -> {
+		rawMessage.headers().forEach(header->{
 			try {
 				headers.put(header.key(), new String(header.value(), StandardCharsets.UTF_8));
 			} catch(Exception e) {
@@ -120,23 +125,19 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 
 	@Nonnull
 	@Override
-	public Map<String, Object> openThread() throws ListenerException {
+	public Map<String, Object> openThread() {
 		return new HashMap<>();
 	}
 
 	@Override
-	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) {
 		// nothing.
 	}
 
 	@Override
-	public RawMessageWrapper<ConsumerRecord<String, byte[]>> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
-		if (waiting.isEmpty()) {
-			Duration duration = Duration.ofMillis(1);
-			consumer.poll(duration).forEach(waiting::add);
-		}
-		if(waiting.isEmpty()) return null;
-		ConsumerRecord<String, byte[]> rawMessage = waiting.remove(0);
-		return new RawMessageWrapper<>(rawMessage);
+	public RawMessageWrapper<ConsumerRecord<String, byte[]>> getRawMessage(@Nonnull Map<String, Object> threadContext) {
+		if (!waiting.hasNext()) waiting = consumer.poll(pollDuration).iterator();
+		if(waiting.hasNext()) return new RawMessageWrapper<>(waiting.next());
+		return null;
 	}
 }

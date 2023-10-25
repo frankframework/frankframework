@@ -16,9 +16,6 @@
 package nl.nn.adapterframework.extensions.kafka;
 
 import java.io.IOException;
-import java.util.concurrent.Future;
-
-import lombok.AccessLevel;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -29,6 +26,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
+import lombok.AccessLevel;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
@@ -72,12 +70,11 @@ public class KafkaSender extends KafkaFacade implements ISender {
 			throw new SenderException("Failed to convert message to byte array", e);
 		}
 		producerRecord = new ProducerRecord<>(topic, messageBytes);
-		Future<RecordMetadata> future = producer.send(producerRecord);
-		try {
-			future.get();
-		} catch (Exception e) {
-			throw new SenderException("Failed to send message", e);
-		}
+		producer.send(producerRecord, (RecordMetadata metadata, Exception exception) -> {
+			if(exception != null) {
+				log.error("Failed to send message", exception);
+			}
+		});
 		return new SenderResult(message);
 	}
 
