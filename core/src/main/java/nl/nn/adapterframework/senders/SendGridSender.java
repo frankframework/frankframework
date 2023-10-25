@@ -52,7 +52,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender that sends a mail via SendGrid v3 (cloud-based SMTP provider).
- * 
+ *
  * Sample XML file can be found in the path: iaf-core/src/test/resources/emailSamplesXML/emailSample.xml
  * @author alisihab
  */
@@ -96,9 +96,8 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 	@Override
 	public String sendEmail(MailSession mailSession) throws SenderException {
-		String result = null;
-
-		Mail mail = null;
+		String result;
+		Mail mail;
 
 		try {
 			mail = createEmail(mailSession);
@@ -130,7 +129,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 		List<EMail> emailList = mailSession.getRecipientList();
 		EMail from = mailSession.getFrom();
-		EMail replyTo = mailSession.getReplyto();
+		EMail replyTo = mailSession.getReplyTo();
 		setEmailAddresses(mail, personalization, emailList, from, replyTo);
 
 		String subject = mailSession.getSubject();
@@ -149,12 +148,12 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 	/**
 	 * Sets header of mail object if header exists
-	 * @param mail 
-	 * @param personalization 
-	 * @param headers 
+	 * @param mail
+	 * @param personalization
+	 * @param headers
 	 */
 	private void setHeader(Mail mail, Personalization personalization, Collection<Node> headers) {
-		if (headers != null && headers.size() > 0) {
+		if (headers != null && !headers.isEmpty()) {
 			Iterator<Node> iter = headers.iterator();
 			while (iter.hasNext()) {
 				Element headerElement = (Element) iter.next();
@@ -168,10 +167,10 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 	/**
 	 * Adds attachments to mail Object if there is any
-	 * @param mail 
-	 * @param attachmentList 
-	 * @throws SenderException 
-	 * @throws IOException 
+	 * @param mail
+	 * @param attachmentList
+	 * @throws SenderException
+	 * @throws IOException
 	 */
 	private void setAttachments(Mail mail, List<MailAttachmentStream> attachmentList) throws SenderException, IOException {
 		if (attachmentList != null) {
@@ -229,18 +228,23 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	/**
-	 * Sets recipients, sender and replyto to mail object 
-	 * @param mail 
-	 * @param personalization 
-	 * @param list 
-	 * @param replyTo 
-	 * @param from 
-	 * @throws SenderException 
+	 * Sets recipients, sender and replyto to mail object
+	 * @param mail
+	 * @param personalization
+	 * @param list
+	 * @param replyTo
+	 * @param from
+	 * @throws SenderException
 	 */
 	private void setEmailAddresses(Mail mail, Personalization personalization, List<EMail> list, EMail from,
 			EMail replyTo) throws SenderException {
 		if (list != null && !list.isEmpty()) {
 			for (EMail e : list) {
+				if (!isRecipientWhitelisted(e)) {
+					log.warn("Recipient [{}] ignored, not in domain whitelist [{}]", ()->e, this::getDomainWhitelist);
+					continue;
+				}
+
 				if ("cc".equalsIgnoreCase(e.getType())) {
 					Email cc = new Email();
 					cc.setName(e.getName());
@@ -439,7 +443,6 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		return httpSender.getKeyManagerAlgorithm();
 	}
 
-	
 	@Override
 	@IbisDocRef({HTTPSENDERBASE})
 	public void setTruststore(String truststore) {
@@ -521,7 +524,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		return httpSender.isIgnoreCertificateExpiredException();
 	}
 
-	
+
 	@IbisDocRef({HTTPSENDERBASE})
 	public void setFollowRedirects(boolean b) {
 		httpSender.setFollowRedirects(b);
@@ -531,12 +534,11 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setStaleChecking(boolean b) {
 		httpSender.setStaleChecking(b);
 	}
-	
+
 	@IbisDocRef({HTTPSENDERBASE})
 	public void setStaleTimeout(int timeout) {
 		httpSender.setStaleTimeout(timeout);
 	}
-
 
 	@IbisDocRef({HTTPSENDERBASE})
 	public void setProtocol(String protocol) {

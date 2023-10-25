@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
@@ -105,8 +106,9 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class MailSender extends MailSenderBase {
 
 	private @Getter String smtpHost;
+	private @Getter int smtpPort=25;
 
-	private Properties properties = new Properties();
+	private final Properties properties = new Properties();
 	private Session session = null;
 
 	@Override
@@ -117,6 +119,7 @@ public class MailSender extends MailSenderBase {
 		}
 
 		properties.put("mail.smtp.host", getSmtpHost());
+		properties.put("mail.smtp.port", getSmtpPort());
 		properties.put("mail.smtp.connectiontimeout", getTimeout() + "");
 		properties.put("mail.smtp.timeout", getTimeout() + "");
 		String userId = getCredentialFactory().getUsername();
@@ -127,9 +130,6 @@ public class MailSender extends MailSenderBase {
 		}
 		//Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if(StringUtils.isNotEmpty(getBounceAddress())) {
-			if(properties.contains("mail.smtp.from")){
-				properties.remove("mail.smtp.from"); //Make sure it's not set twice?
-			}
 			properties.put("mail.smtp.from", getBounceAddress());
 		}
 	}
@@ -175,6 +175,10 @@ public class MailSender extends MailSenderBase {
 		boolean recipientsFound = false;
 		List<EMail> emailList = mailSession.getRecipientList();
 		for (EMail recipient : emailList) {
+			if (!isRecipientWhitelisted(recipient)) {
+				log.warn("Recipient [{}] ignored, not in domain whitelist [{}]", ()->recipient, this::getDomainWhitelist);
+				continue;
+			}
 			String type = recipient.getType();
 			Message.RecipientType recipientType;
 			if ("cc".equalsIgnoreCase(type)) {
@@ -274,6 +278,14 @@ public class MailSender extends MailSenderBase {
 			throw new SenderException("Error occurred while setting sender email", e);
 		}
 
+		if (mailSession.getReplyTo() != null) {
+			try {
+				msg.setReplyTo(new InternetAddress[]{mailSession.getReplyTo().getInternetAddress()});
+			} catch (Exception e) {
+				throw new SenderException("Error occurred while setting replyTo email", e);
+			}
+		}
+
 		try {
 			msg.setSubject(mailSession.getSubject(), mailSession.getCharSet());
 		} catch (MessagingException e) {
@@ -320,7 +332,9 @@ public class MailSender extends MailSenderBase {
 			throw new SenderException("Error occurred while setting header", e);
 		}
 
-		log.debug(logBuffer.toString());
+		if (log.isDebugEnabled()) {
+			log.debug(logBuffer.toString());
+		}
 		try {
 			msg.setSentDate(new Date());
 		} catch (MessagingException e) {
@@ -392,7 +406,11 @@ public class MailSender extends MailSenderBase {
 		smtpHost = newSmtpHost;
 	}
 
-	public void setProperties(Properties properties) {
-		this.properties = properties;
+	/**
+	 * Port of the SMTP-host by which the messages are to be send
+	 * @ff.default 25
+	 */
+	public void setSmtpPort(int newSmtpPort) {
+		smtpPort = newSmtpPort;
 	}
 }

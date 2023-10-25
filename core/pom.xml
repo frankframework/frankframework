@@ -827,6 +827,18 @@
 			<version>2.35.1</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.icegreen</groupId>
+			<artifactId>greenmail-junit5</artifactId>
+			<version>1.6.14</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
 		<!-- DATABASE DRIVERS  -->
 		<dependency>
