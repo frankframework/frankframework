@@ -515,7 +515,6 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		private String threadTopic = null;
 		private Collection<Node> headers;
-		// TODO: FIX this, calls wrong getBounceAddress()
 		private String bounceAddress = MailSenderBase.this.getBounceAddress();
 
 		public MailSessionBase() throws SenderException {

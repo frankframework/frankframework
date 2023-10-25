@@ -507,36 +507,6 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 	}
 
 	@Test
-	public void mailWithNDRNoReplyToShouldUseBounce() throws Exception {
-		if(!(sender instanceof MailSender)) return;
-
-		String mailInput = "<email>"
-				+ "<recipients>"
-					+ "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
-				+ "</recipients>"
-				+ "<subject>My Subject</subject>"
-				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
-				+ "<message>My Message Goes Here</message>"
-				+ "<messageType>text/plain</messageType>"
-				+ "<charset>UTF-8</charset>"
-			+ "</email>";
-
-		sender.setBounceAddress("my@bounce.nl");
-
-		sender.configure();
-		sender.open();
-
-		sender.sendMessageOrThrow(new Message(mailInput), session);
-		Session mailSession = (Session) session.get("mailSession");
-		assertEquals("localhost", mailSession.getProperty("mail.smtp.host"));
-
-		MimeMessage message = (MimeMessage) mailSession.getProperties().get("MimeMessage");
-		validateAuthentication(mailSession);
-		validateNDR(mailSession, "my@bounce.nl");
-		compare("mailWithNDRUsingBounceAddress.txt", message);
-	}
-
-	@Test
 	public void mailWithDynamicNDR() throws Exception {
 		if(!(sender instanceof MailSender)) return;
 

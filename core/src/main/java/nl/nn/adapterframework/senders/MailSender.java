@@ -36,6 +36,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
@@ -256,15 +257,9 @@ public class MailSender extends MailSenderBase {
 
 		if (mailSession.getReplyTo() != null) {
 			try {
-				msg.setReplyTo(new jakarta.mail.internet.InternetAddress[]{mailSession.getReplyTo().getInternetAddress()});
+				msg.setReplyTo(new InternetAddress[]{mailSession.getReplyTo().getInternetAddress()});
 			} catch (Exception e) {
 				throw new SenderException("Error occurred while setting replyTo email", e);
-			}
-		} else if (StringUtils.isNotBlank(mailSession.getBounceAddress())) {
-			try {
-				msg.setReplyTo(new jakarta.mail.internet.InternetAddress[]{new EMail(mailSession.getBounceAddress()).getInternetAddress()});
-			} catch (Exception e) {
-				throw new SenderException("Error occurred while setting replyTo email from bounceAddress", e);
 			}
 		}
 
@@ -395,10 +390,6 @@ public class MailSender extends MailSenderBase {
 	 */
 	public void setSmtpPort(int newSmtpPort) {
 		smtpPort = newSmtpPort;
-	}
-
-	public void setProperties(Properties properties) {
-		this.properties = properties;
 	}
 
 	public class MailSession extends MailSessionBase {

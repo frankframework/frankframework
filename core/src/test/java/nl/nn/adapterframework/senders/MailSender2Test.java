@@ -1,6 +1,9 @@
 package nl.nn.adapterframework.senders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Enumeration;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +12,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
 
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import nl.nn.adapterframework.stream.Message;
 
@@ -62,8 +66,84 @@ class MailSender2Test extends SenderTestBase<MailSender> {
 		MimeMessage[] messages = greenMail.getReceivedMessages();
 		assertEquals(1, messages.length);
 
-		assertEquals(subject, messages[0].getSubject());
-		assertEquals(body, messages[0].getContent().toString().trim());
+		MimeMessage message = messages[0];
+		assertEquals(subject, message.getSubject());
+		assertEquals(body, message.getContent().toString().trim());
+
+		assertMailHeader(message, "From", "\"Me, Myself and I\" <me@address.org>");
+		assertMailHeader(message, "Return-Path", "<me@address.org>");
+	}
+
+	@Test
+	void testSendMessageWithBounceAddress() throws Exception {
+		// For this test disable the whitelist to verify that the empty value lets through all recipients
+		sender.setDomainWhitelist("");
+		sender.setBounceAddress("my@bounce.nl");
+
+		String subject = "My Subject";
+		String body = "My Message Goes Here";
+
+		String mailInput = "<email>"
+				+ "<recipients>"
+				+ "<recipient type=\"to\" name=\"dummy\">" + toAddress + "</recipient>"
+				+ "</recipients>"
+				+ "<subject>" + subject + "</subject>"
+				+ "<from name=\"Me, Myself and I\">me@address.org</from>"
+				+ "<message>" + body + "</message>"
+			+ "</email>";
+
+		sender.configure();
+		sender.open();
+		sender.sendMessageOrThrow(new Message(mailInput), session);
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+		assertEquals(1, messages.length);
+
+		MimeMessage message = messages[0];
+		assertEquals(subject, message.getSubject());
+		assertEquals(body, message.getContent().toString().trim());
+		assertMailHeader(message, "Return-Path", "<my@bounce.nl>");
+	}
+
+	@Test
+	void testSendMessageWithReplyToAndBounceAddress() throws Exception {
+		// For this test disable the whitelist to verify that the empty value lets through all recipients
+		sender.setDomainWhitelist("");
+		sender.setBounceAddress("my@bounce.nl");
+
+		String subject = "My Subject";
+		String body = "My Message Goes Here";
+
+		String mailInput = "<email>"
+				+ "<recipients>"
+				+ "<recipient type=\"to\" name=\"dummy\">" + toAddress + "</recipient>"
+				+ "</recipients>"
+				+ "<subject>" + subject + "</subject>"
+				+ "<from name=\"Me, Myself and I\">me@address.org</from>"
+				+ "<replyTo>to@address.com</replyTo>"
+				+ "<message>" + body + "</message>"
+			+ "</email>";
+
+		sender.configure();
+		sender.open();
+		sender.sendMessageOrThrow(new Message(mailInput), session);
+
+		MimeMessage[] messages = greenMail.getReceivedMessages();
+		assertEquals(1, messages.length);
+
+		MimeMessage message = messages[0];
+		assertEquals(subject, message.getSubject());
+		assertEquals(body, message.getContent().toString().trim());
+
+		assertMailHeader(message, "Return-Path", "<my@bounce.nl>");
+		assertMailHeader(message, "Reply-To", "to@address.com");
+	}
+
+	private static void assertMailHeader(MimeMessage message, String headerName, String headerValue) throws MessagingException {
+		Enumeration<String> returnPathHeaders = message.getMatchingHeaderLines(new String[]{headerName});
+		assertTrue(returnPathHeaders.hasMoreElements(), "Expected at least 1 header " + headerName);
+		String returnPathHeader = returnPathHeaders.nextElement().trim();
+		assertEquals(headerName + ": " + headerValue, returnPathHeader);
 	}
 
 	@Test
