@@ -2,7 +2,7 @@ import { StateService } from "@uirouter/angularjs";
 import { appModule } from "./app.module";
 import { Subject } from "rxjs";
 
-export type RunState = 'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED';
+export type RunState = 'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED' | 'PAUSED';
 export type RunStateRuntime = RunState | 'loading'
 export type MessageLevel = 'INFO' | 'WARN' | 'ERROR';
 export type AdapterStatus = 'started' | 'warning' | 'stopped';
@@ -82,6 +82,16 @@ export type Adapter = {
   errorStoreMessageCount?: number,
 }
 
+export type Job = {
+  name: string,
+  description: string,
+  state: Lowercase<RunState>,
+  type?: string,
+  jobGroupName?: string,
+  stateful?: boolean,
+  durable?: boolean,
+}
+
 export type Configuration = {
   name: string,
   stubbed: boolean,
@@ -152,7 +162,8 @@ export class AppService {
     stopping: 0,
     exception_starting: 0,
     exception_stopping: 0,
-    error: 0
+    error: 0,
+    paused: 0
   };
   receiverSummary: Summary = {
     started: 0,
@@ -161,7 +172,8 @@ export class AppService {
     stopping: 0,
     exception_starting: 0,
     exception_stopping: 0,
-    error: 0
+    error: 0,
+    paused: 0
   };
   messageSummary: MessageSummary = {
     info: 0,
@@ -255,7 +267,8 @@ export class AppService {
       stopping: 0,
       exception_starting: 0,
       exception_stopping: 0,
-      error: 0
+      error: 0,
+      paused: 0
     };
     var receiverSummary: Record<Lowercase<RunState>, number> = {
       started: 0,
@@ -264,7 +277,8 @@ export class AppService {
       stopping: 0,
       exception_starting: 0,
       exception_stopping: 0,
-      error: 0
+      error: 0,
+      paused: 0
     };
     var messageSummary: Record<Lowercase<MessageLevel>, number> = {
       info: 0,
