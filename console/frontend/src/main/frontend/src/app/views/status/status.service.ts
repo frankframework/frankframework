@@ -1,7 +1,7 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
+import { MiscService } from 'src/app/services/misc.service';
 
 @Injectable({
   providedIn: 'root'
@@ -22,5 +22,9 @@ export class StatusService {
 
   getAdapterFlowDiagram(flowUrl: string): Observable<HttpResponse<string>> {
     return this.http.get(flowUrl, { observe: "response", responseType: "text" });
+  }
+
+  updateAdapters(action: string, adapters: string[]){
+    return this.http.put(this.Misc.absoluteApiPath + "adapters", { action, adapters });
   }
 }

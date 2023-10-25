@@ -6,6 +6,8 @@ import { Base64Service } from './base64.service';
   providedIn: 'root'
 })
 export class MiscService {
+  absoluteApiPath = this.getServerPath() + "iaf/api/";
+
   private appConstants: AppConstants;
 
     constructor(

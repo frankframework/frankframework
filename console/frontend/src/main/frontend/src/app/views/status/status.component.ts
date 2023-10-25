@@ -177,10 +177,10 @@ export class StatusComponent implements OnInit, OnDestroy {
       .forEach(adapter => this.adapterShowContent[adapter] = true);
   };
   stopAll() {
-    this.Api.Put("adapters", { "action": "stop", "adapters": this.getCompiledAdapterList() });
+    this.statusService.updateAdapters("stop", this.getCompiledAdapterList());
   };
   startAll() {
-    this.Api.Put("adapters", { "action": "start", "adapters": this.getCompiledAdapterList() });
+    this.statusService.updateAdapters("start", this.getCompiledAdapterList());
   };
   reloadConfiguration() {
     if (this.selectedConfiguration == "All") return;
@@ -308,6 +308,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       const configuration = adapters[adapter].configuration;
       compiledAdapterList.push(configuration + "/" + adapter);
     }
+    return compiledAdapterList;
   }
 
   private determineShowContent(adapter: Adapter) {
