@@ -788,7 +788,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			runState.setRunState(RunState.STARTED);
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		} catch (Throwable t) {
-			error("error occured while starting", t);
+			error("error occurred while starting", t);
 
 			runState.setRunState(RunState.EXCEPTION_STARTING);
 			closeAllResources(); //Close potential dangling resources, don't change state here..
@@ -2075,11 +2075,19 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		pollInterval = i;
 	}
 
-	/** timeout to start receiver. If this timeout is reached, the Receiver may be stopped again */
+	/**
+	 *  timeout (in seconds) to start receiver. If this timeout is exceeded, the Receiver startup is
+	 *  aborted and all resources closed and the receiver will be in state {@code EXCEPTION_STARTING}
+	 *  and a new start command may be issued again.
+	 */
 	public void setStartTimeout(int i) {
 		startTimeout = i;
 	}
-	/** timeout to stopped receiver. If this timeout is reached, a new stop command may be issued */
+	/**
+	 *  timeout (in seconds) to stop receiver. If this timeout is exceeded, stopping will be aborted
+	 *  and the receiver will be in state {@code EXCEPTION_STOPPING}.
+	 *  The receiver will no longer be running but some resources might not have been cleaned up properly.
+	 */
 	public void setStopTimeout(int i) {
 		stopTimeout = i;
 	}
