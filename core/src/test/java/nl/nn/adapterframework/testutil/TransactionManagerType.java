@@ -125,8 +125,12 @@ public enum TransactionManagerType {
 	/**
 	 * fetch the DataSource through the configured {@link JndiDataSourceFactory}.
 	 */
-	public DataSource getDataSource(String productKey) throws NamingException {
+	public DataSource getDataSource(String productKey) {
 		ApplicationContext ac = getConfigurationContext(productKey);
-		return getDataSourceFactory(ac).get(productKey);
+		try {
+			return getDataSourceFactory(ac).get(productKey);
+		} catch (NamingException e) {
+			throw new IllegalStateException("productkey not found");
+		}
 	}
 }
