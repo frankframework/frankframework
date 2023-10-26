@@ -15,8 +15,11 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.FixedResultPipe;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class InputOutputPipeProcessorTest {
 
@@ -46,6 +49,35 @@ public class InputOutputPipeProcessorTest {
 		pipeLine.setOwner(owner);
 
 		session = new PipeLineSession();
+	}
+
+	@Test
+	public void testCompactMessage() throws Exception {
+		// Arrange
+		EchoPipe pipe = new EchoPipe();
+		pipe.setRestoreMovedElements(false);
+		pipe.setRemoveCompactMsgNamespaces(true);
+		pipe.setElementToMove("identificatie");
+		PipeForward forward = new PipeForward();
+		forward.setName("success");
+		pipe.registerForward(forward);
+		pipe.configure();
+		pipe.start();
+
+		Message input = MessageTestUtils.getMessage("/Util/CompactSaxHandler/input.xml");
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals(2, session.size());
+		assertEquals("DC2023-00020", session.getString("ref_identificatie"));
+		assertEquals("DC2022-012345", session.getString("ref_identificatie2"));
+
+		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest.xml");
+
+		assertEquals(testOutputFile, prr.getResult().asString());
+
 	}
 
 	public void testRestoreMovedElement(Object sessionVarContents) throws Exception {
