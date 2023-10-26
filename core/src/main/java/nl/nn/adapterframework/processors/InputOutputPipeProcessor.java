@@ -138,8 +138,8 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 							// in case there was an error during compacting
 							result.preserve();
 							inputSource = result.asInputSource();
-						} catch (Exception e) {
-							throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] got error during compacting received message to more compact format: " + e.getMessage());
+						} catch (IOException e) {
+							throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] could not read received message during compacting to more compact format: " + e.getMessage(), e);
 						}
 						XmlWriter xmlWriter = new XmlWriter();
 						CompactSaxHandler handler = new CompactSaxHandler(xmlWriter);
