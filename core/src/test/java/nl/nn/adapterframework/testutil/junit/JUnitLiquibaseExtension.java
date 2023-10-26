@@ -21,6 +21,7 @@ import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.AnnotationUtils;
 
 import liquibase.Contexts;
+import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
@@ -121,14 +122,14 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 			String tableName = annotation.tableName();
 
 			System.setProperty("tableName", tableName);
-			Liquibase liquibase = runMigrator(file, dbTestEnv, context);
+			Liquibase liquibase = runMigrator(file, dbTestEnv);
 
 			//Store every instance in the 'Store' so it's auto-closed after the test has ran, even when it fails.
 			getStore(context).put("liquibaseInstance#" + argumentIndex.incrementAndGet(), new CloseableArgument(liquibase));
 		}
 	}
 
-	private Liquibase runMigrator(String changeLogFile, DatabaseTestEnvironment dbTestEnv, ExtensionContext context) throws Exception {
+	private Liquibase runMigrator(String changeLogFile, DatabaseTestEnvironment dbTestEnv) throws Exception {
 		Connection connection = dbTestEnv.createNonTransactionalConnection();
 		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
 		Liquibase liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
@@ -158,7 +159,7 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 				liquibase.dropAll();
 			} catch(Exception e) {
 				log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
-				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
+				liquibase.rollback(liquibase.getChangeSetStatuses(null, new LabelExpression()).size(), null);
 			}
 			liquibase.close();
 		}

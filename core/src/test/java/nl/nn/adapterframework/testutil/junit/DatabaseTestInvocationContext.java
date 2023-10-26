@@ -30,17 +30,15 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 
 	private final Method testMethod;
 	private final Object[] arguments;
-	private final int invocationIndex;
 
-	public DatabaseTestInvocationContext(Method testMethod, Object[] arguments, int invocationIndex) {
+	public DatabaseTestInvocationContext(Method testMethod, Object[] arguments) {
 		this.testMethod = testMethod;
 		this.arguments = arguments;
-		this.invocationIndex = invocationIndex;
 	}
 
 	@Override
 	public List<Extension> getAdditionalExtensions() {
-		return singletonList(new DatabaseTestParameterResolver(testMethod, arguments, invocationIndex));
+		return singletonList(new DatabaseTestParameterResolver(testMethod, arguments));
 	}
 
 	@Override
@@ -52,7 +50,7 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 		private final Object[] arguments;
 		private final boolean cleanupBeforeUse;
 
-		public DatabaseTestParameterResolver(Method testMethod, Object[] arguments, int invocationIndex) {
+		public DatabaseTestParameterResolver(Method testMethod, Object[] arguments) {
 			this.arguments = arguments;
 
 			DatabaseTest annotation = AnnotationUtils.findAnnotation(testMethod, DatabaseTest.class)

@@ -4,7 +4,6 @@ import static org.junit.platform.commons.util.AnnotationUtils.findRepeatableAnno
 import static org.junit.platform.commons.util.AnnotationUtils.isAnnotated;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -15,6 +14,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.support.AnnotationConsumerInitializer;
+import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.ExceptionUtils;
 import org.junit.platform.commons.util.ReflectionUtils;
 
@@ -29,9 +29,13 @@ public class JUnitDatabaseExtension implements TestTemplateInvocationContextProv
 			return false;
 		}
 
-		Method testMethod = context.getTestMethod().get();
+		Method testMethod = context.getRequiredTestMethod();
 		if (!isAnnotated(testMethod, DatabaseTest.class)) {
-			return false;
+			throw new JUnitException("Missing DatabaseTest annotation");
+		}
+
+		if(findRepeatableAnnotations(testMethod, ArgumentsSource.class).isEmpty()) {
+			throw new JUnitException("Missing Database/TX Execution Matrix");
 		}
 
 		return true;
@@ -39,7 +43,6 @@ public class JUnitDatabaseExtension implements TestTemplateInvocationContextProv
 
 	@Override
 	public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(ExtensionContext context) {
-		AtomicLong invocationCount = new AtomicLong(0);
 		Method templateMethod = context.getRequiredTestMethod();
 
 		return findRepeatableAnnotations(templateMethod, ArgumentsSource.class)
@@ -50,8 +53,7 @@ public class JUnitDatabaseExtension implements TestTemplateInvocationContextProv
 				.flatMap(provider -> arguments(provider, context))
 				.map(Arguments::get)
 				.map(arguments -> {
-					invocationCount.incrementAndGet();
-					return new DatabaseTestInvocationContext(templateMethod, arguments, invocationCount.intValue());
+					return new DatabaseTestInvocationContext(templateMethod, arguments);
 				});
 	}
 
