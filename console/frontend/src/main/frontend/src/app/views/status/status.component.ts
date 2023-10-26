@@ -188,7 +188,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.isConfigReloading[this.selectedConfiguration] = true;
 
     this.Poller.getAll().stop();
-    this.Api.Put("configurations/" + this.selectedConfiguration, { "action": "reload" }, () => {
+    this.statusService.updateSelectedConfiguration(this.selectedConfiguration, "reload").subscribe(() => {
       this.startPollingForConfigurationStateChanges(() => {
         this.Poller.getAll().start();
       });
@@ -197,7 +197,7 @@ export class StatusComponent implements OnInit, OnDestroy {
   fullReload() {
     this.reloading = true;
     this.Poller.getAll().stop();
-    this.Api.Put("configurations", { "action": "reload" }, () => {
+    this.statusService.updateConfigurations("reload").subscribe(() => {
       this.reloading = false;
       this.startPollingForConfigurationStateChanges(() => {
         this.Poller.getAll().start();
@@ -277,27 +277,33 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   startAdapter(adapter: Adapter) {
     adapter.state = 'starting';
-    this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name), { "action": "start" });
+    this.statusService.updateAdapter(adapter.configuration, adapter.name, "start");
   }
   stopAdapter(adapter: Adapter) {
     adapter.state = 'stopping';
-    this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name), { "action": "stop" });
+    this.statusService.updateAdapter(adapter.configuration, adapter.name, "stop");
   }
   startReceiver(adapter: Adapter, receiver: Receiver) {
     receiver.state = 'loading';
-    this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name) + "/receivers/" + this.Misc.escapeURL(receiver.name), { "action": "start" });
+    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, "start");
   }
   stopReceiver(adapter: Adapter, receiver: Receiver) {
     receiver.state = 'loading';
-    this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name) + "/receivers/" + this.Misc.escapeURL(receiver.name), { "action": "stop" });
+    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, "stop");
   }
   addThread(adapter: Adapter, receiver: Receiver) {
     receiver.state = 'loading';
-    this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name) + "/receivers/" + this.Misc.escapeURL(receiver.name), { "action": "incthread" });
+    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, "incthread");
   }
   removeThread(adapter: Adapter, receiver: Receiver) {
     receiver.state = 'loading';
-    this.Api.Put("configurations/" + adapter.configuration + "/adapters/" + this.Misc.escapeURL(adapter.name) + "/receivers/" + this.Misc.escapeURL(receiver.name), { "action": "decthread" });
+    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, "decthread");
+  }
+
+  navigateByAlert(alert: Alert){
+    if(alert.link){
+      this.router.navigate(['configuration', alert.link.name], { fragment: alert.link['#'] });
+    }
   }
 
   private getCompiledAdapterList() {

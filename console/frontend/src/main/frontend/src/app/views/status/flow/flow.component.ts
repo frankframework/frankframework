@@ -1,8 +1,8 @@
 import { HttpResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
-import { Adapter } from 'src/angularjs/app/app.service';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
 import { StatusService } from '../status.service';
+import { MiscService } from 'src/app/services/misc.service';
+import { Adapter } from 'src/app/app.service';
 
 @Component({
   selector: 'app-flow',

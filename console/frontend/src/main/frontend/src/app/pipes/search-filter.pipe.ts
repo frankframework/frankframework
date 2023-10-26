@@ -9,7 +9,7 @@ export class SearchFilterPipe implements PipeTransform {
     if (Object.keys(adapters).length < 1) return [];
 
     if (!searchText || searchText.length == 0) return Object.values(adapters);
-    var searchText = searchText.toLowerCase();
+    searchText = searchText.toLowerCase();
 
     const filtered = Object.values(adapters).reduce((acc, adapter) => {
       if (JSON.stringify(adapter).replace(/"/g, '').toLowerCase().indexOf(searchText) > -1)

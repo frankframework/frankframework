@@ -59,12 +59,12 @@ $(document).ready(function () {
 //Foist: To force upon or impose fraudulently or unjustifiably
 function foist(callback: () => void) {
   // @ts-ignore
-  angular.element(document.body).scope().foist(callback);
+  $(document.body).scope().foist(callback);
 }
 //Changes the log level to; 0 - error, 1 - warn, 2 - info, 3 - debug
 function setLogLevel(level: number) {
   // @ts-ignore
-  angular.element(document.body).scope().setLogLevel(level);
+ $(document.body).scope().setLogLevel(level);
 }
 //Detect if using any (older) version of Internet Explorer
 if (navigator.userAgent.indexOf('MSIE') !== -1 || navigator.appVersion.indexOf('Trident/') > -1) {

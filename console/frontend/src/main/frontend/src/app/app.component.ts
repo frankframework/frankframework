@@ -2,17 +2,16 @@ import { Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { Idle } from '@ng-idle/core';
 import { Observable, Subscription } from 'rxjs';
 import { Adapter, AppConstants, AppService, Configuration } from './app.service';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { AuthService } from 'src/angularjs/app/services/authservice.service';
-import { DebugService } from 'src/angularjs/app/services/debug.service';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
-import { NotificationService } from 'src/angularjs/app/services/notification.service';
-import { PollerService } from 'src/angularjs/app/services/poller.service';
-import { SessionService } from 'src/angularjs/app/services/session.service';
-import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
 import { Pace } from 'src/angularjs/deps';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { formatDate } from '@angular/common';
+import { NotificationService } from './services/notification.service';
+import { MiscService } from './services/misc.service';
+import { DebugService } from './services/debug.service';
+import { PollerService } from './services/poller.service';
+import { AuthService } from './services/auth.service';
+import { SessionService } from './services/session.service';
+import { SweetalertService } from './services/sweetalert.service';
 
 @Component({
   selector: 'app-root',
@@ -42,13 +41,12 @@ export class AppComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private renderer: Renderer2,
     private authService: AuthService,
-    private apiService: ApiService,
     private pollerService: PollerService,
     private notificationService: NotificationService,
     private miscService: MiscService,
     private sessionService: SessionService,
     private debugService: DebugService,
-    private sweetAlertService: SweetAlertService,
+    private sweetAlertService: SweetalertService,
     private appService: AppService,
     private idle: Idle
   ) {

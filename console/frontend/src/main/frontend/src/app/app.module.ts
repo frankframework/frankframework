@@ -45,10 +45,10 @@ import { HamburgerComponent } from './components/pages/pages-topnavbar/hamburger
 // import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
 import { StatusComponent } from './views/status/status.component';
 // import { LogoutComponent } from './components/logout/logout.component';
-// import { ConfigurationFilterPipe } from './pipes/configuration-filter.pipe';
-// import { SearchFilterPipe } from './pipes/search-filter.pipe';
-// import { TruncatePipe } from './pipes/truncate.pipe';
-// import { ToDateDirective } from './components/to-date.directive';
+import { ConfigurationFilterPipe } from './pipes/configuration-filter.pipe';
+import { SearchFilterPipe } from './pipes/search-filter.pipe';
+import { TruncatePipe } from './pipes/truncate.pipe';
+import { ToDateDirective } from './components/to-date.directive';
 // import { AppConstants, appConstants, appModule } from '../angularjs/app/app.module';
 // import { LiquibaseComponent } from './views/liquibase/liquibase.component';
 // import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
@@ -56,7 +56,7 @@ import { StatusComponent } from './views/status/status.component';
 // import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
 // import { VariablesFilterPipe } from './pipes/variablesFilter.pipe';
 import { TimeSinceDirective } from './components/time-since.directive';
-// import { FlowComponent } from './views/status/flow/flow.component';
+import { FlowComponent } from './views/status/flow/flow.component';
 // import { StorageComponent } from './views/storage/storage.component';
 // import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
 // import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
@@ -135,7 +135,7 @@ import { TimeSinceDirective } from './components/time-since.directive';
     AppComponent,
     CustomViewsComponent,
     // EnvironmentVariablesComponent,
-    // FlowComponent,
+    FlowComponent,
     HamburgerComponent,
     // IbisstoreSummaryComponent,
     // IframeCustomViewComponent,
@@ -166,17 +166,17 @@ import { TimeSinceDirective } from './components/time-since.directive';
     // WebservicesComponent,
 
     // pipes
-    // ConfigurationFilterPipe,
+    ConfigurationFilterPipe,
     // DropLastCharPipe,
     // OrderByPipe,
-    // SearchFilterPipe,
-    // TruncatePipe,
+    SearchFilterPipe,
+    TruncatePipe,
     // VariablesFilterPipe,
     // FormatStatisticsPipe,
     // FormatStatKeysPipe,
 
     // directives
-    // ToDateDirective,
+    ToDateDirective,
     TimeSinceDirective,
     // QuickSubmitFormDirective,
     // FitHeightDirective,
