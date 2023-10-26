@@ -246,5 +246,4 @@ class CompactSaxHandlerTest {
 		assertEquals(2, session.size());
 		assertEquals(testOutputFile, xmlWriter.toString());
 	}
-
 }

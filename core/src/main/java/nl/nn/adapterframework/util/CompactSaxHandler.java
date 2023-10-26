@@ -121,6 +121,9 @@ public class CompactSaxHandler extends FullXmlFilter {
 		if (charDataBuilder.length() == 0) {
 			return;
 		}
+		if (inCDATASection) {
+			super.startCDATA();
+		}
 
 		// Detection Moving elements; only when not already moved session key is found
 		int length = charDataBuilder.length();
@@ -149,9 +152,6 @@ public class CompactSaxHandler extends FullXmlFilter {
 			super.characters(VALUE_MOVE_END.toCharArray(), 0, 1);
 			moveElementFound = false;
 		} else {
-			if (inCDATASection) {
-				super.startCDATA();
-			}
 			String after = null;
 			if (chompLength >= 0 && charDataBuilder.length() > chompLength) {
 				String before = "*** character data size [" + charDataBuilder.length() + "] exceeds [" + chompLength + "] and is chomped ***";
@@ -164,11 +164,11 @@ public class CompactSaxHandler extends FullXmlFilter {
 			if (after != null) {
 				super.characters(after.toCharArray(), 0, after.length());
 			}
-			if (inCDATASection) {
-				super.endCDATA();
-			}
 		}
 
+		if (inCDATASection) {
+			super.endCDATA();
+		}
 		inCDATASection = false;
 		charDataBuilder.setLength(0);
 	}

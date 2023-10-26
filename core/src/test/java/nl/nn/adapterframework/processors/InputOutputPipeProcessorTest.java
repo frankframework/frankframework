@@ -75,9 +75,44 @@ public class InputOutputPipeProcessorTest {
 		assertEquals("DC2022-012345", session.getString("ref_identificatie2"));
 
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest.xml");
-
 		assertEquals(testOutputFile, prr.getResult().asString());
+	}
 
+	@Test
+	public void testCompactMessageAndRestoreElement() throws Exception {
+		// Arrange
+		EchoPipe pipe1 = new EchoPipe();
+		pipe1.setRestoreMovedElements(false);
+		pipe1.setRemoveCompactMsgNamespaces(true);
+		pipe1.setElementToMove("identificatie");
+		PipeForward forward1 = new PipeForward();
+		forward1.setName("success");
+		pipe1.registerForward(forward1);
+		pipe1.configure();
+		pipe1.start();
+
+		EchoPipe pipe2 = new EchoPipe();
+		pipe2.setRestoreMovedElements(true);
+		pipe2.setRemoveCompactMsgNamespaces(false);
+		PipeForward forward2 = new PipeForward();
+		forward2.setName("success");
+		pipe2.registerForward(forward2);
+		pipe2.configure();
+		pipe2.start();
+
+		Message input = MessageTestUtils.getMessage("/Util/CompactSaxHandler/input.xml");
+
+		// Act
+		PipeRunResult prr1 = processor.processPipe(pipeLine, pipe1, input, session);
+		PipeRunResult prr2 = processor.processPipe(pipeLine, pipe2, prr1.getResult(), session);
+
+		// Assert
+		assertEquals(2, session.size());
+		assertEquals("DC2023-00020", session.getString("ref_identificatie"));
+		assertEquals("DC2022-012345", session.getString("ref_identificatie2"));
+
+		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output.xml");
+		assertEquals(testOutputFile, prr2.getResult().asString());
 	}
 
 	public void testRestoreMovedElement(Object sessionVarContents) throws Exception {
