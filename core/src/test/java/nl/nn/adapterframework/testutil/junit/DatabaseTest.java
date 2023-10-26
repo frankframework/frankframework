@@ -44,7 +44,7 @@ public @interface DatabaseTest {
 	}
 
 	/**
-	 * AutoClose after tests has run
+	 * Ensure a clean database test environment is used
 	 */
 	boolean cleanupBeforeUse() default false;
 }

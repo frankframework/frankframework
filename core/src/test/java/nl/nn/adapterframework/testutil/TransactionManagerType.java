@@ -133,7 +133,7 @@ public enum TransactionManagerType {
 		try {
 			return getDataSourceFactory(ac).get(productKey);
 		} catch (NamingException e) {
-			throw new IllegalStateException("productkey not found");
+			throw new IllegalStateException("productkey not found?", e);
 		}
 	}
 }

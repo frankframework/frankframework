@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * TODO
+ * Annotation that works in tandem with {@link DatabaseTest}, executes Liquibase before it runs the test and cleansup after the test has ran.
  *
  * @author Niels Meijer
  */
@@ -23,7 +23,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 @Tag("database")
 @Tag("liquibase")
-//@TestInstance(Lifecycle.PER_METHOD)
 @ExtendWith(JUnitLiquibaseExtension.class)
 public @interface WithLiquibase {
 
