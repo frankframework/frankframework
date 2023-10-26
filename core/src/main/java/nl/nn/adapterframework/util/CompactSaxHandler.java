@@ -49,6 +49,7 @@ public class CompactSaxHandler extends FullXmlFilter {
 	private final List<String> elements = new ArrayList<>();
 	@Setter private Map<String, Object> context = null;
 	private boolean moveElementFound = false;
+	private boolean inCDATASection = false;
 
 	public CompactSaxHandler(ContentHandler handler) {
 		super(handler);
@@ -102,6 +103,16 @@ public class CompactSaxHandler extends FullXmlFilter {
 	}
 
 	@Override
+	public void startCDATA() throws SAXException {
+		inCDATASection = true;
+	}
+
+	@Override
+	public void endCDATA() throws SAXException {
+		// No-op
+	}
+
+	@Override
 	public void characters(char[] ch, int start, int length) {
 		charDataBuilder.append(ch, start, length);
 	}
@@ -138,6 +149,9 @@ public class CompactSaxHandler extends FullXmlFilter {
 			super.characters(VALUE_MOVE_END.toCharArray(), 0, 1);
 			moveElementFound = false;
 		} else {
+			if (inCDATASection) {
+				super.startCDATA();
+			}
 			String after = null;
 			if (chompLength >= 0 && charDataBuilder.length() > chompLength) {
 				String before = "*** character data size [" + charDataBuilder.length() + "] exceeds [" + chompLength + "] and is chomped ***";
@@ -145,13 +159,17 @@ public class CompactSaxHandler extends FullXmlFilter {
 				charDataBuilder.setLength(chompLength);
 				super.characters(before.toCharArray(), 0, before.length());
 			}
-			char[] encodedChars = XmlEncodingUtils.encodeChars(charDataBuilder.toString()).toCharArray();
-			super.characters(encodedChars, 0, encodedChars.length);
+			char[] charData = charDataBuilder.toString().toCharArray();
+			super.characters(charData, 0, charData.length);
 			if (after != null) {
 				super.characters(after.toCharArray(), 0, after.length());
 			}
+			if (inCDATASection) {
+				super.endCDATA();
+			}
 		}
 
+		inCDATASection = false;
 		charDataBuilder.setLength(0);
 	}
 
