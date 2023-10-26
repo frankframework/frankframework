@@ -2,16 +2,21 @@ package nl.nn.adapterframework.testutil.junit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
+import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.ExceptionUtils;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
 import lombok.Getter;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
@@ -28,13 +33,36 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	private @Getter IDbmsSupport dbmsSupport;
 	private final TransactionManagerType type;
 	private final TestConfiguration configuration;
+	private boolean cleanupAfterUse = false;
+	private AtomicInteger connectionCount = new AtomicInteger(0);
 
 	/**
 	 * <b>Make sure to close this!</b>
 	 * @return a new Connection each time this method is called
 	 */
 	public Connection getConnection() throws SQLException {
-		return dataSource.getConnection();
+		connectionCount.incrementAndGet();
+		try {
+			return warpCountingConnectionDelegate(dataSource.getConnection());
+		} catch (Exception e) {
+			connectionCount.decrementAndGet();
+			throw ExceptionUtils.throwAsUncheckedException(e);
+		}
+	}
+
+	private Connection warpCountingConnectionDelegate(Connection connection) throws Exception {
+		ProxyFactory factory = new ProxyFactory();
+		factory.setInterfaces(new Class[] {Connection.class});
+
+		return (Connection) factory.create(new Class[0], new Object[0], new MethodHandler() {
+			@Override
+			public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
+				if(method.getName().equals("close")) {
+					connectionCount.decrementAndGet();
+				}
+				return method.invoke(connection, args);
+			}
+		});
 	}
 
 	public DatabaseTestEnvironment(TransactionManagerType type, String productKey) {
@@ -98,6 +126,8 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 
 	@Override
 	public void close() throws Throwable {
-		System.err.println("--------------------");
+		if(connectionCount.get() > 0) {
+			throw new JUnitException("Not all connections have been closed!");
+		}
 	}
 }

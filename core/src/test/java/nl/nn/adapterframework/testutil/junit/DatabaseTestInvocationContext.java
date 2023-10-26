@@ -49,25 +49,25 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 	}
 
 	private static class DatabaseTestParameterResolver implements ParameterResolver, BeforeEachCallback {
-		private final Method testMethod;
 		private final Object[] arguments;
-		private final int invocationIndex;
+		private final boolean cleanupBeforeUse;
 
 		public DatabaseTestParameterResolver(Method testMethod, Object[] arguments, int invocationIndex) {
-			this.testMethod = testMethod;
 			this.arguments = arguments;
-			this.invocationIndex = invocationIndex;
 
 			DatabaseTest annotation = AnnotationUtils.findAnnotation(testMethod, DatabaseTest.class)
 					.orElseThrow(()->new JUnitException("unable to find DatabaseTest annotation"));
-			boolean shouldClose = annotation.cleanupAfterUse();
-			System.out.println(shouldClose);
+			cleanupBeforeUse = annotation.cleanupBeforeUse();
 		}
 
 		@Override
 		public void beforeEach(ExtensionContext context) throws Exception {
 			Object testInstance = context.getRequiredTestInstances().getInnermostInstance();
 			setAnnotatedFields(testInstance, testInstance.getClass());
+
+			if(cleanupBeforeUse) {
+				TransactionManagerType.closeAllConfigurationContexts();
+			}
 		}
 
 		private void setAnnotatedFields(Object instance, Class<?> testClass) {
