@@ -52,8 +52,8 @@ public class CleanupDatabaseJobTest2 {
 	}
 
 	@BeforeEach
+	@SuppressWarnings("unchecked")
 	public void setup(DatabaseTestEnvironment database) throws Exception {
-		//noinspection unchecked
 		storage = getConfiguration().createBean(JdbcTransactionalStorage.class);
 		storage.setName("test-cleanupDB");
 		storage.setType("A");
@@ -103,8 +103,6 @@ public class CleanupDatabaseJobTest2 {
 	}
 
 	@DatabaseTest
-	@WithLiquibase(tableName = "IBISLOCK") //Lock table must exist
-	@WithLiquibase(tableName = tableName) //Actual JdbcTXStorage table
 	public void testCleanupDatabaseJobMaxRowsZero(DatabaseTestEnvironment database) throws Exception {
 		jobDef.setName(cleanupJobName);
 		jobDef.configure();
@@ -187,8 +185,6 @@ public class CleanupDatabaseJobTest2 {
 	}
 
 	@DatabaseTest
-	@WithLiquibase(tableName = "IBISLOCK") //Lock table must exist
-	@WithLiquibase(tableName = tableName) //Actual JdbcTXStorage table
 	public void testCleanupDatabaseJobMaxRowsOne(DatabaseTestEnvironment database) throws Exception {
 		jobDef.setName(cleanupJobName);
 		jobDef.configure();

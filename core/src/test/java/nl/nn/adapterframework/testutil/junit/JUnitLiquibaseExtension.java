@@ -6,8 +6,10 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -26,11 +28,17 @@ import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * Works in tandem with {@link DatabaseTest} to execute a liquibase changeset before running a test.
+ * Automatically cleans up the created tables after the test regardless of the state.
+ * 
+ * @author Niels Meijer
+ */
 @Log4j2
 public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCallback, BeforeTestExecutionCallback {
 
-	private static final String LIQUIBASE_CONFIGURATIONS = "LIQUIBASE_CONFIGURATIONS"; //With the idea you can populate this on class level
-	private static final Namespace INSTANCE_NAMESPACE = Namespace.create(JUnitLiquibaseExtension.class);
+	private static final String LIQUIBASE_CONFIGURATIONS = "LIQUIBASE_CONFIGURATIONS";
+	private static final Namespace LIQUIBASE_NAMESPACE = Namespace.create(JUnitLiquibaseExtension.class);
 
 	@Override
 	public void beforeEach(ExtensionContext context) throws Exception {
@@ -41,6 +49,17 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 		}
 
 		List<WithLiquibase> annotations = findRepeatableAnnotations(templateMethod, WithLiquibase.class);
+		storeAnnotations(context, annotations);
+	}
+
+	@Override
+	public void beforeAll(ExtensionContext context) throws Exception {
+		Class<?> templateClass = context.getRequiredTestClass();
+		List<WithLiquibase> annotations = findRepeatableAnnotations(templateClass, WithLiquibase.class);
+		storeAnnotations(context, annotations);
+	}
+
+	private void validate(List<WithLiquibase> annotations) {
 		for(WithLiquibase liquibase : annotations) {
 			String file = liquibase.file();
 			URL url = JUnitLiquibaseExtension.class.getResource("/"+file);
@@ -50,22 +69,36 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 
 			log.info("Running Liquibase file: {} tableName: {}", file, liquibase.tableName());
 		}
-
-		getStore(context).put(LIQUIBASE_CONFIGURATIONS, annotations);
-	}
-
-	@Override
-	public void beforeAll(ExtensionContext context) throws Exception {
-		System.out.println("test123");
 	}
 
 	private ExtensionContext.Store getStore(ExtensionContext context) {
-		return context.getStore(Namespace.create(JUnitLiquibaseExtension.class, context.getRequiredTestMethod()));
+		return context.getStore(LIQUIBASE_NAMESPACE);
 	}
 
 	@SuppressWarnings("unchecked")
 	private List<WithLiquibase> getAnnotations(ExtensionContext context) {
 		return getStore(context).get(LIQUIBASE_CONFIGURATIONS, List.class);
+	}
+
+	/**
+	 * Store {@link WithLiquibase} annotations found on both class and method level in the JUnit context.
+	 */
+	private void storeAnnotations(ExtensionContext context, final List<WithLiquibase> annotations) {
+		if(annotations.isEmpty()) {
+			return;
+		}
+
+		validate(annotations);
+
+		final List<WithLiquibase> toStore = new ArrayList<>();
+		toStore.addAll(annotations);
+
+		List<WithLiquibase> alreadyStoredAnnotations = getAnnotations(context);
+		if(alreadyStoredAnnotations != null && !alreadyStoredAnnotations.isEmpty()) {
+			toStore.addAll(alreadyStoredAnnotations);
+		}
+
+		getStore(context).put(LIQUIBASE_CONFIGURATIONS, toStore.stream().distinct().collect(Collectors.toList()));
 	}
 
 	@Override
@@ -74,6 +107,8 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 		if(annotations.isEmpty()) {
 			return;
 		}
+
+		log.info("found {} migration scripts", annotations.size());
 
 		DatabaseTestEnvironment dbTestEnv = DatabaseTestInvocationContext.getDatabaseTestEnvironment(context);
 		if(dbTestEnv == null) {
@@ -88,9 +123,8 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 			System.setProperty("tableName", tableName);
 			Liquibase liquibase = runMigrator(file, dbTestEnv, context);
 
-			//Store every instance in the 'Store' so it's autoclosed after the test has ran, even when it fails.
-			Store store = context.getStore(INSTANCE_NAMESPACE);
-			store.put("liquibaseInstance#" + argumentIndex.incrementAndGet(), new CloseableArgument(liquibase));
+			//Store every instance in the 'Store' so it's auto-closed after the test has ran, even when it fails.
+			getStore(context).put("liquibaseInstance#" + argumentIndex.incrementAndGet(), new CloseableArgument(liquibase));
 		}
 	}
 
@@ -119,7 +153,7 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 
 		@Override
 		public void close() throws Throwable {
-			log.info("Closing Liquibase and releasing all connections");
+			log.info("Closing Liquibase [{}] and releasing all connections", liquibase::getChangeLogFile);
 			try {
 				liquibase.dropAll();
 			} catch(Exception e) {
