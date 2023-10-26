@@ -38,7 +38,7 @@ public class MatchUtils {
 	public static Map<String, Object> stringToMap(String mapInStr) throws IOException {
 		Properties inProps = new Properties();
 		inProps.load(new StringReader(mapInStr));
-		Map<String, Object> mapIn = new HashMap<String, Object>();
+		Map<String, Object> mapIn = new HashMap<>();
 		for(Object key : inProps.keySet()) {
 			mapIn.put((String) key, inProps.getProperty((String) key));
 		}

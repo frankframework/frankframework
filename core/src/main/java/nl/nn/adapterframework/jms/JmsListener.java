@@ -56,7 +56,7 @@ import nl.nn.adapterframework.core.IPullingListener;
  * <p>You can add parameters to the JmsListener, the values will be added as Headers to the JMS response message.</p>
  *
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
- * <code>javax.jms.TextMessage</code>s <br/><br/>
+ * {@link javax.jms.TextMessage}s and {@link javax.jms.BytesMessage}<br/><br/>
  * </p>
  * @author Gerrit van Brakel
  * @since 4.0.1, since 4.8 as 'switch'-class

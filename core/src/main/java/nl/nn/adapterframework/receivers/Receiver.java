@@ -15,8 +15,9 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import static nl.nn.adapterframework.functional.FunctionalUtil.logMethod;
+import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
 import static nl.nn.adapterframework.functional.FunctionalUtil.supplier;
-import static nl.nn.adapterframework.functional.FunctionalUtil.supply;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -787,7 +788,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			runState.setRunState(RunState.STARTED);
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		} catch (Throwable t) {
-			error("error occured while starting", t);
+			error("error occurred while starting", t);
 
 			runState.setRunState(RunState.EXCEPTION_STARTING);
 			closeAllResources(); //Close potential dangling resources, don't change state here..
@@ -968,7 +969,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		try {
 			txStatus = txManager.getTransaction(txDef);
 		} catch (RuntimeException e) {
-			log.error("{} Exception preparing to move input message with id [{}] correlationId [{}] to error sender", supplier(this::getLogPrefix), supply(originalMessageId), supply(correlationId), e);
+			log.error("{} Exception preparing to move input message with id [{}] correlationId [{}] to error sender", logMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), e);
 			// no use trying again to send message on errorSender, will cause same exception!
 
 			// NB: Why does this case return, instead of re-throwing?
@@ -992,13 +993,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			txManager.commit(txStatus);
 		} catch (Exception e) {
-			log.error("{} Exception moving message with id [{}] correlationId [{}] to error sender or error storage, original message: [{}]", supplier(this::getLogPrefix), supply(originalMessageId), supply(correlationId), supply(rawMessageWrapper), e);
+			log.error("{} Exception moving message with id [{}] correlationId [{}] to error sender or error storage, original message: [{}]", logMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), logValue(rawMessageWrapper), e);
 			try {
 				if (!txStatus.isCompleted()) {
 					txManager.rollback(txStatus);
 				}
 			} catch (Exception rbe) {
-				log.error("{} Exception while rolling back transaction for message  with id [{}] correlationId [{}], original message: [{}]", supplier(this::getLogPrefix), supply(originalMessageId), supply(correlationId), supply(rawMessageWrapper), rbe);
+				log.error("{} Exception while rolling back transaction for message  with id [{}] correlationId [{}], original message: [{}]", logMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), logValue(rawMessageWrapper), rbe);
 			}
 		}
 	}
@@ -1150,7 +1151,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					String correlationId = session.getCorrelationId();
 					Date receivedDate = session.getTsReceived();
 					if (receivedDate == null) {
-						log.warn("{} {} is unknown, cannot update comments", supplier(this::getLogPrefix), supply(PipeLineSession.TS_RECEIVED_KEY));
+						log.warn("{} {} is unknown, cannot update comments", this::getLogPrefix, logValue(PipeLineSession.TS_RECEIVED_KEY));
 					} else {
 						errorStorage.deleteMessage(storageKey);
 						errorStorage.storeMessage(messageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg.rawMessage);
@@ -2074,11 +2075,19 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		pollInterval = i;
 	}
 
-	/** timeout to start receiver. If this timeout is reached, the Receiver may be stopped again */
+	/**
+	 *  timeout (in seconds) to start receiver. If this timeout is exceeded, the Receiver startup is
+	 *  aborted and all resources closed and the receiver will be in state {@code EXCEPTION_STARTING}
+	 *  and a new start command may be issued again.
+	 */
 	public void setStartTimeout(int i) {
 		startTimeout = i;
 	}
-	/** timeout to stopped receiver. If this timeout is reached, a new stop command may be issued */
+	/**
+	 *  timeout (in seconds) to stop receiver. If this timeout is exceeded, stopping will be aborted
+	 *  and the receiver will be in state {@code EXCEPTION_STOPPING}.
+	 *  The receiver will no longer be running but some resources might not have been cleaned up properly.
+	 */
 	public void setStopTimeout(int i) {
 		stopTimeout = i;
 	}

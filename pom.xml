@@ -11,7 +11,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
-		<log4j2.version>2.21.0</log4j2.version>
+		<log4j2.version>2.21.1</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -106,6 +106,11 @@
 				<groupId>commons-beanutils</groupId>
 				<artifactId>commons-beanutils</artifactId>
 				<version>1.9.4</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>1.5</version>
 			</dependency>
 			<dependency>
 				<groupId>net.minidev</groupId>
@@ -818,7 +823,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.3.1</version>
 					<configuration>
 						<configLocation>${iaf.rootdir}/checkstyle.xml</configLocation>
 						<propertyExpansion>config_loc=${iaf.rootdir}</propertyExpansion>
@@ -986,10 +991,16 @@
 									</bannedDependencies>
 									<bannedDependencies>
 										<excludes>
-											<exclude>org.bouncycastle:bcpg-jdk15on</exclude>
-											<exclude>org.bouncycastle:bcprov-jdk15on</exclude>
+											<exclude>org.bouncycastle:*-jdk12</exclude>
+											<exclude>org.bouncycastle:*-jdk14</exclude>
+											<exclude>org.bouncycastle:*-jdk15</exclude>
+											<exclude>org.bouncycastle:*-jdk16</exclude>
+											<exclude>org.bouncycastle:*-jdk15to18</exclude>
+											<exclude>org.bouncycastle:*-ext-jdk15on</exclude>
+											<exclude>org.bouncycastle:*-jdk15on</exclude>
+											<exclude>bouncycastle:*</exclude>
 										</excludes>
-										<message>use the newer 'jdk18on' version of org.bouncycastle</message>
+										<message>use the newer 'org.bouncycastle:*-jdk18on' version of org.bouncycastle</message>
 									</bannedDependencies>
 								</rules>
 							</configuration>

@@ -70,7 +70,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * @throws IOException If the {@link InputStream} cannot be read or a temporary file cannot be created / written to.
 	 */
 	public static SerializableFileReference of(InputStream in) throws IOException {
-		try (InputStream is = in) {
+		try (InputStream ignored = in) {
 			return new SerializableFileReference(true, null, true, copyToTempFile(in, -1));
 		}
 	}
@@ -103,7 +103,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * @throws IOException If the {@link Reader} cannot be read or a temporary file cannot be created / written to.
 	 */
 	public static SerializableFileReference of(Reader in, String charset) throws IOException {
-		try (InputStream is = new ReaderInputStream(in, charset)) {
+		try (InputStream is = ReaderInputStream.builder().setReader(in).setCharset(charset).get()) {
 			return new SerializableFileReference(false, charset, true, copyToTempFile(is, -1));
 		}
 	}
