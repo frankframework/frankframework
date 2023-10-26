@@ -9,7 +9,7 @@
 			</stuurgegevens>
 			<parameters>
 				<mutatiesoort>T</mutatiesoort>
-				<indicatorOvername>V</indicatorOvername>
+				<indicatorOvername><![CDATA[&<V]]></indicatorOvername>
 			</parameters>
 			<object entiteittype="EDC" verwerkingssoort="T">
 				<identificatie>{sessionKey:ref_identificatie}</identificatie>
@@ -17,7 +17,7 @@
 			</object>
 			<object entiteittype="EDC" verwerkingssoort="E">
 				<identificatie>{sessionKey:ref_identificatie2}</identificatie>
-				<dct.omschrijving>Email</dct.omschrijving>
+				<dct.omschrijving>&amp;&lt;Email</dct.omschrijving>
 			</object>
 		</edcLk01>
 	</Body>

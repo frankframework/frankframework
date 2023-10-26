@@ -9,7 +9,7 @@
 			</ZKN:stuurgegevens>
 			<ZKN:parameters>
 				<StUF:mutatiesoort>T</StUF:mutatiesoort>
-				<StUF:indicatorOvername>V</StUF:indicatorOvername>
+				<StUF:indicatorOvername><![CDATA[&<V]]></StUF:indicatorOvername>
 			</ZKN:parameters>
 			<ZKN:object StUF:entiteittype="EDC" StUF:verwerkingssoort="T">
 				<ZKN:identificatie>{sessionKey:sessionKey}</ZKN:identificatie>
@@ -17,7 +17,7 @@
 			</ZKN:object>
 			<ZKN:object StUF:entiteittype="EDC" StUF:verwerkingssoort="E">
 				<ZKN:identificatie>{sessionKey:sessionKey2}</ZKN:identificatie>
-				<ZKN:dct.omschrijving>Email</ZKN:dct.omschrijving>
+				<ZKN:dct.omschrijving>&amp;&lt;Email</ZKN:dct.omschrijving>
 			</ZKN:object>
 		</ZKN:edcLk01>
 	</SOAP-ENV:Body>
