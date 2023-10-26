@@ -1,5 +1,6 @@
 Date: DATE
 From: "Me, Myself and I" <myself@address.org>
+Reply-To: to@address.com
 To: dummy <me@address.org>
 Cc: cc@address.org
 Bcc: bcc@address.org, name <i@address.org>,

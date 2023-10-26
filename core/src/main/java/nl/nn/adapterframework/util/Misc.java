@@ -50,12 +50,16 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -1444,5 +1448,18 @@ public class Misc {
 		}
 		return DEFAULT_SPLIT_PATTERN.splitAsStream(input.trim())
 				.filter(StringUtils::isNotBlank);
+	}
+
+	/**
+	 * Splits a string into a list of substrings using default delimiter {@literal ','}.
+	 * Spaces before or after separators, and any leading trailing spaces, are trimmed from the result.
+	 *
+	 * @param input the string to split, can be {@literal null}.
+	 * @return a {@link List} of strings. An empty list if the input was {@literal null}.
+	 */
+	@Nonnull
+	public static List<String> split(@Nullable String input) {
+		return splitToStream(input)
+			.collect(Collectors.toList());
 	}
 }

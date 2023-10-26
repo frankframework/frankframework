@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 WeAreFrank!
+   Copyright 2019, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,9 +32,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.IbisDoc;
@@ -43,11 +44,12 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * 
+ *
  * @ff.parameter from email address of the sender
  * @ff.parameter subject subject field of the message
  * @ff.parameter threadTopic (optional) conversation field of the message, used to correlate mails in mail viewer (header field "Thread-Topic"). Note: subject must end with value of threadTopic, but cann't be exactly the same
@@ -81,12 +83,24 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	private String defaultFrom;
 	private int timeout = 20000;
 	private String bounceAddress;
+	private @Getter String domainWhitelist;
+
+	private ArrayList<String> allowedDomains = new ArrayList<>();
+
+	protected boolean isRecipientWhitelisted(EMail recipient) {
+		return allowedDomains.isEmpty() || allowedDomains.contains(StringUtils.substringAfter(recipient.getAddress(),'@').toLowerCase());
+	}
 
 	protected abstract String sendEmail(MailSession mailSession) throws SenderException;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		cf = new CredentialFactory(getAuthAlias(), getUserId(), getPassword());
+
+		if (StringUtils.isNotEmpty(getDomainWhitelist())) {
+			allowedDomains.addAll(Misc.split(getDomainWhitelist()));
+		}
+
 		super.configure();
 	}
 
@@ -137,15 +151,16 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	private MailSession readParameters(Message input, PipeLineSession session) throws SenderException {
-		EMail from = null;
-		String subject = null;
-		String threadTopic = null;
-		String messageType = null;
-		boolean messageBase64 = false;
-		String charset = null;
+		EMail from;
+		EMail replyTo;
+		String subject;
+		String threadTopic;
+		String messageType;
+		boolean messageBase64;
+		String charset;
 		List<EMail> recipients;
-		List<MailAttachmentStream> attachments = null;
-		ParameterValueList pvl=null;
+		List<MailAttachmentStream> attachments;
+		ParameterValueList pvl;
 		ParameterValue pv;
 
 		MailSession mail = new MailSession();
@@ -156,6 +171,12 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 				from = new EMail(pv.asStringValue(null));
 				log.debug("MailSender [" + getName() + "] retrieved from-parameter [" + from + "]");
 				mail.setFrom(from);
+			}
+			pv = pvl.get("replyTo");
+			if (pv != null) {
+				replyTo = new EMail(pv.asStringValue(null));
+				log.debug("MailSender [{}] retrieved replyTo-parameter [{}]", getName(), replyTo);
+				mail.setReplyTo(replyTo);
 			}
 			pv = pvl.get("subject");
 			if (pv != null) {
@@ -196,7 +217,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			pv = pvl.get("recipients");
 			Collection<EMail> recipientsCollection = retrieveRecipientsFromParameterList(pv);
 			if (recipientsCollection != null && !recipientsCollection.isEmpty()) {
-				recipients = new ArrayList<EMail>(recipientsCollection);
+				recipients = new ArrayList<>(recipientsCollection);
 				mail.setRecipientList(recipients);
 			} else {
 				throw new SenderException("Recipients cannot be empty. At least one recipient is required");
@@ -205,7 +226,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			pv = pvl.get("attachments");
 			Collection<MailAttachmentStream> attachmentsCollection = retrieveAttachmentsFromParamList(pv, session);
 			if (attachmentsCollection != null && !attachmentsCollection.isEmpty()) {
-				attachments = new ArrayList<MailAttachmentStream>(attachmentsCollection);
+				attachments = new ArrayList<>(attachmentsCollection);
 				mail.setAttachmentList(attachments);
 			}
 
@@ -220,7 +241,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		if (recipientsNode != null && !recipientsNode.isEmpty()) {
 			Iterator<Node> iter = recipientsNode.iterator();
 			if (iter.hasNext()) {
-				recipients = new LinkedList<EMail>();
+				recipients = new LinkedList<>();
 				while (iter.hasNext()) {
 					Element recipientElement = (Element) iter.next();
 					String value = XmlUtils.getStringValue(recipientElement);
@@ -244,13 +265,13 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	private Collection<MailAttachmentStream> retrieveAttachments(Collection<Node> attachmentsNode, PipeLineSession session) throws SenderException {
 		Collection<MailAttachmentStream> attachments = null;
 		Iterator<Node> iter = attachmentsNode.iterator();
-		if (iter != null && iter.hasNext()) {
-			attachments = new LinkedList<MailAttachmentStream>();
+		if (iter.hasNext()) {
+			attachments = new LinkedList<>();
 			while (iter.hasNext()) {
 				Element attachmentElement = (Element) iter.next();
 				String name = attachmentElement.getAttribute("name");
 				String mimeType = attachmentElement.getAttribute("type");
-				if (StringUtils.isNotEmpty(mimeType) && mimeType.indexOf("/")<0) {
+				if (StringUtils.isNotEmpty(mimeType) && !mimeType.contains("/")) {
 					throw new SenderException("mimeType ["+mimeType+"] of attachment ["+name+"] must contain a forward slash ('/')");
 				}
 				String sessionKey = attachmentElement.getAttribute("sessionKey");
@@ -311,7 +332,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		String charset;
 		Collection<Node> recipientList;
 		Collection<Node> attachments;
-		Element replyTo = null;
+		Element replyTo;
 
 		MailSession mailSession = new MailSession();
 
@@ -327,7 +348,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		if (StringUtils.isEmpty(messageType)) {
 			messageType=getDefaultMessageType();
 		}
-		if (messageType.indexOf("/")<0) {
+		if (!messageType.contains("/")) {
 			throw new SenderException("messageType ["+messageType+"] must contain a forward slash ('/')");
 		}
 		messageBase64 = XmlUtils.getChildTagAsBoolean(emailElement, "messageBase64");
@@ -346,7 +367,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		Collection<Node> headers = headersElement == null ? null : XmlUtils.getChildTags(headersElement, "header");
 
 		String bounceAddress = XmlUtils.getChildTagAsString(emailElement, "bounceAddress");
-		mailSession.setBounceAddress(bounceAddress);
+		if (StringUtils.isNotBlank(bounceAddress)) {
+			mailSession.setBounceAddress(bounceAddress);
+		}
 
 		mailSession.setFrom(getEmailAddress(from, "from"));
 		mailSession.setSubject(subject);
@@ -356,7 +379,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		mailSession.setMessageBase64(messageBase64);
 		mailSession.setCharSet(charset);
 		mailSession.setHeaders(headers);
-		mailSession.setReplyto(getEmailAddress(replyTo,"replyTo"));
+		mailSession.setReplyTo(getEmailAddress(replyTo,"replyTo"));
 
 		List<EMail> recipients = retrieveRecipients(recipientList);
 		mailSession.setRecipientList(recipients);
@@ -502,14 +525,19 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return bounceAddress;
 	}
 
+	@IbisDoc({ "Comma separated list of domains to which mails can be send, domains not on the list are filtered out. Empty allows all domains */", ""})
+	public void setDomainWhitelist(String domainWhitelist) {
+		this.domainWhitelist = domainWhitelist;
+	}
+
 	/**
 	 * Generic email class
 	 */
 	public class MailSession {
-		private EMail from = null;
-		private EMail replyto = null;
-		private List<EMail> recipients = new ArrayList<EMail>();
-		private List<MailAttachmentStream> attachmentList = new ArrayList<MailAttachmentStream>();
+		private EMail from;
+		private EMail replyTo = null;
+		private List<EMail> recipients = new ArrayList<>();
+		private List<MailAttachmentStream> attachmentList = new ArrayList<>();
 		private String subject = getDefaultSubject();
 		private String message = null;
 		private String messageType = getDefaultMessageType();
@@ -517,7 +545,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		private String threadTopic = null;
 		private Collection<Node> headers;
-		private String bounceAddress = getBounceAddress();
+		private String bounceAddress = MailSenderBase.this.getBounceAddress();
 
 		public MailSession() throws SenderException {
 			from = new EMail(getDefaultFrom(),"from");
@@ -531,16 +559,16 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			this.from = from;
 		}
 
-		public EMail getReplyto() {
-			return replyto;
+		public EMail getReplyTo() {
+			return replyTo;
 		}
 
-		public void setReplyto(EMail replyto) {
-			this.replyto = replyto;
+		public void setReplyTo(EMail replyTo) {
+			this.replyTo = replyTo;
 		}
 
 		public List<EMail> getRecipientList() throws SenderException {
-			if (recipients == null || recipients.size() == 0) {
+			if (recipients == null || recipients.isEmpty()) {
 				throw new SenderException("MailSender [" + getName() + "] has no recipients for message");
 			}
 			return recipients;
@@ -667,13 +695,13 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	protected class MailAttachmentStream extends MailAttachmentBase<InputStream>{};
 
 	/**
-	 * Generic mail class 
+	 * Generic mail class
 	 * @author alisihab
 	 *
 	 */
 	public class EMail {
 		private InternetAddress emailAddress;
-		private String type; //"cc", "to", "from", "bcc" 
+		private String type; //"cc", "to", "from", "bcc"
 
 		public EMail(String address, String name, String type) throws SenderException {
 			try {
