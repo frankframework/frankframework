@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -30,6 +29,7 @@ import com.aspose.slides.LoadOptions;
 import com.aspose.slides.Presentation;
 import com.aspose.slides.SaveFormat;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -62,7 +62,11 @@ public class SlidesConvertor extends AbstractConvertor {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			Presentation presentation = new Presentation(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
+			LoadOptions loadOptions = MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
+			if(!configuration.isLoadExternalResources()){
+				loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
+			}
+			Presentation presentation = new Presentation(inputStream, loadOptions);
 			long startTime = new Date().getTime();
 			presentation.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
 			long endTime = new Date().getTime();
