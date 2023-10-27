@@ -15,7 +15,7 @@
     <SenderId>senderId2</SenderId>
   </Header>
   <Message>
-    <Text>{sessionKey:ref_Text}</Text>
+    <Text><![CDATA[{sessionKey:ref_Text}]]></Text>
     <Type>received</Type>
     <FunctionCallId>functionCallId3</FunctionCallId>
     <Label>label4</Label>

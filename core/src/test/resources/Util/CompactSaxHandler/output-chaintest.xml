@@ -12,7 +12,7 @@
 				<indicatorOvername><![CDATA[&<V]]></indicatorOvername>
 			</parameters>
 			<object entiteittype="EDC" verwerkingssoort="T">
-				<identificatie>{sessionKey:ref_identificatie}</identificatie>
+				<identificatie><![CDATA[{sessionKey:ref_identificatie}]]></identificatie>
 				<dct.omschrijving>Brief</dct.omschrijving>
 			</object>
 			<object entiteittype="EDC" verwerkingssoort="E">

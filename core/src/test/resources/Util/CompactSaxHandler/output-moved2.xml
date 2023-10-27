@@ -12,7 +12,7 @@
 				<StUF:indicatorOvername><![CDATA[&<V]]></StUF:indicatorOvername>
 			</ZKN:parameters>
 			<ZKN:object StUF:entiteittype="EDC" StUF:verwerkingssoort="T">
-				<ZKN:identificatie>{sessionKey:sessionKey}</ZKN:identificatie>
+				<ZKN:identificatie><![CDATA[{sessionKey:sessionKey}]]></ZKN:identificatie>
 				<ZKN:dct.omschrijving>Brief</ZKN:dct.omschrijving>
 			</ZKN:object>
 			<ZKN:object StUF:entiteittype="EDC" StUF:verwerkingssoort="E">
