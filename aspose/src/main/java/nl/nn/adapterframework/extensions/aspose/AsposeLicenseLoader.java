@@ -17,27 +17,33 @@ package nl.nn.adapterframework.extensions.aspose;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.EnumMap;
+import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
+import com.aspose.words.License;
 
-import nl.nn.adapterframework.util.LogUtil;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class AsposeLicenseLoader {
 	enum AsposeLibrary {
 		WORDS, CELLS, EMAIL, PDF, SLIDES, IMAGING;
 	}
 
-	private static Boolean WORDS_LICENSE_LOADED = null;
-	private static Boolean CELLS_LICENSE_LOADED = null;
-	private static Boolean EMAIL_LICENSE_LOADED = null;
-	private static Boolean PDF_LICENSE_LOADED = null;
-	private static Boolean SLIDES_LICENSE_LOADED = null;
-	private static Boolean IMAGING_LICENSE_LOADED = null;
+	private static final Map<AsposeLibrary, LicenseWrapper> loadedLicenses = new EnumMap<>(AsposeLibrary.class);
 
-	private final Logger log = LogUtil.getLogger(this);
+	static {
+		loadedLicenses.put(AsposeLibrary.WORDS, new WordsLicenseWrapper());
+		loadedLicenses.put(AsposeLibrary.CELLS, new CellsLicenseWrapper());
+		loadedLicenses.put(AsposeLibrary.EMAIL, new EmailLicenseWrapper());
+		loadedLicenses.put(AsposeLibrary.PDF, new PdfLicenseWrapper());
+		loadedLicenses.put(AsposeLibrary.SLIDES, new SlidesLicenseWrapper());
+		loadedLicenses.put(AsposeLibrary.IMAGING, new ImagingLicenseWrapper());
+	}
+
 	private static AsposeLicenseLoader self = null;
 
-	private URL license = null;
+	private final URL license;
 
 	// We only need to load the license once
 	public static synchronized void loadLicenses(URL asposeLicenseLocation) throws Exception {
@@ -46,57 +52,9 @@ public class AsposeLicenseLoader {
 		}
 	}
 
-	/**
-	 * how wonderful that every component has it's very own way of licensing..
-	 */
-	public boolean licenseLoaded(AsposeLibrary libraryName) {
-		try {
-			switch (libraryName) {
-			case WORDS:
-				if(WORDS_LICENSE_LOADED == null) {
-					com.aspose.words.License wordsLicense = new com.aspose.words.License();
-					WORDS_LICENSE_LOADED = wordsLicense.isLicensed();
-				}
-				return WORDS_LICENSE_LOADED;
-			case CELLS:
-				if(CELLS_LICENSE_LOADED == null) {
-					CELLS_LICENSE_LOADED = com.aspose.cells.License.isLicenseSet();
-				}
-				return CELLS_LICENSE_LOADED;
-			case EMAIL:
-				if(EMAIL_LICENSE_LOADED == null) {
-					com.aspose.email.License emailLicense = new com.aspose.email.License();
-					EMAIL_LICENSE_LOADED = emailLicense.isLicensed();
-				}
-				return EMAIL_LICENSE_LOADED;
-			case PDF:
-				if(PDF_LICENSE_LOADED == null) {
-					PDF_LICENSE_LOADED = com.aspose.pdf.Document.isLicensed();
-				}
-				return PDF_LICENSE_LOADED;
-			case SLIDES:
-				if(SLIDES_LICENSE_LOADED == null) {
-					com.aspose.slides.License slidesLicense = new com.aspose.slides.License();
-					SLIDES_LICENSE_LOADED = slidesLicense.isLicensed();
-				}
-				return SLIDES_LICENSE_LOADED;
-			case IMAGING:
-				if(IMAGING_LICENSE_LOADED == null) {
-					IMAGING_LICENSE_LOADED = com.aspose.imaging.License.isLicensed();
-				}
-				return IMAGING_LICENSE_LOADED;
-	
-			default:
-				return false;
-			}
-		} catch (Throwable t) {
-			log.warn("unable to load Aspose ["+libraryName.name()+"] license information", t);
-			return false;
-		}
-	}
-
-	private interface LicenseLoader {
+	private interface LicenseWrapper {
 		void loadLicense(InputStream licenseInputStream) throws Exception;
+		boolean isLicenseLoaded();
 	}
 
 	public AsposeLicenseLoader(URL asposeLicenseLocation) throws Exception {
@@ -106,94 +64,135 @@ public class AsposeLicenseLoader {
 			license = asposeLicenseLocation;
 		}
 
-		// words
-		loadAsposeLicense(new LicenseLoader() {
-			@Override
-			public void loadLicense(InputStream licenseInputStream) throws Exception {
-				com.aspose.words.License asposeLicense = new com.aspose.words.License();
-				asposeLicense.setLicense(licenseInputStream);
-			}
-		}, AsposeLibrary.WORDS);
-
-		// cells
-		loadAsposeLicense(new LicenseLoader() {
-			@Override
-			public void loadLicense(InputStream licenseInputStream) throws Exception {
-				com.aspose.cells.License asposeLicense = new com.aspose.cells.License();
-				asposeLicense.setLicense(licenseInputStream);
-			}
-		}, AsposeLibrary.CELLS);
-
-		// email
-		loadAsposeLicense(new LicenseLoader() {
-			@Override
-			public void loadLicense(InputStream licenseInputStream) throws Exception {
-				com.aspose.email.License asposeLicense = new com.aspose.email.License();
-				asposeLicense.setLicense(licenseInputStream);
-			}
-		}, AsposeLibrary.EMAIL);
-
-		// pdf
-		loadAsposeLicense(new LicenseLoader() {
-			@Override
-			public void loadLicense(InputStream licenseInputStream) throws Exception {
-				com.aspose.pdf.License asposeLicense = new com.aspose.pdf.License();
-				asposeLicense.setLicense(licenseInputStream);
-			}
-		}, AsposeLibrary.PDF);
-
-		// slides
-		loadAsposeLicense(new LicenseLoader() {
-			@Override
-			public void loadLicense(InputStream licenseInputStream) throws Exception {
-				com.aspose.slides.License asposeLicense = new com.aspose.slides.License();
-				asposeLicense.setLicense(licenseInputStream);
-			}
-		}, AsposeLibrary.SLIDES);
-
-		// imaging
-		loadAsposeLicense(new LicenseLoader() {
-			@Override
-			public void loadLicense(InputStream licenseInputStream) throws Exception {
-				com.aspose.imaging.License asposeLicense = new com.aspose.imaging.License();
-				asposeLicense.setLicense(licenseInputStream);
-			}
-		}, AsposeLibrary.IMAGING);
-
+		for(AsposeLibrary library: AsposeLibrary.values()) {
+			loadAsposeLicense(library);
+		}
 	}
 
-	private void loadAsposeLicense(LicenseLoader licenseLoader, AsposeLibrary library) throws Exception {
-		if(!licenseLoaded(library)) {
-			log.debug("loading Aspose ["+library.name()+"] license");
+	private void loadAsposeLicense(AsposeLibrary library) throws Exception {
+		LicenseWrapper licenseWrapper = loadedLicenses.get(library);
+		if(licenseWrapper.isLicenseLoaded()) {
+			log.debug("loading Aspose [{}] license", library.name());
 
 			try (InputStream inputStream = license.openStream()) {
-				licenseLoader.loadLicense(inputStream);
-				log.info("loaded Aspose [" + library.name() + "] license");
-
-				switch (library) {
-				case WORDS:
-					WORDS_LICENSE_LOADED = true;
-					break;
-				case CELLS:
-					CELLS_LICENSE_LOADED = true;
-					break;
-				case EMAIL:
-					EMAIL_LICENSE_LOADED = true;
-					break;
-				case IMAGING:
-					IMAGING_LICENSE_LOADED = true;
-					break;
-				case PDF:
-					PDF_LICENSE_LOADED = true;
-					break;
-				case SLIDES:
-					SLIDES_LICENSE_LOADED = true;
-					break;
-				}
+				licenseWrapper.loadLicense(inputStream);
+				log.info("loaded Aspose [{}] license", library.name());
 			} catch (Exception e) {
 				log.error("failed to load Aspose [" + library.name() + "] license", e);
 				throw e;
 			}
+		}
+	}
+
+	private static class WordsLicenseWrapper implements LicenseWrapper {
+
+		private License asposeLicense;
+
+		@Override
+		public void loadLicense(InputStream licenseInputStream) throws Exception {
+			try {
+				asposeLicense = new License();
+				asposeLicense.setLicense(licenseInputStream);
+			} catch (Exception e) {
+				asposeLicense = null;
+				throw e;
+			}
+		}
+
+		@Override
+		public boolean isLicenseLoaded() {
+			return asposeLicense != null;
+		}
+	}
+
+	private static class CellsLicenseWrapper implements LicenseWrapper {
+		@Override
+		public void loadLicense(InputStream licenseInputStream) throws Exception {
+			com.aspose.cells.License asposeLicense = new com.aspose.cells.License();
+			asposeLicense.setLicense(licenseInputStream);
+		}
+
+		@Override
+		public boolean isLicenseLoaded() {
+			return com.aspose.cells.License.isLicenseSet();
+		}
+	}
+
+	private static class EmailLicenseWrapper implements LicenseWrapper {
+
+		private com.aspose.email.License asposeLicense;
+
+		@Override
+		public void loadLicense(InputStream licenseInputStream) throws Exception {
+			try {
+				asposeLicense = new com.aspose.email.License();
+				asposeLicense.setLicense(licenseInputStream);
+			} catch (Exception e) {
+				asposeLicense = null;
+				throw e;
+			}
+		}
+
+		@Override
+		public boolean isLicenseLoaded() {
+			return asposeLicense != null;
+		}
+	}
+
+	private static class PdfLicenseWrapper implements LicenseWrapper {
+
+		private com.aspose.pdf.License asposeLicense;
+
+		@Override
+		public void loadLicense(InputStream licenseInputStream) throws Exception {
+			try {
+				asposeLicense = new com.aspose.pdf.License();
+				asposeLicense.setLicense(licenseInputStream);
+			} catch (Exception e) {
+				asposeLicense = null;
+				throw e;
+			}
+		}
+
+		@Override
+		public boolean isLicenseLoaded() {
+			return asposeLicense != null;
+		}
+	}
+
+	private static class SlidesLicenseWrapper implements LicenseWrapper {
+
+		private final com.aspose.slides.License asposeLicense = new com.aspose.slides.License();
+
+		@Override
+		public void loadLicense(InputStream licenseInputStream) throws Exception {
+			asposeLicense.setLicense(licenseInputStream);
+		}
+
+		@Override
+		public boolean isLicenseLoaded() {
+			return asposeLicense.isLicensed();
+		}
+	}
+
+	private static class ImagingLicenseWrapper implements LicenseWrapper {
+
+		private com.aspose.imaging.License asposeLicense;
+
+		@Override
+		public void loadLicense(InputStream licenseInputStream) throws Exception {
+			try {
+				asposeLicense = new com.aspose.imaging.License();
+				asposeLicense.setLicense(licenseInputStream);
+			} catch (Exception e) {
+				asposeLicense = null;
+				throw e;
+			}
+		}
+
+		@Override
+		public boolean isLicenseLoaded() {
+			return asposeLicense != null;
 		}
 	}
 }

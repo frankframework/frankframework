@@ -12,7 +12,10 @@
 
 	<properties>
 		<!-- NOTE: some dependencies require the classifier tag to be set to jdk16 (1.6) -->
-		<aspose.version>19.1</aspose.version>
+		<aspose.version>23.10</aspose.version>
+		<aspose.email.version>23.9</aspose.email.version>
+		<aspose.imaging.version>23.9</aspose.imaging.version>
+		<aspose.pdf.version>23.9</aspose.pdf.version>
 	</properties>
 
 	<dependencies>
@@ -228,13 +231,13 @@
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-pdf</artifactId>
-			<version>${aspose.version}</version>
+			<version>${aspose.pdf.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-email</artifactId>
-			<version>${aspose.version}</version>
+			<version>${aspose.email.version}</version>
 			<classifier>jdk16</classifier>
 		</dependency>
 
@@ -261,9 +264,8 @@
 		<dependency>
 			<groupId>com.aspose</groupId>
 			<artifactId>aspose-imaging</artifactId>
-			<!-- for some reason version 19.1 does not exist for aspose-imaging -->
-<!-- 			<version>${aspose.version}</version> -->
-			<version>18.11</version>
+ 			<version>${aspose.imaging.version}</version>
+			<classifier>jdk16</classifier>
 		</dependency>
 
 		<!-- test scoped dependencies -->
