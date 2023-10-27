@@ -157,7 +157,11 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 		if(!waiting.hasNext()) return null;
 		ConsumerRecord<T, M> next = waiting.next();
 		offsetAndMetadataMap.put(new TopicPartition(next.topic(), next.partition()), new OffsetAndMetadata(next.offset()));
-		consumer.commitSync(offsetAndMetadataMap);
+		consumer.commitAsync(offsetAndMetadataMap, (Map<TopicPartition, OffsetAndMetadata> offsets, Exception exception)->{
+			if(exception != null) {
+				log.error("Failed to commit offsets", exception);
+			}
+		});
 		return new RawMessageWrapper<>(next);
 	}
 }

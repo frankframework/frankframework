@@ -21,6 +21,8 @@ import java.util.function.BiFunction;
 
 import javax.annotation.Nonnull;
 
+import nl.nn.adapterframework.core.IThreadCountControllable;
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import lombok.AccessLevel;
@@ -35,7 +37,7 @@ import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 
-public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord> {
+public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord>, IThreadCountControllable {
 
 	/** The group id of the consumer */
 	private @Setter String groupId;
@@ -118,5 +120,35 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	@Override
 	public RawMessageWrapper<ConsumerRecord> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		return internalListener.getRawMessage(threadContext);
+	}
+
+	@Override
+	public boolean isThreadCountReadable() {
+		return false;
+	}
+
+	@Override
+	public boolean isThreadCountControllable() {
+		return false;
+	}
+
+	@Override
+	public int getCurrentThreadCount() {
+		return 1;
+	}
+
+	@Override
+	public int getMaxThreadCount() {
+		return 1;
+	}
+
+	@Override
+	public void increaseThreadCount() {
+		//nothing.
+	}
+
+	@Override
+	public void decreaseThreadCount() {
+		//nothing.
 	}
 }
