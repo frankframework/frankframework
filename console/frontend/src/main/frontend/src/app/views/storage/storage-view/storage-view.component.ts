@@ -39,16 +39,6 @@ export class StorageViewComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    const storageParams = {
-      adapterName: this.$state.params["adapter"],
-      configuration: this.$state.params["configuration"],
-      processState: this.$state.params["processState"],
-      storageSource: this.$state.params["storageSource"],
-      storageSourceName: this.$state.params["storageSourceName"],
-    }
-    this.storageService.storageParams = storageParams;
-    this.storageParams = storageParams;
-
     this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List > View Message " + this.$state.params["messageId"];
     this.storageService.closeNotes();
 
@@ -75,14 +65,14 @@ export class StorageViewComponent implements OnInit {
   }
 
   resendMessage(message: PartialMessage) {
-    this.storageService.doResendMessage(message, (messageId: string) => {
+    this.storageService.resendMessage(message, (messageId: string) => {
       //Go back to the storage list if successful
       this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
     });
   };
 
   deleteMessage(message: PartialMessage) {
-    this.storageService.doDeleteMessage(message, (messageId: string) => {
+    this.storageService.deleteMessage(message, (messageId: string) => {
       //Go back to the storage list if successful
       this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
     });

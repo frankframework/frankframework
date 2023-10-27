@@ -19,6 +19,7 @@ import '../angularjs/directives';
 import '../angularjs/controllers';
 import '../angularjs/components';
 
+// import { AppComponent } from './app.component';
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';
 import { sidebarServiceProvider } from './components/pages/ajs-sidebar-upgraded';
@@ -81,11 +82,14 @@ import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-
 import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
 import { FitHeightDirective } from './views/iframe/fit-height.directive';
 import { DataTablesModule } from 'angular-datatables';
+import { SecurityItemsComponent } from './views/security-items/security-items.component';
+import { WebservicesComponent } from './views/webservices/webservices.component';
 import { StorageListDtComponent } from './views/storage/storage-list/storage-list-dt/storage-list-dt.component';
 import { SchedulerComponent } from './views/scheduler/scheduler.component';
 import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
+import { SideNavigationDirective } from './components/pages/side-navigation.directive';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -121,15 +125,17 @@ appModule
   .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
   .directive('pagesTopnavbar', downgradeComponent({ component: PagesTopnavbarComponent }) as angular.IDirectiveFactory)
   .directive('scrollToTop', downgradeComponent({ component: ScrollToTopComponent }) as angular.IDirectiveFactory)
-  // .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
+  .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
   .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory)
   .directive('adapterstatistics', downgradeComponent({ component: AdapterstatisticsComponent }) as angular.IDirectiveFactory)
   .directive('scheduler', downgradeComponent({ component: SchedulerComponent }) as angular.IDirectiveFactory)
   .directive('schedulerAdd', downgradeComponent({ component: SchedulerAddComponent }) as angular.IDirectiveFactory)
   .directive('schedulerEdit', downgradeComponent({ component: SchedulerEditComponent }) as angular.IDirectiveFactory)
-  // .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
-  // .directive('storageList', downgradeComponent({ component: StorageListComponent }) as angular.IDirectiveFactory)
-  .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory);
+  .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory)
+  .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
+  .directive('storageList', downgradeComponent({ component: StorageListComponent }) as angular.IDirectiveFactory)
+  .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory)
+  .directive('webservices', downgradeComponent({ component: WebservicesComponent }) as angular.IDirectiveFactory);
 
 const nestedRouterStates: NgHybridStateDeclaration[] = [
   {
@@ -154,6 +160,7 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
 
 @NgModule({
   declarations: [
+    // AppComponent,
     CustomViewsComponent,
     EnvironmentVariablesComponent,
     FlowComponent,
@@ -176,13 +183,18 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     PagesNavigationComponent,
     PagesTopinfobarComponent,
     PagesTopnavbarComponent,
+    SchedulerComponent,
+    SchedulerEditComponent,
+    SchedulerAddComponent,
     ScrollToTopComponent,
     StatusComponent,
     StorageComponent,
     // StorageListComponent,
     StorageViewComponent,
     AdapterstatisticsComponent,
-    // SecurityItemsComponent,
+    StorageListDtComponent,
+    SecurityItemsComponent,
+    WebservicesComponent,
 
     // pipes
     ConfigurationFilterPipe,
@@ -192,17 +204,15 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     TruncatePipe,
     VariablesFilterPipe,
     FormatStatisticsPipe,
+    FormatStatKeysPipe,
 
     // directives
     ToDateDirective,
     TimeSinceDirective,
     QuickSubmitFormDirective,
-    FormatStatKeysPipe,
     FitHeightDirective,
     StorageListDtComponent,
-    SchedulerComponent,
-    SchedulerEditComponent,
-    SchedulerAddComponent,
+    SideNavigationDirective,
   ],
   imports: [
     BrowserModule,
@@ -241,7 +251,8 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     // scoped services
     appServiceProvider,
     sidebarServiceProvider,
-  ]
+  ],
+  // bootstrap: [AppComponent]
 })
 
 export class AppModule implements DoBootstrap {

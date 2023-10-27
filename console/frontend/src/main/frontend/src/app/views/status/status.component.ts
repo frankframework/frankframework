@@ -1,5 +1,5 @@
 import { ViewportScroller } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StateService } from "@uirouter/angularjs";
 import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog, MessageSummary, Receiver, Summary } from 'src/angularjs/app/app.service';
@@ -8,6 +8,7 @@ import { MiscService } from 'src/angularjs/app/services/misc.service';
 import { PollerService } from 'src/angularjs/app/services/poller.service';
 import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
 import { StatusService } from './status.service';
+import { Subscription } from 'rxjs';
 
 type Filter = Record<AdapterStatus, boolean>;
 
@@ -16,7 +17,7 @@ type Filter = Record<AdapterStatus, boolean>;
   templateUrl: './status.component.html',
   styleUrls: ['./status.component.scss']
 })
-export class StatusComponent implements OnInit {
+export class StatusComponent implements OnInit, OnDestroy {
   filter: Filter = {
     started: true,
     stopped: true,
@@ -66,6 +67,8 @@ export class StatusComponent implements OnInit {
   getProcessStateIcon = this.appService.getProcessStateIcon;
   getProcessStateIconColor = this.appService.getProcessStateIconColor;
 
+  private _subscriptions = new Subscription();
+
   constructor(
     public $state: StateService,
     private Api: ApiService,
@@ -111,22 +114,31 @@ export class StatusComponent implements OnInit {
     this.alerts = this.appService.alerts;
     this.messageLog = this.appService.messageLog;
     this.adapters = this.appService.adapters;
-    this.appService.configurations$.subscribe(() => this.check4StubbedConfigs());
-    this.appService.summaries$.subscribe(() => {
+    const configurationsSubscription = this.appService.configurations$.subscribe(() => this.check4StubbedConfigs());
+    this._subscriptions.add(configurationsSubscription);
+    const summariesSubscription = this.appService.summaries$.subscribe(() => {
       this.adapterSummary = this.appService.adapterSummary;
       this.receiverSummary = this.appService.receiverSummary;
       this.messageSummary = this.appService.messageSummary;
     });
-    this.appService.alerts$.subscribe(() => { this.alerts = [...this.appService.alerts]; });
-    this.appService.messageLog$.subscribe(() => { this.messageLog = {...this.appService.messageLog}; });
-    this.appService.adapters$.subscribe(() => {
+    this._subscriptions.add(summariesSubscription);
+    const alertsSubscription = this.appService.alerts$.subscribe(() => { this.alerts = [...this.appService.alerts]; });
+    this._subscriptions.add(alertsSubscription);
+    const messageLogSubscription = this.appService.messageLog$.subscribe(() => { this.messageLog = {...this.appService.messageLog}; });
+    this._subscriptions.add(messageLogSubscription);
+    const adaptersSubscription = this.appService.adapters$.subscribe(() => {
       this.adapters = {...this.appService.adapters};
       this.updateAdapterShownContent();
     });
+    this._subscriptions.add(adaptersSubscription);
 
     if (this.$state.params["configuration"] != "All")
       this.changeConfiguration(this.$state.params["configuration"]);
-  };
+  }
+
+  ngOnDestroy() {
+    this._subscriptions.unsubscribe();
+  }
 
   applyFilter(filter: Filter) {
     this.filter = filter;

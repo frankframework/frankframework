@@ -5,17 +5,13 @@ import { Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild }
   templateUrl: './input-file-upload.component.html',
   styleUrls: ['./input-file-upload.component.scss']
 })
-export class InputFileUploadComponent{
+export class InputFileUploadComponent {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
-  @Output() onUpdateFile!: EventEmitter<File | null>;
+  @Output() onUpdateFile = new EventEmitter<File | null>();
   @Input() accept?: string;
   @Input() title?: string;
 
   constructor() { }
-
-  ngOnInit() {
-    throw new Error('Method not implemented.');
-  }
 
   onFilesChange(){
     this.handleFile(this.fileInput.nativeElement.files);

@@ -12,6 +12,7 @@ import { MiscService } from './services/misc.service';
 import { NotificationService } from './services/notification.service';
 import { PollerService } from './services/poller.service';
 import { SweetAlertService } from './services/sweetalert.service';
+import { Subscription } from 'rxjs';
 
 export type IAFRelease = {
   url: string,
@@ -66,6 +67,8 @@ class AppController {
   serverTime = "";
   startupError: string | null = null;
   userName?: string;
+
+  private _subscriptions = new Subscription();
 
   constructor(
     private $scope: angular.IScope,
@@ -200,9 +203,10 @@ class AppController {
 
         this.appService.updateMessageLog(configurations);
 
-        this.appService.startupError$.subscribe(() => {
+        const startupErrorSubscription = this.appService.startupError$.subscribe(() => {
           this.startupError = this.appService.startupError;
-        })
+        });
+        this._subscriptions.add(startupErrorSubscription);
       }, true, 60000);
 
       var raw_adapter_data: Record<string, string> = {};
@@ -317,6 +321,10 @@ class AppController {
         });
       }
     });
+  }
+
+  $onDestroy() {
+    this._subscriptions.unsubscribe();
   }
 
   initializeFrankConsole() {

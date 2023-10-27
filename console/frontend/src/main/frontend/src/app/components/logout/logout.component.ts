@@ -11,12 +11,12 @@ export class LogoutComponent implements OnInit {
   constructor(
     private Poller: PollerService,
     private authService: AuthService,
-    // private idleService: Idle
+    private idle: Idle
   ){}
 
   ngOnInit() {
     this.Poller.getAll().remove();
-    // this.idleService.unwatch(); TODO handle this in a seperate service
+    this.idle.stop();
     this.authService.logout();
   };
 }

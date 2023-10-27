@@ -5,8 +5,6 @@ Pace.start({
 });
 // import 'mermaid'; // TODO let ngMermaid handle or replace ngMermaid with own component
 
-import 'metismenu';
-
 import 'angular-animate';
 import 'angular-aria';
 import 'angular-cookies';
@@ -19,14 +17,10 @@ import 'angular-route';
 import 'angular-sanitize';
 import 'angular-touch';
 import 'angular-ui-bootstrap';
-// import '@uirouter/angularjs'; // somehow loads angularjs again
-import '@uirouter/angular-hybrid';
+import '@uirouter/angular-hybrid'; // somehow loads angularjs again
 import 'ng-idle/angular-idle.js';
 import 'angular-ladda';
 import 'angularjs-toaster';
-// import 'angular-datatables/dist/angular-datatables';
-// import 'angular-datatables/dist/plugins/buttons/angular-datatables.buttons';
-// import 'angular-chart.js';
 import './plugins/mermaid/ng-mermaid';
 
 export {
