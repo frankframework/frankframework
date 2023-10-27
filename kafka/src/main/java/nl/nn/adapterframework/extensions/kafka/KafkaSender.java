@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.extensions.kafka;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -70,11 +72,15 @@ public class KafkaSender extends KafkaFacade implements ISender {
 			throw new SenderException("Failed to convert message to byte array", e);
 		}
 		producerRecord = new ProducerRecord<>(topic, messageBytes);
-		producer.send(producerRecord, (RecordMetadata metadata, Exception exception) -> {
-			if(exception != null) {
-				log.error("Failed to send message", exception);
-			}
-		});
+		Future<RecordMetadata> future = producer.send(producerRecord);
+		RecordMetadata metadata;
+		try {
+			metadata = future.get();
+		} catch (Exception e) {
+            throw new SenderException(e);
+        }
+		message.getContext().put("kafka.offset", metadata.offset());
+		message.getContext().put("kafka.partition", metadata.partition());
 		return new SenderResult(message);
 	}
 

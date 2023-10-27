@@ -37,7 +37,8 @@ public class KafkaPatternValidatorTest {
 		}
 		Assertions.assertDoesNotThrow(listener::configure, topics);
 		List<String> expectedPatterns = expected.stream().map(Pattern::compile).map(Pattern::pattern).collect(Collectors.toList());
-		List<String> actual = listener.getTopicPatterns().stream().map(Pattern::pattern).collect(Collectors.toList());
+		List<Pattern> actualPatterns = listener.getInternalListener().getTopicPatterns();
+		List<String> actual = actualPatterns.stream().map(Pattern::pattern).collect(Collectors.toList());
 		Assertions.assertEquals(expectedPatterns, actual, topics);
 	}
 	public static Stream<Arguments> validateTopics() {

@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.kafka;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -36,11 +37,11 @@ public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurab
 	private @Getter @Setter ApplicationContext applicationContext;
 	protected Logger log = LogUtil.getLogger(this);
 
-	private @Getter String name;
+	private @Setter @Getter String name;
 	/** The bootstrap servers to connect to, as a comma separated list. */
-	private @Setter @Getter String bootstrapServers;
+	private @Setter @Getter(AccessLevel.PACKAGE) String bootstrapServers;
 	/** The client id to use when connecting to the Kafka cluster. */
-	private @Setter String clientId;
+	private @Setter @Getter(AccessLevel.PACKAGE) String clientId;
 	protected Properties properties;
 
 	@Override
@@ -51,10 +52,5 @@ public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurab
 		properties = new Properties();
 		properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 		properties.setProperty(CommonClientConfigs.CLIENT_ID_CONFIG, clientId);
-	}
-
-	@Override
-	public void setName(String name) {
-		this.name = name;
 	}
 }

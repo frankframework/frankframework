@@ -36,6 +36,8 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 public class KafkaReceiverTest {
 	MockConsumer<String, byte[]> mockListener = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
 	KafkaListener listener;
@@ -48,8 +50,10 @@ public class KafkaReceiverTest {
 		listener.setClientId("test");
 		listener.setGroupId("testGroup");
 		listener.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
+		listener.setKeyType(KafkaType.STRING);
+		listener.setMessageType(KafkaType.BYTEARRAY);
 		listener.configure();
-		listener.setConsumer(mockListener);
+		listener.getInternalListener().setConsumerGenerator(properties -> mockListener);
 	}
 
 	@ParameterizedTest
@@ -91,7 +95,7 @@ public class KafkaReceiverTest {
 		mockListener.rebalance(Collections.singletonList(topicPartition));
 		mockListener.addRecord(new ConsumerRecord<>(topic, 0, 0, "", "testtesttest".getBytes()));
 
-		RawMessageWrapper<ConsumerRecord<String, byte[]>> wrapper = listener.getRawMessage(new HashMap<>());
+		RawMessageWrapper<ConsumerRecord> wrapper = listener.getRawMessage(new HashMap<>());
 		Message message = listener.extractMessage(wrapper, new HashMap<>());
 
 		Assertions.assertEquals(topic, message.getContext().get("kafkaTopic"));
@@ -99,5 +103,21 @@ public class KafkaReceiverTest {
 
 		Assertions.assertNull(listener.getRawMessage(new HashMap<>()));
 		listener.close();
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	void generateInternalListenerTest(KafkaType kafkaType1, KafkaType kafkaType2) {
+		assertDoesNotThrow(()->KafkaListener.generateInternalListener(kafkaType1, kafkaType2, null));
+	}
+
+	static Stream<Arguments> generateInternalListenerTest() {
+		Stream.Builder<Arguments> argumentBuilder = Stream.builder();
+		for (KafkaType kafkaType1 : KafkaType.values()) {
+			for (KafkaType kafkaType2 : KafkaType.values()) {
+				argumentBuilder.add(Arguments.of(kafkaType1, kafkaType2));
+			}
+		}
+		return argumentBuilder.build();
 	}
 }
