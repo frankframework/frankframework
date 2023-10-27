@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/" xmlns:foo="http://xmlns/overlappendeNamespace">
+	<Header/>
+	<Body>
+		<foo:A></foo:A>
+	</Body>
+</Envelope>

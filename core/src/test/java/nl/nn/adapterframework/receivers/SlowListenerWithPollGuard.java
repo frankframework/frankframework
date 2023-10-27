@@ -4,12 +4,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Timer;
+
 import javax.jms.Message;
 
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.IPortConnectedListener;
@@ -25,21 +27,26 @@ public class SlowListenerWithPollGuard extends SlowPushingListener implements IP
     private Timer pollGuardTimer = null;
     private @Getter @Setter int mockLastPollDelayMs = 10;
     private @Setter Receiver<Message> receiver;
-    @Override
+	private SpringJmsConnector mockConnector;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		DefaultMessageListenerContainer mockContainer = mock(DefaultMessageListenerContainer.class);
+		mockConnector = mock(SpringJmsConnector.class);
+		when(mockConnector.getLastPollFinishedTime()).thenAnswer(invocationOnMock -> System.currentTimeMillis() - mockLastPollDelayMs);
+		when(mockConnector.getThreadsProcessing()).thenReturn(new Counter(0));
+		when(mockConnector.getReceiver()).thenReturn(receiver);
+		when(mockConnector.getListener()).thenReturn(this);
+		when(mockConnector.getJmsContainer()).thenReturn(mockContainer);
+		when(mockConnector.getLogPrefix()).thenReturn("MockJmsConnector ");
+	}
+
+	@Override
     public void open() {
         super.open();
 
         if (pollGuardInterval > 0) {
             log.debug("Creating poll-guard timer with interval [" + pollGuardInterval + "ms] while starting SpringJmsConnector");
-            DefaultMessageListenerContainer mockContainer = mock(DefaultMessageListenerContainer.class);
-            SpringJmsConnector mockConnector = mock(SpringJmsConnector.class);
-            when(mockConnector.getLastPollFinishedTime()).thenAnswer(invocationOnMock -> System.currentTimeMillis() - mockLastPollDelayMs);
-            when(mockConnector.getThreadsProcessing()).thenReturn(new Counter(0));
-            when(mockConnector.getReceiver()).thenReturn(receiver);
-            when(mockConnector.getListener()).thenReturn(this);
-            when(mockConnector.getJmsContainer()).thenReturn(mockContainer);
-            when(mockConnector.getLogPrefix()).thenReturn("MockJmsConnector ");
-
             pollGuard = new PollGuard();
             pollGuard.setSpringJmsConnector(mockConnector);
             pollGuardTimer = new Timer(true);

@@ -34,4 +34,19 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+	<adapter name="CompactMessage-JavaListener3">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+					  serviceName="ibis4test-CompactMessage-JavaListener3" />
+		</receiver>
+		<pipeline firstPipe="echo">
+			<exits>
+				<exit path="EXIT" state="success" />
+			</exits>
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe"
+				  removeCompactMsgNamespaces="true" elementToMoveChain="AuditLog_Action;Message;Text">
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
 </module>

@@ -36,6 +36,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
@@ -128,9 +129,6 @@ public class MailSender extends MailSenderBase {
 		}
 		//Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if(StringUtils.isNotEmpty(getBounceAddress())) {
-			if(properties.containsValue("mail.smtp.from")){
-				properties.remove("mail.smtp.from"); //Make sure it's not set twice?
-			}
 			properties.put("mail.smtp.from", getBounceAddress());
 		}
 	}
@@ -257,6 +255,14 @@ public class MailSender extends MailSenderBase {
 			throw new SenderException("Error occurred while setting sender email", e);
 		}
 
+		if (mailSession.getReplyTo() != null) {
+			try {
+				msg.setReplyTo(new InternetAddress[]{mailSession.getReplyTo().getInternetAddress()});
+			} catch (Exception e) {
+				throw new SenderException("Error occurred while setting replyTo email", e);
+			}
+		}
+
 		try {
 			msg.setSubject(mailSession.getSubject(), mailSession.getCharSet());
 		} catch (MessagingException e) {
@@ -306,7 +312,9 @@ public class MailSender extends MailSenderBase {
 			throw new SenderException("Error occurred while setting header", e);
 		}
 
-		log.debug(logBuffer.toString());
+		if (log.isDebugEnabled()) {
+			log.debug(logBuffer.toString());
+		}
 		try {
 			msg.setSentDate(new Date());
 		} catch (MessagingException e) {
@@ -382,10 +390,6 @@ public class MailSender extends MailSenderBase {
 	 */
 	public void setSmtpPort(int newSmtpPort) {
 		smtpPort = newSmtpPort;
-	}
-
-	public void setProperties(Properties properties) {
-		this.properties = properties;
 	}
 
 	public class MailSession extends MailSessionBase {

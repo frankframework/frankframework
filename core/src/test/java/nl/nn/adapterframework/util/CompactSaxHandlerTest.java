@@ -108,9 +108,9 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-moved2.xml");
-		assertEquals(testOutputFile, xmlWriter.toString());
 		assertEquals("DC2023-00020", session.getString("sessionKey"));
 		assertEquals("DC2022-012345", session.getString("sessionKey2"));
+		assertEquals(testOutputFile, xmlWriter.toString());
 	}
 
 	@Test
@@ -123,8 +123,8 @@ class CompactSaxHandlerTest {
 		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
 
 		// Assert
-		assertEquals(Objects.requireNonNull(defaultInputMessage.asString()).trim(), xmlWriter.toString());
 		assertNull(session.getString("edcLk01"));
+		assertEquals(Objects.requireNonNull(defaultInputMessage.asString()).trim(), xmlWriter.toString());
 	}
 
 	@Test
@@ -153,9 +153,9 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest.xml");
-		assertEquals(testOutputFile, xmlWriter.toString());
 		assertEquals("DC2023-00020", session.getString("ref_identificatie"));
 		assertEquals("DC2022-012345", session.getString("ref_identificatie2"));
+		assertEquals(testOutputFile, xmlWriter.toString());
 
 		// Act 2: retry with already parsed input
 		handler = new CompactSaxHandler(new XmlWriter());
@@ -166,9 +166,9 @@ class CompactSaxHandlerTest {
 		XmlUtils.parseXml(testOutputFile, handler);
 
 		// Assert 2: everything should be still the same
-		assertEquals(testOutputFile, xmlWriter.toString());
 		assertEquals("DC2023-00020", session.getString("ref_identificatie"));
 		assertEquals("DC2022-012345", session.getString("ref_identificatie2"));
+		assertEquals(testOutputFile, xmlWriter.toString());
 	}
 
 	@Test
@@ -183,8 +183,8 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chainchomptest.xml");
-		assertEquals(testOutputFile, xmlWriter.toString());
 		assertEquals("20230825095316895", session.getString("ref_tijdstipBericht"));
+		assertEquals(testOutputFile, xmlWriter.toString());
 	}
 
 	@Test
@@ -218,9 +218,9 @@ class CompactSaxHandlerTest {
 
 		// Assert
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest2.xml");
-		assertEquals(testOutputFile, xmlWriter.toString());
 		assertEquals("DC2023-00020", session.getString("ref_identificatie"));
 		assertEquals("DC2022-012345", session.getString("ref_identificatie2"));
+		assertEquals(testOutputFile, xmlWriter.toString());
 	}
 
 	@ParameterizedTest
@@ -242,9 +242,8 @@ class CompactSaxHandlerTest {
 		XmlUtils.parseXml(MessageTestUtils.getMessage(inputUri).asInputSource(), handler);
 
 		// Assert
-		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-moved2.xml");
-		assertEquals(testOutputFile, xmlWriter.toString());
+		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-moved3.xml");
 		assertEquals(2, session.size());
+		assertEquals(testOutputFile, xmlWriter.toString());
 	}
-
 }

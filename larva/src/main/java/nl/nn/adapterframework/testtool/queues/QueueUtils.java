@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.http.HttpSenderBase;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Reflection helper to create Larva Queues'
@@ -39,12 +39,19 @@ import nl.nn.adapterframework.util.LogUtil;
 public class QueueUtils {
 	private static final Logger LOG = LogUtil.getLogger(QueueUtils.class);
 
-	@SuppressWarnings("unchecked")
-	public static <T extends IConfigurable> T createInstance(Class<T> clazz) {
-		return (T) createInstance(clazz.getCanonicalName());
+	public static IConfigurable createInstance(ClassLoader classLoader, String className) {
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(classLoader);
+		try {
+			return createInstance(className);
+		} finally {
+			if (originalClassLoader != null) {
+				Thread.currentThread().setContextClassLoader(originalClassLoader);
+			}
+		}
 	}
 
-	public static IConfigurable createInstance(String className) {
+	private static IConfigurable createInstance(String className) {
 		LOG.debug("instantiating queue [{}]", className);
 		try {
 			Class<?> clazz = ClassUtils.loadClass(className);
@@ -87,48 +94,16 @@ public class QueueUtils {
 			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
 				continue;
 
-			String setter = firstCharToLower(method.getName().substring(3));
+			String setter = StringUtil.lcFirst(method.getName().substring(3));
 			String value = queueProperties.getProperty(setter);
 			if(value == null)
 				continue;
 
-			//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
-			Object castValue = getCastValue(method.getParameterTypes()[0], value);
-			LOG.debug("trying to set property ["+setter+"] with value ["+value+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+ClassUtils.nameOf(clazz)+"]");
-
 			try {
-				method.invoke(clazz, castValue);
+				ClassUtils.invokeSetter(clazz, method, value);
 			} catch (Exception e) {
 				throw new IllegalArgumentException("unable to set method ["+setter+"] on Class ["+ClassUtils.nameOf(clazz)+"]: "+e.getMessage(), e);
 			}
 		}
-	}
-
-	private static Object getCastValue(Class<?> setterArgumentClass, String value) {
-		if(setterArgumentClass.isEnum())
-			return parseAsEnum(setterArgumentClass, value);//Try to parse the value as an Enum
-		else {
-			switch (setterArgumentClass.getTypeName()) {
-			case "int":
-			case "java.lang.Integer":
-				return Integer.parseInt(value);
-			case "boolean":
-			case "java.lang.Boolean":
-				return Boolean.parseBoolean(value);
-			case "long":
-				return Long.parseLong(value);
-			default:
-				return value;
-			}
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private static <E extends Enum<E>> E parseAsEnum(Class<?> enumClass, String value) {
-		return EnumUtils.parse((Class<E>) enumClass, value);
-	}
-
-	public static String firstCharToLower(String input) {
-		return input.substring(0, 1).toLowerCase() + input.substring(1);
 	}
 }

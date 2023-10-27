@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021 - 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable {
 	private @Getter @Setter String name;
 
 	private String filename;
-	private boolean fromClasspath = false;
 	private int xsltVersion=0; // set to 0 for auto detect.
 	private boolean namespaceAware = true;
 	private TransformerPool transformerPool = null;
@@ -54,13 +53,7 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable {
 			throw new ConfigurationException("Could not find filename property for " + getName());
 		}
 		try {
-			Resource stylesheet;
-
-			if (fromClasspath) {
-				stylesheet = Resource.getResource(filename);
-			} else {
-				stylesheet = Resource.getResource(this, filename);
-			}
+			Resource stylesheet = Resource.getResource(this, filename);
 			if(stylesheet == null) {
 				throw new ConfigurationException("Could not find file ["+filename+"]");
 			}
@@ -90,10 +83,6 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable {
 
 	public void setFilename(String filename) {
 		this.filename = filename;
-	}
-
-	public void setFromClasspath(boolean fromClasspath) {
-		this.fromClasspath = fromClasspath;
 	}
 
 	public void setXsltVersion(int xsltVersion) {
