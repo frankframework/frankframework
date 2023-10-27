@@ -44,7 +44,7 @@ export class SchedulerComponent implements OnInit {
   searchFilter: string = "";
   refreshing: boolean = false;
   databaseSchedulesEnabled: boolean = this.appService.databaseSchedulesEnabled;
-  showContent: boolean = true;
+  showContent: boolean[] = [];
 
   constructor(
     private apiService: ApiService,
@@ -58,16 +58,11 @@ export class SchedulerComponent implements OnInit {
     this.pollerService.add("schedules", (data) => {
       Object.assign(this, data);
       this.refreshing = false;
-
-      console.log("DATA:", data)
-
     }, true, 5000);
 
     this.appService.databaseSchedulesEnabled$.subscribe(() => {
       this.databaseSchedulesEnabled = this.appService.databaseSchedulesEnabled;
     });
-
-    console.log("JOBS:", this.jobs)
   };
 
   $onDestroy() {

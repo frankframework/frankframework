@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Adapter, AppService, Configuration } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { StateParams } from '@uirouter/angularjs';
+import { SchedulerAddEditParent } from '../scheduler-add-edit-parent';
 
 interface StateItem {
   type: string
@@ -23,34 +24,20 @@ interface Form {
 
 @Component({
   selector: 'app-scheduler-edit',
-  templateUrl: './scheduler-edit.component.html',
+  templateUrl: '../scheduler-add-edit-parent.component.html',
   styleUrls: ['./scheduler-edit.component.scss']
 })
-export class SchedulerEditComponent implements OnInit {
-  state: StateItem[] = [];
-  editMode: boolean = true;
-  selectedConfiguration: string = "";
-  form: Form = {
-    name: "",
-    group: "",
-    adapter: "",
-    listener: "",
-    cron: "",
-    interval: "",
-    message: "",
-    description: "",
-    locker: false,
-    lockkey: "",
-  };
-  configurations: Configuration[] = [];
-  adapters: Record<string, Adapter> = {};
+export class SchedulerEditComponent extends SchedulerAddEditParent implements OnInit {
   url: string = "";
+  editMode: boolean = true;
 
   constructor(
     private Api: ApiService,
     private stateParams: StateParams,
     private appService: AppService
-  ) { };
+  ) {
+    super();
+  };
 
   ngOnInit(): void {
     this.url = "schedules/" + this.stateParams['group'] + "/jobs/" + this.stateParams['name'];
@@ -107,13 +94,5 @@ export class SchedulerEditComponent implements OnInit {
       var error = (errorData) ? errorData.error : errorMsg;
       this.addLocalAlert("warning", error);
     }, false);
-  };
-
-  reset() {
-    // TODO: button exists, but no function
-  }
-
-  addLocalAlert(type: string, message: string) {
-    this.state.push({ type: type, message: message });
   };
 }

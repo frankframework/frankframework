@@ -32,6 +32,7 @@ type Message = {
   date: number,
   level: MessageLevel,
   message: string,
+  text?: string
 }
 
 export interface AdapterMessage extends Message {
@@ -90,6 +91,17 @@ export type Job = {
   jobGroupName?: string,
   stateful?: boolean,
   durable?: boolean,
+  messages: Message[],
+  triggers: Trigger[]
+}
+
+export type Trigger = {
+  name: string,
+  cronExpression: string,
+  repeatInterval: string,
+  startTime: string,
+  previousFireTime: string,
+  nextFireTime: string
 }
 
 export type Configuration = {
