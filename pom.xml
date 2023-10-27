@@ -1189,6 +1189,16 @@
 				<module>ladybug</module>
 				<module>test</module>
 				<module>example</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>extra-modules</id>
+			<activation>
+				<property>
+					<name>extra-modules</name>
+				</property>
+			</activation>
+			<modules>
 				<module>akamai</module>
 				<module>aws</module>
 				<module>cmis</module>
