@@ -35,7 +35,8 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Abstract class for resulthandlers (handler that handles the transformed record).
- *
+ * 
+ * 
  * @author  John Dekker
  */
 public abstract class AbstractResultHandler implements IResultHandler, IWithParameters {

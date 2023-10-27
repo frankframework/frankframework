@@ -29,7 +29,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
  * Baseclass for resulthandlers that write the transformed record to a writer.
- *
+ * 
  * @author  Gerrit van Brakel
  * @since   4.7
  */
