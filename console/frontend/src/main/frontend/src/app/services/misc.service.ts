@@ -6,25 +6,10 @@ import { Base64Service } from './base64.service';
   providedIn: 'root'
 })
 export class MiscService {
-  absoluteApiPath = this.getServerPath() + "iaf/api/";
 
-  private appConstants: AppConstants;
-
-    constructor(
-      private appService: AppService,
-      private Base64: Base64Service
-    ) {
-      this.appConstants = this.appService.APP_CONSTANTS
-      this.appService.appConstants$.subscribe(() => {
-        this.appConstants = this.appService.APP_CONSTANTS;
-      });
-    }
-
-  getServerPath(): string {
-    let absolutePath = this.appConstants["server"];
-    if (absolutePath && absolutePath.slice(-1) != "/") absolutePath += "/";
-    return absolutePath;
-  }
+  constructor(
+    private Base64: Base64Service
+  ) {}
 
   escapeURL(uri: string | number | boolean): string {
     return encodeURIComponent(uri);

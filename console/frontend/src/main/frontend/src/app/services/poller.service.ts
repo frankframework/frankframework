@@ -33,7 +33,7 @@ export class PollerService {
   add(uri: string, callback?: (data: any) => void, autoStart?: boolean, interval?: number): PollerObject | void {
     if (!this.data[uri]) {
       this.Debug.log("Adding new poller [" + uri + "] autoStart [" + !!autoStart + "] interval [" + interval + "]");
-      let poller = new this.createPollerObject(uri, this.Debug, this.http, this.appConstants, callback);
+      let poller = new this.createPollerObject(uri, this.Debug, this.appService, this.http, this.appConstants, callback);
       this.data[uri] = poller;
       if (!!autoStart)
         poller.fn();
@@ -129,6 +129,7 @@ class PollerObject {
   constructor(
     private uri: string,
     private Debug: DebugService,
+    private appService: AppService,
     private http: HttpClient,
     private appConstants: AppConstants,
     private callback?: (data: any) => void
@@ -164,7 +165,7 @@ class PollerObject {
 
   fn(runOnce: boolean = false): void {
     this.fired++;
-    this.http.get(this.uri).subscribe({
+    this.http.get(this.appService.absoluteApiPath + this.uri).subscribe({
       next: this.callback,
       error: () => {
         this.addError();

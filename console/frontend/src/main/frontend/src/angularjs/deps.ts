@@ -1,8 +1,4 @@
-// @ts-ignore pace-js does not have types
-import * as Pace from 'pace-js';
-Pace.start({
-  ajax: false
-});
+
 // import 'mermaid'; // TODO let ngMermaid handle or replace ngMermaid with own component
 
 import 'angular-animate';
@@ -22,10 +18,6 @@ import 'ng-idle/angular-idle.js';
 import 'angular-ladda';
 import 'angularjs-toaster';
 import './plugins/mermaid/ng-mermaid';
-
-export {
-  Pace
-};
 
 // because @types/ng-idle does not work for some weird ts reason (import name mismatch)
 declare module 'angular' {

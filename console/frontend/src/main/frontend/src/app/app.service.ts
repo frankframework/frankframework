@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ParamMap, Params } from '@angular/router';
 import { Subject, catchError, of } from 'rxjs';
-import { DebugService } from 'src/angularjs/app/services/debug.service';
+import { DebugService } from './services/debug.service';
 
 export type RunState = 'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED';
 export type RunStateRuntime = RunState | 'loading'
@@ -154,6 +154,41 @@ export type IAFRelease = {
   reactions: Record<string, number>
 }
 
+export type ServerInfo = {
+  fileSystem: {
+    freeSpace: string,
+    totalSpace: string
+  },
+  framework: {
+    name: string,
+    version: string
+  },
+  instance: {
+    name: string,
+    version: string
+  },
+  applicationServer: string,
+  javaVersion: string,
+  serverTime: number,
+  "dtap.stage": string,
+  "dtap.side": string,
+  processMetrics: {
+    maxMemory: string,
+    freeMemory: string,
+    totalMemory: string,
+    heapSize: string
+  },
+  machineName: string,
+  uptime: number,
+  userName?: string
+}
+
+export type ServerEnvironmentVariables = {
+  "Application Constants": Record<string, Record<string, string>>;
+  "Environment Variables": Record<string, string>;
+  "System Properties": Record<string, string>;
+}
+
 export type AppConstants = Record<string, string | any>;
 
 @Injectable({
@@ -248,6 +283,8 @@ export class AppService {
     }
   };
 
+  absoluteApiPath = this.getServerPath() + "iaf/api/";
+
   private lastUpdated = 0;
   private timeout?: number;
 
@@ -341,12 +378,34 @@ export class AppService {
     this.addAlert("danger", configuration, message);
   };
 
+  getServerPath(): string {
+    let absolutePath = this.APP_CONSTANTS["server"];
+    if (absolutePath && absolutePath.slice(-1) != "/") absolutePath += "/";
+    return absolutePath;
+  }
+
   getIafVersions(UID: string){
     return this.http.get<IAFRelease[]>("https://ibissource.org/iaf/releases/?q=" + UID)
       .pipe(catchError((error) => {
         this.debugService.error("An error occured while comparing IAF versions", error);
         return of([]);
       }));
+  }
+
+  getServerInfo(){
+    return this.http.get<ServerInfo>(this.absoluteApiPath + "server/info");
+  }
+
+  getConfigurations(){
+    return this.http.get<Configuration[]>(this.absoluteApiPath + "server/configurations");
+  }
+
+  getAdapters(){
+    return this.http.get<Record<string, Adapter>>(this.absoluteApiPath + "adapters");
+  }
+
+  getEnvironmentVariables(){
+    return this.http.get<ServerEnvironmentVariables>(this.absoluteApiPath + "environmentvariables");
   }
 
   updateAdapterSummary(routeQueryParams: ParamMap, configurationName?: string) {

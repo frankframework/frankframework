@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Adapter } from 'src/angularjs/app/app.service';
+import { Adapter } from '../app.service';
 
 @Pipe({
   name: 'searchFilter'

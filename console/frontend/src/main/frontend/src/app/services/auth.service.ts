@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { MiscService } from './misc.service';
 import { Base64Service } from './base64.service';
 import { AppConstants, AppService } from '../app.service';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -12,10 +13,10 @@ export class AuthService {
   private appConstants: AppConstants;
 
   constructor(
+    private http: HttpClient,
     private router: Router,
     private appService: AppService,
-    private Base64: Base64Service,
-    private Misc: MiscService
+    private Base64: Base64Service
   ) {
     this.appConstants = this.appService.APP_CONSTANTS
     this.appService.appConstants$.subscribe(() => {
@@ -27,7 +28,7 @@ export class AuthService {
     if (username != "anonymous") {
       this.authToken = this.Base64.encode(username + ':' + password);
       sessionStorage.setItem('authToken', this.authToken);
-      this.$http.defaults.headers!.common['Authorization'] = 'Basic ' + this.authToken;
+      // TODO this.$http.defaults.headers!.common['Authorization'] = 'Basic ' + this.authToken;
     }
     let location = sessionStorage.getItem('location') || "status";
     let absUrl = window.location.href.split("login")[0];
@@ -38,7 +39,7 @@ export class AuthService {
   loggedin(): void {
     let token = sessionStorage.getItem('authToken');
     if (token != null && token != "null") {
-      this.$http.defaults.headers!.common['Authorization'] = 'Basic ' + token;
+      // TODO this.$http.defaults.headers!.common['Authorization'] = 'Basic ' + token;
       if (this.router.url.indexOf("login") >= 0)
         this.router.navigateByUrl(sessionStorage.getItem('location') || "status");
     }
@@ -53,7 +54,7 @@ export class AuthService {
 
   logout(): void {
     sessionStorage.clear();
-    this.$http.defaults.headers!.common['Authorization'] = null;
-    this.$http.get(this.Misc.getServerPath() + "iaf/api/logout");
+    // TODO this.$http.defaults.headers!.common['Authorization'] = null;
+    this.http.get(this.appService.getServerPath() + "iaf/api/logout");
   }
 }

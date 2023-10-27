@@ -1,10 +1,12 @@
-import { Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { Component, Inject, LOCALE_ID, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { Idle } from '@ng-idle/core';
 import { Observable, Subscription } from 'rxjs';
-import { Adapter, AppConstants, AppService, Configuration } from './app.service';
-import { Pace } from 'src/angularjs/deps';
+import { Adapter, AppConstants, AppService, Configuration, ServerInfo } from './app.service';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { formatDate } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+// @ts-ignore pace-js does not have types
+import * as Pace from 'pace-js';
 import { NotificationService } from './services/notification.service';
 import { MiscService } from './services/misc.service';
 import { DebugService } from './services/debug.service';
@@ -20,7 +22,7 @@ import { SweetalertService } from './services/sweetalert.service';
 })
 export class AppComponent implements OnInit, OnDestroy {
   loading = true;
-  serverInfo: Record<string, any> | null = {};
+  serverInfo: ServerInfo | null = null;
   loggedin = false;
   monitoring = false;
   config_database = false;
@@ -48,12 +50,17 @@ export class AppComponent implements OnInit, OnDestroy {
     private debugService: DebugService,
     private sweetAlertService: SweetalertService,
     private appService: AppService,
-    private idle: Idle
+    private idle: Idle,
+    @Inject(LOCALE_ID) private locale: string
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
   }
 
   ngOnInit() {
+    Pace.start({
+      ajax: false
+    });
+
     this.urlHash$ = this.route.fragment;
     this.route.queryParamMap.subscribe(params => {
       if(this.router.url !== '/login'){
@@ -139,7 +146,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     if (this.appConstants['init'] === 0) { //Only continue if the init state was -1
       this.appConstants['init'] = 1;
-      this.apiService.Get("server/info", (data) => {
+      this.appService.getServerInfo().subscribe({ next: (data) => {
         this.serverInfo = data;
 
         this.appConstants['init'] = 2;
@@ -166,7 +173,7 @@ export class AppComponent implements OnInit, OnDestroy {
         const updateTime = () => {
           const serverDate = new Date();
           serverDate.setTime(serverDate.getTime() - this.appConstants['timeOffset']);
-          this.serverTime = formatDate(serverDate, this.appConstants["console.dateFormat"], this.appService.getUserLocale());
+          this.serverTime = formatDate(serverDate, this.appConstants["console.dateFormat"], this.locale);
         }
         window.setInterval(updateTime, 1000);
         updateTime();
@@ -183,17 +190,17 @@ export class AppComponent implements OnInit, OnDestroy {
           this.idle.setTimeout(0);
         }
 
-        this.apiService.Get("server/configurations", (data: Configuration[]) => {
+        this.appService.getConfigurations().subscribe((data) => {
           this.appService.updateConfigurations(data);
         });
         this.checkIafVersions();
         this.initializeWarnings();
-      }, (message, statusCode, statusText) => {
-        if (statusCode == 500) {
+      }, error: (error: HttpErrorResponse) => {
+        if (error.status == 500) {
           this.router.navigate(['error']);
         }
-      });
-      this.apiService.Get("environmentletiables", (data) => {
+      }});
+      this.appService.getEnvironmentVariables().subscribe((data) => {
         if (data["Application Constants"]) {
           this.appConstants = $.extend(this.appConstants, data["Application Constants"]["All"]); //make FF!Application Constants default
 
@@ -355,7 +362,7 @@ export class AppComponent implements OnInit, OnDestroy {
     };
 
     //Get base information first, then update it with more details
-    this.apiService.Get("adapters", (data: Record<string, Adapter>) => pollerCallback(data));
+    this.appService.getAdapters().subscribe((data: Record<string, Adapter>) => pollerCallback(data));
     window.setTimeout(() => {
       this.pollerService.add("adapters?expanded=all", (data: Record<string, Adapter>) => { pollerCallback(data) }, true);
       this.appService.updateLoading(false);

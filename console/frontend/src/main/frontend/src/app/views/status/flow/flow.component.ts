@@ -2,7 +2,7 @@ import { HttpResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { StatusService } from '../status.service';
 import { MiscService } from 'src/app/services/misc.service';
-import { Adapter } from 'src/app/app.service';
+import { Adapter, AppService } from 'src/app/app.service';
 
 @Component({
   selector: 'app-flow',
@@ -21,12 +21,13 @@ export class FlowComponent implements OnInit {
   @Input() adapter!: Adapter;
 
   constructor(
+    private appService: AppService,
     private Misc: MiscService,
     private statusService: StatusService
   ) {}
 
   ngOnInit() {
-    const uri = this.Misc.getServerPath() + 'iaf/api/configurations/' + this.adapter.configuration + '/adapters/' + this.Misc.escapeURL(this.adapter.name) + "/flow?" + this.adapter.upSince;
+    const uri = this.appService.getServerPath() + 'iaf/api/configurations/' + this.adapter.configuration + '/adapters/' + this.Misc.escapeURL(this.adapter.name) + "/flow?" + this.adapter.upSince;
     this.flow = { "image": false, "url": uri };
     this.statusService.getAdapterFlowDiagram(uri).subscribe((data) => {
       const status = (data && data.status) ? data.status : 204;

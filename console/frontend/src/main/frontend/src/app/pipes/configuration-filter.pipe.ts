@@ -1,5 +1,5 @@
-import { Adapter, AdapterStatus } from "src/angularjs/app/app.service";
 import { Pipe, PipeTransform } from "@angular/core";
+import { Adapter, AdapterStatus } from "../app.service";
 
 export function ConfigurationFilter(adapters: Record<string, Adapter>, selectedConfiguration: string, filter?: Record<AdapterStatus, boolean>) {
   if (!adapters || Object.keys(adapters).length < 1) return {};
