@@ -19,19 +19,15 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 
 /**
  * @author  Gerrit van Brakel
- * @since
- * @deprecated Warning: non-maintained functionality.
+ * @since  
  */
-@Deprecated
 @FrankDocGroup(name = "Batch")
-@ConfigurationWarning("Warning: non-maintained functionality.")
 public interface IReaderFactory {
 
 	void configure() throws ConfigurationException;

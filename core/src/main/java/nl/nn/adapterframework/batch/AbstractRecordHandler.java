@@ -43,8 +43,6 @@ import nl.nn.adapterframework.util.StringUtil;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
-@ConfigurationWarning("Warning: non-maintained functionality.")
 public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

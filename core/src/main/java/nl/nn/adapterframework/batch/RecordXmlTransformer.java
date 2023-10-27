@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021, 2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -40,8 +39,6 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author  John Dekker / Gerrit van Brakel
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
-@ConfigurationWarning("Warning: non-maintained functionality.")
 public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	private @Getter String rootTag="record";

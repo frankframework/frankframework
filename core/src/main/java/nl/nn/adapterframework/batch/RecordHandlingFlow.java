@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -34,9 +33,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 @FrankDocGroup(name = "Batch")
-@ConfigurationWarning("Warning: non-maintained functionality.")
 public final class RecordHandlingFlow {
 	protected Logger log = LogUtil.getLogger(this);
 

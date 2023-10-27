@@ -18,7 +18,6 @@ package nl.nn.adapterframework.batch;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 
 
@@ -29,8 +28,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @since   4.7
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
-@ConfigurationWarning("Warning: non-maintained functionality.")
 public class Result2StringWriter extends ResultWriter {
 
 	@Override

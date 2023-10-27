@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -40,8 +39,6 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @since   4.7
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
-@ConfigurationWarning("Warning: non-maintained functionality.")
 public class ResultBlock2Sender extends Result2StringWriter {
 
 	private @Getter ISender sender = null;

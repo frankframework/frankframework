@@ -18,7 +18,6 @@ package nl.nn.adapterframework.batch;
 import java.util.Map;
 
 import lombok.Getter;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
@@ -30,8 +29,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
  * @author John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
-@ConfigurationWarning("Warning: non-maintained functionality.")
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private @Getter int startPosition;

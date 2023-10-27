@@ -23,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -35,8 +34,6 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author  John Dekker
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
-@ConfigurationWarning("Warning: non-maintained functionality.")
 public class RecordHandlerManager implements IRecordHandlerManager {
 	protected Logger log = LogUtil.getLogger(this);
 

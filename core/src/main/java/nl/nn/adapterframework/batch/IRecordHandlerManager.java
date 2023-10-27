@@ -18,25 +18,21 @@ package nl.nn.adapterframework.batch;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 
 /**
  * Interface for handling a transformed record.
- *
+ * 
  * A RecordHandlerManager decides, based on some implementation dependent algorithm, which record handler
- * is to be used to process a record.
- * A record manager keeps a table of flow-elements, that each define a recordhandler, resulthandler and,
+ * is to be used to process a record. 
+ * A record manager keeps a table of flow-elements, that each define a recordhandler, resulthandler and, 
  * optionally, a next-manager.
- *
+ * 
  * @author John Dekker
- * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 @FrankDocGroup(order = 70, name = "Batch")
-@ConfigurationWarning("Warning: non-maintained functionality.")
 public interface IRecordHandlerManager extends INamedObject {
 
 	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException;
@@ -50,7 +46,7 @@ public interface IRecordHandlerManager extends INamedObject {
 	RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception;
 
 	/**
-	 * @return the IRecordHandlingManager to be used initially based on the name of the input file
+	 * @return the IRecordHandlingManager to be used initially based on the name of the input file 
 	 */
 	IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String filename);
 

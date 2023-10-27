@@ -29,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -55,9 +54,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @since   4.7
  * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
 @ElementType(ElementTypes.TRANSLATOR)
-@ConfigurationWarning("Warning: non-maintained functionality.")
 public class StreamTransformerPipe extends FixedForwardPipe {
 
 	public static final String originalBlockKey = "originalBlock";

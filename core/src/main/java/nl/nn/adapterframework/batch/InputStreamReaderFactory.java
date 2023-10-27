@@ -20,20 +20,16 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Basic InputStreamReaderFactory.
- *
+ * 
  * @author  Gerrit van Brakel
  * @since   4.11
- * @deprecated Warning: non-maintained functionality.
  */
-@Deprecated
-@ConfigurationWarning("Warning: non-maintained functionality.")
 public class InputStreamReaderFactory implements IReaderFactory {
 
 	@Override

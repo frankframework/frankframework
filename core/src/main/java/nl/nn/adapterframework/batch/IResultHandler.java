@@ -26,7 +26,7 @@ import nl.nn.adapterframework.pipes.AbstractPipe;
 
 /**
  * Interface for handling a transformed record.
- *
+ * 
  * @author  John Dekker
  */
 @FrankDocGroup(name = "Batch")
@@ -45,7 +45,7 @@ public interface IResultHandler extends IConfigurable {
 	void closeDocument(PipeLineSession session, String streamId);
 
 	/**
-	 * write a result record.
+	 * write a result record. 
 	 * @param session  current PipeLineSession
 	 * @param streamId identification of the original file/stream/message containing the untransformed records
 	 * @param recordKey key of the record (describes the record type)
@@ -77,7 +77,7 @@ public interface IResultHandler extends IConfigurable {
 	void closeBlock(PipeLineSession session, String streamId, String blockName, Map<String, Object> blocks) throws Exception;
 
 	/**
-	 * @return true if this resulthandler should be used for all flows if no resulthandler is specified for that flow
+	 * @return true if this resulthandler should be used for all flows if no resulthandler is specified for that flow 
 	 */
 	boolean isDefault();
 	void setDefault(boolean isDefault);
@@ -85,7 +85,7 @@ public interface IResultHandler extends IConfigurable {
 	boolean hasPrefix();
 
 	/**
-	 * @return true causes groups of identical records, indicated by {@link IRecordHandler#isNewRecordType(PipeLineSession, boolean, List, List) newRecordType} to appear in a block.
+	 * @return true causes groups of identical records, indicated by {@link IRecordHandler#isNewRecordType(PipeLineSession, boolean, List, List) newRecordType} to appear in a block. 
 	 */
 	boolean isBlockByRecordType();
 }
