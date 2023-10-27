@@ -37,6 +37,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  *
  * @author  Gerrit van Brakel
  * @since   4.7
+ * @deprecated Warning: non-maintained functionality.
  */
 public class ResultBlock2Sender extends Result2StringWriter {
 

@@ -19,15 +19,19 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 
 /**
  * {@link IReaderFactory} that provides a reader that reads Delphi records containing Strings.
- * 
+ *
  * @author  Gerrit van Brakel
- * @since   4.10  
+ * @since   4.10
+ * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class DelphiStringRecordReaderFactory implements IReaderFactory {
 
 	private int stringLength=50;
