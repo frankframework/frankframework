@@ -33,6 +33,8 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
@@ -61,8 +63,11 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	private @Setter int patternRecheckInterval = 5000;
 	/** The topics to listen to, separated by `,`. Wildcards are supported with `example.*`. */
 	private @Setter String topics;
+	/** Warning: This ignores all other messages until the current one has finished. One bad message can take the system down. **/
+	private @Setter boolean retry = false;
 	private @Getter(AccessLevel.PACKAGE) List<Pattern> topicPatterns = new ArrayList<>();
 	private final Duration pollDuration = Duration.ofMillis(1);
+	private Map<TopicPartition, OffsetAndMetadata> offsetAndMetadataMap = new HashMap<>();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -75,7 +80,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 		properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
 		properties.setProperty(ConsumerConfig.METADATA_MAX_AGE_CONFIG, String.valueOf(patternRecheckInterval));
-		consumer = new KafkaConsumer<>(properties);
+		properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 		topicPatterns = StringUtil.splitToStream(topics)
 				.map(Pattern::compile) //Convert the topic to a regex pattern, to allow for wildcards in topic names.
 				.collect(Collectors.toList());
@@ -84,11 +89,12 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 
 	@Override
 	public void open() {
+		consumer = new KafkaConsumer<>(properties);
 		topicPatterns.forEach(consumer::subscribe);
 	}
 
 	@Override
-	public void close() throws ListenerException {
+	public void close() {
 		consumer.close();
 	}
 
@@ -115,7 +121,9 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<ConsumerRecord<String, byte[]>> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
-		// no-op
+		ConsumerRecord<String,byte[]> record = rawMessage.getRawMessage();
+		offsetAndMetadataMap.put(new TopicPartition(record.topic(), record.partition()), new OffsetAndMetadata(record.offset()));
+		consumer.commitSync(offsetAndMetadataMap);
 	}
 
 	@Override
