@@ -36,8 +36,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-
 public class KafkaReceiverTest {
 	MockConsumer<String, byte[]> mockListener = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
 	KafkaListener listener;
@@ -108,7 +106,7 @@ public class KafkaReceiverTest {
 	@ParameterizedTest
 	@MethodSource
 	void generateInternalListenerTest(KafkaType kafkaType1, KafkaType kafkaType2) {
-		assertDoesNotThrow(()->KafkaListener.generateInternalListener(kafkaType1, kafkaType2, null));
+		Assertions.assertDoesNotThrow(()->KafkaListener.generateInternalListener(kafkaType1, kafkaType2, null));
 	}
 
 	static Stream<Arguments> generateInternalListenerTest() {

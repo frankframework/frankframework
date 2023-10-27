@@ -15,12 +15,9 @@
 */
 package nl.nn.adapterframework.extensions.kafka;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.BiFunction;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 

@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.extensions.kafka;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.apache.commons.lang3.StringUtils;
@@ -77,8 +76,8 @@ public class KafkaSender extends KafkaFacade implements ISender {
 		try {
 			metadata = future.get();
 		} catch (Exception e) {
-            throw new SenderException(e);
-        }
+			throw new SenderException(e);
+		}
 		message.getContext().put("kafka.offset", metadata.offset());
 		message.getContext().put("kafka.partition", metadata.partition());
 		return new SenderResult(message);
