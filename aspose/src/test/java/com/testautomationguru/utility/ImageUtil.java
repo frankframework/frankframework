@@ -31,7 +31,7 @@ public class ImageUtil {
 				saveImage(out, fileName);
 			}
 		} else {
-			logger.fine("Image compared - match with diff: " + diff);
+			logger.info("Image compared - match with diff: " + diff);
 		}
 		return diff;
 	}

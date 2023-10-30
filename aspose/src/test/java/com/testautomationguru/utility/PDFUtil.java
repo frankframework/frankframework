@@ -183,10 +183,10 @@ public class PDFUtil {
    * @throws java.io.IOException when file is not found.
    */
 	public int getPageCount(String file) throws IOException{
-		logger.info("file :" + file);
+		logger.fine("file :" + file);
 		PDDocument doc = PDDocument.load(new File(file));
 		int pageCount = doc.getNumberOfPages();
-		logger.info("pageCount :" + pageCount);
+		logger.fine("pageCount :" + pageCount);
 		doc.close();
 		return pageCount;
 	}
@@ -232,9 +232,7 @@ public class PDFUtil {
    */
 	private String getPDFText(String file, int startPage, int endPage) throws IOException{
 
-		logger.info("file : " + file);
-		logger.info("startPage : " + startPage);
-		logger.info("endPage : " + endPage);
+		logger.info("file : " + file + ", startPage: " + startPage + ", endPage: " + endPage);
 
 		PDDocument doc = PDDocument.load(new File(file));
 
@@ -383,11 +381,9 @@ public class PDFUtil {
    */
 	private List<String> saveAsImage(String file, int startPage, int endPage) throws IOException{
 
-		logger.info("file : " + file);
-		logger.info("startPage : " + startPage);
-		logger.info("endPage : " + endPage);
+		logger.info("file : " + file + ", startPage: " + startPage + ", endPage: " + endPage);
 
-		ArrayList<String> imgNames = new ArrayList<String>();
+		ArrayList<String> imgNames = new ArrayList<>();
 
 		try {
 			File sourceFile = new File(file);
@@ -399,12 +395,12 @@ public class PDFUtil {
 			PDDocument document = PDDocument.load(sourceFile);
 			PDFRenderer pdfRenderer = new PDFRenderer(document);
 			for (int iPage = this.startPage - 1; iPage < this.endPage; iPage++) {
-				logger.info("Page No : " + (iPage+1));
+				logger.fine("Page No : " + (iPage+1));
 				String fname = this.imageDestinationPath + fileName + "_" + (iPage + 1) + ".png";
 				BufferedImage image = pdfRenderer.renderImageWithDPI(iPage, 300, ImageType.RGB);
 				ImageIOUtil.writeImage(image, fname , 300);
 				imgNames.add(fname);
-				logger.info("PDf Page saved as image : " + fname);
+				logger.fine("PDf Page saved as image : " + fname);
 			}
 			document.close();
 		}catch (Exception e) {
@@ -472,7 +468,7 @@ public class PDFUtil {
 				String fileName = new File(file1).getName().replace(".pdf", "_") + (iPage + 1);
 				fileName = this.getImageDestinationPath() + "/" + fileName + "_diff.png";
 
-				logger.info("Comparing Page No : " + (iPage + 1));
+				logger.fine("Comparing Page No : " + (iPage + 1));
 				BufferedImage image1 = pdfRenderer1.renderImageWithDPI(iPage, 300, ImageType.RGB);
 				BufferedImage image2 = pdfRenderer2.renderImageWithDPI(iPage, 300, ImageType.RGB);
 				double pageResult = ImageUtil.compareAndHighlight(image1, image2, fileName, this.bHighlightPdfDifference, this.imgColor.getRGB(), allowedRGBDeviation);
@@ -530,9 +526,7 @@ public class PDFUtil {
    */
 	private List<String> extractimages(String file, int startPage, int endPage){
 
-		logger.info("file : " + file);
-		logger.info("startPage : " + startPage);
-		logger.info("endPage : " + endPage);
+		logger.info("file : " + file + ", startPage: " + startPage + ", endPage: " + endPage);
 
 		ArrayList<String> imgNames = new ArrayList<String>();
 		boolean bImageFound = false;
@@ -548,7 +542,7 @@ public class PDFUtil {
 
 			int totalImages = 1;
 			for(int iPage=this.startPage-1;iPage<this.endPage;iPage++){
-				logger.info("Page No : " + (iPage+1));
+				logger.fine("Page No : " + (iPage+1));
 				PDResources pdResources = list.get(iPage).getResources();
 				for (COSName c : pdResources.getXObjectNames()) {
 		            PDXObject o = pdResources.getXObject(c);
@@ -563,9 +557,9 @@ public class PDFUtil {
 			}
 			document.close();
 			if(bImageFound)
-				logger.info("Images are saved @ " + this.imageDestinationPath);
+				logger.fine("Images are saved @ " + this.imageDestinationPath);
 			else
-				logger.info("No images were found in the PDF");
+				logger.fine("No images were found in the PDF");
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -594,9 +588,7 @@ public class PDFUtil {
 
 		PDDocument document = PDDocument.load(new File(file));
 		int pagecount = document.getNumberOfPages();
-		logger.info("Page Count : " + pagecount);
-		logger.info("Given start page:" + start);
-		logger.info("Given end   page:" + end);
+		logger.fine("Page Count : " + pagecount + ", Given start page: " + start + ", Given end page: " + end);
 
 		if((start > 0 && start <= pagecount)){
 			this.startPage = start;
@@ -609,7 +601,7 @@ public class PDFUtil {
 			this.endPage = pagecount;
 		}
 		document.close();
-		logger.info("Updated start page:" + this.startPage);
-		logger.info("Updated end   page:" + this.endPage);
+		logger.fine("Updated start page:" + this.startPage);
+		logger.fine("Updated end   page:" + this.endPage);
 	}
 }
