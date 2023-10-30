@@ -18,12 +18,13 @@ package nl.nn.adapterframework.extensions.kafka;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -64,7 +65,7 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 	//setter is for testing purposes only.
 	private @Setter(AccessLevel.PACKAGE) Consumer<T, M> consumer;
 	private @Setter(AccessLevel.PACKAGE) Function<Properties, Consumer<T,M>> consumerGenerator = KafkaConsumer::new;
-	private Iterator<ConsumerRecord<T, M>> waiting = Collections.emptyIterator();
+	private Iterator<ConsumerRecord<T, M>> waiting;
 	private @Setter String groupId;
 	private @Setter boolean fromBeginning;
 	private @Setter int patternRecheckInterval;
@@ -73,6 +74,7 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 	private final Duration pollDuration = Duration.ofMillis(1);
 	private Map<TopicPartition, OffsetAndMetadata> offsetAndMetadataMap = new HashMap<>();
 	private BiFunction<M, MessageContext, Message> converter;
+	private Lock lock = new ReentrantLock();
 
 	public KafkaInternalListener(Properties properties, BiFunction<M, MessageContext, Message> converter) {
 		super();
@@ -99,9 +101,22 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 	}
 
 	@Override
-	public void open() {
-		consumer = consumerGenerator.apply(properties);
-		topicPatterns.forEach(consumer::subscribe);
+	public void open() throws ListenerException {
+		lock.lock();
+		try {
+			consumer = consumerGenerator.apply(properties);
+			topicPatterns.forEach(consumer::subscribe);
+			waiting = consumer.poll(Duration.ofMillis(500)).iterator();
+			if (waiting.hasNext()) return;
+			waiting = consumer.poll(Duration.ofMillis(500)).iterator();
+			if (waiting.hasNext()) return;
+			Double metric = (Double) consumer.metrics().values().stream().filter(item -> item.metricName().name().equals("response-total")).findFirst().orElseThrow(() -> new ListenerException("Failed to get response-total metric.")).metricValue();
+			if (metric.intValue() == 0) throw new ListenerException("Didn't get a response from Kafka while connecting.");
+		} catch(RuntimeException e) {
+			throw new ListenerException(e);
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
@@ -153,15 +168,20 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 
 	@Override
 	public RawMessageWrapper<ConsumerRecord<T, M>> getRawMessage(@Nonnull Map<String, Object> threadContext) {
-		if (!waiting.hasNext()) waiting = consumer.poll(pollDuration).iterator();
-		if(!waiting.hasNext()) return null;
-		ConsumerRecord<T, M> next = waiting.next();
-		offsetAndMetadataMap.put(new TopicPartition(next.topic(), next.partition()), new OffsetAndMetadata(next.offset()));
-		consumer.commitAsync(offsetAndMetadataMap, (Map<TopicPartition, OffsetAndMetadata> offsets, Exception exception)->{
-			if(exception != null) {
-				log.error("Failed to commit offsets", exception);
-			}
-		});
-		return new RawMessageWrapper<>(next);
+		lock.lock();
+		try {
+			if (!waiting.hasNext()) waiting = consumer.poll(pollDuration).iterator();
+			if (!waiting.hasNext()) return null;
+			ConsumerRecord<T, M> next = waiting.next();
+			offsetAndMetadataMap.put(new TopicPartition(next.topic(), next.partition()), new OffsetAndMetadata(next.offset() + 1));
+			consumer.commitAsync(offsetAndMetadataMap, (Map<TopicPartition, OffsetAndMetadata> offsets, Exception exception) -> {
+				if (exception != null) {
+					log.error("Failed to commit offsets", exception);
+				}
+			});
+			return new RawMessageWrapper<>(next);
+		} finally {
+			lock.unlock();
+		}
 	}
 }

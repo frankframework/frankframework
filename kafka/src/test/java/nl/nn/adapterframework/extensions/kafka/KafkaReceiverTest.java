@@ -17,13 +17,19 @@ package nl.nn.adapterframework.extensions.kafka;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
+import org.apache.kafka.common.Metric;
+import org.apache.kafka.common.MetricName;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.metrics.KafkaMetric;
+import org.apache.kafka.common.metrics.stats.Value;
+import org.apache.kafka.common.utils.Time;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,8 +42,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
+import org.mockito.Mockito;
+
 public class KafkaReceiverTest {
-	MockConsumer<String, byte[]> mockListener = new MockConsumer<>(OffsetResetStrategy.EARLIEST);
+	MockConsumer<String, byte[]> mockListener = Mockito.spy(new MockConsumer<>(OffsetResetStrategy.EARLIEST));
 	KafkaListener listener;
 
 	@BeforeEach
@@ -52,6 +60,18 @@ public class KafkaReceiverTest {
 		listener.setMessageType(KafkaType.BYTEARRAY);
 		listener.configure();
 		listener.getInternalListener().setConsumerGenerator(properties -> mockListener);
+		Map<MetricName, Metric> metrics = new HashMap<>();
+		MetricName metricName = new MetricName("response-total", "consumer-node-metrics", "The total number of responses received", Collections.singletonMap("client-id", "test"));
+		Value value = new Value();
+		value.record(null, 1.0, 0);
+		metrics.put(metricName, new KafkaMetric(
+				new Object(),
+				metricName,
+				value,
+				null,
+				Time.SYSTEM
+		));
+		Mockito.when(mockListener.metrics()).thenReturn((Map)metrics);
 	}
 
 	@ParameterizedTest
