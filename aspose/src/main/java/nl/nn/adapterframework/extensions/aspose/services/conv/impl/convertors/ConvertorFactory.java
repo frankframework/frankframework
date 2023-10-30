@@ -18,12 +18,11 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
+import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Convertor factory instantiates all convertor types and keeps them in a map.
@@ -31,11 +30,10 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Gerard van der Hoorn
  *
  */
+@Log4j2
 public class ConvertorFactory {
 
-	private static final Logger LOGGER = LogUtil.getLogger(ConvertorFactory.class);
-
-	private Map<MediaType, Convertor> convertorLookupMap = new HashMap<>();
+	private final Map<MediaType, Convertor> convertorLookupMap = new HashMap<>();
 
 	public ConvertorFactory(CisConversionService cisConversionService, CisConfiguration configuration) {
 		addToConvertorLookupMap(new MailConvertor(cisConversionService, configuration));
@@ -51,7 +49,7 @@ public class ConvertorFactory {
 		for (MediaType mediaTypeSupported : convertor.getSupportedMediaTypes()) {
 			Convertor oldConvertor = convertorLookupMap.put(mediaTypeSupported, convertor);
 			if (oldConvertor != null) {
-				LOGGER.warn("More than one convertor found for " + mediaTypeSupported);
+				log.warn("More than one convertor found for " + mediaTypeSupported);
 			}
 		}
 	}

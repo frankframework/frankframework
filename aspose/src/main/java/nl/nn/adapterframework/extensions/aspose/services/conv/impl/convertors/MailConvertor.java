@@ -87,7 +87,7 @@ class MailConvertor extends AbstractConvertor {
 	}
 
 	protected MailConvertor(CisConversionService cisConversionService, CisConfiguration configuration) {
-		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[0]));
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
 		this.cisConversionService = cisConversionService;
 	}
 

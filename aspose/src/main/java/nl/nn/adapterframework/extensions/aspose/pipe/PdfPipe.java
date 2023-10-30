@@ -113,7 +113,7 @@ public class PdfPipe extends FixedForwardPipe {
 			try {
 				AsposeLicenseLoader.loadLicenses(licenseUrl);
 			} catch (Exception e) {
-				throw new ConfigurationException("an error occured while loading Aspose license(s)");
+				throw new ConfigurationException("an error occurred while loading Aspose license(s)");
 			}
 		}
 
@@ -121,7 +121,7 @@ public class PdfPipe extends FixedForwardPipe {
 		try {
 			fontManager.load(isUnpackDefaultFonts());
 		} catch (IOException e) {
-			throw new ConfigurationException("an error occured while loading fonts", e);
+			throw new ConfigurationException("an error occurred while loading fonts", e);
 		}
 
 		CisConfiguration configuration = new CisConfiguration(loadExternalResources, getPdfOutputLocation(), getCharset(), fontManager.getFontsPath());

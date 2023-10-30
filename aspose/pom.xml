@@ -12,9 +12,11 @@
 
 	<properties>
 		<!-- NOTE: some dependencies require the classifier tag to be set to jdk16 (1.6) -->
+		<!-- Latest versions and what libraries need the classifier can be checked on the -->
+		<!-- AsposeJava Maven repository: https://releases.aspose.com/java/repo/com/aspose/ -->
 		<aspose.version>23.10</aspose.version>
 		<aspose.email.version>23.9</aspose.email.version>
-		<aspose.imaging.version>23.9</aspose.imaging.version>
+		<aspose.imaging.version>23.10</aspose.imaging.version>
 		<aspose.pdf.version>23.9</aspose.pdf.version>
 	</properties>
 

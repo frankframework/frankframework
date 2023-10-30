@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.http.MediaType;
 
 import com.aspose.pdf.Document;
@@ -39,19 +41,19 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class PdfConvertor extends AbstractConvertor {
 
-	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
+	private static final Map<MediaType, Class<? extends LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
 	static {
-		Map<MediaType, LoadOptions> map = new HashMap<>();
+		Map<MediaType, Class<? extends LoadOptions>> map = new HashMap<>();
 
-		map.put(new MediaType("application", "vnd.ms-xpsdocument"), new XpsLoadOptions());
-		map.put(new MediaType("application", "x-tika-ooxml"), new XpsLoadOptions());
+		map.put(new MediaType("application", "vnd.ms-xpsdocument"), XpsLoadOptions.class);
+		map.put(new MediaType("application", "x-tika-ooxml"), XpsLoadOptions.class);
 
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
 	protected PdfConvertor(CisConfiguration configuration) {
-		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[0]));
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
 	}
 
 	@Override
@@ -61,13 +63,17 @@ public class PdfConvertor extends AbstractConvertor {
 		}
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
+			Document doc = new Document(inputStream, getLoadOptions(mediaType));
 			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
 			doc.freeMemory();
-			doc.dispose();
 			doc.close();
 		}
 		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+	}
+
+	@Nonnull
+	private static LoadOptions getLoadOptions(final MediaType mediaType) throws InstantiationException, IllegalAccessException {
+		return MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType).newInstance();
 	}
 
 	@Override
