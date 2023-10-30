@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
+import { AppService } from 'src/app/app.service';
 
 @Component({
   selector: 'app-iframe-ladybug',
@@ -14,11 +14,11 @@ export class IframeLadybugComponent implements OnInit {
 
   constructor(
     private sanitizer: DomSanitizer,
-    private Misc: MiscService,
+    private appService: AppService,
   ) { };
 
   ngOnInit(): void {
-    this.url = this.Misc.getServerPath() + "iaf/testtool";
+    this.url = this.appService.getServerPath() + "iaf/testtool";
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
   };
 }

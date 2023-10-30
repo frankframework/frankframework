@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { Idle } from "@ng-idle/core";
-import { AuthService } from "src/angularjs/app/services/authservice.service";
-import { PollerService } from "src/angularjs/app/services/poller.service";
+import { AuthService } from "src/app/services/auth.service";
+import { PollerService } from "src/app/services/poller.service";
 
 @Component({
   selector: 'app-logout',

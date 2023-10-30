@@ -15,7 +15,7 @@ export class SweetalertService {
 
   constructor(private Debug: DebugService) { }
 
-  defaults(title: string | SweetAlertOptions, text?: string | (() => void)) {
+  defaults(title: string | SweetAlertOptions, text?: string | ((imSure: boolean) => void)) {
     // let args = arguments || [];
     let options = { ...this.defaultSettings };
 
@@ -43,7 +43,7 @@ export class SweetalertService {
     return Swal.fire(options)
   }
 
-  Confirm(title: string | SweetAlertOptions, text?: string | (() => void)) { //(JsonObject, Callback)-> returns boolean
+  Confirm(title: string | SweetAlertOptions, text?: string | ((imSure: boolean) => void)) { //(JsonObject, Callback)-> returns boolean
     let options: SweetAlertSettings = {
       title: "Are you sure?",
       showCancelButton: true,

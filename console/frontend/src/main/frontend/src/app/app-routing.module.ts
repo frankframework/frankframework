@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-// import { LogoutComponent } from './components/logout/logout.component';
+import { LogoutComponent } from './components/logout/logout.component';
 import { StatusComponent } from './views/status/status.component';
 // import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
 // import { StorageComponent } from './views/storage/storage.component';
@@ -17,9 +17,9 @@ import { StatusComponent } from './views/status/status.component';
 // import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
 // import { LiquibaseComponent } from './views/liquibase/liquibase.component';
 // import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
-// import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
+import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
 // import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
-// import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
+import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
 
 const routes: Routes = [
   /* {
@@ -27,11 +27,11 @@ const routes: Routes = [
     component: LoginComponent,
     title: 'Login'
   }, */
-  // {
-  //   path: 'logout',
-  //   component: LogoutComponent,
-  //   title: 'Logout'
-  // },
+  {
+    path: 'logout',
+    component: LogoutComponent,
+    title: 'Logout'
+  },
   /* /status?configuration&filter&search */
   {
     path: 'status',
@@ -293,24 +293,24 @@ const routes: Routes = [
   //     iframe: true
   //   },
   // },
-  // {
-  //   path: 'testing/ladybug',
-  //   component: IframeLadybugComponent,
-  //   title: 'Ladybug',
-  //   data: {
-  //     breadcrumbs: 'Testing > Ladybug',
-  //     iframe: true
-  //   },
-  // },
-  // {
-  //   path: 'testing/ladybug-beta',
-  //   component: IframeLadybugBetaComponent,
-  //   title: 'Ladybug (beta)',
-  //   data: {
-  //     breadcrumbs: 'Testing > Ladybug (beta)',
-  //     iframe: true
-  //   },
-  // },
+  {
+    path: 'testing/ladybug',
+    component: IframeLadybugComponent,
+    title: 'Ladybug',
+    data: {
+      breadcrumbs: 'Testing > Ladybug',
+      iframe: true
+    },
+  },
+  {
+    path: 'testing/ladybug-beta',
+    component: IframeLadybugBetaComponent,
+    title: 'Ladybug (beta)',
+    data: {
+      breadcrumbs: 'Testing > Ladybug (beta)',
+      iframe: true
+    },
+  },
   /* {
     path: 'empty_page',
     templateUrl: "js/app/views/empty/empty_page.html",
@@ -330,16 +330,20 @@ const routes: Routes = [
     path: 'error',
     component: ErrorComponent,
   }, */
-  {
+  /* {
     path: '**',
     redirectTo: 'status',
-  }
+    data: {
+      breadcrumbs: 'Loading'
+    }
+  } */
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes, {
     useHash: true,
-    enableTracing: true
+    enableTracing: true,
+    paramsInheritanceStrategy: 'always'
   })],
   exports: [RouterModule]
 })

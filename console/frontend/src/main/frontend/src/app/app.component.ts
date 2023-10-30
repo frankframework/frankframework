@@ -1,8 +1,8 @@
 import { Component, Inject, LOCALE_ID, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { Idle } from '@ng-idle/core';
-import { Observable, Subscription } from 'rxjs';
-import { Adapter, AppConstants, AppService, Configuration, ServerInfo } from './app.service';
-import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { Observable, Subscription, combineLatest, filter } from 'rxjs';
+import { Adapter, AppConstants, AppService, ServerInfo } from './app.service';
+import { ActivatedRoute, Data, NavigationEnd, ParamMap, Router, RouterEvent } from '@angular/router';
 import { formatDate } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 // @ts-ignore pace-js does not have types
@@ -32,7 +32,7 @@ export class AppComponent implements OnInit, OnDestroy {
   startupError: string | null = null;
   userName?: string;
   appConstants: AppConstants;
-  routeData: Record<string, any> = {};
+  routeData: Data = {};
 
   private urlHash$!: Observable<string | null>;
   private routeQueryParams!: ParamMap;
@@ -62,16 +62,17 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     this.urlHash$ = this.route.fragment;
-    this.route.queryParamMap.subscribe(params => {
-      if(this.router.url !== '/login'){
+    this.router.events.pipe(
+      filter((e) => e instanceof NavigationEnd)
+    ).subscribe((e) => {
+      const childRoute = this.route.children.pop()!;
+      if (this.router.url === '/login') {
         this.renderer.addClass(document.body, 'gray-bg');
       } else {
         this.renderer.removeClass(document.body, 'gray-bg');
       };
-      this.routeQueryParams = params;
-    });
-    this.route.data.subscribe((data) => {
-      this.routeData = data;
+      this.routeQueryParams = childRoute.snapshot.paramMap;
+      this.routeData = childRoute.snapshot.data;
     });
 
     /* state controller */
@@ -146,60 +147,62 @@ export class AppComponent implements OnInit, OnDestroy {
 
     if (this.appConstants['init'] === 0) { //Only continue if the init state was -1
       this.appConstants['init'] = 1;
-      this.appService.getServerInfo().subscribe({ next: (data) => {
-        this.serverInfo = data;
+      this.appService.getServerInfo().subscribe({
+        next: (data) => {
+          this.serverInfo = data;
 
-        this.appConstants['init'] = 2;
-        if (!(this.router.url.indexOf("login") >= 0)) {
-          this.idle.watch();
-          $("body").removeClass("gray-bg");
-          $(".main").show();
-          $(".loading").hide();
+          this.appConstants['init'] = 2;
+          if (!(this.router.url.indexOf("login") >= 0)) {
+            this.idle.watch();
+            $("body").removeClass("gray-bg");
+            $(".main").show();
+            $(".loading").hide();
+          }
+
+          this.appService.dtapStage = data["dtap.stage"];
+          this.dtapStage = data["dtap.stage"];
+          this.dtapSide = data["dtap.side"];
+          // appService.userName = data["userName"];
+          this.userName = data["userName"];
+
+          let serverTime = Date.parse(new Date(data.serverTime).toUTCString());
+          let localTime = Date.parse(new Date().toUTCString());
+          this.appConstants['timeOffset'] = serverTime - localTime;
+          // TODO this doesnt work as serverTime gets converted to local time before getTimezoneOffset is called
+          this.appConstants['timezoneOffset'] = 0;
+          //this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
+
+          const updateTime = () => {
+            const serverDate = new Date();
+            serverDate.setTime(serverDate.getTime() - this.appConstants['timeOffset']);
+            this.serverTime = formatDate(serverDate, this.appConstants["console.dateFormat"], this.locale);
+          }
+          window.setInterval(updateTime, 1000);
+          updateTime();
+
+          this.appService.updateInstanceName(data.instance.name);
+          $(".iaf-info").html(data.framework.name + " " + data.framework.version + ": " + data.instance.name + " " + data.instance.version);
+
+          if (this.appService.dtapStage == "LOC") {
+            this.debugService.setLevel(3);
+          }
+
+          //Was it able to retrieve the serverinfo without logging in?
+          if (!this.loggedin) {
+            this.idle.setTimeout(0);
+          }
+
+          this.appService.getConfigurations().subscribe((data) => {
+            this.appService.updateConfigurations(data);
+          });
+          this.checkIafVersions();
+          this.initializeWarnings();
+        }, error: (error: HttpErrorResponse) => {
+          if (error.status == 500) {
+            this.router.navigate(['error']);
+          }
         }
-
-        this.appService.dtapStage = data["dtap.stage"];
-        this.dtapStage = data["dtap.stage"];
-        this.dtapSide = data["dtap.side"];
-        // appService.userName = data["userName"];
-        this.userName = data["userName"];
-
-        let serverTime = Date.parse(new Date(data.serverTime).toUTCString());
-        let localTime = Date.parse(new Date().toUTCString());
-        this.appConstants['timeOffset'] = serverTime - localTime;
-        // TODO this doesnt work as serverTime gets converted to local time before getTimezoneOffset is called
-        this.appConstants['timezoneOffset'] = 0;
-        //this.appConstants['timezoneOffset'] = new Date(data.serverTime).getTimezoneOffset();
-
-        const updateTime = () => {
-          const serverDate = new Date();
-          serverDate.setTime(serverDate.getTime() - this.appConstants['timeOffset']);
-          this.serverTime = formatDate(serverDate, this.appConstants["console.dateFormat"], this.locale);
-        }
-        window.setInterval(updateTime, 1000);
-        updateTime();
-
-        this.appService.updateInstanceName(data.instance.name);
-        $(".iaf-info").html(data.framework.name + " " + data.framework.version + ": " + data.instance.name + " " + data.instance.version);
-
-        if (this.appService.dtapStage == "LOC") {
-          this.debugService.setLevel(3);
-        }
-
-        //Was it able to retrieve the serverinfo without logging in?
-        if (!this.loggedin) {
-          this.idle.setTimeout(0);
-        }
-
-        this.appService.getConfigurations().subscribe((data) => {
-          this.appService.updateConfigurations(data);
-        });
-        this.checkIafVersions();
-        this.initializeWarnings();
-      }, error: (error: HttpErrorResponse) => {
-        if (error.status == 500) {
-          this.router.navigate(['error']);
-        }
-      }});
+      });
       this.appService.getEnvironmentVariables().subscribe((data) => {
         if (data["Application Constants"]) {
           this.appConstants = $.extend(this.appConstants, data["Application Constants"]["All"]); //make FF!Application Constants default
@@ -223,7 +226,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.loggedin = (token != null && token != "null") ? true : false;
   }
 
-  checkIafVersions(){
+  checkIafVersions() {
     /* Check IAF version */
     console.log("Checking IAF version with remote...");
     this.appService.getIafVersions(this.miscService.getUID(this.serverInfo!)).subscribe((response) => {
@@ -247,7 +250,7 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  initializeWarnings(){
+  initializeWarnings() {
     this.pollerService.add("server/warnings", (configurations) => {
       this.appService.updateAlerts([]); //Clear all old alerts
 
@@ -370,7 +373,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }, 3000);
   }
 
-  scrollToAdapter(){
+  scrollToAdapter() {
     this.urlHash$.subscribe((hash) => {
       if (this.router.url == "/status" && hash) {
         let el = $("#" + hash);
@@ -381,7 +384,7 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateAdapterNotifications(adapter: Adapter){
+  updateAdapterNotifications(adapter: Adapter) {
     let name = adapter.name;
     if (name.length > 20)
       name = name.substring(0, 17) + "...";
