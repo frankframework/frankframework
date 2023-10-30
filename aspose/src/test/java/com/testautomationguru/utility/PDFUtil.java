@@ -58,12 +58,12 @@ public class PDFUtil {
 	private boolean bHighlightPdfDifference = false;
 	private Color imgColor = Color.MAGENTA;
 	private PDFTextStripper stripper;
-	private boolean bCompareAllPages = true;
+	private boolean bCompareAllPages = false;
 	private CompareMode compareMode = CompareMode.TEXT_MODE;
 	private String[] excludePattern;
 	private int startPage = 1;
 	private int endPage = -1;
-	private @Getter @Setter double allowedDeviation = 0.0;
+	private @Getter @Setter double allowedRGBDeviation = 0.0;
 
 	/*
 	 * Constructor
@@ -88,10 +88,6 @@ public class PDFUtil {
    */
 	public void setCompareMode(CompareMode mode){
 		this.compareMode = mode;
-	}
-
-	public void setAllowedRGBDeviation(double deviation) {
-		this.allowedDeviation = deviation;
 	}
 
    /**
@@ -402,7 +398,7 @@ public class PDFUtil {
 
 			PDDocument document = PDDocument.load(sourceFile);
 			PDFRenderer pdfRenderer = new PDFRenderer(document);
-			for(int iPage=this.startPage-1;iPage<this.endPage;iPage++){
+			for (int iPage = this.startPage - 1; iPage < this.endPage; iPage++) {
 				logger.info("Page No : " + (iPage+1));
 				String fname = this.imageDestinationPath + fileName + "_" + (iPage + 1) + ".png";
 				BufferedImage image = pdfRenderer.renderImageWithDPI(iPage, 300, ImageType.RGB);
@@ -479,8 +475,9 @@ public class PDFUtil {
 				logger.info("Comparing Page No : " + (iPage + 1));
 				BufferedImage image1 = pdfRenderer1.renderImageWithDPI(iPage, 300, ImageType.RGB);
 				BufferedImage image2 = pdfRenderer2.renderImageWithDPI(iPage, 300, ImageType.RGB);
-				result += ImageUtil.compareAndHighlight(image1, image2, fileName, this.bHighlightPdfDifference, this.imgColor.getRGB(), allowedDeviation);
-				if (!this.bCompareAllPages && result > allowedDeviation) {
+				double pageResult = ImageUtil.compareAndHighlight(image1, image2, fileName, this.bHighlightPdfDifference, this.imgColor.getRGB(), allowedRGBDeviation);
+				result = Math.max(result, pageResult);
+				if (!this.bCompareAllPages && result > allowedRGBDeviation) {
 					break;
 				}
 			}

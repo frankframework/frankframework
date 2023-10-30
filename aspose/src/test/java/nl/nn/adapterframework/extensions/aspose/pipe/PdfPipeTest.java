@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -135,12 +137,30 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			log.debug("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
 
 			PDFUtil pdfUtil = createPdfUtil(CompareMode.VISUAL_MODE);
-			double compare = pdfUtil.compare(convertedFilePath, file.getPath());
-			assertEquals(0d, compare, pdfUtil.getAllowedDeviation(), "pdf files ["+convertedFilePath+"] and ["+expectedFilePath+"] should match");
+			double compare = pdfUtil.compare(convertedFilePath, expectedFilePath);
+			updateExpectedSource(convertedFilePath, expectedFilePath, expectedFile);
+			assertEquals(0d, compare, pdfUtil.getAllowedRGBDeviation(), "pdf files ["+convertedFilePath+"] and ["+expectedFilePath+"] should match");
 		}
 		else {
 			fail("failed to extract converted file from documentMetadata xml");
 		}
+	}
+
+	private void updateExpectedSource(final String convertedFilePath, final String expectedFilePath, final String expectedFile) throws IOException {
+		if (!System.getProperty("pdfPipeTest.updateExpectations", "false").equalsIgnoreCase("true")) {
+			return;
+		}
+
+		String prefixPath = expectedFilePath.replace(expectedFile, "");
+		File targetResourceFile = Paths.get(prefixPath, "/../../src/test/resources", expectedFile).toFile().getCanonicalFile();
+
+		if (!targetResourceFile.exists() || !targetResourceFile.canWrite()) {
+			log.warn("Cannot find or write to target resource file at [{}]", targetResourceFile);
+			return;
+		}
+		log.warn("Overwriting expectation at [{}] with actual output from [{}]", targetResourceFile, convertedFilePath);
+
+		FileUtils.copyFile(new File(convertedFilePath), targetResourceFile);
 	}
 
 	@Nonnull
@@ -154,7 +174,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pdfUtil.enableLog();
 		pdfUtil.setCompareMode(compareMode);
 		if (compareMode == CompareMode.VISUAL_MODE) {
-			pdfUtil.setAllowedRGBDeviation(6d); //In percents, diff is between RGB values
+			pdfUtil.setAllowedRGBDeviation(2d); //In percents, diff is between RGB values
 			pdfUtil.highlightPdfDifference(true);
 			pdfUtil.setImageDestinationPath(getTargetTestDirectory());
 		}
