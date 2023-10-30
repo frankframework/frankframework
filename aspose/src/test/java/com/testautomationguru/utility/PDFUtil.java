@@ -38,6 +38,9 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
 * <h1>PDF Utility</h1>
 * A simple pdf utility using apache pdfbox to get the text,
@@ -55,12 +58,12 @@ public class PDFUtil {
 	private boolean bHighlightPdfDifference = false;
 	private Color imgColor = Color.MAGENTA;
 	private PDFTextStripper stripper;
-	private boolean bCompareAllPages = false;
+	private boolean bCompareAllPages = true;
 	private CompareMode compareMode = CompareMode.TEXT_MODE;
 	private String[] excludePattern;
 	private int startPage = 1;
 	private int endPage = -1;
-	private double allowedDeviation = 0.0;
+	private @Getter @Setter double allowedDeviation = 0.0;
 
 	/*
 	 * Constructor
@@ -275,7 +278,7 @@ public class PDFUtil {
    * @return boolean true if matches, false otherwise
    * @throws java.io.IOException when file is not found.
    */
-	public boolean compare(String file1, String file2) throws IOException{
+	public double compare(String file1, String file2) throws IOException{
 		return this.comparePdfFiles(file1, file2, -1, -1);
 	}
 
@@ -292,7 +295,7 @@ public class PDFUtil {
    * @return boolean true if matches, false otherwise
    * @throws java.io.IOException when file is not found.
    */
-	public boolean compare(String file1, String file2, int startPage, int endPage) throws IOException{
+	public double compare(String file1, String file2, int startPage, int endPage) throws IOException{
 		return this.comparePdfFiles(file1, file2, startPage, endPage);
 	}
 
@@ -308,18 +311,18 @@ public class PDFUtil {
    * @return boolean true if matches, false otherwise
    * @throws java.io.IOException when file is not found.
    */
-	public boolean compare(String file1, String file2, int startPage) throws IOException{
+	public double compare(String file1, String file2, int startPage) throws IOException{
 		return this.comparePdfFiles(file1, file2, startPage, -1);
 	}
 
-	private boolean comparePdfFiles(String file1, String file2, int startPage, int endPage)throws IOException{
+	private double comparePdfFiles(String file1, String file2, int startPage, int endPage)throws IOException{
 		if(CompareMode.TEXT_MODE==this.compareMode)
 			return comparePdfFilesWithTextMode(file1, file2, startPage, endPage);
 		else
 			return comparePdfByImage(file1, file2, startPage, endPage);
 	}
 
-	private boolean comparePdfFilesWithTextMode(String file1, String file2, int startPage, int endPage) throws IOException{
+	private double comparePdfFilesWithTextMode(String file1, String file2, int startPage, int endPage) throws IOException{
 
 		String file1Txt = this.getPDFText(file1, startPage, endPage).trim();
 		String file2Txt = this.getPDFText(file2, startPage, endPage).trim();
@@ -334,9 +337,9 @@ public class PDFUtil {
 		logger.info("File 1 Txt : " + file1Txt);
 		logger.info("File 2 Txt : " + file2Txt);
 
-		boolean result = file1Txt.equalsIgnoreCase(file2Txt);
+		int result = file1Txt.compareToIgnoreCase(file2Txt);
 
-		if(!result){
+		if(result != 0){
 			logger.warning("PDF content does not match");
 		}
 
@@ -426,7 +429,7 @@ public class PDFUtil {
    * @return boolean true if matches, false otherwise
    * @throws java.io.IOException when file is not found.
    */
-	public boolean compare(String file1, String file2,int startPage, int endPage, boolean highlightImageDifferences, boolean showAllDifferences) throws IOException{
+	public double compare(String file1, String file2,int startPage, int endPage, boolean highlightImageDifferences, boolean showAllDifferences) throws IOException{
 		this.compareMode = CompareMode.VISUAL_MODE;
 		this.bHighlightPdfDifference = highlightImageDifferences;
 		this.bCompareAllPages = showAllDifferences;
@@ -437,7 +440,7 @@ public class PDFUtil {
    * This method reads each page of a given doc, converts to image
    * compare. If it fails, exits immediately.
    */
-	private boolean comparePdfByImage(String file1, String file2, int startPage, int endPage) throws IOException{
+	private double comparePdfByImage(String file1, String file2, int startPage, int endPage) throws IOException{
 
 		logger.info("file1 : " + file1);
 		logger.info("file2 : " + file2);
@@ -447,7 +450,7 @@ public class PDFUtil {
 
 		if(pgCount1!=pgCount2){
 			logger.warning("files page counts do not match - returning false");
-			return false;
+			return Double.NEGATIVE_INFINITY;
 		}
 
 		if(this.bHighlightPdfDifference)
@@ -458,9 +461,9 @@ public class PDFUtil {
 		return this.convertToImageAndCompare(file1, file2, this.startPage, this.endPage);
 	}
 
-	private boolean convertToImageAndCompare(String file1, String file2, int startPage, int endPage) throws IOException{
+	private double convertToImageAndCompare(String file1, String file2, int startPage, int endPage) throws IOException{
 
-		boolean result = true;
+		double result = 0d;
 
 		try (PDDocument doc1 = PDDocument.load(new File(file1));
 			PDDocument doc2 = PDDocument.load(new File(file2))) {
@@ -476,8 +479,8 @@ public class PDFUtil {
 				logger.info("Comparing Page No : " + (iPage + 1));
 				BufferedImage image1 = pdfRenderer1.renderImageWithDPI(iPage, 300, ImageType.RGB);
 				BufferedImage image2 = pdfRenderer2.renderImageWithDPI(iPage, 300, ImageType.RGB);
-				result = ImageUtil.compareAndHighlight(image1, image2, fileName, this.bHighlightPdfDifference, this.imgColor.getRGB(), allowedDeviation) && result;
-				if (!this.bCompareAllPages && !result) {
+				result += ImageUtil.compareAndHighlight(image1, image2, fileName, this.bHighlightPdfDifference, this.imgColor.getRGB(), allowedDeviation);
+				if (!this.bCompareAllPages && result > allowedDeviation) {
 					break;
 				}
 			}

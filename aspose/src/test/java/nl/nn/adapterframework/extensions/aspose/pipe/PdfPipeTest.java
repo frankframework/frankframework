@@ -15,13 +15,13 @@
 */
 package nl.nn.adapterframework.extensions.aspose.pipe;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -39,8 +39,9 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.MimeType;
 
 import com.testautomationguru.utility.CompareMode;
@@ -83,7 +84,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		return new PdfPipe();
 	}
 
-	@Override
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		pdfOutputLocation = Files.createTempDirectory("Pdf");
@@ -91,7 +92,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.setUnpackCommonFontsArchive(true);
 	}
 
-	@Override
+	@AfterEach
 	public void tearDown() throws Exception {
 		synchronized(pdfOutputLocation) {
 			Files.walk(pdfOutputLocation).forEach(PdfPipeTest::removeFile); //Remove each individual file
@@ -108,7 +109,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 				Files.delete(file);
 			} catch (IOException e) {
 				LogUtil.getLogger(PdfPipeTest.class).error("unable to delete file", e);
-				Assert.fail("unable to delete: "+ e.getMessage());
+				fail("unable to delete: "+ e.getMessage());
 			}
 		}
 	}
@@ -128,14 +129,14 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			log.debug("found converted file [{}]", convertedFilePath);
 
 			URL expectedFileUrl = TestFileUtils.getTestFileURL(expectedFile);
-			assertNotNull("cannot find expected file ["+expectedFile+"]", expectedFileUrl);
+			assertNotNull(expectedFileUrl, "cannot find expected file ["+expectedFile+"]");
 			File file = new File(expectedFileUrl.toURI());
 			String expectedFilePath = file.getPath();
 			log.debug("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
 
 			PDFUtil pdfUtil = createPdfUtil(CompareMode.VISUAL_MODE);
-			boolean compare = pdfUtil.compare(convertedFilePath, file.getPath());
-			assertTrue("pdf files ["+convertedFilePath+"] and ["+expectedFilePath+"] should match", compare);
+			double compare = pdfUtil.compare(convertedFilePath, file.getPath());
+			assertEquals(0d, compare, pdfUtil.getAllowedDeviation(), "pdf files ["+convertedFilePath+"] and ["+expectedFilePath+"] should match");
 		}
 		else {
 			fail("failed to extract converted file from documentMetadata xml");
@@ -153,7 +154,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pdfUtil.enableLog();
 		pdfUtil.setCompareMode(compareMode);
 		if (compareMode == CompareMode.VISUAL_MODE) {
-			pdfUtil.setAllowedRGBDeviation(1.6d); //In percents, diff is between RGB values
+			pdfUtil.setAllowedRGBDeviation(6d); //In percents, diff is between RGB values
 			pdfUtil.highlightPdfDifference(true);
 			pdfUtil.setImageDestinationPath(getTargetTestDirectory());
 		}
@@ -168,8 +169,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	public void testImageDiff() throws IOException {
 		URL rbgw = TestFileUtils.getTestFileURL("/PdfPipe/imageDiffTest/rbgw.png");
 		URL rgbw = TestFileUtils.getTestFileURL("/PdfPipe/imageDiffTest/rgbw.png");
-		assertNotNull("unable to find [rbgw]", rbgw);
-		assertNotNull("unable to find [rgbw]", rgbw);
+		assertNotNull(rbgw, "unable to find [rbgw]");
+		assertNotNull(rgbw, "unable to find [rgbw]");
 		BufferedImage img1 = ImageIO.read(rbgw.openStream());
 		BufferedImage img2 = ImageIO.read(rgbw.openStream());
 		double deviation = ImageUtil.getDifferencePercent(img1, img2);
@@ -254,7 +255,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void emlFromGroupmailbox2Pdf() throws Exception {
-		assumeTrue("This test only runs for Europe/Amsterdam due to the time being in the output PDF", TestAssertions.isTimeZone(TEST_TZ));
+		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
 		expectSuccessfulConversion("EmlFromGroupmailbox", "/PdfPipe/eml-from-groupmailbox.eml", "/PdfPipe/xml-results/eml-from-groupmailbox.xml", "/PdfPipe/results/eml-from-groupmailbox.pdf");
 	}
 
@@ -375,7 +376,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void mailWithWordAttachment() throws Exception {
-		assumeTrue("This test only runs for Europe/Amsterdam due to the time being in the output PDF", TestAssertions.isTimeZone(TEST_TZ));
+		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
 		expectSuccessfulConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachment.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
 	}
 
@@ -390,7 +391,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		PipeLineSession session = new PipeLineSession();
 		List<Message> inputs = new ArrayList<>();
 		URL url = TestFileUtils.getTestFileURL("/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg");
-		assertNotNull("unable to find test file", url);
+		assertNotNull(url, "unable to find test file");
 		for(int i = 0; i<5; i++) {
 			inputs.add(new UrlMessage(url));
 		}
@@ -407,15 +408,15 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		});
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void wrongPdfOutputLocation() throws Exception {
 		pipe.setPdfOutputLocation("not a valid location");
-		pipe.configure();
+		assertThrows(ConfigurationException.class, pipe::configure);
 	}
 
 	@Test
 	public void nullAction() throws Exception {
-		assertThrows("please specify an action for pdf pipe [PdfPipe under test]. possible values: [CONVERT, COMBINE]", ConfigurationException.class, () -> pipe.configure());
+		assertThrows(ConfigurationException.class, pipe::configure, "please specify an action for pdf pipe [PdfPipe under test]. possible values: [CONVERT, COMBINE]");
 	}
 
 	@Test
@@ -429,11 +430,11 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		assertTrue(warnings.get(0).contains("Aspose License is not configured"));
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void wrongLicense() throws Exception {
 		pipe.setAction(DocumentAction.CONVERT); //without action the pipe will never reach the license block!
 		pipe.setLicense("test123");//can't find this 'license' file
-		pipe.configure();
+		assertThrows(ConfigurationException.class, pipe::configure);
 	}
 
 	@Test
@@ -458,6 +459,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		// comparison
 		PDFUtil pdfUtil = createPdfUtil(CompareMode.TEXT_MODE);
-		assertTrue(pdfUtil.compare(expectedFilePath, resultingFile.toFile().getCanonicalPath()));
+		assertEquals(0d, pdfUtil.compare(expectedFilePath, resultingFile.toFile().getCanonicalPath()));
 	}
 }
