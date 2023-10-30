@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9-RC1">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -171,7 +171,9 @@
     </xs:sequence>
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the Receiver as known to the Adapter</xs:documentation>
+        <xs:documentation>Sets the name of the Receiver, as known to the Adapter.
+ If the listener implements the name interface and &lt;code&gt;getName()&lt;/code&gt;
+ of the listener is empty, the name of this object is given to the listener.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="onError">
@@ -194,17 +196,21 @@
     </xs:attribute>
     <xs:attribute name="pollInterval" type="frankInt">
       <xs:annotation>
-        <xs:documentation>The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners Default: 10</xs:documentation>
+        <xs:documentation>The number of seconds waited after an unsuccessful poll attempt, before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners Default: 10</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="startTimeout" type="frankInt">
       <xs:annotation>
-        <xs:documentation>timeout to start receiver. If this timeout is reached, the Receiver may be stopped again</xs:documentation>
+        <xs:documentation>timeout (in seconds) to start receiver. If this timeout is exceeded, the Receiver startup is
+  aborted and all resources closed and the receiver will be in state {@code EXCEPTION_STARTING}
+  and a new start command may be issued again.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="stopTimeout" type="frankInt">
       <xs:annotation>
-        <xs:documentation>timeout to stopped receiver. If this timeout is reached, a new stop command may be issued</xs:documentation>
+        <xs:documentation>timeout (in seconds) to stop receiver. If this timeout is exceeded, stopping will be aborted
+  and the receiver will be in state {@code EXCEPTION_STOPPING}.
+  The receiver will no longer be running but some resources might not have been cleaned up properly.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="checkForDuplicates" type="frankBoolean">
@@ -272,12 +278,12 @@
     </xs:attribute>
     <xs:attribute name="elementToMove" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + &lt;code&gt;elementToMoveSessionKey&lt;/code&gt; + }</xs:documentation>
+        <xs:documentation>If set, the character data in this XML element is stored inside a session key and in the message it is replaced by a reference to this session key: {sessionKey: + &lt;code&gt;elementToMoveSessionKey&lt;/code&gt; + }</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="elementToMoveSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>(Only used when &lt;code&gt;elementToMove&lt;/code&gt; is set) Name of the session key under which the character data is stored Default: ref_ + the name of the element</xs:documentation>
+        <xs:documentation>(Only used when &lt;code&gt;elementToMove&lt;/code&gt; or &lt;code&gt;elementToMoveChain&lt;/code&gt; is set) Name of the session key wherein the character data is stored Default: ref_ + the name of the element</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="elementToMoveChain" type="xs:string">
@@ -311,7 +317,7 @@
     </xs:attribute>
     <xs:attribute name="numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Number of connection attemps to put the adapter in warning status Default: 5</xs:documentation>
+        <xs:documentation>Number of connection attempts to put the adapter in warning status Default: 5</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="transactionTimeout" />
@@ -411,7 +417,7 @@
     </xs:attribute>
     <xs:attribute name="namespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of
+        <xs:documentation>Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of
  &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. One entry can be without a prefix, that will define the default namespace.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -434,8 +440,8 @@
       <xs:annotation>
         <xs:documentation>Value of parameter is determined using substitution and formatting, following MessageFormat syntax with named parameters. The expression can contain references
  to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat.
- &lt;br/&gt;If for instance &lt;code&gt;fname&lt;/code&gt; is a parameter or session variable that resolves to eric, then the pattern
- 'hi {fname}, hoe gaat het?' resolves to 'hi eric, hoe gaat het?'.&lt;br/&gt;
+ &lt;br/&gt;If for instance &lt;code&gt;fname&lt;/code&gt; is a parameter or session variable that resolves to Eric, then the pattern
+ 'Hi {fname}, how do you do?' resolves to 'Hi Eric, do you do?'.&lt;br/&gt;
  The following predefined reference can be used in the expression too:&lt;ul&gt;
  &lt;li&gt;{now}: the current system time&lt;/li&gt;
  &lt;li&gt;{uid}: an unique identifier, based on the IP address and java.rmi.server.UID&lt;/li&gt;
@@ -599,7 +605,7 @@
     </xs:attribute>
     <xs:attribute name="messageSizeWarn" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If messageSizeWarn&gt;=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged. You can specify the value with the suffixes &lt;code&gt;KB&lt;/code&gt;, &lt;code&gt;MB&lt;/code&gt; or &lt;code&gt;GB&lt;/code&gt; Default: application default (3MB)</xs:documentation>
+        <xs:documentation>If messageSizeWarn&gt;=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged. You can specify the value with the suffixes &lt;code&gt;KB&lt;/code&gt;, &lt;code&gt;MB&lt;/code&gt; or &lt;code&gt;GB&lt;/code&gt; Default: application default (30MB)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="transformNullMessage" type="xs:string">
@@ -880,93 +886,16 @@
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
   <xs:complexType name="GlobalForwardsType">
+    <xs:annotation>
+      <xs:documentation>Optional element in a pipeline. Global forwards that will be added to every pipe, when the forward name has not been explicitly set.
+ For example the &lt;code&gt;&amp;lt;forward name="exception" path="error_exception" /&amp;gt;&lt;/code&gt;, which will add the '&lt;code&gt;exception&lt;/code&gt;' forward to every pipe in the pipeline.</xs:documentation>
+    </xs:annotation>
     <xs:sequence>
       <xs:element name="Forward" minOccurs="0" maxOccurs="unbounded" type="ForwardType" />
     </xs:sequence>
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeForwards" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="globalForwards" use="prohibited" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:complexType>
-  <xs:complexType name="FlowType">
-    <xs:annotation>
-      <xs:documentation>The flow contains the handlers to handle records of a specific type.
- Each flow is registered to a manager using the recordHandlerManagerRef.</xs:documentation>
-    </xs:annotation>
-    <xs:attribute name="recordKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Key under which this flow is registered in the manager</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="nextRecordHandlerManagerRef" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the manager to be used after handling this record</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="recordHandlerRef" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the recordHandler to be used to transform records of the type specified in the key (optional)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="recordHandlerManagerRef" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the manager to which this flow must be added</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="resultHandlerRef" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the resultHandler to be used to handle the transformed result</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="openBlockBeforeLine" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Instructs the resultHandler to start a new block before the parsed line is processed</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="closeBlockBeforeLine" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Instructs the resultHandler to end the specified block before the parsed line is processed</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="openBlockAfterLine" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Instructs the resultHandler to start a new block after the parsed line is processed</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="closeBlockAfterLine" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Instructs the resultHandler to end the specified block after the parsed line is processed</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="autoCloseBlock" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, any open block of this type (and other nested open 'autoClose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9) Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="openBlockBeforeLineNumber" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>If &amp;gt;0 the &lt;code&gt;openBlockBeforeLine&lt;/code&gt; instruction is only performed when the current line number is a multiple of this value Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.RecordHandlingFlow" use="prohibited" />
-    <xs:attribute ref="active" />
-    <xs:attribute name="elementRole" type="xs:string" fixed="flow" use="prohibited" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:complexType>
-  <xs:complexType name="InputFieldsType">
-    <xs:attribute name="value" type="xs:string" />
-    <xs:attribute name="description" type="xs:string" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.InputfieldsPart" use="prohibited" />
-    <xs:attribute ref="active" />
-    <xs:attribute name="elementRole" type="xs:string" fixed="inputFields" use="prohibited" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:complexType>
-  <xs:complexType name="OutputFieldsType">
-    <xs:attribute name="value" type="xs:string" />
-    <xs:attribute name="description" type="xs:string" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.OutputfieldsPart" use="prohibited" />
-    <xs:attribute ref="active" />
-    <xs:attribute name="elementRole" type="xs:string" fixed="outputFields" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
   <xs:complexType name="SchedulerType">
@@ -1302,10 +1231,10 @@
       <xs:element name="IfsaProviderListener">
         <xs:annotation>
           <xs:documentation>Implementation of IPullingListener that acts as an IFSA-service.
-
+ 
  There is no need or possibility to set the ServiceId as the Provider will receive all messages
  for this Application on the same serviceQueue.
-
+ 
  The following session keys are set for each message:
  &lt;ul&gt;
    &lt;li&gt;id (the message id)&lt;/li&gt;
@@ -1319,13 +1248,13 @@
    &lt;li&gt;ifsaOccurrence&lt;/li&gt;
    &lt;li&gt;ifsaVersion&lt;/li&gt;
  &lt;/ul&gt;
-
- N.B.
+ 
+ N.B. 
  Starting from IFSA-jms version 2.2.10.055(beta) a feature was created to have separate service-queues for Request/Reply
  and for Fire &amp; Forget services. This allows applications to provide both types of services, each in its own transaction
- mode. This options is not compatible with earlier versions of IFSA-jms. If an earlier version of IFSA-jms is deployed on
+ mode. This options is not compatible with earlier versions of IFSA-jms. If an earlier version of IFSA-jms is deployed on 
  the server, this behaviour must be disabled by the following setting in DeploymentSpecifics.properties:
-
+ 
  &lt;code&gt;ifsa.provider.useSelectors=false&lt;/code&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -1438,24 +1367,12 @@
  &lt;p&gt;You can add parameters to the JmsListener, the values will be added as Headers to the JMS response message.&lt;/p&gt;
 
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
- &lt;code&gt;javax.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
+ javax.jms.TextMessages and javax.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="JmsListenerType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="JmsListenerBaseListener">
-        <xs:annotation>
-          <xs:documentation>Common baseclass for Pulling and Pushing JMS Listeners.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="JmsListenerBaseType">
               <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -1689,7 +1606,7 @@
  whatever it is configured to.&lt;/p&gt;
 
  &lt;p&gt;&lt;b&gt;Notice:&lt;/b&gt; the JmsListener is ONLY capable of processing
- &lt;code&gt;javax.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
+ javax.jms.TextMessages and javax.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -1861,7 +1778,7 @@
     </xs:attribute>
     <xs:attribute name="updateEtag" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Automatically generate and validate etags Default: &lt;code&gt;true&lt;/code&gt; for repeatable responses</xs:documentation>
+        <xs:documentation>Automatically generate and validate etags Default: &lt;code&gt;false&lt;/code&gt;, can be changed by setting the property &lt;code&gt;api.etag.enabled&lt;/code&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="authenticationMethod">
@@ -2085,6 +2002,7 @@
     <xs:attribute ref="replyNamespaceURI" />
     <xs:attribute ref="replySoapAction" />
     <xs:attribute ref="soapHeaderSessionKey" />
+    <xs:attribute ref="messageClass" />
     <xs:attribute ref="destinationType" />
     <xs:attribute ref="acknowledgeMode" />
     <xs:attribute ref="subscriberType" />
@@ -2109,11 +2027,6 @@
     <xs:attribute ref="lookupDestination" />
     <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="JmsListenerBaseType">
-    <xs:group ref="JmsListenerBaseDeclaredChildGroup" />
-    <xs:attributeGroup ref="JmsListenerBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsListenerBase" use="prohibited" />
-  </xs:complexType>
   <xs:group name="JmsListenerBaseDeclaredChildGroup">
     <xs:sequence>
       <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
@@ -2160,6 +2073,7 @@
     <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JMSFacade" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JMSFacadeDeclaredAttributeGroup">
+    <xs:attribute ref="messageClass" />
     <xs:attribute name="destinationName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Name of the JMS destination (queue or topic) to use</xs:documentation>
@@ -2250,6 +2164,7 @@
   <xs:attributeGroup name="PushingJmsListenerCumulativeAttributeGroup">
     <xs:attributeGroup ref="PushingJmsListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="JmsListenerBaseDeclaredAttributeGroup" />
+    <xs:attribute ref="messageClass" />
     <xs:attribute ref="destinationType" />
     <xs:attribute ref="acknowledgeMode" />
     <xs:attribute ref="subscriberType" />
@@ -4103,7 +4018,7 @@
    &lt;li&gt;Define a Receiver with a JavaListener&lt;/li&gt;
    &lt;li&gt;Set the attribute &lt;code&gt;serviceName&lt;/code&gt; to &lt;i&gt;yourExternalServiceName&lt;/i&gt;&lt;/li&gt;
  &lt;/ul&gt;
- N.B. Please make sure that the IbisServiceDispatcher-1.1.jar is present on the class path of the server.</xs:documentation>
+ N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4269,7 +4184,7 @@
       </xs:element>
       <xs:element name="JavascriptSender">
         <xs:annotation>
-          <xs:documentation>Sender used to run javascript code using J2V8 or Rhino
+          <xs:documentation>Sender used to run JavaScript code using J2V8, Rhino or Nashorn
 
  This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
  The parameters of the javascript function to run are given as parameters by the adapter configuration
@@ -4827,7 +4742,7 @@
  &lt;br/&gt;
  - Folder should have SGID bit set so that all files what is copied to this folder get group ownership xfbgw
  &lt;br/&gt;
- - send file must have rights 660 after putting the file in the send directory.
+ - send file must have rights 660 after putting the file in the send directory. 
  &lt;br/&gt;
  &lt;br/&gt;
  RECEIVING CFT:
@@ -5115,7 +5030,7 @@
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the folder to move or copy to is created if it does not exist Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the folder to create, write, move or copy the file to is created if it does not exist Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
@@ -6440,24 +6355,24 @@
     <xs:attribute name="action" type="xs:string" />
     <xs:attribute name="merchantID" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the contract number for iDIN the Merchant received from its Acquirer after registration,
- and is used to unambiguously identify the Merchant. This number is 10-digits long, where the
+        <xs:documentation>This is the contract number for iDIN the Merchant received from its Acquirer after registration, 
+ and is used to unambiguously identify the Merchant. This number is 10-digits long, where the 
  first four digits are equal to the AcquirerID.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="merchantSubID" type="frankInt">
       <xs:annotation>
-        <xs:documentation>The SubID that uniquely defines the name and address of the Merchant to be used for iDIN,
- if operating under different brands or trading entities. The Merchant obtains the SubID
- from its Acquirer after registration for iDIN. A Merchant can request permission from
+        <xs:documentation>The SubID that uniquely defines the name and address of the Merchant to be used for iDIN, 
+ if operating under different brands or trading entities. The Merchant obtains the SubID 
+ from its Acquirer after registration for iDIN. A Merchant can request permission from 
  the Acquirer to use one or more SubIDs.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="merchantReturnUrl" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The web address provided by the Merchant in the transaction request that is used to redirect the
- Consumer back to the Merchant after completing the authentication in the Issuer domain. The URL
- does not necessarily begin with http:// or https://, it can also start with an app handler
+        <xs:documentation>The web address provided by the Merchant in the transaction request that is used to redirect the 
+ Consumer back to the Merchant after completing the authentication in the Issuer domain. The URL 
+ does not necessarily begin with http:// or https://, it can also start with an app handler 
  e.g. companyname-nlservice://.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -6466,7 +6381,7 @@
     <xs:attribute name="acquirerStatusUrl" type="xs:string" />
     <xs:attribute name="keyStoreLocation" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The Java iDIN Software Library needs to access a keystore located in the Java classpath to
+        <xs:documentation>The Java iDIN Software Library needs to access a keystore located in the Java classpath to 
  store all the required certificates</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -6500,22 +6415,22 @@
     </xs:attribute>
     <xs:attribute name="acquirerCertificateAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library
- only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
+        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library 
+ only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically 
  has the file extension .cer,.crt or .pem.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="acquirerAlternativeCertificateAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library
- only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
+        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library 
+ only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically 
  has the file extension .cer,.crt or .pem.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="sAMLCertificateAlias" type="xs:string">
       <xs:annotation>
-        <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information.
- The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
+        <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information. 
+ The Merchant can then use the private key to decrypt that information. The SAML certificate must be in 
  PKCS#12 format which has the extension .p12 or .pfx;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -6650,14 +6565,6 @@
       <xs:annotation>
         <xs:documentation>the name of the javascript function that will be called (first) Default: main</xs:documentation>
       </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="engineName">
-      <xs:annotation>
-        <xs:documentation>the name of the javascript engine to be used Default: J2V8</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="JavaScriptEnginesAttributeValuesType variableRef" />
-      </xs:simpleType>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="JavascriptSenderCumulativeAttributeGroup">
@@ -8340,7 +8247,7 @@
     <xs:attribute name="noname" type="xs:string" />
     <xs:attribute name="copy" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When set to &lt;code&gt;true&lt;/code&gt;, the file is copied before calling the XFB script.
+        <xs:documentation>When set to &lt;code&gt;true&lt;/code&gt;, the file is copied before calling the XFB script. 
  Reasons to copy the file:
  - XFB will rename the file (prefix it with FXB_) and delete it.
  - On Linux the sticky bit (drwxrws--- wasadmin xfbgw) isn't honoured with a move (only with a copy) (on AIX the sticky bit works for both move and copy).</xs:documentation>
@@ -8811,7 +8718,7 @@
    &lt;li&gt;Define a Receiver with a JavaListener&lt;/li&gt;
    &lt;li&gt;Set the attribute &lt;code&gt;serviceName&lt;/code&gt; to &lt;i&gt;yourExternalServiceName&lt;/i&gt;&lt;/li&gt;
  &lt;/ul&gt;
- N.B. Please make sure that the IbisServiceDispatcher-1.1.jar is present on the class path of the server.</xs:documentation>
+ N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -8977,7 +8884,7 @@
       </xs:element>
       <xs:element name="JavascriptErrorSender">
         <xs:annotation>
-          <xs:documentation>Sender used to run javascript code using J2V8 or Rhino
+          <xs:documentation>Sender used to run JavaScript code using J2V8, Rhino or Nashorn
 
  This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
  The parameters of the javascript function to run are given as parameters by the adapter configuration
@@ -9535,7 +9442,7 @@
  &lt;br/&gt;
  - Folder should have SGID bit set so that all files what is copied to this folder get group ownership xfbgw
  &lt;br/&gt;
- - send file must have rights 660 after putting the file in the send directory.
+ - send file must have rights 660 after putting the file in the send directory. 
  &lt;br/&gt;
  &lt;br/&gt;
  RECEIVING CFT:
@@ -11861,14 +11768,10 @@
               <xs:group ref="InputWrapperElementGroup" />
               <xs:group ref="ListenerElementGroup_2" />
               <xs:element name="Locker" type="LockerType" />
-              <xs:group ref="ManagerElementGroup" />
               <xs:group ref="MessageLogElementGroup" />
               <xs:group ref="OutputValidatorElementGroup" />
               <xs:group ref="OutputWrapperElementGroup" />
               <xs:element name="Param" type="ParamType" />
-              <xs:group ref="ReaderFactoryElementGroup" />
-              <xs:group ref="RecordHandlerElementGroup" />
-              <xs:group ref="ResultHandlerElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -11950,661 +11853,6 @@
         </xs:complexType>
       </xs:element>
     </xs:choice>
-  </xs:group>
-  <xs:group name="ManagerElementGroup">
-    <xs:choice>
-      <xs:element name="Manager">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="Flow" type="FlowType" />
-            </xs:choice>
-          </xs:sequence>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="manager" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.batch.RecordHandlerManager" />
-          <xs:anyAttribute processContents="skip" />
-        </xs:complexType>
-      </xs:element>
-      <xs:group ref="ManagerElementGroupBase" />
-    </xs:choice>
-  </xs:group>
-  <xs:group name="ManagerElementGroupBase">
-    <xs:choice>
-      <xs:element name="FieldPositionManager">
-        <xs:annotation>
-          <xs:documentation>Manager that decides the handlers based on the content of a field in the specified
- position in a record. The fields in the record are separated by a separator.
- The value of the specified field is taken as key in the flow-table.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="FieldPositionRecordHandlerManagerType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="manager" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="FixedPositionManager">
-        <xs:annotation>
-          <xs:documentation>Manager that decides the handlers based on the content of a field in the specified
- position in a record. The fields in the record are of a fixed length.
- The data beween the start position and end position is taken as key in the flow-table.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="FixedPositionRecordHandlerManagerType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="manager" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-    </xs:choice>
-  </xs:group>
-  <xs:complexType name="FieldPositionRecordHandlerManagerType">
-    <xs:group ref="RecordHandlerManagerDeclaredChildGroup" />
-    <xs:attributeGroup ref="FieldPositionRecordHandlerManagerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="FieldPositionRecordHandlerManagerDeclaredAttributeGroup">
-    <xs:attribute name="fieldNr" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>position of field that identifies the recordtype (position of first field is 1)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="separator" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>separator that separates the fields in the record</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="FieldPositionRecordHandlerManagerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="FieldPositionRecordHandlerManagerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="RecordHandlerManagerDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="RecordHandlerManagerType">
-    <xs:group ref="RecordHandlerManagerDeclaredChildGroup" />
-    <xs:attributeGroup ref="RecordHandlerManagerDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.RecordHandlerManager" use="prohibited" />
-  </xs:complexType>
-  <xs:group name="RecordHandlerManagerDeclaredChildGroup">
-    <xs:sequence>
-      <xs:element name="Flow" minOccurs="0" maxOccurs="unbounded" type="FlowType" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="RecordHandlerManagerDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the manager</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="initial" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>This manager is the initial manager, i.e. to be used for the first record Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
-  <xs:complexType name="FixedPositionRecordHandlerManagerType">
-    <xs:group ref="RecordHandlerManagerDeclaredChildGroup" />
-    <xs:attributeGroup ref="FixedPositionRecordHandlerManagerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.FixedPositionRecordHandlerManager" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="FixedPositionRecordHandlerManagerDeclaredAttributeGroup">
-    <xs:attribute name="startPosition" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Start position of the field in the record that identifies the recordtype (first character is 0) Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="endPosition" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>If endposition &amp;gt;= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition &amp;lt; 0 then it depends on the length of the recordkey in the flow Default: -1</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="FixedPositionRecordHandlerManagerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="FixedPositionRecordHandlerManagerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="RecordHandlerManagerDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:group name="ReaderFactoryElementGroup">
-    <xs:choice>
-      <xs:element name="ReaderFactory">
-        <xs:complexType>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="readerFactory" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" use="required" />
-          <xs:anyAttribute processContents="skip" />
-        </xs:complexType>
-      </xs:element>
-      <xs:group ref="ReaderFactoryElementGroupBase" />
-    </xs:choice>
-  </xs:group>
-  <xs:group name="ReaderFactoryElementGroupBase">
-    <xs:choice>
-      <xs:element name="DelphiStringRecordReaderFactory">
-        <xs:annotation>
-          <xs:documentation>IReaderFactory that provides a reader that reads Delphi records containing Strings.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="DelphiStringRecordReaderFactoryType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="readerFactory" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="InputStreamReaderFactory">
-        <xs:annotation>
-          <xs:documentation>Basic InputStreamReaderFactory.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="InputStreamReaderFactoryType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="readerFactory" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-    </xs:choice>
-  </xs:group>
-  <xs:complexType name="DelphiStringRecordReaderFactoryType">
-    <xs:attributeGroup ref="DelphiStringRecordReaderFactoryDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.DelphiStringRecordReaderFactory" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="DelphiStringRecordReaderFactoryDeclaredAttributeGroup">
-    <xs:attribute name="separator" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>separator placed between each string read Default: |</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="stringLength" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>the maximum length of each string. each string is preceded by a one byte length indication. Default: 50</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="stringsPerRecord" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>the number of strings read for each record. 0 means file consists of one logical record Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="separatorReplacement" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>replacement character, used when separator is found in string read Default: _</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
-  <xs:complexType name="InputStreamReaderFactoryType">
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.InputStreamReaderFactory" use="prohibited" />
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:complexType>
-  <xs:group name="RecordHandlerElementGroup">
-    <xs:choice>
-      <xs:element name="RecordHandler">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="InputFields" type="InputFieldsType" />
-              <xs:element name="OutputFields" type="OutputFieldsType" />
-              <xs:element name="Param" type="ParamType" />
-              <xs:group ref="SenderElementGroup" />
-            </xs:choice>
-          </xs:sequence>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="recordHandler" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" use="required" />
-          <xs:anyAttribute processContents="skip" />
-        </xs:complexType>
-      </xs:element>
-      <xs:group ref="RecordHandlerElementGroupBase" />
-    </xs:choice>
-  </xs:group>
-  <xs:group name="RecordHandlerElementGroupBase">
-    <xs:choice>
-      <xs:element name="RecordTransformerRecordHandler">
-        <xs:annotation>
-          <xs:documentation>Translate a record using an outputFields description.
-
-
- The outputFields description can contain the following functions:
-
- &lt;table border="1"&gt;
- &lt;tr&gt;&lt;td&gt;string(value)&lt;/td&gt;&lt;td&gt;inserts the value between the braces&lt;/td&gt;&lt;td&gt;string( Dit wordt geinsert inclusief spaties ervoor en erna. )&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;align(value,size,align,fillchar)&lt;/td&gt;&lt;td&gt;inserts the value aligned&lt;/td&gt;&lt;td&gt;align(test~10~left~ )&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;fill(size,fillchar)&lt;/td&gt;&lt;td&gt;insert size fillchars&lt;/td&gt;&lt;td&gt;fill(2,0)&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;now(outformat)&lt;/td&gt;&lt;td&gt;inserts the current date&lt;/td&gt;&lt;td&gt;now(dd MMM yyyy)&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;incopy(fieldnr)&lt;/td&gt;&lt;td&gt;simply inserts the value of the field&lt;/td&gt;&lt;td&gt;incopy(2)&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;substr(fieldnr,startindex,endindex)&lt;/td&gt;&lt;td&gt;insert part of the value of the field&lt;/td&gt;&lt;td&gt;substr(2,0,8)&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;lookup(fieldnr,orgvval=newval,...)&lt;/td&gt;&lt;td&gt;replace original value using lookup table&lt;/td&gt;&lt;td&gt;lookup(3,Debit=+,Credit=-)&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;indate(fieldnr,informat,outformat)&lt;/td&gt;&lt;td&gt;inserts an input datefield using a different format&lt;/td&gt;&lt;td&gt;indate(2~MMddYY~dd MMM yyyy)&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;inalign(fieldnr,size,align,fillchar)&lt;/td&gt;&lt;td&gt;inserts an input field&lt;/td&gt;&lt;td&gt;inalign(3~5~left~0)&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;if(fieldnr,comparator,compareval)&lt;/td&gt;&lt;td&gt;only output the next fields if condition is true. Comparator is EQ (is equal to), NE (is not equal to), SW (starts with) or NS (not starts with). Use "{..|..|..}" for multiple compareValues&lt;/td&gt;&lt;td&gt;if(1,eq,3)&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;elseif(fieldnr,comparator,compareval)&lt;/td&gt;&lt;td&gt;only output the next fields if condition is true. Comparator is EQ, NE, SW or NS&lt;/td&gt;&lt;td&gt;elseif(1,ne,4)&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;endif()&lt;/td&gt;&lt;td&gt;endmarker for if&lt;/td&gt;&lt;td&gt;endif()&lt;/td&gt;&lt;/tr&gt;
- &lt;/table&gt;</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="RecordTransformerType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="recordHandler" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="RecordXml2SenderRecordHandler">
-        <xs:annotation>
-          <xs:documentation>Translate a record into XML, then send it using a sender.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="RecordXml2SenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="recordHandler" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="RecordXmlTransformerRecordHandler">
-        <xs:annotation>
-          <xs:documentation>Encapsulates a record in XML, optionally translates it using XSLT or XPath.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="RecordXmlTransformerType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="recordHandler" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-    </xs:choice>
-  </xs:group>
-  <xs:complexType name="RecordTransformerType">
-    <xs:group ref="RecordTransformerCumulativeChildGroup" />
-    <xs:attributeGroup ref="RecordTransformerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.RecordTransformer" use="prohibited" />
-  </xs:complexType>
-  <xs:group name="RecordTransformerDeclaredChildGroup">
-    <xs:sequence>
-      <xs:element name="OutputFields" minOccurs="0" maxOccurs="unbounded" type="OutputFieldsType" />
-    </xs:sequence>
-  </xs:group>
-  <xs:group name="RecordTransformerCumulativeChildGroup">
-    <xs:sequence>
-      <xs:group ref="RecordTransformerDeclaredChildGroup" />
-      <xs:group ref="AbstractRecordHandlerDeclaredChildGroup" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="RecordTransformerDeclaredAttributeGroup">
-    <xs:attribute name="outputFields" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>semicolon separated list of output record field specifications (see table below)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="outputSeparator" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>optional separator to add between the fields</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="RecordTransformerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="RecordTransformerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractRecordHandlerDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:group name="AbstractRecordHandlerDeclaredChildGroup">
-    <xs:sequence>
-      <xs:element name="InputFields" minOccurs="0" maxOccurs="unbounded" type="InputFieldsType" />
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="AbstractRecordHandlerDeclaredAttributeGroup">
-    <xs:attribute name="recordIdentifyingFields" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>comma separated list of numbers of those fields that are compared with the previous record to determine if a prefix must be written. if any of these fields is not equal in both records, the record types are assumed to be different</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the recordhandler</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="inputFields" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Comma separated specification of field lengths. if neither this attribute nor &lt;code&gt;inputSeparator&lt;/code&gt; is specified then the entire record is parsed</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="inputSeparator" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Separator that separates the fields in the input record. If neither this attribute nor &lt;code&gt;inputFields&lt;/code&gt; is specified then the entire record is parsed</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="trim" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, trailing spaces are removed from each field Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
-  <xs:complexType name="RecordXml2SenderType">
-    <xs:group ref="RecordXml2SenderCumulativeChildGroup" />
-    <xs:attributeGroup ref="RecordXmlTransformerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.RecordXml2Sender" use="prohibited" />
-  </xs:complexType>
-  <xs:group name="RecordXml2SenderDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
-    </xs:sequence>
-  </xs:group>
-  <xs:group name="RecordXml2SenderCumulativeChildGroup">
-    <xs:sequence>
-      <xs:group ref="RecordXml2SenderDeclaredChildGroup" />
-      <xs:group ref="AbstractRecordHandlerDeclaredChildGroup" />
-    </xs:sequence>
-  </xs:group>
-  <xs:complexType name="RecordXmlTransformerType">
-    <xs:group ref="AbstractRecordHandlerDeclaredChildGroup" />
-    <xs:attributeGroup ref="RecordXmlTransformerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.RecordXmlTransformer" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="RecordXmlTransformerDeclaredAttributeGroup">
-    <xs:attribute name="outputFields" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>comma separated string with tagnames for the individual input fields (related using there positions). if you leave a tagname empty, the field is not xml-ized</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="rootTag" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Root tag for the generated xml document that will be send to the Sender Default: record</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="styleSheetName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of stylesheet to transform an individual record</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="xpathExpression" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Alternatively: xpath-expression to create stylesheet from</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="namespaceDefs" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. One entry can be without a prefix, that will define the default namespace.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="outputType">
-      <xs:annotation>
-        <xs:documentation>Only valid for &lt;code&gt;xpathExpression&lt;/code&gt; Default: text</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="omitXmlDeclaration" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Force the transformer generated from the xpath-expression to omit the xml declaration Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="endOfRecord" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>String which ends the record and must be ignored</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="RecordXmlTransformerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="RecordXmlTransformerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractRecordHandlerDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:group name="ResultHandlerElementGroup">
-    <xs:choice>
-      <xs:element name="ResultHandler">
-        <xs:complexType>
-          <xs:sequence>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="Param" type="ParamType" />
-              <xs:group ref="SenderElementGroup" />
-            </xs:choice>
-          </xs:sequence>
-          <xs:attribute ref="active" />
-          <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" use="required" />
-          <xs:anyAttribute processContents="skip" />
-        </xs:complexType>
-      </xs:element>
-      <xs:group ref="ResultHandlerElementGroupBase" />
-    </xs:choice>
-  </xs:group>
-  <xs:group name="ResultHandlerElementGroupBase">
-    <xs:choice>
-      <xs:element name="Result2BlobWriterResultHandler">
-        <xs:annotation>
-          <xs:documentation>ResultHandler that writes the transformed record to a BLOB.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="Result2BlobWriterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="Result2ClobWriterResultHandler">
-        <xs:annotation>
-          <xs:documentation>ResultHandler that writes the transformed record to a CLOB.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="Result2ClobWriterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="Result2FilewriterResultHandler">
-        <xs:annotation>
-          <xs:documentation>Resulthandler that writes the transformed record to a file.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="Result2FilewriterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="Result2StringWriterResultHandler">
-        <xs:annotation>
-          <xs:documentation>Resulthandler that writes the transformed record to a String, that is passed to the next Pipe literally.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="Result2StringWriterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="ResultBlock2SenderResultHandler">
-        <xs:annotation>
-          <xs:documentation>ResultHandler that collects a number of records and sends them together to a sender.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="ResultBlock2SenderType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="resultHandler" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-    </xs:choice>
-  </xs:group>
-  <xs:complexType name="Result2BlobWriterType">
-    <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
-    <xs:attributeGroup ref="Result2BlobWriterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.Result2BlobWriter" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="Result2BlobWriterDeclaredAttributeGroup">
-    <xs:attribute name="blobColumn" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Column that contains the BLOB to be updated Default: 1</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="blobsCompressed" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>controls whether blobdata is stored compressed in the database Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="blobCharset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Charset that is used to read and write BLOBs. This assumes the blob contains character data.
- If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="Result2BlobWriterCumulativeAttributeGroup">
-    <xs:attributeGroup ref="Result2BlobWriterDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="Result2LobWriterBaseCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:group name="AbstractResultHandlerDeclaredChildGroup">
-    <xs:sequence>
-      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="AbstractResultHandlerDeclaredAttributeGroup">
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The functional name of the object.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="default" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>if set &lt;code&gt;true&lt;/code&gt;, this resulthandler is the default for all flows that do not have a handler specified Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="blockByRecordType" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>When set &lt;code&gt;true&lt;/code&gt;(default), every group of records, as indicated by RecordHandler.newRecordType is handled as a block. Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="Result2LobWriterBaseDeclaredAttributeGroup">
-    <xs:attribute name="query" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>The SQL query text</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="datasourceName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: jdbc.datasource.default</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jmsRealm" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>loads JNDI (and other) properties from a JmsRealm</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="Result2LobWriterBaseCumulativeAttributeGroup">
-    <xs:attributeGroup ref="Result2LobWriterBaseDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="ResultWriterCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="ResultWriterDeclaredAttributeGroup">
-    <xs:attribute name="onOpenDocument" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>string that is written before any data of results is written Default: &amp;lt;document name=&amp;quot;#name#&amp;quot;&amp;gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="onCloseDocument" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>string that is written after all data of results is written Default: &amp;lt;/document&amp;gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="onOpenBlock" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>string that is written before the start of each logical block, as defined in the flow Default: &amp;lt;#name#&amp;gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="onCloseBlock" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>string that is written after the end of each logical block, as defined in the flow Default: &amp;lt;/#name#&amp;gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="blockNamePattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>string that is replaced by name of block or name of stream in above strings Default: #name#</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="ResultWriterCumulativeAttributeGroup">
-    <xs:attributeGroup ref="ResultWriterDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractResultHandlerDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="Result2ClobWriterType">
-    <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
-    <xs:attributeGroup ref="Result2ClobWriterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.Result2ClobWriter" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="Result2ClobWriterDeclaredAttributeGroup">
-    <xs:attribute name="clobColumn" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Column that contains the CLOB to be updated Default: 1</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="Result2ClobWriterCumulativeAttributeGroup">
-    <xs:attributeGroup ref="Result2ClobWriterDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="Result2LobWriterBaseCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="Result2FilewriterType">
-    <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
-    <xs:attributeGroup ref="Result2FilewriterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.Result2Filewriter" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="Result2FilewriterDeclaredAttributeGroup">
-    <xs:attribute name="outputDirectory" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Directory in which the resultfile must be stored</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="move2dirAfterFinalize" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Directory to which the created file must be moved after finalization (is optional)</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="filenamePattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the file is created using the messageformat. Params: 1=inputfilename, 2=extension of file, 3=current date</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="Result2FilewriterCumulativeAttributeGroup">
-    <xs:attributeGroup ref="Result2FilewriterDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="ResultWriterCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="Result2StringWriterType">
-    <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
-    <xs:attributeGroup ref="ResultWriterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.Result2StringWriter" use="prohibited" />
-  </xs:complexType>
-  <xs:complexType name="ResultBlock2SenderType">
-    <xs:group ref="ResultBlock2SenderCumulativeChildGroup" />
-    <xs:attributeGroup ref="ResultWriterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.ResultBlock2Sender" use="prohibited" />
-  </xs:complexType>
-  <xs:group name="ResultBlock2SenderDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
-    </xs:sequence>
-  </xs:group>
-  <xs:group name="ResultBlock2SenderCumulativeChildGroup">
-    <xs:sequence>
-      <xs:group ref="ResultBlock2SenderDeclaredChildGroup" />
-      <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
-    </xs:sequence>
   </xs:group>
   <xs:group name="PipeElementGroupBase">
     <xs:choice>
@@ -12734,26 +11982,6 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="BatchFileTransformerPipe">
-        <xs:annotation>
-          <xs:documentation>Pipe for transforming a (batch)file with records. Records in the file must be separated
- with new line characters.
- You can use the &amp;lt;child&amp;gt; tag to register RecordHandlers, RecordHandlerManagers, ResultHandlers
- and RecordHandlingFlow elements. This is deprecated, however. Since 4.7 one should use &amp;lt;manager&amp;gt;,
- &amp;lt;recordHandler&amp;gt;, &amp;lt;resultHandler&amp;gt; and &amp;lt;flow&amp;gt;
-
- For files containing only a single type of lines, a simpler configuration without managers and flows
- can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
- Each line will be handled by this recordHandler and resultHandler.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="BatchFileTransformerPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="BlobLineIteratingPipe">
         <xs:annotation>
           <xs:documentation>Pipe that iterates over the lines in a BLOB.</xs:documentation>
@@ -12768,40 +11996,40 @@
       </xs:element>
       <xs:element name="BytesOutputPipe">
         <xs:annotation>
-          <xs:documentation>Output bytes as specified by the input XML.
-
+          <xs:documentation>Output bytes as specified by the input XML. 
+ 
  Actions are taken on every field
  tag found in the input XML. Every field tag should have a type attribute
  that specifies the type of conversion that needs to be done on the string
  specified by the value attribute. A value attribute also needs to be present
  for every field tag. Currently two types of conversion are supported:
-
+ 
  &lt;ul&gt;
    &lt;li&gt;&lt;code&gt;GetBytesFromString&lt;/code&gt;, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName)&lt;/li&gt;
    &lt;li&gt;&lt;code&gt;PackedDecimal&lt;/code&gt;, a conversion from string to Packed-decimal&lt;/li&gt;
  &lt;/ul&gt;
-
+  
  An additional charset attribute is needed for a GetBytesFromString
  conversion. An input XML that would encode the string &amp;quot; TEST 1234 &amp;quot;
  into EBCDIC format would look like:
-
+ 
  &lt;pre&gt;
  &amp;lt;fields&amp;gt;
    &amp;lt;field type=&amp;quot;GetBytesFromString&amp;quot; value=&amp;quot; TEST 1234 &amp;quot; charset=&amp;quot;Cp037&amp;quot;/&amp;gt;
  &amp;lt;/fields&amp;gt;
  &lt;/pre&gt;
-
+ 
  The Packed-decimal conversion has been implemented according to information
  found in the following resources:
-
+ 
  &lt;ul&gt;
    &lt;li&gt;A description as found at &lt;a href="http://www.simotime.com/datapk01.htm"&gt;http://www.simotime.com/datapk01.htm&lt;/a&gt;&lt;/li&gt;
    &lt;li&gt;AS400PackedDecimal.java from jtopen_6_1_source.zip downloaded at &lt;a href="http://jt400.sourceforge.net/"&gt;http://jt400.sourceforge.net/&lt;/a&gt;&lt;/li&gt;
    &lt;li&gt;The WebSphere Studio COBOL for Windows Programming Guide from &lt;a href="http://www-1.ibm.com/support/docview.wss?uid=swg27005151"&gt;http://www-1.ibm.com/support/docview.wss?uid=swg27005151&lt;/a&gt;&lt;/li&gt;
  &lt;/ul&gt;
-
+ 
  Some examples:
-
+ 
  &lt;ul&gt;
    &lt;li&gt;The string +12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5C&lt;/li&gt;
    &lt;li&gt;The string -12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5D&lt;/li&gt;
@@ -12814,7 +12042,7 @@
  is smaller than the number of decimals.
 
  An input XML that would generate a number of Packed-decimals could look like:
-
+ 
  &lt;pre&gt;
  &amp;lt;fields&amp;gt;
    &amp;lt;field type=&amp;quot;PackedDecimal&amp;quot; value=&amp;quot;+12345&amp;quot; size=&amp;quot;16&amp;quot;/&amp;gt;
@@ -12905,7 +12133,7 @@
       </xs:element>
       <xs:element name="CompareStringPipe">
         <xs:annotation>
-          <xs:documentation>Pipe that compares lexicographically two strings.</xs:documentation>
+          <xs:documentation>Pipe that lexicographically compares two strings, that must NOT be empty.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -12942,7 +12170,7 @@
       <xs:element name="CounterSwitchPipe">
         <xs:annotation>
           <xs:documentation>Selects an exitState, based on the number of received messages by this pipe.
-
+ 
  The exitState is the difference (subtraction) between the &lt;code&gt;divisor&lt;/code&gt; and
  the remainder of [number of received messages] modulus &lt;code&gt;divisor&lt;/code&gt;.
  This will always be an integer between 1 and &lt;code&gt;divisor&lt;/code&gt;, inclusive.</xs:documentation>
@@ -13052,10 +12280,10 @@
         <xs:annotation>
           <xs:documentation>Pipe that performs domain transforming on the basis of a database table.
 
- Every string which equals "%![DT{&lt;code&gt;label&lt;/code&gt;,&lt;code&gt;valueIn&lt;/code&gt;,&lt;code&gt;type&lt;/code&gt;}]" will be replaced by &lt;code&gt;valueOut&lt;/code&gt;.
-
+ Every string which equals "%![DT{&lt;code&gt;label&lt;/code&gt;,&lt;code&gt;valueIn&lt;/code&gt;,&lt;code&gt;type&lt;/code&gt;}]" will be replaced by &lt;code&gt;valueOut&lt;/code&gt;. 
+ 
  The field &lt;code&gt;type&lt;/code&gt;, which is optional, indicates the format of &lt;code&gt;valueIn&lt;/code&gt;. Currently the following types are supported:
-
+ 
  &lt;ul&gt;
    &lt;li&gt;&lt;code&gt;string&lt;/code&gt; (default): the methode setString() is used&lt;/li&gt;
    &lt;li&gt;&lt;code&gt;number&lt;/code&gt;: the method setDouble() is used &lt;/li&gt;
@@ -13610,6 +12838,18 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="JwtPipe">
+        <xs:annotation>
+          <xs:documentation>Creates a JWT with a shared secret using the HmacSHA256 algorithm.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="JwtPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="LabelFormatPipe">
         <xs:annotation>
           <xs:documentation>Transforms between ascii and an XML representation.
@@ -13920,7 +13160,8 @@
       </xs:element>
       <xs:element name="ReplacerPipe">
         <xs:annotation>
-          <xs:documentation>Replaces all occurrences of one string with another.</xs:documentation>
+          <xs:documentation>Replaces all occurrences of one string with another.
+ Optionally strips or replaces XML non-printable characters.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -14120,22 +13361,6 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
-      <xs:element name="StreamTransformerPipe">
-        <xs:annotation>
-          <xs:documentation>Pipe for transforming a stream with records. Records in the stream must be separated with new line characters.
-
- For file containing only a single type of lines, a simpler configuration without managers and flows
- can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
- Each line will be handled by this recordHandler and resultHandler.</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="StreamTransformerPipeType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
       <xs:element name="StringIteratorPipe">
         <xs:annotation>
           <xs:documentation>IteratingPipe that has Strings as items.</xs:documentation>
@@ -14162,7 +13387,7 @@
       </xs:element>
       <xs:element name="TextSplitterPipe">
         <xs:annotation>
-          <xs:documentation>Breaks up the text input in blocks of a maximum length.
+          <xs:documentation>Breaks up the text input in blocks of a maximum length. 
  By default the maximum block length is 160 characters, to enable them to be send as SMS messages.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -14490,82 +13715,6 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="StreamingPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="StreamingPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="BatchFileTransformerPipeType">
-    <xs:group ref="StreamTransformerPipeCumulativeChildGroup" />
-    <xs:attributeGroup ref="BatchFileTransformerPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.BatchFileTransformerPipe" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="BatchFileTransformerPipeDeclaredAttributeGroup">
-    <xs:attribute name="move2dirAfterTransform" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Directory in which the transformed file(s) is stored</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="move2dirAfterError" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Directory to which the inputfile is moved in case an error occurs</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="numberOfBackups" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept. Default: 5</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="overwrite" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the destination file will be deleted if it already exists Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="delete" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the file processed will deleted after being processed, and not stored Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="BatchFileTransformerPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="BatchFileTransformerPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="StreamTransformerPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:complexType name="StreamTransformerPipeType">
-    <xs:group ref="StreamTransformerPipeCumulativeChildGroup" />
-    <xs:attributeGroup ref="StreamTransformerPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.StreamTransformerPipe" use="prohibited" />
-  </xs:complexType>
-  <xs:group name="StreamTransformerPipeDeclaredChildGroup">
-    <xs:sequence>
-      <xs:group ref="ManagerElementGroup" minOccurs="1" maxOccurs="unbounded" />
-      <xs:group ref="RecordHandlerElementGroup" minOccurs="0" maxOccurs="unbounded" />
-      <xs:group ref="ResultHandlerElementGroup" minOccurs="0" maxOccurs="unbounded" />
-      <xs:group ref="ReaderFactoryElementGroup" minOccurs="0" maxOccurs="1" />
-    </xs:sequence>
-  </xs:group>
-  <xs:group name="StreamTransformerPipeCumulativeChildGroup">
-    <xs:sequence>
-      <xs:group ref="StreamTransformerPipeDeclaredChildGroup" />
-      <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    </xs:sequence>
-  </xs:group>
-  <xs:attributeGroup name="StreamTransformerPipeDeclaredAttributeGroup">
-    <xs:attribute name="storeOriginalBlock" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; the original block is stored under the session key &lt;code&gt;originalBlock&lt;/code&gt;. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="closeInputstreamOnExit" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;false&lt;/code&gt;, the inputstream is not closed after it has been used. Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="charset" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Characterset used for reading file or inputstream" Default: UTF-8</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="StreamTransformerPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="StreamTransformerPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="BlobLineIteratingPipeType">
@@ -15197,7 +14346,7 @@
   <xs:attributeGroup name="CrlPipeDeclaredAttributeGroup">
     <xs:attribute name="issuerSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>name of the sessionkey that holds a stream to the certificate of the issuer who signed the crl. the steam is closed after reading</xs:documentation>
+        <xs:documentation>Name of the sessionKey that holds the certificate of the issuer who signed the CRL.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15687,7 +14836,8 @@
     </xs:attribute>
     <xs:attribute name="addXmlRootElement" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>When true, and direction is json2xml, it wraps a root element around the converted message Default: true</xs:documentation>
+        <xs:documentation>When direction is JSON2XML, it wraps a root element around the converted message. 
+ When direction is XML2JSON, it includes the name of the root element as a key in the converted message. Default: TRUE when JSON2XML and FALSE when XML2JSON</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="prettyPrint" type="frankBoolean">
@@ -15880,6 +15030,32 @@
   <xs:attributeGroup name="XsltPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="XsltPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="StreamingPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="JwtPipeType">
+    <xs:group ref="AbstractPipeDeclaredChildGroup" />
+    <xs:attributeGroup ref="JwtPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.JwtPipe" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="JwtPipeDeclaredAttributeGroup">
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Alias for the SharedSecret to be used when signing the JWT (using the HmacSHA256 algorithm)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sharedSecret" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Shared secret to be used when signing the JWT (using the HmacSHA256 algorithm)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="expirationTime" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>JWT expirationTime in seconds, 0 to disable Default: 600</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="JwtPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="JwtPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="LabelFormatType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -16129,7 +15305,7 @@
     </xs:attribute>
     <xs:attribute name="createFolder" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the folder to move or copy to is created if it does not exist Default: false</xs:documentation>
+        <xs:documentation>If set &lt;code&gt;true&lt;/code&gt;, the folder to create, write, move or copy the file to is created if it does not exist Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="overwrite" type="frankBoolean">
@@ -16592,22 +15768,37 @@
   <xs:attributeGroup name="ReplacerPipeDeclaredAttributeGroup">
     <xs:attribute name="find" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Sets the string that is searched for.</xs:documentation>
+        <xs:documentation>Sets the string that is searched for. Newlines can be represented
+ by the #setLineSeparatorSymbol(String).</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="replace" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Sets the string that will replace each of the occurrences of the find-string.</xs:documentation>
+        <xs:documentation>Sets the string that will replace each of the occurrences of the find-string. Newlines can be represented
+ 	 * by the #setLineSeparatorSymbol(String).</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="lineSeparatorSymbol" type="xs:string">
       <xs:annotation>
-        <xs:documentation>sets the string the representation in find and replace of the line separator</xs:documentation>
+        <xs:documentation>sets the string that will represent the line-separator in the #setFind(String) and #setReplace(String) strings.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="replaceNonXmlChars" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Replace all non XML chars (not in the &lt;a href="http://www.w3.org/TR/2006/REC-xml-20060816/#NT-Char"&gt;character range as specified by the XML specification&lt;/a&gt;) with replaceNonValidXmlCharacters Default: false</xs:documentation>
+        <xs:documentation>Replace all characters that are non-printable according to the XML specification with
+ the value specified in #setReplaceNonXmlChar(String).
+ &lt;p&gt;
+     &lt;b&gt;NB:&lt;/b&gt; This will only replace or remove characters considered non-printable. This
+     will not check if a given character is valid in the particular way it is used. Thus it will
+     not remove or replace, for instance, a single {@code '&amp;'} character.
+ &lt;/p&gt;
+ &lt;p&gt;
+ See also:
+ 	&lt;ul&gt;
+ 	    &lt;li&gt;XmlEncodingUtils replaceNonValidXmlCharacters&lt;/li&gt;
+ 	    &lt;li&gt;&lt;a href="https://www.w3.org/TR/xml/#charsets"&gt;Character ranges specified in the XML Specification&lt;/a&gt;&lt;/li&gt;
+ 	&lt;/ul&gt;
+ &lt;/p&gt; Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="replaceNonXmlChar" type="xs:string">
@@ -17453,7 +16644,7 @@
         <xs:annotation>
           <xs:documentation>1. This method first stores all database jobs that can are found in the Quartz Scheduler in a Map.
  2. It then loops through all records found in the database.
- 3. If the job is found, remove it from the Map and compares it with the already existing scheduled job.
+ 3. If the job is found, remove it from the Map and compares it with the already existing scheduled job. 
     Only if they differ, it overwrites the current job.
     If it is not present it add the job to the scheduler.
  4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
@@ -17659,7 +16850,7 @@
     </xs:attribute>
     <xs:attribute name="message" type="xs:string">
       <xs:annotation>
-        <xs:documentation>message to be send into the pipeline</xs:documentation>
+        <xs:documentation>message to be sent into the pipeline</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -18107,6 +17298,26 @@
       <xs:enumeration value="NON_PERSISTENT" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="MessageClassAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AUTO">
+        <xs:annotation>
+          <xs:documentation>Automatically determine the type of the outgoing javax.jms.Message based
+ on the value of Message#isBinary().</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="TEXT">
+        <xs:annotation>
+          <xs:documentation>Create the outgoing message as TextMessage.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="BYTES">
+        <xs:annotation>
+          <xs:documentation>Create the outgoing message as BytesMessage.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="DestinationTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="QUEUE" />
@@ -18295,7 +17506,7 @@
       </xs:enumeration>
       <xs:enumeration value="write">
         <xs:annotation>
-          <xs:documentation>write contents, specified by parameter &lt;code&gt;contents&lt;/code&gt; or input message, to a file, specified by attribute &lt;code&gt;filename&lt;/code&gt;, parameter &lt;code&gt;filename&lt;/code&gt; or input message.
+          <xs:documentation>Creates file and writes contents, specified by parameter &lt;code&gt;contents&lt;/code&gt; or input message, to a file, specified by attribute &lt;code&gt;filename&lt;/code&gt;, parameter &lt;code&gt;filename&lt;/code&gt; or input message.
   At least one of the parameters must be specified. The missing parameter defaults to the input message. For streaming operation, the parameter &lt;code&gt;filename&lt;/code&gt; must be specified.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
@@ -18479,13 +17690,6 @@
       <xs:enumeration value="DELETE" />
       <xs:enumeration value="HEAD" />
       <xs:enumeration value="REPORT" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="JavaScriptEnginesAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="J2V8" />
-      <xs:enumeration value="NASHORN" />
-      <xs:enumeration value="RHINO" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="OperationAttributeValuesType">
@@ -19166,6 +18370,17 @@
     <xs:annotation>
       <xs:documentation>sessionKey to store the SOAP header of the incoming message Default: soapHeader</xs:documentation>
     </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="messageClass">
+    <xs:annotation>
+      <xs:documentation>The JMS javax.jms.Message class for the outgoing message.
+ Currently supported are MessageClass#TEXT for JMS TextMessage,
+ MessageClass#BYTES for JMS BytesMessage, or AUTO for auto-determination
+ based on whether the input Message is binary or character.</xs:documentation>
+    </xs:annotation>
+    <xs:simpleType>
+      <xs:union memberTypes="MessageClassAttributeValuesType variableRef" />
+    </xs:simpleType>
   </xs:attribute>
   <xs:attribute name="destinationType">
     <xs:annotation>
@@ -19923,7 +19138,7 @@
   </xs:attribute>
   <xs:attribute name="elementToMove" type="xs:string">
     <xs:annotation>
-      <xs:documentation>If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + &lt;code&gt;elementToMoveSessionKey&lt;/code&gt; + }</xs:documentation>
+      <xs:documentation>If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionKey: + &lt;code&gt;elementToMoveSessionKey&lt;/code&gt; + }</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="elementToMoveSessionKey" type="xs:string">
