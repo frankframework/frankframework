@@ -26,15 +26,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
 import com.aspose.email.Attachment;
 import com.aspose.email.AttachmentCollection;
+import com.aspose.email.EmlLoadOptions;
+import com.aspose.email.LoadOptions;
 import com.aspose.email.MailAddress;
 import com.aspose.email.MailMessage;
 import com.aspose.email.MhtFormatOptions;
 import com.aspose.email.MhtSaveOptions;
+import com.aspose.email.MsgLoadOptions;
 import com.aspose.email.SaveOptions;
 import com.aspose.email.TnefLoadOptions;
 import com.aspose.words.Document;
@@ -45,33 +47,32 @@ import com.aspose.words.NodeType;
 import com.aspose.words.SaveFormat;
 import com.aspose.words.Shape;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
 
+@Log4j2
 class MailConvertor extends AbstractConvertor {
-
-	private static final Logger LOGGER = LogUtil.getLogger(MailConvertor.class);
 
 	private static final float MAX_IMAGE_WIDTH_IN_POINTS = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - 2 * 1.1f);
 	private static final float MAX_IMAGE_HEIGHT_IN_POINTS = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - 2 * 1.1f);
 	private static final String MAIL_HEADER_DATEFORMAT = "dd-MM-yyyy HH:mm:ss";
-	private CisConversionService cisConversionService;
+	private final CisConversionService cisConversionService;
 
 	// contains mapping from MediaType to the LoadOption for the Aspose Word conversion.
-	private static final Map<MediaType, com.aspose.email.LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
+	private static final Map<MediaType, Class<? extends LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
 	static {
-		final Map<MediaType, com.aspose.email.LoadOptions> map = new HashMap<>();
-		map.put(new MediaType("message", "rfc822"), null);
-		map.put(new MediaType("message", "rfc822.concept"), null);
-		map.put(new MediaType("message", "rfc822.ddcim"), null);
-		map.put(new MediaType("application", "vnd.ms-outlook"), null);
-		map.put(new MediaType("application", "vnd.ms-tnef"), new TnefLoadOptions());
+		final Map<MediaType, Class<? extends LoadOptions>> map = new HashMap<>();
+		map.put(new MediaType("message", "rfc822"), EmlLoadOptions.class);
+		map.put(new MediaType("message", "rfc822.concept"), EmlLoadOptions.class);
+		map.put(new MediaType("message", "rfc822.ddcim"), EmlLoadOptions.class);
+		map.put(new MediaType("application", "vnd.ms-outlook"), MsgLoadOptions.class);
+		map.put(new MediaType("application", "vnd.ms-tnef"), TnefLoadOptions.class);
 
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
@@ -86,27 +87,28 @@ class MailConvertor extends AbstractConvertor {
 	}
 
 	protected MailConvertor(CisConversionService cisConversionService, CisConfiguration configuration) {
-		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[0]));
 		this.cisConversionService = cisConversionService;
 	}
 
 	@Override
 	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
-		MailMessage eml = null;
+		MailMessage eml;
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			eml = MailMessage.load(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
+			eml = MailMessage.load(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType).newInstance());
 		}
 
 		AttachmentCollection attachments = eml.getAttachments();
 
-		LOGGER.debug("cc : " + toString(eml.getCC()));
-		LOGGER.debug("bcc : " + toString(eml.getBcc()));
-		LOGGER.debug("sender : " + toString(eml.getSender()));
-		LOGGER.debug("from : " + toString(eml.getFrom()));
-		LOGGER.debug("to : " + toString(eml.getTo()));
-		LOGGER.debug("reversePath : " + toString(eml.getReversePath()));
-		LOGGER.debug("subject : " + eml.getSubject());
+		if (log.isDebugEnabled()) {
+			log.debug("cc : " + toString(eml.getCC()));
+			log.debug("bcc : " + toString(eml.getBcc()));
+			log.debug("sender : " + toString(eml.getSender()));
+			log.debug("from : " + toString(eml.getFrom()));
+			log.debug("to : " + toString(eml.getTo()));
+			log.debug("subject : " + eml.getSubject());
+		}
 
 		// Overrules the default documentname.
 		result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
@@ -134,7 +136,7 @@ class MailConvertor extends AbstractConvertor {
 
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 			Long endTime = new Date().getTime();
-			LOGGER.info("Conversion completed in " + (endTime - startTime) + "ms");
+			log.info("Conversion completed in " + (endTime - startTime) + "ms");
 		} finally {
 			Files.delete(tempMHtmlFile.toPath());
 		}
@@ -195,7 +197,7 @@ class MailConvertor extends AbstractConvertor {
 	 * Converts an email attachment to a pdf via the cisConversionService.
 	 */
 	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption) throws IOException {
-		LOGGER.debug("Convert attachment... (" + attachment.getName() + ")");
+		log.debug("Convert attachment... (" + attachment.getName() + ")");
 
 		// Get the name of the file (segment) (this is the last part.
 		String[] segments = attachment.getName().split("/");

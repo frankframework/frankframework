@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.springframework.http.MediaType;
 
 import com.aspose.pdf.Document;
@@ -29,6 +28,7 @@ import com.aspose.pdf.SaveFormat;
 import com.aspose.pdf.XpsLoadOptions;
 import com.aspose.pdf.exceptions.InvalidPasswordException;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.stream.Message;
 
@@ -51,7 +51,7 @@ public class PdfConvertor extends AbstractConvertor {
 	}
 
 	protected PdfConvertor(CisConfiguration configuration) {
-		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[0]));
 	}
 
 	@Override

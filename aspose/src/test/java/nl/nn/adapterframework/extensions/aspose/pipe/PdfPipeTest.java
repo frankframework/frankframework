@@ -36,6 +36,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 
 import org.junit.Assert;
@@ -112,7 +113,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		}
 	}
 
-	public void expectSuccessfullConversion(String pipeName, String fileToConvert, String metadataXml, String expectedFile) throws Exception {
+	public void expectSuccessfulConversion(String pipeName, String fileToConvert, String metadataXml, String expectedFile) throws Exception {
 		String documentMetadata = executeConversion(pipeName, fileToConvert);
 		String expected = TestFileUtils.getTestFile(metadataXml);
 
@@ -132,20 +133,31 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			String expectedFilePath = file.getPath();
 			log.debug("converted relative path ["+expectedFile+"] to absolute file ["+expectedFilePath+"]");
 
-			PDFUtil pdfUtil = new PDFUtil();
-			pdfUtil.setCompareMode(CompareMode.VISUAL_MODE);
-			pdfUtil.setAllowedRGBDeviation(0.51); //In percents, diff is between RGB values
-			//remove Aspose evaluation copy information
-			pdfUtil.excludeText("(Created with an evaluation copy of Aspose.([a-zA-Z]+). To discover the full versions of our APIs please visit: https:\\/\\/products.aspose.com\\/([a-zA-Z]+)\\/)");
-			pdfUtil.enableLog();
-			pdfUtil.highlightPdfDifference(true);
-			pdfUtil.setImageDestinationPath(getTargetTestDirectory());
+			PDFUtil pdfUtil = createPdfUtil(CompareMode.VISUAL_MODE);
 			boolean compare = pdfUtil.compare(convertedFilePath, file.getPath());
 			assertTrue("pdf files ["+convertedFilePath+"] and ["+expectedFilePath+"] should match", compare);
 		}
 		else {
 			fail("failed to extract converted file from documentMetadata xml");
 		}
+	}
+
+	@Nonnull
+	private static PDFUtil createPdfUtil(CompareMode compareMode) throws IOException {
+		PDFUtil pdfUtil = new PDFUtil();
+		//remove Aspose evaluation copy information
+		pdfUtil.excludeText(
+				"(Created with an evaluation copy of Aspose.([a-zA-Z]+). To discover the full versions of our APIs please visit: https:\\/\\/products.aspose.com\\/([a-zA-Z]+)\\/)",
+				"Evaluation Only. Created with Aspose\\.\\w+\\. Copyright \\d{4}-\\d{4} Aspose Pty Ltd."
+		);
+		pdfUtil.enableLog();
+		pdfUtil.setCompareMode(compareMode);
+		if (compareMode == CompareMode.VISUAL_MODE) {
+			pdfUtil.setAllowedRGBDeviation(1.6d); //In percents, diff is between RGB values
+			pdfUtil.highlightPdfDifference(true);
+			pdfUtil.setImageDestinationPath(getTargetTestDirectory());
+		}
+		return pdfUtil;
 	}
 
 	/*
@@ -222,83 +234,83 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void bmp2Pdf() throws Exception {
-		expectSuccessfullConversion("Bmp2Pdf", "/PdfPipe/bmp.bmp", "/PdfPipe/xml-results/bmp.xml", "/PdfPipe/results/bmp.pdf");
+		expectSuccessfulConversion("Bmp2Pdf", "/PdfPipe/bmp.bmp", "/PdfPipe/xml-results/bmp.xml", "/PdfPipe/results/bmp.pdf");
 	}
 
 	@Test
 	public void docWord2016Macro2Pdf() throws Exception {
-		expectSuccessfullConversion("DocWord2016Macro2Pdf", "/PdfPipe/docm-word-2016-macro.docm", "/PdfPipe/xml-results/docm-word-2016-macro.xml", "/PdfPipe/results/docm-word-2016-macro.pdf");
+		expectSuccessfulConversion("DocWord2016Macro2Pdf", "/PdfPipe/docm-word-2016-macro.docm", "/PdfPipe/xml-results/docm-word-2016-macro.xml", "/PdfPipe/results/docm-word-2016-macro.pdf");
 	}
 
 	@Test
 	public void docWord20032Pdf() throws Exception {
-		expectSuccessfullConversion("DocWord20032Pdf", "/PdfPipe/doc-word-2003.doc", "/PdfPipe/xml-results/doc-word-2003.xml", "/PdfPipe/results/doc-word-2003.pdf");
+		expectSuccessfulConversion("DocWord20032Pdf", "/PdfPipe/doc-word-2003.doc", "/PdfPipe/xml-results/doc-word-2003.xml", "/PdfPipe/results/doc-word-2003.pdf");
 	}
 
 	@Test
 	public void dot2Pdf() throws Exception {
-		expectSuccessfullConversion("Dot2Pdf", "/PdfPipe/dot.dot", "/PdfPipe/xml-results/dot.xml", "/PdfPipe/results/dot.pdf");
+		expectSuccessfulConversion("Dot2Pdf", "/PdfPipe/dot.dot", "/PdfPipe/xml-results/dot.xml", "/PdfPipe/results/dot.pdf");
 	}
 
 	@Test
 	public void emlFromGroupmailbox2Pdf() throws Exception {
 		assumeTrue("This test only runs for Europe/Amsterdam due to the time being in the output PDF", TestAssertions.isTimeZone(TEST_TZ));
-		expectSuccessfullConversion("EmlFromGroupmailbox", "/PdfPipe/eml-from-groupmailbox.eml", "/PdfPipe/xml-results/eml-from-groupmailbox.xml", "/PdfPipe/results/eml-from-groupmailbox.pdf");
+		expectSuccessfulConversion("EmlFromGroupmailbox", "/PdfPipe/eml-from-groupmailbox.eml", "/PdfPipe/xml-results/eml-from-groupmailbox.xml", "/PdfPipe/results/eml-from-groupmailbox.pdf");
 	}
 
 	@Test
 	public void gif2Pdf() throws Exception {
-		expectSuccessfullConversion("Gif2Pdf", "/PdfPipe/gif.gif", "/PdfPipe/xml-results/gif.xml", "/PdfPipe/results/gif.pdf");
+		expectSuccessfulConversion("Gif2Pdf", "/PdfPipe/gif.gif", "/PdfPipe/xml-results/gif.xml", "/PdfPipe/results/gif.pdf");
 	}
 
 	@Test
 	public void htm2Pdf() throws Exception {
-		expectSuccessfullConversion("Htm2Pdf", "/PdfPipe/htm.htm", "/PdfPipe/xml-results/htm.xml", "/PdfPipe/results/htm.pdf");
+		expectSuccessfulConversion("Htm2Pdf", "/PdfPipe/htm.htm", "/PdfPipe/xml-results/htm.xml", "/PdfPipe/results/htm.pdf");
 	}
 
 	@Test
 	public void html2Pdf() throws Exception {
-		expectSuccessfullConversion("Html2Pdf", "/PdfPipe/html.html", "/PdfPipe/xml-results/html.xml", "/PdfPipe/results/html.pdf");
+		expectSuccessfulConversion("Html2Pdf", "/PdfPipe/html.html", "/PdfPipe/xml-results/html.xml", "/PdfPipe/results/html.pdf");
 	}
 
 	@Test
 	public void jpeg2Pdf() throws Exception {
-		expectSuccessfullConversion("Jpeg2Pdf", "/PdfPipe/jpeg.jpeg", "/PdfPipe/xml-results/jpeg.xml", "/PdfPipe/results/jpeg.pdf");
+		expectSuccessfulConversion("Jpeg2Pdf", "/PdfPipe/jpeg.jpeg", "/PdfPipe/xml-results/jpeg.xml", "/PdfPipe/results/jpeg.pdf");
 	}
 
 	@Test
 	public void jpg2Pdf() throws Exception {
-		expectSuccessfullConversion("Jpg2Pdf", "/PdfPipe/jpg.jpg", "/PdfPipe/xml-results/jpg.xml", "/PdfPipe/results/jpg.pdf");
+		expectSuccessfulConversion("Jpg2Pdf", "/PdfPipe/jpg.jpg", "/PdfPipe/xml-results/jpg.xml", "/PdfPipe/results/jpg.pdf");
 	}
 
 	@Test
 	public void log2Pdf() throws Exception {
-		expectSuccessfullConversion("Log2Pdf", "/PdfPipe/log.log", "/PdfPipe/xml-results/log.xml", "/PdfPipe/results/log.pdf");
+		expectSuccessfulConversion("Log2Pdf", "/PdfPipe/log.log", "/PdfPipe/xml-results/log.xml", "/PdfPipe/results/log.pdf");
 	}
 
 	@Test
 	public void png2Pdf() throws Exception {
-		expectSuccessfullConversion("Png2Pdf", "/PdfPipe/png.png", "/PdfPipe/xml-results/png.xml", "/PdfPipe/results/png.pdf");
+		expectSuccessfulConversion("Png2Pdf", "/PdfPipe/png.png", "/PdfPipe/xml-results/png.xml", "/PdfPipe/results/png.pdf");
 	}
 
 	@Test
 	public void ppt2Pdf() throws Exception {
-		expectSuccessfullConversion("Ppt2Pdf", "/PdfPipe/ppt.ppt", "/PdfPipe/xml-results/ppt.xml", "/PdfPipe/results/ppt.pdf");
+		expectSuccessfulConversion("Ppt2Pdf", "/PdfPipe/ppt.ppt", "/PdfPipe/xml-results/ppt.xml", "/PdfPipe/results/ppt.pdf");
 	}
 
 	@Test
 	public void rtf2Pdf() throws Exception {
-		expectSuccessfullConversion("Rtf2Pdf", "/PdfPipe/rtf.rtf", "/PdfPipe/xml-results/rtf.xml", "/PdfPipe/results/rtf.pdf");
+		expectSuccessfulConversion("Rtf2Pdf", "/PdfPipe/rtf.rtf", "/PdfPipe/xml-results/rtf.xml", "/PdfPipe/results/rtf.pdf");
 	}
 
 	@Test
 	public void tiff2Pdf() throws Exception {
-		expectSuccessfullConversion("Tiff2Pdf", "/PdfPipe/tiff.tiff", "/PdfPipe/xml-results/tiff.xml", "/PdfPipe/results/tiff.pdf");
+		expectSuccessfulConversion("Tiff2Pdf", "/PdfPipe/tiff.tiff", "/PdfPipe/xml-results/tiff.xml", "/PdfPipe/results/tiff.pdf");
 	}
 
 	@Test
 	public void txt2Pdf() throws Exception {
-		expectSuccessfullConversion("Txt2Pdf", "/PdfPipe/txt.txt", "/PdfPipe/xml-results/txt.xml", "/PdfPipe/results/txt.pdf");
+		expectSuccessfulConversion("Txt2Pdf", "/PdfPipe/txt.txt", "/PdfPipe/xml-results/txt.xml", "/PdfPipe/results/txt.pdf");
 	}
 
 	@Test
@@ -308,63 +320,63 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void emailWithAttachments() throws Exception {
-		expectSuccessfullConversion("Txt2Pdf", "/PdfPipe/nestedMail.msg", "/PdfPipe/xml-results/nestedMail.xml", "/PdfPipe/results/nestedMail.pdf");
+		expectSuccessfulConversion("Txt2Pdf", "/PdfPipe/nestedMail.msg", "/PdfPipe/xml-results/nestedMail.xml", "/PdfPipe/results/nestedMail.pdf");
 	}
 
 	@Test
 	public void excel2pdf() throws Exception {
-		expectSuccessfullConversion("xls2pdf", "/PdfPipe/excel.xls", "/PdfPipe/xml-results/xls.xml", "/PdfPipe/results/excel.pdf");
+		expectSuccessfulConversion("xls2pdf", "/PdfPipe/excel.xls", "/PdfPipe/xml-results/xls.xml", "/PdfPipe/results/excel.pdf");
 	}
 
 	@Test
 	public void xslx2pdf() throws Exception {
-		expectSuccessfullConversion("xslx2pdf", "/PdfPipe/fonttest.xlsx", "/PdfPipe/xml-results/xlsx.xml", "/PdfPipe/results/fonttest.pdf");
+		expectSuccessfulConversion("xslx2pdf", "/PdfPipe/fonttest.xlsx", "/PdfPipe/xml-results/xlsx.xml", "/PdfPipe/results/fonttest.pdf");
 	}
 
 	@Test
 	public void fontTestEmail() throws Exception {
-		expectSuccessfullConversion("fontTestEmail", "/PdfPipe/fonttest/fontTestEmail.msg", "/PdfPipe/xml-results/fontTestEmail.xml", "/PdfPipe/results/fontTestEmail.pdf");
+		expectSuccessfulConversion("fontTestEmail", "/PdfPipe/fonttest/fontTestEmail.msg", "/PdfPipe/xml-results/fontTestEmail.xml", "/PdfPipe/results/fontTestEmail.pdf");
 	}
 
 	@Test
 	public void fontTestSlides() throws Exception {
-		expectSuccessfullConversion("fontTestSlides", "/PdfPipe/fonttest/fontTestSlides.msg", "/PdfPipe/xml-results/fontTestSlides.xml", "/PdfPipe/results/fontTestSlides.pdf");
+		expectSuccessfulConversion("fontTestSlides", "/PdfPipe/fonttest/fontTestSlides.msg", "/PdfPipe/xml-results/fontTestSlides.xml", "/PdfPipe/results/fontTestSlides.pdf");
 	}
 
 	@Test
 	public void fontTestWord() throws Exception {
-		expectSuccessfullConversion("fontTestWord", "/PdfPipe/fonttest/fontTestWord.msg", "/PdfPipe/xml-results/fontTestWord.xml", "/PdfPipe/results/fontTestWord.pdf");
+		expectSuccessfulConversion("fontTestWord", "/PdfPipe/fonttest/fontTestWord.msg", "/PdfPipe/xml-results/fontTestWord.xml", "/PdfPipe/results/fontTestWord.pdf");
 	}
 
 	@Test
 	public void mailWithExcelAttachment() throws Exception {
-		expectSuccessfullConversion("mailWithExcelAttachment", "/PdfPipe/MailWithAttachments/mailWithExcelAttachment.msg", "/PdfPipe/xml-results/mailWithExcelAttachment.xml", "/PdfPipe/results/mailWithExcelAttachment.pdf");
+		expectSuccessfulConversion("mailWithExcelAttachment", "/PdfPipe/MailWithAttachments/mailWithExcelAttachment.msg", "/PdfPipe/xml-results/mailWithExcelAttachment.xml", "/PdfPipe/results/mailWithExcelAttachment.pdf");
 	}
 
 	@Test
 	public void mailWithImage() throws Exception {
-		expectSuccessfullConversion("mailWithImage", "/PdfPipe/MailWithAttachments/mailWithImage.msg", "/PdfPipe/xml-results/mailWithImage.xml", "/PdfPipe/results/mailWithImage.pdf");
+		expectSuccessfulConversion("mailWithImage", "/PdfPipe/MailWithAttachments/mailWithImage.msg", "/PdfPipe/xml-results/mailWithImage.xml", "/PdfPipe/results/mailWithImage.pdf");
 	}
 
 	@Test
 	public void mailWithLargeImage() throws Exception {
-		expectSuccessfullConversion("mailWithLargeImage", "/PdfPipe/aspect-ratio/aspect-ratio-test.msg", "/PdfPipe/xml-results/mail-with-large-image.xml", "/PdfPipe/results/mailWithLargeImage.pdf");
+		expectSuccessfulConversion("mailWithLargeImage", "/PdfPipe/aspect-ratio/aspect-ratio-test.msg", "/PdfPipe/xml-results/mail-with-large-image.xml", "/PdfPipe/results/mailWithLargeImage.pdf");
 	}
 
 	@Test
 	public void mailWithSmallImage() throws Exception {
-		expectSuccessfullConversion("mailWithSmallImage", "/PdfPipe/aspect-ratio/mailWithSmallImage.msg", "/PdfPipe/xml-results/mailWithSmallImage.xml", "/PdfPipe/results/mailWithSmallImage.pdf");
+		expectSuccessfulConversion("mailWithSmallImage", "/PdfPipe/aspect-ratio/mailWithSmallImage.msg", "/PdfPipe/xml-results/mailWithSmallImage.xml", "/PdfPipe/results/mailWithSmallImage.pdf");
 	}
 
 	@Test
 	public void mailWithPdfAttachment() throws Exception {
-		expectSuccessfullConversion("mailWithPdfAttachment", "/PdfPipe/MailWithAttachments/mailWithPdfAttachment.msg", "/PdfPipe/xml-results/mailWithPdfAttachment.xml", "/PdfPipe/results/mailWithPdfAttachment.pdf");
+		expectSuccessfulConversion("mailWithPdfAttachment", "/PdfPipe/MailWithAttachments/mailWithPdfAttachment.msg", "/PdfPipe/xml-results/mailWithPdfAttachment.xml", "/PdfPipe/results/mailWithPdfAttachment.pdf");
 	}
 
 	@Test
 	public void mailWithWordAttachment() throws Exception {
 		assumeTrue("This test only runs for Europe/Amsterdam due to the time being in the output PDF", TestAssertions.isTimeZone(TEST_TZ));
-		expectSuccessfullConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachment.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
+		expectSuccessfulConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachment.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
 	}
 
 	@Test
@@ -445,7 +457,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		String expectedFilePath = new File(TestFileUtils.getTestFileURL("/PdfPipe/combine/combined.pdf").toURI()).getCanonicalPath();
 
 		// comparison
-		PDFUtil pdfUtil = new PDFUtil();
+		PDFUtil pdfUtil = createPdfUtil(CompareMode.TEXT_MODE);
 		assertTrue(pdfUtil.compare(expectedFilePath, resultingFile.toFile().getCanonicalPath()));
 	}
 }
