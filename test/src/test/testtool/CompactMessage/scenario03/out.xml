@@ -1,0 +1,23 @@
+<AuditLog_Action>
+  <Header>
+    <MessageId>messageId1</MessageId>
+    <ConversationId>conversationId2</ConversationId>
+    <CPAId>cpaId9</CPAId>
+    <BusinessDomain>businessDomain3</BusinessDomain>
+    <ServiceName>serviceName4</ServiceName>
+    <ServiceContext>serviceContext5</ServiceContext>
+    <ServiceContextVersion>6</ServiceContextVersion>
+    <OperationName>operationName7</OperationName>
+    <OperationVersion>8</OperationVersion>
+    <ApplicationName>applicationName9</ApplicationName>
+    <ApplicationFunction>applicationFunction0</ApplicationFunction>
+    <Timestamp>2001-12-17T09:30:11</Timestamp>
+    <SenderId>senderId2</SenderId>
+  </Header>
+  <Message>
+    <Text><![CDATA[{sessionKey:ref_Text}]]></Text>
+    <Type>received</Type>
+    <FunctionCallId>functionCallId3</FunctionCallId>
+    <Label>label4</Label>
+  </Message>
+</AuditLog_Action>

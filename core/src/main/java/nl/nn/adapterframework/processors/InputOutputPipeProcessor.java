@@ -16,15 +16,12 @@
 package nl.nn.adapterframework.processors;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.stream.Collectors;
-
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.INamedObject;
@@ -135,29 +132,28 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 					log.debug("Pipeline of adapter [{}] compact received message", owner::getName);
 					Message result = pipeRunResult.getResult();
 					if (result!=null && !result.isEmpty()) {
+						InputSource inputSource;
 						try {
-							String resultString = result.asString();
-							InputStream xmlInput = result.asInputStream();
-							XmlWriter xmlWriter = new XmlWriter();
-							CompactSaxHandler handler = new CompactSaxHandler(xmlWriter);
-							handler.setChompCharSize(pe.getChompCharSize());
-							handler.setElementToMove(pe.getElementToMove());
-							handler.setElementToMoveChain(pe.getElementToMoveChain());
-							handler.setElementToMoveSessionKey(pe.getElementToMoveSessionKey());
-							handler.setRemoveCompactMsgNamespaces(pe.isRemoveCompactMsgNamespaces());
-							handler.setContext(pipeLineSession);
-							SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
-							parserFactory.setNamespaceAware(true);
-							SAXParser saxParser = parserFactory.newSAXParser();
-							try {
-								saxParser.parse(xmlInput, xmlWriter);
-								resultString = xmlWriter.toString();
-							} catch (Exception e) {
-								log.warn("Pipeline of adapter [{}] could not compact received message: {}", owner.getName(), e.getMessage());
-							}
-							pipeRunResult.setResult(resultString);
+							// Preserve the message so that it can be read again
+							// in case there was an error during compacting
+							result.preserve();
+							inputSource = result.asInputSource();
+						} catch (IOException e) {
+							throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] could not read received message during compacting to more compact format: " + e.getMessage(), e);
+						}
+						XmlWriter xmlWriter = new XmlWriter();
+						CompactSaxHandler handler = new CompactSaxHandler(xmlWriter);
+						handler.setChompCharSize(pe.getChompCharSize());
+						handler.setElementToMove(pe.getElementToMove());
+						handler.setElementToMoveChain(pe.getElementToMoveChain());
+						handler.setElementToMoveSessionKey(pe.getElementToMoveSessionKey());
+						handler.setRemoveCompactMsgNamespaces(pe.isRemoveCompactMsgNamespaces());
+						handler.setContext(pipeLineSession);
+						try {
+							XmlUtils.parseXml(inputSource, handler);
+							pipeRunResult.setResult(xmlWriter.toString());
 						} catch (Exception e) {
-							throw new PipeRunException(pipe, "Pipeline of ["+pipeLine.getOwner().getName()+"] got error during compacting received message to more compact format: " + e.getMessage());
+							log.warn("Pipeline of adapter [{}] could not compact received message: {}", owner.getName(), e.getMessage());
 						}
 					}
 				}

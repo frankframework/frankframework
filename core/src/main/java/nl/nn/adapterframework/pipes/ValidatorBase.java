@@ -98,7 +98,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 	protected abstract PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException, XmlValidatorException, ConfigurationException;
 
 
-	protected PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode, Supplier<String> errorMessageProvider) throws PipeRunException {
+	protected final PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode, Supplier<String> errorMessageProvider) throws PipeRunException {
 		throwEvent(validationResult.getEvent());
 		PipeForward forward = null;
 		switch(validationResult) {
