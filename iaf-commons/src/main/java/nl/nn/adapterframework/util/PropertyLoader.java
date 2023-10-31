@@ -49,7 +49,7 @@ public class PropertyLoader extends Properties {
 		load(classLoader, propertiesFile);
 
 		//Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
-		if(classLoader instanceof ClassLoader) {
+		if(classLoader != null) {
 			LOG.info("created new PropertyLoader for classloader [{}]", ()->ClassUtils.nameOf(classLoader));
 		} else {
 			LOG.info("created new PropertyLoader for root classloader");
@@ -97,7 +97,7 @@ public class PropertyLoader extends Properties {
 	/**
 	 * the method is like the <code>Properties.getProperty</code>, but provides functionality to resolve <code>${variable}</code>
 	 * Syntaxes. It uses the property values and system values to resolve the variables, and does so recursively.
-	 * 
+	 *
 	 * @see nl.nn.adapterframework.util.StringResolver
 	 */
 	protected final String getResolvedProperty(String key) {
@@ -126,8 +126,17 @@ public class PropertyLoader extends Properties {
 		}
 	}
 
+	@Nonnull
+	public <T extends Enum<T>> T getOrDefault(@Nonnull String key, @Nonnull T dfault) {
+		String value = getProperty(key);
+		if (value == null) {
+			return dfault;
+		}
+		return (T) EnumUtils.parse(dfault.getClass(), value);
+	}
+
 	/**
-	 * Retrieves a list property value associated with the specified key. The method first resolves the property value using 
+	 * Retrieves a list property value associated with the specified key. The method first resolves the property value using
 	 * the {@link #getResolvedProperty(String)} method. If the resolved property value is null, an empty list is returned.
 	 *
 	 * @param key the key of the property value to retrieve
@@ -139,8 +148,8 @@ public class PropertyLoader extends Properties {
 	}
 
 	/**
-	 * Retrieves a list property value associated with the specified key. The method first resolves the property value using 
-	 * the {@link #getResolvedProperty(String)} method. If the resolved property value is null, it returns the list of string 
+	 * Retrieves a list property value associated with the specified key. The method first resolves the property value using
+	 * the {@link #getResolvedProperty(String)} method. If the resolved property value is null, it returns the list of string
 	 * values provided as "defaults".
 	 *
 	 * @param key the key of the property value to retrieve

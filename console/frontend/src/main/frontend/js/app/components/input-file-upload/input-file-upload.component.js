@@ -21,7 +21,6 @@ const InputFileUploadController = function ($element) {
 
 appModule.component('inputFileUpload', {
 	bindings: {
-		file: '<',
 		onUpdateFile: '&',
 		accept: '@',
 		title: '@'

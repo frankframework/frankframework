@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
@@ -50,6 +51,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 @Log4j2
 public class ServletConfiguration implements InitializingBean, EnvironmentAware {
 
+	private static final char SLASH = '/';
 	private @Getter String name;
 	private @Getter List<String> securityRoles = Collections.emptyList();
 	private @Getter List<String> urlMapping;
@@ -152,21 +154,29 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 			throw new IllegalStateException("servlet must have an URL to map to");
 		}
 
-		this.urlMapping = urlMappings;
+		this.urlMapping = urlMappings.stream().filter(StringUtils::isNotBlank).collect(Collectors.toList());
 	}
 
-	private void setUrlMapping(String urlMappingArray) {
+	public void setUrlMapping(String urlMappingArray) {
 		String[] urlMappingsCopy = new String[0];
 		if(StringUtils.isNotEmpty(urlMappingArray)) {
 			urlMappingsCopy = urlMappingArray.split(",");
 		}
 
 		List<String> mappings = new ArrayList<>();
-		for(String rawMapping : urlMappingsCopy) {
+		for(final String rawMapping : urlMappingsCopy) {
 			String mapping = rawMapping.trim();
-			if(!mapping.startsWith("/") && !mapping.startsWith("*")) {
+			if(StringUtils.isBlank(mapping)) continue;
+			if("*".equals(mapping)) mapping = "/*";
+
+			char firstChar = mapping.charAt(0);
+			if(firstChar == '!' && (mapping.charAt(1) != SLASH || mapping.charAt(mapping.length()-1) == '*')) {
+				throw new IllegalStateException("when excluding an URL you it must start with '!/' and may not end with a wildcard");
+			}
+			if(firstChar != SLASH && firstChar != '*' && firstChar != '!') { //Add a conditional slash
 				mapping = "/"+mapping;
 			}
+			log.debug("converted raw mapping [{}] to [{}]", rawMapping, mapping);
 			mappings.add(mapping);
 		}
 

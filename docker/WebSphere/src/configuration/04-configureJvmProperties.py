@@ -22,16 +22,10 @@ def setSecurityProperty(name, value ):
 
 setJVMSystemProperty('log.dir', '${SERVER_LOG_ROOT}')
 setJVMSystemProperty('dtap.stage', 'LOC')
-setJVMSystemProperty('web.protocol', 'http')
-setJVMSystemProperty('web.port', '9080')
 setJVMSystemProperty('scenariosroot1.directory', '/opt/frank/testtool')
 setJVMSystemProperty('scenariosroot1.description', 'embedded testtool directory /opt/frank/testtool')
 setJVMSystemProperty('scenariosroot2.directory', '/opt/frank/testtool-ext')
 setJVMSystemProperty('scenariosroot2.description', 'external testtool directory /opt/frank/testtool-ext')
-setJVMSystemProperty('jdbc.dbms.default', 'oracle')
-setJVMSystemProperty('active.jms', 'false')
-setJVMSystemProperty('active.tibco', 'false')
-setJVMSystemProperty('active.ifsa', 'false')
 setJVMSystemProperty('test.alias', 'testalias')
 setJVMSystemProperty('authAliases.expansion.allowed', 'testalias')
 setJVMSystemProperty('APPSERVER_ROOT_DIR', '${USER_INSTALL_ROOT}') # APPSERVER_ROOT_DIR is a NN standard custom property for WAS

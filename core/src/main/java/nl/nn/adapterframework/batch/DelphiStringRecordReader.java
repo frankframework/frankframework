@@ -23,13 +23,17 @@ import java.io.Reader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  *
  * @author  Gerrit van Brakel
  * @since   4.10
+ * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class DelphiStringRecordReader extends Reader {
 	protected Logger log = LogUtil.getLogger(this);
 

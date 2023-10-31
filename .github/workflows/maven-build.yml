@@ -4,7 +4,7 @@
 name: Java CI with Maven
 
 env:
-  PROFILES: ibissource,codecoverage,cmis,attachFrankDoc
+  PROFILES: ibissource,codecoverage,extra-modules,attachFrankDoc
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource') && github.actor != 'dependabot[bot]' }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   MAVEN_GOALS: verify
@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ '8', '11' ]
+        java: [ '11' ]
 
     steps:
     - name: Checkout repository
@@ -92,7 +92,7 @@ jobs:
       run: |
         echo "MAVEN_GOALS=${{ env.MAVEN_GOALS }} org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_ENV
 
-      # Use Maven Wrapper so we can build with an older version of Maven, see PR #4579.
+      # Use Maven Wrapper, so we can build with an older version of Maven, see PR #4579.
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB

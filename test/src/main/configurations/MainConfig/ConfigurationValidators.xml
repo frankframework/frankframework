@@ -21,7 +21,7 @@
 				<exit path="ServerError" state="error" code="500" />
 			</exits>
 	
-			<inputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="urn:items /Validators/xsd/Items.xsd" soapBody="Item_Request" outputSoapBody="Item_Response,SpecialResponse,InputValidationFailure,OutputValidationFailure" allowPlainXml="true"
+			<inputValidator className="nl.nn.adapterframework.soap.SoapValidator" schemaLocation="urn:items /Validators/xsd/Items%20v1.xsd" soapBody="Item_Request" outputSoapBody="Item_Response,SpecialResponse,InputValidationFailure,OutputValidationFailure" allowPlainXml="true"
 				rootElementSessionKey="receivedRootElement" rootNamespaceSessionKey="receivedRootNamespace" soapVersion="auto" >
 				<param name="Status" sessionKey="Status" />
 				<param name="Id" sessionKey="Id" />

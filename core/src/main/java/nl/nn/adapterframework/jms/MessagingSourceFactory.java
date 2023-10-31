@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public abstract class MessagingSourceFactory {
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected abstract Map getMessagingSourceMap();
+	protected abstract Map<String,MessagingSource> getMessagingSourceMap();
 	protected abstract Context createContext() throws NamingException;
 	protected abstract ConnectionFactory createConnectionFactory(Context context, String id, boolean createDestination, boolean useJms102) throws IbisException, NamingException;
 
@@ -45,15 +45,14 @@ public abstract class MessagingSourceFactory {
 	}
 
 	public synchronized MessagingSource getMessagingSource(String id, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
-		Map messagingSourceMap = getMessagingSourceMap();
-		MessagingSource result = (MessagingSource)messagingSourceMap.get(id);
+		Map<String, MessagingSource> messagingSourceMap = getMessagingSourceMap();
+
+		MessagingSource result = messagingSourceMap.get(id);
 		if (result == null) {
 			result = createMessagingSource(id, authAlias, createDestination, useJms102);
-			log.debug("created new MessagingSource-object for ["+id+"]");
+			log.debug("created new MessagingSource-object for [{}]", id);
 		}
-		log.trace("Increase references to messaging-source, synchronize (lock) on {}", result::toString);
 		result.increaseReferences();
-		log.trace("References to messaging-source increased, lock released on {}", result::toString);
 		return result;
 	}
 

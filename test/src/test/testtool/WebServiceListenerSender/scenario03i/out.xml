@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TIMEOUT>
-  <errorMessage timestamp="Tue Oct 18 16:19:26 CEST 2022" originator="IAF_ss9 7.9-SNAPSHOT" message="ForEachChildElementPipe [send2ws_multiple_with_forwards] msgId [0a722fe4-75c7044f_183eb329d12_-7603]: (SocketTimeoutException) Read timed out">
+  <errorMessage timestamp="Tue Oct 18 16:19:26 CEST 2022" originator="IAF_ss9 8.0-SNAPSHOT" message="ForEachChildElementPipe [send2ws_multiple_with_forwards] msgId [0a722fe4-75c7044f_183eb329d12_-7603]: (SocketTimeoutException) Read timed out">
     <location class="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="send2ws_multiple_with_forwards"/>
     <details>nl.nn.adapterframework.core.TimeoutException: (SocketTimeoutException) Read timed out
 	at nl.nn.adapterframework.http.HttpSenderBase.sendMessageAndProvideForwardName(HttpSenderBase.java:772)
