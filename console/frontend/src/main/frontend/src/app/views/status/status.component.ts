@@ -81,21 +81,28 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.route.queryParamMap.subscribe(params => {
       this.routeQueryParams = params;
       this.route.fragment.subscribe(fragment => {
-        const hash = fragment ?? ""; // let hash = this.$location.hash();
+        const hash = fragment; // let hash = this.$location.hash();
         this.adapterName = params.get("adapter") ?? "";
-        if (this.adapterName == "" && hash != "") { //If the adapter param hasn't explicitly been set
+        if (this.adapterName == "" && hash && hash != "") { //If the adapter param hasn't explicitly been set
           this.adapterName = hash;
-        } else {
-          this.router.navigate([], { relativeTo: this.route, fragment: hash }); // this.$location.hash(this.adapterName);
+        } else if (this.adapterName != "") {
+          /* let routeQueryParams = null;
+          if (filterParam && filterParam != "") {
+            let routeQueryParams = filterParam.length > 16 ? null // if everything is selected then filter doesnt need to be in the url
+              : { filter: filterParam };
+            this.router.navigate([], { relativeTo: this.route, queryParams: routeQueryParams, fragment: hash ?? undefined }); // this.$location.hash(this.adapterName);
+          } */
+          this.router.navigate([], { relativeTo: this.route, fragment: this.adapterName });
         }
       });
 
       const filterParam = params.get("filter");
       if (filterParam && filterParam != "") {
-        const filter = filterParam.split("+");
-        for (const f in filter) {
-          this.filter[f as keyof Filter] = (filter.indexOf(f) > -1);
+        const filters: Filter = { started: false, stopped: false, warning: false };
+        for (const f of filterParam.split("+")) {
+          filters[f as keyof Filter] = true;
         }
+        this.filter = filters;
       }
       const searchParam = params.get("search");
       if (searchParam && searchParam != "") {
@@ -129,10 +136,10 @@ export class StatusComponent implements OnInit, OnDestroy {
     this._subscriptions.add(summariesSubscription);
     const alertsSubscription = this.appService.alerts$.subscribe(() => { this.alerts = [...this.appService.alerts]; });
     this._subscriptions.add(alertsSubscription);
-    const messageLogSubscription = this.appService.messageLog$.subscribe(() => { this.messageLog = {...this.appService.messageLog}; });
+    const messageLogSubscription = this.appService.messageLog$.subscribe(() => { this.messageLog = { ...this.appService.messageLog }; });
     this._subscriptions.add(messageLogSubscription);
     const adaptersSubscription = this.appService.adapters$.subscribe(() => {
-      this.adapters = {...this.appService.adapters};
+      this.adapters = { ...this.appService.adapters };
       this.updateAdapterShownContent();
     });
     this._subscriptions.add(adaptersSubscription);
@@ -142,7 +149,9 @@ export class StatusComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  applyFilter(filter: Filter) {
+  applyFilter(filterName: keyof Filter) {
+    const filter = { ...this.filter };
+    filter[filterName] = !filter[filterName];
     this.filter = filter;
     this.updateQueryParams();
   };
@@ -153,18 +162,22 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   updateQueryParams() {
     let filterStr = [];
+    let filterCount = 0;
     for (const f in this.filter) {
-      if (this.filter[f as keyof Filter])
+      if (this.filter[f as keyof Filter]){
         filterStr.push(f);
+        filterCount+=1;
+      }
     }
     let transitionObj: Record<string, string> = {};
-    transitionObj["filter"] = filterStr.join("+");
+    if(filterCount < 3)
+      transitionObj["filter"] = filterStr.join("+");
     if (this.selectedConfiguration != "All")
       transitionObj["configuration"] = this.selectedConfiguration;
     if (this.searchText.length > 0)
       transitionObj["search"] = this.searchText;
 
-    this.router.navigate(['status'], { queryParams: transitionObj, preserveFragment: true });
+    this.router.navigate([],{ relativeTo: this.route, queryParams: transitionObj, preserveFragment: true });
   };
 
   collapseAll() {
@@ -177,10 +190,10 @@ export class StatusComponent implements OnInit, OnDestroy {
       .forEach(adapter => this.adapterShowContent[adapter] = true);
   };
   stopAll() {
-    this.statusService.updateAdapters("stop", this.getCompiledAdapterList());
+    this.statusService.updateAdapters("stop", this.getCompiledAdapterList()).subscribe();
   };
   startAll() {
-    this.statusService.updateAdapters("start", this.getCompiledAdapterList());
+    this.statusService.updateAdapters("start", this.getCompiledAdapterList()).subscribe();
   };
   reloadConfiguration() {
     if (this.selectedConfiguration == "All") return;
@@ -271,37 +284,37 @@ export class StatusComponent implements OnInit, OnDestroy {
     return Object.values(receiver.transactionalStores);
   }
 
-  getMessageLog(selectedConfiguration: string){
+  getMessageLog(selectedConfiguration: string) {
     return this.messageLog[selectedConfiguration].messages ?? [];
   }
 
   startAdapter(adapter: Adapter) {
     adapter.state = 'starting';
-    this.statusService.updateAdapter(adapter.configuration, adapter.name, "start");
+    this.statusService.updateAdapter(adapter.configuration, adapter.name, "start").subscribe();
   }
   stopAdapter(adapter: Adapter) {
     adapter.state = 'stopping';
-    this.statusService.updateAdapter(adapter.configuration, adapter.name, "stop");
+    this.statusService.updateAdapter(adapter.configuration, adapter.name, "stop").subscribe();
   }
   startReceiver(adapter: Adapter, receiver: Receiver) {
     receiver.state = 'loading';
-    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, "start");
+    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, "start").subscribe();
   }
   stopReceiver(adapter: Adapter, receiver: Receiver) {
     receiver.state = 'loading';
-    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, "stop");
+    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, "stop").subscribe();
   }
   addThread(adapter: Adapter, receiver: Receiver) {
     receiver.state = 'loading';
-    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, "incthread");
+    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, "incthread").subscribe();
   }
   removeThread(adapter: Adapter, receiver: Receiver) {
     receiver.state = 'loading';
-    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, "decthread");
+    this.statusService.updateReceiver(adapter.configuration, adapter.name, receiver.name, "decthread").subscribe();
   }
 
-  navigateByAlert(alert: Alert){
-    if(alert.link){
+  navigateByAlert(alert: Alert) {
+    if (alert.link) {
       this.router.navigate(['configuration', alert.link.name], { fragment: alert.link['#'] });
     }
   }

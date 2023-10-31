@@ -1,7 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
-
+import { AppService } from 'src/app/app.service';
 @Component({
   selector: 'app-iframe-larva',
   templateUrl: '../iframe.component.html',
@@ -14,11 +13,11 @@ export class IframeLarvaComponent implements OnInit {
 
   constructor(
     private sanitizer: DomSanitizer,
-    private miscService: MiscService,
+    private appService: AppService,
   ) { };
 
   ngOnInit(): void {
-    this.url = this.miscService.getServerPath() + "iaf/larva";
+    this.url = this.appService.getServerPath() + "iaf/larva";
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
   };
 }

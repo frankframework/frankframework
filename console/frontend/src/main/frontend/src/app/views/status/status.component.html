@@ -179,20 +179,20 @@
                 <!-- [(ngModel)]="filter.started" -->
                 <label
                   class="btn btn-primary btn-outline btn-xs started"
-                  (click)="applyFilter(filter)"
-                  uib-btn-checkbox
+                  [ngClass]="{ active: this.filter['started'] }"
+                  (click)="applyFilter('started')"
                 >Started</label>
                 <!-- [(ngModel)]="filter.stopped" -->
                 <label
                   class="btn btn-danger btn-outline btn-xs stopped"
-                  (click)="applyFilter(filter)"
-                  uib-btn-checkbox
+                  [ngClass]="{ active: this.filter['stopped'] }"
+                  (click)="applyFilter('stopped')"
                 >Stopped</label>
                 <!-- [(ngModel)]="filter.warning" -->
                 <label
                   class="btn btn-warning btn-outline btn-xs warning"
-                  (click)="applyFilter(filter)"
-                  uib-btn-checkbox
+                  [ngClass]="{ active: this.filter['warning'] }"
+                  (click)="applyFilter('warning')"
                 >Warning</label>
               </div>
             </div>

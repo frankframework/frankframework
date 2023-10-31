@@ -16,9 +16,9 @@ import { StatusComponent } from './views/status/status.component';
 // import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
 // import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
 // import { LiquibaseComponent } from './views/liquibase/liquibase.component';
-// import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
+import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
 import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
-// import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
+import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
 import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
 
 const routes: Routes = [
@@ -275,24 +275,24 @@ const routes: Routes = [
   //     breadcrumbs: 'JDBC > Liquibase Script'
   //   }
   // },
-  // {
-  //   path: 'customView/:name',
-  //   component: IframeCustomViewComponent,
-  //   title: "Custom View",
-  //   data: {
-  //     breadcrumbs: 'Custom View',
-  //     iframe: true
-  //   },
-  // },
-  // {
-  //   path: 'testing/larva',
-  //   component: IframeLarvaComponent,
-  //   title: 'Larva',
-  //   data: {
-  //     breadcrumbs: 'Testing > Larva',
-  //     iframe: true
-  //   },
-  // },
+  {
+    path: 'customView/:name',
+    component: IframeCustomViewComponent,
+    title: "Custom View",
+    data: {
+      breadcrumbs: 'Custom View',
+      iframe: true
+    },
+  },
+  {
+    path: 'testing/larva',
+    component: IframeLarvaComponent,
+    title: 'Larva',
+    data: {
+      breadcrumbs: 'Testing > Larva',
+      iframe: true
+    },
+  },
   {
     path: 'testing/ladybug',
     component: IframeLadybugComponent,

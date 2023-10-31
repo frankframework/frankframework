@@ -375,7 +375,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   scrollToAdapter() {
     this.urlHash$.subscribe((hash) => {
-      if (this.router.url == "/status" && hash) {
+      if (this.router.url == "/status" && hash && hash !== "") {
         let el = $("#" + hash);
         if (el && el[0]) {
           el[0].scrollIntoView();
