@@ -123,9 +123,6 @@ public class ReceiverTest {
 			configuration.close();
 			configuration = null;
 		}
-		if (TransactionManagerServices.isTransactionManagerRunning()) {
-			TransactionManagerServices.getTransactionManager().shutdown();
-		}
 		if (appender != null) {
 			TestAppender.removeAppender(appender);
 			appender = null;
