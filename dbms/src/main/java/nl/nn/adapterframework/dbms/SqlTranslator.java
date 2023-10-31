@@ -38,20 +38,16 @@ import org.apache.commons.lang3.StringUtils;
 @Log4j2
 public class SqlTranslator implements ISqlTranslator {
 	private static final String PATTERN_FILE = "SqlTranslationPatterns.properties";
-
 	private Map<String, Pattern> sources;
 	private Map<String, String> targets;
 	private String target;
-
-
-
 	private boolean configured = false;
 
 	public SqlTranslator(String source, String target) throws DbmsException {
 		if (StringUtils.isEmpty(source) || StringUtils.isEmpty(target))
 			throw new IllegalArgumentException("Can not translate from [" + source + "] to [" + target + "]");
 		if (source.equalsIgnoreCase(target)) {
-			log.warn("Same source and target for nl.nn.adapterframework.dbms.SqlTranslator. Skipping pattern generation.");
+			log.warn("Same source and target for SqlTranslator. Skipping pattern generation.");
 			return;
 		}
 		try {
@@ -59,7 +55,7 @@ public class SqlTranslator implements ISqlTranslator {
 				return;
 			}
 		} catch (Exception e) {
-			throw new DbmsException("cannot create nl.nn.adapterframework.dbms.SqlTranslator", e);
+			throw new DbmsException("cannot create SqlTranslator", e);
 		}
 		this.target = target;
 		configured = true;
