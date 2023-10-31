@@ -44,7 +44,7 @@
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>5.17.6</activemq.driver.version> <!-- this minor version is the last using the javax api -->
-		<artemis.driver.version>2.1.2</artemis.driver.version>
+		<artemis.driver.version>2.31.2</artemis.driver.version>
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
 	</properties>
