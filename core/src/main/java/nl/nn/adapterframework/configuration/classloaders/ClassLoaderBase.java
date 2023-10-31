@@ -23,6 +23,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -32,7 +33,6 @@ import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
-import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
