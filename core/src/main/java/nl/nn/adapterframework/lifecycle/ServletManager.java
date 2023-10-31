@@ -61,18 +61,19 @@ import nl.nn.adapterframework.util.StringUtil;
  * Enables the use of programmatically adding servlets to the given ServletContext.<br/>
  * Run during the ApplicationServers {@link ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent) contextInitialized} phase, before starting servlets.
  * This ensures that all (dynamic) {@link DynamicRegistration.Servlet servlets} are created, before servlets are being created.
- * This in turn avoids a ConcurrentModificationException if this where to be done during a {@link javax.servlet.http.HttpServlet servlet} init phase.
+ * This in turn avoids a ConcurrentModificationException if this where to be done during a {@link javax.servlet.http.HttpServlet servlet} initialization phase.
  * </p>
  * <p>
- * When <code>dtap.stage</code> is set to LOC, the default behaviour of each servlet is not-secured (no authentication) on HTTP.<br/>
- * When <code>dtap.stage</code> is NOT set to LOC, the default behaviour of each servlet is secured (authentication enforced) on HTTPS.
+ * When <code>dtap.stage</code> is set to LOC, the default behavior of each servlet is not-secured (no authentication) on HTTP.<br/>
+ * When <code>dtap.stage</code> is NOT set to LOC, the default behavior of each servlet is secured (authentication enforced) on HTTPS.
  * </p>
  * <p>
- * To change this behaviour the following properties can be used;
+ * To change this behavior the following properties can be used;
  * <code>servlet.servlet-name.transportGuarantee</code> - forces HTTPS when set to CONFIDENTIAL, or HTTP when set to NONE<br/>
  * <code>servlet.servlet-name.securityRoles</code> - use the default IBIS roles or create your own<br/>
  * <code>servlet.servlet-name.urlMapping</code> - path the servlet listens to<br/>
  * <code>servlet.servlet-name.loadOnStartup</code> - automatically load or use lazy-loading (affects application startup time)<br/>
+ * <code>servlet.servlet-name.authenticator</code> - enables authentication on this endpoint<br/>
  * </p>
  * NOTE:
  * Both CONTAINER and NONE are non-configurable default authenticators.
@@ -208,7 +209,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, config.getServlet());
 
 		serv.setLoadOnStartup(config.getLoadOnStartup());
-		serv.addMapping(config.getUrlMapping().toArray(new String[0]));
+		serv.addMapping(getEndpoints(config.getUrlMapping()));
 		serv.setServletSecurity(getServletSecurity(config));
 
 		if(!config.getInitParameters().isEmpty()) {
@@ -224,6 +225,13 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 		servlets.put(servletName, config);
 		logServletInfo(serv, config);
+	}
+
+	// Remove all endpoint excludes
+	private String[] getEndpoints(List<String> list) {
+		return list.stream()
+				.filter(e -> e.charAt(0) != '!')
+				.toArray(String[]::new);
 	}
 
 	private void logServletInfo(Dynamic serv, ServletConfiguration config) {

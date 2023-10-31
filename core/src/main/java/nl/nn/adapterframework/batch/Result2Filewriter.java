@@ -31,9 +31,10 @@ import nl.nn.adapterframework.util.FileUtils;
 
 /**
  * Resulthandler that writes the transformed record to a file.
- * 
- * 
+ *
+ *
  * @author  John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class Result2Filewriter extends ResultWriter {
 

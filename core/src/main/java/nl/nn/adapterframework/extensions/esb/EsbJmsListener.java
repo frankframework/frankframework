@@ -17,9 +17,9 @@ package nl.nn.adapterframework.extensions.esb;
 
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -182,22 +182,16 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	protected Map<String, Object> getMessageProperties(Map<String, Object> threadContext) {
-		Map<String, Object> properties = super.getMessageProperties(threadContext);
+	protected Map<String, Object> getMessageProperties(PipeLineSession session) {
+		Map<String, Object> properties = super.getMessageProperties(session);
 
-		if (isCopyAEProperties()) {
+		if (isCopyAEProperties() && session != null) {
 			if(properties == null)
-				properties = new HashMap<String, Object>();
+				properties = new HashMap<>();
 
-			if (threadContext != null) {
-				for (Iterator<String> it = threadContext.keySet().iterator(); it.hasNext();) {
-					String key = it.next();
-					if (key.startsWith("ae_")) {
-						Object value = threadContext.get(key);
-						properties.put(key, value);
-					}
-				}
-			}
+			properties.putAll(session.entrySet().stream()
+					.filter(entry -> entry.getKey().startsWith("ae_"))
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 		}
 
 		return properties;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021, 2023 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  *
  *
  * @author  John Dekker / Gerrit van Brakel
+ * @deprecated Warning: non-maintained functionality.
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
 

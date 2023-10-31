@@ -138,11 +138,13 @@ public class TestTool {
 		return IbisApplicationServlet.getIbisContext(application);
 	}
 
+
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, String realPath) {
 		runScenarios(application, request, out, false, realPath);
 	}
 
-	private static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, boolean silent, String realPath) {
+	// Invoked by the IbisTester class
+	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, boolean silent, String realPath) {
 		String paramLogLevel = request.getParameter("loglevel");
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramExecute = request.getParameter("execute");

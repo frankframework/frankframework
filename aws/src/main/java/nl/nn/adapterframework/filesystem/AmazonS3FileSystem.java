@@ -26,7 +26,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -205,15 +204,11 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	@Override
 	public DirectoryStream<S3Object> listFiles(String folder) throws FileSystemException {
 		List<S3ObjectSummary> summaries = new ArrayList<>();
-		String prefix = folder != null ? folder + FILE_DELIMITER : null;
 		try {
-			ListObjectsV2Request request = new ListObjectsV2Request()
-					.withBucketName(bucketName)
-					.withDelimiter(FILE_DELIMITER)
-					.withPrefix(prefix);
-
+			ListObjectsV2Request request = createListRequestV2(folder);
 			ListObjectsV2Result listing;
 			int iterations = 0;
+
 			do {
 				if(iterations > 20) {
 					log.warn("unable to list all files in folder [{}]", folder);
@@ -335,16 +330,35 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 		}
 	}
 
+	private ListObjectsV2Request createListRequestV2(String folder) {
+		String prefix = folder != null ? folder + FILE_DELIMITER : null;
+		return new ListObjectsV2Request()
+				.withBucketName(bucketName)
+				.withDelimiter(FILE_DELIMITER)
+				.withPrefix(prefix);
+	}
+
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
-		ObjectListing objectListing = s3Client.listObjects(bucketName);
-		Iterator<S3ObjectSummary> objIter = objectListing.getObjectSummaries().iterator();
-		while (objIter.hasNext()) {
-			S3ObjectSummary s3ObjectSummary = objIter.next();
-			String key = s3ObjectSummary.getKey();
-			if(key.endsWith("/") && key.equals(folder+"/")){
-				return true;
-			}
+		try {
+			ListObjectsV2Request request = createListRequestV2(folder);
+			ListObjectsV2Result listing;
+			int iterations = 0;
+
+			do {
+				if(iterations > 20) {
+					log.warn("unable to list all files in folder [{}]", folder);
+					break;
+				}
+				listing = s3Client.listObjectsV2(request);
+				if(listing.getKeyCount() > 0) { //If more then 1 result is returned, files also exist in this folder
+					return true;
+				}
+				request.setContinuationToken(listing.getNextContinuationToken());
+				iterations++;
+			} while(listing.isTruncated());
+		} catch (AmazonServiceException e) {
+			throw new FileSystemException("Cannot process requested action", e);
 		}
 		return false;
 	}

@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.jms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.nio.charset.StandardCharsets;
 
+import javax.jms.BytesMessage;
 import javax.jms.TextMessage;
 import javax.xml.soap.SOAPConstants;
 
@@ -13,7 +13,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
+import com.mockrunner.mock.jms.MockBytesMessage;
+import com.mockrunner.mock.jms.MockTextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -22,6 +24,7 @@ import nl.nn.adapterframework.stream.Message;
 
 class JMSFacadeTest {
 
+	public static final String DEFAULT_HEADER_RESULT = "<info xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">234</info>";
 	private JMSFacade jmsFacade;
 	private Message message;
 	private static SoapWrapper soapWrapper;
@@ -50,18 +53,32 @@ class JMSFacadeTest {
 	void testExtractMessageWithHeaders() throws Exception {
 		// Arrange
 		PipeLineSession pipeLineSession = new PipeLineSession();
-		TextMessage mock = Mockito.mock(TextMessage.class);
-		when(mock.getText()).thenReturn(SOAP_MESSAGE);
-		when(mock.getPropertyNames()).thenReturn(Collections.emptyEnumeration());
+		TextMessage textMessage = new MockTextMessage();
+		textMessage.setText(SOAP_MESSAGE);
 
 		// Act
-		message = jmsFacade.extractMessage(mock, pipeLineSession, true, "key", soapWrapper);
+		message = jmsFacade.extractMessage(textMessage, pipeLineSession, true, "key", soapWrapper);
 		pipeLineSession.close();
 
 		// Assert
 		assertEquals(DEFAULT_BODY, message.asString());
-		assertEquals("<info xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">234</info>", pipeLineSession.get("key"));
+		assertEquals(DEFAULT_HEADER_RESULT, pipeLineSession.get("key"));
 	}
 
+	@Test
+	void testExtractBytesMessage() throws Exception {
+		// Arrange
+		PipeLineSession pipeLineSession = new PipeLineSession();
+		BytesMessage bytesMessage = new MockBytesMessage();
+		bytesMessage.writeBytes(SOAP_MESSAGE.getBytes(StandardCharsets.UTF_8));
+		bytesMessage.reset();
 
+		// Act
+		message = jmsFacade.extractMessage(bytesMessage, pipeLineSession, true, "key", soapWrapper);
+		pipeLineSession.close();
+
+		// Assert
+		assertEquals(DEFAULT_BODY, message.asString());
+		assertEquals(DEFAULT_HEADER_RESULT, pipeLineSession.get("key"));
+	}
 }

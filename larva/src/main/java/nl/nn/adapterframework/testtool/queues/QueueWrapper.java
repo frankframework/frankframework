@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ import nl.nn.adapterframework.testtool.SenderThread;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.testtool.XsltProviderListener;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 @Log4j2
@@ -67,7 +68,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	private QueueWrapper(IConfigurable configurable) {
 		super();
 
-		queueKey = QueueUtils.firstCharToLower(configurable.getClass().getSimpleName());
+		queueKey = StringUtil.lcFirst(configurable.getClass().getSimpleName());
 		put(queueKey, configurable);
 
 		if(configurable instanceof IPushingListener) {
@@ -260,8 +261,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		return (IConfigurable) get(queueKey);
 	}
 
-	public static QueueWrapper createQueue(String className, Properties queueProperties, int defaultTimeout, String correlationId) { //TODO use correlationId
-		IConfigurable configurable = QueueUtils.createInstance(className);
+	public static QueueWrapper create(IConfigurable configurable, Properties queueProperties, int defaultTimeout, String correlationId) { //TODO use correlationId
 		QueueUtils.invokeSetters(configurable, queueProperties);
 		return create(configurable).invokeSetters(defaultTimeout, queueProperties);
 	}

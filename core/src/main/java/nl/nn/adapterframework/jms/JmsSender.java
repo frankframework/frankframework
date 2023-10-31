@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.jms;
 
+import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -78,7 +80,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	protected ParameterList paramList = null;
 	private SoapWrapper soapWrapper = null;
 	private String responseHeaders = null;
-	private @Getter List<String> responseHeadersList = new ArrayList<>();
+	private final @Getter List<String> responseHeadersList = new ArrayList<>();
 
 	public enum LinkMethod {
 		/** use the generated messageId as the correlationId in the selector for response messages */
@@ -147,22 +149,22 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		return new SenderResult(sendMessage(message, session, null));
 	}
 
-	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException, TimeoutException {
-		Session s = null;
+	public Message sendMessage(Message message, PipeLineSession pipeLineSession, String soapHeader) throws SenderException, TimeoutException {
+		Session jmsSession = null;
 		MessageProducer messageProducer = null;
 
 		checkTransactionManagerValidity();
 		ParameterValueList pvl=null;
 		if (paramList != null) {
 			try {
-				pvl=paramList.getValues(message, session);
+				pvl=paramList.getValues(message, pipeLineSession);
 			} catch (ParameterException e) {
 				throw new SenderException(getLogPrefix()+"cannot extract parameters",e);
 			}
 		}
 
 		try {
-			String correlationID = session == null ? null : session.getCorrelationId();
+			String correlationID = pipeLineSession == null ? null : pipeLineSession.getCorrelationId();
 			if (isSoap()) {
 				if (soapHeader == null && pvl != null && StringUtils.isNotEmpty(getSoapHeaderParam())) {
 					ParameterValue soapHeaderParamValue = pvl.get(getSoapHeaderParam());
@@ -175,18 +177,18 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 				message = soapWrapper.putInEnvelope(message, getEncodingStyleURI(), getServiceNamespaceURI(), soapHeader);
 				if (log.isDebugEnabled()) log.debug("{} correlationId [{}] soap message [{}]", getLogPrefix(), correlationID, message);
 			}
-			s = createSession();
-			messageProducer = getMessageProducer(s, getDestination(session, pvl));
+			jmsSession = createSession();
+			messageProducer = getMessageProducer(jmsSession, getDestination(pipeLineSession, pvl));
 
 			// create message to send
-			javax.jms.Message messageToSend = createMessage(s, correlationID, message);
-			enhanceMessage(messageToSend, messageProducer, pvl, s);
+			javax.jms.Message messageToSend = createMessage(jmsSession, correlationID, message, getMessageClass());
+			enhanceMessage(messageToSend, messageProducer, pvl, jmsSession);
 			Destination replyQueue = messageToSend.getJMSReplyTo();
 
 			// send message
 			send(messageProducer, messageToSend);
 			if (isSynchronous()) {
-				return waitAndHandleResponseMessage(messageToSend, replyQueue, session, s);
+				return waitAndHandleResponseMessage(messageToSend, replyQueue, pipeLineSession, jmsSession);
 			}
 			return new Message(messageToSend.getJMSMessageID());
 		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException e) {
@@ -199,7 +201,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 					log.warn("JmsSender [{}] got exception closing message producer", getName(), e);
 				}
 			}
-			closeSession(s);
+			closeSession(jmsSession);
 		}
 	}
 
@@ -235,11 +237,14 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	}
 
 	private Message waitAndHandleResponseMessage(javax.jms.Message msg, Destination replyQueue, PipeLineSession session, Session s) throws JMSException, TimeoutException, IOException, TransformerException, SAXException {
-		String replyCorrelationId = null;
-		if (getReplyToName() != null) {
+		String jmsMessageID = msg.getJMSMessageID();
+		String replyCorrelationId;
+		if (getReplyToName() == null) {
+			replyCorrelationId = null;
+		} else {
 			switch (getLinkMethod()) {
 				case MESSAGEID:
-					replyCorrelationId = msg.getJMSMessageID();
+					replyCorrelationId = jmsMessageID;
 					break;
 				case CORRELATIONID:
 					replyCorrelationId = session == null ? null : session.getCorrelationId();
@@ -251,13 +256,13 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 					throw new IllegalStateException("unknown linkMethod [" + getLinkMethod() + "]");
 			}
 		}
-		if (log.isDebugEnabled())
-			log.debug("[" + getName() + "] start waiting for reply on [" + replyQueue + "] requestMsgId [" + msg.getJMSMessageID() + "] replyCorrelationId [" + replyCorrelationId + "] for [" + getReplyTimeout() + "] ms");
+		log.debug("[{}] start waiting for reply on [{}] requestMsgId [{}] replyCorrelationId [{}] for [{}] ms",
+				this::getName, logValue(replyQueue), logValue(jmsMessageID), logValue(replyCorrelationId), this::getReplyTimeout);
 		MessageConsumer mc = getMessageConsumerForCorrelationId(s, replyQueue, replyCorrelationId);
 		try {
 			javax.jms.Message rawReplyMsg = mc.receive(getReplyTimeout());
 			if (rawReplyMsg == null) {
-				throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId [" + msg.getJMSMessageID() + "] replyCorrelationId [" + replyCorrelationId + "] within [" + getReplyTimeout() + "] ms");
+				throw new TimeoutException("did not receive reply on [" + replyQueue + "] requestMsgId [" + jmsMessageID + "] replyCorrelationId [" + replyCorrelationId + "] within [" + getReplyTimeout() + "] ms");
 			}
 			StringBuilder receivedJMSProperties = new StringBuilder();
 			if (!getResponseHeadersList().isEmpty()) {

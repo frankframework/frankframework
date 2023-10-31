@@ -56,6 +56,7 @@ import nl.nn.adapterframework.util.StringUtil;
  * </table>
  *
  * @author  John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class RecordTransformer extends AbstractRecordHandler {
 
