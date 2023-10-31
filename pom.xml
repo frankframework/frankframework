@@ -17,7 +17,7 @@
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
 		<jackson.version>2.15.3</jackson.version>
-		<cxf.version>3.5.7</cxf.version>
+		<cxf.version>3.6.2</cxf.version>
 		<spring.version>5.3.30</spring.version>
 		<spring-security.version>5.8.8</spring-security.version>
 		<spring-integration.version>5.5.19</spring-integration.version>
