@@ -683,19 +683,34 @@
 			<artifactId>jackson-annotations</artifactId>
 		</dependency>
 
-		<!-- Using the default saaj-impl causes signed SOAP message problems.
-		Only bump dependency when moved to Jakarta namespaces -->
-		<!--<dependency>
-			<groupId>com.sun.xml.messaging.saaj</groupId>
-			<artifactId>saaj-impl</artifactId>
-			<version>1.5.3</version>
+		<!-- Use our own JaxB and JaxWS implementations to run on the IBM JDK -->
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-core</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.xml.ws</groupId>
+			<artifactId>jakarta.xml.ws-api</artifactId>
+			<version>2.3.3</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.xml.bind</groupId>
+			<artifactId>jakarta.xml.bind-api</artifactId>
+			<version>2.3.3</version>
 			<exclusions>
 				<exclusion>
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>-->
+		</dependency>
+
 
 		<!--
 			We cannot upgrade to a later version due to it forcing us to use com.sun.xerces
