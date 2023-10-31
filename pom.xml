@@ -44,7 +44,7 @@
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>5.16.7</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
-		<artemis.driver.version>2.19.1</artemis.driver.version><!-- ActiveMQ Artemis v2.19 is the last that works with Java 8 -->
+		<artemis.driver.version>2.31.2</artemis.driver.version><!-- ActiveMQ Artemis v2.19 is the last that works with Java 8 -->
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
 	</properties>
