@@ -152,7 +152,7 @@
 				</datasource>
 				<!-- Framework datasources -->
 				<datasource jndi-name="java:/jdbc/ibis4test-h2" pool-name="h2-datasource" enabled="true" use-java-context="true">
-					<connection-url>jdbc:h2:file:./ibis4test;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE</connection-url>
+					<connection-url>jdbc:h2:file:/tmp/ibis4test;AUTO_SERVER=TRUE</connection-url>
 					<driver>h2</driver>
 				</datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-oracle" pool-name="ibis4test-oracle">
@@ -234,10 +234,10 @@
 				</xa-datasource>
 				<!-- End of Framework datasources -->
 				<drivers>
-					<driver name="h2" module="com.h2database.h2">
+					<!-- Framework drivers -->
+					<driver name="h2" module="module.frank-framework">
 						<xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
 					</driver>
-					<!-- Framework drivers -->
 					<driver name="mssql" module="module.frank-framework">
 						<xa-datasource-class>com.microsoft.sqlserver.jdbc.SQLServerXADataSource</xa-datasource-class>
 					</driver>

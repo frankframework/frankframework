@@ -7,6 +7,8 @@ services:
         image: private.docker.nexus.frankframework.org/ff-test:${VERSION:-latest}-jboss
         build: JBoss
         ports:
-            - "80:8080"
+            - "8080:8080"
+            - "9990:9990"
         environment:
             larva.adapter.active: false
+        restart: unless-stopped
