@@ -20,7 +20,7 @@ import nl.nn.adapterframework.util.Locker;
 
 /**
  * extra attributes to do logging and use sessionvariables.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.3
  */
@@ -60,7 +60,7 @@ public interface IExtendedPipe extends IPipe {
 	public void setChompCharSize(String string);
 	public String getChompCharSize();
 
-	/** If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementToMoveSessionKey</code> + } */
+	/** If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionKey: + <code>elementToMoveSessionKey</code> + } */
 	public void setElementToMove(String string);
 	public String getElementToMove();
 
@@ -87,8 +87,8 @@ public interface IExtendedPipe extends IPipe {
 	public void setDurationThreshold(long maxDuration) ;
 	public long getDurationThreshold();
 
-	/** 
-	 * Optional Locker, to avoid parallel execution of the Pipe by multiple threads or servers. An exception is thrown when the lock cannot be obtained, 
+	/**
+	 * Optional Locker, to avoid parallel execution of the Pipe by multiple threads or servers. An exception is thrown when the lock cannot be obtained,
 	 * e.g. in case another thread, may be in another server, holds the lock and does not release it in a timely manner.
 	 */
 	public void setLocker(Locker locker);

@@ -12,15 +12,21 @@ const TestPipelineController = function ($scope, Api, Alert, $rootScope, appServ
     ctrl.sessionKeyIndex = 1;
     ctrl.sessionKeyIndices = [ctrl.sessionKeyIndex];
 
-    ctrl.sessionKeys = [];
+	ctrl.sessionKeys = [];
+	ctrl.unregister$on = [];
 
     ctrl.$onInit = function () {
         ctrl.configurations = appService.configurations;
-        $rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
+		ctrl.unregister$on.push($rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; }));
 
         ctrl.adapters = appService.adapters;
-        $rootScope.$on('adapters', function () { ctrl.adapters = appService.adapters; });
+		ctrl.unregister$on.push($rootScope.$on('adapters', function () { ctrl.adapters = appService.adapters; }));
     };
+
+	ctrl.$onDestroy = function(){
+		for (const unregister of ctrl.unregister$on)
+			unregister();
+	}
 
     ctrl.addNote = function (type, message, removeQueue) {
         ctrl.state.push({ type: type, message: message });

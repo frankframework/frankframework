@@ -1,5 +1,6 @@
 Date: DATE
 From: myself@address.org
+Reply-To: to@address.com
 To: dummy <me@address.org>, two <me2@address.org>
 Message-ID: MESSAGE-ID
 Subject: My Subject

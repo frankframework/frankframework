@@ -1,5 +1,5 @@
 <Envelope>
-	<Header></Header>
+	<Header/>
 	<Body>
 		<edcLk01>
 			<stuurgegevens>
@@ -9,15 +9,15 @@
 			</stuurgegevens>
 			<parameters>
 				<mutatiesoort>T</mutatiesoort>
-				<indicatorOvername>V</indicatorOvername>
+				<indicatorOvername><![CDATA[&<V]]></indicatorOvername>
 			</parameters>
 			<object entiteittype="EDC" verwerkingssoort="T">
-				<identificatie>DC2023-00020</identificatie>
+				<identificatie><![CDATA[DC2023-00020]]></identificatie>
 				<dct.omschrijving>Brief</dct.omschrijving>
 			</object>
 			<object entiteittype="EDC" verwerkingssoort="E">
 				<identificatie>DC2022-012345</identificatie>
-				<dct.omschrijving>Email</dct.omschrijving>
+				<dct.omschrijving>&amp;&lt;Email</dct.omschrijving>
 			</object>
 		</edcLk01>
 	</Body>

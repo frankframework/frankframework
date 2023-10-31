@@ -7,7 +7,7 @@ const ibisStoreSummaryController = function ($rootScope, Api, $location, appCons
     ctrl.form = {};
 
     ctrl.$onInit = function () {
-		$rootScope.$on('appConstants', function () {
+		ctrl.unregister$on = $rootScope.$on('appConstants', function () {
             ctrl.form.datasource = appConstants['jdbc.datasource.default'];
         });
 
@@ -21,6 +21,10 @@ const ibisStoreSummaryController = function ($rootScope, Api, $location, appCons
 			ctrl.fetch(datasource);
         };
     };
+
+	ctrl.$onDestroy = function(){
+		ctrl.unregister$on();
+	}
 
 	ctrl.fetch = function(datasource) {
         Api.Post("jdbc/summary", JSON.stringify({ datasource: datasource }), function (data) {

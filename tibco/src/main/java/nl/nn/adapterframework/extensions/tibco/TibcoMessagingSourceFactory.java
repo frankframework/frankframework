@@ -22,32 +22,32 @@ import javax.jms.ConnectionFactory;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import com.tibco.tibjms.TibjmsQueueConnectionFactory;
+import com.tibco.tibjms.TibjmsTopicConnectionFactory;
+
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.JmsMessagingSourceFactory;
 import nl.nn.adapterframework.jms.MessagingSource;
 
-import com.tibco.tibjms.TibjmsQueueConnectionFactory;
-import com.tibco.tibjms.TibjmsTopicConnectionFactory;
-
 
 /**
- * Factory for {@link TibcoMessagingSource}s, to share them for Tibco Objects that can use the same. 
- * 
+ * Factory for {@link TibcoMessagingSource}s, to share them for Tibco Objects that can use the same.
+ *
  * Tibco related IBIS objects can obtain a MessagingSource from this class. The physical connection is shared
  * between all IBIS objects that have the same (Tibco)connectionFactoryName.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
 public class TibcoMessagingSourceFactory extends JmsMessagingSourceFactory {
 
-	private static Map<String,MessagingSource> tibcoMessagingSourceMap = new HashMap<>();
-	private boolean useTopic;
+	private static final Map<String,MessagingSource> TIBCO_MESSAGING_SOURCE_MAP = new HashMap<>();
+	private final boolean useTopic;
 
 	@Override
-	protected Map<String,MessagingSource> getMessagingSourceMap() {
-		return tibcoMessagingSourceMap;
+	protected Map<String, MessagingSource> getMessagingSourceMap() {
+		return TIBCO_MESSAGING_SOURCE_MAP;
 	}
 
 	public TibcoMessagingSourceFactory(JMSFacade jmsFacade, boolean useTopic) {
@@ -57,7 +57,7 @@ public class TibcoMessagingSourceFactory extends JmsMessagingSourceFactory {
 
 	@Override
 	protected MessagingSource createMessagingSource(String serverUrl, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
-		ConnectionFactory connectionFactory = getConnectionFactory(null, serverUrl, createDestination, useJms102); 
+		ConnectionFactory connectionFactory = getConnectionFactory(null, serverUrl, createDestination, useJms102);
 		return new TibcoMessagingSource(serverUrl, null, connectionFactory, getMessagingSourceMap(),authAlias);
 	}
 

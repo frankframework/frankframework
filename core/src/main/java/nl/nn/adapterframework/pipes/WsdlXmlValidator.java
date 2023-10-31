@@ -19,12 +19,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
@@ -124,40 +124,41 @@ public class WsdlXmlValidator extends SoapValidator {
 		int counter = 0;
 		int soapBodyFoundCounter = 0;
 		for (Object o : definition.getTypes().getExtensibilityElements()) {
-			if (o instanceof Schema) {
-				Schema schema = (Schema) o;
-				String tns = schema.getElement().getAttribute("targetNamespace");
-				NodeList childNodes = schema.getElement().getChildNodes();
-				boolean soapBodyFound = false;
-				for (int i = 0; i < childNodes.getLength(); i++) {
-					Node n = childNodes.item(i);
-					if (n.getNodeType() == Node.ELEMENT_NODE && n.getLocalName().equals("element")) {
-						String name = n.getAttributes().getNamedItem("name").getNodeValue();
-						if (getSoapBody().equals(name)) {
-							soapBodyFound = true;
-							soapBodyFoundCounter++;
-							if (StringUtils.isNotEmpty(getSoapBodyNamespace())) {
-								tns = getSoapBodyNamespace();
-							}
+			if (!(o instanceof Schema)) {
+				continue;
+			}
+			Schema schema = (Schema) o;
+			String tns = schema.getElement().getAttribute("targetNamespace");
+			NodeList childNodes = schema.getElement().getChildNodes();
+			boolean soapBodyFound = false;
+			for (int i = 0; i < childNodes.getLength(); i++) {
+				Node n = childNodes.item(i);
+				if (n.getNodeType() == Node.ELEMENT_NODE && n.getLocalName().equals("element")) {
+					String name = n.getAttributes().getNamedItem("name").getNodeValue();
+					if (getSoapBody().equals(name)) {
+						soapBodyFound = true;
+						soapBodyFoundCounter++;
+						if (StringUtils.isNotEmpty(getSoapBodyNamespace())) {
+							tns = getSoapBodyNamespace();
 						}
 					}
 				}
-				if (sb.length() > 0) {
-					sb.append(" ");
-					sbx.append(" ");
-				}
-				sb.append(tns);
-				if (soapBodyFound) {
-					sbx.append(".*");
-				} else {
-					sbx.append(Pattern.quote(tns));
-				}
+			}
+			if (sb.length() > 0) {
 				sb.append(" ");
 				sbx.append(" ");
-				String schemaWithNumber = RESOURCE_INTERNAL_REFERENCE_PREFIX + ++counter;
-				sb.append(schemaWithNumber);
-				sbx.append(schemaWithNumber);
 			}
+			sb.append(tns);
+			if (soapBodyFound) {
+				sbx.append(".*");
+			} else {
+				sbx.append(Pattern.quote(tns));
+			}
+			sb.append(" ");
+			sbx.append(" ");
+			String schemaWithNumber = RESOURCE_INTERNAL_REFERENCE_PREFIX + ++counter;
+			sb.append(schemaWithNumber);
+			sbx.append(schemaWithNumber);
 		}
 
 		if (StringUtils.isNotEmpty(getSoapBodyNamespace()) && soapBodyFoundCounter > 1) {
@@ -223,27 +224,32 @@ public class WsdlXmlValidator extends SoapValidator {
 		return super.validate(messageToValidate, session, responseMode, messageRoot);
 	}
 
-	private String getSoapBodyFromSoapAction(String soapAction, boolean responseMode) throws PipeRunException {
+	@SuppressWarnings("unchecked")
+	private String getSoapBodyFromSoapAction(String soapAction, boolean responseMode) {
 		Map<QName, Binding> bindings = definition.getBindings();
-		for (Entry<QName, Binding> binding : bindings.entrySet()) {
-			List<BindingOperation> operations = binding.getValue().getBindingOperations();
-			for (BindingOperation bindingOperation : operations) {
-				List<ExtensibilityElement> elements = bindingOperation.getExtensibilityElements();
-				if(elements != null && !elements.isEmpty()) {
-					for (ExtensibilityElement element : elements) {
-						if(element instanceof SOAPOperation) {
-							String soapActionFromDefinition = ((SOAPOperation) element).getSoapActionURI();
-							if(soapActionFromDefinition.equals(soapAction)) {
-								javax.wsdl.Message message = responseMode ? bindingOperation.getOperation().getOutput().getMessage() : bindingOperation.getOperation().getInput().getMessage();
-								Map<String, Part> parts = message.getParts();
-								return parts.values().stream().map(Part::getElementName).map(QName::getLocalPart).collect(Collectors.joining(","));
-							}
-						}
-					}
-				}
-			}
-		}
-		return null;
+		return bindings.values().stream()
+				.flatMap(binding -> ((List<BindingOperation>) binding.getBindingOperations()).stream())
+				.filter(bindingOperation -> isMatchingSoapAction(soapAction, bindingOperation))
+				.findFirst()
+				.map(bindingOperation -> responseMode ? bindingOperation.getOperation().getOutput().getMessage() : bindingOperation.getOperation().getInput().getMessage())
+				.map(message -> (Collection<Part>)message.getParts().values())
+				.map(WsdlXmlValidator::mapPartsToSoapBody)
+				.orElse(null);
+	}
+
+	private static String mapPartsToSoapBody(Collection<Part> parts) {
+		return parts.stream()
+				.map(Part::getElementName)
+				.map(QName::getLocalPart)
+				.collect(Collectors.joining(","));
+	}
+
+	@SuppressWarnings("unchecked")
+	private static boolean isMatchingSoapAction(String soapAction, BindingOperation bindingOperation) {
+		return bindingOperation.getExtensibilityElements().stream()
+				.filter(SOAPOperation.class::isInstance)
+				.map(element -> ((SOAPOperation) element).getSoapActionURI())
+				.anyMatch(soapActionFromDefinition -> soapActionFromDefinition.equals(soapAction));
 	}
 
 	private static String getFormattedSchemaLocation(String schemaLocation) {
@@ -278,8 +284,8 @@ public class WsdlXmlValidator extends SoapValidator {
 
 	protected static void addNamespaces(Schema schema, Map<String, String> namespaces) {
 		for (Map.Entry<String,String> e : namespaces.entrySet()) {
-			String key = e.getKey().length() == 0 ? "xmlns" : ("xmlns:" + e.getKey());
-			if (schema.getElement().getAttribute(key).length() == 0) {
+			String key = e.getKey().isEmpty() ? "xmlns" : ("xmlns:" + e.getKey());
+			if (schema.getElement().getAttribute(key).isEmpty()) {
 				schema.getElement().setAttribute(key, e.getValue());
 			}
 		}
@@ -394,9 +400,9 @@ public class WsdlXmlValidator extends SoapValidator {
 }
 
 class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
-	private @Getter ClassLoader configurationClassLoader = null;
-	private String wsdl;
-	private @Getter URL url;
+	private @Getter ClassLoader configurationClassLoader;
+	private final String wsdl;
+	private final @Getter URL url;
 	private @Getter IOException iOException;
 	private @Getter String latestImportURI;
 
@@ -422,7 +428,7 @@ class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 			parentLocation = wsdl;
 		}
 		int i = parentLocation.lastIndexOf('/');
-		if (i == -1) {
+		if (i == -1 || importLocation.startsWith("/")) {
 			latestImportURI = importLocation;
 		} else {
 			latestImportURI = parentLocation.substring(0, i + 1) + importLocation;

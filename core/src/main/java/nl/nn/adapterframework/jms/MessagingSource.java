@@ -57,17 +57,17 @@ public class MessagingSource  {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private int referenceCount;
-	private boolean connectionsArePooledStore = AppConstants.getInstance().getBoolean("jms.connectionsArePooled", false);
-	private boolean sessionsArePooledStore = AppConstants.getInstance().getBoolean("jms.sessionsArePooled", false);
-	private boolean useSingleDynamicReplyQueueStore = AppConstants.getInstance().getBoolean("jms.useSingleDynamicReplyQueue", true);
-	private boolean cleanUpOnClose = AppConstants.getInstance().getBoolean("jms.cleanUpOnClose", true);
-	private boolean createDestination;
-	private boolean useJms102;
+	private final boolean connectionsArePooledStore = AppConstants.getInstance().getBoolean("jms.connectionsArePooled", false);
+	private final boolean sessionsArePooledStore = AppConstants.getInstance().getBoolean("jms.sessionsArePooled", false);
+	private final boolean useSingleDynamicReplyQueueStore = AppConstants.getInstance().getBoolean("jms.useSingleDynamicReplyQueue", true);
+	private final boolean cleanUpOnClose = AppConstants.getInstance().getBoolean("jms.cleanUpOnClose", true);
+	private final boolean createDestination;
+	private final boolean useJms102;
 
 	private @Getter @Setter String authAlias;
 
-	private Counter openConnectionCount = new Counter(0);
-	private Counter openSessionCount = new Counter(0);
+	private final Counter openConnectionCount = new Counter(0);
+	private final Counter openSessionCount = new Counter(0);
 
 	private @Getter String id;
 
@@ -75,7 +75,7 @@ public class MessagingSource  {
 	private ConnectionFactory connectionFactory = null;
 	private Connection globalConnection=null; // only used when connections are not pooled
 
-	private Map<String,MessagingSource> siblingMap;
+	private final Map<String,MessagingSource> siblingMap;
 	private Hashtable<Session,Connection> connectionTable; // hashtable is synchronized and does not permit nulls
 
 	private Queue globalDynamicReplyQueue = null;

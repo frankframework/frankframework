@@ -18,6 +18,8 @@ package nl.nn.adapterframework.validation;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import nl.nn.adapterframework.core.IScopeProvider;
 
 /**
@@ -31,6 +33,8 @@ public interface IXSD extends Schema {
 	boolean isAddNamespaceToSchema();
 	List<String> getRootTags();
 	Set<String> getImportedNamespaces();
+	@Nullable
+	IXSD getImportParent();
 
 	default boolean hasDependency(Set<IXSD> xsds) {
 		for (IXSD xsd : xsds) {
@@ -53,4 +57,6 @@ public interface IXSD extends Schema {
 	String getResourceBase();
 
 	IScopeProvider getScopeProvider();
+
+	int compareToByContents(IXSD x);
 }

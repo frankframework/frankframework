@@ -41,6 +41,7 @@ import nl.nn.adapterframework.util.StringUtil;
  * a fixed position in the line.
  *
  * @author  John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public abstract class AbstractRecordHandler implements IRecordHandler, IWithParameters {
 	protected Logger log = LogUtil.getLogger(this);

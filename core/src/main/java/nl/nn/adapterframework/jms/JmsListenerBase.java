@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.jms;
 
+import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
+
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -57,7 +59,7 @@ import nl.nn.adapterframework.util.DateUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters, IRedeliveringListener<javax.jms.Message> {
+public abstract class JmsListenerBase extends JMSFacade implements HasSender, IWithParameters, IRedeliveringListener<javax.jms.Message> {
 
 	private @Getter long timeOut = 1000; // Same default value as Spring: https://docs.spring.io/spring/docs/3.2.x/javadoc-api/org/springframework/jms/listener/AbstractPollingMessageListenerContainer.html#setReceiveTimeout(long)
 	private @Getter boolean useReplyTo = true;
@@ -69,7 +71,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	private @Getter ISender sender;
 
 
-	private @Getter boolean forceMessageIdAsCorrelationId = false;
+	private @Getter Boolean forceMessageIdAsCorrelationId = null;
 
 	private @Getter boolean soap = false;
 	private @Getter String replyEncodingStyleURI = null;
@@ -85,10 +87,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (isSoap()) {
-			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			//String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
-			//configWarnings.add(log, msg);
-			soapWrapper=SoapWrapper.getInstance();
+			soapWrapper = SoapWrapper.getInstance();
 		}
 		ISender sender = getSender();
 		if (sender != null) {
@@ -97,6 +96,9 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 		if (paramList != null) {
 			paramList.configure();
+		}
+		if (forceMessageIdAsCorrelationId == null) {
+			forceMessageIdAsCorrelationId = false;
 		}
 	}
 
@@ -241,14 +243,14 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<javax.jms.Message> rawMessageWrapper, PipeLineSession session) throws ListenerException {
 		String replyCid = null;
 
-		if (!isForceMessageIdAsCorrelationId()) {
+		if (Boolean.FALSE.equals(forceMessageIdAsCorrelationId)) {
 			replyCid = session.getCorrelationId();
 		}
 		if (StringUtils.isEmpty(replyCid)) {
 			replyCid = session.getMessageId();
 		}
 
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"in JmsListener.afterMessageProcessed()");
+		log.debug("{} in JmsListener.afterMessageProcessed()", this::getLogPrefix);
 		// handle reply
 		try {
 			Destination replyTo = isUseReplyTo() ? (Destination) session.get("replyTo") : null;
@@ -258,17 +260,18 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 			if (replyTo != null) {
 
-				log.debug(getLogPrefix()+"sending reply message with correlationID [" + replyCid + "], replyTo [" + replyTo.toString()+ "]");
+				log.debug("{} sending reply message with correlationID [{}], replyTo [{}]", this::getLogPrefix, logValue(replyCid), logValue(replyTo));
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
-					if (rawMessageWrapper.getRawMessage() != null) {
+					//noinspection DataFlowIssue
+					if (rawMessageWrapper.getRawMessage() instanceof javax.jms.Message) {
 						javax.jms.Message messageReceived = rawMessageWrapper.getRawMessage();
 						long expiration = messageReceived.getJMSExpiration();
 						if (expiration != 0) {
 							timeToLive = expiration - new Date().getTime();
 							if (timeToLive <= 0) {
-								log.warn(getLogPrefix() + "message [" + replyCid + "] expired [" + timeToLive + "]ms, sending response with 1 second time to live");
+								log.warn("{} message [{}] expired [{}]ms, sending response with 1 second time to live", this::getLogPrefix, logValue(replyCid), logValue(timeToLive));
 								timeToLive = 1000;
 								// In case of a temporary queue it might already
 								// have disappeared.
@@ -276,7 +279,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 							}
 						}
 					} else {
-						log.warn(getLogPrefix() + "message with correlationID [" + replyCid + "] is not a JMS message, but [" + rawMessageWrapper.getClass().getName() + "], cannot determine time to live [" + timeToLive + "]ms, sending response with 20 second time to live");
+						log.warn(getLogPrefix() + "{} message with correlationID [{}] is not a JMS message, but [{}], cannot determine time to live [{}]ms, sending response with 20 second time to live", this::getLogPrefix, logValue(replyCid), ()->rawMessageWrapper.getRawMessage().getClass().getName(), logValue(timeToLive));
 						timeToLive = 1000;
 						ignoreInvalidDestinationException = true;
 					}
@@ -336,9 +339,9 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 		return isTransacted() || isJmsTransacted() || getAcknowledgeModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE;
 	}
 
-	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, Map<String, Object> threadContext, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {
-		Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
-		send(session, replyTo, replyCid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
+	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {
+		Session session = (Session) pipeLineSession.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in PipeLineSession by JmsConnector
+		send(session, replyTo, replyCid, prepareReply(plr.getResult(), pipeLineSession), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 	}
 
 	@Deprecated
@@ -349,13 +352,15 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 
 	/**
 	 * Set additional message headers/properties on the JMS response, read after message has been processed!
-	 * @param threadContext which has been build during the pipeline
-	 * @return a map with headers to set to the JMS response
+	 *
+	 * @param session which has been built during the pipeline
+	 * @return a map with headers to set to the JMS response, or {@code null} if there was
+	 * no session or no parameters.
 	 */
-	protected Map<String, Object> getMessageProperties(Map<String, Object> threadContext) {
+	protected Map<String, Object> getMessageProperties(PipeLineSession session) {
 
-		if (threadContext != null && paramList != null) {
-			return new HashMap<>(evaluateParameters(threadContext));
+		if (session != null && paramList != null) {
+			return new HashMap<>(evaluateParameters(session));
 		}
 
 		return null;
@@ -407,7 +412,7 @@ public class JmsListenerBase extends JMSFacade implements HasSender, IWithParame
 	 * When set to <code>true</code>, the messageID is used as Correlation-ID of the reply.
 	 * @ff.default false
 	 */
-	public void setForceMessageIdAsCorrelationId(boolean force){
+	public void setForceMessageIdAsCorrelationId(Boolean force){
 		forceMessageIdAsCorrelationId = force;
 	}
 

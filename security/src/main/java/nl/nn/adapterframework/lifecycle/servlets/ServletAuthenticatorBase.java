@@ -37,6 +37,8 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AndRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import lombok.Getter;
 
@@ -48,7 +50,8 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	protected final Logger log = LogManager.getLogger(this);
 
-	private Set<String> endpoints = new HashSet<>();
+	private Set<String> publicEndpoints = new HashSet<>();
+	private Set<String> privateEndpoints = new HashSet<>();
 	private @Getter ApplicationContext applicationContext;
 	private @Getter Set<String> securityRoles = new HashSet<>();
 	private Properties applicationConstants = null;
@@ -77,11 +80,11 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	@Override
 	public final void registerServlet(ServletConfiguration config) {
-		setEndpoints(config.getUrlMapping());
-		setSecurityRoles(config.getSecurityRoles());
+		addEndpoints(config.getUrlMapping());
+		addSecurityRoles(config.getSecurityRoles());
 	}
 
-	private void setSecurityRoles(List<String> securityRoles) {
+	private void addSecurityRoles(List<String> securityRoles) {
 		if(securityRoles == null || securityRoles.isEmpty()) {
 			this.securityRoles.addAll(DEFAULT_IBIS_ROLES);
 		} else {
@@ -89,19 +92,28 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		}
 	}
 
-	private void setEndpoints(List<String> urlMappings) {
+	private void addEndpoints(List<String> urlMappings) {
 		for(String url : urlMappings) {
-			if(endpoints.contains(url)) {
+			if(publicEndpoints.contains(url) || privateEndpoints.contains(url)) {
 				throw new IllegalStateException("endpoint already configured");
 			}
 
-			log.info("registering url pattern [{}]", url);
-			endpoints.add(url);
+			if(url.charAt(0) == '!') {
+				String publicUrl = url.substring(1);
+				log.info("registering public endpoint with url [{}]", publicUrl);
+				publicEndpoints.add(publicUrl);
+			} else {
+				log.info("registering private endpoint with url pattern [{}]", url);
+				privateEndpoints.add(url);
+			}
 		}
 	}
 
-	protected Set<String> getEndpoints() {
-		return Collections.unmodifiableSet(endpoints);
+	/**
+	 * List of endpoints as well as potential exclusions.
+	 */
+	protected Set<String> getPrivateEndpoints() {
+		return Collections.unmodifiableSet(privateEndpoints);
 	}
 
 	@Override
@@ -109,7 +121,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 		if(applicationContext == null) {
 			throw new IllegalStateException("Authenticator is not wired through local BeanFactory");
 		}
-		if(endpoints.isEmpty()) { //No servlets registered so no need to build/enable this Authenticator
+		if(privateEndpoints.isEmpty()) { //No servlets registered so no need to build/enable this Authenticator
 			log.info("no url matchers found, ignoring Authenticator [{}]", this::getClass);
 			return;
 		}
@@ -132,12 +144,22 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
 			http.csrf().disable(); //Disable because the front-end doesn't support CSFR tokens (yet!)
-			http.securityMatcher(new URLRequestMatcher(endpoints)); //Triggers the SecurityFilterChain
+			RequestMatcher securityRequestMatcher = new URLRequestMatcher(privateEndpoints);
+			http.securityMatcher(securityRequestMatcher); //Triggers the SecurityFilterChain, also for OPTIONS requests!
 			http.formLogin().disable(); //Disable the form login filter
-			http.anonymous().disable(); //Disable the default anonymous filter
 			http.logout().disable(); //Disable the logout endpoint on every filter
 //			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); //Disables cookies
-			http.authorizeHttpRequests().requestMatchers(this::authorizationRequestMatcher).authenticated();
+
+			if(!publicEndpoints.isEmpty()) { //Enable anonymous access on public endpoints
+				http.authorizeHttpRequests().requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll();
+				http.anonymous();
+			} else {
+				http.anonymous().disable(); //Disable the default anonymous filter and thus disallow all anonymous access
+			}
+
+			// Enables security for all servlet endpoints
+			RequestMatcher authorizationRequestMatcher = new AndRequestMatcher(securityRequestMatcher, this::authorizationRequestMatcher);
+			http.authorizeHttpRequests().requestMatchers(authorizationRequestMatcher).authenticated();
 
 			return configure(http);
 		} catch (Exception e) {

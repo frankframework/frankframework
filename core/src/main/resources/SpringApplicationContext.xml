@@ -257,10 +257,11 @@
 
 	<bean
 		name="taskExecutor"
-		class="org.springframework.core.task.SimpleAsyncTaskExecutor"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor"
 		scope="singleton"
 	>
-		<property name="ThreadFactory" ref="namedThreadFactory"/>
+		<property name="threadFactory" ref="namedThreadFactory"/>
+		<property name="queueCapacity" value="0"/>
 	</bean>
 
 	<bean

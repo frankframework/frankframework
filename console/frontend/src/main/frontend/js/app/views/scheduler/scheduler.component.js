@@ -15,10 +15,14 @@ const SchedulerController = function ($rootScope, $timeout, Api, Poller, $state,
         }, true, 5000);
 
 		ctrl.databaseSchedulesEnabled = appService.databaseSchedulesEnabled;
-		$rootScope.$on('databaseSchedulesEnabled', function (){
+		ctrl.unregister$on = $rootScope.$on('databaseSchedulesEnabled', function (){
 			ctrl.databaseSchedulesEnabled = appService.databaseSchedulesEnabled;
 		});
     };
+
+	ctrl.$onDestroy = function(){
+		ctrl.unregister$on();
+	}
 
     ctrl.$onDestroy = function () {
         Poller.remove("schedules");

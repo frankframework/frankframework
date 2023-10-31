@@ -72,8 +72,7 @@ public class CredentialResolver implements AdditionalStringResolver {
 			if(StringResolver.needsResolution(property)) {
 				property = StringResolver.substVars(property, props1);
 			}
-			Set<String> aliases = new HashSet<>(Arrays.asList(property.split(",")));
-			authAliasesAllowedToExpand = aliases;
+			authAliasesAllowedToExpand = new HashSet<>(Arrays.asList(property.split(",")));
 		}
 		return authAliasesAllowedToExpand.contains(aliasName);
 	}

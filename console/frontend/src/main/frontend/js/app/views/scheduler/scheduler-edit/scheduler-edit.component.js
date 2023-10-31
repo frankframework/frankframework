@@ -19,15 +19,16 @@ const SchedulerEditController = function ($scope, Api, $stateParams, $rootScope,
 		locker: false,
 		lockkey: "",
 	};
+	ctrl.unregister$on = [];
 
     ctrl.$onInit = function () {
         var url = "schedules/" + $stateParams.group + "/jobs/" + $stateParams.name;
 
         ctrl.configurations = appService.configurations;
-        $rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
+		ctrl.unregister$on.push($rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; }));
 
         ctrl.adapters = appService.adapters;
-        $rootScope.$on('adapters', function () { ctrl.adapters = appService.adapters; });
+		ctrl.unregister$on($rootScope.$on('adapters', function () { ctrl.adapters = appService.adapters; }));
 
         Api.Get(url, function (data) {
             ctrl.selectedConfiguration = data.configuration;
@@ -45,6 +46,11 @@ const SchedulerEditController = function ($scope, Api, $stateParams, $rootScope,
             };
         });
     };
+
+	ctrl.$onDestroy = function(){
+		for (const unregister of ctrl.unregister$on)
+			unregister();
+	}
 
 	ctrl.submit = function (form) {
 		var fd = new FormData();
@@ -65,7 +71,7 @@ const SchedulerEditController = function ($scope, Api, $stateParams, $rootScope,
 		fd.append("message", ctrl.form.message);
 		fd.append("description", ctrl.form.description);
 		fd.append("locker", ctrl.form.locker);
-        
+
 		if (ctrl.form.lockkey)
 			fd.append("lockkey", ctrl.form.lockkey);
 

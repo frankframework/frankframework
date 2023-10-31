@@ -7,24 +7,24 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>7.9-SNAPSHOT</revision>
+		<revision>8.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<log4j2.version>2.20.0</log4j2.version>
+		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.source>11</maven.compiler.source>
+		<log4j2.version>2.21.1</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
-		<jackson.version>2.15.2</jackson.version>
-		<cxf.version>3.5.7</cxf.version>
+		<jackson.version>2.15.3</jackson.version>
+		<cxf.version>3.6.2</cxf.version>
 		<spring.version>5.3.30</spring.version>
-		<spring-security.version>5.8.7</spring-security.version>
+		<spring-security.version>5.8.8</spring-security.version>
 		<spring-integration.version>5.5.19</spring-integration.version>
 
-		<narayana.version>5.12.7.Final</narayana.version>
+		<narayana.version>5.13.1.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
-		<micrometer.version>1.11.4</micrometer.version>
+		<micrometer.version>1.11.5</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
@@ -35,14 +35,14 @@
 		<oracle.driver.version>18.3.0.0</oracle.driver.version>
 		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
 		<mssql.driver.version>7.4.1.jre8</mssql.driver.version>
-		<mysql.driver.version>8.1.0</mysql.driver.version>
+		<mysql.driver.version>8.2.0</mysql.driver.version>
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
 		<mariadb.driver.version>2.7.10</mariadb.driver.version>
 		<postgresql.driver.version>42.6.0</postgresql.driver.version>
-		<mongodb.driver.version>4.10.2</mongodb.driver.version>
+		<mongodb.driver.version>4.11.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>5.16.6</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
+		<activemq.driver.version>5.16.7</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
 		<artemis.driver.version>2.19.1</artemis.driver.version><!-- ActiveMQ Artemis v2.19 is the last that works with Java 8 -->
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
@@ -100,6 +100,44 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- Lock transient dependency versions to fix CVE's -->
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>1.9.4</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>1.5</version>
+			</dependency>
+			<dependency>
+				<groupId>net.minidev</groupId>
+				<artifactId>json-smart</artifactId>
+				<version>2.5.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jdom</groupId>
+				<artifactId>jdom2</artifactId>
+				<version>2.0.6.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.protobuf</groupId>
+				<artifactId>protobuf-java</artifactId>
+				<version>3.24.4</version>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-transport-native-epoll</artifactId>
+				<version>4.1.100.Final</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>32.1.3-jre</version>
+			</dependency>
+			<!-- End Lock transient deps -->
+
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-commons</artifactId>
@@ -240,29 +278,6 @@
 				<artifactId>jakarta.activation</artifactId>
 				<version>2.0.1</version>
 			</dependency>
-
-			<!-- Lock transient dependency versions to fix CVE's -->
-			<dependency>
-				<groupId>commons-beanutils</groupId>
-				<artifactId>commons-beanutils</artifactId>
-				<version>1.9.4</version>
-			</dependency>
-			<dependency>
-				<groupId>net.minidev</groupId>
-				<artifactId>json-smart</artifactId>
-				<version>2.5.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jdom</groupId>
-				<artifactId>jdom2</artifactId>
-				<version>2.0.6.1</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.protobuf</groupId>
-				<artifactId>protobuf-java</artifactId>
-				<version>3.24.3</version>
-			</dependency>
-			<!-- End Lock transient deps -->
 
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
@@ -455,6 +470,11 @@
 				<version>3.13.0</version>
 			</dependency>
 			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-text</artifactId>
+				<version>1.11.0</version>
+			</dependency>
+			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
 				<version>1.16.0</version>
@@ -462,12 +482,12 @@
 			<dependency>
 				<groupId>commons-net</groupId>
 				<artifactId>commons-net</artifactId>
-				<version>3.9.0</version>
+				<version>3.10.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.14.0</version>
+				<version>2.15.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.mail</groupId>
@@ -501,7 +521,7 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>4.11.0</version>
+				<version>5.5.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
@@ -564,7 +584,7 @@
 					<excludes>
 						<exclude>it.**</exclude>
 					</excludes>
-					<argLine>@{argLine} -Dfile.encoding=CP-1252</argLine>
+					<argLine>@{argLine} -Dfile.encoding=CP-1252 --illegal-access=permit</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -599,6 +619,7 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.11.0</version>
 					<configuration>
+						<release>${maven.compiler.target}</release>
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
 					</configuration>
@@ -713,7 +734,7 @@
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.8.10</version>
+					<version>0.8.11</version>
 					<executions>
 						<execution>
 							<id>prepare-jacoco</id>
@@ -802,7 +823,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>3.3.0</version>
+					<version>3.3.1</version>
 					<configuration>
 						<configLocation>${iaf.rootdir}/checkstyle.xml</configLocation>
 						<propertyExpansion>config_loc=${iaf.rootdir}</propertyExpansion>
@@ -967,6 +988,19 @@
 											<exclude>jakarta.activation:jakarta.activation-api</exclude>
 										</excludes>
 										<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<excludes>
+											<exclude>org.bouncycastle:*-jdk12</exclude>
+											<exclude>org.bouncycastle:*-jdk14</exclude>
+											<exclude>org.bouncycastle:*-jdk15</exclude>
+											<exclude>org.bouncycastle:*-jdk16</exclude>
+											<exclude>org.bouncycastle:*-jdk15to18</exclude>
+											<exclude>org.bouncycastle:*-ext-jdk15on</exclude>
+											<exclude>org.bouncycastle:*-jdk15on</exclude>
+											<exclude>bouncycastle:*</exclude>
+										</excludes>
+										<message>use the newer 'org.bouncycastle:*-jdk18on' version of org.bouncycastle</message>
 									</bannedDependencies>
 								</rules>
 							</configuration>
@@ -1155,6 +1189,16 @@
 				<module>ladybug</module>
 				<module>test</module>
 				<module>example</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>extra-modules</id>
+			<activation>
+				<property>
+					<name>extra-modules</name>
+				</property>
+			</activation>
+			<modules>
 				<module>akamai</module>
 				<module>aws</module>
 				<module>cmis</module>
@@ -1337,44 +1381,6 @@
 					</plugin>
 				</plugins>
 			</reporting>
-		</profile>
-		<profile><!-- This profile should only activate when explicitly specified, and running on JDK11 -->
-			<id>jdk11</id>
-			<activation>
-				<jdk>11</jdk>
-				<property>
-					<name>jdk11</name>
-				</property>
-			</activation>
-			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<artifactId>maven-compiler-plugin</artifactId>
-							<configuration>
-								<release>11</release>
-							</configuration>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-				<plugins>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<version>2.22.2</version>
-						<configuration>
-							<redirectTestOutputToFile>true</redirectTestOutputToFile>
-							<reuseForks>true</reuseForks>
-							<includes>
-								<include>**/*.java</include>
-							</includes>
-							<excludes>
-								<exclude>it.**</exclude>
-							</excludes>
-							<argLine>@{argLine} -Dfile.encoding=CP-1252 --illegal-access=permit</argLine>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
 		</profile>
 		<profile><!-- https://stackoverflow.com/a/12598554/17193564 -->
 			<id>alternateBuildDir</id>

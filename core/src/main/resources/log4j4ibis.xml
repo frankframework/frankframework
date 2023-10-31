@@ -115,7 +115,7 @@
 			<AppenderRef ref="msg-text"/>
 			<AppenderRef ref="msg-json"/>
 		</Logger>
-		<Logger name="SEC" additivity="false" level="INFO">
+		<Logger name="SEC" additivity="false" level="${ctx:security.log.level}">
 			<AppenderRef ref="security"/>
 		</Logger>
 		<Logger name="HEARTBEAT" additivity="false" level="INFO">
