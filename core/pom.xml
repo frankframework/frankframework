@@ -702,7 +702,7 @@
 			</exclusions>
 		</dependency>
 
-		<!-- TODO, find a new SAAJ implementation -->
+		<!-- TODO, find a new SAAJ implementation once we upgrade to Jakarta -->
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.saaj-impl</artifactId>
