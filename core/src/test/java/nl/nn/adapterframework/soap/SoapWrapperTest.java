@@ -304,6 +304,9 @@ public class SoapWrapperTest {
 		if (nl.getLength() == 0) {
 			fail("Cannot find Signature element");
 		}
+		if (nl.getLength() > 1) {
+			fail("More then one Signature element");
+		}
 
 		DOMValidateContext valContext = new DOMValidateContext(new UsernameTokenSelector(), nl.item(0));
 		XMLSignatureFactory factory = XMLSignatureFactory.getInstance("DOM");
