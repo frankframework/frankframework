@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.ftp;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp.LsEntry;
@@ -22,11 +23,10 @@ import com.jcraft.jsch.SftpATTRS;
 
 import lombok.Getter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.FilenameUtils;
 
 /**
  * Wrapper around a FTPFile to allow for relative path operations
- * 
+ *
  * @author Niels Meijer
  *
  */

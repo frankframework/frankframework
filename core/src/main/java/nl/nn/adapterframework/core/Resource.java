@@ -21,13 +21,13 @@ import java.net.URL;
 
 import javax.xml.transform.Source;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
-import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
