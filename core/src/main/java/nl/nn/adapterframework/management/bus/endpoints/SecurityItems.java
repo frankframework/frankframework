@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
-import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,16 +26,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -49,13 +40,11 @@ import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.management.bus.BusAware;
-import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
 @BusAware("frank-management-bus")
@@ -64,154 +53,19 @@ public class SecurityItems extends BusEndpointBase {
 	@TopicSelector(BusTopic.SECURITY_ITEMS)
 	public Message<String> getSecurityItems(Message<?> message) {
 		Map<String, Object> returnMap = new HashMap<>();
-		returnMap.put("securityRoles", getApplicationDeploymentDescriptor());
+		returnMap.put("securityRoles", null); //TODO find out all servlet roles and return them
 		returnMap.put("jmsRealms", addJmsRealms());
 		returnMap.put("datasources", addDataSources());
 		returnMap.put("sapSystems", addSapSystems());
 		returnMap.put("authEntries", addAuthEntries());
-		returnMap.put("serverProps", addServerProps());
 		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
 
 		return new JsonResponseMessage(returnMap);
 	}
 
-	private Map<String, Object> getApplicationDeploymentDescriptor() {
-		String appDDString = null;
-		Map<String, Object> resultList = new HashMap<>();
-		Document xmlDoc = null;
-
-		try {
-			appDDString = Misc.getApplicationDeploymentDescriptor();
-			if (appDDString != null) {
-				appDDString = XmlUtils.skipXmlDeclaration(appDDString);
-				appDDString = XmlUtils.skipDocTypeDeclaration(appDDString);
-				appDDString = XmlUtils.removeNamespaces(appDDString);
-				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-				InputSource inputSource = new InputSource(new StringReader(appDDString));
-				xmlDoc = dBuilder.parse(inputSource);
-				xmlDoc.getDocumentElement().normalize();
-			}
-		}
-		catch (Exception e) {
-			log.debug("cannot get deployment descriptor", e);
-			return null;
-		}
-
-		Map<String, Map<String, List<String>>> secBindings = getSecurityRoleBindings();
-
-		if (xmlDoc==null || secBindings == null) {
-			log.debug("could get deployment descriptor");
-			return null;
-		}
-
-		NodeList rowset = xmlDoc.getElementsByTagName("security-role");
-		for (int i = 0; i < rowset.getLength(); i++) {
-			Element row = (Element) rowset.item(i);
-			NodeList fieldsInRowset = row.getChildNodes();
-			if (fieldsInRowset != null && fieldsInRowset.getLength() > 0) {
-				Map<String, Object> tmp = new HashMap<>();
-				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
-					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
-						Element field = (Element) fieldsInRowset.item(j);
-						tmp.put(field.getNodeName(), field.getTextContent());
-					}
-				}
-				if(secBindings.containsKey(row.getAttribute("id"))) {
-					tmp.putAll(secBindings.get(row.getAttribute("id")));
-				}
-				try {
-					if(tmp.containsKey("role-name")) {
-						String role = (String) tmp.get("role-name");
-						tmp.put("allowed", BusMessageUtils.hasRole(role));
-					}
-				} catch(Exception e) {
-					log.warn("unable to check user authorities against the provided security roles", e);
-				}
-				resultList.put(row.getAttribute("id"), tmp); //items are stored under the security-role-id
-			}
-		}
-
-		if(resultList.size() == 0) {
-			return null;
-		}
-
-		return resultList;
-	}
-
-	private Map<String, Map<String, List<String>>> getSecurityRoleBindings() {
-		String appBndString = null;
-		Map<String, Map<String, List<String>>> resultList = new HashMap<>();
-		Document xmlDoc = null;
-
-		try {
-			appBndString = Misc.getDeployedApplicationBindings();
-			if (StringUtils.isNotEmpty(appBndString)) {
-				appBndString = XmlUtils.removeNamespaces(appBndString);
-				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-				InputSource inputSource = new InputSource(new StringReader(appBndString));
-				xmlDoc = dBuilder.parse(inputSource);
-				xmlDoc.getDocumentElement().normalize();
-			}
-		} catch (Exception e) {
-			log.debug("cannot get security role bindings", e);
-			return null;
-		}
-
-		if (xmlDoc==null) {
-			log.debug("could get security role bindings");
-			return null;
-		}
-
-		NodeList rowset = xmlDoc.getElementsByTagName("authorizations");
-		for (int i = 0; i < rowset.getLength(); i++) {
-			Element row = (Element) rowset.item(i);
-			NodeList fieldsInRowset = row.getChildNodes();
-			if (fieldsInRowset != null && fieldsInRowset.getLength() > 0) {
-				String role = null;
-				List<String> roles = new ArrayList<>();
-				List<String> specialSubjects = new ArrayList<>();
-				for (int j = 0; j < fieldsInRowset.getLength(); j++) {
-					if (fieldsInRowset.item(j).getNodeType() == Node.ELEMENT_NODE) {
-						Element field = (Element) fieldsInRowset.item(j);
-
-						if("role".equals(field.getNodeName())) {
-							role = field.getAttribute("href");
-							if(role.indexOf("#") > -1)
-								role = role.substring(role.indexOf("#")+1);
-						}
-						else if("specialSubjects".equals(field.getNodeName())) {
-							specialSubjects.add(field.getAttribute("name"));
-						}
-						else if("groups".equals(field.getNodeName())) {
-							roles.add(field.getAttribute("name"));
-						}
-					}
-				}
-				if(role != null && !role.isEmpty()) {
-					Map<String, List<String>> roleBinding = new HashMap<>();
-					roleBinding.put("groups", roles);
-					roleBinding.put("specialSubjects", specialSubjects);
-					resultList.put(role, roleBinding);
-				}
-			}
-		}
-		return resultList;
-	}
-
-	private String getConfigurationResources() {
-		String confResString = Misc.getConfigurationResources();
-		if (confResString != null) {
-			return XmlUtils.removeNamespaces(confResString);
-		}
-		return null;
-	}
-
 	private ArrayList<Object> addJmsRealms() {
 		List<String> jmsRealms = JmsRealmFactory.getInstance().getRegisteredRealmNamesAsList();
 		ArrayList<Object> jmsRealmList = new ArrayList<>();
-		String confResString = getConfigurationResources();
 
 		for (String realmName : jmsRealms) {
 			Map<String, Object> realm = new HashMap<>();
@@ -223,7 +77,7 @@ public class SecurityItems extends BusEndpointBase {
 			String cfInfo = null;
 
 			if(StringUtils.isNotEmpty(dsName)) {
-				realm = mapDataSource(realmName, dsName, confResString);
+				realm = mapDataSource(realmName, dsName);
 			} else {
 				JmsSender js = new JmsSender();
 				js.setJmsRealm(realmName);
@@ -239,13 +93,6 @@ public class SecurityItems extends BusEndpointBase {
 					realm.put("name", realmName);
 					realm.put("queueConnectionFactoryName", qcfName);
 					realm.put("info", cfInfo);
-
-					if (confResString!=null) {
-						String connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JMS", qcfName);
-						if (StringUtils.isNotEmpty(connectionPoolProperties)) {
-							realm.put("connectionPoolProperties", connectionPoolProperties);
-						}
-					}
 				} else if (StringUtils.isNotEmpty(tcfName)) {
 					realm.put("name", realmName);
 					realm.put("topicConnectionFactoryName", tcfName);
@@ -262,16 +109,15 @@ public class SecurityItems extends BusEndpointBase {
 		IDataSourceFactory dataSourceFactory = getBean("dataSourceFactory", IDataSourceFactory.class);
 		List<String> dataSourceNames = dataSourceFactory.getDataSourceNames();
 		dataSourceNames.sort(Comparator.naturalOrder()); //AlphaNumeric order
-		String confResString = getConfigurationResources();
 
 		ArrayList<Object> dsList = new ArrayList<>();
 		for(String datasourceName : dataSourceNames) {
-			dsList.add(mapDataSource(null, datasourceName, confResString));
+			dsList.add(mapDataSource(null, datasourceName));
 		}
 		return dsList;
 	}
 
-	private Map<String, Object> mapDataSource(String jmsRealm, String datasourceName, String confResString) {
+	private Map<String, Object> mapDataSource(String jmsRealm, String datasourceName) {
 		Map<String, Object> realm = new HashMap<>();
 		FixedQuerySender qs = createBean(FixedQuerySender.class);
 
@@ -293,12 +139,6 @@ public class SecurityItems extends BusEndpointBase {
 		realm.put("datasourceName", datasourceName);
 		realm.put("info", dsInfo);
 
-		if (confResString!=null) {
-			String connectionPoolProperties = Misc.getConnectionPoolProperties(confResString, "JDBC", datasourceName);
-			if (StringUtils.isNotEmpty(connectionPoolProperties)) {
-				realm.put("connectionPoolProperties", connectionPoolProperties);
-			}
-		}
 		return realm;
 	}
 
@@ -397,24 +237,5 @@ public class SecurityItems extends BusEndpointBase {
 		}
 
 		return authEntries;
-	}
-
-	private Map<String, Object> addServerProps() {
-		Map<String, Object> serverProps = new HashMap<>(2);
-
-		Integer totalTransactionLifetimeTimeout = Misc.getTotalTransactionLifetimeTimeout();
-		if(totalTransactionLifetimeTimeout == null) {
-			serverProps.put("totalTransactionLifetimeTimeout", "-");
-		} else {
-			serverProps.put("totalTransactionLifetimeTimeout", totalTransactionLifetimeTimeout);
-		}
-
-		int maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
-		if(maximumTransactionTimeout <= 0 ) {
-			serverProps.put("maximumTransactionTimeout", "-");
-		} else {
-			serverProps.put("maximumTransactionTimeout", maximumTransactionTimeout);
-		}
-		return serverProps;
 	}
 }
