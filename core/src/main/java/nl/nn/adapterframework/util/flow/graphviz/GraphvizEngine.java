@@ -46,7 +46,7 @@ public class GraphvizEngine {
 	private String fileFormat = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG");
 
 	// Available JS Engines. Lower index has priority.
-	private static String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8,nl.nn.adapterframework.extensions.javascript.Nashorn").split(",");
+	private static final String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8").split(",");
 
 	private Options defaultOptions = null;
 

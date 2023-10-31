@@ -5,17 +5,17 @@
 /*
 * Standard WebSphere variables for use in dynamic policy files:
 * (These variables can be used without defining them as custom properties)
-* Symbol                              Definition      
-* ${app.installed.path}      Path where the application is installed      
-* ${was.module.path}            Path where the module is installed      
-* ${current.cell.name}            Current cell name      
-* ${current.node.name}            Current node name      
-* ${current.server.name}      Current server name      
-* ${was.install.root}            
+* Symbol                              Definition
+* ${app.installed.path}      Path where the application is installed
+* ${was.module.path}            Path where the module is installed
+* ${current.cell.name}            Current cell name
+* ${current.node.name}            Current node name
+* ${current.server.name}      Current server name
+* ${was.install.root}
 *
 * Standard SDI custom properties that can also be used in dynamic policy files:
-* Name                                    Example Value      
-* APPSERVER_ROOT_DIR            /data/WAS/6.1/wasap0x                          
+* Name                                    Example Value
+* APPSERVER_ROOT_DIR            /data/WAS/6.1/wasap0x
 */
 
 grant codeBase "file:${application}" {
@@ -117,13 +117,6 @@ permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xml.*";
 permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xerces.*";
 permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xalan.*";
 permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xpath.*";
-
-
-// required for the Nashorn javascript engine
-permission java.lang.RuntimePermission "accessClassInPackage.jdk.internal.dynalink.support";
-permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime";
-permission java.lang.RuntimePermission "accessClassInPackage.jdk.nashorn.internal.runtime.*";
-permission java.util.PropertyPermission "com.ibm.websphere.security.dumpJaasConfig", "read";
 
 // required for MS SQL:
 permission java.lang.RuntimePermission "accessClassInPackage.sun.jdbc.odbc";
