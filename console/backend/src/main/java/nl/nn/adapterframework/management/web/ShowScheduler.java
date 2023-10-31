@@ -111,7 +111,7 @@ public class ShowScheduler extends FrankApiBase {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateSchedule(@PathParam("groupName") String groupName, @PathParam("jobName") String jobName, MultipartBody input) {
-		return createSchedule(groupName, jobName, input, true);
+		return createSchedule(this, groupName, jobName, input, true);
 	}
 
 	@POST
@@ -125,11 +125,11 @@ public class ShowScheduler extends FrankApiBase {
 
 	private Response createSchedule(String groupName, MultipartBody input) {
 		String jobName = RequestUtils.resolveStringFromMap(input, "name");
-		return createSchedule(groupName, jobName, input, false);
+		return createSchedule(this, groupName, jobName, input, false);
 	}
 
-	private Response createSchedule(String groupName, String jobName, MultipartBody inputDataMap, boolean overwrite) {
-		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.UPLOAD);
+	protected static Response createSchedule(FrankApiBase base, String groupName, String jobName, MultipartBody inputDataMap, boolean overwrite) {
+		RequestMessageBuilder builder = RequestMessageBuilder.create(base, BusTopic.SCHEDULER, BusAction.UPLOAD);
 		builder.addHeader("job", jobName);
 		builder.addHeader("group", groupName);
 
@@ -152,7 +152,7 @@ public class ShowScheduler extends FrankApiBase {
 			builder.addHeader("overwrite", overwrite);
 		}
 
-		return callSyncGateway(builder);
+		return base.callSyncGateway(builder);
 	}
 
 	@DELETE

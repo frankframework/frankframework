@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,10 +25,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.jms.MessagingSource;
-import nl.nn.adapterframework.jms.MessagingSourceFactory;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.ing.ifsa.IFSAConstants;
@@ -36,34 +32,38 @@ import com.ing.ifsa.IFSAContext;
 import com.ing.ifsa.IFSAGate;
 import com.ing.ifsa.IFSAQueueConnectionFactory;
 
+import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.jms.MessagingSource;
+import nl.nn.adapterframework.jms.MessagingSourceFactory;
+
 /**
- * Factory for {@link IfsaMessagingSource}s, to share them for IFSA Objects that can use the same. 
- * 
+ * Factory for {@link IfsaMessagingSource}s, to share them for IFSA Objects that can use the same.
+ *
  * IFSA related IBIS objects can obtain a MessagingSource from this class. The physical connection is shared
  * between all IBIS objects that have the same ApplicationID.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class IfsaMessagingSourceFactory extends MessagingSourceFactory {
 
 	private static final String IFSA_INITIAL_CONTEXT_FACTORY="com.ing.ifsa.IFSAContextFactory";
 	private static final String IFSA_PROVIDER_URL_V2_0="IFSA APPLICATION BUS";
-	private static Map ifsaMessagingSourceMap = new HashMap();	
+	private static final Map<String, MessagingSource> IFSA_MESSAGING_SOURCE_MAP = new HashMap<>();
 
 	@Override
-	protected Map getMessagingSourceMap() {
-		return ifsaMessagingSourceMap;
+	protected Map<String, MessagingSource> getMessagingSourceMap() {
+		return IFSA_MESSAGING_SOURCE_MAP;
 	}
 
 	// the following two booleans are only valid if an IFSAQueueConnectionFactory has been created
-	// using createConnectionFactory() 
-	private boolean preJms22Api=false; 
+	// using createConnectionFactory()
+	private boolean preJms22Api=false;
 	private boolean xaEnabled=false;
 
 	@Override
 	protected MessagingSource createMessagingSource(String id, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		IFSAContext context = (IFSAContext)getContext();
-		IFSAQueueConnectionFactory connectionFactory = (IFSAQueueConnectionFactory)getConnectionFactory(context, id, createDestination, useJms102); 
+		IFSAQueueConnectionFactory connectionFactory = (IFSAQueueConnectionFactory)getConnectionFactory(context, id, createDestination, useJms102);
 		return new IfsaMessagingSource(id, context, connectionFactory, getMessagingSourceMap(),preJms22Api, xaEnabled);
 	}
 
@@ -96,7 +96,7 @@ public class IfsaMessagingSourceFactory extends MessagingSourceFactory {
 
 	@Override
 	protected Context createContext() throws NamingException {
-		log.info("IFSA API installed version ["+IFSAConstants.getVersionInfo()+"]");	
+		log.info("IFSA API installed version ["+IFSAConstants.getVersionInfo()+"]");
 		Hashtable env = new Hashtable(11);
 		env.put(Context.INITIAL_CONTEXT_FACTORY, IFSA_INITIAL_CONTEXT_FACTORY);
 		env.put(Context.PROVIDER_URL, getProviderUrl());
@@ -108,20 +108,20 @@ public class IfsaMessagingSourceFactory extends MessagingSourceFactory {
 	protected ConnectionFactory createConnectionFactory(Context context, String applicationId, boolean createDestination, boolean useJms102) throws IbisException, NamingException {
 		IFSAQueueConnectionFactory ifsaQueueConnectionFactory = (IFSAQueueConnectionFactory) ((IFSAContext)context).lookupBusConnection(applicationId);
 		if (log.isDebugEnabled()) {
-			log.debug("IfsaConnection for application ["+applicationId+"] got ifsaQueueConnectionFactory with properties:" 
-				+ ToStringBuilder.reflectionToString(ifsaQueueConnectionFactory) +"\n" 
-				+ " isServer: " +ifsaQueueConnectionFactory.IsServer()+"\n"  
-				+ " isClientNonTransactional:" +ifsaQueueConnectionFactory.IsClientNonTransactional()+"\n" 
-				+ " isClientTransactional:" +ifsaQueueConnectionFactory.IsClientTransactional()+"\n" 
-				+ " isClientServerNonTransactional:" +ifsaQueueConnectionFactory.IsClientServerNonTransactional()+"\n" 
+			log.debug("IfsaConnection for application ["+applicationId+"] got ifsaQueueConnectionFactory with properties:"
+				+ ToStringBuilder.reflectionToString(ifsaQueueConnectionFactory) +"\n"
+				+ " isServer: " +ifsaQueueConnectionFactory.IsServer()+"\n"
+				+ " isClientNonTransactional:" +ifsaQueueConnectionFactory.IsClientNonTransactional()+"\n"
+				+ " isClientTransactional:" +ifsaQueueConnectionFactory.IsClientTransactional()+"\n"
+				+ " isClientServerNonTransactional:" +ifsaQueueConnectionFactory.IsClientServerNonTransactional()+"\n"
 			+ " isServerTransactional:" +ifsaQueueConnectionFactory.IsClientServerTransactional()+"\n" );
 		}
 		if (!preJms22Api) {
 			try {
 				IFSAGate gate = IFSAGate.getInstance();
 				xaEnabled=gate.isXA();
-				log.info("IFSA JMS XA enabled ["+xaEnabled+"]");        
-				log.info("IFSA JMS hasDynamicReplyQueue: " +((IFSAContext)context).hasDynamicReplyQueue()); 
+				log.info("IFSA JMS XA enabled ["+xaEnabled+"]");
+				log.info("IFSA JMS hasDynamicReplyQueue: " +((IFSAContext)context).hasDynamicReplyQueue());
 			} catch (Throwable t) {
 				log.info("caught exception determining IfsaJms v2.2+ features:",t);
 			}

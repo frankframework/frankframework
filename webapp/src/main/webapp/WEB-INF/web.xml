@@ -74,95 +74,20 @@
 		<realm-name>Frank</realm-name>
 	</login-config>
 
-	<security-constraint>
-		<display-name>PublicAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>PublicAccessResourceCollection</web-resource-name>
-			<description>collection of url's for public access (overruled by other collections for specific url's)</description>
-			<url-pattern>/*</url-pattern>
-			<url-pattern>/iaf/api/server/health</url-pattern>
-		</web-resource-collection>
-	</security-constraint>
-
 	<!--
-	LEGACY URL-based security configuration, now superseded by dynamic servlet configuration.
-	See nl.nn.adapterframework.lifecycle.ServletManager
-
-	When a security-constraint element is present, Tomcat will authenticate the
-	user for all url's.
+	When a security-constraint element is present Tomcat will authenticate the
+	user for all url's whereas WebSphere does this only for the url's mentioned
+	in the security constraint(s). The PublicAccess security constraint will
+	make Tomcat behave the same as WebSphere.
 	-->
-
-	<!-- security-constraint>
-		<web-resource-collection>
-			<web-resource-name>GUI login</web-resource-name>
-			<description></description>
-			<url-pattern>/iaf/</url-pattern>
-			<url-pattern>/iaf/index.jsp</url-pattern>
-			<http-method>GET</http-method>
-			<http-method>POST</http-method>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisObserver</role-name>
-			<role-name>IbisAdmin</role-name>
-			<role-name>IbisDataAdmin</role-name>
-			<role-name>IbisTester</role-name>
-			<role-name>IbisWebService</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>IAFAPI</web-resource-name>
-			<description></description>
-			<url-pattern>/iaf/api/*</url-pattern>
-			<http-method>OPTIONS</http-method>
-		</web-resource-collection>
-	</security-constraint>
-
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>IAFAPI</web-resource-name>
-			<description></description>
-			<url-pattern>/iaf/api/*</url-pattern>
-			<http-method>GET</http-method>
-			<http-method>POST</http-method>
-			<http-method>PUT</http-method>
-			<http-method>DELETE</http-method>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisObserver</role-name>
-			<role-name>IbisAdmin</role-name>
-			<role-name>IbisDataAdmin</role-name>
-			<role-name>IbisTester</role-name>
-			<role-name>IbisWebService</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-
 	<security-constraint>
 		<display-name>PublicAccess</display-name>
 		<web-resource-collection>
 			<web-resource-name>PublicAccessResourceCollection</web-resource-name>
 			<description>collection of url's for public access (overruled by other collections for specific url's)</description>
 			<url-pattern>/*</url-pattern>
-			<url-pattern>/iaf/api/server/health</url-pattern>
 		</web-resource-collection>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
 	</security-constraint>
-	<security-role>
-		<description>all authenticated users</description>
-		<role-name>**</role-name>
-	</security-role -->
-	<!-- The above role exists solely for the ibis-war-plugin which removes the 'dashes' from the endElement tag -->
 
 	<!-- These roles are parsed when Spring Security is enabled and uses JEE container authorization. -->
 	<security-role>

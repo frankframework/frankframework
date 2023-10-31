@@ -131,7 +131,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public String getUrlMapping() {
-		return "iaf/api/*";
+		return "iaf/api/*,!/iaf/api/server/health";
 	}
 
 	@Override

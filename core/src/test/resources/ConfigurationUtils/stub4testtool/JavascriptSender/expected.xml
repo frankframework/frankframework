@@ -24,7 +24,7 @@
 				        <sender className="nl.nn.adapterframework.senders.JavascriptSender"
                     jsFileName="JavaScript/JavascriptTest.js"
                     jsFunctionName="f2"
-                    engineName="Rhino"/>
+                    engineName="J2V8"/>
 				        <forward name="success" path="READY"/>
 			      </pipe>
 		    </pipeline>

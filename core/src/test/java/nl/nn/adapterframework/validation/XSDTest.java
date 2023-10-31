@@ -39,6 +39,14 @@ public class XSDTest {
 	}
 
 	@Test
+	public void xsdUrlEncoded() throws Exception {
+		XSD xsd = new ResourceXsd();
+		xsd.initNamespace("http://test", scopeProvider, "XSDTest/v1%20test.xsd");
+		assertEquals("http://test", xsd.getNamespace());
+		assertEquals("http://www.ing.com/pim", xsd.getTargetNamespace());
+	}
+
+	@Test
 	public void writeXSD() throws Exception {
 		XSD xsd = new ResourceXsd();
 		xsd.initNamespace("http://test", scopeProvider, "XSDTest/test.xsd");

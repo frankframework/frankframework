@@ -225,12 +225,12 @@ public abstract class ClassUtils {
 
 	private static Object parseValueToSet(Method m, String value) throws IllegalArgumentException {
 		Class<?> setterArgumentClass = m.getParameters()[0].getType();
-		String fieldName = StringUtil.lcFirst(m.getName().substring(3));
 
 		//Try to parse as primitive
 		try {
 			return convertToType(setterArgumentClass, value);
 		} catch (IllegalArgumentException e) {
+			String fieldName = StringUtil.lcFirst(m.getName().substring(3));
 			throw new IllegalArgumentException("cannot set field ["+fieldName+"]: " + e.getMessage(), e);
 		}
 	}

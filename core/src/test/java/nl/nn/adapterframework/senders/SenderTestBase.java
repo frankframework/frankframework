@@ -24,6 +24,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.ISender;
@@ -88,5 +89,10 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 		URL url = PipeTestBase.class.getResource(relativeUrl);
 		assertNotNull(url, "unable to find resource ["+resource+"] in path ["+relativeUrl+"]");
 		return new UrlMessage(url);
+	}
+
+	@Test
+	public void testIfToStringWorks() {
+		assertNotNull(sender.toString()); //And no NPE
 	}
 }
