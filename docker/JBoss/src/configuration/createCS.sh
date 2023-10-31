@@ -2,7 +2,7 @@
 #
 # converts filesystem credentials into WildFly credentials
 
-SERVER_DIR=/opt/jboss
+SERVER_DIR=/home/jboss/jboss-eap-7.3
 SECRETS_TOOL=$SERVER_DIR/bin/elytron-tool.sh
 SECRETS_LOCATION=$SERVER_DIR/standalone/data/CS.jceks
 SECRETS_PASSWORD=secret
@@ -23,8 +23,8 @@ add_alias() {
 cd $SOURCE_PATH || return
 for alias in *
 do
-	if [ -d $alias ]
-	then
+	if [ -d $alias ] 
+	then 
 		add_alias "$alias/username" "$alias/username"
 		add_alias "$alias"          "$alias/password"
 	else
