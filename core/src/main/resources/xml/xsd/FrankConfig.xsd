@@ -18484,8 +18484,6 @@
   <xs:simpleType name="JavaScriptEnginesAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="J2V8" />
-      <xs:enumeration value="NASHORN" />
-      <xs:enumeration value="RHINO" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="OperationAttributeValuesType">

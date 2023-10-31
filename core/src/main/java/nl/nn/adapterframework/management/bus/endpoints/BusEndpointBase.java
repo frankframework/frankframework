@@ -17,6 +17,7 @@ package nl.nn.adapterframework.management.bus.endpoints;
 
 import javax.annotation.Nonnull;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -31,7 +32,6 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 

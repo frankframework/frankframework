@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.junit.jupiter.api.AfterEach;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
-import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FtpFileSystemTestHelper implements IFileSystemTestHelper{

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.InputStream;
 import java.net.URL;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +22,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.ThrowingAfterCloseInputStream;
-import nl.nn.adapterframework.util.FilenameUtils;
 
 public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 
