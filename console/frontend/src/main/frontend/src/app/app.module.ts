@@ -32,9 +32,9 @@ import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/page
 import { HamburgerComponent } from './components/pages/pages-topnavbar/hamburger.component';
 // import { InputFileUploadComponent } from './components/input-file-upload/input-file-upload.component';
 // import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
-// import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
-// import { OrderByPipe } from './pipes/orderby.pipe';
-// import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
+import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
+import { OrderByPipe } from './pipes/orderby.pipe';
+import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
 import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
 import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
 import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
@@ -46,7 +46,7 @@ import { ConfigurationFilterPipe } from './pipes/configuration-filter.pipe';
 import { SearchFilterPipe } from './pipes/search-filter.pipe';
 import { TruncatePipe } from './pipes/truncate.pipe';
 import { ToDateDirective } from './components/to-date.directive';
-// import { LiquibaseComponent } from './views/liquibase/liquibase.component';
+import { LiquibaseComponent } from './views/liquibase/liquibase.component';
 // import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
 // import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
 // import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
@@ -87,11 +87,11 @@ const windowProvider: ValueProvider = {
     IframeLarvaComponent,
     // InlinestoreComponent,
     // InputFileUploadComponent,
-    // JdbcBrowseTablesComponent,
-    // JdbcExecuteQueryComponent,
+    JdbcBrowseTablesComponent,
+    JdbcExecuteQueryComponent,
     // JmsBrowseQueueComponent,
     // JmsSendMessageComponent,
-    // LiquibaseComponent,
+    LiquibaseComponent,
     LogoutComponent,
     MinimalizaSidebarComponent,
     PagesFooterComponent,
@@ -111,7 +111,7 @@ const windowProvider: ValueProvider = {
     // pipes
     ConfigurationFilterPipe,
     // DropLastCharPipe,
-    // OrderByPipe,
+    OrderByPipe,
     SearchFilterPipe,
     TruncatePipe,
     // VariablesFilterPipe,

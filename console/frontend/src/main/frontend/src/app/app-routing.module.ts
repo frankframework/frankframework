@@ -11,11 +11,11 @@ import { StatusComponent } from './views/status/status.component';
 // import { WebservicesComponent } from './views/webservices/webservices.component';
 // import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
-// import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
-// import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
+import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
+import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
 // import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
 // import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
-// import { LiquibaseComponent } from './views/liquibase/liquibase.component';
+import { LiquibaseComponent } from './views/liquibase/liquibase.component';
 import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
 import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
 import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
@@ -195,22 +195,22 @@ const routes: Routes = [
   //     breadcrumbs: 'Environment Variables'
   //   }
   // },
-  // {
-  //   path: 'jdbc/execute-query',
-  //   component: JdbcExecuteQueryComponent,
-  //   title: 'Execute JDBC Query',
-  //   data: {
-  //     breadcrumbs: 'JDBC > Execute Query'
-  //   }
-  // },
-  // {
-  //   path: 'jdbc/browse-tables',
-  //   component: JdbcBrowseTablesComponent,
-  //   title: 'Browse JDBC Tables',
-  //   data: {
-  //     breadcrumbs: 'JDBC > Browse Tables'
-  //   }
-  // },
+  {
+    path: 'jdbc/execute-query',
+    component: JdbcExecuteQueryComponent,
+    title: 'Execute JDBC Query',
+    data: {
+      breadcrumbs: 'JDBC > Execute Query'
+    }
+  },
+  {
+    path: 'jdbc/browse-tables',
+    component: JdbcBrowseTablesComponent,
+    title: 'Browse JDBC Tables',
+    data: {
+      breadcrumbs: 'JDBC > Browse Tables'
+    }
+  },
   // {
   //   path: 'security-items',
   //   component: SecurityItemsComponent,
@@ -267,14 +267,14 @@ const routes: Routes = [
   //     breadcrumbs: 'JDBC > Ibisstore Summary'
   //   }
   // },
-  // {
-  //   path: 'liquibase',
-  //   component: LiquibaseComponent,
-  //   title: 'Liquibase Script',
-  //   data: {
-  //     breadcrumbs: 'JDBC > Liquibase Script'
-  //   }
-  // },
+  {
+    path: 'liquibase',
+    component: LiquibaseComponent,
+    title: 'Liquibase Script',
+    data: {
+      breadcrumbs: 'JDBC > Liquibase Script'
+    }
+  },
   {
     path: 'customView/:name',
     component: IframeCustomViewComponent,

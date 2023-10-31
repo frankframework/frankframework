@@ -1,10 +1,6 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppConstants } from 'src/angularjs/app/app.module';
-import { AppService } from 'src/angularjs/app/app.service';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { CookiesService } from 'src/angularjs/app/services/cookies.service';
-import { APPCONSTANTS } from 'src/app/app.module';
+import { AppConstants, AppService } from 'src/app/app.service';
 
 interface Form {
   query: string
@@ -43,13 +39,18 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
   result: string = "";
 
   private _subscriptions = new Subscription();
+  private appConstants: AppConstants;
 
   constructor(
-    private apiService: ApiService,
     private cookiesService: CookiesService,
-    @Inject(APPCONSTANTS) private appConstants: AppConstants,
     private appService: AppService
-  ) { };
+  ) {
+    this.appConstants = this.appService.APP_CONSTANTS;
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
+    });
+    this._subscriptions.add(appConstantsSubscription)
+  }
 
   ngOnInit(): void {
     const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
