@@ -15,9 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.kafka;
 
-import java.io.IOException;
 import java.util.concurrent.Future;
-import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -42,30 +40,22 @@ class KafkaInternalSender<T,M> extends KafkaFacade implements ISender {
 	private @Setter String topic;
 	private String keySerializer;
 	private String valueSerializer;
-	private Function<Message, M> messageParser;
+	private KafkaType messageType;
 	public KafkaInternalSender(String keySerializer, String valueSerializer, KafkaType messageType) {
 		super();
 		this.keySerializer = keySerializer;
 		this.valueSerializer = valueSerializer;
-		this.messageParser = generateMessageParser(messageType);
+		this.messageType = messageType;
 	}
 
-	private Function<Message, M> generateMessageParser(KafkaType messageType) {
-		if(messageType == KafkaType.BYTEARRAY) return message-> {
-			try {
-				return (M) message.asByteArray();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		};
-		if(messageType == KafkaType.STRING) return message-> {
-			try {
-				return (M) message.asString();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		};
-		throw new IllegalArgumentException("Unknown KafkaType ["+messageType+"]");
+	private M getMessage(Message message) throws SenderException {
+		try {
+			if (messageType == KafkaType.BYTEARRAY) return (M) message.asByteArray();
+			if (messageType == KafkaType.STRING) return (M) message.asString();
+		} catch(Exception e) {
+			throw new SenderException("Failed to convert message to message type:", e);
+		}
+		throw new SenderException("Unknown KafkaType ["+messageType+"]");
 	}
 
 	@Override
@@ -89,12 +79,12 @@ class KafkaInternalSender<T,M> extends KafkaFacade implements ISender {
 	}
 
 	@Override
-	public SenderResult sendMessage(nl.nn.adapterframework.stream.Message message, PipeLineSession session) throws SenderException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
 		ProducerRecord<T, M> producerRecord;
 		M messageData;
 		try {
 			message.preserve();
-			messageData = messageParser.apply(message);
+			messageData = getMessage(message);
 		} catch (Exception e) {
 			throw new SenderException("Failed to convert message to message type:", e);
 		}
