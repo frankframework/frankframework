@@ -84,7 +84,7 @@ public class KafkaReceiverTest {
 	public static Consumer<KafkaListener> wrap(Consumer<KafkaListener> function) {
 		return function;
 	}
-	private static Stream<Arguments> validateParameters() {
+	static Stream<Arguments> validateParameters() {
 		return Stream.of(
 				Arguments.of(wrap(listener->listener.setTopics(null)), false, "null topics"),
 				Arguments.of(wrap(listener->listener.setTopics("")), false, "empty topics"),

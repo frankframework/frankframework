@@ -53,7 +53,7 @@ public class KafkaFacadeTest {
 	public static Consumer<KafkaFacade> wrap(Consumer<KafkaFacade> function) {
 		return function;
 	}
-	private static Stream<Arguments> validateParameters() {
+	static Stream<Arguments> validateParameters() {
 		return Stream.of(
 				Arguments.of(wrap(listener->listener.setBootstrapServers(null)), false, "null bootstrapServers"),
 				Arguments.of(wrap(listener->listener.setBootstrapServers("")), false, "empty bootstrapServers"),

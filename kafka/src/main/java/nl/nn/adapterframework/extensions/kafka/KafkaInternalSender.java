@@ -33,19 +33,33 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.stream.Message;
 
+import org.apache.kafka.common.serialization.ByteArraySerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
+
+/**
+ * This class should NOT be used outside of this kafka package.
+ * This class isn't public to prevent generation of javadoc/frankdoc.
+ * @param <T> Topic type.
+ * @param <M> Message type.
+ */
 class KafkaInternalSender<T,M> extends KafkaFacade implements ISender {
 	//setter is for testing purposes only.
 	private @Setter(AccessLevel.PACKAGE) Producer<T, M> producer;
-	/** The topic to send messages to. Only one topic per sender. Wildcards are not supported. */
 	private @Setter String topic;
-	private String keySerializer;
-	private String valueSerializer;
-	private KafkaType messageType;
-	public KafkaInternalSender(String keySerializer, String valueSerializer, KafkaType messageType) {
+	private final String keySerializer;
+	private final String valueSerializer;
+	private final KafkaType messageType;
+	public KafkaInternalSender(KafkaType keyType, KafkaType messageType) {
 		super();
-		this.keySerializer = keySerializer;
-		this.valueSerializer = valueSerializer;
+		this.keySerializer = getSerializer(keyType);
+		this.valueSerializer = getSerializer(messageType);
 		this.messageType = messageType;
+	}
+
+	private String getSerializer(KafkaType kafkaType) {
+		if (kafkaType == KafkaType.BYTEARRAY) return ByteArraySerializer.class.getName();
+		if (kafkaType == KafkaType.STRING) return StringSerializer.class.getName();
+		throw new IllegalArgumentException("Unknown KafkaType ["+kafkaType+"]");
 	}
 
 	private M getMessage(Message message) throws SenderException {

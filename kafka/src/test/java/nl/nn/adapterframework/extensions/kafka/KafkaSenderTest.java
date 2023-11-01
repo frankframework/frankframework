@@ -72,7 +72,7 @@ public class KafkaSenderTest {
 	public static Consumer<KafkaSender> wrap(Consumer<KafkaSender> function) {
 		return function;
 	}
-	private static Stream<Arguments> validateParameters() {
+	static Stream<Arguments> validateParameters() {
 		return Stream.of(
 				Arguments.of(wrap(sender->sender.setTopic(null)), false, "null topic"),
 				Arguments.of(wrap(sender->sender.setTopic("")), false, "empty topic"),

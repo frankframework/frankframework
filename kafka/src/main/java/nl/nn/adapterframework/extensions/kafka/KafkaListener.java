@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.kafka;
 
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.BiFunction;
 
 import javax.annotation.Nonnull;
 
@@ -33,10 +32,6 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageContext;
-
-import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 
 public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord> {
 
@@ -48,9 +43,11 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	private @Setter int patternRecheckInterval = 5000;
 	/** The topics to listen to, separated by `,`. Wildcards are supported with `example.*`. */
 	private @Setter String topics;
-	/** The type of the key. **/
+	/** The type of the key. Used for deserializing.
+	 * @ff.default STRING **/
 	private @Setter KafkaType keyType = KafkaType.STRING;
-	/** The type of the message. **/
+	/** The type of the message. Used for deserializing.
+	 * @ff.default BYTEARRAY **/
 	private @Setter KafkaType messageType = KafkaType.BYTEARRAY;
 	private @Getter(AccessLevel.PACKAGE) KafkaInternalListener internalListener;
 
@@ -88,23 +85,11 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 		internalListener.afterMessageProcessed(processResult, rawMessage, pipeLineSession);
 	}
 
-	public static <M> BiFunction<M, MessageContext, Message> messageConverterFactory(KafkaType kafkaType) {
-		if(kafkaType == KafkaType.STRING) return (M message, MessageContext messageContext) -> new Message((String) message, messageContext);
-		if(kafkaType == KafkaType.BYTEARRAY) return (M message, MessageContext messageContext) -> new Message((byte[]) message, messageContext);
-		throw new IllegalArgumentException("Unknown KafkaType ["+kafkaType+"]");
-	}
-
-	private static String getDeserializer(KafkaType type) {
-		if(type==KafkaType.STRING) return StringDeserializer.class.getName();
-		if(type==KafkaType.BYTEARRAY) return ByteArrayDeserializer.class.getName();
-		throw new IllegalArgumentException("Unknown KafkaType ["+type+"]");
-	}
-
 	public static KafkaInternalListener generateInternalListener(KafkaType keyType, KafkaType messageType, Properties properties) {
-		if(keyType == KafkaType.STRING && messageType == KafkaType.STRING) return new KafkaInternalListener<String, String>(properties, messageConverterFactory(messageType), getDeserializer(keyType), getDeserializer(messageType));
-		if(keyType == KafkaType.STRING && messageType == KafkaType.BYTEARRAY) return new KafkaInternalListener<String, byte[]>(properties, messageConverterFactory(messageType), getDeserializer(keyType), getDeserializer(messageType));
-		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.STRING) return new KafkaInternalListener<byte[], String>(properties, messageConverterFactory(messageType), getDeserializer(keyType), getDeserializer(messageType));
-		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.BYTEARRAY) return new KafkaInternalListener<byte[], byte[]>(properties, messageConverterFactory(messageType), getDeserializer(keyType), getDeserializer(messageType));
+		if(keyType == KafkaType.STRING && messageType == KafkaType.STRING) return new KafkaInternalListener<String, String>(properties, keyType, messageType);
+		if(keyType == KafkaType.STRING && messageType == KafkaType.BYTEARRAY) return new KafkaInternalListener<String, byte[]>(properties, keyType, messageType);
+		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.STRING) return new KafkaInternalListener<byte[], String>(properties, keyType, messageType);
+		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.BYTEARRAY) return new KafkaInternalListener<byte[], byte[]>(properties, keyType, messageType);
 		throw new IllegalArgumentException("Unknown KafkaType combination ["+keyType+"-"+messageType+"]");
 	}
 

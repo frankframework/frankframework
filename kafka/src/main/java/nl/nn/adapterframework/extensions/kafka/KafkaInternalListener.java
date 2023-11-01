@@ -53,11 +53,14 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.StringUtil;
 
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
 /**
  * This class should NOT be used outside of this kafka package.
  * This class isn't public to prevent generation of javadoc/frankdoc.
- * @param <T>
- * @param <M>
+ * @param <T> Topic type.
+ * @param <M> Message type.
  */
 class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener<ConsumerRecord<T, M>> {
 	//setter is for testing purposes only.
@@ -76,14 +79,25 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 	private String keyDeserializer;
 	private String valueDeserializer;
 
-	public KafkaInternalListener(Properties properties, BiFunction<M, MessageContext, Message> converter, String keyDeserializer, String valueDeserializer) {
+	public KafkaInternalListener(Properties properties, KafkaType keyType, KafkaType messageType) {
 		super();
 		this.properties = properties;
-		this.converter = converter;
-		this.keyDeserializer = keyDeserializer;
-		this.valueDeserializer = valueDeserializer;
+		this.converter = messageConverterFactory(messageType);
+		this.keyDeserializer = getDeserializer(keyType);
+		this.valueDeserializer = getDeserializer(messageType);
 	}
 
+	private static String getDeserializer(KafkaType type) {
+		if(type==KafkaType.STRING) return StringDeserializer.class.getName();
+		if(type==KafkaType.BYTEARRAY) return ByteArrayDeserializer.class.getName();
+		throw new IllegalArgumentException("Unknown KafkaType ["+type+"]");
+	}
+
+	public static <M> BiFunction<M, MessageContext, Message> messageConverterFactory(KafkaType kafkaType) {
+		if(kafkaType == KafkaType.STRING) return (M message, MessageContext messageContext) -> new Message((String) message, messageContext);
+		if(kafkaType == KafkaType.BYTEARRAY) return (M message, MessageContext messageContext) -> new Message((byte[]) message, messageContext);
+		throw new IllegalArgumentException("Unknown KafkaType ["+kafkaType+"]");
+	}
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();

@@ -16,12 +16,7 @@
 package nl.nn.adapterframework.extensions.kafka;
 
 import lombok.AccessLevel;
-
 import lombok.Getter;
-
-import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
-
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
@@ -32,7 +27,11 @@ import nl.nn.adapterframework.core.SenderResult;
 public class KafkaSender extends KafkaFacade implements ISender {
 	/** The topic to send messages to. Only one topic per sender. Wildcards are not supported. */
 	private @Setter String topic;
+	/** The type of the key. Used for serializing.
+	 * @ff.default STRING **/
 	private @Setter KafkaType keyType = KafkaType.STRING;
+	/** The type of the message. Used for serializing.
+	 * @ff.default BYTEARRAY **/
 	private @Setter KafkaType messageType = KafkaType.BYTEARRAY;
 	//getter is for testing purposes only.
 	private @Getter(AccessLevel.PACKAGE) KafkaInternalSender internalSender;
@@ -67,17 +66,11 @@ public class KafkaSender extends KafkaFacade implements ISender {
 		return internalSender.getPhysicalDestinationName();
 	}
 
-	private static String getSerializer(KafkaType type) {
-		if(type==KafkaType.STRING) return StringSerializer.class.getName();
-		if(type==KafkaType.BYTEARRAY) return ByteArraySerializer.class.getName();
-		throw new IllegalArgumentException("Unknown KafkaType ["+type+"]");
-	}
-
 	public static KafkaInternalSender generateInternalSender(KafkaType keyType, KafkaType messageType) {
-		if(keyType == KafkaType.STRING && messageType == KafkaType.STRING) return new KafkaInternalSender<String, String>(getSerializer(keyType), getSerializer(messageType), messageType);
-		if(keyType == KafkaType.STRING && messageType == KafkaType.BYTEARRAY) return new KafkaInternalSender<String, byte[]>(getSerializer(keyType), getSerializer(messageType), messageType);
-		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.STRING) return new KafkaInternalSender<byte[], String>(getSerializer(keyType), getSerializer(messageType), messageType);
-		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.BYTEARRAY) return new KafkaInternalSender<byte[], byte[]>(getSerializer(keyType), getSerializer(messageType), messageType);
+		if(keyType == KafkaType.STRING && messageType == KafkaType.STRING) return new KafkaInternalSender<String, String>(keyType, messageType);
+		if(keyType == KafkaType.STRING && messageType == KafkaType.BYTEARRAY) return new KafkaInternalSender<String, byte[]>(keyType, messageType);
+		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.STRING) return new KafkaInternalSender<byte[], String>(keyType, messageType);
+		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.BYTEARRAY) return new KafkaInternalSender<byte[], byte[]>(keyType, messageType);
 		throw new IllegalArgumentException("Unknown KafkaType combination ["+keyType+"-"+messageType+"]");
 	}
 }
