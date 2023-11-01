@@ -72,7 +72,6 @@ import nl.nn.adapterframework.util.MessageUtils;
 
 public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	private static final String REGEX_PATH_IGNORE = "(?<=convertedDocument=\").*?(?=\")";
-//	private static final String REGEX_SESSIONKEY_IGNORE = "(?<=sessionKey=\").*?(?=\")";
 	private static final String REGEX_TIMESTAMP_IGNORE = "(?<=Timestamp:).*(?=\" n)";
 	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIMESTAMP_IGNORE};
 
@@ -219,12 +218,11 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeLineSession session = new PipeLineSession();
 		Message input = MessageTestUtils.getBinaryMessage(fileToConvert, false);
 		pipe.doPipe(input, session);
 
 		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
-		return session.getString("documents");
+		return session.getString(pipe.getConversionResultDocumentSessionKey());
 	}
 
 	public String applyIgnores(String input){
@@ -255,155 +253,295 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	@Test
 	public void bmp2Pdf() throws Exception {
 		expectSuccessfulConversion("Bmp2Pdf", "/PdfPipe/bmp.bmp", "/PdfPipe/xml-results/bmp.xml", "/PdfPipe/results/bmp.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void docWord2016Macro2Pdf() throws Exception {
 		expectSuccessfulConversion("DocWord2016Macro2Pdf", "/PdfPipe/docm-word-2016-macro.docm", "/PdfPipe/xml-results/docm-word-2016-macro.xml", "/PdfPipe/results/docm-word-2016-macro.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void docWord20032Pdf() throws Exception {
 		expectSuccessfulConversion("DocWord20032Pdf", "/PdfPipe/doc-word-2003.doc", "/PdfPipe/xml-results/doc-word-2003.xml", "/PdfPipe/results/doc-word-2003.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void dot2Pdf() throws Exception {
 		expectSuccessfulConversion("Dot2Pdf", "/PdfPipe/dot.dot", "/PdfPipe/xml-results/dot.xml", "/PdfPipe/results/dot.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void emlFromGroupmailbox2Pdf() throws Exception {
 //		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
 		expectSuccessfulConversion("EmlFromGroupmailbox", "/PdfPipe/eml-from-groupmailbox.eml", "/PdfPipe/xml-results/eml-from-groupmailbox.xml", "/PdfPipe/results/eml-from-groupmailbox.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void gif2Pdf() throws Exception {
 		expectSuccessfulConversion("Gif2Pdf", "/PdfPipe/gif.gif", "/PdfPipe/xml-results/gif.xml", "/PdfPipe/results/gif.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void htm2Pdf() throws Exception {
 		expectSuccessfulConversion("Htm2Pdf", "/PdfPipe/htm.htm", "/PdfPipe/xml-results/htm.xml", "/PdfPipe/results/htm.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void html2Pdf() throws Exception {
 		expectSuccessfulConversion("Html2Pdf", "/PdfPipe/html.html", "/PdfPipe/xml-results/html.xml", "/PdfPipe/results/html.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void jpeg2Pdf() throws Exception {
 		expectSuccessfulConversion("Jpeg2Pdf", "/PdfPipe/jpeg.jpeg", "/PdfPipe/xml-results/jpeg.xml", "/PdfPipe/results/jpeg.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void jpg2Pdf() throws Exception {
 		expectSuccessfulConversion("Jpg2Pdf", "/PdfPipe/jpg.jpg", "/PdfPipe/xml-results/jpg.xml", "/PdfPipe/results/jpg.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void log2Pdf() throws Exception {
 		expectSuccessfulConversion("Log2Pdf", "/PdfPipe/log.log", "/PdfPipe/xml-results/log.xml", "/PdfPipe/results/log.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void png2Pdf() throws Exception {
 		expectSuccessfulConversion("Png2Pdf", "/PdfPipe/png.png", "/PdfPipe/xml-results/png.xml", "/PdfPipe/results/png.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void ppt2Pdf() throws Exception {
 		expectSuccessfulConversion("Ppt2Pdf", "/PdfPipe/ppt.ppt", "/PdfPipe/xml-results/ppt.xml", "/PdfPipe/results/ppt.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void rtf2Pdf() throws Exception {
 		expectSuccessfulConversion("Rtf2Pdf", "/PdfPipe/rtf.rtf", "/PdfPipe/xml-results/rtf.xml", "/PdfPipe/results/rtf.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void tiff2Pdf() throws Exception {
 		expectSuccessfulConversion("Tiff2Pdf", "/PdfPipe/tiff.tiff", "/PdfPipe/xml-results/tiff.xml", "/PdfPipe/results/tiff.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void txt2Pdf() throws Exception {
 		expectSuccessfulConversion("Txt2Pdf", "/PdfPipe/txt.txt", "/PdfPipe/xml-results/txt.xml", "/PdfPipe/results/txt.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void zip2Pdf() throws Exception {
 		expectUnsuccessfullConversion("Zip2Pdf", "/PdfPipe/PdfPipe.zip", "/PdfPipe/xml-results/zip.xml");
+		assertTrue(session.containsKey("documents"));
+		assertFalse(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void emailWithAttachments() throws Exception {
 		expectSuccessfulConversion("Txt2Pdf", "/PdfPipe/nestedMail.msg", "/PdfPipe/xml-results/nestedMail.xml", "/PdfPipe/results/nestedMail.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void excel2pdf() throws Exception {
 		expectSuccessfulConversion("xls2pdf", "/PdfPipe/excel.xls", "/PdfPipe/xml-results/xls.xml", "/PdfPipe/results/excel.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void xslx2pdf() throws Exception {
 		expectSuccessfulConversion("xslx2pdf", "/PdfPipe/fonttest.xlsx", "/PdfPipe/xml-results/xlsx.xml", "/PdfPipe/results/fonttest.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void fontTestEmail() throws Exception {
 		expectSuccessfulConversion("fontTestEmail", "/PdfPipe/fonttest/fontTestEmail.msg", "/PdfPipe/xml-results/fontTestEmail.xml", "/PdfPipe/results/fontTestEmail.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void fontTestSlides() throws Exception {
 		expectSuccessfulConversion("fontTestSlides", "/PdfPipe/fonttest/fontTestSlides.msg", "/PdfPipe/xml-results/fontTestSlides.xml", "/PdfPipe/results/fontTestSlides.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void fontTestWord() throws Exception {
 		expectSuccessfulConversion("fontTestWord", "/PdfPipe/fonttest/fontTestWord.msg", "/PdfPipe/xml-results/fontTestWord.xml", "/PdfPipe/results/fontTestWord.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void mailWithExcelAttachment() throws Exception {
 		expectSuccessfulConversion("mailWithExcelAttachment", "/PdfPipe/MailWithAttachments/mailWithExcelAttachment.msg", "/PdfPipe/xml-results/mailWithExcelAttachment.xml", "/PdfPipe/results/mailWithExcelAttachment.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void mailWithImage() throws Exception {
 		expectSuccessfulConversion("mailWithImage", "/PdfPipe/MailWithAttachments/mailWithImage.msg", "/PdfPipe/xml-results/mailWithImage.xml", "/PdfPipe/results/mailWithImage.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void mailWithLargeImage() throws Exception {
 		expectSuccessfulConversion("mailWithLargeImage", "/PdfPipe/aspect-ratio/aspect-ratio-test.msg", "/PdfPipe/xml-results/mail-with-large-image.xml", "/PdfPipe/results/mailWithLargeImage.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void mailWithSmallImage() throws Exception {
 		expectSuccessfulConversion("mailWithSmallImage", "/PdfPipe/aspect-ratio/mailWithSmallImage.msg", "/PdfPipe/xml-results/mailWithSmallImage.xml", "/PdfPipe/results/mailWithSmallImage.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void mailWithPdfAttachment() throws Exception {
 		expectSuccessfulConversion("mailWithPdfAttachment", "/PdfPipe/MailWithAttachments/mailWithPdfAttachment.msg", "/PdfPipe/xml-results/mailWithPdfAttachment.xml", "/PdfPipe/results/mailWithPdfAttachment.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
 	public void mailWithWordAttachment() throws Exception {
 //		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
 		expectSuccessfulConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachment.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 
 	@Test
-	public void mailWithWordAttachmentSaveSeparateFiles() throws Exception {
+	public void mailWithAttachmentSaveSeparateFiles() throws Exception {
 //		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
 		pipe.setSaveSeparate(true);
-		expectSuccessfulConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachmentSaveSeparate.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
+
+		expectSuccessfulConversion("mailWithAttachmentSaveSeparateFiles", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachmentSaveSeparate.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
+
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertTrue(session.containsKey("pdfConversionResultFiles2"));
+		assertTrue(session.containsKey("pdfConversionResultFiles3"));
+		assertFalse(session.containsKey("pdfConversionResultFiles4"));
+	}
+
+	@Test
+	public void mailWithAttachmentDifferentSessionKeyNames() throws Exception {
+//		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
+		pipe.setSaveSeparate(true);
+		pipe.setConversionResultDocumentSessionKey("output");
+		pipe.setConversionResultFilesSessionKey("pdf");
+
+		expectSuccessfulConversion("mailWithAttachmentDifferentSessionKeyNames", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithAttachmentDifferentSessionKeys.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
+
+		assertFalse(session.containsKey("documents"));
+		assertFalse(session.containsKey("pdfConversionResultFiles1"));
+		assertTrue(session.containsKey("output"));
+		assertTrue(session.containsKey("pdf1"));
+		assertTrue(session.containsKey("pdf2"));
+		assertTrue(session.containsKey("pdf3"));
 	}
 
 	@Test
@@ -414,7 +552,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pipe.configure();
 		pipe.start();
 
-		PipeLineSession session = new PipeLineSession();
 		List<Message> inputs = new ArrayList<>();
 		URL url = TestFileUtils.getTestFileURL("/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg");
 		assertNotNull(url, "unable to find test file");

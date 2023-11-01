@@ -24,19 +24,15 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import org.apache.logging.log4j.Logger;
-
-import nl.nn.adapterframework.util.LogUtil;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
  *         Hoorn</a> (d937275)
  *
  */
+@Log4j2
 public final class FileUtil {
-
-	private static final Logger LOGGER = LogUtil.getLogger(FileUtil.class);
-
 	private FileUtil() {
 	}
 
@@ -46,16 +42,12 @@ public final class FileUtil {
 		}
 	}
 
-	public static Logger getLogger() {
-		return LOGGER;
-	}
-
 	/**
 	 * Delete the given file (when file == null nothing will be done). Throws an
 	 * runtimeexception when deleting fails.
-	 * 
+	 *
 	 * @param file
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static void deleteFile(File file) throws IOException {
 		// Delete always the temporary file if it exist.
@@ -63,7 +55,7 @@ public final class FileUtil {
 			try {
 				Files.delete(file.toPath());
 			} catch (IOException e) {
-				LOGGER.warn("Deleting file failed!", e);
+				log.warn("Deleting file failed!", e);
 				throw new IOException("Deleting file failed!", e);
 			}
 		}
@@ -92,7 +84,7 @@ public final class FileUtil {
 		public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 			// Do not delete the given directory.
 			if (!dir.equals(directory.toPath())) {
-				getLogger().debug("Delete directory " + dir);
+				log.debug("Delete directory {}", dir);
 				Files.delete(dir);
 			}
 			if (exc != null) {

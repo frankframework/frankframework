@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
+import static nl.nn.adapterframework.functional.FunctionalUtil.logMethod;
+import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,7 +88,6 @@ abstract class AbstractConvertor implements Convertor {
 			builder.append("')");
 			throw new IllegalArgumentException(builder.toString());
 		}
-
 	}
 
 	/**
@@ -136,13 +138,9 @@ abstract class AbstractConvertor implements Convertor {
 
 	protected String createErrorMsg(Exception e) {
 		String timestamp = DateUtils.format(new Date(), "dd-MM-yyyy HH:mm:ss");
-		log.warn("Conversion in " + this.getClass().getSimpleName() + " failed! (Timestamp: " + timestamp + ")", e);
-		StringBuilder msg = new StringBuilder();
-		msg.append("Conversion to PDF failed due to a technical failure. Please contact functional support.");
-		msg.append("(Timestamp: ");
-		msg.append(timestamp);
-		msg.append(")");
-		return msg.toString();
+		log.warn("Conversion in {} failed! (Timestamp: {})", logMethod(()-> getClass().getSimpleName()), logValue(timestamp), e);
+		return "Conversion to PDF failed due to a technical failure. Please contact functional support." +
+				"(Timestamp: " + timestamp + ")";
 	}
 
 	protected void deleteFile(File file) throws IOException {
@@ -150,5 +148,4 @@ abstract class AbstractConvertor implements Convertor {
 	}
 
 	protected abstract boolean isPasswordException(Exception e);
-
 }

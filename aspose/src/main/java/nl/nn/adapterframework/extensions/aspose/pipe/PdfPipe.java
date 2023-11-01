@@ -74,7 +74,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	private CisConversionService cisConversionService;
 
-	protected enum DocumentAction {
+	public enum DocumentAction {
 		CONVERT,
 		COMBINE;
 	}
@@ -202,8 +202,12 @@ public class PdfPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * The session key used to store the main conversion result document
-	 * @param conversionResultDocumentSessionKey
+	 * The session key used to store the main conversion result document. Only to be
+	 * used when action is set to 'convert'.
+	 *
+	 * ff.default documents
+	 *
+	 * @param conversionResultDocumentSessionKey Name of the session key.
 	 */
 	public void setConversionResultDocumentSessionKey(String conversionResultDocumentSessionKey) {
 		this.conversionResultDocumentSessionKey = conversionResultDocumentSessionKey;
