@@ -83,12 +83,12 @@ class KafkaInternalSender<T,M> extends KafkaFacade implements ISender {
 	}
 
 	@Override
-	public void open() throws SenderException {
+	public void open() {
 		producer = new KafkaProducer<>(properties);
 	}
 
 	@Override
-	public void close() throws SenderException {
+	public void close() {
 		producer.close();
 	}
 

@@ -38,8 +38,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 public class KafkaSenderTest {
-	MockProducer<String, byte[]> mockProducer = new MockProducer<>(true, new StringSerializer(), new ByteArraySerializer());
-	KafkaSender sender = new KafkaSender();
+	final MockProducer<String, byte[]> mockProducer = new MockProducer<>(true, new StringSerializer(), new ByteArraySerializer());
+	final KafkaSender sender = new KafkaSender();
 	@BeforeEach
 	@SneakyThrows
 	void setUp() {

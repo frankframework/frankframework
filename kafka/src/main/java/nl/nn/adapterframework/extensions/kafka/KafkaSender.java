@@ -66,7 +66,7 @@ public class KafkaSender extends KafkaFacade implements ISender {
 		return internalSender.getPhysicalDestinationName();
 	}
 
-	public static KafkaInternalSender generateInternalSender(KafkaType keyType, KafkaType messageType) {
+	static KafkaInternalSender generateInternalSender(KafkaType keyType, KafkaType messageType) {
 		if(keyType == KafkaType.STRING && messageType == KafkaType.STRING) return new KafkaInternalSender<String, String>(keyType, messageType);
 		if(keyType == KafkaType.STRING && messageType == KafkaType.BYTEARRAY) return new KafkaInternalSender<String, byte[]>(keyType, messageType);
 		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.STRING) return new KafkaInternalSender<byte[], String>(keyType, messageType);

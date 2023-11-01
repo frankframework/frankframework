@@ -73,11 +73,11 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 	private @Setter String topics;
 	private @Getter(AccessLevel.PACKAGE) List<Pattern> topicPatterns = new ArrayList<>();
 	private final Duration pollDuration = Duration.ofMillis(1);
-	private Map<TopicPartition, OffsetAndMetadata> offsetAndMetadataMap = new HashMap<>();
-	private BiFunction<M, MessageContext, Message> converter;
-	private Lock lock = new ReentrantLock();
-	private String keyDeserializer;
-	private String valueDeserializer;
+	private final Map<TopicPartition, OffsetAndMetadata> offsetAndMetadataMap = new HashMap<>();
+	private final BiFunction<M, MessageContext, Message> converter;
+	private final Lock lock = new ReentrantLock();
+	private final String keyDeserializer;
+	private final String valueDeserializer;
 
 	public KafkaInternalListener(Properties properties, KafkaType keyType, KafkaType messageType) {
 		super();
@@ -162,7 +162,7 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<ConsumerRecord<T, M>> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<ConsumerRecord<T, M>> rawMessage, PipeLineSession pipeLineSession) {
 		//nothing.
 	}
 

@@ -85,7 +85,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 		internalListener.afterMessageProcessed(processResult, rawMessage, pipeLineSession);
 	}
 
-	public static KafkaInternalListener generateInternalListener(KafkaType keyType, KafkaType messageType, Properties properties) {
+	static KafkaInternalListener generateInternalListener(KafkaType keyType, KafkaType messageType, Properties properties) {
 		if(keyType == KafkaType.STRING && messageType == KafkaType.STRING) return new KafkaInternalListener<String, String>(properties, keyType, messageType);
 		if(keyType == KafkaType.STRING && messageType == KafkaType.BYTEARRAY) return new KafkaInternalListener<String, byte[]>(properties, keyType, messageType);
 		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.STRING) return new KafkaInternalListener<byte[], String>(properties, keyType, messageType);

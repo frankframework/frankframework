@@ -45,7 +45,7 @@ import nl.nn.adapterframework.stream.Message;
 import org.mockito.Mockito;
 
 public class KafkaReceiverTest {
-	MockConsumer<String, byte[]> mockListener = Mockito.spy(new MockConsumer<>(OffsetResetStrategy.EARLIEST));
+	final MockConsumer<String, byte[]> mockListener = Mockito.spy(new MockConsumer<>(OffsetResetStrategy.EARLIEST));
 	KafkaListener listener;
 
 	@BeforeEach

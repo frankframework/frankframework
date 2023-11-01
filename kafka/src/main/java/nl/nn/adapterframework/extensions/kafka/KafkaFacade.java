@@ -35,7 +35,7 @@ public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurab
 	private final @Getter(onMethod = @__(@Override)) String domain = "KAFKA";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
-	protected Logger log = LogUtil.getLogger(this);
+	protected final Logger log = LogUtil.getLogger(this);
 
 	private @Setter @Getter String name;
 	/** The bootstrap servers to connect to, as a comma separated list. */
