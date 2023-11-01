@@ -36,6 +36,7 @@
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-console-backend</artifactId>
 		</dependency>
+
 		<!-- jboss-logging is required for Narayana -->
 		<dependency>
 			<groupId>org.jboss.logging</groupId>
