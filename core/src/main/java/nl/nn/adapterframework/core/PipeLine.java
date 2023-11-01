@@ -771,7 +771,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/**
 	 * If messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged. You can specify the value with the suffixes <code>KB</code>, <code>MB</code> or <code>GB</code>
-	 * @ff.default application default (3MB)
+	 * @ff.default application default (30MB)
 	 */
 	public void setMessageSizeWarn(String s) {
 		messageSizeWarn = Misc.toFileSize(s, messageSizeWarn + 1);

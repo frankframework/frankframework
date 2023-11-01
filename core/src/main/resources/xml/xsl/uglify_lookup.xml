@@ -825,11 +825,6 @@
     <ClassName>nl.nn.adapterframework.jdbc.ResultSetIteratingPipe</ClassName>
   </Element>
   <Element>
-    <Name>RhinoPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.RhinoPipe</ClassName>
-  </Element>
-  <Element>
     <Name>Samba1Pipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.Samba1Pipe</ClassName>

@@ -187,12 +187,12 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	@Override
-	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, Map<String, Object> threadContext, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {
-		Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
+	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {
+		Session session = (Session) pipeLineSession.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 		if (session==null) {
 			try {
-				session=getSession(threadContext);
-				send(session, replyTo, replyCid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
+				session=getSession(pipeLineSession);
+				send(session, replyTo, replyCid, prepareReply(plr.getResult(), pipeLineSession), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} finally {
 				releaseSession(session);
 			}

@@ -18,13 +18,13 @@ package nl.nn.adapterframework.filesystem.smb;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.util.FilenameUtils;
 
 public class SmbFileRef {
 	private @Getter String filename;

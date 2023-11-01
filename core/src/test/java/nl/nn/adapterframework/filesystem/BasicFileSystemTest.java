@@ -15,13 +15,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.commons.io.FilenameUtils;
 import org.hamcrest.core.StringEndsWith;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {

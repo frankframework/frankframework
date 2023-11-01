@@ -10,15 +10,15 @@ const StorageListController = function ($scope, Api, $compile, Cookies, Session,
 	ctrl.truncateButtonText = "Truncate displayed data";
 	ctrl.filterBoxExpanded = false;
 
-	ctrl.resendMessage = ctrl.onDoResendMessage;
-	ctrl.deleteMessage = ctrl.onDoDeleteMessage;
-
 	ctrl.messagesResending = false;
 	ctrl.messagesDeleting = false;
 
 	ctrl.changingProcessState = false;
 
 	ctrl.$onInit = function () {
+		ctrl.resendMessage = ctrl.onDoResendMessage;
+		ctrl.deleteMessage = ctrl.onDoDeleteMessage;
+		
 		ctrl.onCloseNotes();
 		let searchSession = Session.get('search');
 
