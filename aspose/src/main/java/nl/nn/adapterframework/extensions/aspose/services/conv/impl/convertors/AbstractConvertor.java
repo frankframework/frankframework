@@ -16,16 +16,14 @@
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.http.MediaType;
 
@@ -45,7 +43,6 @@ abstract class AbstractConvertor implements Convertor {
 
 	private final Set<MediaType> supportedMediaTypes;
 	protected CisConfiguration configuration;
-	private static final AtomicInteger atomicCount = new AtomicInteger(1);
 
 	protected AbstractConvertor(CisConfiguration configuration, Set<MediaType> mediaTypes) {
 		this.configuration = configuration;
@@ -117,7 +114,7 @@ abstract class AbstractConvertor implements Convertor {
 			if (isPasswordException(e)) {
 				result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
 			} else {
-				result.setFailureReason(createTechnishefoutMsg(e));
+				result.setFailureReason(createErrorMsg(e));
 			}
 			// Clear the file to state that the conversion has failed.
 			result.setPdfResultFile(null);
@@ -128,7 +125,7 @@ abstract class AbstractConvertor implements Convertor {
 	protected int getNumberOfPages(File file) throws IOException {
 		int result = 0;
 		if(file != null) {
-			try (InputStream inStream = new FileInputStream(file)) {
+			try (InputStream inStream = Files.newInputStream(file.toPath())) {
 				Document doc = new Document(inStream);
 				result = doc.getPages().size();
 			}
@@ -137,32 +134,19 @@ abstract class AbstractConvertor implements Convertor {
 		return result;
 	}
 
-	protected String createTechnishefoutMsg(Exception e) {
-		String tijdstip = DateUtils.format(new Date(), "dd-MM-yyyy HH:mm:ss");
-		log.warn("Conversion in " + this.getClass().getSimpleName() + " failed! (Tijdstip: " + tijdstip + ")", e);
+	protected String createErrorMsg(Exception e) {
+		String timestamp = DateUtils.format(new Date(), "dd-MM-yyyy HH:mm:ss");
+		log.warn("Conversion in " + this.getClass().getSimpleName() + " failed! (Timestamp: " + timestamp + ")", e);
 		StringBuilder msg = new StringBuilder();
-		msg.append("Het omzetten naar pdf is mislukt door een technische fout. Neem contact op met de functioneel beheerder.");
-		msg.append("(Tijdstip: ");
-		msg.append(tijdstip);
+		msg.append("Conversion to PDF failed due to a technical failure. Please contact functional support.");
+		msg.append("(Timestamp: ");
+		msg.append(timestamp);
 		msg.append(")");
 		return msg.toString();
 	}
 
 	protected void deleteFile(File file) throws IOException {
 		FileUtil.deleteFile(file);
-	}
-
-	/**
-	 * Create a unique file in the pdfOutputLocation with the given extension
-	 */
-	protected File getUniqueFile() {
-
-		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-		int count = atomicCount.addAndGet(1);
-
-		String fileNamePdf = String.format("conv_%s_%s_%05d%s", this.getClass().getSimpleName(),
-				format.format(new Date()), count, ".bin");
-		return new File(configuration.getPdfOutputLocation(), fileNamePdf);
 	}
 
 	protected abstract boolean isPasswordException(Exception e);

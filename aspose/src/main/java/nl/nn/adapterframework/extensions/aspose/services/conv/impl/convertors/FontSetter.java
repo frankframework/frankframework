@@ -26,10 +26,10 @@ import com.aspose.words.FolderFontSource;
 import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
-public class Fontsetter {
+public class FontSetter {
 	private final String fontFilesLocation;
 
-	public Fontsetter(String pdfOutputLocation) {
+	public FontSetter(String pdfOutputLocation) {
 		fontFilesLocation = pdfOutputLocation;
 	}
 

@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -61,7 +60,6 @@ import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.MessageTestUtils.MessageType;
-import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
@@ -73,9 +71,10 @@ import nl.nn.adapterframework.util.MessageUtils;
  */
 
 public class PdfPipeTest extends PipeTestBase<PdfPipe> {
-	private static final String REGEX_PATH_IGNORE = "(?<=convertedDocument=\").*(?=\")";
-	private static final String REGEX_TIJDSTIP_IGNORE = "(?<=Tijdstip:).*(?=\" n)";
-	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIJDSTIP_IGNORE};
+	private static final String REGEX_PATH_IGNORE = "(?<=convertedDocument=\").*?(?=\")";
+//	private static final String REGEX_SESSIONKEY_IGNORE = "(?<=sessionKey=\").*?(?=\")";
+	private static final String REGEX_TIMESTAMP_IGNORE = "(?<=Timestamp:).*(?=\" n)";
+	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIMESTAMP_IGNORE};
 
 	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("Europe/Amsterdam");
 
@@ -275,7 +274,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void emlFromGroupmailbox2Pdf() throws Exception {
-		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
+//		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
 		expectSuccessfulConversion("EmlFromGroupmailbox", "/PdfPipe/eml-from-groupmailbox.eml", "/PdfPipe/xml-results/eml-from-groupmailbox.xml", "/PdfPipe/results/eml-from-groupmailbox.pdf");
 	}
 
@@ -396,8 +395,15 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void mailWithWordAttachment() throws Exception {
-		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
+//		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
 		expectSuccessfulConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachment.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
+	}
+
+	@Test
+	public void mailWithWordAttachmentSaveSeparateFiles() throws Exception {
+//		assumeTrue(TestAssertions.isTimeZone(TEST_TZ), "This test only runs for Europe/Amsterdam due to the time being in the output PDF");
+		pipe.setSaveSeparate(true);
+		expectSuccessfulConversion("mailWithWordAttachment", "/PdfPipe/MailWithAttachments/mailWithWordAttachment.msg", "/PdfPipe/xml-results/mailWithWordAttachmentSaveSeparate.xml", "/PdfPipe/results/mailWithWordAttachment.pdf");
 	}
 
 	@Test

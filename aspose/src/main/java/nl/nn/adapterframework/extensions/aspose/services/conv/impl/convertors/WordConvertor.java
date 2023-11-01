@@ -85,7 +85,7 @@ class WordConvertor extends AbstractConvertor {
 			LoadOptions loadOptions = getLoadOptions(mediaType);
 
 			Document doc = new Document(inputStream, loadOptions);
-			new Fontsetter(configuration.getFontsDirectory()).setFontSettings(doc);
+			new FontSetter(configuration.getFontsDirectory()).setFontSettings(doc);
 			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
 			saveOptions.setMemoryOptimization(true);
 

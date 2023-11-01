@@ -129,7 +129,7 @@ class MailConvertor extends AbstractConvertor {
 		Long startTime = new Date().getTime();
 		try(FileInputStream fis = new FileInputStream(tempMHtmlFile)){
 			Document doc = new Document(fis, loadOptions);
-			new Fontsetter(configuration.getFontsDirectory()).setFontSettings(doc);
+			new FontSetter(configuration.getFontsDirectory()).setFontSettings(doc);
 			resizeInlineImages(doc);
 
 			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
@@ -148,14 +148,14 @@ class MailConvertor extends AbstractConvertor {
 
 			// Convert the attachment.
 			CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, result.getConversionOption());
-			// If it is an singlepdf add the file to the the current pdf.
-			if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessfull()) {
+			// If it is a singlepdf add the file to the current pdf.
+			if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessful()) {
 				try {
 					PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
 					pdfAttachmentUtil.addAttachmentInSinglePdf();
 				} finally {
 					deleteFile(cisConversionResultAttachment.getPdfResultFile());
-					// Clear the file because it is now incorporated in the file it self.
+					// Clear the file because it is now incorporated in the file itself.
 					cisConversionResultAttachment.setPdfResultFile(null);
 					cisConversionResultAttachment.setResultFilePath(null);
 				}
@@ -167,14 +167,14 @@ class MailConvertor extends AbstractConvertor {
 
 	private void resizeInlineImages(Document doc) throws Exception {
 		Node[] shapes = doc.getChildNodes(NodeType.SHAPE, true).toArray();
-		for (int i = 0; i < shapes.length; i++) {
-			Shape shape = (Shape) shapes[i];
+		for (Node node : shapes) {
+			Shape shape = (Shape) node;
 
 			// If images needs to be shrunk then scale to fit
-			if(shape.getWidth() > MAX_IMAGE_WIDTH_IN_POINTS || shape.getHeight() > MAX_IMAGE_HEIGHT_IN_POINTS){
+			if (shape.getWidth() > MAX_IMAGE_WIDTH_IN_POINTS || shape.getHeight() > MAX_IMAGE_HEIGHT_IN_POINTS) {
 
 				// make sure that aspect ratio is locked
-				if(!shape.getAspectRatioLocked()){
+				if (!shape.getAspectRatioLocked()) {
 					shape.setAspectRatioLocked(true);
 				}
 
@@ -199,7 +199,7 @@ class MailConvertor extends AbstractConvertor {
 	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption) throws IOException {
 		log.debug("Convert attachment... (" + attachment.getName() + ")");
 
-		// Get the name of the file (segment) (this is the last part.
+		// Get the name of the file (segment) (this is the last part).
 		String[] segments = attachment.getName().split("/");
 		String segmentFilename = segments[segments.length - 1];
 

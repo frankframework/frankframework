@@ -155,11 +155,13 @@ public class PdfPipe extends FixedForwardPipe {
 				case CONVERT:
 					String filename = session.getString(FILENAME_SESSION_KEY);
 					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(input, filename, isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
+
+					// Populate Session before creating main-xml as it will update session keys.
+					populateSession(cisConversionResult, session, new MutableInt(0));
+
 					XmlBuilder main = new XmlBuilder("main");
 					cisConversionResult.buildXmlFromResult(main, true);
-
 					Message message = new Message(main.toXML());
-					populateContext(cisConversionResult, session, new MutableInt(0));
 					session.put(getConversionResultDocumentSessionKey(), message);
 
 					return new PipeRunResult(getSuccessForward(), message);
@@ -171,17 +173,19 @@ public class PdfPipe extends FixedForwardPipe {
 		}
 	}
 
-	private void populateContext(CisConversionResult result, PipeLineSession session, MutableInt index) {
+	private void populateSession(CisConversionResult result, PipeLineSession session, MutableInt index) {
 		if (StringUtils.isNotEmpty(result.getResultFilePath())) {
 			// TODO: Use a PathMessage.asTemporaryMessage() here in future so that all these files
 			//       are automatically cleaned up on close of the PipeLineSession.
 			FileMessage document = new FileMessage(new File(result.getResultFilePath()));
-			session.put(getConversionResultFilesSessionKey() + index.incrementAndGet(), document);
+			String sessionKey = getConversionResultFilesSessionKey() + index.incrementAndGet();
+			result.setResultSessionKey(sessionKey);
+			session.put(sessionKey, document);
 		}
 
 		List<CisConversionResult> attachmentList = result.getAttachments();
 		for (CisConversionResult cisConversionResult : attachmentList) {
-			populateContext(cisConversionResult, session, index);
+			populateSession(cisConversionResult, session, index);
 		}
 	}
 
