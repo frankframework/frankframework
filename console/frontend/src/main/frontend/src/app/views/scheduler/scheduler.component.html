@@ -100,14 +100,14 @@
     </div>
     <div class="col-lg-12" *ngFor="let item of jobs | keyvalue; let i = index">
       <div class="ibox float-e-margins" *ngIf="(jobs | searchFilter : searchFilter).length > 0">
-        <div (click)="showContent[i] = !showContent[i]" class="ibox-title pointer">
+        <div (click)="jobShowContent[item.key] = !showContent(item.key)" class="ibox-title pointer">
           <div class="ibox-tools pull-right">
-            <a> <i class="fa fa-chevron-{{(showContent[i]) ? 'up' : 'down' }}"></i></a>
+            <a> <i class="fa fa-chevron-{{(showContent(item.key)) ? 'up' : 'down' }}"></i></a>
           </div>
           <h4>Jobgroup: {{item.key}}</h4>
         </div>
         <ng-template ngFor let-job [ngForOf]="item.value | searchFilter : searchFilter | orderby:'name'">
-          <div class="ibox-content" *ngIf="showContent[i]">
+          <div class="ibox-content" *ngIf="showContent(item.key)">
             <div class="col-md-12">
               <div class="pull-right">
                 <button *ngIf="job.type == 'DATABASE'" title="Edit Job {{job.name}}" class="btn btn-info btn-xs" type="button" (click)="edit(item.key, job.name)"><i class="fa fa-pencil"></i> Edit</button>

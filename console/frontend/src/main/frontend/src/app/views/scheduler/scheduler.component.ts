@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Adapter, AppService, Job } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { PollerService } from 'src/angularjs/app/services/poller.service';
@@ -25,7 +25,7 @@ interface Scheduler {
   templateUrl: './scheduler.component.html',
   styleUrls: ['./scheduler.component.scss']
 })
-export class SchedulerComponent implements OnInit {
+export class SchedulerComponent implements OnInit, OnDestroy {
   jobs: Record<string, Job[]> = {};
   scheduler: Scheduler = {
     name: "",
@@ -44,7 +44,9 @@ export class SchedulerComponent implements OnInit {
   searchFilter: string = "";
   refreshing: boolean = false;
   databaseSchedulesEnabled: boolean = this.appService.databaseSchedulesEnabled;
-  showContent: boolean[] = [];
+  jobShowContent: Record<keyof typeof this.jobs, boolean> = {}
+
+  private initialized = false;
 
   constructor(
     private apiService: ApiService,
@@ -58,6 +60,12 @@ export class SchedulerComponent implements OnInit {
     this.pollerService.add("schedules", (data) => {
       Object.assign(this, data);
       this.refreshing = false;
+      if (!this.initialized) {
+        for (const job of Object.keys(this.jobs)) {
+          this.jobShowContent[job] = true;
+        }
+        this.initialized = true;
+      }
     }, true, 5000);
 
     this.appService.databaseSchedulesEnabled$.subscribe(() => {
@@ -65,9 +73,13 @@ export class SchedulerComponent implements OnInit {
     });
   };
 
-  $onDestroy() {
+  ngOnDestroy() {
     this.pollerService.remove("schedules");
   };
+
+  showContent(job: keyof typeof this.jobs) {
+    return this.jobShowContent[job];
+  }
 
   start() {
     this.refreshing = true;
