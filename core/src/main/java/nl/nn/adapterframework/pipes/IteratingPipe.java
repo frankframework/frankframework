@@ -414,18 +414,34 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				try {
 					guard.waitForAllResources();
 					int count = 0;
+					List<Throwable> exceptions = new ArrayList<>();
 					for (ParallelSenderExecutor pse : executorList) {
 						count++;
-						String itemResult;
+						String itemResult="";
 						if (pse.getThrowable() == null) {
 							SenderResult senderResult = pse.getReply();
 							if (senderResult.isSuccess()) {
 								itemResult = senderResult.getResult().asString();
-							} else {
-								throw new SenderException("Something went wrong during parallel execution of iterating pipe: " + senderResult.getResult().asString());
+							} 
+							else {
+								if(isIgnoreExceptions()){
+									itemResult = "<exception>"+ XmlEncodingUtils.encodeChars(senderResult.getResult().asString())+"</exception>";
+								} else {
+									SenderException se = new SenderException(senderResult.getResult().asString());
+									exceptions.add(se);
+								}
 							}
 						} else {
-							throw new SenderException("Something went wrong during parallel execution of iterating pipe: " + pse.getThrowable().getMessage());
+							if(isIgnoreExceptions()){
+								itemResult = "<exception>"+ XmlEncodingUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
+							} else {
+								exceptions.add(pse.getThrowable());
+							}
+						}
+						if(!exceptions.isEmpty()){
+							SenderException se = new SenderException("Something went wrong in one of the parallel running pipes: ");
+							exceptions.stream().forEach(se::addSuppressed);
+							throw se;
 						}
 						addResult(count, pse.getRequest(), itemResult);
 					}
