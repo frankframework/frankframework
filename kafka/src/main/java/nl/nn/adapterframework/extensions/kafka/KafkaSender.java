@@ -15,19 +15,13 @@
 */
 package nl.nn.adapterframework.extensions.kafka;
 
-import java.io.IOException;
-import java.util.concurrent.Future;
+import lombok.AccessLevel;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import lombok.Getter;
+
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-import lombok.AccessLevel;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
@@ -36,55 +30,54 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 
 public class KafkaSender extends KafkaFacade implements ISender {
-	//setter is for testing purposes only.
-	private @Setter(AccessLevel.PACKAGE) Producer<String, byte[]> producer;
 	/** The topic to send messages to. Only one topic per sender. Wildcards are not supported. */
 	private @Setter String topic;
+	private @Setter KafkaType keyType = KafkaType.STRING;
+	private @Setter KafkaType messageType = KafkaType.BYTEARRAY;
+	//getter is for testing purposes only.
+	private @Getter(AccessLevel.PACKAGE) KafkaInternalSender internalSender;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(topic)) throw new ConfigurationException("topic must be specified");
-		if(topic.contains(",")) throw new ConfigurationException("Only one topic is allowed to be used for sender.");
-		if(topic.contains("*")) throw new ConfigurationException("Wildcards are not allowed to be used for sender.");
-		properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-		properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ByteArraySerializer.class.getName());
+		internalSender = generateInternalSender(keyType, messageType);
+		internalSender.setTopic(topic);
+		internalSender.setBootstrapServers(getBootstrapServers());
+		internalSender.setClientId(getClientId());
+		internalSender.configure();
 	}
 
 	@Override
 	public void open() throws SenderException {
-		producer = new KafkaProducer<>(properties);
+		internalSender.open();
 	}
 
 	@Override
 	public void close() throws SenderException {
-		producer.close();
+		internalSender.close();
 	}
 
 	@Override
 	public SenderResult sendMessage(nl.nn.adapterframework.stream.Message message, PipeLineSession session) throws SenderException {
-		ProducerRecord<String, byte[]> producerRecord;
-		byte[] messageBytes;
-		try {
-			messageBytes = message.asByteArray();
-		} catch (IOException e) {
-			throw new SenderException("Failed to convert message to byte array", e);
-		}
-		producerRecord = new ProducerRecord<>(topic, messageBytes);
-		Future<RecordMetadata> future = producer.send(producerRecord);
-		RecordMetadata metadata;
-		try {
-			metadata = future.get();
-		} catch (Exception e) {
-			throw new SenderException(e);
-		}
-		message.getContext().put("kafka.offset", metadata.offset());
-		message.getContext().put("kafka.partition", metadata.partition());
-		return new SenderResult(message);
+		return internalSender.sendMessage(message, session);
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "TOPIC(" + topic + ") on ("+ getBootstrapServers() +")";
+		return internalSender.getPhysicalDestinationName();
+	}
+
+	private static String getSerializer(KafkaType type) {
+		if(type==KafkaType.STRING) return StringSerializer.class.getName();
+		if(type==KafkaType.BYTEARRAY) return ByteArraySerializer.class.getName();
+		throw new IllegalArgumentException("Unknown KafkaType ["+type+"]");
+	}
+
+	public static KafkaInternalSender generateInternalSender(KafkaType keyType, KafkaType messageType) {
+		if(keyType == KafkaType.STRING && messageType == KafkaType.STRING) return new KafkaInternalSender<String, String>(getSerializer(keyType), getSerializer(messageType), messageType);
+		if(keyType == KafkaType.STRING && messageType == KafkaType.BYTEARRAY) return new KafkaInternalSender<String, byte[]>(getSerializer(keyType), getSerializer(messageType), messageType);
+		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.STRING) return new KafkaInternalSender<byte[], String>(getSerializer(keyType), getSerializer(messageType), messageType);
+		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.BYTEARRAY) return new KafkaInternalSender<byte[], byte[]>(getSerializer(keyType), getSerializer(messageType), messageType);
+		throw new IllegalArgumentException("Unknown KafkaType combination ["+keyType+"-"+messageType+"]");
 	}
 }

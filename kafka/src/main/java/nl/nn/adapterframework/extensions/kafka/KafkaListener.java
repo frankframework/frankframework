@@ -35,6 +35,9 @@ import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
+
 public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord> {
 
 	/** The group id of the consumer */
@@ -91,11 +94,17 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 		throw new IllegalArgumentException("Unknown KafkaType ["+kafkaType+"]");
 	}
 
+	private static String getDeserializer(KafkaType type) {
+		if(type==KafkaType.STRING) return StringDeserializer.class.getName();
+		if(type==KafkaType.BYTEARRAY) return ByteArrayDeserializer.class.getName();
+		throw new IllegalArgumentException("Unknown KafkaType ["+type+"]");
+	}
+
 	public static KafkaInternalListener generateInternalListener(KafkaType keyType, KafkaType messageType, Properties properties) {
-		if(keyType == KafkaType.STRING && messageType == KafkaType.STRING) return new KafkaInternalListener<String, String>(properties, messageConverterFactory(messageType));
-		if(keyType == KafkaType.STRING && messageType == KafkaType.BYTEARRAY) return new KafkaInternalListener<String, byte[]>(properties, messageConverterFactory(messageType));
-		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.STRING) return new KafkaInternalListener<byte[], String>(properties, messageConverterFactory(messageType));
-		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.BYTEARRAY) return new KafkaInternalListener<byte[], byte[]>(properties, messageConverterFactory(messageType));
+		if(keyType == KafkaType.STRING && messageType == KafkaType.STRING) return new KafkaInternalListener<String, String>(properties, messageConverterFactory(messageType), getDeserializer(keyType), getDeserializer(messageType));
+		if(keyType == KafkaType.STRING && messageType == KafkaType.BYTEARRAY) return new KafkaInternalListener<String, byte[]>(properties, messageConverterFactory(messageType), getDeserializer(keyType), getDeserializer(messageType));
+		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.STRING) return new KafkaInternalListener<byte[], String>(properties, messageConverterFactory(messageType), getDeserializer(keyType), getDeserializer(messageType));
+		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.BYTEARRAY) return new KafkaInternalListener<byte[], byte[]>(properties, messageConverterFactory(messageType), getDeserializer(keyType), getDeserializer(messageType));
 		throw new IllegalArgumentException("Unknown KafkaType combination ["+keyType+"-"+messageType+"]");
 	}
 

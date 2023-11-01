@@ -46,8 +46,8 @@ public class KafkaSenderTest {
 		sender.setTopic("test.test2");
 		sender.setClientId("test");
 		sender.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
-		sender.setProducer(mockProducer);
 		sender.configure();
+		sender.getInternalSender().setProducer(mockProducer);
 	}
 
 	@Test

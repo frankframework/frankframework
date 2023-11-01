@@ -1,0 +1,117 @@
+/*
+   Copyright 2023 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package nl.nn.adapterframework.extensions.kafka;
+
+import java.io.IOException;
+import java.util.concurrent.Future;
+import java.util.function.Function;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
+
+import lombok.AccessLevel;
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.stream.Message;
+
+class KafkaInternalSender<T,M> extends KafkaFacade implements ISender {
+	//setter is for testing purposes only.
+	private @Setter(AccessLevel.PACKAGE) Producer<T, M> producer;
+	/** The topic to send messages to. Only one topic per sender. Wildcards are not supported. */
+	private @Setter String topic;
+	private String keySerializer;
+	private String valueSerializer;
+	private Function<Message, M> messageParser;
+	public KafkaInternalSender(String keySerializer, String valueSerializer, KafkaType messageType) {
+		super();
+		this.keySerializer = keySerializer;
+		this.valueSerializer = valueSerializer;
+		this.messageParser = generateMessageParser(messageType);
+	}
+
+	private Function<Message, M> generateMessageParser(KafkaType messageType) {
+		if(messageType == KafkaType.BYTEARRAY) return message-> {
+			try {
+				return (M) message.asByteArray();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		};
+		if(messageType == KafkaType.STRING) return message-> {
+			try {
+				return (M) message.asString();
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		};
+		throw new IllegalArgumentException("Unknown KafkaType ["+messageType+"]");
+	}
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		if (StringUtils.isEmpty(topic)) throw new ConfigurationException("topic must be specified");
+		if(topic.contains(",")) throw new ConfigurationException("Only one topic is allowed to be used for sender.");
+		if(topic.contains("*")) throw new ConfigurationException("Wildcards are not allowed to be used for sender.");
+		properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializer);
+		properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, valueSerializer);
+	}
+
+	@Override
+	public void open() throws SenderException {
+		producer = new KafkaProducer<>(properties);
+	}
+
+	@Override
+	public void close() throws SenderException {
+		producer.close();
+	}
+
+	@Override
+	public SenderResult sendMessage(nl.nn.adapterframework.stream.Message message, PipeLineSession session) throws SenderException {
+		ProducerRecord<T, M> producerRecord;
+		M messageData;
+		try {
+			messageData = messageParser.apply(message);
+		} catch (Exception e) {
+			throw new SenderException("Failed to convert message to message type:", e);
+		}
+		producerRecord = new ProducerRecord<>(topic, messageData);
+		Future<RecordMetadata> future = producer.send(producerRecord);
+		RecordMetadata metadata;
+		try {
+			metadata = future.get();
+		} catch (Exception e) {
+			throw new SenderException(e);
+		}
+		message.getContext().put("kafka.offset", metadata.offset());
+		message.getContext().put("kafka.partition", metadata.partition());
+		return new SenderResult(message);
+	}
+
+	@Override
+	public String getPhysicalDestinationName() {
+		return "TOPIC(" + topic + ") on ("+ getBootstrapServers() +")";
+	}
+}

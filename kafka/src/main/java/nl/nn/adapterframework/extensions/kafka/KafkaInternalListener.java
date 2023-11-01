@@ -39,8 +39,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.ByteArrayDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -75,11 +73,15 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 	private Map<TopicPartition, OffsetAndMetadata> offsetAndMetadataMap = new HashMap<>();
 	private BiFunction<M, MessageContext, Message> converter;
 	private Lock lock = new ReentrantLock();
+	private String keyDeserializer;
+	private String valueDeserializer;
 
-	public KafkaInternalListener(Properties properties, BiFunction<M, MessageContext, Message> converter) {
+	public KafkaInternalListener(Properties properties, BiFunction<M, MessageContext, Message> converter, String keyDeserializer, String valueDeserializer) {
 		super();
 		this.properties = properties;
 		this.converter = converter;
+		this.keyDeserializer = keyDeserializer;
+		this.valueDeserializer = valueDeserializer;
 	}
 
 	@Override
@@ -90,8 +92,8 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 		if(patternRecheckInterval < 10) throw new ConfigurationException("patternRecheckInterval should be at least 10");
 		properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 		properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, fromBeginning ? "earliest" : "latest");
-		properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName());
+		properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer);
+		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer);
 		properties.setProperty(ConsumerConfig.METADATA_MAX_AGE_CONFIG, String.valueOf(patternRecheckInterval));
 		properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 		topicPatterns = StringUtil.splitToStream(topics)
