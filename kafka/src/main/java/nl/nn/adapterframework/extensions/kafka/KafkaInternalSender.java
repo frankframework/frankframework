@@ -93,6 +93,7 @@ class KafkaInternalSender<T,M> extends KafkaFacade implements ISender {
 		ProducerRecord<T, M> producerRecord;
 		M messageData;
 		try {
+			message.preserve();
 			messageData = messageParser.apply(message);
 		} catch (Exception e) {
 			throw new SenderException("Failed to convert message to message type:", e);
