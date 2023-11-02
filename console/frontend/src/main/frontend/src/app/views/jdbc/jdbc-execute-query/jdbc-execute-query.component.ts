@@ -1,21 +1,9 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
-
-interface Form {
-  query: string
-  queryType: string
-  datasource: string
-  resultType: string
-  avoidLocking: boolean
-  trimSpaces: boolean
-}
-
-interface Data {
-  queryTypes: string[]
-  resultTypes: string[]
-  datasources: string[]
-}
+import { WebStorageService } from 'src/app/services/web-storage.service';
+import { JdbcQueryForm, JdbcService } from '../jdbc.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-jdbc-execute-query',
@@ -28,7 +16,7 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
   queryTypes: string[] = [];
   error: string = "";
   processingMessage: boolean = false;
-  form: Form = {
+  form: JdbcQueryForm = {
     query: "",
     queryType: "",
     datasource: "",
@@ -42,8 +30,9 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
   private appConstants: AppConstants;
 
   constructor(
-    private cookiesService: CookiesService,
-    private appService: AppService
+    private webStorageService: WebStorageService,
+    private appService: AppService,
+    private jdbcService: JdbcService
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
     const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
@@ -58,9 +47,9 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     });
     this._subscriptions.add(appConstantsSubscription);
 
-    var executeQueryCookie = this.cookiesService.get("executeQuery");
+    var executeQueryCookie = this.webStorageService.get("executeQuery");
 
-    this.apiService.Get("jdbc", (data: Data) => {
+    this.jdbcService.getJdbc().subscribe((data) => {
       Object.assign(this, data);
 
       this.form["datasource"] = (this.appConstants['jdbc.datasource.default'] != undefined) ? this.appConstants['jdbc.datasource.default'] : data.datasources[0];
@@ -83,7 +72,7 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     this._subscriptions.unsubscribe();
   }
 
-  submit(formData: Form) {
+  submit(formData: JdbcQueryForm) {
     this.processingMessage = true;
 
     if (!formData || !formData.query) {
@@ -95,23 +84,25 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     if (!formData.datasource) formData.datasource = this.datasources[0] || "";
     if (!formData.resultType) formData.resultType = this.resultTypes[0] || "";
 
-    this.cookiesService.set("executeQuery", formData);
+    this.webStorageService.set("executeQuery", formData);
 
-    this.apiService.Post("jdbc/query", JSON.stringify(formData), (returnData) => {
-      this.error = "";
+    this.jdbcService.postJdbcQuery(formData).subscribe({
+      next: returnData => {
+        this.error = "";
 
-      if (!returnData) {
-        returnData = "Ok";
-      };
+        if (!returnData) {
+          returnData = "Ok";
+        };
 
-      this.result = returnData;
-      this.processingMessage = false;
-    }, (errorData: { error: string }) => {
-      var error = (errorData && errorData.error) ? errorData.error : "An error occured!";
-      this.error = error;
-      this.result = "";
-      this.processingMessage = false;
-    }, false);
+        this.result = returnData;
+        this.processingMessage = false;
+      }, error: (errorData: HttpErrorResponse) => {
+        const error = (errorData && errorData.error) ? errorData.error : "An error occured!";
+        this.error = typeof error === 'object' ? error.error : error;
+        this.result = "";
+        this.processingMessage = false;
+      }
+    }); // TODO no intercept
   };
 
   reset() {
@@ -121,6 +112,6 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     this.form["resultType"] = this.resultTypes[0];
     this.form["avoidLocking"] = false;
     this.form["trimSpaces"] = false;
-    this.cookiesService.remove("executeQuery");
+    this.webStorageService.remove("executeQuery");
   };
 }

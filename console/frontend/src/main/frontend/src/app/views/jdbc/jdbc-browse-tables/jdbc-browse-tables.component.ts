@@ -2,6 +2,7 @@ import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 interface ColumnName {
   id: number
@@ -76,7 +77,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
     if (!formData.datasource) formData.datasource = this.datasources[0] || "";
     if (!formData.resultType) formData.resultType = this.resultTypes[0] || "";
 
-    this.jdbcService.postJdbcBrowse(JSON.stringify(formData)).subscribe(returnData => {
+    this.jdbcService.postJdbcBrowse(formData).subscribe({ next: returnData => {
       this.error = "";
       this.query = returnData.query;
       let i = 0;
@@ -108,12 +109,12 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
       }
 
       this.processingMessage = false;
-    }, (errorData: { error: string }) => {
-      const error = errorData.error ? errorData.error : "";
-      this.error = error;
+    }, error: (errorData: HttpErrorResponse) => {
+      const error = errorData.error ? errorData.error.error : "";
+      this.error = typeof error === 'object' ? error.error : error;
       this.query = "";
       this.processingMessage = false;
-    }); // TODO no intercept
+    }}); // TODO no intercept
   }
 
   reset() {

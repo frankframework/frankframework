@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppService, Configuration, File } from 'src/angularjs/app/app.service';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
+import { AppService, Configuration } from 'src/app/app.service';
+import { JdbcService } from '../jdbc/jdbc.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 interface Form {
   configuration: string
@@ -17,9 +17,7 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
   form: Form = {
     configuration: ""
   };
-  file: File | null = {
-    name: ""
-  };
+  file: File | null = null;
   generateSql: boolean = false;
   error: string = "";
   result: string = "";
@@ -29,9 +27,8 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
   private _subscriptions = new Subscription();
 
   constructor(
-    private apiService: ApiService,
-    private miscService: MiscService,
     private appService: AppService,
+    private jdbcService: JdbcService
   ) { };
 
   ngOnInit(): void {
@@ -59,7 +56,7 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
   }
 
   download() {
-    window.open(this.miscService.getServerPath() + "iaf/api/jdbc/liquibase/");
+    window.open(this.appService.getServerPath() + "iaf/api/jdbc/liquibase/");
   };
 
   submit(formData: Form) {
@@ -73,15 +70,15 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
 
     fd.append("configuration", formData.configuration);
 
-    this.apiService.Post("jdbc/liquibase", fd, (returnData) => {
+    this.jdbcService.postJdbcLiquibase(fd).subscribe({ next: returnData => {
       this.error = "";
       this.generateSql = false;
-      Object.assign(this, returnData);
-    }, (errorData, status, errorMsg) => {
+      this.result = returnData.result;
+    }, error: (errorData: HttpErrorResponse) => {
       this.generateSql = false;
-      var error = (errorData) ? errorData.error : errorMsg;
-      this.error = error;
+      const error = (errorData && errorData.error) ? errorData.error : "An error occured!";
+      this.error = typeof error === 'object' ? error.error : error;
       this.result = "";
-    }, false);
+    }}); // TODO no intercept
   };
 }

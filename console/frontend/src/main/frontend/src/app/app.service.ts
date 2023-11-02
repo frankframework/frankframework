@@ -52,10 +52,6 @@ export type Pipe = {
   certificate?: Certificate
 }
 
-export type File = {
-  name: string
-}
-
 export type Certificate = {
   name: string
 }

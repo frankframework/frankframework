@@ -30,7 +30,7 @@ import { CustomViewsComponent } from './components/custom-views/custom-views.com
 import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pages-topinfobar.component';
 import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/pages-topnavbar.component';
 import { HamburgerComponent } from './components/pages/pages-topnavbar/hamburger.component';
-// import { InputFileUploadComponent } from './components/input-file-upload/input-file-upload.component';
+import { InputFileUploadComponent } from './components/input-file-upload/input-file-upload.component';
 // import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
 import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
 import { OrderByPipe } from './pipes/orderby.pipe';
@@ -59,7 +59,7 @@ import { FlowComponent } from './views/status/flow/flow.component';
 // import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
 // import { FormatStatisticsPipe } from './views/adapterstatistics/format-statistics.pipe';
 // import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
-// import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
+import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
 // import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
 // import { FitHeightDirective } from './views/iframe/fit-height.directive';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
@@ -86,7 +86,7 @@ const windowProvider: ValueProvider = {
     IframeLadybugBetaComponent,
     IframeLarvaComponent,
     // InlinestoreComponent,
-    // InputFileUploadComponent,
+    InputFileUploadComponent,
     JdbcBrowseTablesComponent,
     JdbcExecuteQueryComponent,
     // JmsBrowseQueueComponent,
@@ -121,7 +121,7 @@ const windowProvider: ValueProvider = {
     // directives
     ToDateDirective,
     TimeSinceDirective,
-    // QuickSubmitFormDirective,
+    QuickSubmitFormDirective,
     // FitHeightDirective,
     SideNavigationDirective,
   ],

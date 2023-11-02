@@ -3,9 +3,9 @@ import { Injectable } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 
 export type JDBC = {
-  "queryTypes": string[],
-  "datasources": string[],
-  "resultTypes": string[]
+  queryTypes: string[]
+  datasources: string[]
+  resultTypes: string[]
 }
 
 export interface JdbcBrowseForm {
@@ -17,6 +17,15 @@ export interface JdbcBrowseForm {
   numberOfRowsOnly: boolean
   minRow: number
   maxRow: number
+}
+
+export interface JdbcQueryForm {
+  query: string
+  queryType: string
+  datasource: string
+  resultType: string
+  avoidLocking: boolean
+  trimSpaces: boolean
 }
 
 export interface JdbcBrowseReturnData {
@@ -39,8 +48,16 @@ export class JdbcService {
     return this.http.get<JDBC>(this.appService.absoluteApiPath + "jdbc");
   }
 
-  postJdbcBrowse(formData: string) {
+  postJdbcBrowse(formData: JdbcBrowseForm) {
     return this.http.post<JdbcBrowseReturnData>(this.appService.absoluteApiPath + "jdbc/browse", formData);
+  }
+
+  postJdbcQuery(formData: JdbcQueryForm) {
+    return this.http.post(this.appService.absoluteApiPath + "jdbc/query", formData, { responseType: 'text' });
+  }
+
+  postJdbcLiquibase(formData: FormData) {
+    return this.http.post<{ result: string }>(this.appService.absoluteApiPath + "jdbc/liquibase", formData);
   }
 
 }
