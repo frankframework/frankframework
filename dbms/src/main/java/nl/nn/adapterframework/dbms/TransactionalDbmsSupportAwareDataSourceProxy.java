@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.jndi;
+package nl.nn.adapterframework.dbms;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -23,17 +23,17 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.logging.log4j.Logger;
-import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
+import lombok.extern.log4j.Log4j2;
 
-import nl.nn.adapterframework.util.LogUtil;
+import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 /**
  * DataSource that is aware of the database metadata.
  * Fetches the metadata once and caches them.
  */
+
+@Log4j2
 public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwareDataSourceProxy {
-	private Logger log = LogUtil.getLogger(this);
 	private Map<String, String> metadata;
 	private String destinationName = null;
 

@@ -38,7 +38,7 @@ import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
-import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
+import nl.nn.adapterframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;

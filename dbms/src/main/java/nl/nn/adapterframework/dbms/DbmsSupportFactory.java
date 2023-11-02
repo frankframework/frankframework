@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 
 import lombok.Getter;
-
 import lombok.extern.log4j.Log4j2;
 
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +49,10 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 
 	private IDbmsSupport compute(DataSource datasource) {
 		try {
+			if (datasource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+				Map<String, String> md = ((TransactionalDbmsSupportAwareDataSourceProxy) datasource).getMetaData();
+				return getDbmsSupport(md.get("product"), md.get("product-version"));
+			}
 			try (Connection connection = datasource.getConnection()) {
 				return getDbmsSupport(connection);
 			}

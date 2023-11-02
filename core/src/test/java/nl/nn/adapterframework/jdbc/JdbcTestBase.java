@@ -40,7 +40,7 @@ import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.dbms.JdbcException;
-import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
+import nl.nn.adapterframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
