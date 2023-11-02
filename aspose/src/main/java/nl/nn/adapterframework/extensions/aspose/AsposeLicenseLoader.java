@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.extensions.aspose;
 
+import static nl.nn.adapterframework.functional.FunctionalUtil.logMethod;
+
 import java.io.InputStream;
 import java.net.URL;
 import java.util.EnumMap;
@@ -72,13 +74,13 @@ public class AsposeLicenseLoader {
 	private void loadAsposeLicense(AsposeLibrary library) throws Exception {
 		LicenseWrapper licenseWrapper = loadedLicenses.get(library);
 		if(licenseWrapper.isLicenseLoaded()) {
-			log.debug("loading Aspose [{}] license", library.name());
+			log.debug("loading Aspose [{}] license", library::name);
 
 			try (InputStream inputStream = license.openStream()) {
 				licenseWrapper.loadLicense(inputStream);
-				log.info("loaded Aspose [{}] license", library.name());
+				log.info("loaded Aspose [{}] license", library::name);
 			} catch (Exception e) {
-				log.error("failed to load Aspose [" + library.name() + "] license", e);
+				log.error("failed to load Aspose [{}] license", logMethod(library::name), e);
 				throw e;
 			}
 		}
