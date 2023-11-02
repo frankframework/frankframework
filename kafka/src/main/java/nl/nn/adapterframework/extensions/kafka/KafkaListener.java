@@ -85,12 +85,12 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 		internalListener.afterMessageProcessed(processResult, rawMessage, pipeLineSession);
 	}
 
-	static KafkaInternalListener generateInternalListener(KafkaType keyType, KafkaType messageType, Properties properties) {
+	static KafkaInternalListener generateInternalListener(KafkaType keyType, KafkaType messageType, Properties properties) throws ConfigurationException {
 		if(keyType == KafkaType.STRING && messageType == KafkaType.STRING) return new KafkaInternalListener<String, String>(properties, keyType, messageType);
 		if(keyType == KafkaType.STRING && messageType == KafkaType.BYTEARRAY) return new KafkaInternalListener<String, byte[]>(properties, keyType, messageType);
 		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.STRING) return new KafkaInternalListener<byte[], String>(properties, keyType, messageType);
 		if(keyType == KafkaType.BYTEARRAY && messageType == KafkaType.BYTEARRAY) return new KafkaInternalListener<byte[], byte[]>(properties, keyType, messageType);
-		throw new IllegalArgumentException("Unknown KafkaType combination ["+keyType+"-"+messageType+"]");
+		throw new ConfigurationException("Unknown KafkaType combination ["+keyType+"-"+messageType+"]");
 	}
 
 	@Override

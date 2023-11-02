@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.kafka;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -71,7 +70,7 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 	private @Setter boolean fromBeginning;
 	private @Setter int patternRecheckInterval;
 	private @Setter String topics;
-	private @Getter(AccessLevel.PACKAGE) List<Pattern> topicPatterns = new ArrayList<>();
+	private @Getter(AccessLevel.PACKAGE) List<Pattern> topicPatterns;
 	private final Duration pollDuration = Duration.ofMillis(1);
 	private final Map<TopicPartition, OffsetAndMetadata> offsetAndMetadataMap = new HashMap<>();
 	private final BiFunction<M, MessageContext, Message> converter;
