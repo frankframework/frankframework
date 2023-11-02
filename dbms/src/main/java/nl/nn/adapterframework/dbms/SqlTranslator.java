@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -122,7 +123,7 @@ public class SqlTranslator implements ISqlTranslator {
 		String sourceMatch = (".source." + sourceDialect.replace(" ", "_")).toLowerCase();
 		String targetMatch = (".target." + targetDialect.replace(" ", "_")).toLowerCase();
 
-		URL resourceUrl = getClass().getClassLoader().getResource(PATTERN_FILE);
+		URL resourceUrl = ClassUtils.getResourceURL(PATTERN_FILE);
 		if (resourceUrl == null) {
 			throw new IOException("unable to find SQL Pattern File");
 		}
