@@ -20,15 +20,15 @@ public class DbmsException extends JdbcException {
 		super();
 	}
 
-	public DbmsException(String arg1) {
-		super(arg1);
+	public DbmsException(String message) {
+		super(message);
 	}
 
-	public DbmsException(String arg1, Throwable arg2) {
-		super(arg1, arg2);
+	public DbmsException(String message, Throwable exception) {
+		super(message, exception);
 	}
 
-	public DbmsException(Throwable arg1) {
-		super(arg1);
+	public DbmsException(Throwable exception) {
+		super(exception);
 	}
 }
