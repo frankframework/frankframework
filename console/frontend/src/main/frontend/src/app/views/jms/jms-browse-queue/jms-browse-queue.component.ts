@@ -1,22 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { CookiesService } from 'src/angularjs/app/services/cookies.service';
-
-interface Form {
-  destination: string
-  connectionFactory: string
-  type: string
-  rowNumbersOnly: boolean
-  payload: boolean
-  lookupDestination: boolean
-}
-
-interface Message {
-  id: string
-  correlationId: string
-  text: string
-  insertDate: string
-}
+import { WebStorageService } from 'src/app/services/web-storage.service';
+import { JmsBrowseForm, JmsService, Message } from '../jms.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-jms-browse-queue',
@@ -25,10 +10,10 @@ interface Message {
 })
 export class JmsBrowseQueueComponent implements OnInit {
   destinationTypes: string[] = ["QUEUE", "TOPIC"];
-  form: Form = {
+  form: JmsBrowseForm = {
     destination: "",
     connectionFactory: "",
-    type: "",
+    type: "QUEUE",
     rowNumbersOnly: false,
     payload: false,
     lookupDestination: false
@@ -40,21 +25,21 @@ export class JmsBrowseQueueComponent implements OnInit {
   connectionFactories: string[] = [];
 
   constructor(
-    private apiService: ApiService,
-    private cookiesService: CookiesService
+    private jmsService: JmsService,
+    private webStorageService: WebStorageService
   ) { };
 
   ngOnInit(): void {
-    var browseJmsQueue = this.cookiesService.get("browseJmsQueue");
+    var browseJmsQueue = this.webStorageService.get("browseJmsQueue");
     if (browseJmsQueue) this.form = browseJmsQueue;
 
-    this.apiService.Get("jms", (data) => {
+    this.jmsService.getJms().subscribe(data => {
       this.connectionFactories = data["connectionFactories"];
-      angular.element("select[name='type']").val(this.destinationTypes[0]);
+      $("select[name='type']").val(this.destinationTypes[0]);
     });
   };
 
-  submit(formData: Form) {
+  submit(formData: JmsBrowseForm) {
     this.processing = true;
 
     if (!formData || !formData.destination) {
@@ -62,19 +47,21 @@ export class JmsBrowseQueueComponent implements OnInit {
       return;
     };
 
-    this.cookiesService.set("browseJmsQueue", formData);
+    this.webStorageService.set("browseJmsQueue", formData);
     if (!formData.connectionFactory) formData.connectionFactory = this.connectionFactories[0] || "";
     if (!formData.type) formData.type = this.destinationTypes[0] || "";
 
-    this.apiService.Post("jms/browse", JSON.stringify(formData), (data) => {
-      this.connectionFactories = data["connectionFactories"];
-      if (!data.messages) this.messages = [];
+    this.jmsService.postJmsBrowse(formData).subscribe({ next: data => {
+      //this.connectionFactories = data["connectionFactories"]; // doesnt exist in the result?
+      this.messages = !data.messages ? [] : data.messages;
+      this.numberOfMessages = data.numberOfMessages;
       this.error = "";
       this.processing = false;
-    }, (errorData, status, errorMsg) => {
-      this.error = (errorData && errorData.error) ? errorData.error : errorMsg;
+    }, error: (errorData: HttpErrorResponse) => {
+      const error = errorData.error ? errorData.error.error : "";
+      this.error = typeof error === 'object' ? error.error : error;
       this.processing = false;
-    });
+    }});
   };
 
   reset() {

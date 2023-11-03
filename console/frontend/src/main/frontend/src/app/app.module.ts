@@ -47,8 +47,8 @@ import { SearchFilterPipe } from './pipes/search-filter.pipe';
 import { TruncatePipe } from './pipes/truncate.pipe';
 import { ToDateDirective } from './components/to-date.directive';
 import { LiquibaseComponent } from './views/liquibase/liquibase.component';
-// import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
-// import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
+import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
+import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
 // import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
 // import { VariablesFilterPipe } from './pipes/variablesFilter.pipe';
 import { TimeSinceDirective } from './components/time-since.directive';
@@ -89,8 +89,8 @@ const windowProvider: ValueProvider = {
     InputFileUploadComponent,
     JdbcBrowseTablesComponent,
     JdbcExecuteQueryComponent,
-    // JmsBrowseQueueComponent,
-    // JmsSendMessageComponent,
+    JmsBrowseQueueComponent,
+    JmsSendMessageComponent,
     LiquibaseComponent,
     LogoutComponent,
     MinimalizaSidebarComponent,

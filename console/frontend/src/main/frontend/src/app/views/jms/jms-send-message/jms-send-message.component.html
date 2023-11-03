@@ -30,7 +30,7 @@
             <div class="row form-group">
               <label class="col-sm-5 col-md-3 control-label label-height-30">Destination Type</label>
               <div class="col-sm-7 col-md-9">
-                <select [value]="this.destinationTypes[0]" class="form-control" name="type" [(ngModel)]="form['type']">
+                <select class="form-control" name="type" [(ngModel)]="form['type']">
                   <option *ngFor="let type of destinationTypes">{{type}}</option>
                 </select>
               </div>

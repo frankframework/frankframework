@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { File } from 'src/angularjs/app/app.service';
-import { ApiService } from 'src/angularjs/app/services/api.service';
+import { JmsService } from '../jms.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 interface Form {
   destination: string
@@ -24,9 +24,7 @@ interface Form {
 export class JmsSendMessageComponent implements OnInit {
   destinationTypes: string[] = ["QUEUE", "TOPIC"];
   processing: boolean = false;
-  file: File | null = {
-    name: ""
-  };
+  file: File | null = null;
   connectionFactories: string[] = [];
   error: string = "";
   form: Form = {
@@ -36,7 +34,7 @@ export class JmsSendMessageComponent implements OnInit {
     persistent: false,
     propertyValue: "",
     propertyKey: "",
-    type: "",
+    type: "QUEUE",
     connectionFactory: "",
     synchronous: false,
     lookupDestination: false,
@@ -44,11 +42,11 @@ export class JmsSendMessageComponent implements OnInit {
   };
 
   constructor(
-    private apiService: ApiService
+    private jmsService: JmsService
   ) { };
 
   ngOnInit(): void {
-    this.apiService.Get("jms", (data) => { this.connectionFactories = data["connectionFactories"]; });
+    this.jmsService.getJms().subscribe(data => { this.connectionFactories = data["connectionFactories"]; });
   };
 
   submit(formData: Form) {
@@ -92,14 +90,14 @@ export class JmsSendMessageComponent implements OnInit {
       return;
     }
 
-    this.apiService.Post("jms/message", fd, (returnData) => {
+    this.jmsService.postJmsMessage(fd).subscribe({ next: (returnData) => {
       this.error = "";
       this.processing = false;
-    }, (errorData, status, errorMsg) => {
+    }, error: (errorData: HttpErrorResponse) => {
       this.processing = false;
-      errorMsg = (errorMsg) ? errorMsg : "An unknown error occured, check the logs for more info.";
-      this.error = (errorData.error) ? errorData.error : errorMsg;
-    });
+      const error = errorData.error ? errorData.error.error : "An unknown error occured, check the logs for more info.";
+      this.error = typeof error === 'object' ? error.error : error;
+    }});
   };
 
   reset() {

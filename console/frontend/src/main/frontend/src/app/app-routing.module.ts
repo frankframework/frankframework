@@ -6,8 +6,8 @@ import { StatusComponent } from './views/status/status.component';
 // import { StorageComponent } from './views/storage/storage.component';
 // import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
 // import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
-// import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
-// import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
+import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
+import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
 // import { WebservicesComponent } from './views/webservices/webservices.component';
 // import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
@@ -32,7 +32,6 @@ const routes: Routes = [
     component: LogoutComponent,
     title: 'Logout'
   },
-  /* /status?configuration&filter&search */
   {
     path: 'status',
     component: StatusComponent,
@@ -123,22 +122,22 @@ const routes: Routes = [
       breadcrumbs: 'Logging > Log Settings'
     },
   }, */
-  // {
-  //   path: 'jms/send-message',
-  //   component: JmsSendMessageComponent,
-  //   title: 'Send JMS Message',
-  //   data: {
-  //     breadcrumbs: 'JMS > Send Message'
-  //   }
-  // },
-  // {
-  //   path: 'jms/browse-queue',
-  //   component: JmsBrowseQueueComponent,
-  //   title: 'Browse JMS Queue',
-  //   data: {
-  //     breadcrumbs: 'JMS > Browse Queue'
-  //   }
-  // },
+  {
+    path: 'jms/send-message',
+    component: JmsSendMessageComponent,
+    title: 'Send JMS Message',
+    data: {
+      breadcrumbs: 'JMS > Send Message'
+    }
+  },
+  {
+    path: 'jms/browse-queue',
+    component: JmsBrowseQueueComponent,
+    title: 'Browse JMS Queue',
+    data: {
+      breadcrumbs: 'JMS > Browse Queue'
+    }
+  },
   /* {
     path: "/test-pipeline",
     component: TestPipelineComponent,
