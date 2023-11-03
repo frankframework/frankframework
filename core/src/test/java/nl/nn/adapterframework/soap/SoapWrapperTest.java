@@ -306,6 +306,10 @@ public class SoapWrapperTest {
 		}
 
 		DOMValidateContext valContext = new DOMValidateContext(new UsernameTokenSelector(), nl.item(0));
+
+		// Need to set this property to allow SHA-1 signing and signature validation, for existing messages
+		valContext.setProperty("org.jcp.xml.dsig.secureValidation", false);
+
 		XMLSignatureFactory factory = XMLSignatureFactory.getInstance("DOM");
 		XMLSignature signature = factory.unmarshalXMLSignature(valContext);
 		return signature.validate(valContext);
