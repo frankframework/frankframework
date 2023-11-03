@@ -1,34 +1,38 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
 
 /**
  * DateUtils Tester.
  * The assertions are in the form of testing the date in most cases, not the time
  * because of the time difference between timezones that might occur.
- * 
+ *
  * @author Ricardo
  */
+@Log4j2
 public class DateUtilsTest {
 
 	private static final TimeZone CI_TZ = Calendar.getInstance().getTimeZone();
 	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("UTC");
-	private static Logger LOG = LogUtil.getLogger(DateUtilsTest.class);
 
 	@BeforeAll
 	public static void setUp() {
-		if(!CI_TZ.hasSameRules(TEST_TZ)) {
-			LOG.warn("CI TimeZone [{}] differs from test TimeZone [{}]", CI_TZ::getDisplayName, TEST_TZ::getDisplayName);
+		if (!CI_TZ.hasSameRules(TEST_TZ)) {
+			log.warn("CI TimeZone [{}] differs from test TimeZone [{}]", CI_TZ::getDisplayName, TEST_TZ::getDisplayName);
 		}
 	}
 
@@ -36,14 +40,14 @@ public class DateUtilsTest {
 	 * Tests have been written in UTC, adjust the TimeZone for CI running with a different default TimeZone
 	 */
 	private Date getCorrectedDate(Date date) {
-		if(CI_TZ.hasSameRules(TEST_TZ)) {
+		if (CI_TZ.hasSameRules(TEST_TZ)) {
 			return date;
 		} else {
 			Calendar calendar = Calendar.getInstance();
 			calendar.setTime(date);
 			int offset = CI_TZ.getOffset(calendar.getTime().getTime());
-			calendar.add(Calendar.MILLISECOND, - offset);
-			LOG.info("adjusting date [{}] with offset [{}] to [{}]", ()->date, ()->offset, calendar::getTime);
+			calendar.add(Calendar.MILLISECOND, -offset);
+			log.info("adjusting date [{}] with offset [{}] to [{}]", () -> date, () -> offset, calendar::getTime);
 			return calendar.getTime();
 		}
 	}
@@ -114,7 +118,7 @@ public class DateUtilsTest {
 
 	@Test
 	public void testParseXmlInvalidDateTime() throws Exception {
-		assertThrows(IllegalArgumentException.class, ()-> DateUtils.parseXmlDateTime("2013-12-10 12:41:43"));
+		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime("2013-12-10 12:41:43"));
 	}
 
 	@Test
@@ -159,5 +163,65 @@ public class DateUtilsTest {
 		Date d2 = DateUtils.parseAnyDate("2013-10-10");
 		boolean b = DateUtils.isSameDay(d1, d2);
 		assertEquals(true, b);
+	}
+
+	@Test
+	public void Should_ReturnDateObject_When_StringWithDateIsProvided() {
+		String s = "2023-12-09";
+		assertInstanceOf(Date.class, DateUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ReturnDateObject_When_StringWithDateTimeIsProvided() {
+		String s = "2023-12-09T00:00:00";
+		assertInstanceOf(Date.class, DateUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ReturnDateObject_When_StringWithFebruary29thInLeapYearIsProvided() {
+		String s = "2024-02-29T00:00:00";
+		assertInstanceOf(Date.class, DateUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ReturnDateObject_When_StringWithDateTimeWithYear2400IsProvided() {
+		String s = "2400-02-29T18:08:05";
+		assertInstanceOf(Date.class, DateUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ThrowError_When_StringWithHoursOutOfBoundsIsProvided() {
+		String s = "2023-13-09T24:08:05";
+		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ThrowError_When_StringWithMinutesOutOfBoundsIsProvided() {
+		String s = "2023-13-09T18:60:05";
+		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ThrowError_When_StringWithSecondsOutOfBoundsIsProvided() {
+		String s = "2023-13-09T18:08:60";
+		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ThrowError_When_StringWithMonthOutOfBoundsIsProvided() {
+		String s = "2023-13-09T18:08:05";
+		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ThrowError_When_StringWithDayOutOfBoundsIsProvided() {
+		String s = "2023-11-31T18:08:05";
+		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime(s));
+	}
+
+	@Test //A year is a leap year when it dividable by 4, but not if dividable by 100, except dividable by 400
+	public void Should_ThrowError_When_StringWithDateTimeWithYearDividableBy100WithFebruary29thIsProvided() {
+		String s = "2100-02-29T18:08:05";
+		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime(s));
 	}
 }

@@ -18,12 +18,12 @@ package nl.nn.adapterframework.util;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
 import lombok.extern.log4j.Log4j2;
-
-import org.apache.xmlbeans.GDate;
 
 /**
  * Utilities for formatting and parsing dates.
@@ -85,8 +85,12 @@ public class DateUtils {
 	 * Parses a string to a Date using XML Schema dateTime data type (GDate)
 	 */
 	public static Date parseXmlDateTime(String s) {
-		GDate gdate = new org.apache.xmlbeans.GDate(s);
-		return gdate.getDate();
+		s = s.trim();
+		if (!s.contains("T") && s.length() == 10) {
+			s += "T00:00:00";
+		}
+		LocalDateTime localDateTime = LocalDateTime.parse(s);
+		return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
 	}
 
 	/**
