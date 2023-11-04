@@ -716,7 +716,7 @@
 			<artifactId>stax-ex</artifactId>
 			<version>2.0.1</version>
 		</dependency>
-		<!-- Explicity add woodstox to ensure this version is used -->
+		<!-- Explicitly add woodstox to ensure this version is used -->
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>

@@ -275,7 +275,7 @@ public class SoapWrapperTest {
 		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_mock.xml");
 		MatchUtils.assertXmlEquals(expectedSoapBody, result);
 
-		assertTrue(verifySoapDigest(toSoapMessage(soapBody.asInputStream())));
+		assertTrue(verifySoapDigest(soapBody.asInputStream()));
 	}
 
 	@Test
@@ -283,11 +283,10 @@ public class SoapWrapperTest {
 		URL file = TestFileUtils.getTestFileURL("/Soap/signedSoap1_1.xml");
 		assertNotNull(file); //ensure we can find the file
 
-		Message soapBody = toSoapMessage(file.openStream());
-		assertTrue(verifySoapDigest(soapBody));
+		assertTrue(verifySoapDigest(file.openStream()));
 	}
 
-	private Message toSoapMessage(InputStream is) throws Exception {
+	private Document toSoapMessage(InputStream is) throws Exception {
 		MessageFactory factory = MessageFactory.newInstance(SOAPConstants.SOAP_1_1_PROTOCOL);
 		SOAPMessage msg = factory.createMessage();
 		SOAPPart part = msg.getSOAPPart();
@@ -295,12 +294,11 @@ public class SoapWrapperTest {
 
 		// create unsigned envelope
 		SOAPEnvelope unsignedEnvelope = part.getEnvelope();
-		Document doc = unsignedEnvelope.getOwnerDocument();
-		return new Message(doc);
+		return unsignedEnvelope.getOwnerDocument();
 	}
 
-	private boolean verifySoapDigest(Message soapBody) throws Exception {
-		Document doc = (Document) soapBody.asObject();
+	private boolean verifySoapDigest(InputStream stream) throws Exception {
+		Document doc = toSoapMessage(stream);
 		NodeList nl = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
 		if (nl.getLength() == 0) {
 			fail("Cannot find Signature element");
@@ -310,8 +308,10 @@ public class SoapWrapperTest {
 		}
 
 		DOMValidateContext valContext = new DOMValidateContext(new UsernameTokenSelector(), nl.item(0));
+
+		// Need to set this property to allow SHA-1 signing and signature validation, for existing messages
 		valContext.setProperty("org.jcp.xml.dsig.secureValidation", false);
-		valContext.setProperty("org.apache.jcp.xml.dsig.secureValidation", false);
+
 		XMLSignatureFactory factory = XMLSignatureFactory.getInstance("DOM");
 		XMLSignature signature = factory.unmarshalXMLSignature(valContext);
 
