@@ -79,7 +79,7 @@ public class AsposeFontManager {
 			fontDirectory = new File(tmpdir, FONTS_RESOURCE_DIR);
 		}
 
-		// If this fonts (sub-)directory does not exist, try to create it
+		// If this font (sub-)directory does not exist, try to create it
 		if(!fontDirectory.exists()) {
 			fontDirectory.mkdirs();
 		}

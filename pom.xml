@@ -43,8 +43,8 @@
 		<mongodb.driver.version>4.11.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>5.16.7</activemq.driver.version> <!-- appears to be the last java 8 compatible release -->
-		<artemis.driver.version>2.19.1</artemis.driver.version><!-- ActiveMQ Artemis v2.19 is the last that works with Java 8 -->
+		<activemq.driver.version>5.17.6</activemq.driver.version> <!-- this minor version is the last using the javax api -->
+		<artemis.driver.version>2.31.2</artemis.driver.version>
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
 	</properties>
@@ -125,7 +125,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>3.24.4</version>
+				<version>3.25.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
@@ -522,7 +522,7 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>5.5.0</version>
+				<version>5.7.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
