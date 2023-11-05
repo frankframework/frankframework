@@ -70,8 +70,12 @@ public class SecurityItems extends BusEndpointBase {
 
 	@Override
 	protected void doAfterPropertiesSet() {
-		ServletManager servletManager = getApplicationContext().getBean(ServletManager.class);
-		securityRoles = servletManager.getDeclaredRoles();
+		try {
+			ServletManager servletManager = getApplicationContext().getBean(ServletManager.class);
+			securityRoles = servletManager.getDeclaredRoles();
+		} catch (Exception e) { //TODO make IbisTester run without SpringEnvironmentContext
+			securityRoles = Collections.emptyList();
+		}
 	}
 
 	private List<SecurityRolesDTO> getSecurityRoles() {
