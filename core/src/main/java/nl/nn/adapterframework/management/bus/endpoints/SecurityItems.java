@@ -25,10 +25,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -39,7 +41,9 @@ import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.jms.JmsSender;
+import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
@@ -49,11 +53,12 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 @BusAware("frank-management-bus")
 public class SecurityItems extends BusEndpointBase {
+	private List<String> securityRoles;
 
 	@TopicSelector(BusTopic.SECURITY_ITEMS)
 	public Message<String> getSecurityItems(Message<?> message) {
 		Map<String, Object> returnMap = new HashMap<>();
-		returnMap.put("securityRoles", null); //TODO find out all servlet roles and return them
+		returnMap.put("securityRoles", getSecurityRoles());
 		returnMap.put("jmsRealms", addJmsRealms());
 		returnMap.put("datasources", addDataSources());
 		returnMap.put("sapSystems", addSapSystems());
@@ -61,6 +66,28 @@ public class SecurityItems extends BusEndpointBase {
 		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
 
 		return new JsonResponseMessage(returnMap);
+	}
+
+	@Override
+	protected void doAfterPropertiesSet() {
+		ServletManager servletManager = getApplicationContext().getBean(ServletManager.class);
+		securityRoles = servletManager.getDeclaredRoles();
+	}
+
+	private List<SecurityRolesDTO> getSecurityRoles() {
+		return securityRoles.stream()
+				.map(SecurityRolesDTO::new)
+				.collect(Collectors.toList());
+	}
+
+	public static class SecurityRolesDTO {
+		private final @Getter String name;
+		private final @Getter boolean allowed;
+
+		public SecurityRolesDTO(String role) {
+			this.name = role;
+			this.allowed = BusMessageUtils.hasRole(role);
+		}
 	}
 
 	private ArrayList<Object> addJmsRealms() {

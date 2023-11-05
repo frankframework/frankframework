@@ -1,5 +1,26 @@
 {
-    "securityRoles": null,
+    "securityRoles": [
+        {
+            "name": "IbisObserver",
+            "allowed": false
+        },
+        {
+            "name": "IbisAdmin",
+            "allowed": false
+        },
+        {
+            "name": "IbisDataAdmin",
+            "allowed": false
+        },
+        {
+            "name": "IbisTester",
+            "allowed": true
+        },
+        {
+            "name": "IbisWebService",
+            "allowed": false
+        }
+    ],
     "datasources": [
         {
             "datasourceName": "jdbc/testconfiguration",
