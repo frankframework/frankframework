@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
@@ -274,7 +275,7 @@ public class SoapWrapperTest {
 		String expectedSoapBody = TestFileUtils.getTestFile("/Soap/signedSoap1_1_mock.xml");
 		MatchUtils.assertXmlEquals(expectedSoapBody, result);
 
-		assertTrue(verifySoapDigest(soapBody));
+		assertTrue(verifySoapDigest(soapBody.asInputStream()));
 	}
 
 	@Test
@@ -282,27 +283,28 @@ public class SoapWrapperTest {
 		URL file = TestFileUtils.getTestFileURL("/Soap/signedSoap1_1.xml");
 		assertNotNull(file); //ensure we can find the file
 
-		Message soapBody = toSoapMessage(file);
-		assertTrue(verifySoapDigest(soapBody));
+		assertTrue(verifySoapDigest(file.openStream()));
 	}
 
-	private Message toSoapMessage(URL url) throws Exception {
+	private Document toSoapMessage(InputStream is) throws Exception {
 		MessageFactory factory = MessageFactory.newInstance(SOAPConstants.SOAP_1_1_PROTOCOL);
 		SOAPMessage msg = factory.createMessage();
 		SOAPPart part = msg.getSOAPPart();
-		part.setContent(new StreamSource(url.openStream()));
+		part.setContent(new StreamSource(is));
 
 		// create unsigned envelope
 		SOAPEnvelope unsignedEnvelope = part.getEnvelope();
-		Document doc = unsignedEnvelope.getOwnerDocument();
-		return new Message(doc);
+		return unsignedEnvelope.getOwnerDocument();
 	}
 
-	private boolean verifySoapDigest(Message soapBody) throws Exception {
-		Document doc = (Document) soapBody.asObject();
+	private boolean verifySoapDigest(InputStream stream) throws Exception {
+		Document doc = toSoapMessage(stream);
 		NodeList nl = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
 		if (nl.getLength() == 0) {
 			fail("Cannot find Signature element");
+		}
+		if (nl.getLength() > 1) {
+			fail("More then one Signature element");
 		}
 
 		DOMValidateContext valContext = new DOMValidateContext(new UsernameTokenSelector(), nl.item(0));
@@ -312,6 +314,7 @@ public class SoapWrapperTest {
 
 		XMLSignatureFactory factory = XMLSignatureFactory.getInstance("DOM");
 		XMLSignature signature = factory.unmarshalXMLSignature(valContext);
+
 		return signature.validate(valContext);
 	}
 
