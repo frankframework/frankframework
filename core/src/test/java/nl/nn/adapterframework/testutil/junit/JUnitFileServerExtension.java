@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.testutil.junit;
 
 import static org.junit.platform.commons.util.AnnotationUtils.findAnnotatedFields;
 import static org.junit.platform.commons.util.ReflectionUtils.makeAccessible;
