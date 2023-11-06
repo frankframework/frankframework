@@ -17,9 +17,13 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    allow:
+      - security
+    open-pull-requests-limit: 5
     labels:
       - "Dependencies"
       - "Backport"
+      - "7.8"
     target-branch: "7.8-release"
     ignore:
       - dependency-name: "org.ibissource:ibis-ladybug"
@@ -37,9 +41,11 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    open-pull-requests-limit: 5
     labels:
       - "Dependencies"
       - "Backport"
+      - "7.9"
     target-branch: "7.9-release"
     ignore:
       - dependency-name: "org.ibissource:ibis-ladybug"
