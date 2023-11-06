@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.extensions.cmis;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,8 +17,8 @@ import org.apache.http.HttpHost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -33,7 +33,7 @@ public class CmisHttpInvokerTest extends Mockito {
 	@Mock
 	private BindingSession session;
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		MockitoAnnotations.initMocks(this);
 		when(session.get(eq(SessionParameter.USER_AGENT), anyString())).thenReturn("Mockito mock-agent");
@@ -64,7 +64,7 @@ public class CmisHttpInvokerTest extends Mockito {
 
 	private Output createOutputFromFile(String file) throws IOException {
 		URL url = TestFileUtils.getTestFileURL(file);
-		assertNotNull("unable to find test file", url);
+		assertNotNull(url, "unable to find test file");
 
 		return new Output() {
 			@Override
