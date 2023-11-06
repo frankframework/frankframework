@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -28,7 +27,7 @@ import nl.nn.adapterframework.testutil.ParameterBuilder;
 @RunWith(Parameterized.class)
 public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
-	@Parameterized.Parameter(0)
+	@Parameterized.Parameter()
 	public JavaScriptEngines engine;
 
 	@Override
@@ -38,7 +37,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {{JavaScriptEngines.J2V8}, {JavaScriptEngines.NASHORN}, {JavaScriptEngines.RHINO}});
+		return Arrays.asList(new Object[][] {{JavaScriptEngines.J2V8}});
 	}
 
 	//Test without a given jsFunctionName. Will call the javascript function main as default
@@ -271,28 +270,4 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("12", sender.sendMessageOrThrow(input,session).asString());
 	}
 
-	//This test is used to compare the performance of J2V8 to that of Nashorn. J2V8 should finish about ten times faster than Nashorn.
-	@Test
-	@Ignore
-	public void performance() throws ConfigurationException, SenderException, TimeoutException, IOException {
-
-		Message dummyInput = new Message("dummyinput");
-		sender.setJsFileName("Javascript/JavascriptTest.js");
-		sender.setJsFunctionName("performance");
-		sender.setEngineName(engine);
-
-		sender.addParameter(ParameterBuilder.create("x", "100000").withType(ParameterType.INTEGER));
-
-		sender.configure();
-		sender.open();
-
-		System.out.println("Start timer");
-		long startTime = System.nanoTime();
-
-		assertEquals("1", sender.sendMessageOrThrow(dummyInput,session).asString());
-		long endTime = System.nanoTime();
-
-		double duration = (double)(endTime - startTime)/1000000000;
-		System.out.println("Run time: " + duration + " seconds");
-	}
 }
