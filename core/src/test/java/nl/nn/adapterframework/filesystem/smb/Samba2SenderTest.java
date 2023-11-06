@@ -4,13 +4,13 @@ import org.junit.jupiter.api.BeforeEach;
 
 import nl.nn.adapterframework.filesystem.FileSystemSenderTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
-import nl.nn.adapterframework.filesystem.LocalFileServer;
-import nl.nn.adapterframework.filesystem.LocalFileSystemMock;
 import nl.nn.adapterframework.filesystem.LocalFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
-import nl.nn.adapterframework.filesystem.LocalFileServer.FileSystemType;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem.Samba2AuthType;
 import nl.nn.adapterframework.senders.Samba2Sender;
+import nl.nn.adapterframework.testutil.junit.LocalFileServer;
+import nl.nn.adapterframework.testutil.junit.LocalFileSystemMock;
+import nl.nn.adapterframework.testutil.junit.LocalFileServer.FileSystemType;
 
 public class Samba2SenderTest extends FileSystemSenderTest<Samba2Sender, SmbFileRef, Samba2FileSystem> {
 
