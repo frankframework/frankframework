@@ -100,7 +100,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 		MediaType mediaType = null;
 		try {
 			mediaType = mediaTypeValidator.getMediaType(message, filename);
-			log.debug("Mediatype received: " + mediaType);
+			log.debug("detected mediatype [{}]",mediaType);
 		} catch (IOException e) {
 			throw new CisConversionException("Het omzetten naar pdf is mislukt. Neem contact op met de functioneel beheerder", e);
 		}
