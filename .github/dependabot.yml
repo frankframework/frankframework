@@ -17,9 +17,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    allow:
-      - security
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
     labels:
       - "Dependencies"
       - "Backport"
