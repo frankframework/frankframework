@@ -9,7 +9,6 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.channels.FileChannel;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -179,11 +178,6 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 		BtmDiskJournal journal = new BtmDiskJournal();
 		Field transactionLogAppenderField = BtmDiskJournal.class.getDeclaredField("MAX_ERROR_COUNT");
 		transactionLogAppenderField.setAccessible(true);
-
-
-		Field modifiersField = Field.class.getDeclaredField("modifiers");
-		modifiersField.setAccessible(true);
-		modifiersField.setInt(transactionLogAppenderField, transactionLogAppenderField.getModifiers() & ~Modifier.FINAL);
 
 		transactionLogAppenderField.setInt(journal, errorCount);
 	}
