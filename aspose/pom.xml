@@ -309,21 +309,11 @@
 		</dependency>
 	</dependencies>
 
-	<profiles>
-		<profile>
-			<id>aspose</id>
-			<activation>
-				<property>
-					<name>!no-aspose</name>
-				</property>
-			</activation>
-			<repositories>
-				<repository>
-					<id>AsposeJavaAPI</id>
-					<name>Aspose Java Repository</name>
-					<url>https://repository.aspose.com/repo/</url>
-				</repository>
-			</repositories>
-		</profile>
-	</profiles>
+	<repositories>
+		<repository>
+			<id>AsposeJavaAPI</id>
+			<name>Aspose Java Repository</name>
+			<url>https://repository.aspose.com/repo/</url>
+		</repository>
+	</repositories>
 </project>

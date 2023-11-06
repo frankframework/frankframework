@@ -32,6 +32,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @ff.parameters any parameters defined on the recordHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
  *
  * @author  John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
 

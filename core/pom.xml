@@ -147,7 +147,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-dbcp2</artifactId>
-			<version>2.10.0</version>
+			<version>2.11.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>jakarta.transaction</groupId>
@@ -177,6 +177,12 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-digester3</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>cglib</groupId>
+					<artifactId>cglib</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -318,7 +324,7 @@
 		<dependency>
 			<groupId>org.apache.wss4j</groupId>
 			<artifactId>wss4j-ws-security-dom</artifactId>
-			<version>2.4.2</version>
+			<version>2.4.3</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.opensaml</groupId>
@@ -344,6 +350,10 @@
 				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -374,7 +384,7 @@
 		<dependency>
 			<groupId>com.github.mwiede</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.2.11</version>
+			<version>0.2.12</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>
@@ -391,6 +401,12 @@
 			<artifactId>jfileserver</artifactId>
 			<version>1.3.15</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- available through our nexus -->
 		<dependency>
@@ -436,11 +452,26 @@
 			<groupId>cglib</groupId>
 			<artifactId>cglib-nodep</artifactId>
 			<version>3.3.0</version>
+			<groupId>org.apache.xmlbeans</groupId>
+			<artifactId>xmlbeans</artifactId>
+			<version>5.1.1</version>
+			<exclusions>
+				<exclusion><!-- Java 8 scoped profile -->
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.sendgrid</groupId>
 			<artifactId>sendgrid-java</artifactId>
 			<version>4.9.3</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.hierynomus</groupId>
@@ -517,7 +548,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.13.10</version>
+			<version>1.14.0</version>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
@@ -578,16 +609,6 @@
 			<version>${j2v8.version}</version>
 			<scope>runtime</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.mozilla</groupId>
-			<artifactId>rhino</artifactId>
-			<version>1.7.14</version>
-		</dependency>
-		<dependency>
-			<groupId>net.arnx</groupId>
-			<artifactId>nashorn-promise</artifactId>
-			<version>0.1.3</version>
-		</dependency>
 
 		<!-- CXF -->
 		<dependency>
@@ -624,6 +645,8 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+
 		<dependency>
 			<groupId>jakarta.ws.rs</groupId>
 			<artifactId>jakarta.ws.rs-api</artifactId>
@@ -654,17 +677,6 @@
 			<artifactId>jackson-annotations</artifactId>
 		</dependency>
 
-		<!-- Use our own JaxB and JaxWS implementations to run on the IBM JDK -->
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-core</artifactId>
-			<version>3.0.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-impl</artifactId>
-			<version>3.0.2</version>
-		</dependency>
 		<dependency>
 			<groupId>jakarta.xml.ws</groupId>
 			<artifactId>jakarta.xml.ws-api</artifactId>
@@ -682,22 +694,21 @@
 			</exclusions>
 		</dependency>
 
-
-		<!--
-			We cannot upgrade to a later version due to it forcing us to use com.sun.xerces
-			This version depends on the StAX1-API indirectly because of stax-ex.
-		-->
+		<!-- TODO, find a new SAAJ implementation once we upgrade to Jakarta -->
 		<dependency>
 			<groupId>org.apache.servicemix.bundles</groupId>
 			<artifactId>org.apache.servicemix.bundles.saaj-impl</artifactId>
-			<version>1.3.28_1</version>
+			<version>1.5.1_1</version>
 			<exclusions>
-				<exclusion><!-- excluded because we want the stax2 api -->
+				<exclusion>
+					<!-- excluded because we want the stax2 api -->
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+
 
 		<!--
 			Upgraded version of the Extended StAX API which does not depend on any StAX API.
@@ -707,7 +718,7 @@
 			<artifactId>stax-ex</artifactId>
 			<version>2.0.1</version>
 		</dependency>
-		<!-- Explicity add woodstox to ensure this version is used -->
+		<!-- Explicitly add woodstox to ensure this version is used -->
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
@@ -730,15 +741,26 @@
 					<groupId>ch.qos.logback</groupId>
 					<artifactId>logback-classic</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcpg-jdk15on</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
-<!--		Bouncy GPG uses this version. However another dependency uses 1.60,
-			and causes problems during loading from classpath.
-			So, it requires it to be explicitly defined here in the pom -->
+		<!-- bouncy-gpg uses an very old version published under a different artifact name -->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.70</version>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.76</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpg-jdk18on</artifactId>
+			<version>1.76</version>
 		</dependency>
 
 		<dependency>
@@ -806,6 +828,18 @@
 				<exclusion>
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.mockrunner</groupId>
+			<artifactId>mockrunner-jms</artifactId>
+			<version>2.0.7</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -917,19 +951,6 @@
 					<version>1.2.15</version>
 					<classifier>license</classifier>
 					<scope>test</scope>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>ibm-jdk</id>
-			<dependencies>
-				<!-- IbisSource 3rd party Nexus repo -->
-				<dependency>
-					<groupId>com.sun.net</groupId>
-					<artifactId>ssl</artifactId>
-					<version>1.3.1_01</version>
-					<scope>provided</scope>
-					<optional>true</optional>
 				</dependency>
 			</dependencies>
 		</profile>

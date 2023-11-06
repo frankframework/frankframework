@@ -4,7 +4,7 @@
 name: Java CI with Maven
 
 env:
-  PROFILES: ibissource,codecoverage,cmis,attachFrankDoc
+  PROFILES: ibissource,codecoverage,extra-modules
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource') && github.actor != 'dependabot[bot]' }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   MAVEN_GOALS: verify
@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ '8', '11' ]
+        java: [ '11' ]
 
     steps:
     - name: Checkout repository
@@ -86,19 +86,23 @@ jobs:
       run: |
         echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
 
+    - name: FrankDoc only on Java 11
+      if: ${{ matrix.java == '11' }}
+      run: |
+        echo "PROFILES=${{ env.PROFILES }},attachFrankDoc" >> $GITHUB_ENV
+
       # Secrets are not available when commits are made by Dependabot or from GH forks
     - name: Update environment when JDK == 11
       if: ${{ matrix.java == '11' && env.USE_PROPRIETARY == 'true' }}
       run: |
         echo "MAVEN_GOALS=${{ env.MAVEN_GOALS }} org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_ENV
 
-      # Use Maven Wrapper so we can build with an older version of Maven, see PR #4579.
+      # Use Maven Wrapper, so we can build with an older version of Maven, see PR #4579.
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
-        jdk11: true # allows the use of the JDK11 profile, when running JDK11
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
       run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf

@@ -52,6 +52,9 @@ import javanet.staxutils.XMLStreamUtils;
 import javanet.staxutils.events.AttributeEvent;
 import javanet.staxutils.events.StartElementEvent;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -127,14 +130,15 @@ public class SchemaUtils {
 		for (Map.Entry<String, Set<IXSD>> entry: xsdsGroupedByNamespace.entrySet()) {
 			String namespace = entry.getKey();
 			Set<IXSD> xsds = entry.getValue();
+
+			addXsdMergeWarnings(scopeProvider, xsds, namespace);
+
 			// Get attributes of root elements and get import elements from all XSDs
 			List<Attribute> rootAttributes = new ArrayList<>();
 			List<Namespace> rootNamespaceAttributes = new ArrayList<>();
 			List<XMLEvent> imports = new ArrayList<>();
 			for (IXSD xsd: xsds) {
-				StringWriter dummySchemaContentsWriter = new StringWriter();
-				XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(dummySchemaContentsWriter);
-				xsdToXmlStreamWriter(xsd, w, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports, true);
+				xsdToXmlStreamWriter(xsd, false, true, false, false, rootAttributes, rootNamespaceAttributes, imports);
 			}
 			// Write XSD's with merged root element
 			StringXsd resultXsd = null;
@@ -151,20 +155,18 @@ public class SchemaUtils {
 			// perform the merge
 			for (IXSD xsd: xsds) {
 				i++;
-				boolean skipFirstElement = true;
-				boolean skipLastElement = true;
+				boolean skipRootElementStart;
+				boolean skipRootElementEnd;
 				if (xsds.size() == 1) {
-					skipFirstElement = false;
-					skipLastElement = false;
+					skipRootElementStart = false;
+					skipRootElementEnd = false;
 				} else {
-					if (i == 1) {
-						skipFirstElement = false;
-					} else if (i == xsds.size()) {
-						skipLastElement = false;
-					}
+					skipRootElementStart = (i != 1);
+					skipRootElementEnd = (i < xsds.size());
 				}
-				xsdToXmlStreamWriter(xsd, w, false, true, skipFirstElement, skipLastElement, rootAttributes, rootNamespaceAttributes, imports, false);
+				xsdToXmlStreamWriter(xsd, w, false, true, skipRootElementStart, skipRootElementEnd, rootAttributes, rootNamespaceAttributes, imports, false);
 			}
+			// TODO: After creating merged XSD, while we still know what the source files are, we should now validate for duplicate elements
 			if (resultXsd != null) {
 				IXSD firstXsd = xsds.iterator().next();
 				resultXsd.setImportedSchemaLocationsToIgnore(firstXsd.getImportedSchemaLocationsToIgnore());
@@ -177,8 +179,63 @@ public class SchemaUtils {
 		return resultXsds;
 	}
 
+	private static void addXsdMergeWarnings(final IScopeProvider scopeProvider, final Set<IXSD> xsds, final String namespace) {
+		// If there are multiple XSDs for the namespace, give ConfigWarning that explains wherefrom
+		// each file is included.
+		if (xsds.size() <= 1) {
+			return;
+		}
+		StringBuilder message = new StringBuilder("Multiple XSDs for namespace '" + namespace + "' will be merged: ");
+		for (IXSD xsd: xsds) {
+			message.append("\n - XSD path '")
+					.append(xsd.getResourceTarget())
+					.append("'");
+
+			if (xsd.getImportParent() != null) {
+				message.append(", included from '")
+						.append(xsd.getImportParent().getResourceTarget()).append("'");
+			}
+		}
+		message.append("\nPlease check that there are no overlapping definitions between these XSDs.");
+		LOG.info(message);
+
+		// And check for duplicate XSDs included multiple times from multiple locations
+		if (scopeProvider instanceof IConfigurationAware) {
+			IXSD[] xsdList = xsds.toArray(new IXSD[0]);
+			for (int i = 0; i < xsdList.length - 1; i++) {
+				IXSD xsd1 = xsdList[i];
+				for (int j = i + 1; j < xsdList.length; j++) {
+					IXSD xsd2 = xsdList[j];
+					if (xsd1.compareToByContents(xsd2) == 0) {
+						StringBuilder duplicateXsdError = new StringBuilder("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: '");
+						duplicateXsdError.append(namespace)
+								.append("'.\n Path '").append(xsd1.getResourceTarget()).append("'");
+						if (xsd1.getImportParent() != null) {
+							duplicateXsdError.append(" imported from '").append(xsd1.getImportParent().getResourceTarget()).append("'");
+						}
+						duplicateXsdError.append(",\n and also Path '").append(xsd2.getResourceTarget()).append("'");
+						if (xsd2.getImportParent() != null) {
+							duplicateXsdError.append(" imported from '").append(xsd2.getImportParent().getResourceTarget()).append("'");
+						}
+						ConfigurationWarnings.add((IConfigurationAware) scopeProvider, LOG, duplicateXsdError.toString(), SuppressKeys.XSD_VALIDATION_ERROR_SUPPRESS_KEY);
+					}
+				}
+			}
+		}
+	}
+
 	public static void xsdToXmlStreamWriter(final IXSD xsd, XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
 		xsdToXmlStreamWriter(xsd, xmlStreamWriter, true, false, false, false, null, null, null, false);
+	}
+
+	private static void xsdToXmlStreamWriter(final IXSD xsd, boolean standalone, boolean stripSchemaLocationFromImport, boolean skipRootStartElement, boolean skipRootEndElement, List<Attribute> rootAttributes, List<Namespace> rootNamespaceAttributes, List<XMLEvent> imports) throws IOException, ConfigurationException {
+		StringWriter dummySchemaContentsWriter = new StringWriter();
+		try {
+			XMLStreamWriter w = XmlUtils.REPAIR_NAMESPACES_OUTPUT_FACTORY.createXMLStreamWriter(dummySchemaContentsWriter);
+			xsdToXmlStreamWriter(xsd, w, standalone, stripSchemaLocationFromImport, skipRootStartElement, skipRootEndElement, rootAttributes, rootNamespaceAttributes, imports, true);
+		} catch (XMLStreamException e) {
+			throw new ConfigurationException("unable to create stream writer", e);
+		}
 	}
 
 	/**

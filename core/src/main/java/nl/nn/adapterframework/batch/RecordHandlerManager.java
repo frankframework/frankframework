@@ -29,9 +29,10 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * Basic implementation of RecordHandlerManager, that allows only for a single flow.
  * The manager decides which handlers to be used for a specific record.
- * 
- * 
+ *
+ *
  * @author  John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
 	protected Logger log = LogUtil.getLogger(this);

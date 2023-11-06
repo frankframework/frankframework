@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -41,6 +42,7 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -51,7 +53,6 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
-import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -82,6 +83,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	private final @Getter Set<String> importedNamespaces = new HashSet<>();
 	private @Getter String xsdTargetNamespace;
 	private @Getter String xsdDefaultNamespace;
+	private @Getter(onMethod_ = {@Nullable, @Override}) @Setter IXSD importParent;
 
 	protected XSD() {
 		super();
@@ -221,6 +223,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 
 	@Override
 	public boolean equals(Object o) {
+		if (this == o) return true;
 		if (o instanceof XSD) {
 			XSD other = (XSD) o;
 			return compareTo(other) == 0;
@@ -236,6 +239,7 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 	@Override
 	public int compareTo(XSD other) { // CompareTo is required for WSDL generation
 		if (other == null) return 1;
+		if (this == other) return 0;
 		if (namespace != null && other.namespace != null) {
 			int c = namespace.compareTo(other.namespace);
 			if (c != 0) return c;
@@ -247,7 +251,8 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 		return compareToByContents(x);
 	}
 
-	protected int compareToByContents(XSD x) {
+	@Override
+	public int compareToByContents(IXSD x) {
 		try {
 			InputSource control = new InputSource(getReader());
 			InputSource test = new InputSource(x.getReader());
@@ -367,7 +372,8 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 				x.setImportedNamespacesToIgnore(xsd.getImportedNamespacesToIgnore());
 				x.setParentLocation(xsd.getResourceBase());
 				x.setRootXsd(false);
-				x.initNamespace(namespace, xsd.getScopeProvider(), xsd.getResourceBase() + schemaLocationAttribute.getValue());
+				x.setImportParent(xsd);
+				x.initNamespace(namespace, xsd.getScopeProvider(), getResourceRef(xsd.getResourceBase(), schemaLocationAttribute.getValue()));
 
 				String xsdKey = getXsdLoadingMapKey(x);
 				if (!xsds.containsKey(xsdKey)) {
@@ -388,6 +394,14 @@ public abstract class XSD implements IXSD, Comparable<XSD> {
 			String message = "XMLStreamException reading XSD";
 			LOG.error(message, e);
 			throw new ConfigurationException(message, e);
+		}
+	}
+
+	private static String getResourceRef(final String resourceBase, final String schemaLocation) {
+		if (schemaLocation.startsWith("/")) {
+			return schemaLocation;
+		} else {
+			return resourceBase + schemaLocation;
 		}
 	}
 
