@@ -113,7 +113,7 @@ public class PdfAttachmentUtil {
 		// filename).
 		String documentName = ConvertorUtil.createTidyFilename(convertToValidFileName(fileName), extension);
 
-		log.debug("Adding attachment with document name \"{}\" (original: \"{}\")", documentName, fileName);
+		log.debug("adding attachment with document name [{}] (original: [{}])", documentName, fileName);
 
 		// Add an attachment to document's attachment collection
 		getPdfDocument(rootPdf.getAbsolutePath()).getEmbeddedFiles().add(new FileSpecification(attachmentDocumentStream, documentName));
