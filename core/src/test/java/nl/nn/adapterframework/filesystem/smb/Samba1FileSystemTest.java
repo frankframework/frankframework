@@ -5,11 +5,11 @@ import org.junit.jupiter.api.BeforeEach;
 import jcifs.smb.SmbFile;
 import nl.nn.adapterframework.filesystem.FileSystemTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
-import nl.nn.adapterframework.filesystem.LocalFileServer;
-import nl.nn.adapterframework.filesystem.LocalFileSystemMock;
 import nl.nn.adapterframework.filesystem.LocalFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba1FileSystem;
-import nl.nn.adapterframework.filesystem.LocalFileServer.FileSystemType;
+import nl.nn.adapterframework.testutil.junit.LocalFileServer;
+import nl.nn.adapterframework.testutil.junit.LocalFileSystemMock;
+import nl.nn.adapterframework.testutil.junit.LocalFileServer.FileSystemType;
 
 public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSystem> {
 

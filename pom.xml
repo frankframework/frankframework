@@ -50,7 +50,7 @@
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
-	<description>The Ibis Adapter Framework is an easy to use, stateless integration framework which allows (transactional) messages to be modified and exchanged between different systems.</description>
+	<description>The Ibis Adapter Framework is an easy-to-use, stateless integration framework which allows (transactional) messages to be modified and exchanged between different systems.</description>
 	<url>https://frankframework.org</url>
 
 	<organization>
@@ -125,7 +125,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>3.24.4</version>
+				<version>3.25.0</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
@@ -527,7 +527,8 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>5.6.0</version>
+				<version>5.7.0</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
