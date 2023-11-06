@@ -19,8 +19,10 @@ import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
 import bitronix.tm.TransactionManagerServices;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
+@Log4j2
 public enum TransactionManagerType {
 	DATASOURCE(URLDataSourceFactory.class, "springTOMCAT.xml"),
 	BTM(BTMXADataSourceFactory.class, "springTOMCATBTM.xml"),
@@ -50,6 +52,7 @@ public enum TransactionManagerType {
 	}
 
 	private synchronized TestConfiguration create(String productKey) {
+		log.info("create new TestConfiguration for database [{}]", productKey);
 		TestConfiguration config = new TestConfiguration(springConfigurationFiles);
 		MutablePropertySources propertySources = config.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
@@ -125,8 +128,12 @@ public enum TransactionManagerType {
 	/**
 	 * fetch the DataSource through the configured {@link JndiDataSourceFactory}.
 	 */
-	public DataSource getDataSource(String productKey) throws NamingException {
+	public DataSource getDataSource(String productKey) {
 		ApplicationContext ac = getConfigurationContext(productKey);
-		return getDataSourceFactory(ac).get(productKey);
+		try {
+			return getDataSourceFactory(ac).get(productKey);
+		} catch (NamingException e) {
+			throw new IllegalStateException("productkey not found?", e);
+		}
 	}
 }

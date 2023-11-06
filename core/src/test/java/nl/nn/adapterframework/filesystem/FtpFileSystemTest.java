@@ -5,8 +5,10 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import nl.nn.adapterframework.filesystem.LocalFileServer.FileSystemType;
 import nl.nn.adapterframework.ftp.FTPFileRef;
+import nl.nn.adapterframework.testutil.junit.LocalFileServer;
+import nl.nn.adapterframework.testutil.junit.LocalFileSystemMock;
+import nl.nn.adapterframework.testutil.junit.LocalFileServer.FileSystemType;
 
 /**
  * @author Niels Meijer

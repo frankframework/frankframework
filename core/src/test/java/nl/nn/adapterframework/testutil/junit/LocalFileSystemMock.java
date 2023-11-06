@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.filesystem;
+package nl.nn.adapterframework.testutil.junit;
 
 
 import java.lang.annotation.Documented;
