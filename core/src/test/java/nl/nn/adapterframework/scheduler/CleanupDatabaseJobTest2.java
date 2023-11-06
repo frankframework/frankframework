@@ -11,14 +11,17 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Date;
 
+import nl.nn.adapterframework.dbms.JdbcException;
+
+import nl.nn.adapterframework.util.DbmsUtil;
+
 import org.junit.jupiter.api.BeforeEach;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.Dbms;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob;
@@ -180,7 +183,7 @@ public class CleanupDatabaseJobTest2 {
 
 	private int getCount(DatabaseTestEnvironment database) throws SQLException, JdbcException {
 		try(Connection connection = database.getConnection()) {
-			return JdbcUtil.executeIntQuery(connection, "SELECT count(*) from "+txStorageTableName);
+			return DbmsUtil.executeIntQuery(connection, "SELECT count(*) from "+txStorageTableName);
 		}
 	}
 
