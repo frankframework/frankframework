@@ -35,6 +35,8 @@ import org.apache.chemistry.opencmis.client.runtime.util.EmptyItemIterable;
 import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -122,6 +124,8 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 	}
 
 	@Override
+	@Disabled
+	@Ignore
 	public void testIfToStringWorks() {
 		// Disable this test, the CmisSender is tested in other classes.
 	}
