@@ -321,7 +321,7 @@
               <!-- adapter information -->
               <span class="pull-right">
                 <button
-                  [routerLink]="[adapter.configuration, 'adapter', adapter.name, 'statistics']"
+                  [routerLink]="['', adapter.configuration, 'adapter', adapter.name, 'statistics']"
                   class="btn btn-xs btn-info pull-right m-r-xs"
                   type="button"
                 ><i class="fa fa-bar-chart m-r-xs" aria-hidden="true"></i>More statistics</button>
@@ -442,7 +442,7 @@
                             <span class="text-{{getProcessStateIconColor(store.name)}}"
                               title="Browse messages with ProcessState: {{store.name}}">
                               <button
-                                [routerLink]="[adapter.configuration, 'adapters', adapter.name, 'receivers', receiver.name, 'stores', store.name]"
+                                [routerLink]="['', adapter.configuration, 'adapters', adapter.name, 'receivers', receiver.name, 'stores', store.name]"
                                 class="btn btn-xs btn-default" type="button">
                                 <i class="fa {{getProcessStateIcon(store.name)}}"></i>
                                 ({{store.numberOfMessages}})
@@ -491,7 +491,7 @@
                           <span class="pull-right">
                             <span [ngClass]="pipes.isSenderTransactionalStorage ? 'text-primary' : 'text-success'">
                               <button *ngIf="pipes.hasMessageLog"
-                                [routerLink]="[adapter.configuration, 'adapters', adapter.name, 'pipes', pipes.name, 'stores', 'Done']"
+                                [routerLink]="['', adapter.configuration, 'adapters', adapter.name, 'pipes', pipes.name, 'stores', 'Done']"
                                 class="btn btn-xs btn-default m-l-xs" type="button">
                                 <i
                                   [ngClass]="pipes.isSenderTransactionalStorage ? 'fa fa-sign-out' : 'fa fa-database'"></i>

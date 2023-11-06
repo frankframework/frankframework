@@ -1,8 +1,17 @@
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import type { DataTableDirective } from 'angular-datatables';
-import { type } from 'jquery';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
+import { AppService } from 'src/app/app.service';
+import { MiscService } from 'src/app/services/misc.service';
+
+export type MessageStore = {
+  totalMessages: number;
+  skipMessages: number;
+  messageCount: number;
+  recordsFiltered: number;
+  messages: Message[];
+  targetStates?: { name: string; }[];
+}
 
 export type Message = {
   id: string; //MessageId
@@ -30,6 +39,7 @@ export type StorageParams = {
   processState: string,
   storageSource: string,
   storageSourceName: string,
+  messageId: string | null
 }
 
 @Injectable({
@@ -44,18 +54,20 @@ export class StorageService {
     processState: "",
     storageSource: "",
     storageSourceName: "",
+    messageId: null
   }
   selectedMessages: Record<string, boolean> = {};
   dtElement?: DataTableDirective | null;
 
   constructor(
-    private Api: ApiService,
+    private http: HttpClient,
+    private appService: AppService,
     private Misc: MiscService
   ) { }
 
   updateStorageParams(params: Partial<StorageParams>) {
     this.storageParams = { ...this.storageParams, ...params };
-    this.baseUrl = "configurations/" + this.Misc.escapeURL(this.storageParams.configuration) +
+    this.baseUrl = this.appService.absoluteApiPath + "configurations/" + this.Misc.escapeURL(this.storageParams.configuration) +
       "/adapters/" + this.Misc.escapeURL(this.storageParams.adapterName) + "/" + this.storageParams.storageSource +
       "/" + this.Misc.escapeURL(this.storageParams.storageSourceName) + "/stores/" + this.storageParams.processState;
   }
@@ -75,36 +87,36 @@ export class StorageService {
   deleteMessage(message: PartialMessage, callback?: (messageId: string) => void) {
     message.deleting = true;
     let messageId = message.id;
-    this.Api.Delete(this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId)), () => {
+    this.http.delete(this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId))).subscribe({ next: () => {
       if (callback != undefined && typeof callback == 'function')
         callback(messageId);
       this.addNote("success", "Successfully deleted message with ID: " + messageId);
       this.updateTable();
-    }, () => {
+    }, error: () => {
       message.deleting = false;
       this.addNote("danger", "Unable to delete messages with ID: " + messageId);
       this.updateTable();
-    });
+    }});
   };
 
   downloadMessage(messageId: string) {
-    window.open(this.Misc.getServerPath() + "iaf/api/" + this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId)) + "/download");
+    window.open(this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId)) + "/download");
   };
 
   resendMessage(message: PartialMessage, callback?: (messageId: string) => void) {
     message.resending = true;
     let messageId = message.id;
-    this.Api.Put(this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId)), false, () => {
+    this.http.put(this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId)), false).subscribe({ next: () => {
       if (callback != undefined)
         callback(message.id);
       this.addNote("success", "Message with ID: " + messageId + " will be reprocessed");
       this.updateTable();
-    }, (data) => {
+    }, error: (data: HttpErrorResponse) => {
       message.resending = false;
-      data = (data.error) ? data.error : data;
+      data = (data.error?.error) ? data.error.error : data.error;
       this.addNote("danger", "Unable to resend message [" + messageId + "]. " + data);
       this.updateTable();
-    }, false);
+    }}); // TODO no intercept
   }
 
   updateTable() {
@@ -112,5 +124,25 @@ export class StorageService {
     for(const index in this.selectedMessages){
       this.selectedMessages[index] = false;
     }
+  }
+
+  getStorageList(queryParams: string){
+    return this.http.get<MessageStore>(this.baseUrl + queryParams);
+  }
+
+  postResendMessages(data: FormData){
+    return this.http.post(this.baseUrl, data);
+  }
+
+  postDownloadMessages(data: FormData){
+    return this.http.post(this.baseUrl + "/messages/download", data, { responseType: 'blob' });
+  }
+
+  postChangeProcessState(data: FormData, targetState: string){
+    return this.http.post(this.baseUrl + "/move/" + targetState, data)
+  }
+
+  deleteMessages(data: FormData){
+    return this.http.delete(this.baseUrl, { body: data });
   }
 }

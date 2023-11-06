@@ -3,9 +3,9 @@ import { RouterModule, Routes } from '@angular/router';
 import { LogoutComponent } from './components/logout/logout.component';
 import { StatusComponent } from './views/status/status.component';
 // import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
-// import { StorageComponent } from './views/storage/storage.component';
-// import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
-// import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
+import { StorageComponent } from './views/storage/storage.component';
+import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
+import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
 import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
 import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
 // import { WebservicesComponent } from './views/webservices/webservices.component';
@@ -48,24 +48,24 @@ const routes: Routes = [
   //     breadcrumbs: 'Adapter > Statistics'
   //   },
   // },
-  // {
-  //   path: ':configuration/adapters/:adapter/:storageSource/:storageSourceName',
-  //   component: StorageComponent,
-  //   title: '',
-  //   data: {
-  //     breadcrumbs: ''
-  //   },
-  //   children: [
-  //     {
-  //       path: 'stores/:processState',
-  //       component: StorageListComponent,
-  //     },
-  //     {
-  //       path: 'stores/:processState/messages/:messageId',
-  //       component: StorageViewComponent,
-  //     }
-  //   ]
-  // },
+  {
+    path: ':configuration/adapters/:adapter/:storageSource/:storageSourceName',
+    component: StorageComponent,
+    title: '',
+    data: {
+      breadcrumbs: ''
+    },
+    children: [
+      {
+        path: 'stores/:processState',
+        component: StorageListComponent,
+      },
+      {
+        path: 'stores/:processState/messages/:messageId',
+        component: StorageViewComponent,
+      }
+    ]
+  },
   /* {
     path: 'notifications',
     component: NotificationsComponent,

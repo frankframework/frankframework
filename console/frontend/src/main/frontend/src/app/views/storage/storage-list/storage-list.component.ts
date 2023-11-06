@@ -1,16 +1,14 @@
 import { AfterViewInit, Component, ElementRef, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import type { ADTColumns, ADTSettings } from 'angular-datatables/src/models/settings';
 // import { DataTable } from "simple-datatables"
-import { StateService } from "@uirouter/angularjs";
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { CookiesService } from 'src/angularjs/app/services/cookies.service';
-import { SessionService } from 'src/angularjs/app/services/session.service';
-import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
 import { StorageService } from '../storage.service';
-import { AppService } from 'src/angularjs/app/app.service';
 import { DataTableDirective } from 'angular-datatables';
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { Subject } from 'rxjs';
+import { AppService } from 'src/app/app.service';
+import { SessionService } from 'src/app/services/session.service';
+import { SweetalertService } from 'src/app/services/sweetalert.service';
+import { WebStorageService } from 'src/app/services/web-storage.service';
 
 @Component({
   selector: 'app-storage-list',
@@ -74,11 +72,9 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   @ViewChild('dateDt') dateDt!: TemplateRef<string>;
 
   constructor(
-    private Api: ApiService,
-    private $state: StateService,
-    private Cookies: CookiesService,
+    private webStorageService: WebStorageService,
     private Session: SessionService,
-    private SweetAlert: SweetAlertService,
+    private SweetAlert: SweetalertService,
     public storageService: StorageService,
     private appService: AppService
   ) { }
@@ -106,19 +102,19 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         const direction = order.dir; // asc or desc
 
 
-        let url = this.storageService.baseUrl + "?max=" + length + "&skip=" + start + "&sort=" + direction;
+        let queryParams = "?max=" + length + "&skip=" + start + "&sort=" + direction;
         const search = this.search;
         const searchSession: Record<keyof typeof search, string> = {};
         for (let column in search) {
           let text = search[column as keyof typeof search];
           if (text) {
-            url += "&" + column + "=" + text;
+            queryParams += "&" + column + "=" + text;
             searchSession[column as keyof typeof search] = text;
           }
         }
         this.Session.set('search', searchSession);
-        this.Api.Get(url, (response) => {
-          this.targetStates = response.targetStates;
+        this.storageService.getStorageList(queryParams).subscribe({ next: (response) => {
+          this.targetStates = response.targetStates ?? [];
           callback({
             draw: data["draw"],
             recordsTotal: response.totalMessages,
@@ -130,10 +126,10 @@ export class StorageListComponent implements OnInit, AfterViewInit {
           for (const message of response.messages){
             this.storageService.selectedMessages[message.id] = false;
           }
-        }, (error) => {
+        }, error: (error) => {
           this.searching = false;
           this.clearSearchLadda = false;
-        });
+        }});
       }
     };
 
@@ -218,7 +214,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       }],
     };
 
-    const filterCookie = this.Cookies.get(this.storageParams.processState + "Filter");
+    const filterCookie = this.webStorageService.get(this.storageParams.processState + "Filter");
     if (filterCookie) {
       for (let column of columns) {
         if (column.name && filterCookie[column.name] === false) {
@@ -306,7 +302,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   }
 
   updateFilter(column: string) {
-    this.Cookies.set(this.storageParams.processState + "Filter", this.displayColumn);
+    this.webStorageService.set(this.storageParams.processState + "Filter", this.displayColumn);
 
     this.dataTable.dtInstance.then(table => {
       let tableColumn = table.column(column + ":name");
@@ -329,45 +325,45 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   }
 
   resendMessages() {
-    let fd = this.getFormData();
+    const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.messagesResending = true;
-      this.Api.Post(this.storageService.baseUrl, fd, () => {
+      this.storageService.postResendMessages(fd).subscribe({ next: () => {
         this.messagesResending = false;
         this.storageService.addNote("success", "Selected messages will be reprocessed");
         this.storageService.updateTable();
-      }, (data) => {
+      }, error: () => {
         this.messagesResending = false;
         this.storageService.addNote("danger", "Something went wrong, unable to resend all messages!");
         this.storageService.updateTable();
-      });
+      }});
     }
   }
 
   deleteMessages() {
-    let fd = this.getFormData();
+    const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.messagesDeleting = true;
-      this.Api.Delete(this.storageService.baseUrl, fd, () => {
+      this.storageService.deleteMessages(fd).subscribe({ next: () => {
         this.messagesDeleting = false;
         this.storageService.addNote("success", "Successfully deleted messages");
         this.storageService.updateTable();
-      }, (data) => {
+      }, error: () => {
         this.messagesDeleting = false;
         this.storageService.addNote("danger", "Something went wrong, unable to delete all messages!");
         this.storageService.updateTable();
-      });
+      }});
     }
   }
 
 
   downloadMessages() {
-    let fd = this.getFormData();
+    const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.messagesDownloading = true;
-      this.Api.Post(this.storageService.baseUrl + "/messages/download", fd, (response) => {
-        let blob = new Blob([response], { type: 'application/octet-stream' });
-        let downloadLink = document.createElement('a');
+      this.storageService.postDownloadMessages(fd).subscribe({ next: (response) => {
+        const blob = new Blob([response], { type: 'application/octet-stream' });
+        const downloadLink = document.createElement('a');
         downloadLink.href = window.URL.createObjectURL(blob);
         downloadLink.setAttribute('download', 'messages.zip');
         document.body.appendChild(downloadLink);
@@ -375,26 +371,26 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         downloadLink.parentNode!.removeChild(downloadLink);
         this.storageService.addNote("success", "Successfully downloaded messages");
         this.messagesDownloading = false;
-      }, (data) => {
+      }, error: () => {
         this.messagesDownloading = false;
         this.storageService.addNote("danger", "Something went wrong, unable to download selected messages!");
-      }, false, 'blob');
+      }}); // TODO no intercept
     }
   }
 
-  changeProcessState(processState: string, targetState: string) {
-    let fd = this.getFormData();
+  changeProcessState(targetState: string) {
+    const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.changingProcessState = true;
-      this.Api.Post(this.storageService.baseUrl + "/move/" + targetState, fd, () => {
+      this.storageService.postChangeProcessState(fd, targetState).subscribe({ next: () => {
         this.changingProcessState = false;
         this.storageService.addNote("success", "Successfully changed the state of messages to " + targetState);
         this.storageService.updateTable();
-      }, (data) => {
+      }, error: () => {
         this.changingProcessState = false;
         this.storageService.addNote("danger", "Something went wrong, unable to move selected messages!");
         this.storageService.updateTable();
-      });
+      }});
     }
   }
 

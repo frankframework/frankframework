@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { StateService } from "@uirouter/angularjs";
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
 import { Message, StorageService, PartialMessage } from '../storage.service';
+import { SweetalertService } from 'src/app/services/sweetalert.service';
 
 @Component({
   selector: 'app-storage-view',
@@ -11,7 +9,7 @@ import { Message, StorageService, PartialMessage } from '../storage.service';
 })
 export class StorageViewComponent implements OnInit {
   message: PartialMessage = {
-    id: this.$state.params["messageId"],
+    id: '0',//this.$state.params["messageId"],
     resending: false,
     deleting: false
   };
@@ -32,14 +30,12 @@ export class StorageViewComponent implements OnInit {
   downloadMessage = (messageId: string) => { this.storageService.downloadMessage(messageId); };
 
   constructor(
-    private Api: ApiService,
-    private $state: StateService,
-    private SweetAlert: SweetAlertService,
+    private SweetAlert: SweetalertService,
     private storageService: StorageService
   ) { }
 
   ngOnInit() {
-    this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List > View Message " + this.$state.params["messageId"];
+    // this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List > View Message " + this.$state.params["messageId"];
     this.storageService.closeNotes();
 
     if (!this.message.id) {
@@ -56,7 +52,7 @@ export class StorageViewComponent implements OnInit {
       } else {
         this.SweetAlert.Warning("Message not found", "message id [" + this.message.id + "] error [" + error + "]");
       }
-      this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
+      // this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
     });
   };
 
@@ -67,14 +63,14 @@ export class StorageViewComponent implements OnInit {
   resendMessage(message: PartialMessage) {
     this.storageService.resendMessage(message, (messageId: string) => {
       //Go back to the storage list if successful
-      this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
+      // this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
     });
   };
 
   deleteMessage(message: PartialMessage) {
     this.storageService.deleteMessage(message, (messageId: string) => {
       //Go back to the storage list if successful
-      this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
+      // this.$state.go("pages.storage.list", { adapter: this.storageParams.adapterName, storageSource: this.storageParams.storageSource, storageSourceName: this.storageParams.storageSourceName, processState: this.storageParams.processState });
     });
   };
 

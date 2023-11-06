@@ -53,18 +53,18 @@ import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse
 // import { VariablesFilterPipe } from './pipes/variablesFilter.pipe';
 import { TimeSinceDirective } from './components/time-since.directive';
 import { FlowComponent } from './views/status/flow/flow.component';
-// import { StorageComponent } from './views/storage/storage.component';
-// import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
-// import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
+import { StorageComponent } from './views/storage/storage.component';
+import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
+import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
+import { StorageListDtComponent } from './views/storage/storage-list/storage-list-dt/storage-list-dt.component';
 // import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
 // import { FormatStatisticsPipe } from './views/adapterstatistics/format-statistics.pipe';
-// import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
+import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
 import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
 // import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
-// import { FitHeightDirective } from './views/iframe/fit-height.directive';
+import { FitHeightDirective } from './views/iframe/fit-height.directive';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 // import { WebservicesComponent } from './views/webservices/webservices.component';
-// import { StorageListDtComponent } from './views/storage/storage-list/storage-list-dt/storage-list-dt.component';
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
 
 const windowProvider: ValueProvider = {
@@ -100,17 +100,17 @@ const windowProvider: ValueProvider = {
     PagesTopnavbarComponent,
     ScrollToTopComponent,
     StatusComponent,
-    // StorageComponent,
-    // StorageListComponent,
-    // StorageViewComponent,
+    StorageComponent,
+    StorageListComponent,
+    StorageViewComponent,
+    StorageListDtComponent,
     // AdapterstatisticsComponent,
-    // StorageListDtComponent,
     // SecurityItemsComponent,
     // WebservicesComponent,
 
     // pipes
     ConfigurationFilterPipe,
-    // DropLastCharPipe,
+    DropLastCharPipe,
     OrderByPipe,
     SearchFilterPipe,
     TruncatePipe,
@@ -122,7 +122,7 @@ const windowProvider: ValueProvider = {
     ToDateDirective,
     TimeSinceDirective,
     QuickSubmitFormDirective,
-    // FitHeightDirective,
+    FitHeightDirective,
     SideNavigationDirective,
   ],
   imports: [
