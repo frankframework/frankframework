@@ -26,17 +26,17 @@ import com.aspose.words.FolderFontSource;
 import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
-public class Fontsetter {
-	private String fontFilesLocation = null;
+public class FontSetter {
+	private final String fontFilesLocation;
 
-	public Fontsetter(String pdfOutputLocation) {
+	public FontSetter(String pdfOutputLocation) {
 		fontFilesLocation = pdfOutputLocation;
 	}
 
 	/**
 	 * Set Fontsettings for this particular document. Cf.
 	 * https://forum.aspose.com/t/fonts-not-found-on-unix-java-words-or-email-pdf/175052
-	 * 
+	 *
 	 * @param doc
 	 */
 	public void setFontSettings(Document doc) {
@@ -60,7 +60,7 @@ public class Fontsetter {
 		fontSources.add(folderFontSource);
 
 		// Convert the list of source back into a primitive array of FontSource objects.
-		FontSourceBase[] updatedFontSources = fontSources.toArray(new FontSourceBase[fontSources.size()]);
+		FontSourceBase[] updatedFontSources = fontSources.toArray(new FontSourceBase[0]);
 
 		// Apply the new set of font sources to use.
 		fontSettings.setFontsSources(updatedFontSources);
@@ -91,7 +91,7 @@ public class Fontsetter {
 		fontSources.add(folderFontSource);
 
 		// Convert the list of source back into a primitive array of FontSource objects.
-		com.aspose.cells.FontSourceBase[] updatedFontSources = fontSources.toArray(new com.aspose.cells.FontSourceBase[fontSources.size()]);
+		com.aspose.cells.FontSourceBase[] updatedFontSources = fontSources.toArray(new com.aspose.cells.FontSourceBase[0]);
 
 		// Apply the new set of font sources to use.
 		config.setFontSources(updatedFontSources);

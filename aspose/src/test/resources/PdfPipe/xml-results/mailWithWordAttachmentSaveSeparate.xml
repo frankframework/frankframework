@@ -1,0 +1,7 @@
+<main conversionOption="1" mediaType="application/vnd.ms-outlook" documentName="MailWtihWordAttachment(Aspose" numberOfPages="1" convertedDocument="IGNORE" sessionKey="pdfConversionResultFiles1">
+	<attachments>
+		<attachment conversionOption="1" mediaType="application/x-tika-ooxml-protected" documentName="Richtlijnen archiefmetadata en indexwaarden v0.8 (met wachtwoord wachtwoord).docx" failureReason="Richtlijnen archiefmetadata en indexwaarden v0.8 (met wachtwoord wachtwoord).docx Failed to convert to PDF. Reason: The file has been protected with a password." numberOfPages="0"/>
+		<attachment conversionOption="1" convertedDocument="IGNORE" mediaType="application/vnd.ms-word.document.macroenabled.12" documentName="Macro enabled - supported files for CIS v1.0" numberOfPages="1" sessionKey="pdfConversionResultFiles2"/>
+		<attachment conversionOption="1" convertedDocument="IGNORE" mediaType="application/msword" documentName="Dit is een Document met verschillende fonts Word 2003" numberOfPages="1" sessionKey="pdfConversionResultFiles3"/>
+	</attachments>
+</main>
