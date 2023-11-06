@@ -49,7 +49,7 @@ public class ConvertorFactory {
 		for (MediaType mediaTypeSupported : convertor.getSupportedMediaTypes()) {
 			Convertor oldConvertor = convertorLookupMap.put(mediaTypeSupported, convertor);
 			if (oldConvertor != null) {
-				log.warn("More than one convertor found for " + mediaTypeSupported);
+				log.warn("more than one convertor found for [{}]", mediaTypeSupported);
 			}
 		}
 	}

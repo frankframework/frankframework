@@ -158,7 +158,6 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 			if (image != null) {
 				image.close();
-				image = null;
 			}
 
 			if (tmpImageFile != null) {

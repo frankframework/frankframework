@@ -102,7 +102,7 @@ public class PdfPipe extends FixedForwardPipe {
 				} else {
 					setPdfOutputLocation(Files.createTempDirectory("Pdf").toString());
 				}
-				log.info("Temporary directory path : " + getPdfOutputLocation());
+				log.info("Temporary directory path : [{}]", getPdfOutputLocation());
 			} catch (IOException e) {
 				throw new ConfigurationException(e);
 			}

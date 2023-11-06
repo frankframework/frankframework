@@ -102,12 +102,12 @@ class MailConvertor extends AbstractConvertor {
 		AttachmentCollection attachments = eml.getAttachments();
 
 		if (log.isDebugEnabled()) {
-			log.debug("cc : " + toString(eml.getCC()));
-			log.debug("bcc : " + toString(eml.getBcc()));
-			log.debug("sender : " + toString(eml.getSender()));
-			log.debug("from : " + toString(eml.getFrom()));
-			log.debug("to : " + toString(eml.getTo()));
-			log.debug("subject : " + eml.getSubject());
+			log.debug("cc : [" + toString(eml.getCC()) + "]");
+			log.debug("bcc : [" + toString(eml.getBcc()) + "]");
+			log.debug("sender : [" + toString(eml.getSender()) + "]");
+			log.debug("from : [" + toString(eml.getFrom()) + "]");
+			log.debug("to : [" + toString(eml.getTo()) + "]");
+			log.debug("subject : [" + eml.getSubject() + "]");
 		}
 
 		// Overrules the default documentname.
@@ -136,7 +136,7 @@ class MailConvertor extends AbstractConvertor {
 
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 			Long endTime = new Date().getTime();
-			log.info("Conversion completed in " + (endTime - startTime) + "ms");
+			log.debug("document converted in [{}ms]", (endTime - startTime));
 		} finally {
 			Files.delete(tempMHtmlFile.toPath());
 		}
@@ -197,7 +197,7 @@ class MailConvertor extends AbstractConvertor {
 	 * Converts an email attachment to a pdf via the cisConversionService.
 	 */
 	private CisConversionResult convertAttachmentInPdf(Attachment attachment, ConversionOption conversionOption) throws IOException {
-		log.debug("Convert attachment... (" + attachment.getName() + ")");
+		log.debug("convert attachment [{}]", attachment::getName);
 
 		// Get the name of the file (segment) (this is the last part).
 		String[] segments = attachment.getName().split("/");

@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class CisConversionResult {
 
-	private static final String PASSWORD_MESSAGE = "Omzetten naar PDF mislukt. Reden: bestand is beveiligd met een wachtwoord!";
+	private static final String PASSWORD_MESSAGE = "Failed to convert to PDF. Reason: The file has been protected with a password.";
 
 	private @Getter @Setter ConversionOption conversionOption;
 	private @Getter @Setter MediaType mediaType;

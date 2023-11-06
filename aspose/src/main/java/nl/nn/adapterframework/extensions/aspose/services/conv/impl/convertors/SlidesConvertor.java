@@ -69,7 +69,7 @@ public class SlidesConvertor extends AbstractConvertor {
 			long startTime = new Date().getTime();
 			presentation.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
 			long endTime = new Date().getTime();
-			log.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			log.debug("conversion (save operation in convert method) took [{}ms]", (endTime - startTime));
 			presentation.dispose();
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 		}

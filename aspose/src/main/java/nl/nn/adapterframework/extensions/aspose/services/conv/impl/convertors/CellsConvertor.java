@@ -60,7 +60,7 @@ class CellsConvertor extends AbstractConvertor {
 			Workbook workbook = new Workbook(inputStream, defaultLoadOptions);
 
 			Style style = workbook.getDefaultStyle();
-			log.debug("Default font: " + style.getFont());
+			log.debug("default font: [{}]", style.getFont());
 
 			workbook.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));

@@ -92,7 +92,7 @@ class WordConvertor extends AbstractConvertor {
 			long startTime = new Date().getTime();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), saveOptions);
 			long endTime = new Date().getTime();
-			log.debug("Conversion(save operation in convert method) took  :::  " + (endTime - startTime) + " ms");
+			log.debug("conversion (save operation in convert method) took [{}ms]", (endTime - startTime));
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 		}
 	}

@@ -89,7 +89,7 @@ public class PdfAttachmentUtil {
 						addFileToPdf(attachmentDocumentStream, cisConversionResultAttachment.getDocumentName(), ConvertorUtil.PDF_FILETYPE);
 					}
 				} else {
-					log.debug("Skipping file because it is not available.");
+					log.debug("skipping file because it is not available.");
 				}
 			}
 		} finally {
@@ -126,7 +126,7 @@ public class PdfAttachmentUtil {
 		}
 		String result = value.replaceAll(FileConstants.REPLACE_CHARACTERS_IN_NAME_REGEX, FileConstants.REPLACE_CHARACTER);
 		if (!result.equals(value)) {
-			log.debug("Updated filename to a valid filename from \"{}\" to \"{}\"", value, result);
+			log.debug("updated filename to a valid filename from [{}] to [{}]", value, result);
 		}
 		return result;
 	}

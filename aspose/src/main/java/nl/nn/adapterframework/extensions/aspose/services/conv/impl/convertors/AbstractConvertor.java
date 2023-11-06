@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -37,7 +38,6 @@ import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
-import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 
@@ -108,9 +108,9 @@ abstract class AbstractConvertor implements Convertor {
 			result.setPdfResultFile(resultFile);
 			result.setResultFilePath(resultFile.getAbsolutePath());
 
-			log.debug("Convert to file... {}", filename);
+			log.debug("Convert to file [{}]", filename);
 			convert(mediaType, message, result, charset);
-			log.debug("Convert to file finished. {}", filename);
+			log.debug("Convert to file finished. [{}]", filename);
 
 		} catch (Exception e) {
 			if (isPasswordException(e)) {
@@ -138,13 +138,22 @@ abstract class AbstractConvertor implements Convertor {
 
 	protected String createErrorMsg(Exception e) {
 		String timestamp = DateUtils.format(new Date(), "dd-MM-yyyy HH:mm:ss");
-		log.warn("Conversion in {} failed! (Timestamp: {})", logMethod(()-> getClass().getSimpleName()), logValue(timestamp), e);
+		log.warn("failed to convert [{}] failed! (Timestamp: [{}])", logMethod(()-> getClass().getSimpleName()), logValue(timestamp), e);
 		return "Conversion to PDF failed due to a technical failure. Please contact functional support." +
 				"(Timestamp: " + timestamp + ")";
 	}
 
 	protected void deleteFile(File file) throws IOException {
-		FileUtil.deleteFile(file);
+		// Delete always the temporary file if it exists.
+		if (file != null && Files.exists(file.toPath(), LinkOption.NOFOLLOW_LINKS)) {
+			try {
+				Files.delete(file.toPath());
+			} catch (IOException e) {
+				log.warn("failed to delete file [{}]", file, e);
+				throw new IOException("Deleting file [" + file + "] failed!", e);
+			}
+		}
+
 	}
 
 	protected abstract boolean isPasswordException(Exception e);
