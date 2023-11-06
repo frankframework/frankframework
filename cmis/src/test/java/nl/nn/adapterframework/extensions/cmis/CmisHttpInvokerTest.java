@@ -1,6 +1,12 @@
 package nl.nn.adapterframework.extensions.cmis;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,23 +25,18 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 
 import nl.nn.adapterframework.http.HttpResponseMock;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
-public class CmisHttpInvokerTest extends Mockito {
+public class CmisHttpInvokerTest {
 
-	@Mock
-	private BindingSession session;
+	private BindingSession session = mock(BindingSession.class);
 
 	@BeforeEach
 	public void setup() {
-		MockitoAnnotations.initMocks(this);
 		when(session.get(eq(SessionParameter.USER_AGENT), anyString())).thenReturn("Mockito mock-agent");
 	}
 
