@@ -42,14 +42,14 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	public Connection getConnection() throws SQLException {
 		connectionCount.incrementAndGet();
 		try {
-			return warpCountingConnectionDelegate(dataSource.getConnection());
+			return wrapCountingConnectionDelegate(dataSource.getConnection());
 		} catch (Exception e) {
 			connectionCount.decrementAndGet();
 			throw ExceptionUtils.throwAsUncheckedException(e);
 		}
 	}
 
-	private Connection warpCountingConnectionDelegate(Connection connection) throws Exception {
+	private Connection wrapCountingConnectionDelegate(Connection connection) throws Exception {
 		ProxyFactory factory = new ProxyFactory();
 		factory.setInterfaces(new Class[] {Connection.class});
 
@@ -126,7 +126,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	@Override
 	public void close() throws Throwable {
 		if(connectionCount.get() > 0) {
-			throw new JUnitException("Not all connections have been closed!");
+			throw new JUnitException("Not all connections have been closed! Don't forget to close all database connections in your test.");
 		}
 	}
 }

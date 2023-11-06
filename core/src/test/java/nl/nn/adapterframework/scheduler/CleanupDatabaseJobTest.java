@@ -33,7 +33,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 	private CleanupDatabaseJob jobDef;
 	private JdbcTransactionalStorage<Serializable> storage;
 	private final String cleanupJobName="CleanupDB";
-	private final String tableName="NOT_IBISLOCK_TABLE";
+	private final String txStorageTableName="NOT_IBISLOCK_TABLE";
 
 	@Override
 	@Before
@@ -43,7 +43,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		System.setProperty("tableName", "IBISLOCK"); //Lock table must exist
 		runMigrator(TEST_CHANGESET_PATH);
 
-		System.setProperty("tableName", tableName); //Actual JdbcTXStorage table
+		System.setProperty("tableName", txStorageTableName); //Actual JdbcTXStorage table
 		runMigrator(TEST_CHANGESET_PATH);
 
 		//noinspection unchecked
@@ -51,8 +51,8 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		storage.setName("test-cleanupDB");
 		storage.setType("A");
 		storage.setSlotId("dummySlotId");
-		storage.setTableName(tableName);
-		storage.setSequenceName("SEQ_"+tableName);
+		storage.setTableName(txStorageTableName);
+		storage.setSequenceName("SEQ_"+txStorageTableName);
 		storage.setDatasourceName(getDataSourceName());
 
 		if (getConfiguration().getScheduledJob("MockJob") == null) {
@@ -149,7 +149,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 			sb.append(") SELECT * FROM valuesTable");
 		}
 
-		String query ="INSERT INTO "+tableName+" (" +
+		String query ="INSERT INTO "+txStorageTableName+" (" +
 				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")
 				+ storage.getTypeField() + ","
 				+ storage.getSlotIdField() + ","
@@ -171,7 +171,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 	}
 
 	private int getCount() throws SQLException, JdbcException {
-		return getCount(tableName);
+		return getCount(txStorageTableName);
 	}
 
 	private int getCount(String tableName) throws SQLException, JdbcException {

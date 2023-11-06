@@ -33,13 +33,13 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Locker;
 
 @WithLiquibase(tableName = "IBISLOCK") //Lock table must exist
-@WithLiquibase(tableName = CleanupDatabaseJobTest2.tableName) //Actual JdbcTXStorage table
+@WithLiquibase(tableName = CleanupDatabaseJobTest2.txStorageTableName) //Actual JdbcTXStorage table
 public class CleanupDatabaseJobTest2 {
 
 	private CleanupDatabaseJob jobDef;
 	private JdbcTransactionalStorage<Serializable> storage;
 	private final String cleanupJobName = "CleanupDB";
-	protected static final String tableName = "NOT_IBISLOCK_TABLE";
+	protected static final String txStorageTableName = "NOT_IBISLOCK_TABLE";
 
 	@DatabaseTest.Parameter(0)
 	private TransactionManagerType transactionManagerType;
@@ -58,8 +58,8 @@ public class CleanupDatabaseJobTest2 {
 		storage.setName("test-cleanupDB");
 		storage.setType("A");
 		storage.setSlotId("dummySlotId");
-		storage.setTableName(tableName);
-		storage.setSequenceName("SEQ_"+tableName);
+		storage.setTableName(txStorageTableName);
+		storage.setSequenceName("SEQ_"+txStorageTableName);
 		storage.setDatasourceName(database.getDataSourceName());
 
 		if (getConfiguration().getScheduledJob("MockJob") == null) {
@@ -157,7 +157,7 @@ public class CleanupDatabaseJobTest2 {
 			sb.append(") SELECT * FROM valuesTable");
 		}
 
-		String query ="INSERT INTO "+tableName+" (" +
+		String query ="INSERT INTO "+txStorageTableName+" (" +
 				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")
 				+ storage.getTypeField() + ","
 				+ storage.getSlotIdField() + ","
@@ -180,7 +180,7 @@ public class CleanupDatabaseJobTest2 {
 
 	private int getCount(DatabaseTestEnvironment database) throws SQLException, JdbcException {
 		try(Connection connection = database.getConnection()) {
-			return JdbcUtil.executeIntQuery(connection, "SELECT count(*) from "+tableName);
+			return JdbcUtil.executeIntQuery(connection, "SELECT count(*) from "+txStorageTableName);
 		}
 	}
 
