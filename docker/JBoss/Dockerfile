@@ -4,17 +4,14 @@ ARG JBOSS_BASE_VERSION=7.4.0
 ARG JBOSS_VERSION=7.4.13-7
 FROM ${REGISTRY}/jboss-eap-7/${JBOSS_VARIANT}:${JBOSS_BASE_VERSION} AS jboss-base
 
-USER root
-RUN mkdir $JBOSS_HOME/standalone/data
-RUN chown jboss:jboss $JBOSS_HOME/standalone/data
-
 COPY src/configuration/createCS.sh /home/createCS.sh
 COPY target/dependencies/secrets /opt/frank/secrets
 
 RUN /home/createCS.sh
-USER jboss
 
 FROM ${REGISTRY}/jboss-eap-7/${JBOSS_VARIANT}:${JBOSS_VERSION}
+
+RUN mkdir $JBOSS_HOME/standalone/data
 
 ENV DISABLE_EMBEDDED_JMS_BROKER=true
 # Copy dependencies
