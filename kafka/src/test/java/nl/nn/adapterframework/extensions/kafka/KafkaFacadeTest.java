@@ -24,15 +24,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
 public class KafkaFacadeTest {
 	KafkaFacade facade;
 
 	@BeforeEach
-	@SneakyThrows
-	void setUp() {
+	void setUp() throws Exception {
 		facade = new KafkaFacade() {
 			@Override
 			public String getPhysicalDestinationName() {

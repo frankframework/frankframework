@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.extensions.kafka;
 
-import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
 import org.junit.jupiter.api.Assertions;
@@ -20,8 +19,7 @@ public class KafkaPatternValidatorTest {
 	KafkaListener listener;
 
 	@BeforeEach
-	@SneakyThrows
-	void setUp() {
+	void setUp() throws Exception {
 		listener = new KafkaListener();
 		listener.setClientId("test");
 		listener.setGroupId("testGroup");

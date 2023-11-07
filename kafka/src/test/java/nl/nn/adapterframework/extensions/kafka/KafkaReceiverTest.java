@@ -43,7 +43,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -57,8 +56,7 @@ public class KafkaReceiverTest {
 	KafkaListener listener;
 
 	@BeforeEach
-	@SneakyThrows
-	void setUp() {
+	void setUp() throws Exception {
 		listener = new KafkaListener();
 		listener.setTopics("test.*.test2");
 		listener.setClientId("test");
@@ -115,8 +113,7 @@ public class KafkaReceiverTest {
 	}
 
 	@Test
-	@SneakyThrows
-	public void test() {
+	public void test() throws Exception {
 		String topic="test.test.test2";
 		listener.open();
 		HashMap<TopicPartition, Long> startOffsets = new HashMap<>();

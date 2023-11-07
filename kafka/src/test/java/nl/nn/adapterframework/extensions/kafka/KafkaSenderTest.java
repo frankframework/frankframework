@@ -32,7 +32,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
@@ -41,8 +40,7 @@ public class KafkaSenderTest {
 	final MockProducer<String, byte[]> mockProducer = new MockProducer<>(true, new StringSerializer(), new ByteArraySerializer());
 	final KafkaSender sender = new KafkaSender();
 	@BeforeEach
-	@SneakyThrows
-	void setUp() {
+	void setUp() throws Exception {
 		sender.setTopic("test.test2");
 		sender.setClientId("test");
 		sender.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
@@ -51,8 +49,7 @@ public class KafkaSenderTest {
 	}
 
 	@Test
-	@SneakyThrows
-	public void test() {
+	public void test() throws Exception {
 		Message message = new Message("Hello World");
 		PipeLineSession session = new PipeLineSession();
 		sender.sendMessage(message, session);
