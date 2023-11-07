@@ -1196,6 +1196,7 @@
 				<module>ladybug</module>
 				<module>test</module>
 				<module>example</module>
+				<module>dbms</module>
 			</modules>
 		</profile>
 		<profile>
@@ -1210,7 +1211,6 @@
 				<module>aws</module>
 				<module>cmis</module>
 				<module>aspose</module>
-				<module>dbms</module>
 			</modules>
 		</profile>
 		<profile>
