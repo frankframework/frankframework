@@ -57,7 +57,7 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 				return getDbmsSupport(connection);
 			}
 		} catch (SQLException | DbmsException e) {
-			log.warn(String.format("%s exception while trying to get a connection from datasource [" + datasource + "]", e instanceof SQLException ? "SQL" : "DBMS" ), e);
+			log.warn("SQL exception while trying to get a connection from datasource [" + datasource + "]", e);
 			return new GenericDbmsSupport();
 		}
 	}
