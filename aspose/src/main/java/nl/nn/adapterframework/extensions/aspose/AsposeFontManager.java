@@ -34,7 +34,6 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 import com.aspose.cells.FontConfigs;
 import com.aspose.slides.FontsLoader;
@@ -42,17 +41,16 @@ import com.aspose.words.FolderFontSource;
 import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.LogUtil;
 
+@Log4j2
 public class AsposeFontManager {
 
 	private static final String FONTS_RESOURCE_NAME = "/fonts.zip"; //lots of commonly used fonts
 	private static final String FONTS_RESOURCE_DIR = "/fonts/";
 	private static final String TRUETYPE_FONT_EXT = ".ttf";
-
-	private Logger log = LogUtil.getLogger(this);
 
 	private File fontDirectory = null;
 	private final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();

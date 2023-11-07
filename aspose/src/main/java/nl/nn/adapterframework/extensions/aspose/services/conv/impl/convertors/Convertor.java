@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.MediaType;
 
@@ -28,7 +28,7 @@ public interface Convertor {
 	/**
 	 * Returns the supported media types.
 	 */
-	List<MediaType> getSupportedMediaTypes();
+	Set<MediaType> getSupportedMediaTypes();
 
 	/**
 	 * Converts the given file to a pdf. MediaType is the detected media type of the
