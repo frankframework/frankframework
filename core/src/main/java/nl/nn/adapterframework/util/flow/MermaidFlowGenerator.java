@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +26,6 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -43,6 +41,7 @@ import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
 import org.xml.sax.SAXException;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.ElementType;
@@ -51,7 +50,6 @@ import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.senders.IbisJavaSender;
 import nl.nn.adapterframework.senders.IbisLocalSender;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
@@ -60,8 +58,8 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
 /**
  * Flow generator to create MERMAID files
  */
+@Log4j2
 public class MermaidFlowGenerator implements IFlowGenerator {
-	protected static Logger log = LogUtil.getLogger(MermaidFlowGenerator.class);
 
 	private static final String ADAPTER2MERMAID_XSLT = "/xml/xsl/adapter2mermaid.xsl";
 	private static final String CONFIGURATION2MERMAID_XSLT = "/xml/xsl/configuration2mermaid.xsl";
@@ -73,17 +71,10 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	private TransformerPool transformerPoolConfig;
 
 	public MermaidFlowGenerator() {
-		resourceMethods = new ArrayList<>();
-		resourceMethods.add("setAction"); //Use full method names so we don't have to substring later
-		resourceMethods.add("setWsdl");
-		resourceMethods.add("setSchema");
-		resourceMethods.add("setSchemaLocation");
-		resourceMethods.add("setDirection");
-		resourceMethods.add("setOutputFormat");
-		resourceMethods.add("setResponseRoot");
-		resourceMethods.add("setXpathExpression");
-		resourceMethods.add("setStyleSheetName");
-		resourceMethods.add("setStyleSheetNameSessionKey");
+		resourceMethods = List.of(
+				"setAction", "setWsdl", "setSchema", "setSchemaLocation", "setDirection", "setOutputFormat",
+				"setResponseRoot", "setXpathExpression", "setStyleSheetName", "setStyleSheetNameSessionKey"
+			);
 	}
 
 	@Override
@@ -127,18 +118,18 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	 * Returns a classifier use by the Mermaid XSLT, which in turn is used to change the style in the diagram.
 	 */
 	private int deduceModifier(Class<?> clazz) {
-		String className = clazz.getCanonicalName();
-		if(className.contains("http")) {
+		String packageName = clazz.getPackageName();
+		if(packageName.contains(".http")) {
 			return 0;
-		} else if(className.contains("jms") || className.contains("esb")) {
+		} else if(packageName.contains("jms") || packageName.contains(".esb")) {
 			return 1;
-		} else if(className.contains("jdbc")) {
+		} else if(packageName.contains(".jdbc")) {
 			return 2;
 		} else if(FileSystemListener.class.isAssignableFrom(clazz) || FileSystemSender.class.isAssignableFrom(clazz)) {
 			return 3;
 		} else if(IbisJavaSender.class.isAssignableFrom(clazz) || IbisLocalSender.class.isAssignableFrom(clazz)) {
 			return 4;
-		} else if(className.contains("sap")) {
+		} else if(packageName.contains(".sap")) {
 			return 5;
 		}
 		return 7;
