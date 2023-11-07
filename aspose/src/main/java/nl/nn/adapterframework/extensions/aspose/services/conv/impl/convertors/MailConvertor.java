@@ -129,7 +129,7 @@ class MailConvertor extends AbstractConvertor {
 		Long startTime = new Date().getTime();
 		try(FileInputStream fis = new FileInputStream(tempMHtmlFile)){
 			Document doc = new Document(fis, loadOptions);
-			new FontSetter(configuration.getFontsDirectory()).setFontSettings(doc);
+			new FontManager(configuration.getFontsDirectory()).setFontSettings(doc);
 			resizeInlineImages(doc);
 
 			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
