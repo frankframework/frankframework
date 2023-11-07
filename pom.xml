@@ -757,7 +757,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.6.2</version>
 					<configuration>
 						<source>${maven.compiler.source}</source>
 						<doclint>none</doclint>
@@ -1056,7 +1056,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.6.0</version>
+				<version>3.6.2</version>
 				<reportSets>
 					<reportSet>
 						<id>default</id>
