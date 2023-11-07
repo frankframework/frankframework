@@ -161,7 +161,7 @@ public class CleanupDatabaseJob extends JobDef {
 				param.setType(ParameterType.TIMESTAMP);
 				qs.addParameter(param);
 
-				String query = this.getCleanUpIbisstoreQuery(mlo.getTableName(), mlo.getKeyField(), mlo.getTypeField(), mlo.getExpiryDateField(), maxRows, qs.getDbmsSupport().getDbmsName());
+				String query = this.getCleanUpIbisstoreQuery(mlo.getTableName(), mlo.getKeyField(), mlo.getTypeField(), mlo.getExpiryDateField(), maxRows, qs.getDbmsSupport().getDbms());
 				qs.setQuery(query);
 				qs.configure();
 				qs.open();
@@ -285,23 +285,24 @@ public class CleanupDatabaseJob extends JobDef {
 		queryTimeout = i;
 	}
 
-	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows, String dbmsName) {
-		if (dbmsName.equalsIgnoreCase(Dbms.MSSQL.getKey())) {
-			return "DELETE " + (maxRows > 0 ? "TOP(" + maxRows + ") " : "")
-					+ "FROM " + tableName
-					+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-					+ "') AND " + expiryDateField + " < ?";
-		} else if (dbmsName.equalsIgnoreCase(Dbms.MARIADB.getKey())) {
-			return "DELETE FROM " + tableName + " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-					+ "') AND " + expiryDateField + "< ?" + (maxRows > 0 ? " LIMIT " + maxRows : "");
-		} else if (dbmsName.equalsIgnoreCase(Dbms.MYSQL.getKey())) {
-			return "DELETE FROM " + tableName + " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-					+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " LIMIT " + maxRows : "");
-		} else {
-			return ("DELETE FROM " + tableName + " WHERE " + keyField + " IN (SELECT " + keyField + " FROM " + tableName
-					+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
-					+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " FETCH FIRST " + maxRows + " ROWS ONLY" : "") + ")");
-
+	public String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows, Dbms dbmsName) {
+		switch (dbmsName) {
+			case MSSQL:
+				return "DELETE " + (maxRows > 0 ? "TOP(" + maxRows + ") " : "")
+						+ "FROM " + tableName
+						+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+						+ "') AND " + expiryDateField + " < ?";
+			case MARIADB:
+				return "DELETE FROM " + tableName + " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+						+ "') AND " + expiryDateField + "< ?" + (maxRows > 0 ? " LIMIT " + maxRows : "");
+			case MYSQL:
+				return "DELETE FROM " + tableName + " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+						+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " LIMIT " + maxRows : "");
+			default:
+				if (log.isDebugEnabled()) log.warn("Not sure how to clean up for dialect: " + dbmsName + " just trying something");
+				return ("DELETE FROM " + tableName + " WHERE " + keyField + " IN (SELECT " + keyField + " FROM " + tableName
+						+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
+						+ "') AND " + expiryDateField + " < ?" + (maxRows > 0 ? " FETCH FIRST " + maxRows + " ROWS ONLY" : "") + ")");
 		}
 	}
 }
