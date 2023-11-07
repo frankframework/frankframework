@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -38,6 +37,7 @@ import com.aspose.pdf.LoadOptions;
 import com.aspose.pdf.Page;
 import com.aspose.pdf.SaveFormat;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
@@ -75,7 +75,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 	protected PdfImageConvertor(CisConfiguration configuration) {
 		// Give the supported media types.
-		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
 	}
 
 	@Override
@@ -158,7 +158,6 @@ public class PdfImageConvertor extends AbstractConvertor {
 
 			if (image != null) {
 				image.close();
-				image = null;
 			}
 
 			if (tmpImageFile != null) {

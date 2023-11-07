@@ -11,7 +11,7 @@ public class ImageUtil {
 
 	static Logger logger = Logger.getLogger(ImageUtil.class.getName());
 
-	static boolean compareAndHighlight(final BufferedImage img1, final BufferedImage img2, String fileName, boolean highlight, int colorCode, double deviation) throws IOException {
+	static double compareAndHighlight(final BufferedImage img1, final BufferedImage img2, String fileName, boolean highlight, int colorCode, double deviation) throws IOException {
 		final int w = img1.getWidth();
 		final int h = img1.getHeight();
 		final int[] p1 = img1.getRGB(0, 0, w, h, null, 0, w);
@@ -30,9 +30,10 @@ public class ImageUtil {
 				out.setRGB(0, 0, w, h, p1, 0, w);
 				saveImage(out, fileName);
 			}
-			return false;
+		} else {
+			logger.info("Image compared - match with diff: " + diff);
 		}
-		return true;
+		return diff;
 	}
 
 	static void saveImage(BufferedImage image, String file) {

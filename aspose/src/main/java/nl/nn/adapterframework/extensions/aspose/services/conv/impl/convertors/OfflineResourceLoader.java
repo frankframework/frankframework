@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,17 +15,22 @@
 */
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
-import com.aspose.words.IResourceLoadingCallback;
+import com.aspose.slides.IResourceLoadingArgs;
 import com.aspose.words.ResourceLoadingAction;
 import com.aspose.words.ResourceLoadingArgs;
 
-public class OfflineResourceLoader implements IResourceLoadingCallback {
+public class OfflineResourceLoader implements com.aspose.words.IResourceLoadingCallback, com.aspose.slides.IResourceLoadingCallback {
+
 	@Override
-	public int resourceLoading(ResourceLoadingArgs resourceLoadingArgs) throws Exception {
-		String originalUri = resourceLoadingArgs.getOriginalUri();
-		if(originalUri.startsWith("https://") || originalUri.startsWith("http://")){
-			return ResourceLoadingAction.SKIP;
-		}
-		return ResourceLoadingAction.DEFAULT;
+	public int resourceLoading(IResourceLoadingArgs resourceLoadingArgs) {
+		return canLoadResource(resourceLoadingArgs.getOriginalUri());
 	}
+	@Override
+	public int resourceLoading(ResourceLoadingArgs resourceLoadingArgs) {
+		return canLoadResource(resourceLoadingArgs.getOriginalUri());
+	}
+	private int canLoadResource(String resourceUri) {
+		return ResourceLoadingAction.SKIP;
+	}
+
 }
