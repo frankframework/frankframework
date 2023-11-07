@@ -30,7 +30,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 
 /**
  * Initially I thought, hey lets add some unittests...
@@ -77,7 +77,7 @@ public class IdinSenderTest extends Mockito {
 
 	@Before
 	public void initializeIdinSender() throws FileNotFoundException, ParserConfigurationException, SAXException, IOException {
-		URL expectedUrl = ClassUtils.getResourceURL("bankid-config.xml");
+		URL expectedUrl = ClassLoaderUtils.getResourceURL("bankid-config.xml");
 		Configuration.defaultInstance().Load(expectedUrl.openStream());
 		Communicator communicator = mock(Communicator.class);
 		DirectoryResponse response = mock(DirectoryResponse.class);
@@ -99,7 +99,7 @@ public class IdinSenderTest extends Mockito {
 	public void randomMessage() throws SenderException, TimeoutException, SAXException, IOException {
 		String message = "<test><woop>1</woop></test>";
 		PipeLineSession session = null;
-		String result = sender.sendMessage(new Message(message), session).asString();
+		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
 		//TODO compare
 	}
 
@@ -108,7 +108,7 @@ public class IdinSenderTest extends Mockito {
 	public void normal() throws SenderException, TimeoutException, IOException {
 		String message = "<idin/>";
 		PipeLineSession session = null;
-		String result = sender.sendMessage(new Message(message), session).asString();
+		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
 		//TODO assertEquals("result", result);
 	}
 
@@ -117,7 +117,7 @@ public class IdinSenderTest extends Mockito {
 	public void issuersByCountry() throws SenderException, TimeoutException, IOException {
 		String message = "<idin><issuersByCountry>true</issuersByCountry></idin>";
 		PipeLineSession session = null;
-		String result = sender.sendMessage(new Message(message), session).asString();
+		String result = sender.sendMessageOrThrow(new Message(message), session).asString();
 		//TODO assertEquals("result", result);
 	}
 }

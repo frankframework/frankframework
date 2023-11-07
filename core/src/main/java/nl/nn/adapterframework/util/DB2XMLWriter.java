@@ -27,7 +27,6 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
-import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -72,7 +71,7 @@ public class DB2XMLWriter {
 	private boolean trimSpaces=true;
 	private boolean decompressBlobs=false;
 	private boolean getBlobSmart=false;
-	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private static boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
 
 	public static String getFieldType (int type) {
@@ -96,26 +95,25 @@ public class DB2XMLWriter {
 	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition) {
 		try {
 			XmlWriter xmlWriter = new XmlWriter();
-			PrettyPrintFilter ppf = new PrettyPrintFilter(xmlWriter);
-			getXML(dbmsSupport, rs, maxlength, includeFieldDefinition, ppf);
+			getXML(dbmsSupport, rs, maxlength, includeFieldDefinition, xmlWriter, true);
 			return xmlWriter.toString();
 		} catch (SAXException e) {
 			log.warn("cannot convert ResultSet to XML", e);
-			return "<error>"+XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage())+"</error>";
+			return "<error>"+ XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage())+"</error>";
 		}
 	}
 
 
-	public void getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, ContentHandler handler) throws SAXException {
+	public void getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, ContentHandler handler, boolean prettyPrint) throws SAXException {
 
-		try (SaxDocumentBuilder root = new SaxDocumentBuilder(docname, handler)) {
+		try (SaxDocumentBuilder root = new SaxDocumentBuilder(docname, handler, prettyPrint)) {
 			if (null == rs) {
 				return;
 			}
 			if (maxlength < 0) {
 				maxlength = Integer.MAX_VALUE;
 			}
-			Statement stmt=null;
+			Statement stmt;
 			try {
 				stmt = rs.getStatement();
 				if (stmt!=null) {
@@ -147,17 +145,6 @@ public class DB2XMLWriter {
 		}
 	}
 
-	public static String getFieldDefinitions(ResultSet rs) throws SAXException, SQLException {
-		XmlWriter writer = new XmlWriter();
-		addFieldDefinitions(rs, writer);
-		return writer.toString();
-	}
-	public static void addFieldDefinitions(ResultSet rs, ContentHandler handler) throws SAXException, SQLException {
-		ResultSetMetaData rsmeta = rs.getMetaData();
-		try (SaxElementBuilder fields = new SaxElementBuilder("fielddefinition", handler)) {
-			addFieldDefinitionsToContainer(fields, rsmeta);
-		}
-	}
 	public static void addFieldDefinitions(SaxElementBuilder root, ResultSetMetaData rsmeta) throws SAXException, SQLException {
 		try (SaxElementBuilder fields = root.startElement("fielddefinition")) {
 			addFieldDefinitionsToContainer(fields, rsmeta);
@@ -204,7 +191,7 @@ public class DB2XMLWriter {
 					log.debug("Could not determine isCurrency",e);
 				}
 				try {
-					String columnTypeName = "" + rsmeta.getColumnTypeName(j);
+					String columnTypeName = rsmeta.getColumnTypeName(j);
 					if(convertFieldnamesToUppercase)
 						columnTypeName = columnTypeName.toUpperCase();
 					field.addAttribute("columnTypeName", columnTypeName);
@@ -212,7 +199,7 @@ public class DB2XMLWriter {
 					log.debug("Could not determine columnTypeName",e);
 				}
 				try {
-					field.addAttribute("columnClassName", "" + rsmeta.getColumnClassName(j));
+					field.addAttribute("columnClassName", rsmeta.getColumnClassName(j));
 				} catch (SQLException e) {
 					log.debug("Could not determine columnClassName",e);
 				}

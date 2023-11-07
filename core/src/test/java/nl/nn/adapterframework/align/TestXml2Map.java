@@ -1,15 +1,13 @@
 package nl.nn.adapterframework.align;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URL;
 import java.util.Map;
 
-import javax.json.JsonStructure;
-
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.MatchUtils;
 
@@ -17,8 +15,6 @@ import nl.nn.adapterframework.testutil.MatchUtils;
  * @author Gerrit van Brakel
  */
 public class TestXml2Map extends AlignTestBase {
-
-
 
 	@Override
 	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, boolean potentialCompactionProblems, String expectedFailureReason) throws Exception {
@@ -29,16 +25,15 @@ public class TestXml2Map extends AlignTestBase {
 
 		boolean expectValid=expectedFailureReason==null;
 		// check the validity of the input XML
-		assertEquals("valid XML", expectValid, Utils.validate(schemaUrl, xmlString));
+		assertEquals(expectValid, Utils.validate(schemaUrl, xmlString), "valid XML");
 
-		System.out.println("input xml:"+xmlString);
-		JsonStructure json;
+		LOG.debug("input xml [{}]", xmlString);
 		Map<String,String> result;
 		try {
 			result=Xml2Map.translate(xmlString, schemaUrl);
 			for (String key: result.keySet()) {
 				String value=result.get(key);
-				System.out.println(key+"="+value);
+				LOG.debug("key [{}] => [{}]", key, value);
 			}
 			if (!expectValid) {
 				fail("expected to fail");
@@ -49,7 +44,7 @@ public class TestXml2Map extends AlignTestBase {
 			assertEquals(mapString.trim(), MatchUtils.mapToString(result).trim());
 		} catch (Exception e) {
 			if (expectValid) {
-				e.printStackTrace();
+				LOG.error("expected valid result", e);
 				fail(e.getMessage());
 			}
 			return;
@@ -59,14 +54,14 @@ public class TestXml2Map extends AlignTestBase {
 
 	@Override
 	@Test
-	@Ignore("only json input")
+	@Disabled("only json input")
 	public void testMixedContentUnknown() throws Exception {
 		super.testMixedContentUnknown();
 	}
 
 	@Override
 	@Test
-	@Ignore("No content")
+	@Disabled("No content")
 	public void testOptionalArray() throws Exception {
 		super.testMixedContentUnknown();
 	}

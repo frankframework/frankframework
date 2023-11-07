@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,9 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -33,8 +35,8 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Pipe that compares lexicographically two strings.
- * 
+ * Pipe that lexicographically compares two strings, that must NOT be empty.
+ *
  * @ff.parameter operand1 The first operand, holds v1. Defaults to input message
  * @ff.parameter operand2 The second operand, holds v2. Defaults to input message
  * @ff.parameter ignorepatterns (optional) contains a xml table with references to substrings which have to be ignored during the comparison. This xml table has the following layout:
@@ -57,6 +59,8 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @author  Peter Leeuwenburgh
  */
+@Category("Basic")
+@ElementType(ElementTypes.ROUTER)
 public class CompareStringPipe extends AbstractPipe {
 
 	private static final String LESSTHANFORWARD = "lessthan";
@@ -98,41 +102,41 @@ public class CompareStringPipe extends AbstractPipe {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception extracting parameters", e);
+				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
 		String operand1 = getParameterValue(pvl, OPERAND1);
 		try {
 			if (operand1 == null) {
 				if (StringUtils.isNotEmpty(getSessionKey1())) {
-					operand1 = session.getMessage(getSessionKey1()).asString();
+					operand1 = session.getString(getSessionKey1());
 				}
 				if (operand1 == null) {
 					operand1 = message.asString();
 				}
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand1 from input message", e);
+			throw new PipeRunException(this, "Exception on getting operand1 from input message", e);
 		}
 		String operand2 = getParameterValue(pvl, OPERAND2);
 		try {
 			if (operand2 == null) {
 				if (StringUtils.isNotEmpty(getSessionKey2())) {
-					operand2 = session.getMessage(getSessionKey2()).asString();
+					operand2 = session.getString(getSessionKey2());
 				}
 				if (operand2 == null) {
 					operand2 = message.asString();
 				}
 			}
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on getting operand2 from input message", e);
+			throw new PipeRunException(this, "Exception on getting operand2 from input message", e);
 		}
 		if (isXml()) {
 			try {
 				operand1 = XmlUtils.canonicalize(operand1);
 				operand2 = XmlUtils.canonicalize(operand2);
 			} catch (Exception e) {
-				throw new PipeRunException(this, getLogPrefix(session) + " Exception on pretty printing input", e);
+				throw new PipeRunException(this, "Exception on pretty printing input", e);
 			}
 		}
 
@@ -165,7 +169,7 @@ public class CompareStringPipe extends AbstractPipe {
 					}
 				}
 			} catch (Exception e) {
-				throw new PipeRunException(this, getLogPrefix(session) + " Exception on ignoring parts of input", e);
+				throw new PipeRunException(this, "Exception on ignoring parts of input", e);
 			}
 		}
 
@@ -198,7 +202,7 @@ public class CompareStringPipe extends AbstractPipe {
 		}
 
 		char[] sourceArray = source.toCharArray();
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		int srcPos = 0;
 
 		while (start != -1 && stop != -1) {
@@ -234,7 +238,7 @@ public class CompareStringPipe extends AbstractPipe {
 	}
 
 
-	@IbisDoc({"reference to one of the session variables to be compared. Do not use, but use Parameter operand1 instead", ""})
+	/** reference to one of the session variables to be compared. Do not use, but use Parameter operand1 instead */
 	@Deprecated
 	@ConfigurationWarning("Please use the parameter operand1")
 	public void setSessionKey1(String string) {
@@ -244,7 +248,7 @@ public class CompareStringPipe extends AbstractPipe {
 		return sessionKey1;
 	}
 
-	@IbisDoc({"reference to the other session variables to be compared. Do not use, but use Parameter operand2 instead", ""})
+	/** reference to the other session variables to be compared. Do not use, but use Parameter operand2 instead */
 	@Deprecated
 	@ConfigurationWarning("Please use the parameter operand2")
 	public void setSessionKey2(String string) {
@@ -258,7 +262,10 @@ public class CompareStringPipe extends AbstractPipe {
 		return xml;
 	}
 
-	@IbisDoc({"when set <code>true</code> the string values to compare are considered to be xml strings and before the actual compare both xml strings are transformed to a canonical form", "false"})
+	/**
+	 * when set <code>true</code> the string values to compare are considered to be xml strings and before the actual compare both xml strings are transformed to a canonical form
+	 * @ff.default false
+	 */
 	public void setXml(boolean b) {
 		xml = b;
 	}

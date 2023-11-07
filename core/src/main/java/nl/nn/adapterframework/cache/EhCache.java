@@ -22,32 +22,29 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
  * General Cache provider.
- * 
+ *
  * N.B. the default values shown can be overridden using properties in appConstants. The property names are found by prefixing the attribute name with <code>cache.default.</code>.
- * </p>
- * 
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.11
  */
 public class EhCache<V> extends CacheAdapterBase<V> {
 
-	private final String KEY_PREFIX = "cache.default.";
-	private final String KEY_MAX_ELEMENTS_IN_MEMORY = KEY_PREFIX + "maxElementsInMemory";
-	private final String KEY_MEMORYSTORE_EVICTION_POLICY = KEY_PREFIX + "memoryStoreEvictionPolicy";
-	private final String KEY_ETERNAL = KEY_PREFIX + "eternal";
-	private final String KEY_TIME_TO_LIVE_SECONDS = KEY_PREFIX + "timeToLiveSeconds";
-	private final String KEY_TIME_TO_IDLE_SECONDS = KEY_PREFIX + "timeToIdleSeconds";
-	private final String KEY_OVERFLOW_TO_DISK = KEY_PREFIX + "overflowToDisk";
-	private final String KEY_MAX_ELEMENTS_ON_DISK = KEY_PREFIX + "maxElementsOnDisk";
-	private final String KEY_DISK_PERSISTENT = KEY_PREFIX + "diskPersistent";
-	private final String KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS = KEY_PREFIX + "diskExpiryThreadIntervalSeconds";
+	private static final String KEY_PREFIX = "cache.default.";
+	private static final String KEY_MAX_ELEMENTS_IN_MEMORY = KEY_PREFIX + "maxElementsInMemory";
+	private static final String KEY_MEMORYSTORE_EVICTION_POLICY = KEY_PREFIX + "memoryStoreEvictionPolicy";
+	private static final String KEY_ETERNAL = KEY_PREFIX + "eternal";
+	private static final String KEY_TIME_TO_LIVE_SECONDS = KEY_PREFIX + "timeToLiveSeconds";
+	private static final String KEY_TIME_TO_IDLE_SECONDS = KEY_PREFIX + "timeToIdleSeconds";
+	private static final String KEY_OVERFLOW_TO_DISK = KEY_PREFIX + "overflowToDisk";
+	private static final String KEY_MAX_ELEMENTS_ON_DISK = KEY_PREFIX + "maxElementsOnDisk";
+	private static final String KEY_DISK_PERSISTENT = KEY_PREFIX + "diskPersistent";
+	private static final String KEY_DISK_EXPIRY_THREAD_INTERVAL_SECONDS = KEY_PREFIX + "diskExpiryThreadIntervalSeconds";
 
 	private int maxElementsInMemory=100;
 	private String memoryStoreEvictionPolicy="LRU";
@@ -153,7 +150,10 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		}
 	}
 
-	@IbisDoc({"1", "The maximum number of elements in memory, before they are evicted", "100"})
+	/**
+	 * The maximum number of elements in memory, before they are evicted
+	 * @ff.default 100
+	 */
 	public void setMaxElementsInMemory(int maxElementsInMemory) {
 		this.maxElementsInMemory = maxElementsInMemory;
 	}
@@ -161,7 +161,10 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return maxElementsInMemory;
 	}
 
-	@IbisDoc({"2", "Either <code>LRU</code>=Least Recent Use,<code>LFU</code>=Least Frequent Use or <code>FIFO</code>=First In - First Out", "LRU"})
+	/**
+	 * Either <code>LRU</code>=Least Recent Use,<code>LFU</code>=Least Frequent Use or <code>FIFO</code>=First In - First Out
+	 * @ff.default LRU
+	 */
 	public void setMemoryStoreEvictionPolicy(String memoryStoreEvictionPolicy) {
 		this.memoryStoreEvictionPolicy = memoryStoreEvictionPolicy;
 	}
@@ -169,7 +172,10 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return memoryStoreEvictionPolicy;
 	}
 
-	@IbisDoc({"3", "If <code>true</code>, the elements in the cache are eternal, i.e. never expire", "false"})
+	/**
+	 * If <code>true</code>, the elements in the cache are eternal, i.e. never expire
+	 * @ff.default false
+	 */
 	public void setEternal(boolean eternal) {
 		this.eternal = eternal;
 	}
@@ -177,7 +183,10 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return eternal;
 	}
 
-	@IbisDoc({"4", "The amount of time <i>in seconds</i> to live for an element from its creation date", "36000"})
+	/**
+	 * The amount of time <i>in seconds</i> to live for an element from its creation date
+	 * @ff.default 36000
+	 */
 	public void setTimeToLiveSeconds(int timeToLiveSeconds) {
 		this.timeToLiveSeconds = timeToLiveSeconds;
 	}
@@ -185,7 +194,10 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return timeToLiveSeconds;
 	}
 
-	@IbisDoc({"5", "The amount of time <i>in seconds</i> to live for an element from its last accessed or modified date", "36000"})
+	/**
+	 * The amount of time <i>in seconds</i> to live for an element from its last accessed or modified date
+	 * @ff.default 36000
+	 */
 	public void setTimeToIdleSeconds(int timeToIdleSeconds) {
 		this.timeToIdleSeconds = timeToIdleSeconds;
 	}
@@ -193,7 +205,10 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return timeToIdleSeconds;
 	}
 
-	@IbisDoc({"6", "If <code>true</code>, the elements that are evicted from memory are spooled to disk", "false"})
+	/**
+	 * If <code>true</code>, the elements that are evicted from memory are spooled to disk
+	 * @ff.default false
+	 */
 	public void setOverflowToDisk(boolean overflowToDisk) {
 		this.overflowToDisk = overflowToDisk;
 	}
@@ -201,7 +216,10 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return overflowToDisk;
 	}
 
-	@IbisDoc({"7", "The maximum number of elements on disk, before they are removed", "10000"})
+	/**
+	 * The maximum number of elements on disk, before they are removed
+	 * @ff.default 10000
+	 */
 	public void setMaxElementsOnDisk(int maxElementsOnDisk) {
 		this.maxElementsOnDisk = maxElementsOnDisk;
 	}
@@ -209,7 +227,10 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return maxElementsOnDisk;
 	}
 
-	@IbisDoc({"8", "If <code>true</code>, the the cache is reloaded after the JVM restarts", "false"})
+	/**
+	 * If <code>true</code>, the the cache is reloaded after the JVM restarts
+	 * @ff.default false
+	 */
 	public void setDiskPersistent(boolean diskPersistent) {
 		this.diskPersistent = diskPersistent;
 	}
@@ -217,7 +238,10 @@ public class EhCache<V> extends CacheAdapterBase<V> {
 		return diskPersistent;
 	}
 
-	@IbisDoc({"9", "How often to run the disk store expiry thread", "600"})
+	/**
+	 * How often to run the disk store expiry thread
+	 * @ff.default 600
+	 */
 	public void setDiskExpiryThreadIntervalSeconds(int diskExpiryThreadIntervalSeconds) {
 		this.diskExpiryThreadIntervalSeconds = diskExpiryThreadIntervalSeconds;
 	}

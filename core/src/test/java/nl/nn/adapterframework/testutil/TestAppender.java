@@ -33,14 +33,17 @@ import nl.nn.adapterframework.logging.IbisXmlLayout;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class TestAppender extends AbstractAppender {
-	private final List<String> logMessages = new ArrayList<String>();
-	private final List<LogEvent> logEvents = new ArrayList<LogEvent>();
+	private final List<String> logMessages = new ArrayList<>();
+	private final List<LogEvent> logEvents = new ArrayList<>();
+	private Level minLogLevel = Level.DEBUG;
 
 	public static <B extends Builder<B>> B newBuilder() {
 		return new Builder<B>().asBuilder().setName("jUnit-Test-Appender");
 	}
 
 	public static class Builder<B extends Builder<B>> extends AbstractAppender.Builder<B> {
+
+		private Level minLogLevel = null;
 
 		public B useIbisThreadFilter(String rejectRegex) {
 			IbisThreadFilter threadFilter = IbisThreadFilter.createFilter(rejectRegex, Level.WARN, Result.DENY, Result.NEUTRAL);
@@ -58,8 +61,17 @@ public class TestAppender extends AbstractAppender {
 			return setLayout(layout);
 		}
 
+		public B minLogLevel(Level level) {
+			this.minLogLevel = level;
+			return asBuilder();
+		}
+
 		public TestAppender build() {
-			return new TestAppender(getName(), getFilter(), getOrCreateLayout());
+			TestAppender appender = new TestAppender(getName(), getFilter(), getOrCreateLayout());
+			if (this.minLogLevel != null) {
+				appender.minLogLevel = this.minLogLevel;
+			}
+			return appender;
 		}
 	}
 
@@ -70,6 +82,9 @@ public class TestAppender extends AbstractAppender {
 
 	@Override
 	public void append(LogEvent logEvent) {
+		if (this.minLogLevel != null && !logEvent.getLevel().isMoreSpecificThan(this.minLogLevel)) {
+			return;
+		}
 		logMessages.add((String) this.toSerializable(logEvent));
 		logEvents.add(logEvent);
 	}
@@ -79,11 +94,11 @@ public class TestAppender extends AbstractAppender {
 	}
 
 	public List<String> getLogLines() {
-		return new ArrayList<String>(logMessages);
+		return new ArrayList<>(logMessages);
 	}
 
 	public List<LogEvent> getLogEvents() {
-		return new ArrayList<LogEvent>(logEvents);
+		return new ArrayList<>(logEvents);
 	}
 
 	private static Logger getRootLogger() {
@@ -92,6 +107,11 @@ public class TestAppender extends AbstractAppender {
 
 	public static void addToRootLogger(TestAppender appender) {
 		Logger logger = getRootLogger();
+		logger.addAppender(appender);
+	}
+
+	public static void addToLogger(String loggerName, TestAppender appender) {
+		Logger logger = (Logger) LogUtil.getLogger(loggerName);
 		logger.addAppender(appender);
 	}
 

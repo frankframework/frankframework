@@ -18,7 +18,9 @@ package nl.nn.adapterframework.scheduler.job;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,8 +29,8 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.impl.matchers.GroupMatcher;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
@@ -83,7 +85,6 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 			try (Connection conn = qs.getConnection()) {
 				try (PreparedStatement stmt = conn.prepareStatement("SELECT JOBNAME,JOBGROUP,ADAPTER,RECEIVER,CRON,EXECUTIONINTERVAL,MESSAGE,LOCKER,LOCK_KEY FROM IBISSCHEDULES")) {
 					try (ResultSet rs = stmt.executeQuery()) {
-						IbisManager ibisManager = getIbisManager();
 						while(rs.next()) {
 							String jobName = rs.getString("JOBNAME");
 							String jobGroup = rs.getString("JOBGROUP");
@@ -97,9 +98,11 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 
 							JobKey key = JobKey.jobKey(jobName, jobGroup);
 
-							Adapter adapter = ibisManager.getRegisteredAdapter(adapterName);
-							if(adapter == null) {
-								getMessageKeeper().add("unable to add schedule ["+key+"], adapter ["+adapterName+"] not found");
+							Adapter adapter;
+							try {
+								adapter = findAdapter(adapterName);
+							} catch (IllegalStateException e) {
+								getMessageKeeper().add("unable to add schedule ["+key+"]: " + e.getMessage());
 								continue;
 							}
 
@@ -112,22 +115,22 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 							jobdef.setAdapterName(adapterName);
 							jobdef.setJavaListener(javaListener);
 							jobdef.setMessage(message);
-			
+
 							if(hasLocker) {
 								Locker locker = SpringUtils.createBean(getApplicationContext(), Locker.class);
-			
+
 								locker.setName(lockKey);
 								locker.setObjectId(lockKey);
 								locker.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 								jobdef.setLocker(locker);
 							}
-			
+
 							try {
 								jobdef.configure();
 							} catch (ConfigurationException e) {
 								getMessageKeeper().add("unable to configure DatabaseJobDef ["+jobdef+"] with key ["+key+"]", e);
 							}
-			
+
 							// If the job is found, find out if it is different from the existing one and update if necessarily
 							if(databaseJobDetails.containsKey(key)) {
 								IbisJobDetail oldJobDetails = databaseJobDetails.get(key);
@@ -169,5 +172,27 @@ public class LoadDatabaseSchedulesJob extends JobDef {
 				getMessageKeeper().add("unable to remove schedule ["+key+"]", e);
 			}
 		}
+	}
+
+	//Loops through all configurations
+	private Adapter findAdapter(String adapterName) {
+		List<Adapter> adapters = new ArrayList<>();
+		for(Configuration config : getIbisManager().getConfigurations()) {
+			if(config.isActive()) {
+				for(Adapter adapter : config.getRegisteredAdapters()) {
+					if (adapterName.equals(adapter.getName())) {
+						adapters.add(adapter);
+					}
+				}
+			}
+		}
+
+		if(adapters.isEmpty()) {
+			throw new IllegalStateException("adapter ["+adapterName+"] not found");
+		}
+		if(adapters.size() > 1) {
+			throw new IllegalStateException("found more then 1 adapter matching name ["+adapterName+"]");
+		}
+		return adapters.get(0);
 	}
 }

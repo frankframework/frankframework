@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,10 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.chemistry.opencmis.server.impl.webservices.CmisWebServicesServlet;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
-import nl.nn.adapterframework.lifecycle.ServletManager;
 
 /**
  * It is important that we register the correct CXF bus, or else 
@@ -38,7 +36,7 @@ public abstract class WebServicesServletBase extends CmisWebServicesServlet impl
 
 	@Override
 	public Map<String, String> getParameters() {
-		Map<String, String> returnMap = new HashMap<String, String>();
+		Map<String, String> returnMap = new HashMap<>();
 		returnMap.put(PARAM_CMIS_VERSION, getCmisVersion());
 
 		return returnMap;
@@ -49,8 +47,9 @@ public abstract class WebServicesServletBase extends CmisWebServicesServlet impl
 		return IBIS_FULL_SERVICE_ACCESS_ROLES;
 	}
 
-	@Autowired
-	public void setServletManager(ServletManager servletManager) {
-		servletManager.register(this);
+	/** Disabled by default, set servlet.WebServices10.enabled=true or servlet.WebServices11.enabled=true to enable this endpoint. */
+	@Override
+	public boolean isEnabled() {
+		return false;
 	}
 }

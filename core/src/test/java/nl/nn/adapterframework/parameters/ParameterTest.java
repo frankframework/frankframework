@@ -3,9 +3,9 @@ package nl.nn.adapterframework.parameters;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
@@ -20,7 +20,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.rules.ExpectedException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -176,8 +176,23 @@ public class ParameterTest {
 
 		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
 
-		exception.expectMessage("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved");
-		p.getValue(alreadyResolvedParameters, null, session, false);
+		ParameterException e = assertThrows(ParameterException.class, () -> p.getValue(alreadyResolvedParameters, null, session, false));
+		assertEquals("Parameter or session variable with name [unknown] in pattern [{unknown}] cannot be resolved", e.getMessage());
+	}
+
+	@Test
+	public void testPatternUnknownSessionVariableOrParameterSilentlyIgnored() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setPattern("{unknown}");
+		p.setIgnoreUnresolvablePatternElements(true);
+		p.configure();
+
+		PipeLineSession session = new PipeLineSession();
+
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		assertEquals("", p.getValue(alreadyResolvedParameters, null, session, false));
 	}
 
 	@Test
@@ -248,6 +263,37 @@ public class ParameterTest {
 	public void testEmptyParameterResolvesToMessage() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");
+		p.configure();
+
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		Message message = new Message("fakeMessage");
+
+		assertEquals("fakeMessage", p.getValue(alreadyResolvedParameters, message, session, false));
+	}
+
+	@Test
+	public void testValueSetEmptyDoesNotResolveToMessage() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setValue("");
+		p.configure();
+
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		Message message = new Message("fakeMessage");
+
+		assertEquals("", p.getValue(alreadyResolvedParameters, message, session, false));
+	}
+
+	@Test
+	public void testValueSetEmptyDoesResolveToMessageWhenDefaultValueIsSetToInput() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setValue("");
+		p.setDefaultValueMethods("input");
 		p.configure();
 
 		PipeLineSession session = new PipeLineSession();
@@ -483,7 +529,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 
 		PipeLineSession session = new PipeLineSession();
 		session.put("sessionkey", 8);
@@ -494,31 +540,31 @@ public class ParameterTest {
 		p.configure();
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", "8");
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", Message.asMessage(8));
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", "8".getBytes());
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", Message.asMessage("8".getBytes()));
 
 		result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 
 	}
 
@@ -535,7 +581,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertTrue("Expecting to be String but was:"+result.getClass(), result instanceof String);
+		assertTrue(result instanceof String, "Expecting to be String but was:"+result.getClass());
 		assertEquals("0000000008", (String) result);
 	}
 
@@ -676,7 +722,7 @@ public class ParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(c+" is expected type but was: "+result.getClass(), c.isAssignableFrom(result.getClass()));
+		assertTrue(c.isAssignableFrom(result.getClass()), c+" is expected type but was: "+result.getClass());
 	}
 
 	@Test
@@ -1020,8 +1066,8 @@ public class ParameterTest {
 			assertEquals(ExitState.SUCCESS, pipeRunResult.getState());
 			assertEquals(testMessage, pipeRunResult.getResult().asString());
 
-			MatchUtils.assertXmlEquals(testMessageChild1, session.getMessage("xmlMessageChild").asString());
-			assertEquals("X", session.getMessage("xmlMessageChild2").asString());
+			MatchUtils.assertXmlEquals(testMessageChild1, session.getString("xmlMessageChild"));
+			assertEquals("X", session.getString("xmlMessageChild2"));
 		}
 	}
 
@@ -1231,12 +1277,12 @@ public class ParameterTest {
 
 	@Test
 	public void testPatternFixedDateWithDateFormatType() throws Exception {
-		String expectedDate = "2001-12-17T09:30:47";
+		String expectedDate = "2001-12-17T09:30";
 		Parameter p = new Parameter();
 		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 		try {
 			p.setName("EsbSoapWrapperPipeTimestamp");
-			p.setPattern("{fixeddate,date,yyyy-MM-dd'T'HH:mm:ss}");
+			p.setPattern("{fixeddate,date,yyyy-MM-dd'T'HH:mm}");
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
 
@@ -1246,7 +1292,6 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof String);
 
-			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, result);
 
 		} finally {
@@ -1254,6 +1299,135 @@ public class ParameterTest {
 		}
 	}
 
+	@Test
+	public void testPatternFixedDateWithExtendedDateFormatType() throws Exception {
+		String expectedDate = "2001-12-17 09:30:47.000";
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("EsbSoapWrapperPipeTimestamp");
+			p.setPattern("{fixeddate,date,yyyy-MM-dd HH:mm:ss.SSS}");
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof String);
+
+			assertEquals(expectedDate, result);
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testPatternFixedDateWithDateFormatTypeAndParameterTypeSet() throws Exception {
+		String expectedDate = "2001-12-17 09:30:47.000";
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("EsbSoapWrapperPipeTimestamp");
+			p.setPattern("{fixeddate,date,yyyy-MM-dd'T'HH:mm:ss}");
+			p.setType(ParameterType.TIMESTAMP);
+			p.setFormatString("yyyy-MM-dd'T'HH:mm:ss");
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof Date);
+
+			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, sdf.format(result));
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testPatternFixedDateWithParameterTypeDateTime() throws Exception {
+		String expectedDate = "2001-12-17 09:30:47.000";
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("EsbSoapWrapperPipeTimestamp");
+			p.setPattern("{fixeddate}");
+			p.setType(ParameterType.DATETIME);
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof Date);
+
+			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, sdf.format(result));
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testPatternFixedDateWithParameterTypeTimestamp() throws Exception {
+		String expectedDate = "2001-12-17 09:30:47.000";
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("EsbSoapWrapperPipeTimestamp");
+			p.setPattern("{fixeddate}");
+			p.setFormatString("yyyy-MM-dd HH:mm:ss");
+			p.setType(ParameterType.TIMESTAMP);
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof Date);
+
+			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, sdf.format(result));
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
+
+	@Test
+	public void testPatternFixedDateWithExtendedDateFormatTypeAndParameterTypeSet() throws Exception {
+		String expectedDate = "2001-12-17 09:30:47.000";
+		Parameter p = new Parameter();
+		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		try {
+			p.setName("EsbSoapWrapperPipeTimestamp");
+			p.setPattern("{fixeddate,date,yyyy-MM-dd HH:mm:ss.SSS}");
+			p.setType(ParameterType.TIMESTAMP);
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
+			assertTrue(result instanceof Date);
+
+			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			assertEquals(expectedDate, sdf.format(result));
+
+		} finally {
+			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		}
+	}
 
 
 	@Test
@@ -1433,5 +1607,30 @@ public class ParameterTest {
 		String result = (String)p.getValue(alreadyResolvedParameters, Message.nullMessage(), null, false);
 
 		assertEquals(null, result);
+	}
+
+	@Test
+	// see https://github.com/ibissource/iaf/issues/3232
+	public void testPotentialProblematicSysId() throws ConfigurationException {
+		Parameter p = new Parameter();
+		p.setName("pid");
+		p.setXpathExpression("'#'"); // when this xpath expression is made part of the sysid, then an Exception occurs: '(TransformerException) Did not find the stylesheet root!'
+		p.setXsltVersion(1);
+		p.configure();
+	}
+
+	@Test
+	public void testParameterfromStylesheetXsltVersion3() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setXsltVersion(3);
+		p.setStyleSheetName("Param/ParameterXslt3.0.xsl");
+		p.configure();
+
+		Message input = new Message("<data>{\"pad\":{\"naar\":{\"wat\":{\"de\":{\"waarde\":{\"moet\":{\"zijn\":\"hallo\"}}}}}}}</data>");
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters=new ParameterValueList();
+
+		assertEquals("hallo", p.getValue(alreadyResolvedParameters, input, session, false));
 	}
 }

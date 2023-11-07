@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,17 +20,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.util.LogUtil;
+
 /**
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.10
+ * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class DelphiStringRecordReader extends Reader {
 	protected Logger log = LogUtil.getLogger(this);
 
@@ -40,12 +43,12 @@ public class DelphiStringRecordReader extends Reader {
 	private int stringsPerRecord; // 0 means read till end of file
 	private String separator;
 	private String separatorReplacement;
-	
-	private StringBuffer buffer;
+
+	private StringBuilder buffer;
 	private int bufferLen=0;
 	private int bufferPos=0;
 	boolean eof=false;
-	
+
 	private final boolean trace=false;
 
 	public DelphiStringRecordReader(InputStream in, String charsetName, int stringLength, int stringsPerRecord, String separator, String separatorReplacement) {
@@ -57,9 +60,9 @@ public class DelphiStringRecordReader extends Reader {
 		this.separator=separator;
 		this.separatorReplacement=separatorReplacement;
 	}
-	
+
 	/*
-	 * Fill buffer if empty, then copy characters as required.  
+	 * Fill buffer if empty, then copy characters as required.
 	 */
 	public int read(char[] cbuf, int off, int len) throws IOException {
 		if (buffer==null || bufferPos>=bufferLen) {
@@ -108,12 +111,12 @@ public class DelphiStringRecordReader extends Reader {
 			}
 		}
 		if (pos<stringLength) {
-			if (trace && log.isDebugEnabled()) log.debug("skipping ["+(stringLength-pos)+"] bytes");		
+			if (trace && log.isDebugEnabled()) log.debug("skipping ["+(stringLength-pos)+"] bytes");
 			in.skip(stringLength-pos);
 		}
 		String result=new String(buf,charsetName);
 		if (StringUtils.isNotEmpty(separatorReplacement)) {
-			result=Misc.replace(result,separator,separatorReplacement);
+			result= result.replace(separator, separatorReplacement);
 		}
 		if (trace && log.isDebugEnabled()) log.debug("read string ["+result+"]");
 		return result;
@@ -124,11 +127,11 @@ public class DelphiStringRecordReader extends Reader {
 	 */
 	private void fillBuffer() throws IOException {
 		int stringsRead=0;
-		buffer=new StringBuffer();
+		buffer=new StringBuilder();
 		while (!eof && (stringsPerRecord==0 || stringsRead<stringsPerRecord)) {
 			String part=readString();
 			if (part==null) {
-				eof=true; 
+				eof=true;
 			} else {
 				buffer.append(part).append(separator);
 				stringsRead++;

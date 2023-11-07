@@ -15,17 +15,24 @@
 */
 package nl.nn.adapterframework.util;
 
-import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.core.INamedObject;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+
+import nl.nn.adapterframework.core.IAdapter;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
  * Log4j can now be started from any LogManager.getLogger() call
  *
  */
 public class LogUtil {
+
+	public static final String MESSAGE_LOGGER="MSG";
+
 
 	public static Logger getRootLogger() {
 		return LogManager.getRootLogger();
@@ -48,10 +55,10 @@ public class LogUtil {
 	 */
 	public static Logger getMsgLogger(IAdapter adapter) {
 		if(StringUtils.isEmpty(adapter.getName())) {
-			return getLogger("MSG");
+			return getLogger(MESSAGE_LOGGER);
 		}
 
-		return LogManager.getLogger(String.format("MSG.%S", adapter.getName()));
+		return LogManager.getLogger(String.format("%s.%S", MESSAGE_LOGGER, adapter.getName()));
 	}
 
 	/**
@@ -59,9 +66,29 @@ public class LogUtil {
 	 */
 	public static Logger getMsgLogger(IAdapter adapter, INamedObject object) {
 		if(adapter == null || StringUtils.isEmpty(adapter.getName()) || StringUtils.isEmpty(object.getName())) {
-			return getLogger("MSG");
+			return getLogger(MESSAGE_LOGGER);
 		}
 
-		return LogManager.getLogger(String.format("MSG.%S.%S", adapter.getName(), object.getName()));
+		return LogManager.getLogger(String.format("%s.%S.%S", MESSAGE_LOGGER, adapter.getName(), object.getName()));
+	}
+
+	public static CloseableThreadContext.Instance getThreadContext(IAdapter adapter, String messageId, PipeLineSession session) {
+		String lastAdapter= ThreadContext.get("adapter");
+		String currentAdapter= adapter.getName();
+		CloseableThreadContext.Instance ctc = CloseableThreadContext.put("adapter", currentAdapter);
+		if (lastAdapter!=null && !lastAdapter.equals(currentAdapter)) {
+			ctc.push("caller="+lastAdapter);
+		}
+		setIdsToThreadContext(ctc, messageId, session!=null ? session.getCorrelationId() : null);
+		return ctc;
+	}
+
+	public static void setIdsToThreadContext(CloseableThreadContext.Instance ctc, String messageId, String correlationId) {
+		if (StringUtils.isNotEmpty(messageId)) {
+			ctc.put("mid", messageId);
+		}
+		if (StringUtils.isNotEmpty(correlationId)) {
+			ctc.put("cid", correlationId);
+		}
 	}
 }

@@ -23,7 +23,6 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
@@ -31,10 +30,10 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 /**
  *<code>Pipe</code> that checks the well-formedness of the input message.
  * If <code>root</code> is given then this is also checked.
- * 
+ *
  * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, "failure" is used in such a case
  * @ff.forward failure The document is not well formed.
- * 
+ *
  * @author  Peter Leeuwenburgh
  * @since	4.4.5
  */
@@ -60,7 +59,7 @@ public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator
 		try {
 			input = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		if (XmlUtils.isWellFormed(input, messageRoot)) {
 			throwEvent(ValidationResult.VALID.getEvent());
@@ -74,7 +73,7 @@ public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator
 		return new PipeRunResult(forward, message);
 	}
 
-	@IbisDoc({"name of the root element", ""})
+	/** name of the root element */
 	public void setRoot(String root) {
 		this.root = root;
 	}

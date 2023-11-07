@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SoapInputValidator
+	name="ValidateInput"
+	schemaLocation="urn:hello-lines HelloLines/xsd/Lines.xsd urn:hello-lines2 HelloLines/xsd/Lines2.xsd"
+	addNamespaceToSchema="true"
+	soapBody="lines"
+	allowPlainXml="true"
+	acceptNamespacelessXml="true"
+	rootElementSessionKey="receivedRootElement"
+	reasonSessionKey="validatorMessage"
+	>
+	<Forward name="failure" path="Create example plain text message"/>
+	<Forward name="parserError" path="Transform plain text message to XML"/>
+</SoapInputValidator>

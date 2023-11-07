@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.xml;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringReader;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -13,7 +13,6 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class XmlPrettyPrintFilterTest {
 
-	
 	@Test
 	public void testBasic() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
@@ -23,7 +22,7 @@ public class XmlPrettyPrintFilterTest {
 		XmlUtils.parseXml(input, filter);
 		assertEquals(expected,xmlWriter.toString());
 	}
-	
+
 	@Test
 	public void testTextMode() throws Exception {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
@@ -40,7 +39,7 @@ public class XmlPrettyPrintFilterTest {
 		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedNoLexicalHandler.xml");
 		XmlWriter xmlWriter = new XmlWriter();
-		
+
 		PrettyPrintFilter filter =  new PrettyPrintFilter(xmlWriter);
 
 		InputSource inputSource = new InputSource(new StringReader(input));
@@ -53,4 +52,18 @@ public class XmlPrettyPrintFilterTest {
 		assertEquals(expected,xmlWriter.toString());
 	}
 
+	@Test
+	public void testSortingAttributes() throws Exception {
+		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in-with-attributes.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/out-with-attributes.xml");
+		XmlWriter xmlWriter = new XmlWriter();
+
+		PrettyPrintFilter filter =  new PrettyPrintFilter(xmlWriter, true);
+
+		InputSource inputSource = new InputSource(new StringReader(input));
+		XMLReader xmlReader = XmlUtils.getXMLReader(filter);
+
+		xmlReader.parse(inputSource);
+		assertEquals(expected,xmlWriter.toString());
+	}
 }

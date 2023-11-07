@@ -1,14 +1,16 @@
 package nl.nn.adapterframework.core;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
 import org.hamcrest.core.StringEndsWith;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
@@ -19,11 +21,23 @@ import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 
+@SuppressWarnings("deprecation") //Part of the tests!
 public class PipeLineTest {
+
+	TestConfiguration configuration;
+
+	@BeforeEach
+	void setUp() {
+		configuration = new TestConfiguration();
+	}
+
+	@AfterEach
+	void tearDown() {
+		configuration.close();
+	}
 
 	@Test
 	public void testDuplicateExits() throws ConfigurationException {
-		TestConfiguration configuration = new TestConfiguration();
 		Adapter adapter = new Adapter();
 		PipeLine pipeline = new PipeLine();
 		pipeline.setApplicationContext(configuration);
@@ -35,14 +49,13 @@ public class PipeLineTest {
 		adapter.setPipeLine(pipeline);
 
 		List<String> warnings = configuration.getConfigurationWarnings().getWarnings();
-		assertEquals(warnings.size(), 1);
+		assertEquals(1, warnings.size());
 		String lastWarning = warnings.get(warnings.size()-1);
 		assertThat(lastWarning,StringEndsWith.endsWith("PipeLine exit named [success] already exists"));
 	}
 
 	@Test
 	public void testFixedForwardPipesWithNoForwardShouldDefaultToNextPipe() throws ConfigurationException {
-		TestConfiguration configuration = new TestConfiguration();
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
 		String pipeForwardName = "EchoPipe next pipe";
 
@@ -62,20 +75,57 @@ public class PipeLineTest {
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
 
-		assertTrue("pipe should not cause any configuration warnings", configuration.getConfigurationWarnings().getWarnings().isEmpty());
-		assertEquals("pipe1 should only have 1 pipe-forward", 1, pipe.getForwards().size());
-		assertEquals("pipe1 forward should default to next pipe", pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath());
+		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
+		assertEquals(1, pipe.getForwards().size(), "pipe1 should only have 1 pipe-forward");
+		assertEquals(pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
-		assertEquals("pipe2 should only have 1 pipe-forward", 1, pipe2.getForwards().size());
-		assertEquals("pipe2 forward should default to pipeline-exit", "exit", pipe2.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath());
+		assertEquals(1, pipe2.getForwards().size(), "pipe2 should only have 1 pipe-forward");
+		assertEquals("exit", pipe2.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
+	}
 
-		configuration.close();
-		configuration = null;
+	@Test
+	void testFixedForwardAsLastPipeForwardsToFirstSuccessfulExit() throws ConfigurationException {
+		// Arrange
+		PipeLine pipeline = configuration.createBean(PipeLine.class);
+		String pipeForwardName = "EchoPipe next pipe";
+
+		IExtendedPipe pipe = configuration.createBean(EchoPipe.class);
+		pipe.setName(pipe.getClass().getSimpleName()+" under test");
+		pipe.setPipeLine(pipeline);
+		pipeline.addPipe(pipe);
+
+		IExtendedPipe pipe2 = configuration.createBean(EchoPipe.class);
+		pipe2.setName(pipeForwardName);
+		pipe2.setPipeLine(pipeline);
+		pipeline.addPipe(pipe2);
+
+		PipeLineExit errorExit = new PipeLineExit();
+		errorExit.setPath("error");
+		errorExit.setState(ExitState.ERROR);
+		pipeline.registerPipeLineExit(errorExit);
+		PipeLineExit successExit = new PipeLineExit();
+		successExit.setPath("exit");
+		successExit.setState(ExitState.SUCCESS);
+		pipeline.registerPipeLineExit(successExit);
+		PipeLineExit successExit2 = new PipeLineExit();
+		successExit2.setPath("exit2");
+		successExit2.setState(ExitState.SUCCESS);
+		pipeline.registerPipeLineExit(successExit2);
+
+		// Act
+		pipeline.configure();
+
+		// Assert
+		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
+		assertEquals(1, pipe.getForwards().size(), "pipe1 should only have 1 pipe-forward");
+		assertEquals(pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
+
+		assertEquals(1, pipe2.getForwards().size(), "pipe2 should only have 1 pipe-forward");
+		assertEquals("exit", pipe2.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to successful pipeline-exit");
 	}
 
 	@Test
 	public void testPipesWithNormalForwardToNextPipe() throws ConfigurationException {
-		TestConfiguration configuration = new TestConfiguration();
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
 		String pipeForwardName = "EchoPipe next pipe";
 
@@ -97,20 +147,16 @@ public class PipeLineTest {
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
 
-		assertTrue("pipe should not cause any configuration warnings", configuration.getConfigurationWarnings().getWarnings().isEmpty());
-		assertEquals("pipe1 should only have 1 pipe-forward", 1, pipe.getForwards().size());
-		assertEquals("pipe1 forward should default to next pipe", pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath());
+		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
+		assertEquals(1, pipe.getForwards().size(), "pipe1 should only have 1 pipe-forward");
+		assertEquals(pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
-		assertEquals("pipe2 should only have 1 pipe-forward", 1, pipe2.getForwards().size());
-		assertEquals("pipe2 forward should default to pipeline-exit", "exit", pipe2.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath());
-
-		configuration.close();
-		configuration = null;
+		assertEquals(1, pipe2.getForwards().size(), "pipe2 should only have 1 pipe-forward");
+		assertEquals("exit", pipe2.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
 	}
 
 	@Test
 	public void giveWarningWhenForwardIsAlreadyDefined() throws ConfigurationException {
-		TestConfiguration configuration = new TestConfiguration();
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
 		String pipeForwardName = "EchoPipe next pipe";
 
@@ -136,21 +182,17 @@ public class PipeLineTest {
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
 
-		assertEquals("pipes should cause a configuration warning", 1, configuration.getConfigurationWarnings().getWarnings().size());
-		assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] has forward [success] which is already registered"));
-		assertEquals("pipe1 should only have 1 pipe-forward", 1, pipe.getForwards().size());
-		assertEquals("pipe1 forward should default to next pipe", pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath());
+		assertEquals(1, configuration.getConfigurationWarnings().getWarnings().size(), "pipes should cause a configuration warning");
+		assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] forward [success] is already registered"));
+		assertEquals(1, pipe.getForwards().size(), "pipe1 should only have 1 pipe-forward");
+		assertEquals(pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
-		assertEquals("pipe2 should only have 1 pipe-forward", 1, pipe2.getForwards().size());
-		assertEquals("pipe2 forward should default to pipeline-exit", "exit", pipe2.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath());
-
-		configuration.close();
-		configuration = null;
+		assertEquals(1, pipe2.getForwards().size(), "pipe2 should only have 1 pipe-forward");
+		assertEquals("exit", pipe2.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
 	}
 
 	@Test
 	public void giveWarningWhenForwardToNonExistingPipe() throws ConfigurationException {
-		TestConfiguration configuration = new TestConfiguration();
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
 		String pipeForwardName = "EchoPipe next pipe";
 
@@ -171,16 +213,13 @@ public class PipeLineTest {
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
 
-		assertEquals("pipes should cause a configuration warning", 1, configuration.getConfigurationWarnings().getWarnings().size());
+		assertEquals(1, configuration.getConfigurationWarnings().getWarnings().size(), "pipes should cause a configuration warning");
 		assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] has a forward of which the pipe to execute [the next pipe] is not defined"));
-		assertEquals("pipe1 should only have 1 pipe-forward", 1, pipe.getForwards().size());
-		assertEquals("pipe1 forward should exist even though next pipe doesn't exist", "the next pipe", pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath());
+		assertEquals(1, pipe.getForwards().size(), "pipe1 should only have 1 pipe-forward");
+		assertEquals("the next pipe", pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should exist even though next pipe doesn't exist");
 
-		assertEquals("pipe2 should only have 1 pipe-forward", 1, pipe2.getForwards().size());
-		assertEquals("pipe2 forward should default to pipeline-exit", "special exit name", pipe2.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath());
-
-		configuration.close();
-		configuration = null;
+		assertEquals(1, pipe2.getForwards().size(), "pipe2 should only have 1 pipe-forward");
+		assertEquals("special exit name", pipe2.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
 	}
 
 	private static class NonFixedForwardPipe extends AbstractPipe {
@@ -192,7 +231,6 @@ public class PipeLineTest {
 
 	@Test
 	public void testNonFixedForwardPipesWithNoForwardToNextPipe() throws ConfigurationException {
-		TestConfiguration configuration = new TestConfiguration();
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
 		String pipeForwardName = "EchoPipe next pipe";
 
@@ -214,23 +252,17 @@ public class PipeLineTest {
 		pipeline.registerPipeLineExit(exit);
 		pipeline.configure();
 
-		assertEquals("pipe should cause 1 configuration warnings", 0, configuration.getConfigurationWarnings().getWarnings().size());
+		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
+		assertEquals(1, pipe.getForwards().size(), "pipe1 should only have 1 pipe-forward");
+		assertEquals(pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
-		assertEquals("pipe1 should only have 1 pipe-forward", 1, pipe.getForwards().size());
-		assertEquals("pipe1 forward should default to next pipe", pipeForwardName, pipe.getForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath());
-
-		assertEquals("pipe2 should not have a pipe-forward", 0, pipe2.getForwards().size());
-
-		configuration.close();
-		configuration = null;
+		assertTrue(pipe2.getForwards().isEmpty(), "pipe2 should not have a pipe-forward");
 	}
 
 	//Should add tests to assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] has no pipe forwards defined"));
 
-
 	@Test
 	public void testDirectWrapperPipeSuccessForward() throws ConfigurationException, PipeRunException {
-		TestConfiguration configuration = new TestConfiguration();
 		PipeLine pipeline = configuration.createBean(PipeLine.class);
 
 		PipeForward pf = configuration.createBean(PipeForward.class);
@@ -270,8 +302,5 @@ public class PipeLineTest {
 		IForwardTarget target = pipeline.resolveForward(pipe, pipeForward);
 
 		assertNotNull(target);
-
-		configuration.close();
-		configuration = null;
 	}
 }

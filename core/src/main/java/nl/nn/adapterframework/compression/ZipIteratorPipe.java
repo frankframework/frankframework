@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -44,13 +43,13 @@ import nl.nn.adapterframework.util.StreamUtil;
  * <ul>
  * 	<li>String refering to a filename</li>
  *  <li>File</li>
- *  <li>InputStream</li> 
+ *  <li>InputStream</li>
  * </ul>
- * The message sent each time to the sender is the filename of the entry found in the archive. 
- * The contents of the archive is available as a Stream or a String in a session variable. 
+ * The message sent each time to the sender is the filename of the entry found in the archive.
+ * The contents of the archive is available as a Stream or a String in a session variable.
  *
- * <br>
- * 
+ * <br/>
+ *
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
@@ -61,6 +60,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	private @Getter boolean closeInputstreamOnExit=true;
 	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private @Getter boolean skipBOM=false;
+	private @Getter boolean processFile=false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -99,7 +99,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 
 		@Override
 		public boolean hasNext() throws SenderException {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"hasNext()");
+			log.debug("hasNext()");
 			try {
 				skipCurrent();
 				return current!=null;
@@ -110,19 +110,17 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 
 		@Override
 		public String next() throws SenderException {
-			if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"next()");
+			log.debug("next()");
 			try {
 				skipCurrent();
 				currentOpen=true;
-				if (log.isDebugEnabled()) {
-					log.debug(getLogPrefix(session)+"found zipEntry name ["+current.getName()+"] size ["+current.getSize()+"] compressed size ["+current.getCompressedSize()+"]");
-				}
+				log.debug("found zipEntry name [{}] size [{}] compressed size [{}]", current::getName, current::getSize, current::getCompressedSize);
 				String filename=current.getName();
 				if (isStreamingContents()) {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing stream to contents of zip entries under session key ["+getContentsSessionKey()+"]");
+					log.debug("storing stream to contents of zip entries under session key [{}]", ()->getContentsSessionKey());
 					session.put(getContentsSessionKey(),StreamUtil.dontClose(source)); // do this each time, to allow reuse of the session key when an item is optionally encoded
 				} else {
-					if (log.isDebugEnabled()) log.debug(getLogPrefix(session)+"storing contents of zip entry under session key ["+getContentsSessionKey()+"]");
+					log.debug("storing contents of zip entry under session key [{}]", ()->getContentsSessionKey());
 					String content;
 					if (isSkipBOM()) {
 						byte[] contentBytes = StreamUtil.streamToByteArray(StreamUtil.dontClose(source), true);
@@ -153,22 +151,27 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 
 	protected ZipInputStream getZipInputStream(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
-			throw new SenderException("input is null. Must supply String (Filename), File or InputStream as input");
+			throw new SenderException("input is null. Must supply String (Filename, with processFile=true), File or InputStream as input");
 		}
 		InputStream source=null;
-		try {
-			if (input.asObject() instanceof String) {
-				String filename=(String)input.asObject();
+		if (isProcessFile()) {
+			try {
+				String filename=null;
 				try {
-					source=new FileInputStream(filename);
-				} catch (FileNotFoundException e) {
-					throw new SenderException("Cannot find file ["+filename+"]",e);
+					filename = input.asString();
+				} catch (IOException e) {
+					throw new SenderException("cannot find filename ["+filename+"]", e);
 				}
-			} else {
-				source = input.asInputStream();
+				source = new FileInputStream(filename);
+			} catch (FileNotFoundException e) {
+				throw new SenderException("could not find file ["+input+"]",e);
 			}
-		} catch (IOException e) {
-			throw new SenderException(getLogPrefix(session)+"cannot open stream", e);
+		} else {
+			try {
+				source = input.asInputStream();
+			} catch (IOException e) {
+				throw new SenderException("cannot open stream", e);
+			}
 		}
 		if (!(source instanceof BufferedInputStream)) {
 			source=new BufferedInputStream(source);
@@ -181,7 +184,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	protected IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		ZipInputStream source=getZipInputStream(input, session, threadContext);
 		if (source==null) {
-			throw new SenderException(getLogPrefix(session)+"no ZipInputStream found");
+			throw new SenderException("no ZipInputStream found");
 		}
 		return new ZipStreamIterator(source,session);
 	}
@@ -189,17 +192,26 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 
 
 
-	@IbisDoc({"Session key used to store contents of each zip entry", "zipdata"})
+	/**
+	 * Session key used to store contents of each zip entry
+	 * @ff.default zipdata
+	 */
 	public void setContentsSessionKey(String string) {
 		contentsSessionKey = string;
 	}
 
-	@IbisDoc({"If set to <code>false</code>, a string containing the contents of the entry is placed under the session key, instead of the inputstream to the contents", "true"})
+	/**
+	 * If set to <code>false</code>, a string containing the contents of the entry is placed under the session key, instead of the inputstream to the contents
+	 * @ff.default true
+	 */
 	public void setStreamingContents(boolean b) {
 		streamingContents = b;
 	}
 
-	@IbisDoc({"If set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
+	/**
+	 * If set to <code>false</code>, the inputstream is not closed after it has been used
+	 * @ff.default true
+	 */
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
@@ -209,13 +221,29 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 		setCloseInputstreamOnExit(b);
 	}
 
-	@IbisDoc({"Charset used when reading the contents of the entry (only used if streamingContents=false)", "utf-8"})
+	/**
+	 * Charset used when reading the contents of the entry (only used if streamingContents=false)
+	 * @ff.default utf-8
+	 */
 	public void setCharset(String string) {
 		charset = string;
 	}
 
-	@IbisDoc({"If set to <code>true</code>, a possible bytes order mark (BOM) at the start of the file is skipped (only used for encoding uft-8)", "false"})
+	/**
+	 * If set to <code>true</code>, a possible bytes order mark (BOM) at the start of the file is skipped (only used for encoding uft-8)
+	 * @ff.default false
+	 */
 	public void setSkipBOM(boolean b) {
 		skipBOM = b;
+	}
+
+	/**
+	 * If set <code>true</code>, the each entry is assumed to be the name of a file to be compressed. Otherwise, the input itself is compressed.
+	 * @ff.default false
+	 */
+	@Deprecated
+	@ConfigurationWarning("Please add a LocalFileSystemPipe with action=read in front of this pipe instead")
+	public void setProcessFile(boolean b) {
+		processFile = b;
 	}
 }

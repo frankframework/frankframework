@@ -1,17 +1,17 @@
 package nl.nn.adapterframework.xslt;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.After;
 import org.junit.AssumptionViolatedException;
 import org.junit.Before;
@@ -33,16 +33,17 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	protected TestAppender testAppender;
 	private ErrorOutputStream errorOutputStream;
 	private PrintStream prevStdErr;
-	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=1; // this should be one, but for the time being we're happy that there is logging
-	
+	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=0;
+
 	private final String FILE_NOT_FOUND_EXCEPTION="Cannot get resource for href [";
-	
+	private final String FILE_NOT_FOUND_EXCEPTION_SAXON_10="WARN Fatal transformation error: Exception thrown by URIResolver resolving `";
+
 	private final boolean testForEmptyOutputStream=false;
-	
+
 	protected int getMultiplicity() {
 		return 1;
 	}
-	
+
 	private class ErrorOutputStream extends OutputStream {
 		private StringBuilder line = new StringBuilder();
 
@@ -62,12 +63,13 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	}
 
 	@Before
-	public void init() {
+	public void setup() {
 		// Force reconfigure to clean list appender.
-//		Configurator.reconfigure();
-		testAppender = TestAppender.newBuilder().useIbisPatternLayout("%level %m").build();
+		testAppender = TestAppender.newBuilder()
+			.useIbisPatternLayout("%level %m")
+			.minLogLevel(Level.WARN)
+			.build();
 		TestAppender.addToRootLogger(testAppender);
-		Configurator.setLevel("nl.nn.adapterframework", Level.WARN);
 
 		if (testForEmptyOutputStream) {
 			errorOutputStream = new ErrorOutputStream();
@@ -80,7 +82,6 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	@After
 	public void tearDown() throws Exception {
 		TestAppender.removeAppender(testAppender);
-		Configurator.setLevel("nl.nn.adapterframework", Level.DEBUG);
 		if (testForEmptyOutputStream) {
 			// Xslt processing should not log to stderr
 			System.setErr(prevStdErr);
@@ -133,7 +134,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		assertResultsAreCorrect(expected, result, session);
 	}
 
-	
+
 	@Test
 	public void duplicateImportErrorProcessingXslt1() throws Exception {
 		duplicateImportErrorProcessing(false);
@@ -182,15 +183,15 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
-			fail("Expected to run into an exception");
 		} catch (AssumptionViolatedException e) {
 			assumeTrue("assumption violated:"+e.getMessage(),false);
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
+		// Saxon 9.8 no longer considers a missing import to be fatal. This is similar to Xalan
+		assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION_SAXON_10));
 
-		checkTestAppender(0,null);
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
@@ -240,7 +241,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		} catch (ConfigurationException e) {
 			log.warn("final exception: "+e.getMessage());
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("Cannot find a matching 2-argument function named {http://exslt.org/strings}tokenize()"));
+			assertThat(errorMessage,containsString("Cannot find a 2-argument function named Q{http://exslt.org/strings}tokenize()"));
 		}
 
 		assertThat("number of alerts in logging " + testAppender.getLogLines(), testAppender.getNumberOfAlerts(), is(2+EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS));
@@ -257,7 +258,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			fail("Expected to run into an exception");
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
-			assertThat(errorMessage,containsString("Cannot compare xs:integer to xs:string"));
+			assertThat(errorMessage,containsString("cannot compare xs:integer to xs:string"));
 		}
 		checkTestAppender(1,null);
 		System.out.println("ErrorMessage: "+errorMessage);
@@ -303,7 +304,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
-			assertThat(errorMessage,containsString("Unexpected token \"<\" in path expression"));
+			assertThat(errorMessage,containsString("Unexpected token \"<\" at start of expression"));
 		}
 		checkTestAppender(1,null);
 		System.out.println("ErrorMessage: "+errorMessage);

@@ -9,6 +9,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
+import java.util.StringTokenizer;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,20 +37,21 @@ public class StatisticsKeeperTest {
 		});
 	}
 
-	public StatisticsKeeper createStatisticsKeeper() {
+	public StatisticsKeeper createStatisticsKeeper(boolean publishPercentiles, boolean publishHistograms, boolean calculatePercentiles) {
 		try {
-			return new StatisticsKeeper("test", basicsClass.newInstance());
+			StringTokenizer boundariesTokenizer = new StringTokenizer("100,1000,2000,10000",",");
+			return new StatisticsKeeper("test", basicsClass.newInstance(), boundariesTokenizer, publishPercentiles, publishHistograms, calculatePercentiles, 2);
 		} catch (InstantiationException | IllegalAccessException e) {
 			fail(e.getMessage());
 		}
 		return null;
 	}
 
-	@Test
-	public void testLineair() {
-		StatisticsKeeper sk = createStatisticsKeeper();
-		sk.initMetrics(new SimpleMeterRegistry(), "testLineair", null);
+	public StatisticsKeeper createStatisticsKeeper() {
+		return createStatisticsKeeper(false, false, true);
+	}
 
+	public void testLineair(StatisticsKeeper sk) {
 		for (int i=0; i<100; i++) {
 			sk.addValue(i);
 		}
@@ -66,6 +69,86 @@ public class StatisticsKeeperTest {
 		assertEquals(97.5, getItemValueByName(sk, "p98"), 2.5);
 
 	}
+
+	public void testRandom(StatisticsKeeper sk, boolean withPercentiles) {
+		int count = 10000;
+		int limit = 100;
+
+		long sumsq=0;
+
+		Random rand = new Random();
+		for (int i=0; i<count; i++) {
+			int value = rand.nextInt(100);
+			sumsq += value*value;
+			sk.addValue(value);
+		}
+
+		assertEquals(count, sk.getCount());
+		assertEquals(0, sk.getMin());
+		assertEquals(99, sk.getMax());
+		assertEquals((limit-1)/2.0, sk.getAvg(), 1.5);
+		assertEquals((limit-1)*(count/2), sk.getTotal(), count*1.2);
+		assertEquals(842.0, sk.getVariance(), 50.0);
+		assertEquals(sumsq, sk.getTotalSquare(), 0.001);
+		assertEquals(29.0, sk.getStdDev(), 1.0);
+		if (withPercentiles) {
+			assertEquals(49.5, getItemValueByName(sk, "p50"), 2.0);
+			assertEquals(94.5, getItemValueByName(sk, "p95"), 2.0);
+			assertEquals(97.5, getItemValueByName(sk, "p98"), 2.0);
+		}
+	}
+
+	@Test
+	public void testLineair() {
+		StatisticsKeeper sk = createStatisticsKeeper();
+		sk.initMetrics(new SimpleMeterRegistry(), "testLineair", null);
+		testLineair(sk);
+	}
+
+	@Test
+	public void testLineairPublishPercentiles() {
+		StatisticsKeeper sk = createStatisticsKeeper(true, false, false);
+		sk.initMetrics(new SimpleMeterRegistry(), "testLineair", null);
+		testLineair(sk);
+	}
+
+	@Test
+	public void testLineairPublishHistograms() {
+		StatisticsKeeper sk = createStatisticsKeeper(false, true, false);
+		sk.initMetrics(new SimpleMeterRegistry(), "testLineair", null);
+		testLineair(sk);
+	}
+
+	@Test
+	public void testRandom() {
+		StatisticsKeeper sk = createStatisticsKeeper();
+		sk.initMetrics(new SimpleMeterRegistry(), "testRandom", null);
+		testRandom(sk, true);
+	}
+
+	@Test
+	public void testRandomPublishPercentiles() {
+		StatisticsKeeper sk = createStatisticsKeeper(true, false, false);
+		sk.initMetrics(new SimpleMeterRegistry(), "testRandom", null);
+		testRandom(sk, true);
+	}
+
+	@Test
+	public void testRandomPublishHistograms() {
+		StatisticsKeeper sk = createStatisticsKeeper(false, true, false);
+		sk.initMetrics(new SimpleMeterRegistry(), "testRandom", null);
+		assertEquals(16, sk.getItemCount());
+		testRandom(sk, true);
+	}
+
+	@Test
+	public void testRandomNoPercentiles() {
+		StatisticsKeeper sk = createStatisticsKeeper(false, false, false);
+		sk.initMetrics(new SimpleMeterRegistry(), "testRandom", null);
+		assertEquals(12, sk.getItemCount());
+		testRandom(sk, false);
+	}
+
 
 	double getItemValueByName(StatisticsKeeper sk, String name) {
 		return (double)sk.getItemValue(sk.getItemIndex(name));

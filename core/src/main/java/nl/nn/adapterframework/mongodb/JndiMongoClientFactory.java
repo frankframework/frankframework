@@ -26,7 +26,7 @@ import com.mongodb.client.MongoClient;
 import nl.nn.adapterframework.jndi.JndiObjectFactory;
 import nl.nn.adapterframework.util.AppConstants;
 
-/*
+/**
  * MongoClientFactory that retrieves its configuration from JNDI.
  * 
  * @author Gerrit van Brakel
@@ -54,7 +54,7 @@ public class JndiMongoClientFactory extends JndiObjectFactory<MongoClient,MongoC
 
 	@Override
 	public List<String> getMongoClients() {
-		return new ArrayList<String>(objects.keySet());
+		return new ArrayList<>(objects.keySet());
 	}
 
 }

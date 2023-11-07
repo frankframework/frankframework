@@ -1,0 +1,15 @@
+{
+    "queryTypes": [
+        "AUTO",
+        "SELECT",
+        "OTHER"
+    ],
+    "datasources": [
+        "jdbc/testconfiguration"
+    ],
+    "resultTypes": [
+        "csv",
+        "xml",
+        "json"
+    ]
+}

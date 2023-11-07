@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.align;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 
 /**
@@ -16,14 +16,14 @@ public class TestValidations {
 
 		String xmlString = Utils.getTestXml(xmlResource);
 		URL schemaUrl = Utils.class.getResource(xsd);
-		assertEquals("valid XML", expectValid, Utils.validate(schemaUrl, xmlString));
+		assertEquals(expectValid, Utils.validate(schemaUrl, xmlString), "valid XML");
 
 		Document dom = Utils.string2Dom(xmlString);
-		assertEquals("valid XML DOM", expectValid, Utils.validate(schemaUrl, dom));
+		assertEquals(expectValid, Utils.validate(schemaUrl, dom), "valid XML DOM");
 		String xml1 = Utils.dom2String1(dom);
-		assertEquals("valid XML dom2string1", expectValid, Utils.validate(schemaUrl, xml1));
+		assertEquals(expectValid, Utils.validate(schemaUrl, xml1), "valid XML dom2string1");
 		String xml2 = Utils.dom2String2(dom);
-		assertEquals("valid XML dom2string1", expectValid, Utils.validate(schemaUrl, xml2));
+		assertEquals(expectValid, Utils.validate(schemaUrl, xml2), "valid XML dom2string1");
 
 	}
 

@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.filesystem;
 
-import javax.mail.Message;
-import javax.mail.internet.MimeBodyPart;
+import jakarta.mail.Message;
+import jakarta.mail.internet.MimeBodyPart;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.testutil.PropertyUtil;
@@ -15,7 +15,7 @@ public class ImapFileSystemTest  extends MailFileSystemTestBase<Message, MimeBod
 	private String username    = PropertyUtil.getProperty(PROPERTY_FILE, "username");
 	private String password    = PropertyUtil.getProperty(PROPERTY_FILE, "password");
 	private String basefolder1 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder1");
-	
+
 
 	@Override
 	protected ImapFileSystem createFileSystem() throws ConfigurationException {

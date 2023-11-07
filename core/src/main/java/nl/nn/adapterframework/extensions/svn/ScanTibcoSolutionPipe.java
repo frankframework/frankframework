@@ -36,6 +36,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -44,10 +45,11 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe which scans TIBCO sources in Subversion and creates a report in xml.
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 
+@Category("NN-Special")
 public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 
 	private String url;
@@ -409,9 +411,8 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 	}
 
 	private String getHtml(String urlString) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		HttpSender httpSender = null;
+		HttpSender httpSender = new HttpSender();
 		try {
-			httpSender = new HttpSender();
 			httpSender.setUrl(urlString);
 			httpSender.setAllowSelfSignedCertificates(true);
 			httpSender.setVerifyHostname(false);
@@ -419,12 +420,11 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			httpSender.setXhtml(true);
 			httpSender.configure();
 			httpSender.open();
-			String result = httpSender.sendMessage(new Message(""), null).asString();
-			return result;
-		} finally {
-			if (httpSender != null) {
-				httpSender.close();
+			try (Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), null)) {
+				return result.asString();
 			}
+		} finally {
+			httpSender.close();
 		}
 	}
 

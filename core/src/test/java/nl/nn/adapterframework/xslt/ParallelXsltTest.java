@@ -36,15 +36,15 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	}
 
 	@Parameters(name = "{index}: {0}: provide [{2}] stream out [{3}]")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(new Object[][] {
-                 { "classic", 			false, false, false }, 
-                 { "new, no stream", 	 true, false, false }, 
-                 { "output to stream", 	 true, false, true  }  // no stream providing, cannot be done in parallel
-           });
-    }
+	public static Collection<Object[]> data() {
+		return Arrays.asList(new Object[][] {
+				 { "classic", 			false, false, false },
+				 { "new, no stream", 	 true, false, false },
+				 { "output to stream", 	 true, false, true  }  // no stream providing, cannot be done in parallel
+		});
+	}
 
-	
+
 	protected SenderSeries createSenderContainer() {
 		SenderSeries senders=new ParallelSenders();
 		autowireByType(senders);
@@ -60,9 +60,9 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 			XsltSender sender = new XsltSender();
 			//sender.setSessionKey("out"+i);
 			sender.setOmitXmlDeclaration(true);
-			
+
 			sender.addParameter(new Parameter("header", "header"+i));
-			
+
 			session.put("sessionKey"+i,"sessionKeyValue"+i);
 			sender.addParameter(ParameterBuilder.create().withName("sessionKey").withSessionKey("sessionKey"+i));
 
@@ -89,19 +89,19 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		}
 		return string;
 	}
-	
+
 	@Override
 	protected void assertResultsAreCorrect(String expected, String actual, PipeLineSession session) {
 		String xmlPrefix="<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 		boolean stripAllWhitespace=true; // to cope with differences between unix and windows line endings
-		
+
 		expected=stripPrefix(expected, xmlPrefix);
 		expected=stripPrefix(expected, xmlPrefix.replaceAll("\\s",""));
-		
+
 		String combinedExpected="<results>";
-	
+
 		for (int i=0;i<NUM_SENDERS;i++) {
-			combinedExpected+="<result senderClass=\"XsltSender\" type=\"String\">"
+			combinedExpected+="<result senderClass=\"XsltSender\" success=\"true\" type=\"String\">"
 					+expected.replaceFirst(">headerDefault<", ">header"+i+"<")
 							 .replaceFirst(">sessionKeyDefault<", ">sessionKeyValue"+i+"<")
 							 //.replaceFirst(">sessionKeyGlobalDefault<", ">sessionKeyGlobalValue<")
@@ -109,7 +109,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		}
 		combinedExpected+="</results>";
 //		super.assertResultsAreCorrect(
-//				combinedExpected.replaceAll("\\r\\n","\n").replaceAll("  ","").replaceAll("\\n ","\n"), 
+//				combinedExpected.replaceAll("\\r\\n","\n").replaceAll("  ","").replaceAll("\\n ","\n"),
 //						  actual.replaceAll("\\r\\n","\n").replaceAll("  ","").replaceAll("\\n ","\n"), session);
 
 //		super.assertResultsAreCorrect(combinedExpected, actual, session);
@@ -134,7 +134,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	public void documentIncludedInSourceNotFoundXslt2() throws Exception {
 		// test is ignored
 	}
-	
+
 	@Override
 	@Ignore("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
 	public void anyXmlBasic() throws Exception {
@@ -170,7 +170,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	public void xPathFromParameter() throws Exception {
 		// test is ignored
 	}
-	
+
 	@Override
 	protected int getMultiplicity() {
 		return NUM_SENDERS;
@@ -187,26 +187,26 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		expectExtraParamWarning=true;
 		super.duplicateImportErrorAlertsXslt2();
 	}
-	
+
 
 	@Override
 	protected void setStyleSheetName(String styleSheetName) {
 		for (XsltSender sender:xsltSenders) {
-			sender.setStyleSheetName(styleSheetName);	
+			sender.setStyleSheetName(styleSheetName);
 		}
 	}
 
 	@Override
 	protected void setStyleSheetNameSessionKey(String styleSheetNameSessionKey) {
 		for (XsltSender sender:xsltSenders) {
-			sender.setStyleSheetNameSessionKey(styleSheetNameSessionKey);		
+			sender.setStyleSheetNameSessionKey(styleSheetNameSessionKey);
 		}
 	}
 
 	@Override
 	protected void setXpathExpression(String xpathExpression) {
 		for (XsltSender sender:xsltSenders) {
-			sender.setXpathExpression(xpathExpression);	
+			sender.setXpathExpression(xpathExpression);
 		}
 	}
 
@@ -251,6 +251,13 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	protected void setXslt2(boolean xslt2) {
 		for (XsltSender sender:xsltSenders) {
 			sender.setXslt2(xslt2);
+		}
+	}
+
+	@Override
+	protected void setHandleLexicalEvents(boolean handleLexicalEvents) {
+		for (XsltSender sender:xsltSenders) {
+			sender.setHandleLexicalEvents(handleLexicalEvents);
 		}
 	}
 

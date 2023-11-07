@@ -15,10 +15,11 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
+import nl.nn.adapterframework.http.RestListener;
 
 /**
- * Etag (key-value) Cache interface, allows {@link nl.nn.adapterframework.http.RestListener RestListeners} and {@link nl.nn.adapterframework.http.rest.ApiListener ApiListeners} to save and retrieve etags.
- * 
+ * Etag (key-value) Cache interface, allows {@link RestListener RestListeners} and {@link ApiListener ApiListeners} to save and retrieve etags.
+ *
  * @author	Niels Meijer
  * @since	7.0-B2
  *
@@ -27,7 +28,7 @@ public interface IApiCache {
 
 	/**
 	 * Retrieve an object from the cache
-	 * 
+	 *
 	 * @param key		name of the object to fetch
 	 * @return			null or value of the stored object
 	 */
@@ -35,7 +36,7 @@ public interface IApiCache {
 
 	/**
 	 * Place an object in the cache
-	 * 
+	 *
 	 * @param key		name of the object to store
 	 * @param value		value of the object
 	 */
@@ -43,7 +44,7 @@ public interface IApiCache {
 
 	/**
 	 * Place an object in the cache
-	 * 
+	 *
 	 * @param key		name of the object to store
 	 * @param value		value of the object
 	 * @param ttl		time to live, when the object expires
@@ -52,7 +53,7 @@ public interface IApiCache {
 
 	/**
 	 * Remove an object from the cache
-	 * 
+	 *
 	 * @param key		name of the object to remove
 	 * @return			returns true when successfully removed the object
 	 */
@@ -60,7 +61,7 @@ public interface IApiCache {
 
 	/**
 	 * Checks whether or not an object has previously been stored in the cache
-	 * 
+	 *
 	 * @param key		name of the object to find
 	 * @return			true when found
 	 */

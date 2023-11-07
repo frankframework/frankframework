@@ -2,7 +2,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,6 +15,8 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 @RunWith(Parameterized.class)
 public class PgpPipeTest {
@@ -55,12 +57,6 @@ public class PgpPipeTest {
 						new String[]{"verify", recipient[2], recipient[1], recipient[4], sender[0], recipient[0]}},
 				{"Sign wrong params", "nl.nn.adapterframework.configuration.ConfigurationException",
 						new String[]{"sign", null, null, recipient[3], null, recipient[0]},
-						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
-				{"Null action", "nl.nn.adapterframework.configuration.ConfigurationException",
-						new String[]{null, null, null, recipient[3], null, recipient[0]},
-						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
-				{"Non-existing action", "nl.nn.adapterframework.configuration.ConfigurationException",
-						new String[]{"non-existing action", null, null, recipient[3], null, recipient[0]},
 						new String[]{"decrypt", recipient[2], recipient[1], null, null, null}},
 				{"Wrong password", "org.bouncycastle.openpgp.PGPException",
 						new String[]{"encrypt", null, null, recipient[3], null, recipient[0]},
@@ -135,7 +131,7 @@ public class PgpPipeTest {
 	private void configurePipe(PGPPipe pipe, String[] params) throws ConfigurationException {
 		// Just so we dont have to change numbers every time we change order.
 		int i = 0;
-		pipe.setAction(params[i++]);
+		pipe.setAction(EnumUtils.parse(PGPPipe.Action.class, params[i++]));
 		pipe.setSecretKey(addFolderPath(params[i++]));
 		pipe.setSecretPassword(params[i++]);
 		pipe.setPublicKeys(addFolderPath(params[i++]));
@@ -152,17 +148,9 @@ public class PgpPipeTest {
 	private String addFolderPath(String param) {
 		if (param == null)
 			return null;
-		StringTokenizer keys = new StringTokenizer(param, ";");
-		StringBuilder stringBuilder = new StringBuilder();
-		while (keys.hasMoreTokens()) {
-			String key = keys.nextToken();
-			stringBuilder
-					.append(PGP_FOLDER)
-					.append(key)
-					.append(keys.hasMoreElements() ? ";" : "");
-		}
-
-		return stringBuilder.toString();
+		return StringUtil.splitToStream(param, ";")
+				.map(key -> PGP_FOLDER + key)
+				.collect(Collectors.joining(";"));
 	}
 
 	/**

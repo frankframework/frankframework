@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -72,9 +73,9 @@ public class PdfImageConvertor extends AbstractConvertor {
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected PdfImageConvertor(String pdfOutputLocation) {
+	protected PdfImageConvertor(CisConfiguration configuration) {
 		// Give the supported media types.
-		super(pdfOutputLocation, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 	}
 
 	@Override
@@ -82,6 +83,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
+		message.preserve();
 
 		File tmpImageFile = null;
 		com.aspose.imaging.Image image = null;
@@ -95,10 +97,10 @@ public class PdfImageConvertor extends AbstractConvertor {
 			page.getPageInfo().getMargin().setLeft(PageConvertUtil.convertCmToPoints(marginInCm));
 			page.getPageInfo().getMargin().setRight(PageConvertUtil.convertCmToPoints(marginInCm));
 
-			// Temporary file (because first we need to get image information (the size) and than load it into 
+			// Temporary file (because first we need to get image information (the size) and than load it into
 			// the pdf. The image itself can not be loaded into the pdf because it will be blured with orange.
-			tmpImageFile = UniqueFileGenerator.getUniqueFile(getPdfOutputlocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
-			image =  com.aspose.imaging.Image.load(message.asInputStream());
+			tmpImageFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
+			image = com.aspose.imaging.Image.load(message.asInputStream());
 			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 				TiffFrame[] frames = ((TiffImage)image).getFrames();
 				PngOptions pngOptions = new PngOptions();
@@ -126,7 +128,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 				}
 				Image pdfImage = new Image();
 				pdfImage.setFile(tmpImageFile.getAbsolutePath());
-				
+
 				// do not set scale if the image type is tiff
 				if (!mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 					pdfImage.setImageScale(scaleFactor);

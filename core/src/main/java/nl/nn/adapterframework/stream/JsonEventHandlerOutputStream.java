@@ -34,13 +34,13 @@ public class JsonEventHandlerOutputStream extends PipedOutputStream implements T
 	protected Logger log = LogUtil.getLogger(this);
 
 	private JsonEventHandler handler;
-	
+
 	private ThreadConnector threadConnector;
 
 	private PipedInputStream pipedInputStream=new PipedInputStream();
 	private final EventConsumer pipeReader=new EventConsumer();
 	private Throwable exception;
-	
+
 	public JsonEventHandlerOutputStream(JsonEventHandler handler, ThreadConnector threadConnector) throws StreamingException {
 		this.handler=handler;
 		this.threadConnector=threadConnector;
@@ -68,10 +68,8 @@ public class JsonEventHandlerOutputStream extends PipedOutputStream implements T
 				setException(se);
 			}
 		}
-		
 	}
-	
-	
+
 	@Override
 	public void close() throws IOException {
 		try {
@@ -94,7 +92,7 @@ public class JsonEventHandlerOutputStream extends PipedOutputStream implements T
 	public void uncaughtException(Thread arg0, Throwable t) {
 		setException(t);
 	}
-	
+
 	public void setException(Throwable exception) {
 		this.exception = exception;
 	}

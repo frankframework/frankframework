@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
@@ -47,19 +48,17 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 	@Before
 	@SuppressWarnings("unchecked")
 	public void setUp() throws Exception {
-		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
-		String technicalCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
 		if(listener instanceof IPullingListener) {
 			threadContext = ((IPullingListener<M>) listener).openThread();
 		} else {
 			threadContext = new HashMap<>();
 		}
 
-		PipeLineSession.setListenerParameters(threadContext, messageId, technicalCorrelationId, null, null);
+		PipeLineSession.updateListenerParameters(threadContext, ConfiguredTestBase.testMessageId, ConfiguredTestBase.testCorrelationId, null, null);
 		listener = createListener();
 	}
 
-	protected Object getRawMessage(String mockedResult) throws ListenerException {
+	protected RawMessageWrapper<M> getRawMessage(String mockedResult) throws ListenerException {
 		threadContext.put(STUB_RESULT_KEY, mockedResult);
 		if(listener instanceof IPullingListener) {
 			@SuppressWarnings("unchecked")

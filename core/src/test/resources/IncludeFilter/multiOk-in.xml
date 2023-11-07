@@ -1,0 +1,6 @@
+<root>
+	<Include ref="MultiSubOk1.xml"/>
+	<Include ref="okA.xml"/>
+	<main>main contents</main>
+	<Include ref="sub/okB.xml"/>
+</root>

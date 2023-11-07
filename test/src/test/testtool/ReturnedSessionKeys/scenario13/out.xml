@@ -1,0 +1,9 @@
+<reply>
+	<returnCode>NOT_OK</returnCode>
+	<reasonCode>INTERNAL_ERROR</reasonCode>
+	<dataStream>SessionKey value from inputStream</dataStream>
+	<localValue>LocalValueParent</localValue>
+	<pipelineResult>Exception caught</pipelineResult>
+	<exitState/>
+	<forward>exception</forward>
+</reply>

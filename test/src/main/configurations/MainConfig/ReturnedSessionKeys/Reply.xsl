@@ -3,6 +3,9 @@
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes" />
 	<xsl:param name="returnCode" />
 	<xsl:param name="reasonCode" />
+	<xsl:param name="dataStream" />
+	<xsl:param name="localValue" />
+	<xsl:param name="exitState" />
 	<xsl:param name="forward" />
 	<xsl:template match="/">
 		<reply>
@@ -12,6 +15,18 @@
 			<reasonCode>
 				<xsl:value-of select="$reasonCode" />
 			</reasonCode>
+			<dataStream>
+				<xsl:value-of select="$dataStream" />
+			</dataStream>
+			<localValue>
+				<xsl:value-of select="$localValue" />
+			</localValue>
+			<pipelineResult>
+				<xsl:value-of select="." />
+			</pipelineResult>
+			<exitState>
+				<xsl:value-of select="$exitState" />
+			</exitState>
 			<forward>
 				<xsl:value-of select="$forward" />
 			</forward>

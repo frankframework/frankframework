@@ -1,16 +1,20 @@
 package nl.nn.adapterframework.configuration.digester;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -20,18 +24,22 @@ import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.util.Assert;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class MapPropertyDescriptorsTest {
 	private  Logger log = LogUtil.getLogger(this);
 
-	@Test
-	public void testPropertyDescriptorsBeingRegistered() throws ClassNotFoundException, IntrospectionException {
+	private Iterable<String> getClassesThatImplementIConfigurable() {
+		return getClassesThatImplement(IConfigurable.class);
+	}
+
+	private Iterable<String> getClassesThatImplement(Class<?> type) {
 		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
 		scanner.setIncludeAnnotationConfig(false);
-		scanner.addIncludeFilter(new AssignableTypeFilter(IConfigurable.class));
+		scanner.addIncludeFilter(new AssignableTypeFilter(type));
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
 			@Override
@@ -46,10 +54,17 @@ public class MapPropertyDescriptorsTest {
 		int numberOfBeans = scanner.scan("nl.nn.adapterframework", "nl.nn.ibistesttool");
 		log.debug("Found "+numberOfBeans+" beans registered!");
 
-		String[] names = scanner.getRegistry().getBeanDefinitionNames();
-		for (String beanName : names) {
+		String[] bdn = scanner.getRegistry().getBeanDefinitionNames();
+		assertEquals(numberOfBeans, bdn.length); // ensure we got all beans
+
+		return Arrays.asList(bdn);
+	}
+
+	@Test
+	public void testPropertyDescriptorsBeingRegistered() throws ClassNotFoundException, IntrospectionException {
+		for (String beanName : getClassesThatImplementIConfigurable()) {
 			BeanInfo beanInfo = Introspector.getBeanInfo(Class.forName(beanName));
-			// get methods 
+			// get methods
 			MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();
 			for (MethodDescriptor methodDescriptor : methodDescriptors) {
 				String methodName = methodDescriptor.getName();
@@ -69,10 +84,32 @@ public class MapPropertyDescriptorsTest {
 							.filter(name -> name.getWriteMethod() != null && methodName.equals(name.getWriteMethod().getName()))
 							.findAny()
 							.orElse(null);
-							assertNotNull("Make sure that the attribute ["+propertyName+"] has proper getter and setters in class ["+beanName+"].", pd);
+							assertNotNull(pd, "Make sure that the attribute ["+propertyName+"] has proper getter and setters in class ["+beanName+"].");
 					}
 				}
 			}
+		}
+	}
+
+	@Test
+	public void testIfAllConfigurationWarningsAreDeprecated() throws ClassNotFoundException, IntrospectionException {
+		for (String beanName : getClassesThatImplementIConfigurable()) {
+			Class<?> beanClass = Class.forName(beanName);
+
+			if (beanClass.isAnnotationPresent(ConfigurationWarning.class)) {
+				assertTrue(beanClass.isAnnotationPresent(Deprecated.class), "Class " + beanName + " has ConfigurationWarning, but no Deprecation annotation");
+			}
+			for (Method method : beanClass.getMethods()) {
+				if (method.isAnnotationPresent(ConfigurationWarning.class)) {
+					assertTrue(method.isAnnotationPresent(Deprecated.class), "Method " + method.getName() + " in bean " + beanName + " has ConfigurationWarning, but no Deprecated annotation");
+				}
+			}
+			for (Field field : beanClass.getFields()) {
+				if (field.isAnnotationPresent(ConfigurationWarning.class)) {
+					assertTrue(field.isAnnotationPresent(Deprecated.class), "Field " + field.getName() + " in bean " + beanName + " has ConfigurationWarning, but no Deprecated annotation");
+				}
+			}
+
 		}
 	}
 }

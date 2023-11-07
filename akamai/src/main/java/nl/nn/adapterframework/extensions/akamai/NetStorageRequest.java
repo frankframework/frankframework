@@ -28,13 +28,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.InputStreamEntity;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Setter;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.extensions.akamai.NetStorageSender.Action;
+import nl.nn.adapterframework.http.HttpMessageEntity;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -42,6 +41,8 @@ import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
+ * Translates the request, adds required headers per action, creates a hash and signs the message.
+ * 
  * @author Niels Meijer
  */
 public class NetStorageRequest {
@@ -98,54 +99,50 @@ public class NetStorageRequest {
 
 	public void mapParameters(ParameterValueList pvl) throws SenderException {
 		if(action == Action.UPLOAD && pvl.contains(NetStorageSender.FILE_PARAM_KEY)) {
-			file = pvl.getParameterValue(NetStorageSender.FILE_PARAM_KEY).asMessage();
+			file = pvl.get(NetStorageSender.FILE_PARAM_KEY).asMessage();
 			if(Message.isEmpty(file)) {
 				throw new SenderException("no file specified");
 			}
 
 			if(hashAlgorithm != null) {
-				try {
-					generateHash(pvl);
-				}
-				catch (IOException e) {
-					throw new SenderException("error while calculating ["+hashAlgorithm+"] hash", e);
-				}
+				generateHash(pvl);
 			}
 
-			try {
-				setEntity(file);
-			} catch (IOException e) {
-				throw new SenderException("unable to parse file", e);
-			}
+			setEntity(file);
 
 			if(pvl.contains("size")) {
-				int size = pvl.getParameterValue("size").asIntegerValue(0);
+				int size = pvl.get("size").asIntegerValue(0);
 				actionHeader.put("size", size+"");
 			}
 		}
 
 		if(action == Action.RENAME && pvl.contains(NetStorageSender.DESTINATION_PARAM_KEY)) {
-			String destination = pvl.getParameterValue(NetStorageSender.DESTINATION_PARAM_KEY).asStringValue(null);
+			String destination = pvl.get(NetStorageSender.DESTINATION_PARAM_KEY).asStringValue(null);
 			actionHeader.put("destination", destination);
 		}
 
 		if(pvl.contains(NetStorageSender.MTIME_PARAM_KEY)) {
-			long mtime = pvl.getParameterValue(NetStorageSender.MTIME_PARAM_KEY).asLongValue(-1L);
+			long mtime = pvl.get(NetStorageSender.MTIME_PARAM_KEY).asLongValue(-1L);
 			actionHeader.put("mtime", mtime+"");
 		}
 	}
 
-	private void generateHash(ParameterValueList pvl) throws IOException {
+	private void generateHash(ParameterValueList pvl) throws SenderException {
 		String hash = null;
 		String algorithm = hashAlgorithm.name().toLowerCase();
 		if(pvl.contains(NetStorageSender.HASHVALUE_PARAM_KEY)) {
-			hash = pvl.getParameterValue(NetStorageSender.HASHVALUE_PARAM_KEY).asStringValue(null);
+			hash = pvl.get(NetStorageSender.HASHVALUE_PARAM_KEY).asStringValue(null);
 		}
 		else if(pvl.contains(algorithm)) { //backwards compatibility
-			hash = pvl.getParameterValue(algorithm).asStringValue(null);
+			hash = pvl.get(algorithm).asStringValue(null);
 		}
 		else {
-			hash = hashAlgorithm.computeHash(file);
+			try {
+				hash = hashAlgorithm.computeHash(file);
+			}
+			catch (IOException | IllegalStateException e) {
+				throw new SenderException("error while calculating ["+hashAlgorithm+"] hash", e);
+			}
 		}
 
 		if(StringUtils.isNotEmpty(hash)) {
@@ -157,16 +154,9 @@ public class NetStorageRequest {
 		return EnumUtils.parse(HttpMethod.class, method.getMethod());
 	}
 
-	private void setEntity(Message file) throws IOException {
-		HttpEntity entity = toEntity(file);
+	private void setEntity(Message file) {
+		HttpEntity entity = new HttpMessageEntity(file);
 		((HttpEntityEnclosingRequestBase) method).setEntity(entity);
-	}
-
-	private HttpEntity toEntity(Message file) throws IOException {
-		if(file.requiresStream()) {
-			return new InputStreamEntity(file.asInputStream());
-		}
-		return new ByteArrayEntity(file.asByteArray());
 	}
 
 	public void sign(NetStorageCmsSigner signer) {

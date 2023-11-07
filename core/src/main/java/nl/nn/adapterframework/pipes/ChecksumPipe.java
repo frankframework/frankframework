@@ -31,6 +31,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -39,10 +40,11 @@ import nl.nn.adapterframework.stream.StreamingPipe;
 /**
  * Pipe to calculate checksum on input.
  *
- * 
+ *
  * @author  Gerrit van Brakel
- * @since   4.9  
+ * @since   4.9
  */
+@SupportsOutputStreaming
 public class ChecksumPipe extends StreamingPipe {
 
 	private @Getter String charset;
@@ -52,8 +54,23 @@ public class ChecksumPipe extends StreamingPipe {
 	public enum ChecksumType {
 		MD5,
 		SHA,
+		SHA256("SHA-256"),
+		SHA512("SHA-512"),
 		CRC32,
-		ADLER32
+		ADLER32;
+
+		private String algorithm;
+
+		ChecksumType(String algorithm) {
+			this.algorithm = algorithm;
+		}
+		ChecksumType() {
+			this(null);
+		}
+
+		public String getAlgorithm() {
+			return algorithm!=null ? algorithm : name();
+		}
 	}
 
 	protected interface ChecksumGenerator {
@@ -66,6 +83,8 @@ public class ChecksumPipe extends StreamingPipe {
 		switch(getType()) {
 			case MD5:
 			case SHA:
+			case SHA256:
+			case SHA512:
 				return new MessageDigestChecksumGenerator(getType());
 			case CRC32:
 				return new ZipChecksumGenerator(new CRC32());
@@ -76,7 +95,7 @@ public class ChecksumPipe extends StreamingPipe {
 		}
 	}
 
-	protected class ZipChecksumGenerator implements ChecksumGenerator {	
+	protected static class ZipChecksumGenerator implements ChecksumGenerator {
 
 		private Checksum checksum;
 
@@ -102,13 +121,13 @@ public class ChecksumPipe extends StreamingPipe {
 		}
 	}
 
-	protected class MessageDigestChecksumGenerator implements ChecksumGenerator {
+	protected static class MessageDigestChecksumGenerator implements ChecksumGenerator {
 
 		private MessageDigest messageDigest;
 
 		MessageDigestChecksumGenerator(ChecksumType type) throws NoSuchAlgorithmException {
 			super();
-			this.messageDigest=MessageDigest.getInstance(type.name());
+			this.messageDigest=MessageDigest.getInstance(type.getAlgorithm());
 		}
 
 		@Override
@@ -143,7 +162,7 @@ public class ChecksumPipe extends StreamingPipe {
 			throw new PipeRunException(this,"cannot calculate ["+getType()+"]"+(isInputIsFile()?" on file ["+message+"]":" using charset ["+getCharset()+"]"),e);
 		}
 	}
-	
+
 	@Override
 	protected boolean canProvideOutputStream() {
 		return !isInputIsFile() && super.canProvideOutputStream();
@@ -175,11 +194,11 @@ public class ChecksumPipe extends StreamingPipe {
 			public Message getResponse() {
 				return new Message(cg.getResult());
 			}
-			
+
 		};
 	}
 
-	
+
 	/**
 	 * Character encoding to be used to encode message before calculating checksum.
 	 */

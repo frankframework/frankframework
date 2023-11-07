@@ -17,12 +17,12 @@ package nl.nn.adapterframework.statistics.jdbc;
 
 import java.sql.Connection;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Utility class to populate and reference groups used in statistics.
@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class StatGroupTable {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	private String selectRootByNameQuery;
 	private String selectByNameQuery;
 	private String selectByTypeQuery;
@@ -40,7 +40,7 @@ public class StatGroupTable {
 	private String selectNextValueQuery;
 	private String insertQuery;
 	private String insertRootQuery;
-	
+
 
 	public StatGroupTable(String tableName, String keyColumn, String parentKeyColumn, String instanceKeyColumn, String nameColumn, String typeColumn, String sequence) {
 		super();
@@ -59,7 +59,7 @@ public class StatGroupTable {
 
 	public int findOrInsert(Connection connection, int parentKey, int instanceKey, String name, String type) throws JdbcException {
 		int result;
-		
+
 		if (parentKey<0) {
 			result = JdbcUtil.executeIntQuery(connection,selectRootByNameQuery,instanceKey,name);
 		} else if (StringUtils.isNotEmpty(name)) {

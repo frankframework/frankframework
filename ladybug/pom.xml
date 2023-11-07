@@ -10,26 +10,38 @@
 	<artifactId>ibis-adapterframework-ladybug</artifactId>
 	<name>Ibis AdapterFramework Ladybug</name>
 
+	<properties>
+		<ladybug.version>2.3-20230911.183804</ladybug.version>
+	</properties>
+
 	<dependencies>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-ladybug</artifactId>
-			<version>2.2-20220224.132325</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.codehaus.woodstox</groupId>
-					<artifactId>woodstox-core-asl</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-ladybug</artifactId>
+			<version>${ladybug.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.codehaus.woodstox</groupId>
+					<artifactId>woodstox-core-asl</artifactId>
+				</exclusion>
+				<exclusion><!-- excluded because it uses an old cxf version that introduces javax.annotation -->
+					<groupId>org.apache.cxf</groupId>
+					<artifactId>cxf-rt-rs-client</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjweaver</artifactId>
-			<version>1.6.2</version>
+			<version>1.9.20.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.aspectj</groupId>
@@ -37,6 +49,8 @@
 			<version>1.6.2</version>
 			<scope>runtime</scope>
 		</dependency>
+
+		<!-- Provided scoped dependencies -->
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
@@ -47,10 +61,22 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency><!-- prevent compile error on TibetView: cannot access javax.enterprise.context.Dependent -->
+			<groupId>jakarta.enterprise</groupId>
+			<artifactId>jakarta.enterprise.cdi-api</artifactId>
+			<version>2.0.2</version>
+			<scope>provided</scope>
+		</dependency>
 
+		<!-- Test scoped dependencies -->
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
+			<groupId>org.junit.vintage</groupId>
+			<artifactId>junit-vintage-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

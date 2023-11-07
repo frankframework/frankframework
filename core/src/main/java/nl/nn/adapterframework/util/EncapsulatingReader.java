@@ -21,7 +21,7 @@ import java.io.Reader;
 
 /**
  * Reader that encapsulates a file within a prefix and a postfix.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.3
  */
@@ -44,16 +44,17 @@ public class EncapsulatingReader extends FilterReader {
 
 	public EncapsulatingReader(Reader in, String prefix, String postfix) {
 		this(in, prefix, postfix, false);
-	}		
+	}
 
 	private char charPrintable(char c) {
-		if (!encodePrintable || XmlUtils.isPrintableUnicodeChar(c)) {
+		if (!encodePrintable || XmlEncodingUtils.isPrintableUnicodeChar(c)) {
 			return c;
 		} else {
-			return XmlUtils.REPLACE_NON_XML_CHAR;
+			return XmlEncodingUtils.REPLACE_NON_XML_CHAR;
 		}
 	}
 
+	@Override
 	public int read() throws IOException {
 		if (!readPrefix) {
 			if (position<prefix.length()) {
@@ -74,7 +75,8 @@ public class EncapsulatingReader extends FilterReader {
 		}
 		return -1;
 	}
-	
+
+	@Override
 	public int read(char[] cbuf, int off, int len) throws IOException {
 		int charsRead=0;
 		if (!readPrefix) {
@@ -85,7 +87,7 @@ public class EncapsulatingReader extends FilterReader {
 			position=0;
 			if (charsRead>0) {
 				return charsRead;
-			} 
+			}
 		}
 		if (!readReader) {
 			charsRead = in.read(cbuf, off, len);
@@ -96,7 +98,7 @@ public class EncapsulatingReader extends FilterReader {
 					}
 				}
 				return charsRead;
-			} 
+			}
 			readReader=true;
 			charsRead=0;
 		}
@@ -105,20 +107,22 @@ public class EncapsulatingReader extends FilterReader {
 		}
 		if (charsRead>0) {
 			return charsRead;
-		} 
+		}
 		return -1;
 	}
-		
+
+	@Override
 	public boolean ready() throws IOException {
 		return !readPrefix || (!readReader && in.ready()) || position<postfix.length();
 	}
-		
+
+	@Override
 	public void reset() throws IOException {
 		in.reset();
 		readPrefix=false;
 		readReader=false;
 		position=0;
 	}
-		
+
 }
 

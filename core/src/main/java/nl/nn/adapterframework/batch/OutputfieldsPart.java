@@ -24,7 +24,8 @@ import nl.nn.adapterframework.doc.FrankDocGroup;
  */
 @FrankDocGroup(name = "Batch")
 public class OutputfieldsPart {
+
 	private @Getter @Setter String value;
 	private @Getter @Setter String description;
-	
+
 }

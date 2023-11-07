@@ -18,7 +18,7 @@ package nl.nn.adapterframework.encryption;
 import nl.nn.adapterframework.core.IConfigurationAware;
 
 public interface HasKeystore extends IConfigurationAware {
-	
+
 	String getKeystore();
 	KeystoreType getKeystoreType();
 	String getKeystoreAuthAlias();

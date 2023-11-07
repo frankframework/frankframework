@@ -5,15 +5,33 @@
 	editor -->
 <!-- Checkstyle-Configuration: Frank!Framework Description: none -->
 <module name="Checker">
+	<module name="SuppressionFilter">
+		<!-- The property config_loc is automatically set by the eclipse-cs plugin -->
+		<property name="file" value="${config_loc}/checkstyle-suppressions.xml"/>
+	</module>
+
 	<property name="severity" value="warning" />
 	<module name="TreeWalker">
-		<property name="fileExtensions" value="java"/>
+		<property name="fileExtensions" value="java" />
 		<property name="severity" value="error" />
 		<module name="RedundantImport" />
-		<module name="UnusedImports" />
+		<module name="UnusedImports">
+			<property name="processJavadoc" value="true" /> <!-- allow imports from javadoc comments -->
+		</module>
 		<module name="IllegalImport">
-			<property name="illegalPkgs" value="junit.framework, org.apache.commons.lang" />
-			<property name="illegalClasses" value="org.apache.commons.codec.Charsets"/>
+			<property name="illegalPkgs" value="
+			junit.framework,
+			org.apache.commons.lang,
+			software.amazon.awssdk.utils,
+			" />
+			<property name="illegalClasses" value="
+			org.apache.commons.codec.Charsets,
+			org.apache.cxf.helpers.FileUtils"/>
+		</module>
+		<module name="RegexpSinglelineJava">
+			<property name="format" value="\.deleteOnExit()" />
+			<property name="message" value="You shouldn't use file.deleteOnExit()!" />
+			<property name="ignoreComments" value="true" />
 		</module>
 	</module>
 
@@ -28,7 +46,7 @@
 		<module name="AvoidStarImport">
 			<property name="allowStaticMemberImports" value="true" />
 		</module>
-		
+
 		<module name="EmptyBlock" />
 		<module name="ModifierOrder" />
 		<module name="RedundantModifier">
@@ -64,6 +82,7 @@
 			<property name="id" value="systemout"/>
 			<property name="format" value="^.*System\.(out|err).*$"/>
 			<property name="message" value="Don't use System.out/err, use LOG4J2 instead."/>
+			<property name="ignoreComments" value="true" />
 		</module>
 	</module>
 </module>

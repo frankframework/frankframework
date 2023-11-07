@@ -20,16 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.scheduler.job.IJob;
-import nl.nn.adapterframework.statistics.ItemList;
-import nl.nn.adapterframework.statistics.StatisticsKeeper;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.XmlBuilder;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.quartz.CronTrigger;
@@ -43,6 +33,16 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
+
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.statistics.ItemList;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.XmlBuilder;
 /**
  * The SchedulerAdapter is an adapter for the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> <br/>
  * It transforms the information from the scheduler to XML.
@@ -54,7 +54,7 @@ public class SchedulerAdapter {
 
 	private DecimalFormat tf=new DecimalFormat(ItemList.PRINT_FORMAT_TIME);
 	private DecimalFormat pf=new DecimalFormat(ItemList.PRINT_FORMAT_PERC);
-	
+
 	/**
 	 * Get all jobgroups, jobs within this group, the jobdetail and the
 	 * associated triggers in XML format.
@@ -161,56 +161,57 @@ public class SchedulerAdapter {
 		return jobRunStatistics;
 	}
 
-    public XmlBuilder getSchedulerCalendarNamesToXml(Scheduler theScheduler) {
-        XmlBuilder xbRoot = new XmlBuilder("schedulerCalendars");
+	public XmlBuilder getSchedulerCalendarNamesToXml(Scheduler theScheduler) {
+		XmlBuilder xbRoot = new XmlBuilder("schedulerCalendars");
 
-        try {
-            List<String> names = theScheduler.getCalendarNames();
+		try {
+			List<String> names = theScheduler.getCalendarNames();
 
-            for (int i = 0; i < names.size(); i++) {
-                XmlBuilder el = new XmlBuilder("calendar");
+			for(int i = 0; i < names.size(); i++) {
+				XmlBuilder el = new XmlBuilder("calendar");
 
-                el.setValue(names.get(i));
-                xbRoot.addSubElement(el);
-            }
-        } catch (SchedulerException se) {
-            log.error(se.toString());
-        }
-        return xbRoot;
-    }
- 
-    public XmlBuilder getSchedulerMetaDataToXml(Scheduler theScheduler) {
-        XmlBuilder xbRoot = new XmlBuilder("schedulerMetaData");
+				el.setValue(names.get(i));
+				xbRoot.addSubElement(el);
+			}
+		} catch (SchedulerException se) {
+			log.error(se.toString());
+		}
+		return xbRoot;
+	}
 
-        try {
-            SchedulerMetaData smd = theScheduler.getMetaData();
+	public XmlBuilder getSchedulerMetaDataToXml(Scheduler theScheduler) {
+		XmlBuilder xbRoot = new XmlBuilder("schedulerMetaData");
 
-            xbRoot.addAttribute("schedulerName", smd.getSchedulerName());
-            xbRoot.addAttribute("schedulerInstanceId", smd.getSchedulerInstanceId().toString());
-            xbRoot.addAttribute("version", smd.getVersion());
-            xbRoot.addAttribute("isPaused", smd.isInStandbyMode());
-            xbRoot.addAttribute("isSchedulerRemote", smd.isSchedulerRemote());
-            xbRoot.addAttribute("isShutdown", smd.isShutdown());
-            xbRoot.addAttribute("isStarted", smd.isStarted());
-            xbRoot.addAttribute("jobStoreSupportsPersistence", smd.isJobStoreSupportsPersistence());
-            xbRoot.addAttribute("numJobsExecuted", Integer.toString(smd.getNumberOfJobsExecuted()));
-            try {
-                Date runningSince = smd.getRunningSince();
+		try {
+			SchedulerMetaData smd = theScheduler.getMetaData();
 
-                xbRoot.addAttribute("runningSince", (null == runningSince ? "unknown" : DateUtils.format(runningSince, DateUtils.FORMAT_GENERICDATETIME)));
-            } catch (Exception e) {
-	            log.debug(e);
-	        };
-            xbRoot.addAttribute("jobStoreClass", smd.getJobStoreClass().getName());
-            xbRoot.addAttribute("schedulerClass", smd.getSchedulerClass().getName());
-            xbRoot.addAttribute("threadPoolClass", smd.getThreadPoolClass().getName());
-            xbRoot.addAttribute("threadPoolSize", Integer.toString(smd.getThreadPoolSize()));
-        } catch (SchedulerException se) {
-            log.error(se);
-        }
+			xbRoot.addAttribute("schedulerName", smd.getSchedulerName());
+			xbRoot.addAttribute("schedulerInstanceId", smd.getSchedulerInstanceId().toString());
+			xbRoot.addAttribute("version", smd.getVersion());
+			xbRoot.addAttribute("isPaused", smd.isInStandbyMode());
+			xbRoot.addAttribute("isSchedulerRemote", smd.isSchedulerRemote());
+			xbRoot.addAttribute("isShutdown", smd.isShutdown());
+			xbRoot.addAttribute("isStarted", smd.isStarted());
+			xbRoot.addAttribute("jobStoreSupportsPersistence", smd.isJobStoreSupportsPersistence());
+			xbRoot.addAttribute("numJobsExecuted", Integer.toString(smd.getNumberOfJobsExecuted()));
+			try {
+				Date runningSince = smd.getRunningSince();
 
-        return xbRoot;
-    }
+				xbRoot.addAttribute("runningSince", (null == runningSince ? "unknown" : DateUtils.format(runningSince, DateUtils.FORMAT_GENERICDATETIME)));
+			} catch (Exception e) {
+				log.debug(e);
+			}
+
+			xbRoot.addAttribute("jobStoreClass", smd.getJobStoreClass().getName());
+			xbRoot.addAttribute("schedulerClass", smd.getSchedulerClass().getName());
+			xbRoot.addAttribute("threadPoolClass", smd.getThreadPoolClass().getName());
+			xbRoot.addAttribute("threadPoolSize", Integer.toString(smd.getThreadPoolSize()));
+		} catch (SchedulerException se) {
+			log.error(se);
+		}
+
+		return xbRoot;
+	}
 
 	public XmlBuilder jobDataMapToXmlBuilder(JobDataMap jd) {
 
@@ -240,54 +241,54 @@ public class SchedulerAdapter {
 		return xbRoot;
 	}
 
-    public XmlBuilder jobDetailToXmlBuilder(JobDetail jobDetail) {
-        XmlBuilder xbRoot = new XmlBuilder("jobDetail");
+	public XmlBuilder jobDetailToXmlBuilder(JobDetail jobDetail) {
+		XmlBuilder xbRoot = new XmlBuilder("jobDetail");
 
-        String name = jobDetail.getKey().getName();
-        xbRoot.addAttribute("name", name);
-        xbRoot.addAttribute("fullName", jobDetail.getKey().getGroup() + "." + name);
-        String description="-";
-        if (StringUtils.isNotEmpty(jobDetail.getDescription()))
-            description=jobDetail.getDescription();
+		String name = jobDetail.getKey().getName();
+		xbRoot.addAttribute("name", name);
+		xbRoot.addAttribute("fullName", jobDetail.getKey().getGroup() + "." + name);
+		String description = "-";
+		if(StringUtils.isNotEmpty(jobDetail.getDescription()))
+			description = jobDetail.getDescription();
 
-        xbRoot.addAttribute("description", description);
-        xbRoot.addAttribute("isStateful", (jobDetail.isConcurrentExectionDisallowed() && jobDetail.isPersistJobDataAfterExecution()));
-        xbRoot.addAttribute("isDurable", jobDetail.isDurable());
-        xbRoot.addAttribute("jobClass", jobDetail.getJobClass().getName());
+		xbRoot.addAttribute("description", description);
+		xbRoot.addAttribute("isStateful", (jobDetail.isConcurrentExectionDisallowed() && jobDetail.isPersistJobDataAfterExecution()));
+		xbRoot.addAttribute("isDurable", jobDetail.isDurable());
+		xbRoot.addAttribute("jobClass", jobDetail.getJobClass().getName());
 
-        return xbRoot;
-    }
+		return xbRoot;
+	}
 
-    public XmlBuilder triggerToXmlBuilder(Trigger trigger) {
-        XmlBuilder xbRoot = new XmlBuilder("triggerDetail");
+	public XmlBuilder triggerToXmlBuilder(Trigger trigger) {
+		XmlBuilder xbRoot = new XmlBuilder("triggerDetail");
 
-        TriggerKey triggerKey = trigger.getKey();
-        xbRoot.addAttribute("fullName", triggerKey.getGroup() + "." + triggerKey.getName());
-        xbRoot.addAttribute("triggerName", triggerKey.getName());
-        xbRoot.addAttribute("triggerGroup", triggerKey.getGroup());
-        String cn = trigger.getCalendarName();
+		TriggerKey triggerKey = trigger.getKey();
+		xbRoot.addAttribute("fullName", triggerKey.getGroup() + "." + triggerKey.getName());
+		xbRoot.addAttribute("triggerName", triggerKey.getName());
+		xbRoot.addAttribute("triggerGroup", triggerKey.getGroup());
+		String cn = trigger.getCalendarName();
 
-        xbRoot.addAttribute("calendarName", (cn == null ? "none" : cn));
+		xbRoot.addAttribute("calendarName", (cn == null ? "none" : cn));
 
-        xbRoot.addAttribute("endTime", convertDate(trigger.getEndTime()));
-        xbRoot.addAttribute("finalFireTime", convertDate(trigger.getFinalFireTime()));
-        xbRoot.addAttribute("previousFireTime", convertDate(trigger.getPreviousFireTime()));
-        xbRoot.addAttribute("nextFireTime", convertDate(trigger.getNextFireTime()));
-        xbRoot.addAttribute("startTime", convertDate(trigger.getStartTime()));
+		xbRoot.addAttribute("endTime", convertDate(trigger.getEndTime()));
+		xbRoot.addAttribute("finalFireTime", convertDate(trigger.getFinalFireTime()));
+		xbRoot.addAttribute("previousFireTime", convertDate(trigger.getPreviousFireTime()));
+		xbRoot.addAttribute("nextFireTime", convertDate(trigger.getNextFireTime()));
+		xbRoot.addAttribute("startTime", convertDate(trigger.getStartTime()));
 
-        xbRoot.addAttribute("misfireInstruction", Integer.toString(trigger.getMisfireInstruction()));
-        if (trigger instanceof CronTrigger) {
-            xbRoot.addAttribute("triggerType", "cron");
-            xbRoot.addAttribute("cronExpression", ((CronTrigger)trigger).getCronExpression());
-        } else if (trigger instanceof SimpleTrigger) {
-            xbRoot.addAttribute("triggerType", "simple");
-            xbRoot.addAttribute("repeatInterval", ((SimpleTrigger)trigger).getRepeatInterval());
-        } else {
-            xbRoot.addAttribute("triggerType", "unknown");
-        }
+		xbRoot.addAttribute("misfireInstruction", Integer.toString(trigger.getMisfireInstruction()));
+		if(trigger instanceof CronTrigger) {
+			xbRoot.addAttribute("triggerType", "cron");
+			xbRoot.addAttribute("cronExpression", ((CronTrigger) trigger).getCronExpression());
+		} else if(trigger instanceof SimpleTrigger) {
+			xbRoot.addAttribute("triggerType", "simple");
+			xbRoot.addAttribute("repeatInterval", ((SimpleTrigger) trigger).getRepeatInterval());
+		} else {
+			xbRoot.addAttribute("triggerType", "unknown");
+		}
 
-        return xbRoot;
-    }
+		return xbRoot;
+	}
 
 	private String convertDate(Date date) {
 		try {

@@ -31,7 +31,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -58,17 +57,17 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 
 			IBasicFileSystem<F> ifs = getFileSystem();
 			F file;
-			
+
 			try {
 				file = ifs.toFile(message.asString());
 			} catch (Exception e) {
 				throw new SenderException(getLogPrefix() + "unable to get file", e);
 			}
-			
+
 			XmlBuilder attachments = new XmlBuilder("attachments");
 			IWithAttachments<F,A> withAttachments = getFileSystem();
 			try {
-				Iterator<A> it = withAttachments.listAttachments(file); 
+				Iterator<A> it = withAttachments.listAttachments(file);
 				if (it!=null) {
 					while (it.hasNext()) {
 						A attachment = it.next();
@@ -77,13 +76,13 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 						attachmentXml.addAttribute("contentType", withAttachments.getAttachmentContentType(attachment));
 						attachmentXml.addAttribute("size", withAttachments.getAttachmentSize(attachment));
 						attachmentXml.addAttribute("filename", withAttachments.getAttachmentFileName(attachment));
-						
+
 						FileAttachment fileAttachment = (FileAttachment) attachment;
 						fileAttachment.load();
 						if(!attachmentsAsSessionKeys) {
 							InputStream binaryInputStream = new ByteArrayInputStream(fileAttachment.getContent());
 							InputStream base64 = new Base64InputStream(binaryInputStream,true);
-							attachmentXml.setCdataValue(Misc.streamToString(base64, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
+							attachmentXml.setCdataValue(StreamUtil.streamToString(base64, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING));
 						} else {
 							attachmentXml.setValue(fileAttachment.getName());
 							session.put(fileAttachment.getName(), fileAttachment.getContent());
@@ -96,7 +95,6 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 				throw new SenderException(e);
 			}
 			return new PipeRunResult(null, attachments.toString());
-			
 		}
 	}
 

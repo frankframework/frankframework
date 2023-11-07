@@ -25,6 +25,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.Attributes;
 
+import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -56,10 +57,10 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjectCreationFactory<Object> implements ApplicationContextAware, IDigesterRuleAware {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Setter ApplicationContext applicationContext;
+	private @Getter @Setter ApplicationContext applicationContext;
 	private DigesterRule rule = null;
 
-	public AbstractSpringPoweredDigesterFactory() {
+	protected AbstractSpringPoweredDigesterFactory() {
 		super();
 	}
 
@@ -76,7 +77,7 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 * given suggestedBeanName. If no such bean exists, an error is thrown
 	 * because the factory can not select between multiple beans.
 	 */
-	abstract public String getSuggestedBeanName();
+	public abstract String getSuggestedBeanName();
 
 	/**
 	 * Return <code>true</code> is only prototype beans from the
@@ -137,10 +138,10 @@ public abstract class AbstractSpringPoweredDigesterFactory extends AbstractObjec
 	 * can override this method and change attributes in the map
 	 * before creating the object from the Spring factory.
 	 */
-	protected Object createObject(Map<String, String> attrs) throws Exception {
+	protected Object createObject(Map<String, String> attrs) throws ClassNotFoundException {
 		String classname = attrs.get("classname");
 		if(StringUtils.isNotEmpty(classname)) {
-			throw new IllegalStateException("invalid attribute [classname]. Did you mean [className]?");
+			throw new IllegalArgumentException("invalid attribute [classname]. Did you mean [className]?");
 		}
 
 		String className = attrs.get("className");

@@ -37,11 +37,11 @@ import nl.nn.adapterframework.util.Misc;
 public class ResourceBasedMongoClientFactory extends ResourceBasedObjectFactory<MongoClient, MongoClient> implements IMongoClientFactory {
 
 	public final String MONGODB_URL_PREFIX="mongodb://";
-	
+
 	public final String AUTH_ALIAS_KEY="authAlias";
 	public final String USERNAME_KEY="username";
 	public final String PASSWORD_KEY="password";
-	
+
 	@Override
 	public MongoClient getMongoClient(String dataSourceName) throws NamingException {
 		return get(dataSourceName);

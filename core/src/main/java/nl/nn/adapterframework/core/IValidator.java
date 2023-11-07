@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.doc.Optional;
 import nl.nn.adapterframework.stream.Message;
@@ -25,6 +27,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author Gerrit van Brakel
  */
 @FrankDocGroup(order = 40, name = "Validators")
+@ElementType(ElementTypes.VALIDATOR)
 public interface IValidator extends IPipe {
 
 	public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException;

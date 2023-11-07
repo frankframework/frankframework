@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
@@ -74,14 +73,14 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  */
 public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private static final String LOCK_IGNORED="%null%";
+	private static final String LOCK_OBJECT_QUERY = "INSERT INTO IBISLOCK (objectId, type, host, creationDate, expiryDate) VALUES (?, ?, ?, ?, ?)";
+	private static final String UNLOCK_OBJECT_QUERY = "DELETE FROM IBISLOCK WHERE objectId=?";
+	private static final String CHECK_OBJECT_LOCK_QUERY = "SELECT type, host, creationDate, expiryDate FROM IBISLOCK WHERE objectId=?";
 
 	private @Getter String objectId;
 	private @Getter LockType type = LockType.T;
 	private @Getter String dateFormatSuffix;
 	private @Getter int retention = -1;
-	private String insertQuery = "INSERT INTO IBISLOCK (objectId, type, host, creationDate, expiryDate) VALUES (?, ?, ?, ?, ?)";
-	private String deleteQuery = "DELETE FROM IBISLOCK WHERE objectId=?";
-	private String selectQuery = "SELECT type, host, creationDate, expiryDate FROM IBISLOCK WHERE objectId=?";
 	private SimpleDateFormat formatter;
 	private @Getter int numRetries = 0;
 	private @Getter int firstDelay = 0;
@@ -89,7 +88,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private @Getter boolean ignoreTableNotExist = false;
 
 	private @Getter @Setter TransactionAttribute transactionAttribute=TransactionAttribute.SUPPORTS;
-	private @Getter int transactionTimeout = 0;
+	private @Getter @Setter int transactionTimeout = 0;
 	private @Getter int lockWaitTimeout = 0;
 
 	private @Getter @Setter PlatformTransactionManager txManager;
@@ -158,7 +157,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 			if (r > 0) {
 				Thread.sleep(retryDelay);
 			}
-			IbisTransaction itx = IbisTransaction.getTransaction(getTxManager(), getTxDef(), "locker ["+getName()+"]");
+			IbisTransaction itx = new IbisTransaction(getTxManager(), getTxDef(), "locker [" + getName() + "]");
 			try {
 				Date date = new Date();
 				objectIdWithSuffix = getObjectId();
@@ -169,7 +168,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 
 				boolean timeout = false;
 				log.debug("preparing to set lock [" + objectIdWithSuffix + "]");
-				try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(insertQuery)) {
+				try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(LOCK_OBJECT_QUERY)) {
 					stmt.clearParameters();
 					stmt.setString(1,objectIdWithSuffix);
 					stmt.setString(2,getType().name());
@@ -204,20 +203,17 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 					} finally {
 						if (timeoutGuard!=null && timeoutGuard.cancel()) {
 							log.warn("Timeout obtaining lock ["+objectId+"]");
-							if(itx != null) {
-								itx.setRollbackOnly();
-							}
+							itx.setRollbackOnly();
 							timeout=true;
 							return null;
 						}
 					}
 				} catch (Exception e) {
-					if(itx != null) {
-						itx.setRollbackOnly();
-					}
+					itx.setRollbackOnly();
 					log.debug(getLogPrefix()+"error executing insert query (as part of locker): ",e);
 					if (numRetries == -1 || r < numRetries) {
 						log.debug(getLogPrefix()+"will try again");
+						objectIdWithSuffix = null;
 					} else {
 						log.debug(getLogPrefix()+"will not try again");
 
@@ -227,16 +223,14 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 								messageKeeper.add(msg, MessageKeeperLevel.INFO);
 							}
 							log.info(getLogPrefix()+msg);
+							return null;
 						} else {
 							throw e;
 						}
 					}
-					return null;
 				}
 			} finally {
-				if(itx != null) {
-					itx.commit();
-				}
+				itx.complete();
 			}
 		}
 		return objectIdWithSuffix;
@@ -248,22 +242,18 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		} else {
 			if (getType()==LockType.T) {
 				log.debug("preparing to remove lock [" + objectIdWithSuffix + "]");
-				IbisTransaction itx = IbisTransaction.getTransaction(getTxManager(), getTxDef(), "locker ["+getName()+"]");
+				IbisTransaction itx = new IbisTransaction(getTxManager(), getTxDef(), "locker [" + getName() + "]");
 
-				try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(deleteQuery)) {
+				try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(UNLOCK_OBJECT_QUERY)) {
 					stmt.clearParameters();
 					stmt.setString(1,objectIdWithSuffix);
 					stmt.executeUpdate();
 					log.debug("lock ["+objectIdWithSuffix+"] removed");
 				} catch(JdbcException | SQLException e) {
-					if(itx != null) {
-						itx.setRollbackOnly();
-					}
+					itx.setRollbackOnly();
 					throw e;
 				} finally {
-					if(itx != null) {
-						itx.commit();
-					}
+					itx.complete();
 				}
 			}
 		}
@@ -271,15 +261,14 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 
 	public String getLockerInfo(String objectIdWithSuffix) {
 		try {
-			String query = getDbmsSupport().prepareQueryTextForNonLockingRead(selectQuery);
+			String query = getDbmsSupport().prepareQueryTextForNonLockingRead(CHECK_OBJECT_LOCK_QUERY);
 			try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
 				stmt.clearParameters();
 				stmt.setString(1,objectIdWithSuffix);
 
 				try (ResultSet rs = stmt.executeQuery()) {
 					if (rs.next()) {
-						String info = "objectId ["+objectId+"] of type ["+rs.getString(1)+"]. Process locked by host ["+rs.getString(2)+"] at ["+DateUtils.format(rs.getTimestamp(3))+"] with expiry date ["+DateUtils.format(rs.getTimestamp(4))+"]";
-						return info;
+						return "objectId ["+objectId+"] of type ["+rs.getString(1)+"]. Process locked by host ["+rs.getString(2)+"] at ["+DateUtils.format(rs.getTimestamp(3))+"] with expiry date ["+DateUtils.format(rs.getTimestamp(4))+"]";
 					}
 					return "(no locker info found)";
 				}
@@ -300,54 +289,68 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	}
 
 
-	@IbisDoc({"1", "Identifier for this lock", ""})
+	/** Identifier for this lock */
 	@Mandatory
 	public void setObjectId(String objectId) {
 		this.objectId = objectId;
 	}
 
-	@IbisDoc({"2", "Type for this lock: P(ermanent) or T(emporary). A temporary lock is released after the job has completed", "T"})
+	/**
+	 * Type for this lock: P(ermanent) or T(emporary). A temporary lock is released after the job has completed
+	 * @ff.default T
+	 */
 	public void setType(LockType type) {
 		this.type = type;
 	}
 
-	@IbisDoc({"Format for date which is added after <code>objectid</code> (e.g. yyyyMMdd to be sure the job is executed only once a day)", ""})
+	/** Format for date which is added after <code>objectid</code> (e.g. yyyyMMdd to be sure the job is executed only once a day) */
 	public void setDateFormatSuffix(String dateFormatSuffix) {
 		this.dateFormatSuffix = dateFormatSuffix;
 	}
 
-	@IbisDoc({"3", "The time (for type=P in days and for type=T in hours) to keep the record in the database before making it eligible for deletion by a cleanup process", "30 days (type=P), 4 hours (type=T)"})
+	/**
+	 * The time (for type=P in days and for type=T in hours) to keep the record in the database before making it eligible for deletion by a cleanup process
+	 * @ff.default 30 days (type=P), 4 hours (type=T)
+	 */
 	public void setRetention(int retention) {
 		this.retention = retention;
 	}
 
-	@IbisDoc({"4", "The number of times an attempt should be made to acquire a lock, after this many times an exception is thrown when no lock could be acquired, when -1 the number of retries is unlimited", "0"})
+	/**
+	 * The number of times an attempt should be made to acquire a lock, after this many times an exception is thrown when no lock could be acquired, when -1 the number of retries is unlimited
+	 * @ff.default 0
+	 */
 	public void setNumRetries(int numRetries) {
 		this.numRetries = numRetries;
 	}
 
-	@IbisDoc({"5", "The time in ms to wait before the first attempt to acquire a lock is made", "0"})
+	/**
+	 * The time in ms to wait before the first attempt to acquire a lock is made
+	 * @ff.default 0
+	 */
 	public void setFirstDelay(int firstDelay) {
 		this.firstDelay = firstDelay;
 	}
 
-	@IbisDoc({"6", "The time in ms to wait before another attempt to acquire a lock is made", "10000"})
+	/**
+	 * The time in ms to wait before another attempt to acquire a lock is made
+	 * @ff.default 10000
+	 */
 	public void setRetryDelay(int retryDelay) {
 		this.retryDelay = retryDelay;
 	}
 
-	public void setIgnoreTableNotExist(boolean b) {
-		ignoreTableNotExist = b;
-	}
-
-	@Override
-	public void setTransactionTimeout(int i) {
-		transactionTimeout = i;
-	}
-
-	@IbisDoc({"6", "If > 0: The time in s to wait before the INSERT statement to obtain the lock is canceled. ", "0"})
+	/**
+	 * If > 0: The time in s to wait before the INSERT statement to obtain the lock is canceled. N.B. On Oracle hitting this lockWaitTimeout may cause the error: (SQLRecoverableException) SQLState [08003], errorCode [17008] connection closed
+	 * @ff.default 0
+	 */
 	public void setLockWaitTimeout(int i) {
 		lockWaitTimeout = i;
+	}
+
+	/** If set <code>true</code> and the IBISLOCK table does not exist in the database, the process continues as if the lock was obtained */
+	public void setIgnoreTableNotExist(boolean b) {
+		ignoreTableNotExist = b;
 	}
 
 }

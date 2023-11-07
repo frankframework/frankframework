@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,12 +16,16 @@
 package nl.nn.adapterframework.senders;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -30,27 +34,39 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.pipes.IsolatedServiceCaller;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.receivers.JavaListener;
+import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
+import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 
 /**
- * Posts a message to another IBIS-adapter in the same IBIS instance.
- * 
- * An IbisLocalSender makes a call to a Receiver with either a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener}
+ * Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &lt;<code>exit</code>&gt;
+ * that has state {@link nl.nn.adapterframework.core.PipeLine.ExitState#ERROR}, an error is considered to happen
+ * in the caller which means that the <code>exception</code> forward is followed if it is present.
+ * <p/>
+ * <p/>
+ * Returns exit.code as forward name to SenderPipe provided that exit.code can be parsed as integer.
+ * For example, if the called adapter has an exit state with code
+ * <code>2</code>, then the {@link nl.nn.adapterframework.pipes.SenderPipe} supports a forward with name <code>2</code>
+ * that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example <code>c2</code>.
+ * <p/>
+ * <p/>
+ * An IbisLocalSender makes a call to a Receiver with either a {@link WebServiceListener}
  * or a {@link JavaListener JavaListener}.
  *
- * Any parameters are copied to the PipeLineSession of the service called.
- * 
+ *
+ *
  * <h3>Configuration of the Adapter to be called</h3>
  * A call to another Adapter in the same IBIS instance is preferably made using the combination
  * of an IbisLocalSender and a {@link JavaListener JavaListener}. If,
- * however, a Receiver with a {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} is already present, that can be used in some cases, too.
- *  
+ * however, a Receiver with a {@link WebServiceListener} is already present, that can be used in some cases, too.
+ *
  * <h4>configuring IbisLocalSender and JavaListener</h4>
  * <ul>
  *   <li>Define a SenderPipe with an IbisLocalSender</li>
@@ -64,9 +80,9 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Do not set the attribute <code>serviceName</code>, except if the service is to be called also
  *       from applications other than this IBIS-instance</li>
  * </ul>
- * 
+ *
  * <h4>configuring IbisLocalSender and WebServiceListener</h4>
- * 
+ *
  * <ul>
  *   <li>Define a SenderPipe with an IbisLocalSender</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourIbisWebServiceName</i></li>
@@ -77,11 +93,15 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Define a Receiver with a WebServiceListener</li>
  *   <li>Set the attribute <code>name</code> to <i>yourIbisWebServiceName</i></li>
  * </ul>
- * 
+ *
+ * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
+ * @ff.forward "&lt;Exit.code&gt;" default
+ *
  * @author Gerrit van Brakel
  * @since  4.2
  */
-public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination {
+@Category("Basic")
+public class IbisLocalSender extends SenderWithParametersBase implements HasPhysicalDestination, IThreadCreator{
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Local";
 
@@ -93,9 +113,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 	private @Getter(onMethod = @__({@Override})) boolean synchronous=true;
 	private @Getter boolean checkDependency=true;
 	private @Getter int dependencyTimeOut=60;
-	private @Getter String returnedSessionKeys=null;
-	private IsolatedServiceCaller isolatedServiceCaller;
+	private @Getter String returnedSessionKeys=""; // do not initialize with null, returned session keys must be set explicitly
+	private @Setter IsolatedServiceCaller isolatedServiceCaller;
 	private @Getter boolean throwJavaListenerNotFoundException = true;
+
+	protected @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -129,7 +151,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			while (!listenerOpened
 					&& !configuration.isUnloadInProgressOrDone()
 					&& (loops == -1 || loops > 0)) {
-				JavaListener listener = JavaListener.getListener(getJavaListener());
+				JavaListener<?> listener = JavaListener.getListener(getJavaListener());
 				if (listener!=null) {
 					listenerOpened=listener.isOpen();
 				}
@@ -162,161 +184,187 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 		}
 	}
 
-	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String correlationID = session==null ? null : session.getMessageId();
-		Message result = null;
-		HashMap<String,Object> context = null;
-		if (paramList!=null) {
-			try {
-				context = (HashMap<String,Object>) paramList.getValues(message, session).getValueMap();
-			} catch (ParameterException e) {
-				throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
+	private boolean isJavaListener() {
+		return StringUtils.isEmpty(getServiceName());
+	}
+
+	private String getServiceIndication(PipeLineSession session) throws SenderException {
+		return (isJavaListener() ? "JavaListener [" : "Service [") + getActualServiceName(session) + "]";
+	}
+
+	private ServiceClient getServiceImplementation(PipeLineSession session) throws SenderException {
+		String actualServiceName = getActualServiceName(session);
+		if (isJavaListener()) {
+			if (!JavaListener.getListenerNames().contains(actualServiceName)) {
+				throw new SenderException("could not find JavaListener [" + actualServiceName + "]");
 			}
-		}
-		if (context==null) {
-			context = new HashMap<>();
-		}
-		String serviceIndication;
-		if (StringUtils.isNotEmpty(getServiceName())) {
-			serviceIndication="service ["+getServiceName()+"]";
-			try {
-				if (isIsolated()) {
-					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
-						result = isolatedServiceCaller.callServiceIsolated(getServiceName(), correlationID, message, context, false);
-					} else {
-						log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
-						isolatedServiceCaller.callServiceAsynchronous(getServiceName(), correlationID, message, context, false);
-						result = message;
-					}
-				} else {
-					log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
-					result = new Message(ServiceDispatcher.getInstance().dispatchRequest(getServiceName(), correlationID, message.asString(), context));
-				}
-			} catch (ListenerException | IOException e) {
-				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
-					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication+"",e);
-				}
-				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication+"",e);
-			} finally {
-				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-				}
-				if (session!=null) {
-					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
-				}
-			} 
+			return JavaListener.getListener(actualServiceName);
 		} else {
-			String javaListener;
+			if (!ServiceDispatcher.getInstance().isRegisteredServiceListener(actualServiceName)) {
+				throw new SenderException("No service with name [" + actualServiceName + "] has been registered");
+			}
+			return ServiceDispatcher.getInstance().getListener(actualServiceName);
+		}
+	}
+
+	@Nonnull
+	private String getActualServiceName(PipeLineSession session) throws SenderException {
+		if (isJavaListener()) {
+			String actualJavaListenerName;
 			if (StringUtils.isNotEmpty(getJavaListenerSessionKey())) {
 				try {
-					javaListener = session.getMessage(getJavaListenerSessionKey()).asString();
-				} catch (IOException e) {
-					throw new SenderException("unable to resolve session key ["+getJavaListenerSessionKey()+"]", e);
+					actualJavaListenerName = session.getString(getJavaListenerSessionKey());
+				} catch (Exception e) {
+					log.warn("unable to resolve session key [" + getJavaListenerSessionKey() + "]", e);
+					actualJavaListenerName = null;
+				}
+				if (actualJavaListenerName == null) {
+					throw new SenderException("unable to resolve session key [" + getJavaListenerSessionKey() + "]");
 				}
 			} else {
-				javaListener = getJavaListener();
+				actualJavaListenerName = getJavaListener();
 			}
-			serviceIndication="JavaListener ["+javaListener+"]";
-			try {
-				JavaListener listener= JavaListener.getListener(javaListener);
-				if (listener==null) {
-					String msg = "could not find JavaListener ["+javaListener+"]";
-					if (isThrowJavaListenerNotFoundException()) {
-						throw new SenderException(msg);
-					}
-					log.info(getLogPrefix()+msg);
-					return new Message("<error>"+msg+"</error>");
+			return actualJavaListenerName;
+		} else {
+			return getServiceName();
+		}
+	}
+
+	@Override
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		SenderResult result;
+		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
+			if (session.getCorrelationId() != null) {
+				subAdapterSession.put(PipeLineSession.CORRELATION_ID_KEY, session.getCorrelationId());
+			}
+			if (paramList != null) {
+				try {
+					Map<String,Object> paramValues = paramList.getValues(message, session).getValueMap();
+					subAdapterSession.putAll(paramValues);
+				} catch (ParameterException e) {
+					throw new SenderException(getLogPrefix() + "exception evaluating parameters", e);
 				}
+			}
+			final ServiceClient serviceClient;
+			try {
+				serviceClient = getServiceImplementation(session);
+			} catch (SenderException e) {
+				if (isThrowJavaListenerNotFoundException()) {
+					throw e;
+				}
+				log.info("{} {}", getLogPrefix(), e.getMessage());
+				return new SenderResult(new Message("<error>" + e.getMessage() + "</error>"), e.getMessage());
+			}
+			final String serviceIndication = getServiceIndication(session);
+
+			try {
 				if (isIsolated()) {
 					if (isSynchronous()) {
-						log.debug(getLogPrefix()+"calling "+serviceIndication+" in separate Thread");
-						result = isolatedServiceCaller.callServiceIsolated(javaListener, correlationID, message, context, true);
+						log.debug("{} calling {} in separate Thread", this::getLogPrefix,() -> serviceIndication);
+						result = isolatedServiceCaller.callServiceIsolated(serviceClient, message, subAdapterSession, threadLifeCycleEventListener);
 					} else {
-						log.debug(getLogPrefix()+"calling "+serviceIndication+" in asynchronously");
-						isolatedServiceCaller.callServiceAsynchronous(javaListener, correlationID, message, context, true);
-						result = message;
+						// We return same message as we send, so it should be preserved in case it's not repeatable
+						message.preserve();
+						log.debug("{} calling {} in asynchronously", this::getLogPrefix, () -> serviceIndication);
+						isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, subAdapterSession, threadLifeCycleEventListener);
+						result = new SenderResult(message);
 					}
 				} else {
-					log.debug(getLogPrefix()+"calling "+serviceIndication+" in same Thread");
-					result = new Message(listener.processRequest(correlationID,message.asString(),context));
+					log.debug("{} calling {} in same Thread", this::getLogPrefix, () -> serviceIndication);
+					result = new SenderResult(serviceClient.processRequest(message, subAdapterSession));
 				}
+
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
 					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
 				}
 				throw new SenderException(getLogPrefix()+"exception calling "+serviceIndication,e);
 			} finally {
-				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-					log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
+				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 				}
-				if (session!=null) {
-					Misc.copyContext(getReturnedSessionKeys(), context, session, this);
-				}
+
+				// The original message will be set by the InputOutputPipeLineProcessor, which add it to the autocloseables list.
+				// The input message should not be managed by this sub-PipelineSession but rather the original pipeline
+				subAdapterSession.unscheduleCloseOnSessionExit(message);
+				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
+
+			ExitState exitState = (ExitState)subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+			Object exitCode = subAdapterSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+
+			String forwardName = Objects.toString(exitCode, null);
+			result.setForwardName(forwardName);
+			result.setSuccess(exitState==null || exitState==ExitState.SUCCESS);
+			result.setErrorMessage("exitState="+exitState);
+
+			result.getResult().unscheduleFromCloseOnExitOf(subAdapterSession);
+			result.getResult().closeOnCloseOf(session, this);
+
+			return result;
 		}
-		
-		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
-		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-		if (exitState!=null && exitState!=ExitState.SUCCESS) {
-			context.put("originalResult", result);
-			throw new SenderException(getLogPrefix()+"call to "+serviceIndication+" resulted in exitState ["+exitState+"] exitCode ["+exitCode+"]");
-		}
-		return result;
 	}
 
-	/**
-	 * Sets a serviceName under which the JavaListener or WebServiceListener is registered.
-	 */
-	@IbisDoc({"name of the {@link nl.nn.adapterframework.http.WebServiceListener WebServiceListener} that should be called", ""})
+	/** Name of the {@link WebServiceListener} that should be called */
+	@Deprecated
 	public void setServiceName(String serviceName) {
 		this.serviceName = serviceName;
 	}
 
-	/**
-	 * When <code>true</code>, the call is made in a separate thread, possibly using separate transaction. 
-	 */
-	@IbisDoc({"when <code>true</code>, the call is made in a separate thread, possibly using separate transaction", "false"})
-	public void setIsolated(boolean b) {
-		isolated = b;
-	}
-
-	@IbisDoc({"name of the sessionkey which holds the name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called", ""})
-	public void setJavaListenerSessionKey(String string) {
-		javaListenerSessionKey = string;
-	}
-
-	@IbisDoc({"name of the {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} that should be called (will be ignored when javaListenerSessionKey is set)", ""})
+	/** Name of the {@link JavaListener} that should be called (will be ignored when javaListenerSessionKey is set) */
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}
 
-	@IbisDoc({" when set <code>false</code>, the call is made asynchronously. this implies <code>isolated=true</code>", "true"})
-	public void setSynchronous(boolean b) {
-		synchronous = b;
+	/** Name of the sessionKey which holds the name of the {@link JavaListener} that should be called */
+	public void setJavaListenerSessionKey(String string) {
+		javaListenerSessionKey = string;
 	}
 
-	@IbisDoc({"when <code>true</code>, the sender waits upon open until the called {@link nl.nn.adapterframework.receivers.JavaListener JavaListener} is opened", "true"})
-	public void setCheckDependency(boolean b) {
-		checkDependency = b;
-	}
-
-	@IbisDoc({"maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely", "60"})
-	public void setDependencyTimeOut(int i) {
-		dependencyTimeOut = i;
-	}
-
-	@IbisDoc({"comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. (Only for listeners that support it, like JavaListener)<br/>N.B. To get this working, the attribute returnedSessionKeys must also be set on the corresponding Receiver", ""})
+	/**
+	 * Comma separated list of keys of session variables that will be returned to caller, for correct results as well as for erroneous results.
+	 * The set of available sessionKeys to be returned might be limited by the returnedSessionKeys attribute of the corresponding JavaListener.
+	 */
 	public void setReturnedSessionKeys(String string) {
 		returnedSessionKeys = string;
 	}
 
-	public void setIsolatedServiceCaller(IsolatedServiceCaller isolatedServiceCaller) {
-		this.isolatedServiceCaller = isolatedServiceCaller;
+	/**
+	 * If set <code>false</code>, the call is made asynchronously. This implies isolated=<code>true</code>
+	 * @ff.default true
+	 */
+	public void setSynchronous(boolean b) {
+		synchronous = b;
 	}
 
-	@IbisDoc({"when set <code>false</code>, the xml-string \"&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception", "true"})
+	/**
+	 * If <code>true</code>, the call is made in a separate thread, possibly using separate transaction
+	 * @ff.default false
+	 */
+	public void setIsolated(boolean b) {
+		isolated = b;
+	}
+
+	/**
+	 * If <code>true</code>, the sender waits upon open until the called {@link JavaListener} is opened
+	 * @ff.default true
+	 */
+	public void setCheckDependency(boolean b) {
+		checkDependency = b;
+	}
+
+	/**
+	 * Maximum time (in seconds) the sender waits for the listener to start. A value of -1 indicates to wait indefinitely
+	 * @ff.default 60
+	 */
+	public void setDependencyTimeOut(int i) {
+		dependencyTimeOut = i;
+	}
+
+	/**
+	 * If set <code>false</code>, the xml-string \"&lt;error&gt;could not find JavaListener [...]&lt;/error&gt;\" is returned instead of throwing a senderexception
+	 * @ff.default true
+	 */
 	public void setThrowJavaListenerNotFoundException(boolean b) {
 		throwJavaListenerNotFoundException = b;
 	}

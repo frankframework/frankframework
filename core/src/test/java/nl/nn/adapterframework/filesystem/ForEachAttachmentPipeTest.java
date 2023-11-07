@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -25,10 +25,11 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 	}
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		pipe = createForEachAttachmentPipe();
+		autowireByName(pipe);
 		pipe.registerForward(new PipeForward("success",null));
 		SenderSeries series = new SenderSeries();
 		series.registerSender(new EchoSender());
@@ -36,7 +37,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 	}
 
 	@Override
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		if (pipe!=null) {
 			pipe.stop();
@@ -54,7 +55,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		pipe.configure();
 		pipe.start();
 	}
-	
+
 	@Test
 	public void forEachAttachmentPipeTestBasics() throws Exception {
 		String filename = "testAttachmentBasics" + FILE1;
@@ -67,7 +68,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		String propname2="propname2";
 		String propvalue1="propvalue1";
 		String propvalue2="propvalue2";
-		
+
 		String expected="<results>\n"+
 							"<result item=\"1\">\n"+
 							"<attachment name=\"testAttachmentName\" filename=\"testAttachmentFileName\" contentType=\"testAttachmentContentType\" size=\"18\">\n"+
@@ -78,7 +79,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 							"</attachment>\n"+
 							"</result>\n"+
 						"</results>";
-		
+
 		pipe.configure();
 		pipe.start();
 
@@ -88,7 +89,7 @@ public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<
 		getHelper().setProperty(attachment, propname2, propvalue2);
 		getHelper().addAttachment(null, filename, attachment);
 		waitForActionToFinish();
-		
+
 		PipeLineSession session = new PipeLineSession();
 
 

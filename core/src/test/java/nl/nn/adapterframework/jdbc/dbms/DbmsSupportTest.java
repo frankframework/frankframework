@@ -24,18 +24,23 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
 import org.junit.Test;
 
+import lombok.Getter;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
-import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class DbmsSupportTest extends JdbcTestBase {
@@ -47,9 +52,29 @@ public class DbmsSupportTest extends JdbcTestBase {
 	}
 
 	@Test
-	public void testName() {
+	public void testNameEqualsDbmsKey() {
 		assertEquals(productKey, dbmsSupport.getDbmsName());
 		assertEquals(productKey, dbmsSupport.getDbms().getKey());
+	}
+
+	@Test
+	public void testTableLessSelect() throws JdbcException {
+		assertEquals(4, JdbcUtil.executeIntQuery(connection,"SELECT 2+2 "+dbmsSupport.getFromForTablelessSelect()));
+	}
+
+	@Test
+	public void testTableLessSelectWithIntParam() throws JdbcException {
+		assertEquals(4, JdbcUtil.executeIntQuery(connection,"SELECT 1+? "+dbmsSupport.getFromForTablelessSelect(), 3));
+	}
+
+//	@Test
+//	public void testTableLessSelectWithStringParam() throws JdbcException {
+//		assertEquals(3, JdbcUtil.executeIntQuery(connection,"SELECT ''||? "+dbmsSupport.getFromForTablelessSelect(), 3));
+//	}
+
+	@Test
+	public void testInsertSelect() throws JdbcException {
+		JdbcUtil.executeStatement(connection,"INSERT INTO "+TEST_TABLE+" (TKEY, TINT) SELECT 11, 2+2 "+dbmsSupport.getFromForTablelessSelect()+" WHERE 1=1");
 	}
 
 	@Test
@@ -91,6 +116,43 @@ public class DbmsSupportTest extends JdbcTestBase {
 		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
 		assertTrue("Should have found existing column in schema ["+schema+"]", dbmsSupport.isColumnPresent(connection, schema, TEST_TABLE.toLowerCase(), "TINT"));
 		assertTrue("Should have found existing column in schema ["+schema+"]", dbmsSupport.isColumnPresent(connection, schema, TEST_TABLE.toUpperCase(), "TINT"));
+	}
+
+	@Test
+	public void testHasIndexOnColumn() throws JdbcException {
+		String schema = dbmsSupport.getSchema(connection);
+		assertTrue("Should have been index on primary key column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "TKEY"));
+		assertTrue("Should have been index on primary key column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "tkey"));
+		assertTrue("Should have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "tINT")); // also check first column of multi column index
+		assertFalse("Should not have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "TBOOLEAN"));
+		assertFalse("Should not have been index on column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE, "tboolean"));
+		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
+		assertTrue("Should have been index on primary key column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE.toLowerCase(), "TKEY"));
+		assertTrue("Should have been index on primary key column", dbmsSupport.hasIndexOnColumn(connection, schema, TEST_TABLE.toUpperCase(), "TKEY"));
+	}
+
+	@Test
+	public void testHasIndexOnColumns() throws JdbcException {
+		String schema = dbmsSupport.getSchema(connection);
+		List<String> indexedColums = new ArrayList<>();
+		indexedColums.add("tINT");
+		indexedColums.add("tDATE");
+		List<String> indexedColumsUC = new ArrayList<>();
+		indexedColumsUC.add("tINT");
+		indexedColumsUC.add("tDATE");
+		List<String> indexedColumsLC = new ArrayList<>();
+		indexedColumsLC.add("tINT");
+		indexedColumsLC.add("tDATE");
+		List<String> indexedColumsWrongOrder = new ArrayList<>();
+		indexedColumsWrongOrder.add("tDATE");
+		indexedColumsWrongOrder.add("tINT");
+		assertTrue("Should have been index on columns", dbmsSupport.hasIndexOnColumns(connection, schema, TEST_TABLE, indexedColums));
+		assertTrue("Should have been index on columns", dbmsSupport.hasIndexOnColumns(connection, schema, TEST_TABLE, indexedColumsUC));
+		assertTrue("Should have been index on columns", dbmsSupport.hasIndexOnColumns(connection, schema, TEST_TABLE, indexedColumsLC));
+		assertFalse("Should not have been index on columns", dbmsSupport.hasIndexOnColumns(connection, schema, TEST_TABLE, indexedColumsWrongOrder));
+		assumeThat(productKey, not(anyOf(equalTo("MariaDB"),equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
+		assertTrue("Should have been index on columns", dbmsSupport.hasIndexOnColumns(connection, schema, TEST_TABLE.toLowerCase(), indexedColums));
+		assertTrue("Should have been index on columns", dbmsSupport.hasIndexOnColumns(connection, schema, TEST_TABLE.toUpperCase(), indexedColums));
 	}
 
 	public void testGetTableColumns(String tableName) throws Exception {
@@ -175,24 +237,24 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testGetDateTimeLiteral() throws Exception {
 		JdbcUtil.executeStatement(connection, "INSERT INTO "+TEST_TABLE+"(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3,"+dbmsSupport.getDateAndOffset(dbmsSupport.getDatetimeLiteral(new Date()),4)+","+dbmsSupport.getDatetimeLiteral(new Date())+")");
-		Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM "+TEST_TABLE+" WHERE TKEY=1", null);
+		Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM "+TEST_TABLE+" WHERE TKEY=1", null, new PipeLineSession());
 		System.out.println("result:"+result);
 	}
 
 	@Test
 	public void testSysDate() throws Exception {
 		JdbcUtil.executeStatement(connection, "INSERT INTO "+TEST_TABLE+"(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (2,'xxx',3,"+dbmsSupport.getSysDate()+","+dbmsSupport.getSysDate()+")");
-		Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM "+TEST_TABLE+" WHERE TKEY=2", null);
+		Object result = JdbcUtil.executeQuery(dbmsSupport, connection, "SELECT "+dbmsSupport.getTimestampAsDate("TDATETIME")+" FROM "+TEST_TABLE+" WHERE TKEY=2", null, new PipeLineSession());
 		System.out.println("result:"+result);
 	}
 
 	@Test
 	public void testNumericAsDouble() throws Exception {
 		String number = "1234.5678";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+"(TKEY, TNUMBER) VALUES (3,?)", QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		System.out.println("executing query ["+context.getQuery()+"]");
-		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery())) {
+		String query = "INSERT INTO "+TEST_TABLE+"(TKEY, TNUMBER) VALUES (3,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		System.out.println("executing query ["+translatedQuery+"]");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
 			stmt.setDouble(1, Double.parseDouble(number));
 			stmt.execute();
 		}
@@ -207,19 +269,19 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testNumericAsFloat() throws Exception {
 		assumeFalse(dbmsSupport.getDbms()==Dbms.POSTGRESQL); // This fails on PostgreSQL, precision of setFloat appears to be too low"
-		String number = "1234.5677";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+"(TKEY, TNUMBER) VALUES (4,?)", QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		System.out.println("executing query ["+context.getQuery()+"]");
-		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery())) {
-			stmt.setFloat(1, Float.parseFloat(number));
+		float number = 1234.5677F;
+		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER) VALUES (4,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		System.out.println("executing query ["+translatedQuery+"]");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
+			stmt.setFloat(1, number);
 			stmt.execute();
 		}
 
 		try (PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER FROM "+TEST_TABLE+" WHERE TKEY=4", QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				assertThat(resultSet.getString(1), StringStartsWith.startsWith(number));
+				assertEquals(number, resultSet.getFloat(1), 0.01);
 			}
 		}
 	}
@@ -250,10 +312,10 @@ public class DbmsSupportTest extends JdbcTestBase {
 		String date = DateUtils.format(new Date(), DateUtils.shortIsoFormat);
 
 		assumeFalse(dbmsSupport.getDbmsName().equals("Oracle")); // This fails on Oracle, cannot set a non-integer number via setString()
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+"(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)", QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		System.out.println("executing query ["+context.getQuery()+"]");
-		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery())) {
+		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		System.out.println("executing query ["+translatedQuery+"]");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
 			JdbcUtil.setParameter(stmt, 1, number, dbmsSupport.isParameterTypeMatchRequired());
 			JdbcUtil.setParameter(stmt, 2, date, dbmsSupport.isParameterTypeMatchRequired());
 			JdbcUtil.setParameter(stmt, 3, datetime, dbmsSupport.isParameterTypeMatchRequired());
@@ -331,9 +393,9 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testWriteClobInOneStep() throws Exception {
 		String clobContents = "Dit is de content van de clob";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+" (TKEY,TCLOB) VALUES (12,?)", QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery());) {
+		String query = "INSERT INTO " + TEST_TABLE + " (TKEY,TCLOB) VALUES (12,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery);) {
 			stmt.setString(1, clobContents);
 			stmt.execute();
 		}
@@ -446,9 +508,9 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testWriteBlobInOneStep() throws Exception {
 		String blobContents = "Dit is de content van de blob";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+" (TKEY,TBLOB) VALUES (24,?)", QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery());) {
+		String query = "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB) VALUES (24,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery);) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
 			stmt.execute();
 		}
@@ -481,9 +543,9 @@ public class DbmsSupportTest extends JdbcTestBase {
 	public void testReadBlobAndCLobUsingJdbcUtilGetValue() throws Exception {
 		String blobContents = "Dit is de content van de blob";
 		String clobContents = "Dit is de content van de clob";
-		QueryExecutionContext context = new QueryExecutionContext("INSERT INTO "+TEST_TABLE+" (TKEY,TBLOB,TCLOB) VALUES (24,?,?)", QueryType.OTHER, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		try (PreparedStatement stmt = connection.prepareStatement(context.getQuery());) {
+		String query = "INSERT INTO " + TEST_TABLE + " (TKEY,TBLOB,TCLOB) VALUES (24,?,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery);) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
 			stmt.setString(2, clobContents);
 			stmt.execute();
@@ -516,7 +578,6 @@ public class DbmsSupportTest extends JdbcTestBase {
 
 	private boolean peek(String query) throws Exception {
 		try (Connection peekConnection=getConnection()) {
-			peekConnection.setAutoCommit(false);
 			return !JdbcUtil.isQueryResultEmpty(peekConnection, query);
 		}
 	}
@@ -536,6 +597,8 @@ public class DbmsSupportTest extends JdbcTestBase {
 		assertEquals(40, JdbcUtil.executeIntQuery(connection, readQueueQuery));
 		assertEquals(40, JdbcUtil.executeIntQuery(connection, peekQueueQuery));
 
+		ReadNextRecordConcurrentlyTester nextRecordTester = null;
+		Semaphore actionFinished = null;
 		try (Connection workConn1=getConnection()) {
 			workConn1.setAutoCommit(false);
 			try (Statement stmt1= workConn1.createStatement()) {
@@ -573,10 +636,67 @@ public class DbmsSupportTest extends JdbcTestBase {
 									assertEquals(41,rs2.getInt(1));	// find the second record
 								}
 							}
+							workConn2.rollback();
 						}
+					} else {
+						// Next best behaviour for DBMSes that have no skip lock functionality (like MariaDB):
+						// another thread must find the next record when the thread that has the current record moves it out of the way
+
+						executeTranslatedQuery(connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (41,100)", QueryType.OTHER);
+
+						actionFinished = new Semaphore();
+						nextRecordTester = new ReadNextRecordConcurrentlyTester(this::getConnection, readQueueQuery);
+						nextRecordTester.setActionDone(actionFinished);
+						nextRecordTester.start();
+
+						Thread.sleep(500);
+
+						executeTranslatedQuery(workConn1, "UPDATE "+TEST_TABLE+" SET TINT=101  WHERE TKEY=40", QueryType.OTHER);
+
+						workConn1.commit();
+
 					}
 				}
 			}
+			workConn1.commit();
+			if (nextRecordTester!=null) {
+				actionFinished.acquire();
+				assertTrue("Did not read next record", nextRecordTester.isPassed());
+			}
+		}
+	}
+
+	private class ReadNextRecordConcurrentlyTester extends ConcurrentJdbcActionTester {
+
+		private String query;
+		private @Getter int numRowsUpdated=-1;
+		private @Getter boolean passed = false;
+
+		public ReadNextRecordConcurrentlyTester(ThrowingSupplier<Connection,SQLException> connectionSupplier, String query) {
+			super(connectionSupplier);
+			this.query = query;
+		}
+
+		@Override
+		public void initAction(Connection conn) throws Exception {
+			conn.setAutoCommit(false);
+		}
+
+		@Override
+		public void action(Connection conn) throws Exception {
+			try (Statement stmt2= connection.createStatement()) {
+				stmt2.setFetchSize(1);
+				try (ResultSet rs2=stmt2.executeQuery(query)) {
+					assertTrue(rs2.next());
+					assertEquals(41,rs2.getInt(1));	// find the second record
+				}
+			}
+			passed = true;
+		}
+
+		@Override
+		public void finalizeAction(Connection conn) throws Exception {
+			conn.rollback();
 		}
 	}
 

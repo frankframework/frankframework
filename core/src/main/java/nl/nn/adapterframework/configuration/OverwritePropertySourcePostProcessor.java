@@ -20,7 +20,7 @@ import java.util.Properties;
 import nl.nn.adapterframework.lifecycle.CustomPropertySourcePostProcessor;
 import nl.nn.adapterframework.util.AppConstants;
 
- /**
+/**
  * Overwrite a property available to the Ibis configuration and the Spring
  * configuration. When the property isn't present it will be added.
  *

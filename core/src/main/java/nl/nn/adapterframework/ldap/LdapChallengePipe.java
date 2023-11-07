@@ -25,7 +25,6 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.ldap.LdapSender.Operation;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -60,7 +59,6 @@ public class LdapChallengePipe extends FixedForwardPipe {
 	private String ldapProviderURL=null;
 	private String initialContextFactoryName=null;
 	private String errorSessionKey=null;
-	
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -88,11 +86,11 @@ public class LdapChallengePipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message msg, PipeLineSession pls) throws PipeRunException {
 
 		LdapSender ldapSender = new LdapSender();
-		
+
 		String ldapProviderURL;
 		String credentials;
 		String principal;
-		
+
 		Map<String,Object> paramMap=null;
 		try {
 			paramMap = getParameterList().getValues(msg, pls).getValueMap();
@@ -106,10 +104,10 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "Invalid parameter", e);
 		}
-			
+
 		ldapSender.setErrorSessionKey(getErrorSessionKey());
 		if (StringUtils.isEmpty(ldapProviderURL)) {
-			throw new PipeRunException(this, "ldapProviderURL is empty");			
+			throw new PipeRunException(this, "ldapProviderURL is empty");
 		}
 		if (StringUtils.isEmpty(principal)) {
 //			throw new PipeRunException(this, "principal is empty");
@@ -121,9 +119,9 @@ public class LdapChallengePipe extends FixedForwardPipe {
 			handleError(ldapSender,pls,49,"Credentials are Empty");
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
-			
+
 		ldapSender.addParameter(new Parameter("entryName", principal));
-			
+
 		ldapSender.setUsePooling(false);
 		ldapSender.setLdapProviderURL(ldapProviderURL);
 		if (StringUtils.isNotEmpty(getInitialContextFactoryName())) {
@@ -144,16 +142,16 @@ public class LdapChallengePipe extends FixedForwardPipe {
 			}
 			return new PipeRunResult(findForward("invalid"), msg);
 		}
-						
+
 		return new PipeRunResult(getSuccessForward(), msg);
 	}
-	
+
 	protected void handleError(LdapSender ldapSender, PipeLineSession session, int code, String message) {
 		Throwable t = new ConfigurationException(LdapSender.LDAP_ERROR_MAGIC_STRING+code+"-"+message+"]");
 		ldapSender.storeLdapException(t, session);
 	}
 
-	@IbisDoc({"url to the ldap server. <br/>example: ldap://su05b9.itc.intranet", ""})
+	/** url to the ldap server. <br/>example: ldap://su05b9.itc.intranet */
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
 	}
@@ -161,7 +159,10 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		return ldapProviderURL;
 	}
 
-	@IbisDoc({"class to use as initial context factory", "com.sun.jndi.ldap.ldapctxfactory"})
+	/**
+	 * class to use as initial context factory
+	 * @ff.default com.sun.jndi.ldap.ldapctxfactory
+	 */
 	public void setInitialContextFactoryName(String value) {
 		initialContextFactoryName = value;
 	}
@@ -169,10 +170,7 @@ public class LdapChallengePipe extends FixedForwardPipe {
 		return initialContextFactoryName;
 	}
 
-	/**
-	 * @since 4.7
-	 */
-	@IbisDoc({"key of session variable used to store cause of errors", ""})
+	/** key of session variable used to store cause of errors */
 	public void setErrorSessionKey(String string) {
 		errorSessionKey = string;
 	}

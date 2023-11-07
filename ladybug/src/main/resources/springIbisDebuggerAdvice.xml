@@ -41,7 +41,7 @@
 						*
 						nl.nn.adapterframework.processors.InputOutputPipeProcessor.processPipe(
 							nl.nn.adapterframework.core.PipeLine,
-							nl.nn.adapterframework.core.IPipe, 
+							nl.nn.adapterframework.core.IPipe,
 							nl.nn.adapterframework.stream.Message,
 							nl.nn.adapterframework.core.PipeLineSession
 						)
@@ -59,7 +59,7 @@
 						*
 						nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor.processPipe(
 							nl.nn.adapterframework.core.PipeLine,
-							nl.nn.adapterframework.core.IPipe, 
+							nl.nn.adapterframework.core.IPipe,
 							nl.nn.adapterframework.stream.Message,
 							nl.nn.adapterframework.core.PipeLineSession
 						)
@@ -95,7 +95,7 @@
 					execution(
 						*
 						nl.nn.adapterframework.core.ISender.sendMessage(
-							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.stream.Message,
 							nl.nn.adapterframework.core.PipeLineSession
 						)
 					)
@@ -112,7 +112,7 @@
 						*
 						nl.nn.adapterframework.core.IBlockEnabledSender+.sendMessage(
 							*,
-							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.stream.Message,
 							nl.nn.adapterframework.core.PipeLineSession
 						)
 					)
@@ -128,7 +128,7 @@
 	 				execution(
 	 					*
 	 					nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
-	 						nl.nn.adapterframework.core.PipeLineSession, 
+	 						nl.nn.adapterframework.core.PipeLineSession,
 	 						nl.nn.adapterframework.core.IForwardTarget
 	 					)
 	 				)
@@ -159,8 +159,8 @@
 					execution(
 						*
 						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
-							nl.nn.adapterframework.stream.Message, 
-							nl.nn.adapterframework.core.PipeLineSession, 
+							nl.nn.adapterframework.stream.Message,
+							nl.nn.adapterframework.core.PipeLineSession,
 							nl.nn.adapterframework.core.IForwardTarget
 						)
 					)
@@ -176,8 +176,8 @@
 					execution(
 						*
 						nl.nn.adapterframework.processors.CacheSenderWrapperProcessor.sendMessage(
-							nl.nn.adapterframework.senders.SenderWrapperBase, 
-							nl.nn.adapterframework.stream.Message, 
+							nl.nn.adapterframework.senders.SenderWrapperBase,
+							nl.nn.adapterframework.stream.Message,
 							nl.nn.adapterframework.core.PipeLineSession
 						)
 					)

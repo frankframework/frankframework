@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.DependsOn;
@@ -35,8 +34,10 @@ import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.lifecycle.ServletManager;
+import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 @IbisInitializer
 @DependsOn({"webServices10", "webServices11"})
@@ -47,8 +48,9 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 	private static final long serialVersionUID = 3L;
 
 	private static final boolean ACTIVE = AppConstants.getInstance().getBoolean("cmis.mtomproxy.active", false);
-	private static final String PROXY_SERVLET = AppConstants.getInstance().getProperty("cmis.mtomproxy.servlet", "webServices11");
-	private Servlet cmisWebServiceServlet = null;
+	private static final String PROXY_SERVLET = AppConstants.getInstance().getProperty("cmis.mtomproxy.servlet", "WebServices11");
+	private transient Servlet cmisWebServiceServlet = null;
+	private transient ApplicationContext applicationContext;
 
 	@Override
 	public String getUrlMapping() {
@@ -66,27 +68,36 @@ public class MtomProxy extends HttpServletBase implements InitializingBean, Appl
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(ACTIVE && cmisWebServiceServlet == null) {
+		if(!isEnabled()) {
+			return;
+		}
+
+		Map<String, Servlet> dynamicServlets = applicationContext.getBeansOfType(DynamicRegistration.Servlet.class);
+		String servletName = StringUtil.lcFirst(PROXY_SERVLET);
+		cmisWebServiceServlet = dynamicServlets.get(servletName);
+
+		ServletManager servletManager = applicationContext.getBean("servletManager", ServletManager.class);
+		ServletConfiguration config = servletManager.getServlet(PROXY_SERVLET);
+
+		if(cmisWebServiceServlet == null || config == null) {
 			log.warn("unable to find servlet [" + PROXY_SERVLET + "]");
 			throw new IllegalStateException("proxied servlet ["+PROXY_SERVLET+"] not found");
 		}
-		if(ACTIVE && cmisWebServiceServlet.loadOnStartUp() < 0) {
+		if(config.getLoadOnStartup() < 0) {
 			throw new IllegalStateException("proxied servlet ["+PROXY_SERVLET+"] must have load on startup enabled!");
 		}
+
+		ApplicationWarnings.add(log, "CmisProxy has been deprecated. Please enable the MtomFilter [cmis.mtomfilter.active=true] and use default cmis endpoints instead!");
+
 	}
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		Map<String, Servlet> dynamicServlets = applicationContext.getBeansOfType(DynamicRegistration.Servlet.class);
-		cmisWebServiceServlet = dynamicServlets.get(PROXY_SERVLET);
+		this.applicationContext = applicationContext;
 	}
 
-	@Autowired
 	@Override
-	public void setServletManager(ServletManager servletManager) {
-		if(ACTIVE) {
-			super.setServletManager(servletManager);
-			ApplicationWarnings.add(log, "CmisProxy has been deprecated. Please enable the MtomFilter [cmis.mtomfilter.active=true] and use default cmis endpoints instead!");
-		}
+	public boolean isEnabled() {
+		return ACTIVE;
 	}
 }

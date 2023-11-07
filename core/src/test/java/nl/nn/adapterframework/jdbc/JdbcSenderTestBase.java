@@ -5,6 +5,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mock;
 
+import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
@@ -24,10 +25,8 @@ public abstract class JdbcSenderTestBase<S extends JdbcSenderBase<?>> extends Jd
 	@Before
 	public void setUp() throws Exception {
 		session = new PipeLineSession();
-		String messageId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb1";
-		String technicalCorrelationId = "testmessageac13ecb1--30fe9225_16caa708707_-7fb2";
-		session.put(PipeLineSession.messageIdKey, messageId);
-		session.put(PipeLineSession.technicalCorrelationIdKey, technicalCorrelationId);
+		session.put(PipeLineSession.MESSAGE_ID_KEY, ConfiguredTestBase.testMessageId);
+		session.put(PipeLineSession.CORRELATION_ID_KEY, ConfiguredTestBase.testCorrelationId);
 		sender = createSender();
 		autowire(sender);
 	}
@@ -47,6 +46,6 @@ public abstract class JdbcSenderTestBase<S extends JdbcSenderBase<?>> extends Jd
 		return sendMessage(message, session);
 	}
 	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return sender.sendMessage(message, session);
+		return sender.sendMessageOrThrow(message, session);
 	}
 }

@@ -8,7 +8,7 @@
 	<!ENTITY RecoverAdapters SYSTEM "./ConfigurationRecoverAdapters.xml">
 	<!ENTITY ManageFileSystem SYSTEM "./ConfigurationManageFileSystem.xml">
 ]>
-<configuration name="IAF_Util">
+<configuration>
 	<!-- include configuration for managing the database -->
 	&ManageDatabase;
 	<!-- include configuration for reloading configurations -->

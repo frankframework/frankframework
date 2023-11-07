@@ -24,9 +24,11 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 
@@ -52,11 +54,13 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 		this(tableListener);
 		parent=tableListener;
 		setKeyField(tableListener.getKeyField());
-		setIdField(tableListener.getKeyField());
+		setIdField(tableListener.getMessageIdField());
+		setCorrelationIdField(tableListener.getCorrelationIdField());
 		setTableName(tableListener.getTableName());
 		tableAlias = tableListener.getTableAlias();
 		setMessageField(StringUtils.isNotEmpty(tableListener.getMessageField())?tableListener.getMessageField():tableListener.getKeyField());
 		setDateField(tableListener.getTimestampField());
+		setCommentField(tableListener.getCommentField());
 		setType(storageType.getCode());
 		selectCondition=tableListener.getStatusField()+ "='"+statusValue+"'";
 		if (StringUtils.isNotEmpty(tableListener.getSelectCondition())) {
@@ -95,13 +99,16 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	}
 
 	@Override
-	protected M retrieveObject(ResultSet rs, int columnIndex) throws JdbcException, SQLException {
+	protected RawMessageWrapper<M> retrieveObject(String storageKey, ResultSet rs, int columnIndex) throws JdbcException, SQLException {
 		if (tableListener!=null) {
 			return tableListener.extractRawMessage(rs);
 		}
-		return (M)rs.getString(columnIndex);
+		//noinspection unchecked
+		RawMessageWrapper<M> rawMessageWrapper = (RawMessageWrapper<M>) new RawMessageWrapper<>(rs.getString(columnIndex), storageKey, null);
+		rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
+		return rawMessageWrapper;
 	}
-	
+
 	protected void createQueryTexts(IDbmsSupport dbmsSupport) throws ConfigurationException {
 		deleteQuery = "DELETE" + getFromClause(true) + getWhereClause(getKeyField()+"=?",true);
 		selectContextQuery = "SELECT "+getListClause(true)+ getWhereClause(getKeyField()+"=?",true);
@@ -139,10 +146,13 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 			whereClause=getDateField()+">=?";
 		}
 		if (endTime!=null) {
-			whereClause=Misc.concatStrings(whereClause, " AND ", getDateField()+"<?");
+			whereClause= StringUtil.concatStrings(whereClause, " AND ", getDateField()+"<?");
 		}
 		if(order == SortOrder.NONE) { //If no order has been set, use the default (DESC for messages and ASC for errors)
 			order = getOrder();
+			if (order == null) {
+				order = SortOrder.ASC;
+			}
 		}
 		return "SELECT "+provideIndexHintAfterFirstKeyword(dbmsSupport)+provideFirstRowsHintAfterFirstKeyword(dbmsSupport)+ getListClause(false)+ getWhereClause(whereClause,false)+
 				(StringUtils.isNotEmpty(getDateField())? " ORDER BY "+getDateField()+ " "+order.name():"")+provideTrailingFirstRowsHint(dbmsSupport);
@@ -154,7 +164,7 @@ public class JdbcTableMessageBrowser<M> extends JdbcMessageBrowser<M> {
 	@Override
 	protected String createSelector() {
 		if (StringUtils.isNotEmpty(selectCondition)) {
-			return Misc.concatStrings(super.createSelector()," AND ","("+selectCondition+")");
+			return StringUtil.concatStrings(super.createSelector()," AND ","("+selectCondition+")");
 		}
 		return super.createSelector();
 	}

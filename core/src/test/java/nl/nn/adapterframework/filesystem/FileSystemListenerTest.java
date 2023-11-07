@@ -1,62 +1,76 @@
+/*
+   Copyright 2019-2023 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package nl.nn.adapterframework.filesystem;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
 
 public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
-	
-	
+
 	protected String fileAndFolderPrefix="";
 	protected boolean testFullErrorMessages=true;
 
 	protected FileSystemListener<F,FS> fileSystemListener;
 	protected Map<String,Object> threadContext;
 
-	
 	public abstract FileSystemListener<F,FS> createFileSystemListener();
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		fileSystemListener = createFileSystemListener();
+		autowireByName(fileSystemListener);
 		threadContext=new HashMap<String,Object>();
 	}
 
 	@Override
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		if (fileSystemListener!=null) {
 			fileSystemListener.close();
 		};
 		super.tearDown();
 	}
-	
 
 	@Test
 	public void fileListenerTestConfigure() throws Exception {
@@ -68,50 +82,52 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
-	
 
 	@Test
 	public void fileListenerTestInvalidInputFolder() throws Exception {
 		String folder=fileAndFolderPrefix+"xxx";
 		fileSystemListener.setInputFolder(folder);
-		if (testFullErrorMessages) {
-			thrown.expectMessage("The value for inputFolder ["+folder+"], canonical name [");
-			thrown.expectMessage("It is not a folder.");
-		} else {
-			thrown.expectMessage("["+folder+"] is invalid.");
-		}
 		fileSystemListener.configure();
-		fileSystemListener.open();
+
+		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::open);
+		if (testFullErrorMessages) {
+			assertThat(e.getMessage(), startsWith("The value for inputFolder ["+folder+"], canonical name ["));
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		} else {
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		}
 	}
-	
+
 	@Test
 	public void fileListenerTestInvalidInProcessFolder() throws Exception {
 		String folder=fileAndFolderPrefix+"xxx";
 		fileSystemListener.setInProcessFolder(folder);
-		if (testFullErrorMessages) {
-			thrown.expectMessage("The value for inProcessFolder ["+folder+"], canonical name [");
-			thrown.expectMessage("It is not a folder.");
-		} else {
-			thrown.expectMessage("["+folder+"] is invalid.");
-		}
 		fileSystemListener.configure();
-		fileSystemListener.open();
+
+		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::open);
+		if (testFullErrorMessages) {
+			assertThat(e.getMessage(), startsWith("The value for inProcessFolder ["+folder+"], canonical name ["));
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		} else {
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		}
 	}
-	
+
 	@Test
 	public void fileListenerTestInvalidProcessedFolder() throws Exception {
 		String folder=fileAndFolderPrefix+"xxx";
 		fileSystemListener.setProcessedFolder(folder);
-		if (testFullErrorMessages) {
-			thrown.expectMessage("The value for processedFolder ["+folder+"], canonical name [");
-			thrown.expectMessage("It is not a folder.");
-		} else {
-			thrown.expectMessage("["+folder+"] is invalid.");
-		}
 		fileSystemListener.configure();
-		fileSystemListener.open();
+
+		ListenerException e = assertThrows(ListenerException.class, fileSystemListener::open);
+		if (testFullErrorMessages) {
+			assertThat(e.getMessage(), startsWith("The value for processedFolder ["+folder+"], canonical name ["));
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		} else {
+			assertThat(e.getMessage(), endsWith("It is not a folder."));
+		}
 	}
-	
+
 	@Test
 	public void fileListenerTestCreateInputFolder() throws Exception {
 		fileSystemListener.setInputFolder(fileAndFolderPrefix+"xxx1");
@@ -119,7 +135,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
-	
+
 	@Test
 	public void fileListenerTestCreateInProcessFolder() throws Exception {
 		fileSystemListener.setInProcessFolder(fileAndFolderPrefix+"xxx2");
@@ -127,7 +143,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
-	
+
 	@Test
 	public void fileListenerTestCreateProcessedFolder() throws Exception {
 		fileSystemListener.setProcessedFolder(fileAndFolderPrefix+"xxx3");
@@ -143,16 +159,16 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		fileSystemListener.configure();
 		fileSystemListener.open();
 	}
-	
+
 	/*
-	 * vary this on: 
+	 * vary this on:
 	 *   inputFolder
 	 *   inProcessFolder
 	 */
 	public void fileListenerTestGetRawMessage(String inputFolder, String inProcessFolder) throws Exception {
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
-		
+
 		fileSystemListener.setMinStableTime(0);
 		if (inputFolder!=null) {
 			fileSystemListener.setInputFolder(inputFolder);
@@ -164,23 +180,23 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		}
 		fileSystemListener.configure();
 		fileSystemListener.open();
-		
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNull("raw message must be null when not available",rawMessage);
-		
+
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNull(rawMessage, "raw message must be null when not available");
+
 		createFile(null, filename, contents);
 
 		rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNotNull("raw message must be not null when a file is available",rawMessage);
-		
-		
-		F secondMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage, "raw message must be not null when a file is available");
+
+
+		RawMessageWrapper<F> secondMessage=fileSystemListener.getRawMessage(threadContext);
 		if (inProcessFolder!=null) {
 			boolean movedFirst = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null)!=null;
 			boolean movedSecond = fileSystemListener.changeProcessState(secondMessage, ProcessState.INPROCESS, null)!=null;
-			assertFalse("raw message not have been moved by both threads",movedFirst && movedSecond);			
+			assertFalse(movedFirst && movedSecond, "raw message not have been moved by both threads");
 		} else {
-			assertNotNull("raw message must still be available when no inProcessFolder is configured",secondMessage);			
+			assertNotNull(secondMessage, "raw message must still be available when no inProcessFolder is configured");
 		}
 
 	}
@@ -189,7 +205,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	public void fileListenerTestGetRawMessage() throws Exception {
 		fileListenerTestGetRawMessage(null,null);
 	}
-	
+
 	@Test
 	public void fileListenerTestGetRawMessageWithInProcess() throws Exception {
 		String folderName = "inProcessFolder";
@@ -205,14 +221,14 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		createFile(null, filename, "fakeNewFileContents");
 		createFile(inProcessFolder, filename, "fakeExistingFileContents");
 		waitForActionToFinish();
-		
+
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setInProcessFolder(fileAndFolderPrefix+inProcessFolder);
 		fileSystemListener.configure();
 		fileSystemListener.open();
-		
+
 		assertThrows(ListenerException.class, ()-> {
-			F rawMessage=fileSystemListener.getRawMessage(threadContext);
+			RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 			fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, "test");
 			assertNull(rawMessage);
 		});
@@ -234,17 +250,17 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		fileSystemListener.configure();
 		fileSystemListener.open();
-		
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNull("raw message must be null when not available",rawMessage);
-		
+
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNull(rawMessage, "raw message must be null when not available");
+
 		createFile(null, filename, contents);
 
 		rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNotNull("raw message must be not null when a file is available",rawMessage);
+		assertNotNull(rawMessage, "raw message must be not null when a file is available");
 
-		F movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
-		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
+		RawMessageWrapper<F> movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
+		assertTrue(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()).startsWith(filename+"-"));
 	}
 
 	@Test
@@ -263,27 +279,27 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		fileSystemListener.configure();
 		fileSystemListener.open();
-		
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNull("raw message must be null when not available",rawMessage);
-		
+
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNull(rawMessage, "raw message must be null when not available");
+
 		createFile(null, filename, contents);
 
 		rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNotNull("raw message must be not null when a file is available",rawMessage);
+		assertNotNull(rawMessage, "raw message must be not null when a file is available");
 
-		F movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
-		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
+		RawMessageWrapper<F> movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
+		assertTrue(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()).startsWith(filename+"-"));
 
 		createFile(null, filename, contents);
-		F rawMessage2 = fileSystemListener.getRawMessage(threadContext);
-		F movedFile2 = fileSystemListener.changeProcessState(rawMessage2, ProcessState.INPROCESS, null);
-		assertTrue(fileSystemListener.getFileSystem().getName(movedFile2).startsWith(filename+"-"));
+		RawMessageWrapper<F> rawMessage2 = fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> movedFile2 = fileSystemListener.changeProcessState(rawMessage2, ProcessState.INPROCESS, null);
+		assertTrue(fileSystemListener.getFileSystem().getName(movedFile2.getRawMessage()).startsWith(filename+"-"));
 
-		assertNotEquals(fileSystemListener.getFileSystem().getName(movedFile), fileSystemListener.getFileSystem().getName(movedFile2));
+		assertNotEquals(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()), fileSystemListener.getFileSystem().getName(movedFile2.getRawMessage()));
 	}
 
-	@Ignore("This fails in some operating systems since copying file may change the modification date") // TODO: mock getModificationTime
+	@Disabled("TODO: mock getModificationTime (This fails in some operating systems since copying file may change the modification date)")
 	@Test
 	public void changeProcessStateForTwoFilesWithTheSameNameAndTimestamp() throws Exception {
 		String folderName = "inProcessFolder";
@@ -302,34 +318,34 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		fileSystemListener.configure();
 		fileSystemListener.open();
 
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNull("raw message must be null when not available",rawMessage);
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNull(rawMessage, "raw message must be null when not available");
 
 		createFile(null, filename, contents);
 		F f = fileSystemListener.getFileSystem().toFile(fileAndFolderPrefix+filename);
-		F copiedFile = fileSystemListener.getFileSystem().copyFile(f, fileAndFolderPrefix+copiedFileFolderName, true);
+		F copiedFile = fileSystemListener.getFileSystem().copyFile(f, fileAndFolderPrefix+copiedFileFolderName, true, true);
 
 		rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNotNull("raw message must be not null when a file is available",rawMessage);
+		assertNotNull(rawMessage, "raw message must be not null when a file is available");
 
-		F movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
-		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
+		RawMessageWrapper<F> movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
+		assertTrue(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()).startsWith(filename+"-"));
 
-		F movedCopiedFile = fileSystemListener.getFileSystem().moveFile(copiedFile, fileAndFolderPrefix, true);
+		F movedCopiedFile = fileSystemListener.getFileSystem().moveFile(copiedFile, fileAndFolderPrefix, true, true);
 
 		Date modificationDateFile = fileSystemListener.getFileSystem().getModificationTime(movedCopiedFile);
 		Date modificationDateSecondFile = fileSystemListener.getFileSystem().getModificationTime(f);
 		assertEquals(modificationDateFile, modificationDateSecondFile);
 
-		F movedFile2 = fileSystemListener.changeProcessState(movedCopiedFile, ProcessState.INPROCESS, null);
+		RawMessageWrapper<F> movedFile2 = fileSystemListener.changeProcessState(new RawMessageWrapper<>(movedCopiedFile), ProcessState.INPROCESS, null);
 
-		String nameOfFirstFile = fileSystemListener.getFileSystem().getName(movedFile);
-		String nameOfSecondFile = fileSystemListener.getFileSystem().getName(movedFile2);
+		String nameOfFirstFile = fileSystemListener.getFileSystem().getName(movedFile.getRawMessage());
+		String nameOfSecondFile = fileSystemListener.getFileSystem().getName(movedFile2.getRawMessage());
 
 		assertEquals(nameOfFirstFile, nameOfSecondFile.substring(0, nameOfSecondFile.lastIndexOf("-")));
 	}
-	
-	@Ignore("This fails in some operating systems since copying file may change the modification date")
+
+	@Disabled("TODO: mock getModificationTime (This fails in some operating systems since copying file may change the modification date)")
 	@Test
 	public void changeProcessStateFor6FilesWithTheSameNameAndTimestamp() throws Exception {
 		String folderName = "inProcessFolder";
@@ -348,35 +364,35 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		fileSystemListener.configure();
 		fileSystemListener.open();
 
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNull("raw message must be null when not available",rawMessage);
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
+		assertNull(rawMessage, "raw message must be null when not available");
 
 		createFile(null, filename, contents);
 		F f = fileSystemListener.getFileSystem().toFile(fileAndFolderPrefix+filename);
 		Date modificationDateFirstFile = fileSystemListener.getFileSystem().getModificationTime(f);
-		// copy file 
+		// copy file
 		for(int i=1;i<=6;i++) {
-			fileSystemListener.getFileSystem().copyFile(f, fileAndFolderPrefix+copiedFileFolderName+i, true);
+			fileSystemListener.getFileSystem().copyFile(f, fileAndFolderPrefix+copiedFileFolderName+i, true, false);
 		}
 
 		rawMessage=fileSystemListener.getRawMessage(threadContext);
-		assertNotNull("raw message must be not null when a file is available",rawMessage);
+		assertNotNull(rawMessage, "raw message must be not null when a file is available");
 
-		F movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
-		assertTrue(fileSystemListener.getFileSystem().getName(movedFile).startsWith(filename+"-"));
+		RawMessageWrapper<F> movedFile = fileSystemListener.changeProcessState(rawMessage, ProcessState.INPROCESS, null);
+		assertTrue(fileSystemListener.getFileSystem().getName(movedFile.getRawMessage()).startsWith(filename+"-"));
 
-		String nameOfFirstFile = fileSystemListener.getFileSystem().getName(movedFile);
-		
-		
+		String nameOfFirstFile = fileSystemListener.getFileSystem().getName(movedFile.getRawMessage());
+
+
 		for(int i=1;i<=6;i++) {
-			F movedCopiedFile = fileSystemListener.getFileSystem().moveFile(fileSystemListener.getFileSystem().toFile(fileAndFolderPrefix+copiedFileFolderName+i, filename), fileAndFolderPrefix, true);
+			F movedCopiedFile = fileSystemListener.getFileSystem().moveFile(fileSystemListener.getFileSystem().toFile(fileAndFolderPrefix+copiedFileFolderName+i, filename), fileAndFolderPrefix, true, true);
 
 			Date modificationDate = fileSystemListener.getFileSystem().getModificationTime(movedCopiedFile);
 			assertEquals(modificationDateFirstFile.getTime(), modificationDate.getTime());
 
-			F movedFile2 = fileSystemListener.changeProcessState(movedCopiedFile, ProcessState.INPROCESS, null);
+			RawMessageWrapper<F> movedFile2 = fileSystemListener.changeProcessState(new RawMessageWrapper<>(movedCopiedFile), ProcessState.INPROCESS, null);
 
-			String nameOfSecondFile = fileSystemListener.getFileSystem().getName(movedFile2);
+			String nameOfSecondFile = fileSystemListener.getFileSystem().getName(movedFile2.getRawMessage());
 
 			if(i==6) {
 				assertEquals(filename, nameOfSecondFile);
@@ -390,16 +406,16 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	public void fileListenerTestGetStringFromRawMessageFilename() throws Exception {
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
-		
+
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.configure();
 		fileSystemListener.open();
-		
+
 		createFile(null, filename, contents);
 
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		
+
 		Message message=fileSystemListener.extractMessage(rawMessage, threadContext);
 		assertThat(message.asString(),containsString(filename));
 	}
@@ -408,27 +424,21 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	public void fileListenerTestGetStringFromRawMessageContents() throws Exception {
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
-		
+
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setMessageType("contents");
 		fileSystemListener.configure();
 		fileSystemListener.open();
-		
+
 		createFile(null, filename, contents);
 
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		
+
 		Message message=fileSystemListener.extractMessage(rawMessage, threadContext);
 		assertEquals(contents,message.asString());
 	}
 
-//	@Test
-//	public void fileListenerTestGetStringFromRawMessageOtherAttribute() throws Exception {
-//		throw new NotImplementedException();
-//	}
-	
-	
 	/*
 	 * Test for proper id
 	 * Test for additionalProperties in session variables
@@ -437,42 +447,42 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	public void fileListenerTestGetIdFromRawMessage() throws Exception {
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
-		
+
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.configure();
 		fileSystemListener.open();
-		
+
 		createFile(null, filename, contents);
-	
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		
-		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
+
+		String id = rawMessage.getId();
 		assertThat(id,endsWith(filename));
-		
+
 		String filenameAttribute = (String)threadContext.get("filename");
 		assertThat(filenameAttribute, containsString(filename));
-		
+
 	}
 
 	@Test
 	public void fileListenerTestGetIdFromRawMessageMessageTypeName() throws Exception {
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
-		
+
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setMessageType("name");
 		fileSystemListener.configure();
 		fileSystemListener.open();
-		
+
 		createFile(null, filename, contents);
-	
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		
-		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
+
+		String id = rawMessage.getId();
 		assertThat(id,endsWith(filename));
-		
+
 		String filepathAttribute = (String)threadContext.get("filepath");
 		assertThat(filepathAttribute, containsString(filename));
 	}
@@ -481,20 +491,20 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	public void fileListenerTestGetIdFromRawMessageWithMetadata() throws Exception {
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
-		
+
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setStoreMetadataInSessionKey("metadata");
 		fileSystemListener.configure();
 		fileSystemListener.open();
-		
+
 		createFile(null, filename, contents);
-	
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		
-		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
+
+		String id = rawMessage.getId();
 		assertThat(id,endsWith(filename));
-		
+
 		String metadataAttribute = (String)threadContext.get("metadata");
 		System.out.println(metadataAttribute);
 		assertThat(metadataAttribute, startsWith("<metadata"));
@@ -508,18 +518,18 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	public void fileListenerTestGetIdFromRawMessageFileTimeSensitive() throws Exception {
 		String filename="rawMessageFile";
 		String contents="Test Message Contents";
-		
+
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setFileTimeSensitive(true);
 		fileSystemListener.configure();
 		fileSystemListener.open();
-		
+
 		createFile(null, filename, contents);
-	
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
-		
-		String id=fileSystemListener.getIdFromRawMessage(rawMessage, threadContext);
+
+		String id = rawMessage.getId();
 		assertThat(id, containsString(filename));
 		String currentDateFormatted=DateUtils.format(new Date());
 		String timestamp=id.substring(id.length()-currentDateFormatted.length());
@@ -527,13 +537,13 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		long timestampDate=DateUtils.parseAnyDate(timestamp).getTime();
 		assertTrue(Math.abs(timestampDate-currentDate)<7300000); // less then two hours in milliseconds.
 	}
-	
+
 	@Test
 	public void fileListenerTestAfterMessageProcessedDeleteAndCopy() throws Exception {
 		String filename = "AfterMessageProcessedDelete" + FILE1;
 		String logFolder = "logFolder";
 		String contents = "contents of file";
-		
+
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setDelete(true);
 		fileSystemListener.setLogFolder(fileAndFolderPrefix+logFolder);
@@ -546,14 +556,14 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		// test
 		existsCheck(filename);
 
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.SUCCESS);
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
 		// test
-		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
+		assertFalse(_fileExists(filename), "Expected file [" + filename + "] not to be present");
 		assertFileExistsWithContents(logFolder, filename, contents);
 	}
 
@@ -562,12 +572,12 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 	public void fileListenerTestAfterMessageProcessedMoveFile() throws Exception {
 		String fileName = "fileTobeMoved.txt";
 		String processedFolder = "destinationFolder";
-		
+
 		createFile(null,fileName, "");
 		waitForActionToFinish();
-		
+
 		assertTrue(_fileExists(fileName));
-		
+
 		_createFolder(processedFolder);
 		waitForActionToFinish();
 
@@ -580,30 +590,30 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
 
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.SUCCESS);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test");
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
-		
-		
-		assertTrue("Destination folder must exist",_folderExists(processedFolder));
-		assertTrue("Destination must exist",_fileExists(processedFolder, fileName));
-		assertFalse("Origin must have disappeared",_fileExists(fileName));
+
+
+		assertTrue(_folderExists(processedFolder), "Destination folder must exist");
+		assertTrue(_fileExists(processedFolder, fileName), "Destination must exist");
+		assertFalse(_fileExists(fileName), "Origin must have disappeared");
 	}
 
 	@Test
 	public void fileListenerTestAfterMessageProcessedMoveFileOverwrite() throws Exception {
 		String fileName = "fileTobeMoved.txt";
 		String processedFolder = "destinationFolder";
-		
+
 		createFile(null,fileName, "");
 		waitForActionToFinish();
-		
+
 		assertTrue(_fileExists(fileName));
-		
+
 		_createFolder(processedFolder);
 		createFile(processedFolder,fileName, "");
 		waitForActionToFinish();
@@ -618,24 +628,24 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
 
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.SUCCESS);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test");
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
-		
-		
-		assertTrue("Destination folder must exist",_folderExists(processedFolder));
-		assertTrue("Destination must exist",_fileExists(processedFolder, fileName));
-		assertFalse("Origin must have disappeared",_fileExists(fileName));
+
+
+		assertTrue(_folderExists(processedFolder), "Destination folder must exist");
+		assertTrue(_fileExists(processedFolder, fileName), "Destination must exist");
+		assertFalse(_fileExists(fileName), "Origin must have disappeared");
 	}
 
 	@Test
 	public void fileListenerTestAfterMessageProcessedErrorDelete() throws Exception {
 		String filename = "AfterMessageProcessedDelete" + FILE1;
-		
+
 		fileSystemListener.setMinStableTime(0);
 		fileSystemListener.setDelete(true);
 		fileSystemListener.configure();
@@ -646,14 +656,14 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		// test
 		existsCheck(filename);
 
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.ERROR);
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
 		// test
-		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
+		assertFalse(_fileExists(filename), "Expected file [" + filename + "] not to be present");
 	}
 
 
@@ -662,12 +672,12 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String fileName = "fileTobeMoved.txt";
 		String processedFolder = "destinationFolder";
 		String errorFolder = "errorFolder";
-		
+
 		createFile(null,fileName, "");
 		waitForActionToFinish();
-		
+
 		assertTrue(_fileExists(fileName));
-		
+
 		_createFolder(processedFolder);
 		_createFolder(errorFolder);
 		waitForActionToFinish();
@@ -682,30 +692,30 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
 
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.ERROR);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.ERROR, "test");  // this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
-		
-		
-		assertTrue("Error folder must exist",_folderExists(processedFolder));
-		assertTrue("Destination must exist in error folder",_fileExists(errorFolder, fileName));
-		assertTrue("Destination must not exist in processed folder",!_fileExists(processedFolder, fileName));
-		assertFalse("Origin must have disappeared",_fileExists(fileName));
+
+
+		assertTrue(_folderExists(processedFolder), "Error folder must exist");
+		assertTrue(_fileExists(errorFolder, fileName), "Destination must exist in error folder");
+		assertTrue(!_fileExists(processedFolder, fileName), "Destination must not exist in processed folder");
+		assertFalse(_fileExists(fileName), "Origin must have disappeared");
 	}
 	@Test
 	public void fileListenerTestAfterMessageProcessedErrorMoveFileToProcessedFolder() throws Exception {
 		String fileName = "fileTobeMoved.txt";
 		String processedFolder = "destinationFolder";
-		
+
 		createFile(null,fileName, "");
 		waitForActionToFinish();
-		
+
 		assertTrue(_fileExists(fileName));
-		
+
 		_createFolder(processedFolder);
 		waitForActionToFinish();
 
@@ -718,19 +728,17 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
 
-		F rawMessage=fileSystemListener.getRawMessage(threadContext);
+		RawMessageWrapper<F> rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.ERROR);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test"); // this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
 		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
 		waitForActionToFinish();
-		
-		
-		assertTrue("Error folder must exist",_folderExists(processedFolder));
-		assertTrue("Destination must exist in processed folder",_fileExists(processedFolder, fileName));
-		assertFalse("Origin must have disappeared",_fileExists(fileName));
+
+
+		assertTrue(_folderExists(processedFolder), "Error folder must exist");
+		assertTrue(_fileExists(processedFolder, fileName), "Destination must exist in processed folder");
+		assertFalse(_fileExists(fileName), "Origin must have disappeared");
 	}
-
-
 }

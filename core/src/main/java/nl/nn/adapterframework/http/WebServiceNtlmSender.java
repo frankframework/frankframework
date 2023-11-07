@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,8 +55,8 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
@@ -152,7 +152,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result = null;
 		HttpPost httpPost = new HttpPost(getUrl());
 		try {
@@ -196,7 +196,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 		} finally {
 			httpPost.releaseConnection();
 		}
-		return new Message(result);
+		return new SenderResult(result);
 	}
 
 	@Override
@@ -204,7 +204,10 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 		return getUrl();
 	}
 
-	@IbisDoc({"content-type of the request", "text/html; charset=utf-8"})
+	/**
+	 * content-type of the request
+	 * @ff.default text/html; charset=utf-8
+	 */
 	public void setContentType(String string) {
 		contentType = string;
 	}
@@ -217,7 +220,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 		return url;
 	}
 
-	@IbisDoc({"url or base of url to be used ", ""})
+	/** url or base of url to be used  */
 	public void setUrl(String string) {
 		url = string;
 	}
@@ -226,7 +229,10 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 		return timeout;
 	}
 
-	@IbisDoc({"timeout in ms of obtaining a connection/result. 0 means no timeout", "10000"})
+	/**
+	 * timeout in ms of obtaining a connection/result. 0 means no timeout
+	 * @ff.default 10000
+	 */
 	public void setTimeout(int i) {
 		timeout = i;
 	}
@@ -235,17 +241,20 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 		return maxConnections;
 	}
 
-	@IbisDoc({"the maximum number of concurrent connections", "10"})
+	/**
+	 * the maximum number of concurrent connections
+	 * @ff.default 10
+	 */
 	public void setMaxConnections(int i) {
 		maxConnections = i;
 	}
 
-	@IbisDoc({"alias used to obtain credentials for authentication to host", ""})
+	/** alias used to obtain credentials for authentication to host */
 	public void setAuthAlias(String string) {
 		authAlias = string;
 	}
 
-	@IbisDoc({"username used in authentication to host", ""})
+	/** username used in authentication to host */
 	public void setUsername(String string) {
 		username = string;
 	}
@@ -255,7 +264,10 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 		setUsername(username);
 	}
 
-	@IbisDoc({"password used to authenticate with the host", " "})
+	/**
+	 * password used to authenticate with the host
+	 * @ff.default  
+	 */
 	public void setPassword(String string) {
 		password = string;
 	}
@@ -272,7 +284,10 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 		return proxyHost;
 	}
 
-	@IbisDoc({"", " "})
+	/**
+	 * 
+	 * @ff.default  
+	 */
 	public void setProxyHost(String string) {
 		proxyHost = string;
 	}
@@ -281,7 +296,10 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 		return proxyPort;
 	}
 
-	@IbisDoc({"", "80"})
+	/**
+	 * 
+	 * @ff.default 80
+	 */
 	public void setProxyPort(int i) {
 		proxyPort = i;
 	}
@@ -290,7 +308,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 		return soapAction;
 	}
 
-	@IbisDoc({"the soapactionuri to be set in the requestheader", ""})
+	/** the soapactionuri to be set in the requestheader */
 	public void setSoapAction(String string) {
 		soapAction = string;
 	}

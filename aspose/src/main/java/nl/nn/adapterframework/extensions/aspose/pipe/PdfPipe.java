@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,25 +30,25 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.aspose.AsposeFontManager;
 import nl.nn.adapterframework.extensions.aspose.AsposeLicenseLoader;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.CisConversionServiceImpl;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 
 /**
- * Converts files to pdf type. This pipe has two actions convert and combine. 
- * With combine action you can attach files into main pdf file. 
+ * Converts files to pdf type. This pipe has two actions convert and combine.
+ * With combine action you can attach files into main pdf file.
  *
  */
 public class PdfPipe extends FixedForwardPipe {
@@ -65,6 +65,7 @@ public class PdfPipe extends FixedForwardPipe {
 	private @Getter String charset = null;
 	private AsposeFontManager fontManager;
 	private @Getter boolean unpackDefaultFonts = false;
+	private @Getter boolean loadExternalResources = false;
 
 	private CisConversionService cisConversionService;
 
@@ -90,7 +91,7 @@ public class PdfPipe extends FixedForwardPipe {
 			}
 		} else {
 			try {
-				String ibisTempDir=AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
+				String ibisTempDir = FileUtils.getTempDirectory();
 				if(StringUtils.isNotEmpty(ibisTempDir)) {
 					setPdfOutputLocation(Files.createTempDirectory(Paths.get(ibisTempDir),"Pdf").toString());
 				} else {
@@ -104,7 +105,7 @@ public class PdfPipe extends FixedForwardPipe {
 		if (StringUtils.isEmpty(getLicense())) {
 			ConfigurationWarnings.add(this, log, "Aspose License is not configured. There will be evaluation watermarks on the converted documents. There are also some restrictions in the API use. License field should be set with a valid information to avoid this. ");
 		} else {
-			URL licenseUrl = ClassUtils.getResourceURL(getLicense());
+			URL licenseUrl = ClassLoaderUtils.getResourceURL(getLicense());
 			if(licenseUrl == null) {
 				throw new ConfigurationException("specified file for aspose license is not found");
 			}
@@ -122,8 +123,9 @@ public class PdfPipe extends FixedForwardPipe {
 		} catch (IOException e) {
 			throw new ConfigurationException("an error occured while loading fonts", e);
 		}
-		
-		cisConversionService = new CisConversionServiceImpl(getPdfOutputLocation(), fontManager.getFontsPath(), getCharset());
+
+		CisConfiguration configuration = new CisConfiguration(loadExternalResources, getPdfOutputLocation(), getCharset(), fontManager.getFontsPath());
+		cisConversionService = new CisConversionServiceImpl(configuration);
 	}
 
 	@Override
@@ -138,7 +140,7 @@ public class PdfPipe extends FixedForwardPipe {
 					// Get main document to attach attachments
 					Message mainPdf = session.getMessage(getMainDocumentSessionKey());
 					// Get file name of attachment
-					String fileNameToAttach = session.getMessage(getFilenameToAttachSessionKey()).asString();
+					String fileNameToAttach = session.getString(getFilenameToAttachSessionKey());
 
 					Message result = PdfAttachmentUtil.combineFiles(mainPdf, input, fileNameToAttach + ".pdf", getCharset());
 
@@ -146,7 +148,7 @@ public class PdfPipe extends FixedForwardPipe {
 					session.put(getMainDocumentSessionKey(), result);
 					return new PipeRunResult(getSuccessForward(), result);
 				case CONVERT:
-					String filename = session.getMessage(FILENAME_SESSION_KEY).asString();
+					String filename = session.getString(FILENAME_SESSION_KEY);
 					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(input, filename, isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
 					XmlBuilder main = new XmlBuilder("main");
 					cisConversionResult.buildXmlFromResult(main, true);
@@ -157,7 +159,7 @@ public class PdfPipe extends FixedForwardPipe {
 					throw new PipeRunException(this, "action attribute must be one of the followings: "+EnumUtils.getEnumList(DocumentAction.class));
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot convert to stream",e);
+			throw new PipeRunException(this, "cannot convert to stream",e);
 		}
 	}
 
@@ -165,23 +167,32 @@ public class PdfPipe extends FixedForwardPipe {
 		this.action = action;
 	}
 
-	@IbisDoc({ "session key that contains the document that the attachments will be attached to. Only used when action is set to 'combine'", "defaultMainDocumentSessionKey" })
+	/**
+	 * session key that contains the document that the attachments will be attached to. Only used when action is set to 'combine'
+	 * @ff.default defaultMainDocumentSessionKey
+	 */
 	public void setMainDocumentSessionKey(String mainDocumentSessionKey) {
 		this.mainDocumentSessionKey = mainDocumentSessionKey;
 	}
 
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileNameToAttachSessionKey' is replaced with 'filenameToAttachSessionKey'")
-	public void setFileNameToAttachSessionKey(String fileNameToAttachSessionKey) {
-		this.filenameToAttachSessionKey = fileNameToAttachSessionKey;
+	public void setFileNameToAttachSessionKey(String filenameToAttachSessionKey) {
+		this.filenameToAttachSessionKey = filenameToAttachSessionKey;
 	}
 
-	@IbisDoc({ "session key that contains the filename to be attached. Only used when the action is set to 'combine' ", "defaultFileNameToAttachSessionKey" })
+	/**
+	 * session key that contains the filename to be attached. Only used when the action is set to 'combine'
+	 * @ff.default defaultFileNameToAttachSessionKey
+	 */
 	public void setFilenameToAttachSessionKey(String filenameToAttachSessionKey) {
 		this.filenameToAttachSessionKey = filenameToAttachSessionKey;
 	}
 
-	@IbisDoc({ "fonts folder to load the fonts. If not set then a temporary folder will be created to extract fonts from fonts.zip everytime. Having fontsDirectory to be set will improve startup time", "null" })
+	/**
+	 * fonts folder to load the fonts. If not set then a temporary folder will be created to extract fonts from fonts.zip everytime. Having fontsDirectory to be set will improve startup time
+	 * @ff.default null
+	 */
 	public void setFontsDirectory(String fontsDirectory) {
 		this.fontsDirectory = fontsDirectory;
 	}
@@ -190,23 +201,40 @@ public class PdfPipe extends FixedForwardPipe {
 		this.unpackDefaultFonts = unpackDefaultFonts;
 	}
 
-	@IbisDoc({ "charset to be used to decode the given input message in case the input is not binary but character stream", "UTF-8" })
+	/**
+	 * charset to be used to decode the given input message in case the input is not binary but character stream
+	 * @ff.default UTF-8
+	 */
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
 
-	@IbisDoc({ "aspose license location including the file name. It can also be used without license but there some restrictions on usage. If license is in resource, license attribute can be license file name. If the license is in somewhere in filesystem then it should be full path to file including filename and starting with file://// prefix. classloader.allowed.protocols property should contain 'file' protocol", "" })
+	/** aspose license location including the file name. It can also be used without license but there some restrictions on usage. If license is in resource, license attribute can be license file name. If the license is in somewhere in filesystem then it should be full path to file including filename and starting with file://// prefix. classloader.allowed.protocols property should contain 'file' protocol */
 	public void setLicense(String license) {
 		this.license = license;
 	}
 
-	@IbisDoc({ "when sets to false, converts the file including the attachments attached to the main file. when it is true, saves each attachment separately", "false" })
+	/**
+	 * when sets to false, converts the file including the attachments attached to the main file. when it is true, saves each attachment separately
+	 * @ff.default false
+	 */
 	public void setSaveSeparate(boolean saveSeparate) {
 		this.saveSeparate = saveSeparate;
 	}
 
-	@IbisDoc({ "directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.", "null" })
+	/**
+	 * directory to save resulting pdf files after conversion. If not set then a temporary directory will be created and the conversion results will be stored in that directory.
+	 * @ff.default null
+	 */
 	public void setPdfOutputLocation(String pdfOutputLocation) {
 		this.pdfOutputLocation = pdfOutputLocation;
+	}
+
+	/**
+	 * when set to true, external resources, such as stylesheets and images found in HTML pages, will be loaded from the internet
+	 * @ff.default false
+	 */
+	public void setLoadExternalResources(boolean loadExternalResources) {
+		this.loadExternalResources = loadExternalResources;
 	}
 }

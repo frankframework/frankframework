@@ -33,13 +33,15 @@ import com.ing.ifsa.IFSAReportMessage;
 import com.ing.ifsa.IFSATimeOutMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.extensions.ifsa.jms.IfsaFacade;
-import nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener;
+import nl.nn.adapterframework.extensions.ifsa.jms.IfsaListener;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -53,20 +55,20 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 
 /**
- * {@link nl.nn.adapterframework.core.ISender sender} that sends a message to an IFSA service and, in case the MessageProtocol is RR (Request-Reply)
+ * {@link ISender sender} that sends a message to an IFSA service and, in case the MessageProtocol is RR (Request-Reply)
  * it waits for an reply-message.
- * 
- * @ff.parameter name 
+ *
+ * @ff.parameter name
  * @ff.parameter serviceId When a parameter with name serviceId is present, it is used at runtime instead of the serviceId specified by the attribute. A lookup of the service for this serviceId will be done at runtime, while the service for the serviceId specified as an attribute will be done at configuration time. Hence, IFSA configuration problems will be detected at runtime for the serviceId specified as a param and at configuration time for the serviceId specified with an attribute
  * @ff.parameter occurrence The occurrence part of the serviceId (the part between the fourth and the fifth slash). The occurrence part of the specified serviceId (either specified by a parameter or an attribute) will be replaced with the value of this parameter at runtime. From "IFSA - Naming Standards.doc": IFSA://SERVICE/&lt;group&gt;/&lt;occurrence&gt;/&lt;service&gt;/&lt;version&gt;[?&lt;parameter=value&gt;]
  * @ff.parameters All other parameters are passed to the outgoing UDZ (User Defined Zone) object
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.2, switch class: 4.8
  */
 public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParameters, HasStatistics {
 
-	private boolean throwExceptions=true;	
+	private boolean throwExceptions=true;
 	protected String bifNameSessionKey;
 
 	protected ParameterList paramList = null;
@@ -87,7 +89,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 //		}
 		log.info(getLogPrefix()+" configured sender on "+getPhysicalDestinationName());
 	}
-	
+
 	@Override
 	public void open() throws SenderException {
 		try {
@@ -116,23 +118,23 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 	public boolean isSynchronous() {
 		return getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY;
 	}
-	
+
 	/**
 	 * Retrieves a message with the specified correlationId from queue or other channel, but does no processing on it.
 	 */
 	private javax.jms.Message getRawReplyMessage(QueueSession session, IFSAQueue queue, TextMessage sentMessage) throws SenderException, TimeoutException {
-	
+
 		String selector=null;
 		javax.jms.Message msg = null;
 		QueueReceiver replyReceiver=null;
 		try {
 			replyReceiver = getReplyReceiver(session, sentMessage);
 			selector=replyReceiver.getMessageSelector();
-			
+
 			long timeout = getExpiry(queue);
 			log.debug(getLogPrefix()+"start waiting at most ["+timeout+"] ms for reply on message using selector ["+selector+"]");
 			msg = replyReceiver.receive(timeout);
-			if (msg==null) {	
+			if (msg==null) {
 				log.info(getLogPrefix()+"received null reply");
 			} else {
 				log.info(getLogPrefix()+"received reply");
@@ -164,8 +166,8 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+
 		try {
 			if (isSynchronous()) {
 				if (JtaUtil.inTransaction()) {
@@ -200,10 +202,10 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		//IFSAMessage originatingMessage = (IFSAMessage)prc.getSession().get(PushingIfsaProviderListener.THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 		String BIF = (String)session.get(getBifNameSessionKey());
 		if (StringUtils.isEmpty(BIF)) {
-			BIF=(String)session.get(PushingIfsaProviderListener.THREAD_CONTEXT_BIFNAME_KEY);
+			BIF=(String)session.get(IfsaListener.THREAD_CONTEXT_BIFNAME_KEY);
 		}
 		try {
-			return new Message(sendMessage(message.asString(), params, BIF,null));
+			return new SenderResult(sendMessage(message.asString(), params, BIF,null));
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
 		}
@@ -262,7 +264,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 			log.debug(getLogPrefix()+"message sent");
 
 			if (isSynchronous()){
-		
+
 				log.debug(getLogPrefix()+"waiting for reply");
 				javax.jms.Message msg=getRawReplyMessage(session, queue, sentMessage);
 				try {
@@ -291,8 +293,8 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 //						log.info(getLogPrefix()+"E)  msgRcvd.businessProcFinishRcvd ["+DateUtils.format(businessProcFinishRcvd)+"] diff ["+(businessProcFinishRcvd-jmsTimestampRcvd)+"] (=time spend on IFSA bus sending result?)");
 //						log.info(getLogPrefix()+"F)  timestampAfterRcvd             ["+DateUtils.format(timestampAfterRcvd)    +"] diff ["+(timestampAfterRcvd-businessProcFinishRcvd)+"] ");
 //						log.info(getLogPrefix()+"business processing time (E-C1) ["+(businessProcFinishRcvd-businessProcStartSent)+"] ");
-					}	
-//					if (businessProcessTimes!=null) {						
+					}
+//					if (businessProcessTimes!=null) {
 //						businessProcessTimes.addValue(businessProcFinishRcvd-businessProcStartSent);
 //					}
 				} catch (JMSException e) {
@@ -311,14 +313,14 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 							result = "<IFSAReport>"+
 										"<NoReplyReason>"+irm.getNoReplyReason()+"</NoReplyReason>"+
 									 "</IFSAReport>";
-									
+
 						 }
 					} else {
 						log.warn(getLogPrefix()+"received neither TextMessage nor IFSAReportMessage but ["+msg.getClass().getName()+"]");
 						result = msg.toString();
 					}
 				}
-				if (result==null) {	
+				if (result==null) {
 					log.info(getLogPrefix()+"received null reply");
 				} else {
 					if (log.isDebugEnabled()) {

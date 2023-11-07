@@ -16,43 +16,49 @@
 package nl.nn.adapterframework.core;
 
 /**
- * Exception that indicates that the starting of a {@link IPipe Pipe}
- * did not succeed.<br/>
-
+ * Exception that indicates that the starting of a {@link IPipe Pipe} did not
+ * succeed.<br/>
+ * 
  * @author Johan Verrips IOS
  * @see nl.nn.adapterframework.pipes.AbstractPipe#start()
  */
-public class PipeStartException extends IbisException{
-	
-	private String pipeNameInError=null;
-/**
- * PipeStartException constructor comment.
- */
-public PipeStartException() {
-	super();
-}
-/**
- * PipeStartException constructor comment.
- */
-public PipeStartException(String msg) {
-	super(msg);
-}
-public PipeStartException(String msg, Throwable e) {
-	super(msg, e);
-}
-public PipeStartException(Throwable e) {
-	super(e);
-}
-/**
- * Get the name of the pipe in error.
- */
-public java.lang.String getPipeNameInError() {
-	return pipeNameInError;
-}
-/**
- * Set the name of the pipe in error. 
- */
-public void setPipeNameInError(java.lang.String newPipeNameInError) {
-	pipeNameInError = newPipeNameInError;
-}
+public class PipeStartException extends IbisException {
+
+	private String pipeNameInError = null;
+
+	/**
+	 * PipeStartException constructor comment.
+	 */
+	public PipeStartException() {
+		super();
+	}
+
+	/**
+	 * PipeStartException constructor comment.
+	 */
+	public PipeStartException(String msg) {
+		super(msg);
+	}
+
+	public PipeStartException(String msg, Throwable e) {
+		super(msg, e);
+	}
+
+	public PipeStartException(Throwable e) {
+		super(e);
+	}
+
+	/**
+	 * Get the name of the pipe in error.
+	 */
+	public java.lang.String getPipeNameInError() {
+		return pipeNameInError;
+	}
+
+	/**
+	 * Set the name of the pipe in error.
+	 */
+	public void setPipeNameInError(java.lang.String newPipeNameInError) {
+		pipeNameInError = newPipeNameInError;
+	}
 }

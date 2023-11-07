@@ -23,6 +23,11 @@ import java.util.List;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -35,14 +40,10 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.TransformerPool.OutputType;
-
-import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 /**
  * Pipe to wrap or unwrap a message conformable to the BIS (Business Integration Services) standard.
@@ -140,16 +141,16 @@ import org.xml.sax.SAXException;
  * <tr><td>{@link #setInputNamespaceDefs(String) inputNamespaceDefs}</td><td>(only used when direction=unwrap) namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBisMessageHeaderInSoapBody(boolean) bisMessageHeaderInSoapBody}</td><td>when <code>true</code>, the bis message header is put in the SOAP body instead of in the SOAP header (first one is the old bis standard)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setBisMessageHeaderSessionKey(String) bisMessageHeaderSessionKey}</td><td>
- * <table> 
+ * <table>
  * <tr><td><code>direction=unwrap</code></td><td>name of the session key to store the bis message header from the request in</td></tr>
  * <tr><td><code>direction=wrap</code></td><td>name of the session key the original bis message header from the request is stored in; used to create the bis message header for the response</td></tr>
- * </table> 
+ * </table>
  * </td><td>bisMessageHeader</td></tr>
  * <tr><td>{@link #setBisResultInPayload(boolean) bisResultInPayload}</td><td>when <code>true</code>, the bis result is put in the payload (as last child in root tag) instead of in the SOAP body as sibling of the payload (last one is the old bis standard)</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setBisConversationIdSessionKey(String) bisConversationIdSessionKey}</td><td>(only used when direction=wrap and the original bis message header from the request doesn't exist) key of session variable to retrieve ConversationId for the bis message header from</td><td>bisConversationId</td></tr>
  * <tr><td>{@link #setBisExternalRefToMessageIdSessionKey(String) bisExternalRefToMessageIdSessionKey}</td><td>(only used when direction=wrap and the original bis message header from the request doesn't exist) key of session variable to retrieve ExternalRefToMessageId for the bis message header from</td><td>bisExternalRefToMessageId</td></tr>
  * <tr><td>{@link #setBisErrorCodeSessionKey(String) bisErrorCodeSessionKey}</td><td>(only used when direction=wrap) key of session variable to store bis error code in (if an error occurs)</td><td>bisErrorCode</td></tr>
- * <tr><td>{@link #setBisErrorTextSessionKey(String) bisErrorTextSessionKey}</td><td>(only used when direction=wrap) key of session variable to store bis error text in (if an error occurs). If not specified or no value retrieved, the following error text is derived from the error code: 
+ * <tr><td>{@link #setBisErrorTextSessionKey(String) bisErrorTextSessionKey}</td><td>(only used when direction=wrap) key of session variable to store bis error text in (if an error occurs). If not specified or no value retrieved, the following error text is derived from the error code:
  *   <table border="1">
  *   <tr><th>errorCode</th><th>errorText</th></tr>
  *   <tr><td>ERR6002</td><td>Service Interface Request Time Out</td></tr>
@@ -177,17 +178,17 @@ import org.xml.sax.SAXException;
 @Deprecated
 @ConfigurationWarning("Please change to EsbSoapWrapperPipe")
 public class BisWrapperPipe extends SoapWrapperPipe {
-	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
-	private final static String soapHeaderXPath = "soapenv:Envelope/soapenv:Header";
-	private final static String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
-	private final static String soapErrorXPath = "soapenv:Fault/faultcode";
-	private final static String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
-	private final static String bisMessageHeaderXPath = "bis:MessageHeader";
-	private final static String bisMessageHeaderConversationIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:ConversationId";
-	private final static String bisMessageHeaderExternalRefToMessageIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:MessageId";
-	private final static String bisErrorXPath = "bis:Result/bis:Status='ERROR'";
+	private static final String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
+	private static final String soapHeaderXPath = "soapenv:Envelope/soapenv:Header";
+	private static final String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
+	private static final String soapErrorXPath = "soapenv:Fault/faultcode";
+	private static final String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
+	private static final String bisMessageHeaderXPath = "bis:MessageHeader";
+	private static final String bisMessageHeaderConversationIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:ConversationId";
+	private static final String bisMessageHeaderExternalRefToMessageIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:MessageId";
+	private static final String bisErrorXPath = "bis:Result/bis:Status='ERROR'";
 
-	private final static String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
+	private static final String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
 			"ERR6003", "Invalid Request Message" }, {
 			"ERR6004", "Invalid Backend system response" }, {
 			"ERR6005", "Backend system failure response" }, {
@@ -265,7 +266,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				addOutputNamespaceTp = XmlUtils.getAddRootNamespaceTransformerPool(getOutputNamespace(), true, false);
 			}
 		} catch (TransformerConfigurationException e) {
-			throw new ConfigurationException(getLogPrefix(null) + "cannot create transformer", e);
+			throw new ConfigurationException("cannot create transformer", e);
 		}
 	}
 
@@ -304,7 +305,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 						bisDetailText = (String) session.get(getBisErrorReasonSessionKey());
 					}
 					if (isOmitResult()) {
-						throw new PipeRunException(this, getLogPrefix(session) + "bisError occured: errorCode [" + bisErrorCode + "], errorText [" + bisErrorText + "]");
+						throw new PipeRunException(this, "bisError occured: errorCode [" + bisErrorCode + "], errorText [" + bisErrorText + "]");
 					}
 				}
 				String bisResult = prepareResult(bisErrorCode, bisErrorText, getBisServiceName(), getBisActionName(), bisDetailText);
@@ -329,19 +330,19 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 			} else {
 				Message body = unwrapMessage(message, session);
 				if (Message.isEmpty(body)) {
-					throw new PipeRunException(this, getLogPrefix(session) + "SOAP body is empty or message is not a SOAP message");
+					throw new PipeRunException(this, "SOAP body is empty or message is not a SOAP message");
 				}
 				if (bisMessageHeaderTp != null) {
 					String messageHeader = bisMessageHeaderTp.transform(message.asSource());
 					if (messageHeader != null) {
 						session.put(getBisMessageHeaderSessionKey(), messageHeader);
-						log.debug(getLogPrefix(session) + "stored [" + messageHeader + "] in pipeLineSession under key [" + getBisMessageHeaderSessionKey() + "]");
+						log.debug("stored [{}] in pipeLineSession under key [{}]", messageHeader, getBisMessageHeaderSessionKey());
 					}
 				}
 				if (bisErrorTp != null) {
 					String bisError = bisErrorTp.transform(message.asSource());
 					if (Boolean.valueOf(bisError).booleanValue()) {
-						throw new PipeRunException(this, getLogPrefix(session) + "bisErrorXPath [" + bisErrorXe + "] returns true");
+						throw new PipeRunException(this, "bisErrorXPath [" + bisErrorXe + "] returns true");
 					}
 				}
 				if (bodyMessageTp != null) {
@@ -354,7 +355,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 				}
 			}
 		} catch (Throwable t) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Unexpected exception during (un)wrapping ", t);
+			throw new PipeRunException(this, " Unexpected exception during (un)wrapping ", t);
 
 		}
 		return new PipeRunResult(getSuccessForward(), result);
@@ -379,7 +380,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		}
 		headerFieldsElement.addSubElement(conversationIdElement);
 		XmlBuilder messageIdElement = new XmlBuilder("MessageId");
-		messageIdElement.setValue(Misc.getHostname() + "_" + Misc.createSimpleUUID());
+		messageIdElement.setValue(Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());
 		headerFieldsElement.addSubElement(messageIdElement);
 		XmlBuilder externalRefToMessageIdElement = new XmlBuilder("ExternalRefToMessageId");
 		if (originalMessageHeader == null) {
@@ -506,10 +507,12 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		return outputRoot;
 	}
 
+	@Override
 	public void setOutputNamespace(String outputNamespace) {
 		this.outputNamespace = outputNamespace;
 	}
 
+	@Override
 	public String getOutputNamespace() {
 		return outputNamespace;
 	}
@@ -594,10 +597,12 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		return bisActionName;
 	}
 
+	@Override
 	public void setRemoveOutputNamespaces(boolean b) {
 		removeOutputNamespaces = b;
 	}
 
+	@Override
 	public boolean isRemoveOutputNamespaces() {
 		return removeOutputNamespaces;
 	}

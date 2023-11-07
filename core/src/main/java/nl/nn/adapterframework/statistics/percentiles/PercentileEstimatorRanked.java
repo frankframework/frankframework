@@ -18,16 +18,16 @@ package nl.nn.adapterframework.statistics.percentiles;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 
-/**  
+/**
  * @author Gerrit van Brakel
  */
 public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 
-	private long ranks[];
+	private long[] ranks;
 	private int local_count;
 
 	public PercentileEstimatorRanked(String configKey, String defaultPList, int arraySize) {
-		super(configKey,defaultPList,arraySize); 
+		super(configKey,defaultPList,arraySize);
 		ranks = new long[arraySize];
 		// prefill the ranknumbers initially
 		for (int i = 0; i < arraySize; i++) {
@@ -40,7 +40,7 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		for (int i=0; i<local_count; i++) {
 			values[i]=values[2*i+1];
 			ranks[i]=ranks[2*i+1];
-		}	
+		}
 //		System.out.print("after  condense: ");
 //		printInternals();
 	}
@@ -49,10 +49,11 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 //		System.out.println("interpolating for "+value+" rb="+rankBefore+" ra="+rankAfter+" vb="+valueBefore+" va="+valueAfter);
 		long rank_range=rankAfter-rankBefore-1;
 		long value_range=valueAfter-valueBefore;
-		
+
 		return rankBefore+1+rank_range*(value-valueBefore)/value_range;
 	}
 
+	@Override
 	public synchronized void addValue(long value, long count, long min, long max) {
 		if (count > 2) { // make sure min and max are set and relevant
 			if (local_count >= values.length) {
@@ -79,8 +80,8 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 				long rankAfter;
 				long valueBefore;
 				long valueAfter;
-				
-  				if (i==0) {
+
+				if (i==0) {
 					rankBefore=1;
 					valueBefore=min;
 				} else {
@@ -113,18 +114,18 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		 * p   0               |              100
 		 * r     1   2   3   4   5   6   7   8<------ count=8
 		 * pos 0   2   4   6   8  10  12  14  16
-		 * 
-		 * 
+		 *
+		 *
 		 * example:
 		 * p=50 => pos=8
 		 *
 		 */
 
-		// find double of required rank			
+		// find double of required rank
 		long pos=count*p/50;
-		
+
 		// find the nearest possible rank, as all ranks correspond to the odd posititions:
-		// they're in the middle of their classbox	
+		// they're in the middle of their classbox
 		if ((pos & 1)==0) {
 			pos--;
 		}
@@ -134,7 +135,7 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 
 		long valueBefore;  // value corresponing to rankBefore
 		long valueAfter;   // value corresponding to rankAfter
-		
+
 		if (count<=2) {
 			rankBefore=1;
 			valueBefore=min;
@@ -161,8 +162,8 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		}
 		double fraction = (rankAfter==rankBefore) ? 1.0 : (count*p-(2*rankBefore-1)*50)/(100.0*(rankAfter-rankBefore));
 		double result = valueBefore+(valueAfter-valueBefore)*fraction;
-	//	System.out.println("Interpolated p"+p+"="+result); 
-		return result; 
+	//	System.out.println("Interpolated p"+p+"="+result);
+		return result;
 	}
 
 	public double getPercentileEstimate(int index,long count, long min, long max) {
@@ -170,13 +171,13 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 		return getInterpolatedPercentile(getPercentage(index),count,min,max);
 	}
 
-	public void printInternals(long count, long min, long max) {
-		System.out.print("c"+count+"/lc"+local_count+" min="+min);
-		for (int i=0; i<local_count; i++) {
-			System.out.print(" "+i+":(v"+values[i]+",r"+ranks[i]+")");
-		}
-		System.out.println(" max="+max);
-	}
+//	public void printInternals(long count, long min, long max) {
+//		System.out.print("c"+count+"/lc"+local_count+" min="+min);
+//		for (int i=0; i<local_count; i++) {
+//			System.out.print(" "+i+":(v"+values[i]+",r"+ranks[i]+")");
+//		}
+//		System.out.println(" max="+max);
+//	}
 
 
 
@@ -187,7 +188,7 @@ public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 	public XmlBuilder getSample(int index, long count, long min, long max) {
 		long value;
 		long rank;
-		
+
 		if (index<=0) {
 			value=min;
 			rank=1;

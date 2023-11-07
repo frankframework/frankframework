@@ -3,11 +3,19 @@
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:integration="http://www.springframework.org/schema/integration"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-5.2.xsd
 		"
 	>
+<!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
+	<integration:publish-subscribe-channel id="frank-management-bus">
+		<integration:interceptors>
+			<bean class="org.springframework.integration.security.channel.SecurityContextPropagationChannelInterceptor"/>
+		</integration:interceptors>
+	</integration:publish-subscribe-channel>
 
 	<context:property-placeholder />
 
@@ -19,23 +27,25 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 	</context:component-scan>
 
-	<bean name="metricsRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistry" autowire="byName"/>
-
-	<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
+	<bean id="cxf" class="nl.nn.adapterframework.http.cxf.SpringSoapBus">
 		<property name="id" value="ff-soap-bus"/>
 	</bean>
+
+	<bean id="inboundGatewayFactory" class="nl.nn.adapterframework.management.bus.InboundGatewayFactory">
+		<property name="gatewayClassnames" value="${management.gateway.inbound.class}" />
+	</bean>
+	<!-- The LocalGateway is required for internal traffic as well as the Frank!Console -->
+	<alias name="nl.nn.adapterframework.management.bus.LocalGateway" alias="outboundGateway"/>
 
 	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>
 	<bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>
 	<bean id="org.apache.cxf.bus.spring.BusExtensionPostProcessor" class="org.apache.cxf.bus.spring.BusExtensionPostProcessor"/>
 
 	<!-- Beans that should be loaded before the IbisContext starts -->
-	<bean
-		name="servletManager"
-		scope="singleton"
-		autowire="byName"
-		class="nl.nn.adapterframework.lifecycle.ServletManager"
-	/>
+	<bean id="servletManager" scope="singleton" class="nl.nn.adapterframework.lifecycle.ServletManager" autowire="byName" />
+	<bean id="ServletRegisteringPostProcessor" class="nl.nn.adapterframework.lifecycle.ServletRegisteringPostProcessor"/>
 
 	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
+	<bean name="meterRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistryFactoryBean" autowire="byName" lazy-init="true" />
+
 </beans>

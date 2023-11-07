@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TIMEOUT>
-	<errorMessage timestamp="Mon Dec 14 17:48:42 CET 2020" originator="IAF_ss9 7.6-SNAPSHOT" message="Pipe [LocalHttp] msgId [Test Tool correlation id] : (SocketTimeoutException) Read timed out">
+	<errorMessage timestamp="Mon Dec 14 17:48:42 CET 2020" originator="IAF_ss9 7.6-SNAPSHOT" message="SenderPipe [LocalHttp] msgId [Test Tool correlation id]: (SocketTimeoutException) Read timed out">
 		<location class="nl.nn.adapterframework.pipes.SenderPipe" name="LocalHttp"/>
 		<details>nl.nn.adapterframework.core.TimeoutException: (SocketTimeoutException) Read timed out
 	at nl.nn.adapterframework.http.HttpSenderBase.sendMessage(HttpSenderBase.java:700)

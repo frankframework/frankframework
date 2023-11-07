@@ -21,13 +21,13 @@ import java.security.NoSuchAlgorithmException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 /**
  * An enum of the hash algorithms. Currently supported hashes include MD5; SHA1; SHA256
  *
  * The string representation matches the java {@link java.security.MessageDigest#getInstance(String)} canonical names.
- * 
+ *
  * @author Niels Meijer
  */
 public enum HashAlgorithm {
@@ -36,21 +36,21 @@ public enum HashAlgorithm {
 	/**
 	 * Algorithm name as defined in {@link java.security.MessageDigest#getInstance(String)}
 	 */
-	private @Getter final String algorithm;
+	private final @Getter String algorithm;
 
 	private HashAlgorithm(final String algorithm) {
 		this.algorithm = algorithm;
 	}
 
 	public String computeHash(Message file) throws IOException {
-		byte[] fileBytes = file.asByteArray();
-		if (fileBytes == null) {
+		if (Message.isEmpty(file)) {
 			throw new IllegalStateException("unable to compute hash over null message");
 		}
+		byte[] fileBytes = file.asByteArray();
 
 		byte[] checksum = computeHash(fileBytes, this);
 		if(checksum != null) {
-			return Misc.asHex(checksum);
+			return UUIDUtil.asHex(checksum);
 		}
 
 		throw new IllegalStateException("error computing checksum");

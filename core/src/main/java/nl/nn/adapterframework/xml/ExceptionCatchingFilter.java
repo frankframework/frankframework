@@ -25,12 +25,12 @@ import org.xml.sax.SAXParseException;
 
 public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 
-	public ExceptionCatchingFilter(ContentHandler handler) {
+	protected ExceptionCatchingFilter(ContentHandler handler) {
 		super(handler);
 	}
 
 	protected abstract void handleException(Exception e) throws SAXException;
-	
+
 	@Override
 	public void startDocument() throws SAXException {
 		try {
@@ -74,8 +74,7 @@ public abstract class ExceptionCatchingFilter extends FullXmlFilter {
 			handleException(e);
 		}
 	}
-	
-	
+
 	@Override
 	public void comment(char[] ch, int start, int length) throws SAXException {
 		try {

@@ -1,16 +1,19 @@
 package nl.nn.adapterframework.align;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.Test;
+import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class AlignTestBase {
+	protected final Logger LOG = LogUtil.getLogger(AlignTestBase.class);
 
 	public static String BASEDIR="/Align/";
 
@@ -31,7 +34,7 @@ public abstract class AlignTestBase {
 		if (result==null) {
 			fail("cannot find schema ["+schemaFile+"]");
 		}
-	 return result;
+		return result;
 	}
 
 	protected String getTestFile(String file) throws IOException, TimeoutException {
@@ -157,7 +160,7 @@ public abstract class AlignTestBase {
 	}
 
 
- 	@Test
+	@Test
 	public void testRepeatedElements() throws Exception {
 		testFiles("RepeatedElements/sprint.xsd","","sprint","/RepeatedElements/sprint-withRepeatedElement");
 		testFiles("RepeatedElements/sprint.xsd","","sprint","/RepeatedElements/sprint-withoutRepeatedElement");

@@ -1,0 +1,32 @@
+{
+    "Available": {
+        "items": [
+            {
+                "adapterName": "TestAdapter",
+                "receiverName": "ReceiverName",
+                "messageCount": 2
+            }
+        ],
+        "totalMessageCount": 2
+    },
+    "InProcess": {
+        "items": [
+        ],
+        "totalMessageCount": 0
+    },
+    "Done": {
+        "items": [
+        ],
+        "totalMessageCount": 0
+    },
+    "Error": {
+        "items": [
+        ],
+        "totalMessageCount": 0
+    },
+    "Hold": {
+        "items": [
+        ],
+        "totalMessageCount": 0
+    }
+}

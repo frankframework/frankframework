@@ -21,9 +21,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class OverridesMap<V> extends SubstitutionNode<V> implements SubstitutionProvider<V> {
-	
-	Map<String,Set<String>> allParents = new HashMap<String,Set<String>>();
-	
+
+	private Map<String,Set<String>> allParents = new HashMap<>();
+
 	@Override
 	protected void registerSubstitute(String[] elements, int index, V value) {
 		super.registerSubstitute(elements, index, value);
@@ -46,7 +46,7 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 				return; // child already registered with null parent;
 			}
 		} else {
-			parentSetOfChild=new HashSet<String>();
+			parentSetOfChild=new HashSet<>();
 			allParents.put(child, parentSetOfChild);
 			created=true;
 		}
@@ -54,7 +54,7 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 			parentSetOfChild.add(parent);
 		}
 	}
-	
+
 	@Override
 	public boolean hasSubstitutionsFor(AlignmentContext context, String childName) {
 		while (allParents.containsKey(childName)) {
@@ -83,7 +83,7 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 	public boolean hasOverride(AlignmentContext context) {
 		return getOverride(context)!=null;
 	}
-	
+
 	@Override
 	public V getOverride(AlignmentContext context) {
 		return getMatchingValue(context.getParent(), context.getLocalName());

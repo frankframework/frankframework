@@ -11,27 +11,20 @@ import nl.nn.adapterframework.filesystem.IFileHandler;
 @RunWith(value = Parameterized.class)
 public class FileHandlerTest extends FileHandlerTestBase {
 
-    private Class<? extends IFileHandler> implementation;
+	@Parameterized.Parameter(0)
+	public Class<? extends IFileHandler> implementation;
 
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        Object[][] data = new Object[][]{
-            {FileHandlerWrapper.class}
-           //,{LocalFileSystemHandler.class}
-        };
-        return Arrays.asList(data);
-    }
+	@Parameterized.Parameters
+	public static Collection<Object[]> data() {
+		Object[][] data = new Object[][] { { FileHandlerWrapper.class }
+				// ,{LocalFileSystemHandler.class}
+		};
+		return Arrays.asList(data);
+	}
 
-    
-    public FileHandlerTest(Class<? extends IFileHandler> implementation) {
-    	super();
-        this.implementation = implementation;
-    }
-
- 
-    @Override
+	@Override
 	protected IFileHandler createFileHandler() throws IllegalAccessException, InstantiationException {
 		return implementation.newInstance();
-    }
+	}
 
 }

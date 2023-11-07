@@ -22,32 +22,33 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSystem<F>> implements IMessageBrowsingIteratorItem {
 
 	private FS fileSystem;
-	private F item;
+	private RawMessageWrapper<F> item;
 	private String messageIdPropertyKey;
 
-	public FileSystemMessageBrowsingIteratorItem(FS fileSystem, F item, String messageIdPropertyKey) {
+	public FileSystemMessageBrowsingIteratorItem(FS fileSystem, RawMessageWrapper<F> item, String messageIdPropertyKey) {
 		this.fileSystem = fileSystem;
 		this.item = item;
 		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
-	
+
 	@Override
 	public String getId() throws ListenerException {
-		return fileSystem.getName(item);
+		return fileSystem.getName(item.getRawMessage());
 	}
 
 	@Override
 	public String getOriginalId() throws ListenerException {
 		try {
 			if (StringUtils.isNotEmpty(messageIdPropertyKey)) {
-				Map<String,Object> properties = fileSystem.getAdditionalFileProperties(item);
+				Map<String,Object> properties = fileSystem.getAdditionalFileProperties(item.getRawMessage());
 				return (String)properties.get(messageIdPropertyKey);
 			}
-			return fileSystem.getName(item);
+			return fileSystem.getName(item.getRawMessage());
 		} catch (FileSystemException e) {
 			throw new ListenerException(e);
 		}
@@ -61,7 +62,7 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	@Override
 	public Date getInsertDate() throws ListenerException {
 		try {
-			return fileSystem.getModificationTime(item);
+			return fileSystem.getModificationTime(item.getRawMessage());
 		} catch (FileSystemException e) {
 			throw new ListenerException(e);
 		}

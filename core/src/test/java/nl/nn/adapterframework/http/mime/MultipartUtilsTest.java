@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.http.mime;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import javax.mail.BodyPart;
-import javax.mail.internet.MimeBodyPart;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Test;
+import jakarta.mail.BodyPart;
+import jakarta.mail.internet.MimeBodyPart;
 
 public class MultipartUtilsTest {
 

@@ -8,7 +8,7 @@ import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.testutil.ConcurrentActionTester;
 
 public abstract class ConcurrentManagedTransactionTester extends ConcurrentActionTester {
-	
+
 	private PlatformTransactionManager txManager;
 	private IbisTransaction mainItx;
 
@@ -16,18 +16,18 @@ public abstract class ConcurrentManagedTransactionTester extends ConcurrentActio
 		super();
 		this.txManager=txManager;
 	}
-	
+
 	@Override
 	public void initAction() throws Exception {
 		TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
-		mainItx = IbisTransaction.getTransaction(txManager, txDef, "ConcurrentManagedTransactionTester");
+		mainItx = new IbisTransaction(txManager, txDef, "ConcurrentManagedTransactionTester");
 	}
 
 	@Override
 	public void finalizeAction() throws Exception {
 		if(mainItx != null) {
-			mainItx.commit();
+			mainItx.complete();
 		}
 	}
-	
+
 }

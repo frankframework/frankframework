@@ -24,27 +24,28 @@ import nl.nn.adapterframework.core.TimeoutException;
  * @since   4.9
  */
 public class Guard {
-	
-    private int counter;
-    
-    public Guard() {
-        this(0);
-    }
-    public Guard(int numberOfResourcesToWaitFor) {
-        if (numberOfResourcesToWaitFor < 0) throw new IllegalArgumentException(numberOfResourcesToWaitFor + " < 0");
-        counter = numberOfResourcesToWaitFor;
-    }
-    
-    /**
+
+	private int counter;
+
+	public Guard() {
+		this(0);
+	}
+
+	public Guard(int numberOfResourcesToWaitFor) {
+		if(numberOfResourcesToWaitFor < 0) throw new IllegalArgumentException(numberOfResourcesToWaitFor + " < 0");
+		counter = numberOfResourcesToWaitFor;
+	}
+
+	/**
 	 * Wait for the counter to get zero.
-     *
-     * @exception InterruptedException passed from this.wait().
-     */
-    public synchronized void waitForAllResources() throws InterruptedException {
-        while (counter != 0) {
-            this.wait();
-        }
-    }
+	 *
+	 * @exception InterruptedException passed from this.wait().
+	 */
+	public synchronized void waitForAllResources() throws InterruptedException {
+		while(counter != 0) {
+			this.wait();
+		}
+	}
 
 	/**
 	 * Wait for the counter to get zero.
@@ -65,18 +66,18 @@ public class Guard {
 		counter++;
 	}
 
-    /**
-     * decrements internal counter, possibly awakening the thread waiting for release
-     * wait()ing in acquire()
-     */
-    public synchronized void releaseResource() {
-        counter--;
-        if (counter == 0) {
-            this.notify();
-        }
-    }
-    
-    public synchronized boolean isReleased() {
-    	return counter==0;
-    }
+	/**
+	 * decrements internal counter, possibly awakening the thread waiting for
+	 * release wait()ing in acquire()
+	 */
+	public synchronized void releaseResource() {
+		counter--;
+		if(counter == 0) {
+			this.notify();
+		}
+	}
+
+	public synchronized boolean isReleased() {
+		return counter == 0;
+	}
 }

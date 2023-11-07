@@ -1,7 +1,0 @@
-<div class="sub-menu">
-	<ul>
-		<li ng-repeat="element in elements | matchElement:this:search" ng-class="{ 'deprecated': element.deprecated }" ng-if="!element.deprecated || showDeprecatedElements">
-			<a ui-sref="element({group: group.name, element:element.name})" ui-sref-active="active"><span class="nav-label">{{element.name}}</span></a>
-		</li>
-	</ul>
-</div>

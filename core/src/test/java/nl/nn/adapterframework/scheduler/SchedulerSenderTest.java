@@ -15,17 +15,18 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.text.ParseException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.quartz.SchedulerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -38,10 +39,10 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 	private final String JOB_NAME = "senderName";
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() throws SchedulerException, ParseException {
 		super.setUp();
-		schedulerSender = new SchedulerSender();
+		schedulerSender = configuration.createBean(SchedulerSender.class);
 		schedulerSender.setName(JOB_NAME);
 		schedulerSender.setSchedulerHelper(schedulerHelper);
 	}
@@ -53,7 +54,7 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 		schedulerSender.setJobNamePattern("DummyJobNamePattern");
 
 		schedulerSender.configure();
-		assertNotNull("expected Parameter _jobname to be present", schedulerSender.getParameterList().findParameter("_jobname"));
+		assertNotNull(schedulerSender.getParameterList().findParameter("_jobname"), "expected Parameter _jobname to be present");
 	}
 
 	@Test
@@ -78,22 +79,22 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 		assertFalse(schedulerHelper.contains(JOB_NAME, "test"));
 
 		schedulerSender.configure();
-		Message name = schedulerSender.sendMessage(new Message("message"), null);
+		Message name = schedulerSender.sendMessage(new Message("message"), null).getResult();
 		assertEquals(JOB_NAME, name.asString());
 
 		assertTrue(schedulerHelper.contains(JOB_NAME, "test"));
 		assertFalse(schedulerHelper.contains(JOB_NAME));
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void testConfigureWithoutJavaListener() throws ConfigurationException {
 		schedulerSender.setCronExpressionPattern("0 0 5 * * ?");
-		schedulerSender.configure();
+		assertThrows(ConfigurationException.class, () -> schedulerSender.configure());
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void testConfigureWithoutCronExpressionPattern() throws ConfigurationException {
 		schedulerSender.setJavaListener("dummyJavaListener");
-		schedulerSender.configure();
+		assertThrows(ConfigurationException.class, () -> schedulerSender.configure());
 	}
 }

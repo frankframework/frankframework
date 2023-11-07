@@ -35,20 +35,20 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
  * Definition / configuration of scheduler jobs.
- * 
+ *
  * Specified in the Configuration.xml by a &lt;job&gt; inside a &lt;scheduler&gt;. The scheduler element must
  * be a direct child of configuration, not of adapter.
  * <br/>
  * All registered jobs are displayed in the IbisConsole under 'Scheduler'.
  * <p>
- * <br>
+ * <br/>
  * Operation of scheduling:
  * <ul>
  *   <li>at configuration time {@link Configuration#registerScheduledJob(IJob) Configuration.registerScheduledJob()} is called; </li>
  *   <li>this calls {@link SchedulerHelper#scheduleJob(IJob) SchedulerHelper.scheduleJob()};</li>
  *   <li>this creates a Quartz JobDetail object, and copies adapterName, receiverName, function and a reference to the configuration to jobdetail's datamap;</li>
  *   <li>it sets the class to execute to AdapterJob</li>
- *   <li>this job is scheduled using the cron expression</li> 
+ *   <li>this job is scheduled using the cron expression</li>
  * </ul>
  * </p>
  *
@@ -168,7 +168,7 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  * <p>The legal characters and the names of months and days of the week are not
  * case sensitive.</p>
  *
- * <p>Here are some full examples:<br>
+ * <p>Here are some full examples:<br/>
  * <table cellspacing="8">
  *   <tr>
  *     <th align="left">Expression</th>
@@ -283,7 +283,7 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  *   </li>
  * </ul>
  * </p>
- * 
+ *
  */
 public abstract class JobDef extends TransactionAttributes implements IConfigurationAware, IJob {
 
@@ -308,6 +308,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 
 	@Override
 	public void configure() throws ConfigurationException {
+		super.configure();
 		if (StringUtils.isEmpty(getName())) {
 			throw new ConfigurationException("a name must be specified");
 		}
@@ -316,13 +317,14 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 			setJobGroup(applicationContext.getId());
 		}
 
+		SchedulerHelper.validateJob(getJobDetail(), getCronExpression());
+
 		if (getLocker()!=null) {
 			getLocker().configure();
 		}
 
 		statsKeeper = new StatisticsKeeper(getName());
 
-		super.configure();
 		getMessageKeeper().add("job successfully configured");
 		configured = true;
 	}
@@ -352,7 +354,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	/** Called from {@link ConfiguredJob} which should trigger this job definition. */
 	@Override
 	public final void executeJob() {
-		if (!incrementCountThreads()) { 
+		if (!incrementCountThreads()) {
 			String msg = "maximum number of threads that may execute concurrently [" + getNumThreads() + "] is exceeded, the processing of this thread will be aborted";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			log.error(getLogPrefix()+msg);
@@ -441,14 +443,14 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 	}
 
 	@Override
-	/** Name of the job" 
+	/** Name of the job
 	 * @ff.mandatory
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	/** (Optional) Description of the job */
+	/** Description of the job */
 	public void setDescription(String description) {
 		this.description = description;
 	}
@@ -483,7 +485,7 @@ public abstract class JobDef extends TransactionAttributes implements IConfigura
 		return messageKeeper;
 	}
 
-	/** Number of message displayed in ibisconsole
+	/** Number of messages displayed in ibisconsole
 	 * @ff.default 10
 	 */
 	public void setMessageKeeperSize(int size) {

@@ -2,4 +2,4 @@
   <soapenv:Body>
     <soapenv:Fault>
       <faultcode>soapenv:Server</faultcode>
-      <faultstring><![CDATA[Pipe [unwrap] msgId [Test Tool correlation id]  Unexpected exception during (un)wrapping : Pipe [unwrap] msgId [Test Tool correlation id] SOAP Body is empty or message is not a SOAP Message]]></faultstring></soapenv:Fault></soapenv:Body></soapenv:Envelope>
+      <faultstring><![CDATA[Pipe [unwrap] Unexpected exception during (un)wrapping : Pipe [unwrap] SOAP Body is empty or message is not a SOAP Message]]></faultstring></soapenv:Fault></soapenv:Body></soapenv:Envelope>

@@ -23,7 +23,7 @@ public class PeekableDataIterator<I> implements IDataIterator<I> {
 
 	private IDataIterator<I> target;
 	private I peeked = null;
-	
+
 	public PeekableDataIterator(IDataIterator<I> target) {
 		super();
 		this.target = target;
@@ -36,12 +36,12 @@ public class PeekableDataIterator<I> implements IDataIterator<I> {
 
 	@Override
 	public I next() throws SenderException {
-		
 		if (peeked!=null) {
 			I result = peeked;
 			peeked = null;
 			return result;
 		}
+
 		return target.next();
 	}
 
@@ -54,7 +54,7 @@ public class PeekableDataIterator<I> implements IDataIterator<I> {
 		}
 		return peeked;
 	}
-	
+
 	@Override
 	public void close() throws SenderException {
 		target.close();

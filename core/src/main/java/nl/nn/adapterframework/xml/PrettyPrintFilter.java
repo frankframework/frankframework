@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2022 WeAreFrank!
+   Copyright 2019, 2022, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,10 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.xml;
+
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -30,6 +34,8 @@ public class PrettyPrintFilter extends FullXmlFilter {
 	private boolean elementContentSeen;
 	private @Setter boolean sortAttributes;
 
+	private Map<String,String> prefixMappings;
+
 	public PrettyPrintFilter(ContentHandler handler) {
 		super(handler);
 	}
@@ -37,6 +43,9 @@ public class PrettyPrintFilter extends FullXmlFilter {
 	public PrettyPrintFilter(ContentHandler handler, boolean sortAttributes) {
 		this(handler);
 		this.sortAttributes = sortAttributes;
+		if (sortAttributes) {
+			prefixMappings = new TreeMap<>();
+		}
 	}
 
 	private void write(String string) throws SAXException {
@@ -59,6 +68,10 @@ public class PrettyPrintFilter extends FullXmlFilter {
 		}
 		if (sortAttributes) {
 			atts =new AttributesWrapper(atts, true);
+			for(Entry<String,String> mapping: prefixMappings.entrySet()) {
+				super.startPrefixMapping(mapping.getKey(), mapping.getValue());
+			}
+			prefixMappings.clear();
 		}
 		super.startElement(uri, localName, qName, atts);
 		indentLevel++;
@@ -93,6 +106,20 @@ public class PrettyPrintFilter extends FullXmlFilter {
 
 	public void setIndent(String indent) {
 		this.indent = indent;
+	}
+
+	@Override
+	public String toString() {
+		return getContentHandler().toString();
+	}
+
+	@Override
+	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		if (sortAttributes) {
+			prefixMappings.put(prefix, uri);
+		} else {
+			super.startPrefixMapping(prefix, uri);
+		}
 	}
 
 

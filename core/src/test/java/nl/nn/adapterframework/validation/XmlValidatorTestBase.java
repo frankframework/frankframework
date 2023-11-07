@@ -1,13 +1,16 @@
 package nl.nn.adapterframework.validation;
 
 
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.fail;
 
+import org.apache.xerces.xni.XNIException;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.PipeStartException;
 
 /**
  * @author Gerrit van Brakel / Michiel Meeuwissen
@@ -65,12 +68,9 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 
 	@Test
 	public void validatePlainText() throws Exception {
-		String inputFile = INPUT_FILE_BASIC_PLAIN_TEXT;
-		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK, inputFile, getExpectedErrorForPlainText());
+		validate(ROOT_NAMESPACE_BASIC, SCHEMA_LOCATION_BASIC_A_OK, INPUT_FILE_BASIC_PLAIN_TEXT, getExpectedErrorForPlainText());
 	}
 
-
-	
     @Test
     public void step5() throws Exception {
         validate(ROOT_NAMESPACE_GPBDB,
@@ -83,16 +83,26 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
 				INPUT_FILE_GPBDB_OK);
     }
 
-    @Test(expected = XmlValidatorException.class)
+    @Test
     @Ignore("Fails for XmlValidatorBaseXerces26 Hard to fix....")
-    public void step5MissingNamespace() throws Exception {
-        validate(ROOT_NAMESPACE_GPBDB,
-        		SCHEMA_LOCATION_SOAP_ENVELOPE+" "+
-                SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
-				SCHEMA_LOCATION_GPBDB_REQUEST+" "+
-				SCHEMA_LOCATION_GPBDB_GPBDB,
-				INPUT_FILE_GPBDB_OK,"weetniet");
-    }
+    public void step5MissingNamespace() {
+		try {
+			validate(ROOT_NAMESPACE_GPBDB,
+					SCHEMA_LOCATION_SOAP_ENVELOPE+" "+
+					SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
+					SCHEMA_LOCATION_GPBDB_REQUEST+" "+
+					SCHEMA_LOCATION_GPBDB_GPBDB,
+					INPUT_FILE_GPBDB_OK,"[http://www.ing.com/nl/banking/coe/xsd/bankingcustomer_generate_01/getpartybasicdatabanking_01]");
+			fail("Validation succeeded but an exception was expected");
+		} catch (PipeStartException | XNIException e) {
+			// Success.
+			// Which exception exactly was caught depends on parser used.
+			log.info("Expected exception thrown from validation method: ", e);
+		} catch (Exception e) {
+			log.error("Unexpected exception from validation, expected one of PipeStartException | XNIException depending on parser. Got:", e);
+			fail("Unexpected exception thrown by method: " + e.getMessage() + "; expected one of PipeStartException | XNIException depending on parser");
+		}
+	}
 
     @Test
     public void step5WrongOrderOfSchemaLocations() throws Exception {
@@ -114,7 +124,7 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
     		assertThat(e.getMessage(),containsString(MSG_SCHEMA_NOT_FOUND));
     	}
     }
-    
+
     @Test // step4errorr1.xml uses the namespace xmlns="http://www.ing.com/BESTAATNIET
     public void step5ValidationErrorUnknownNamespace() throws Exception {
         validateIgnoreUnknownNamespacesOff(ROOT_NAMESPACE_GPBDB,
@@ -148,7 +158,7 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
            		SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
 				SCHEMA_LOCATION_GPBDB_GPBDB+" "+
 				SCHEMA_LOCATION_GPBDB_REQUEST+" "+
-				SCHEMA_LOCATION_GPBDB_RESPONSE, 
+				SCHEMA_LOCATION_GPBDB_RESPONSE,
 				INPUT_FILE_GPBDB_ERR2,expectedFailureReasons);
     }
 
@@ -158,5 +168,5 @@ public abstract class XmlValidatorTestBase extends ValidatorTestBase {
     }
 
 
-    
+
 }

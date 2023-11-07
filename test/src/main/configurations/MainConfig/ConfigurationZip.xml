@@ -1,10 +1,10 @@
 <module>
-	<adapter name="Zip - Main" >
-		<receiver 
-			name="Zip - Main" 
+	<adapter name="Zip - Main">
+		<receiver
+			name="Zip - Main"
 			maxRetries="0">
 			<listener 
-				className="nl.nn.adapterframework.receivers.JavaListener" 
+				className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-unzip"
 			/>
 		</receiver>
@@ -43,18 +43,19 @@
 				className="nl.nn.adapterframework.pipes.FixedResultPipe" 
 				returnString="${testdata.dir}/zip/recreated.zip"
 				>
-				<forward name="success" path="ReCreateZip2"/>
+				<forward name="success" path="create a new zip collection with a specified name"/>
 			</pipe>
 			<pipe
-				name="ReCreateZip2"
+				name="create a new zip collection with a specified name"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="open"
+				backwardsCompatibility="true"
 				>
-					<param name="filename" value="${testdata.dir}/zip/out.zip" />
-				<forward name="success" path="ReCreateZip3"/>
+					<param name="filename" /> <!-- Get name from previous pipe -->
+				<forward name="success" path="Iterate over a zip file and add the content to a new zip archive"/>
 			</pipe>
 			<pipe
-				name="ReCreateZip3"
+				name="Iterate over a zip file and add the content to a new zip archive"
 				getInputFromSessionKey="stream"
 				className="nl.nn.adapterframework.compression.ZipIteratorPipe" 
 				
@@ -69,6 +70,7 @@
 				name="ReCreateZip4"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="close"
+				backwardsCompatibility="true"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
@@ -77,16 +79,13 @@
 				name="SimpleZip"
 				className="nl.nn.adapterframework.pipes.FixedResultPipe" 
 				returnString="${testdata.dir}/zip/simple.zip"
-				>
-				<forward name="success" path="SimpleZip2"/>
-			</pipe>
+			/>
 			<pipe
 				name="SimpleZip2"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="open"
-				>
-				<forward name="success" path="SimpleZip3"/>
-			</pipe>
+				backwardsCompatibility="true"
+			/>
 			<pipe
 				name="SimpleZip3"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
@@ -94,12 +93,16 @@
 				getInputFromSessionKey="originalMessage"
 				>
 					<param name="filename" value="zipentry.txt" />
-				<forward name="success" path="SimpleZip4"/>
 			</pipe>
 			<pipe
 				name="SimpleZip4"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="close"
+			/>
+			<pipe
+				name="klaar"
+				className="nl.nn.adapterframework.pipes.EchoPipe" 
+				getInputFromFixedValue="klaar"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
@@ -108,16 +111,13 @@
 				name="SimpleZipX"
 				className="nl.nn.adapterframework.pipes.FixedResultPipe" 
 				returnString="${testdata.dir}/zip/simple.zip"
-				>
-				<forward name="success" path="SimpleZipX2"/>
-			</pipe>
+			/>
 			<pipe
 				name="SimpleZipX2"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="open"
-				>
-				<forward name="success" path="SimpleZipX3"/>
-			</pipe>
+				backwardsCompatibility="true"
+			/>
 			<pipe
 				name="SimpleZipX3"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
@@ -125,12 +125,16 @@
 				getInputFromSessionKey="originalMessage"
 				>
 					<param name="filename" value="zipentry.xml" />
-				<forward name="success" path="SimpleZipX4"/>
 			</pipe>
 			<pipe
 				name="SimpleZipX4"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="close"
+			/>
+			<pipe
+				name="klaarX"
+				className="nl.nn.adapterframework.pipes.EchoPipe" 
+				getInputFromFixedValue="klaarX"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
@@ -229,6 +233,7 @@
 				name="make entry"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="stream"
+				backwardsCompatibility="true"
 				>
 				<param name="filename" />
 				<forward name="success" path="start nested zip"/>
@@ -239,6 +244,7 @@
 				action="open" 
 				zipWriterHandle="zipwriter2"
 				closeOutputstreamOnExit="false" 
+				backwardsCompatibility="true"
 				>
 				<forward name="success" path="ZipRead"/>
 			</pipe>
@@ -252,6 +258,7 @@
 				>
 				<sender className="nl.nn.adapterframework.compression.ZipWriterSender" 
 					zipWriterHandle="zipwriter2"
+					backwardsCompatibility="true"
 				>
 					<param name="contents" sessionKey="nestedZipData" />
 				</sender>
@@ -262,6 +269,7 @@
 				className="nl.nn.adapterframework.compression.ZipWriterPipe" 
 				action="close" 
 				zipWriterHandle="zipwriter2"
+				backwardsCompatibility="true"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>

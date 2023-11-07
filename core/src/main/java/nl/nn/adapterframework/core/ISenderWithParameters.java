@@ -15,8 +15,10 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.parameters.Parameter;
+
 /**
- * The <code>ISenderWithParameters</code> allows Senders to declare that they accept and may use {@link nl.nn.adapterframework.parameters.Parameter parameters} 
+ * The <code>ISenderWithParameters</code> allows Senders to declare that they accept and may use {@link Parameter parameters} 
  * 
  * @author  Gerrit van Brakel
  */

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,88 +17,113 @@ package nl.nn.adapterframework.extensions.esb;
 
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
+import nl.nn.adapterframework.core.IListenerConnector.CacheMode;
 import nl.nn.adapterframework.core.ITransactionRequirements;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.Default;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.jms.JmsListener;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsListener.
  *
- * <p><b>Configuration </b><i>(where deviating from JmsListener)</i><b>:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setMessageProtocol(String) messageProtocol}</td><td>protocol of ESB service to be called. Possible values 
- * <ul>
- *   <li>"FF": Fire & Forget protocol</li>
- *   <li>"RR": Request-Reply protocol</li>
- * </ul></td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setUseReplyTo(boolean) useReplyTo}</td><td>if messageProtocol=<code>FF</code>: </td><td><code>false</code></td></tr>
- * <tr><td>{@link #setForceMessageIdAsCorrelationId(boolean) forceMessageIdAsCorrelationId}</td><td>if messageProtocol=<code>RR</code>: </td><td><code>true</code></td></tr>
- * <tr><td>{@link #setCopyAEProperties(boolean) copyAEProperties}</td><td>if <code>true</code>, all JMS properties in the request starting with "ae_" are copied to the reply</td><td><code>false</code></td></tr>
- * </table></p>
- * 
  * @author  Peter Leeuwenburgh
  */
+@Category("NN-Special")
 public class EsbJmsListener extends JmsListener implements ITransactionRequirements {
-	private final static String REQUEST_REPLY = "RR";
-	private final static String FIRE_AND_FORGET = "FF";
-	private final static String CACHE_CONSUMER = "CACHE_CONSUMER";
 
-	private String messageProtocol = null;
-	private boolean copyAEProperties = false;
-	
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private static final String MSGLOG_KEYS = APP_CONSTANTS.getProperty("msg.log.keys");
+
+	private @Getter MessageProtocol messageProtocol = null;
+	private @Getter boolean copyAEProperties = false;
+	private @Getter String xPathLoggingKeys=null;
+
+	private final Map<String, String> xPathLogMap = new HashMap<>();
+
+	public enum MessageProtocol {
+		/** Fire & Forget protocol */
+		FF,
+		/** Request-Reply protocol */
+		RR;
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
-		if (getMessageProtocol() == null) {
-			throw new ConfigurationException(getLogPrefix() + "messageProtocol must be set");
-		}
-		if (!getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY) && !getMessageProtocol().equalsIgnoreCase(FIRE_AND_FORGET)) {
-			throw new ConfigurationException(getLogPrefix() + "illegal value for messageProtocol [" + getMessageProtocol() + "], must be '" + REQUEST_REPLY + "' or '" + FIRE_AND_FORGET + "'");
-		}
-		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
-			setForceMessageIdAsCorrelationId(true);
-			if (CACHE_CONSUMER.equals(getCacheMode())) {
-				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, getReceiver().getAdapter());
+		if (getMessageProtocol() == MessageProtocol.RR) {
+			if (getForceMessageIdAsCorrelationId() == null) {
+				setForceMessageIdAsCorrelationId(true);
 			}
-			setCacheMode("CACHE_CONSUMER");
+			if (getCacheMode()==CacheMode.CACHE_CONSUMER) {
+				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CacheMode.CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, getReceiver().getAdapter());
+			}
+			setCacheMode(CacheMode.CACHE_CONSUMER);
 		} else {
 			setUseReplyTo(false);
 		}
 		super.configure();
+		configureXPathLogging();
+	}
+
+	protected Map<String, String> getxPathLogMap() {
+		return xPathLogMap;
+	}
+
+	private void configureXPathLogging() {
+		String logKeys;
+		if(getXPathLoggingKeys() != null) //Override on listener level
+			logKeys = getXPathLoggingKeys();
+		else
+			logKeys = MSGLOG_KEYS;
+
+		if (logKeys == null) {
+			return;
+		}
+		for (String name : StringUtil.split(logKeys)) {
+			String xPath = APP_CONSTANTS.getProperty("msg.log.xPath." + name);
+			if(xPath != null)
+				xPathLogMap.put(name, xPath);
+		}
 	}
 
 	@Override
-	protected String retrieveIdFromMessage(Message message, Map<String, Object> threadContext) throws ListenerException {
-		String id = super.retrieveIdFromMessage(message, threadContext);
+	public Map<String, Object> extractMessageProperties(Message rawMessage) throws ListenerException {
+		Map<String, Object> messageProperties = super.extractMessageProperties(rawMessage);
 		if (isCopyAEProperties()) {
 			Enumeration<?> propertyNames = null;
 			try {
-				propertyNames = message.getPropertyNames();
+				propertyNames = rawMessage.getPropertyNames();
 			} catch (JMSException e) {
 				log.debug("ignoring JMSException in getPropertyName()", e);
 			}
-			while (propertyNames.hasMoreElements()) {
+			while (propertyNames != null && propertyNames.hasMoreElements()) {
 				String propertyName = (String) propertyNames.nextElement ();
 				if (propertyName.startsWith("ae_")) {
 					try {
-						Object object = message.getObjectProperty(propertyName);
-						threadContext.put(propertyName, object);
+						Object object = rawMessage.getObjectProperty(propertyName);
+						messageProperties.put(propertyName, object);
 					} catch (JMSException e) {
 						log.debug("ignoring JMSException in getObjectProperty()", e);
 					}
@@ -107,53 +132,49 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 
 		try {
-			TextMessage textMessage = (TextMessage) message;
+			TextMessage textMessage = (TextMessage) rawMessage;
 			String soapMessage = textMessage.getText();
 
-			if(getxPathLogMap().size() > 0) {
-				String xPathLogKeys = "";
-				Iterator<Entry<String, String>> it = getxPathLogMap().entrySet().iterator();
-			    while (it.hasNext()) {
-			    	Map.Entry<String, String> pair = (Entry<String, String>) it.next();
-			    	String sessionKey = pair.getKey();
-			        String xPath = pair.getValue();
-			        String result = getResultFromxPath(soapMessage, xPath);
-					if(result.length() > 0) {
-						threadContext.put(sessionKey, result);
-				        xPathLogKeys = xPathLogKeys + "," + sessionKey; //Only pass items that have been found, otherwise logs will clutter with NULL.
-					}
-			    }
-			    threadContext.put("xPathLogKeys", xPathLogKeys);
+			if(!getxPathLogMap().isEmpty()) {
+				StringBuilder xPathLogKeys = new StringBuilder();
+				for (Entry<String, String> pair : getxPathLogMap().entrySet()) {
+				String sessionKey = pair.getKey();
+				String xPath = pair.getValue();
+				String result = getResultFromxPath(soapMessage, xPath);
+				if (!result.isEmpty()) {
+					messageProperties.put(sessionKey, result);
+					xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
+				}
+			}
+				messageProperties.put("xPathLogKeys", xPathLogKeys.toString());
 			}
 		} catch (JMSException e) {
 			log.debug("ignoring JMSException", e);
 		}
-		return id;
+		return messageProperties;
 	}
 
 	protected String getResultFromxPath(String message, String xPathExpression) {
 		String found = "";
-		if(message != null && message.length() > 0) {
-			if(XmlUtils.isWellFormed(message)) {
-				try {
-					TransformerPool test = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false));
-					found = test.transform(message, null);
-					
-					//xPath not found and message length is 0 but not null nor ""
-					if(found.length() == 0) found = "";
-				} catch (Exception e) {
-					log.debug("could not evaluate xpath expression",e);
-				}
+		if(message != null && !message.isEmpty() && (XmlUtils.isWellFormed(message))) {
+			try {
+				TransformerPool test = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false));
+				found = test.transform(message, null);
+
+				//xPath not found and message length is 0 but not null nor ""
+				if(found.isEmpty()) found = "";
+			} catch (Exception e) {
+				log.debug("could not evaluate xpath expression",e);
 			}
 		}
 		return found;
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
-		if (getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY)) {
-			Destination replyTo = (Destination) threadContext.get("replyTo");
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessageWrapper, pipeLineSession);
+		if (getMessageProtocol() == MessageProtocol.RR) {
+			Destination replyTo = (Destination) pipeLineSession.get("replyTo");
 			if (replyTo == null) {
 				log.warn("no replyTo address found for messageProtocol [" + getMessageProtocol() + "], response is lost");
 			}
@@ -161,62 +182,63 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	protected Map<String, Object> getMessageProperties(Map<String, Object> threadContext) {
-		Map<String, Object> properties = super.getMessageProperties(threadContext);
+	protected Map<String, Object> getMessageProperties(PipeLineSession session) {
+		Map<String, Object> properties = super.getMessageProperties(session);
 
-		if (isCopyAEProperties()) {
+		if (isCopyAEProperties() && session != null) {
 			if(properties == null)
-				properties = new HashMap<String, Object>();
+				properties = new HashMap<>();
 
-			if (threadContext != null) {
-				for (Iterator<String> it = threadContext.keySet().iterator(); it.hasNext();) {
-					String key = it.next();
-					if (key.startsWith("ae_")) {
-						Object value = threadContext.get(key);
-						properties.put(key, value);
-					}
-				}
-			}
+			properties.putAll(session.entrySet().stream()
+					.filter(entry -> entry.getKey().startsWith("ae_"))
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 		}
 
 		return properties;
 	}
 
-	public void setMessageProtocol(String string) {
+	/** protocol of ESB service to be called */
+	@Mandatory
+	public void setMessageProtocol(MessageProtocol string) {
 		messageProtocol = string;
 	}
 
-	public String getMessageProtocol() {
-		return messageProtocol;
-	}
-
 	public boolean isSynchronous() {
-		return getMessageProtocol().equalsIgnoreCase(REQUEST_REPLY);
+		return getMessageProtocol() == MessageProtocol.RR;
 	}
 
 	@Override
 	public boolean transactionalRequired() {
-		if (getMessageProtocol().equals(FIRE_AND_FORGET)) {
-			return true;
-		} else {
-			return false;
-		}
+		return getMessageProtocol() == MessageProtocol.FF;
 	}
 
 	@Override
 	public boolean transactionalAllowed() {
-		if (getMessageProtocol().equals(FIRE_AND_FORGET)) {
-			return true;
-		} else {
-			return false;
-		}
+		return getMessageProtocol() == MessageProtocol.FF;
 	}
 
+	/**
+	 * if true, all JMS properties in the request starting with "ae_" are copied to the reply.
+	 * @ff.default false
+	 */
 	public void setCopyAEProperties(boolean b) {
 		copyAEProperties = b;
 	}
 
-	public boolean isCopyAEProperties() {
-		return copyAEProperties;
+	@Override
+	@Default("if messageProtocol=<code>RR</code>: </td><td><code>true</code>")
+	public void setForceMessageIdAsCorrelationId(Boolean force) {
+		super.setForceMessageIdAsCorrelationId(force);
+	}
+
+	@Override
+	@Default("if messageProtocol=<code>FF</code>: <code>false</code>")
+	public void setUseReplyTo(boolean newUseReplyTo) {
+		super.setUseReplyTo(newUseReplyTo);
+	}
+
+	/** Comma separated list of all XPath keys that need to be logged. (overrides <code>msg.log.keys</code> property) */
+	public void setxPathLoggingKeys(String string) {
+		xPathLoggingKeys = string;
 	}
 }

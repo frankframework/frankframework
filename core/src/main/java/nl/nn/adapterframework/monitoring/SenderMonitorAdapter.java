@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,21 +17,25 @@ package nl.nn.adapterframework.monitoring;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.monitoring.events.MonitorEvent;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * IMonitorAdapter that uses a {@link nl.nn.adapterframework.core.ISender sender} to send its message.
- * 
+ * IMonitorAdapter that uses a {@link ISender sender} to send its message.
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public class SenderMonitorAdapter extends MonitorAdapterBase {
+public class SenderMonitorAdapter extends MonitorDestinationBase {
 
-	private ISender sender;
+	private @Getter @Setter ISender sender;
 	private boolean senderConfigured=false;
 
 	@Override
@@ -44,6 +48,7 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 		}
 
 		super.configure();
+
 		if (!senderConfigured) {
 			getSender().configure();
 			senderConfigured=true;
@@ -62,9 +67,15 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 	}
 
 	@Override
-	public void fireEvent(String eventSource, EventTypeEnum eventType, SeverityEnum severity, String message, Throwable t) {
-		try {
-			getSender().sendMessage(new Message(makeXml(eventSource, eventType, severity, message, t)),null);
+	public void fireEvent(String monitorName, EventType eventType, Severity severity, String eventCode, MonitorEvent event) {
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = event.getEventMessage();
+			if(!Message.isNull(message)) {
+				Message newMessage = message.copyMessage();
+				session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, newMessage);
+				session.scheduleCloseOnSessionExit(newMessage, "Event fired by "+ monitorName);
+			}
+			getSender().sendMessageOrThrow(new Message(makeXml(monitorName, eventType, severity, eventCode, event)), session); // close() disables unit testing Message result
 		} catch (Exception e) {
 			log.error("Could not signal event", e);
 		}
@@ -77,12 +88,5 @@ public class SenderMonitorAdapter extends MonitorAdapterBase {
 		senderXml.addAttribute("className", getUserClass(getSender()).getCanonicalName());
 		result.addSubElement(senderXml);
 		return result;
-	}
-
-	public void setSender(ISender sender) {
-		this.sender = sender;
-	}
-	public ISender getSender() {
-		return sender;
 	}
 }

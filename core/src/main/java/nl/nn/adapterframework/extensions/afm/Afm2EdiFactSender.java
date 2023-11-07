@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,10 @@
 */
 package nl.nn.adapterframework.extensions.afm;
 
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
@@ -30,27 +27,33 @@ import org.w3c.dom.NodeList;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Domparser om AFM-XML berichten om te zetten in edifactberichten (voor de backoffice).
  *
  * @author Erik van de Wetering, fine tuned and wrapped for Ibis by Gerrit van Brakel
  */
+@Category("NN-Special")
 public class Afm2EdiFactSender implements ISender {
 	protected Logger logger = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	public final static String VERWERKTAG = "VRWRKCD";
-	public final static String TPNRTAG = "AL_RECCRT";
-	
-	private final static String contractRoot = "Contractdocument";
-	private final static String mantelRoot = "Mantel";
-	private final static String onderdeelRoot = "Onderdeel";
+	public static final String VERWERKTAG = "VRWRKCD";
+	public static final String TPNRTAG = "AL_RECCRT";
+
+	private static final String contractRoot = "Contractdocument";
+	private static final String mantelRoot = "Mantel";
+	private static final String onderdeelRoot = "Onderdeel";
 
 	private String destination = "   "; // 3 tekens
 	private String tpnummer = "999999";
@@ -77,19 +80,19 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
 		try {
-			return new Message(execute(message.asString()));
+			return new SenderResult(execute(message.asString()));
 		} catch (Exception e) {
 			throw new SenderException("transforming AFM-XML to EdiFact",e);
 		}
 	}
 
-	private void appendArray(char aArray[], StringBuffer aRes) {
+	private void appendArray(char[] aArray, StringBuilder aRes) {
 		String aStr = new String(aArray);
 		appendString(aStr, aRes);
 	}
-	private void appendString(String aStr, StringBuffer aRes) {
+	private void appendString(String aStr, StringBuilder aRes) {
 		if (aStr != null) {
 			String lHlpStr = aStr.trim();  //TODO: checken of dit wel klopt, stond zo in originele EvdW-code
 			if (aStr.length() > 1) {
@@ -122,7 +125,7 @@ public class Afm2EdiFactSender implements ISender {
 		}
 		return lRes;
 	}
-	private void closeList(StringBuffer aRes, int regelTeller) {
+	private void closeList(StringBuilder aRes, int regelTeller) {
 		// UNT
 		char untRegel[] = new char[21];
 		for (int i = 0; i < 21; i++)
@@ -135,7 +138,6 @@ public class Afm2EdiFactSender implements ISender {
 		regelTeller = 0;
 	}
 	public String execute(String aInput) throws DomBuilderException {
-		 
 		Document doc = XmlUtils.buildDomDocument(aInput);
 
 		NodeList contractList = doc.getElementsByTagName(contractRoot);
@@ -146,7 +148,7 @@ public class Afm2EdiFactSender implements ISender {
 			Node lHlpNode = tpNr.item(0);
 			setTpnummer(getWaardeForNode(lHlpNode));
 		}
-		StringBuffer resultaat = new StringBuffer();
+		StringBuilder resultaat = new StringBuilder();
 		//start
 		this.appendArray(getInitResultaat(), resultaat);
 		//docs
@@ -159,7 +161,7 @@ public class Afm2EdiFactSender implements ISender {
 		return resultaat.toString();
 	}
 	public char[] getCloseResultaat() {
-		// UNZ 
+		// UNZ
 		char unzRegel[] = new char[23];
 		for (int i = 0; i < 23; i++)
 			unzRegel[i] = ' ';
@@ -234,7 +236,7 @@ public class Afm2EdiFactSender implements ISender {
 		}
 		return lRes;
 	}
-	private StringBuffer HandleList(NodeList aList, StringBuffer aRes) {
+	private StringBuilder HandleList(NodeList aList, StringBuilder aRes) {
 		if (aList != null) {
 			if (aList.getLength() > 0) {
 				for (int i = 0; i <= aList.getLength() - 1; i++) {
@@ -249,7 +251,7 @@ public class Afm2EdiFactSender implements ISender {
 		}
 		return aRes;
 	}
-	private int HandleSubList(NodeList aList, StringBuffer aRes, int regelTeller) {
+	private int HandleSubList(NodeList aList, StringBuilder aRes, int regelTeller) {
 		String lHlp = "";
 		if (aList != null) {
 			for (int i = 0; i <= aList.getLength() - 1; i++) {
@@ -299,7 +301,7 @@ public class Afm2EdiFactSender implements ISender {
 	public String getName() {
 		return name;
 	}
-	
+
 	public void setDestination(String newDestination) {
 		destination = newDestination;
 	}

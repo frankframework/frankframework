@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,31 +20,31 @@ import java.io.IOException;
 import java.util.Map;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Retrieves a message using an {@link IPostboxListener}. 
- * 
+ * Retrieves a message using an {@link IPostboxListener}.
+ *
  * Note that most listeners allow you to specify a timeout. The timeout has the following
  * meaning:
- * <ul> 
+ * <ul>
  * <li>&lt;0 = no wait</li>
  * <li>0 = block until message available</li>
  * <li>&gt;= 0 maximum wait in milliseconds<li>
- * </ul> 
+ * </ul>
  *
  * <tr><th>nested elements</th><th>description</th></tr>
  * <tr><td>{@link IPostboxListener listener}</td><td>specification of postbox listener to retrieve messages from</td></tr>
  * </table>
  * </p>
-  * 
+  *
  * @author  John Dekker
  */
 @Deprecated
@@ -52,7 +52,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 
 	private IPostboxListener listener = null;
 	private String resultOnEmptyPostbox = "empty postbox";
-		
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -74,7 +74,7 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 	public void start() throws PipeStartException {
 		try {
 			getListener().open();
-		} 
+		}
 		catch (Exception e) {
 			throw new PipeStartException(e);
 		}
@@ -84,9 +84,9 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 	public void stop() {
 		try {
 			getListener().close();
-		} 
+		}
 		catch (Exception e) {
-			log.warn(getLogPrefix(null) + " exception closing sender", e);
+			log.warn("exception closing sender", e);
 		}
 	}
 
@@ -96,29 +96,30 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		try {
 			messageSelector = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
-		Map threadContext = null;
+		Map<String, Object> threadContext = null;
 		try {
 			threadContext = getListener().openThread();
-			Object rawMessage = getListener().retrieveRawMessage(messageSelector, threadContext);
-			
-			if (rawMessage == null)
+			RawMessageWrapper<?> rawMessage = getListener().retrieveRawMessage(messageSelector, threadContext);
+
+			if (rawMessage == null) {
 				return new PipeRunResult(findForward("emptyPostbox"), getResultOnEmptyPostbox());
-				
+			}
 			Message result = getListener().extractMessage(rawMessage, threadContext);
 			return new PipeRunResult(getSuccessForward(), result);
-		} 
-		catch (Exception e) {
-			throw new PipeRunException( this, getLogPrefix(session) + "caught exception", e);
-		} 
+		} catch (Exception e) {
+			throw new PipeRunException( this, "caught exception", e);
+		}
 		finally {
 			try {
-				getListener().closeThread(threadContext);
-			} 
+				if (threadContext != null) {
+					getListener().closeThread(threadContext);
+				}
+			}
 			catch (ListenerException le) {
-				log.error(getLogPrefix(session)+"got error closing listener");
+				log.error("got error closing listener");
 			}
 		}
 	}
@@ -127,7 +128,10 @@ public class PostboxRetrieverPipe  extends FixedForwardPipe {
 		return resultOnEmptyPostbox;
 	}
 
-	@IbisDoc({"result when no object is on postbox", "empty postbox"})
+	/**
+	 * result when no object is on postbox
+	 * @ff.default empty postbox
+	 */
 	public void setResultOnEmptyPostbox(String string) {
 		resultOnEmptyPostbox = string;
 	}

@@ -31,24 +31,27 @@ import javax.xml.xquery.XQResultSequence;
 
 import org.apache.commons.lang3.StringUtils;
 
-import net.sf.saxon.xqj.SaxonXQDataSource;
+import com.saxonica.xqj.SaxonXQDataSource;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Perform an XQuery.
  *
  * @ff.parameters any parameters defined on the pipe will be passed as external variable to the XQuery
- * 
+ *
  * @author Jaco de Groot
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class XQueryPipe extends FixedForwardPipe {
 	private String xquery;
 	private String xqueryName;
@@ -60,7 +63,7 @@ public class XQueryPipe extends FixedForwardPipe {
 		super.configure();
 		URL url;
 		if (StringUtils.isNotEmpty(getXqueryName())) {
-			url = ClassUtils.getResourceURL(this, getXqueryName());
+			url = ClassLoaderUtils.getResourceURL(this, getXqueryName());
 			if (url == null) {
 				throw new ConfigurationException("could not find XQuery '" + getXqueryName() + "'");
 			}
@@ -69,14 +72,14 @@ public class XQueryPipe extends FixedForwardPipe {
 			try {
 				url = file.toURI().toURL();
 			} catch (MalformedURLException e) {
-				throw new ConfigurationException(getLogPrefix(null) + "could not create url for XQuery file", e);
+				throw new ConfigurationException("could not create url for XQuery file", e);
 			}
 		} else {
 			throw new ConfigurationException("no XQuery name or file specified");
 		}
 
 		try {
-			xquery = Misc.resourceToString(url);
+			xquery = StreamUtil.resourceToString(url);
 		} catch (IOException e) {
 			throw new ConfigurationException("could not read XQuery", e);
 		}
@@ -93,19 +96,16 @@ public class XQueryPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {
-			throw new PipeRunException(this, getLogPrefix(session) + "got null input");
+			throw new PipeRunException(this, "got null input");
 		}
 		String input;
 		try {
 			input = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		try {
 			String stringResult = input;
-			// We already specifically use Saxon in this pipe, hence set xslt2
-			// to true to make XmlUtils use the Saxon
-			// DocumentBuilderFactoryImpl.
 			preparedExpression.bindDocument(XQConstants.CONTEXT_ITEM, stringResult, null, null);
 			if (getParameterList() != null) {
 				Map<String,Object> parametervalues = null;
@@ -120,11 +120,11 @@ public class XQueryPipe extends FixedForwardPipe {
 			stringResult = resultSequence.getSequenceAsString(null);
 			return new PipeRunResult(getSuccessForward(), stringResult);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session)+" Exception on running xquery", e);
+			throw new PipeRunException(this, "Exception on running xquery", e);
 		}
 	}
 
-	@IbisDoc({"name of the file (resource) on the classpath to read the xquery from", ""})
+	/** name of the file (resource) on the classpath to read the xquery from */
 	public void setXqueryName(String xqueryName){
 		this.xqueryName = xqueryName;
 	}
@@ -133,7 +133,7 @@ public class XQueryPipe extends FixedForwardPipe {
 		return xqueryName;
 	}
 
-	@IbisDoc({"name of the file on the file system to read the xquery from", ""})
+	/** name of the file on the file system to read the xquery from */
 	public void setXqueryFile(String xqueryFile){
 		this.xqueryFile = xqueryFile;
 	}

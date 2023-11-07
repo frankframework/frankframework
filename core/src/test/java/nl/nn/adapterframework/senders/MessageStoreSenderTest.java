@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.senders;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.util.Date;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
@@ -35,7 +35,7 @@ public class MessageStoreSenderTest extends SenderTestBase<MessageStoreSender> {
 
 		String input = "<dummy/>";
 		Message message = new Message(input);
-		String result = sender.sendMessage(message, session).asString();
+		String result = sender.sendMessageOrThrow(message, session).asString();
 		assertEquals(input, result);
 	}
 
@@ -51,7 +51,7 @@ public class MessageStoreSenderTest extends SenderTestBase<MessageStoreSender> {
 
 		String input = "<dummy/>";
 		Message message = new Message(input);
-		String result = sender.sendMessage(message, session).asString();
+		String result = sender.sendMessageOrThrow(message, session).asString();
 		assertEquals(input+",value1,value2,value3", result);
 	}
 }

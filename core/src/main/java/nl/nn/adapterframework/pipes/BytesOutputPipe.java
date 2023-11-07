@@ -26,6 +26,8 @@ import org.xml.sax.helpers.DefaultHandler;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -111,6 +113,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Jaco de Groot (***@dynasol.nl)
  * @since   4.9
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class BytesOutputPipe extends FixedForwardPipe {
 
 	@Override
@@ -129,7 +132,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	private class FieldsContentHandler extends DefaultHandler {
+	private static class FieldsContentHandler extends DefaultHandler {
 		private byte[] result = new byte[0];
 
 		@Override
@@ -239,7 +242,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 			System.arraycopy(bytes, 0, newResult, result.length, bytes.length);
 			result = newResult;
 		}
-	
+
 		public byte[] getResult() {
 			return result;
 		}

@@ -13,6 +13,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 import nl.nn.adapterframework.validation.XmlValidatorException;
@@ -22,6 +23,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	WsdlXmlValidator validator;
 
 	private PipeLineSession session = new PipeLineSession();
+	private TestConfiguration configuration = new TestConfiguration();
 
 	@Override
 	public ValidationResult validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
@@ -74,7 +76,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	}
 
 	public void wsdlValidate(String wsdl, String soapBody, String testSoap, String testXml, String testJsonStraight, String testJsonCompact, String targetContent1, String targetContent2) throws Exception {
-		WsdlXmlValidator val = new WsdlXmlValidator();
+		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
 		val.setWsdl(wsdl);
 //        val.setSoapBody("TradePriceRequest");
 		val.setThrowException(true);
@@ -127,7 +129,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	public void validatePlainText(String input, String expectedError) throws Exception {
 		String wsdl = BASE_DIR_VALIDATION + "/Wsdl/GetPolicyDetailsTravel/GetPolicyDetailsTravel.wsdl";
 		String soapBody = "GetPolicyDetailsTravel_Response";
-		WsdlXmlValidator val = new WsdlXmlValidator();
+		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
 		val.setWsdl(wsdl);
 		val.setThrowException(true);
 		val.registerForward(new PipeForward("success", null));

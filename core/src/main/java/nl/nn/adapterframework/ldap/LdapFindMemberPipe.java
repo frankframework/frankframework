@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2019, 2020 Nationale-Nederlanden
+   Copyright 2016, 2019-2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,19 +27,17 @@ import javax.naming.ldap.InitialLdapContext;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.webcontrol.DummySSLSocketFactory;
 
 /**
  * Pipe that checks if a specified dn exists as 'member' in another specified dn
  * in LDAP.
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 public class LdapFindMemberPipe extends LdapQueryPipeBase {
@@ -57,7 +55,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
+				throw new PipeRunException(this, "exception on extracting parameters", e);
 			}
 		}
 		dnSearchIn_work = getParameterValue(pvl, "dnSearchIn");
@@ -75,18 +73,17 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 			try {
 				found = findMember(getHost(), getPort(), dnSearchIn_work, isUseSsl(), dnFind_work, isRecursiveSearch());
 			} catch (NamingException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception on ldap lookup", e);
+				throw new PipeRunException(this, "exception on ldap lookup", e);
 			}
 		}
 
 		if (!found) {
-			String msg = getLogPrefix(session) + "dn [" + dnFind_work + "] not found as member in url [" + retrieveUrl(getHost(), getPort(), dnSearchIn_work, isUseSsl()) + "]";
+			String msg = "dn [" + dnFind_work + "] not found as member in url [" + retrieveUrl(getHost(), getPort(), dnSearchIn_work, isUseSsl()) + "]";
 			if (notFoundForward == null) {
 				throw new PipeRunException(this, msg);
-			} else {
-				log.info(msg);
-				return new PipeRunResult(notFoundForward, message);
 			}
+			log.info(msg);
+			return new PipeRunResult(notFoundForward, message);
 		}
 		return new PipeRunResult(getSuccessForward(), message);
 	}
@@ -109,8 +106,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 				ctx = new InitialDirContext(env);
 			} catch (CommunicationException e) {
 				log.info("Cannot create constructor for DirContext ["+ e.getMessage() + "], will try again with dummy SocketFactory",e);
-				env.put("java.naming.ldap.factory.socket", DummySSLSocketFactory.class.getName());
-				ctx = new InitialLdapContext(env, null);
+				ctx = new InitialLdapContext(env, null); //Try again without connection request controls.
 			}
 			Attribute attrs = ctx.getAttributes("").get("member");
 			if (attrs != null) {
@@ -140,7 +136,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 		return false;
 	}
 
-	@IbisDoc({"1", "The dn of the group to search in when the parameter dnSearchIn is not set", ""})
+	/** The dn of the group to search in when the parameter dnSearchIn is not set */
 	public void setDnSearchIn(String string) {
 		dnSearchIn = string;
 	}
@@ -148,7 +144,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 		return dnSearchIn;
 	}
 
-	@IbisDoc({"2", "The dn of the member to search for when the parameter dnFind is not set", ""})
+	/** The dn of the member to search for when the parameter dnFind is not set */
 	public void setDnFind(String string) {
 		dnFind = string;
 	}
@@ -156,7 +152,10 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 		return dnFind;
 	}
 
-	@IbisDoc({"3", "when <code>true</code>, the member attribute is also searched in all the found members", "true"})
+	/**
+	 * when <code>true</code>, the member attribute is also searched in all the found members
+	 * @ff.default true
+	 */
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}

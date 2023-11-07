@@ -16,6 +16,9 @@
 package nl.nn.adapterframework.extensions.ibm;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+
 import java.io.IOException;
 
 import javax.jms.Destination;
@@ -23,7 +26,6 @@ import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.naming.NamingException;
 
 import org.junit.Test;
 
@@ -36,64 +38,67 @@ import nl.nn.adapterframework.jms.MessagingSource;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 
-import nl.nn.adapterframework.extensions.ibm.TestJMSMessage;
-
 public class IMSSenderTest extends SenderTestBase<IMSSender> {
-	
+
 
 	@Override
 	public IMSSender createSender() {
 		return new IMSSender() {
-			TestJMSMessage message = (new TestJMSMessage());
+			final TestJMSMessage message = TestJMSMessage.newInstance();
+
 			@Override
 			public String getQueueConnectionFactoryName() {
 				return "TESTQCF";
 			}
-			
+
 			@Override
-			protected MessagingSource getMessagingSource() throws JmsException {
+			public void configure() {
+				// configure is not required for this test
+			}
+
+			@Override
+			protected MessagingSource getMessagingSource() {
 				return mock(JmsMessagingSource.class);
 			}
-			
+
 			@Override
-			public Destination getDestination() throws NamingException, JMSException, JmsException {
+			public Destination getDestination() {
 				return null;
 			}
-			
+
 			@Override
-			public MessageProducer getMessageProducer(Session session, Destination destination)
-					throws NamingException, JMSException {
+			public MessageProducer getMessageProducer(Session session, Destination destination) {
 				return mock(MessageProducer.class);
 			}
-			
+
 			@Override
 			protected Session createSession() throws JmsException {
 				Session s = mock(Session.class);
 				try {
-					doReturn(message).when(s).createBytesMessage();
+					doAnswer(message).when(s).createBytesMessage();
 				} catch (JMSException e) {
 					throw new JmsException(e);
 				}
 				return s;
 			}
-			
+
 			@Override
 			public MessageConsumer getMessageConsumerForCorrelationId(Session session, Destination destination,
-					String correlationId) throws NamingException, JMSException {
+					String correlationId) throws JMSException {
 				// TODO Auto-generated method stub
 				MessageConsumer mc = mock(MessageConsumer.class);
-				
+
 				try {
-					doReturn(message).when(mc).receive(getReplyTimeout());
+					doAnswer(message).when(mc).receive(getReplyTimeout());
 				} catch (Exception e) {
 					throw new JMSException(e.getMessage());
 				}
-								
+
 				return mc;
 			}
-		};		
+		};
 	}
-	
+
 	@Test
 	public void createAndGetStringMessage() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setDestinationName("TEST");
@@ -102,8 +107,8 @@ public class IMSSenderTest extends SenderTestBase<IMSSender> {
 		sender.configure();
 		// sender.open(); // Do not open the sender, no MQ connections are set
 		String input = "TESTMESSAGE1234%éáöî?";
-		Message response = sender.sendMessage(new Message(input), session);
-		
+		Message response = sender.sendMessageOrThrow(new Message(input), session);
+
 		// For testing purposes the response BytesMessage is the same as the input BytesMessage
 		// The transaction code is thus part of the response message
 		assertEquals(sender.getTransactionCode() + " " + input, response.asString());

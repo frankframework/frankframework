@@ -19,11 +19,11 @@ import java.security.Principal;
 
 import javax.servlet.http.HttpServletRequest;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ISecurityHandler;
+import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
- * Securityhandler that delegates its implementation to the corresponding methods in the HttpServlet.
+ * SecurityHandler that delegates its implementation to the corresponding methods in the HttpServlet.
  * 
  * @author  Gerrit van Brakel
  * @since   4.3
@@ -31,7 +31,7 @@ import nl.nn.adapterframework.core.ISecurityHandler;
 public class HttpSecurityHandler implements ISecurityHandler {
 
 	HttpServletRequest request;
-	
+
 	public HttpSecurityHandler(HttpServletRequest request) {
 		super();
 		this.request=request;

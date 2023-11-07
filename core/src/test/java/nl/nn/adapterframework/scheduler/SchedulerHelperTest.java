@@ -15,13 +15,14 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.text.ParseException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
@@ -85,14 +86,14 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 		assertTrue(schedulerHelper.contains(jobDetail.getKey().getName()));
 	}
 
-	@Test(expected = SchedulerException.class)
+	@Test
 	public void addTwoTheSameJobs() throws SchedulerException, ParseException {
 		JobDetail jobDetail = createServiceJob("testJob");
 
 		schedulerHelper.scheduleJob(jobDetail, 0);
 		assertTrue(schedulerHelper.contains(jobDetail.getKey().getName()));
 
-		schedulerHelper.scheduleJob(jobDetail, 1);
+		assertThrows(SchedulerException.class, () -> schedulerHelper.scheduleJob(jobDetail, 1));
 	}
 
 	@Test
@@ -107,7 +108,7 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 		assertTrue(schedulerHelper.contains(jobName));
 
 		Trigger trigger = schedulerHelper.getTrigger(jobName);
-		assertNotNull("no trigger found", trigger);
+		assertNotNull(trigger, "no trigger found");
 	}
 
 	@Test
@@ -118,12 +119,12 @@ public class SchedulerHelperTest extends SchedulerTestBase {
 		assertFalse(schedulerHelper.contains(jobDetail.getKey().getName()));
 	}
 
-	@Test(expected = SchedulerException.class)
+	@Test
 	public void testScheduleDuplicateJob() throws SchedulerException, ParseException {
 		JobDetail jobDetail = createServiceJob("testJob"+Math.random());
 
 		schedulerHelper.scheduleJob(jobDetail, "0 0 1 * * ?");
-		schedulerHelper.scheduleJob(jobDetail, 0);
+		assertThrows(SchedulerException.class, () -> schedulerHelper.scheduleJob(jobDetail, 0));
 	}
 
 	@Test

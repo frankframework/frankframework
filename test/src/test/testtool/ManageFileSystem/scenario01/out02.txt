@@ -1,0 +1,30 @@
+<manageFileSystemRLY>
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+IyBGcmFuayFSdW5uZXIKClRoaXMgcHJvamVjdCB3aWxsIGhlbHAgeW91IHJ1biB5b3VyIEZyYW5rIGNvbmZpZ3VyYXRpb25zIHdpdGggVG9tY2F0LgoKQWRkIGEgc21hbGw+ append test
+</result>
+		<result item="2">
+README.MD
+</result>
+		<result item="3">
+			<directory>
+				<file name="README.MD" size="144" fSize="1 kB" canonicalName="TESTDATA_DIR\ManageFileSystem\test\README.MD" modificationDate="2022-06-21" modificationTime="08:49:50"/>
+			</directory>
+		</result>
+		<result item="4">
+README.MD
+</result>
+		<result item="5">
+TESTDATA_DIR/ManageFileSystem/myNewFolder1
+</result>
+		<result item="6">
+TESTDATA_DIR/ManageFileSystem/myNewFolder2
+</result>
+		<result item="7">
+TESTDATA_DIR/ManageFileSystem
+</result>
+	</results>
+</manageFileSystemRLY>

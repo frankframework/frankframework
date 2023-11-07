@@ -23,7 +23,7 @@
                         <name>tvarchar</name>
                     </column>
                 </columns>
-                <where>tnumber=<xsl:value-of select="$tnumber"/></where>
+                <where>tnumber=<xsl:value-of select="$tnumber"/> and tchar!='1' and tchar!='8'</where> <!-- avoid 'inProcess' records -->
                 <order>tkey</order>
             </select>
             <select>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,16 +33,18 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 	private boolean attributesConsideredContent=false;
 	private List<Element> pendingElements = new ArrayList<Element>();
 	private Map<String,String> pendingNamespaceMappings = new LinkedHashMap<String,String>();
-	
+
 	private boolean nonWhitespaceCharactersSeen=false;
-	
-	private StringBuffer pendingWhitespace = new StringBuffer();
+	private boolean elementSkipped;
+
+	private StringBuilder pendingWhitespace = new StringBuilder();
 
 	public SkipEmptyTagsFilter(ContentHandler handler) {
 		super(handler);
 	}
 
 	public void handlePendingStartElements() throws SAXException {
+		log.trace("handlePendingStartElements()");
 		for(Element e:pendingElements) {
 			for (Entry<String,String> entry: e.namespaceMappings.entrySet()) {
 				super.startPrefixMapping(entry.getKey(), entry.getValue());
@@ -55,9 +57,10 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 		}
 		pendingElements.clear();
 	}
-	
+
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+		log.trace("startElement({},{},{})", uri, localName, qName);
 		pendingWhitespace.setLength(0);
 		if (attributesConsideredContent && atts.getLength()>0) {
 			handlePendingStartElements();
@@ -75,14 +78,17 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 		}
 		nonWhitespaceCharactersSeen=false;
 	}
-	
+
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
+		log.trace("endElement({},{},{})", uri, localName, qName);
 		if (pendingElements.isEmpty()) {
 			super.endElement(uri, localName, qName);
+			elementSkipped=false;
 		} else {
 			pendingElements.remove(pendingElements.size()-1);
 			pendingWhitespace.setLength(0);
+			elementSkipped=true;
 		}
 		nonWhitespaceCharactersSeen=false;
 	}
@@ -104,7 +110,6 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 			nonWhitespaceCharactersSeen=true;
 		}
 		handlePendingStartElements();
-		//super.characters(pendingWhitespace.toString().toCharArray(), 0, pendingWhitespace.length());
 		pendingWhitespace.setLength(0);
 		super.characters(ch, start, length);
 	}
@@ -118,7 +123,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 
 	private class Element {
 		public String uri;
-		public String localName; 
+		public String localName;
 		public String qName;
 		public Attributes atts;
 		public Map<String,String> namespaceMappings;
@@ -127,12 +132,14 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
+		log.trace("startPrefixMapping({},{})", prefix, uri);
 		pendingNamespaceMappings.put(prefix, uri);
 	}
 
 	@Override
 	public void endPrefixMapping(String prefix) throws SAXException {
-		if (pendingElements.isEmpty()) {
+		log.trace("endPrefixMapping({})", prefix);
+		if (!elementSkipped) {
 			super.endPrefixMapping(prefix);
 		}
 	}

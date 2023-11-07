@@ -6,12 +6,15 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.zip.DeflaterInputStream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,11 +23,13 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -137,6 +142,41 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		assertEquals("10", jdbcResult);
 	}
 
+	private void insertBlob(int key, InputStream blob, boolean compressBlob) throws Exception {
+		try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO "+TEST_TABLE+" (TKEY, TBLOB, TBOOLEAN, TVARCHAR) VALUES (?, ?, ?, ?)")) {
+			stmt.setInt(1, key);
+			stmt.setBinaryStream(2, (compressBlob ? new DeflaterInputStream(blob) : blob));
+			stmt.setBoolean(3, compressBlob);
+			stmt.setString(4, "blobtest");
+			stmt.execute();
+		}
+	}
+
+	@Test
+	public void testWithCompressedAndDecompressedBlob() throws Exception {
+		// Arrange
+		Message xmlMessage = MessageTestUtils.getMessage("/file.xml");
+		insertBlob(1, xmlMessage.asInputStream(), false);
+		insertBlob(2, xmlMessage.asInputStream(), true);
+		insertBlob(3, xmlMessage.asInputStream(), false);
+
+		// Act
+		pipe.setQuery("SELECT TKEY, TBLOB FROM "+TEST_TABLE+" WHERE TVARCHAR='blobtest' ORDER BY TKEY");
+		pipe.setBlobSmartGet(true);
+		pipe.setDatasourceName(getDataSourceName());
+
+		EchoSender sender = new EchoSender();
+		pipe.setSender(sender);
+
+		configurePipe();
+		pipe.start();
+
+		// Assert
+		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
+		String expected = TestFileUtils.getTestFile("/Pipes/ResultSetIteratingPipe/testCompressedAndUncompressedBlob.xml");
+		MatchUtils.assertXmlEquals(expected, result.getResult().asString());
+	}
+
 	private static class ResultCollectingSender extends EchoSender {
 		private List<Message> data = Collections.synchronizedList(new ArrayList<>());
 		private int delay = 0;
@@ -149,13 +189,13 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		}
 
 		@Override
-		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			if(delay > 0) {
 				try {
 					Thread.sleep(delay);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-					return Message.nullMessage();
+					return new SenderResult(Message.nullMessage());
 				}
 			}
 
@@ -164,7 +204,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		}
 		public String collectResults() throws InterruptedException {
 			while(data.size() < 10) {
-				System.out.println("sleeping, result count ["+data.size()+"]");
+				log.info("sleeping, result count [{}]", data::size);
 				Thread.sleep(200);
 			}
 			return "<xml>\n"+data.stream().map(this::mapMessage).sorted().collect(Collectors.joining())+"\n</xml>";

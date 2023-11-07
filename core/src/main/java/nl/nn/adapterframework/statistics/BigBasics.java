@@ -26,10 +26,10 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class BigBasics extends Basics {
 
-	private final static long HALF_MAX_LONG=Long.MAX_VALUE>>1;
-	
+	private static final long HALF_MAX_LONG=Long.MAX_VALUE>>1;
+
 	protected int shift=0;
-	
+
 	public BigBasics() {
 		super();
 	}
@@ -44,13 +44,13 @@ public class BigBasics extends Basics {
 			shiftRight();
 		}
 	}
-	
+
 	public void shiftRight() {
 		shift++;
 		sum >>= 1;
 		sumOfSquares >>= 2;
 	}
-	
+
 	@Override
 	public void reset() {
 		super.reset();
@@ -96,7 +96,7 @@ public class BigBasics extends Basics {
 			}
 		}
 	}
-	
+
 	@Override
 	public void addRecord(Basics record) {
 		count+=record.getCount();
@@ -144,11 +144,11 @@ public class BigBasics extends Basics {
 		}
 		return result;
 	}
-	
+
 	@Override
 	public Object getItemValue(int index) {
 		if (index==5) {
-			if (getCount() == 0) return null; 
+			if (getCount() == 0) return null;
 			return new Double(getSum());
 		}
 		return super.getItemValue(index);
@@ -163,7 +163,6 @@ public class BigBasics extends Basics {
 		return shift;
 	}
 
-	
 	@Override
 	public double getAverage() {
 		if (shift==0 || count == 0) {
@@ -219,7 +218,6 @@ public class BigBasics extends Basics {
 		return getSumOfSquares()-markSumOfSquares;
 	}
 
-	
 	@Override
 	public double getIntervalVariance(Basics mark) {
 		return calculateVariance(count-mark.getCount(), getIntervalSum(mark), getIntervalSumOfSquares(mark), shift);
@@ -231,6 +229,4 @@ public class BigBasics extends Basics {
 		// TODO Auto-generated method stub
 		return super.toXml(elementName, name, timeFormat, percentageFormat);
 	}
-
-	
 }

@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.flow.graphviz.GraphvizEngine;
  */
 public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 
-	private ThreadLocal<SoftReference<GraphvizEngine>> graphvisEngines = new ThreadLocal<>();
+	private static ThreadLocal<SoftReference<GraphvizEngine>> GRAPHVIZ_ENGINES = new ThreadLocal<>();
 
 	/**
 	 * The IFlowGenerator is wrapped in a SoftReference, wrapped in a ThreadLocal. 
@@ -38,7 +38,7 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 	 * as long as the IFlowGenerator bean can initialize, always a valid instance is returned.
 	 */
 	public GraphvizEngine getGraphvizEngine() {
-		SoftReference<GraphvizEngine> reference = graphvisEngines.get();
+		SoftReference<GraphvizEngine> reference = GRAPHVIZ_ENGINES.get();
 		if(reference == null || reference.get() == null) {
 			GraphvizEngine generator = createGraphvizEngine();
 			if(generator == null) {
@@ -46,7 +46,7 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 			}
 
 			reference = new SoftReference<>(generator);
-			graphvisEngines.set(reference);
+			GRAPHVIZ_ENGINES.set(reference);
 		}
 
 		return reference.get();
@@ -56,21 +56,24 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 		try {
 			return new GraphvizEngine();
 		} catch (Throwable t) {
-			log.warn("failed to initalize IFlowGenerator", t);
+			log.warn("failed to initalize GraphvizEngine", t);
 			return null;
 		}
 	}
 
 	@Override
 	public void generateFlow(String xml, OutputStream outputStream) throws FlowGenerationException {
-		String dot = generateDot(xml);
+		GraphvizEngine engine = getGraphvizEngine();
+		if(engine != null) {
+			String dot = generateDot(xml);
 
-		try {
-			String flow = getGraphvizEngine().execute(dot);
+			try {
+				String flow = engine.execute(dot);
 
-			outputStream.write(flow.getBytes());
-		} catch (IOException e) {
-			throw new FlowGenerationException(e);
+				outputStream.write(flow.getBytes());
+			} catch (IOException e) {
+				throw new FlowGenerationException(e);
+			}
 		}
 	}
 
@@ -88,6 +91,6 @@ public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 	public void destroy() {
 		super.destroy();
 
-		graphvisEngines.remove();
+		GRAPHVIZ_ENGINES.remove();
 	}
 }

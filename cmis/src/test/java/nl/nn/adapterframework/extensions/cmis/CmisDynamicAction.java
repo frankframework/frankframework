@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.extensions.cmis;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
+import nl.nn.adapterframework.extensions.cmis.CmisSender.CmisAction;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
 import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
 import nl.nn.adapterframework.testutil.TestAssertions;
@@ -10,15 +12,15 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 
 	@Test
 	public void canConfigure() throws Exception {
-		sender.setBindingType("browser");
-		sender.setAction("dynamic");
+		sender.setBindingType(BindingTypes.BROWSER);
+		sender.setAction(CmisAction.DYNAMIC);
 		sender.configure();
 	}
 
 	@Test
 	public void deleteObject() throws Exception {
-		sender.setBindingType("browser");
-		sender.setAction("dynamic");
+		sender.setBindingType(BindingTypes.BROWSER);
+		sender.setAction(CmisAction.DYNAMIC);
 		sender.setResultOnNotFound("document-not-found");
 		sender.configure();
 		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.DELETE_OBJECT.getLabel());
@@ -29,8 +31,8 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 
 	@Test
 	public void createDocument() throws Exception {
-		sender.setBindingType("browser");
-		sender.setAction("dynamic");
+		sender.setBindingType(BindingTypes.BROWSER);
+		sender.setAction(CmisAction.DYNAMIC);
 		sender.setResultOnNotFound("document-not-found");
 		sender.configure();
 		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.CREATE_DOCUMENT.getLabel());
@@ -42,8 +44,8 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 
 	@Test
 	public void getContentStream() throws Exception {
-		sender.setBindingType("browser");
-		sender.setAction("dynamic");
+		sender.setBindingType(BindingTypes.BROWSER);
+		sender.setAction(CmisAction.DYNAMIC);
 		sender.setResultOnNotFound("document-not-found");
 		sender.configure();
 		session.put(CmisEventDispatcher.CMIS_EVENT_KEY, CmisEvent.GET_CONTENTSTREAM.getLabel());

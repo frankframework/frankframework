@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,15 +34,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.QueryExecutionContext;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * @author  Gerrit van Brakel
@@ -50,7 +52,7 @@ import nl.nn.adapterframework.util.Misc;
 public class GenericDbmsSupport implements IDbmsSupport {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	protected final static String KEYWORD_SELECT="select";
+	protected static final String KEYWORD_SELECT="select";
 
 	protected static final String TYPE_BLOB = "blob";
 	protected static final String TYPE_CLOB = "clob";
@@ -304,27 +306,25 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public InputStream getBlobInputStream(ResultSet rs, int column) throws SQLException, JdbcException {
 		Blob blob = rs.getBlob(column);
-		if (blob==null) {
+		if (blob == null) {
 			return null;
 		}
 		return blob.getBinaryStream();
 	}
+
 	@Override
 	public InputStream getBlobInputStream(ResultSet rs, String column) throws SQLException, JdbcException{
 		Blob blob = rs.getBlob(column);
-		if (blob==null) {
+		if (blob == null) {
 			return null;
 		}
 		return blob.getBinaryStream();
 	}
-
-
 
 	@Override
 	public String getTextFieldType() {
 		return "VARCHAR";
 	}
-
 
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery) throws JdbcException {
@@ -334,10 +334,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public String prepareQueryTextForWorkQueueReading(int batchSize, String selectQuery, int wait) throws JdbcException {
 		if (StringUtils.isEmpty(selectQuery) || !selectQuery.toLowerCase().startsWith(KEYWORD_SELECT)) {
-			throw new JdbcException("query ["+selectQuery+"] must start with keyword ["+KEYWORD_SELECT+"]");
+			throw new JdbcException("query [" + selectQuery + "] must start with keyword [" + KEYWORD_SELECT + "]");
 		}
 		log.warn("don't know how to perform prepareQueryTextForWorkQueueReading for this database type, doing a guess...");
-		return selectQuery+" FOR UPDATE";
+		return selectQuery + " FOR UPDATE";
 	}
 
 	@Override
@@ -352,17 +352,13 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	@Override
 	public String getFirstRecordQuery(String tableName) throws JdbcException {
 		log.warn("don't know how to perform getFirstRecordQuery for this database type, doing a guess...");
-		String query="select * from "+tableName+" where ROWNUM=1";
+		String query = "select * from " + tableName + " where ROWNUM=1";
 		return query;
 	}
 
 	@Override
 	public String prepareQueryTextForNonLockingRead(String selectQuery) throws JdbcException {
 		return selectQuery;
-	}
-	@Override
-	public JdbcSession prepareSessionForNonLockingRead(Connection conn) throws JdbcException {
-		return null;
 	}
 
 
@@ -433,6 +429,43 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		}
 	}
 
+	@Override
+	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+		try (ResultSet rs = conn.getMetaData().getIndexInfo(null, schemaName, tableName, false, true)) {
+			while (rs.next()) {
+				if (tableName.equalsIgnoreCase(rs.getString("TABLE_NAME")) && columnName.equalsIgnoreCase(rs.getString("COLUMN_NAME")) && rs.getInt("ORDINAL_POSITION")==1) {
+					return true;
+				}
+			}
+			return false;
+		} catch(SQLException e) {
+			throw new JdbcException("exception checking for existence of column ["+columnName+"] in table ["+tableName+"]"+(schemaName==null?"":" with schema ["+schemaName+"]"), e);
+		}
+	}
+
+	protected boolean doHasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns, String indexTableName, String indexColumnTableName,
+			String tableOwnerColumnName, String tableNameColumnName, String indexNameColumnName, String columnNameColumnName, String columPositionColumnName) {
+		StringBuilder query= new StringBuilder("select count(*) from "+indexTableName+" ai");
+		for (int i=1;i<=columns.size();i++) {
+			query.append(", "+indexColumnTableName+" aic"+i);
+		}
+		query.append(" where ai."+tableNameColumnName+"='"+tableName+"'");
+		if (tableOwnerColumnName!=null) {
+			query.append(" and ai."+tableOwnerColumnName+"='"+schemaOwner+"'");
+		}
+		for (int i=1;i<=columns.size();i++) {
+//			query.append(" and ai."+indexOwnerColumnName+"=aic"+i+"."+indexOwnerColumnName);
+			query.append(" and ai."+indexNameColumnName+"=aic"+i+"."+indexNameColumnName);
+			query.append(" and aic"+i+"."+columnNameColumnName+"='"+columns.get(i-1)+"'");
+			query.append(" and aic"+i+"."+columPositionColumnName+"="+i);
+		}
+		try {
+			return JdbcUtil.executeIntQuery(conn, query.toString())>=1;
+		} catch (Exception e) {
+			log.warn("could not determine presence of index columns on table ["+tableName+"] using query ["+query+"]",e);
+			return false;
+		}
+	}
 
 	/**
 	 * Alternative implementation of isTablePresent(), that can be used by descender classes if the implementation via metadata does not work for that driver.
@@ -487,25 +520,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public boolean isIndexColumnPresent(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]");
-		return true;
-	}
-
-	@Override
-	public int getIndexColumnPosition(Connection conn, String schemaOwner, String tableName, String indexName, String columnName) {
-		log.warn("could not determine correct presence of column ["+columnName+"] of index ["+indexName+"] on table ["+tableName+"]");
-		return -1;
-	}
-
-	@Override
-	public boolean hasIndexOnColumn(Connection conn, String schemaOwner, String tableName, String columnName) {
-		log.warn("could not determine presence of index column ["+columnName+"] on table ["+tableName+"]");
-		return true;
-	}
-
-	@Override
-	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
+	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws JdbcException {
 		log.warn("could not determine presence of index columns on table ["+tableName+"]");
 		return true;
 	}
@@ -551,50 +566,51 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return new SqlTranslator(source, target);
 	}
 
-	@Override
-	public void convertQuery(QueryExecutionContext queryExecutionContext, String sqlDialectFrom) throws SQLException, JdbcException {
-		if (isQueryConversionRequired(sqlDialectFrom)) {
-			String translatorKey = sqlDialectFrom+"->"+getDbmsName();
-			ISqlTranslator translator = sqlTranslators.get(translatorKey);
-			if (translator==null) {
-				if (sqlTranslators.containsKey(sqlDialectFrom)) {
-					// if translator==null, but the key is present in the map,
-					// then we already tried to setup this translator, and did not succeed.
-					// No need to try again.
-					warnConvertQuery(sqlDialectFrom);
-					return;
-				}
-				try {
-					translator = createTranslator(sqlDialectFrom, getDbmsName());
-				} catch (IllegalArgumentException e) {
-					warnConvertQuery(sqlDialectFrom);
-					sqlTranslators.put(translatorKey, null);
-					return;
-				} catch (Exception e) {
-					throw new JdbcException("Could not translate sql query from " + sqlDialectFrom + " to " + getDbmsName(), e);
-				}
+	@Nullable
+	protected ISqlTranslator getSqlTranslator(@Nonnull String sqlDialectFrom) throws JdbcException {
+		String translatorKey = sqlDialectFrom+"->"+getDbmsName();
+		if (!sqlTranslators.containsKey(translatorKey)) {
+			try {
+				ISqlTranslator translator = createTranslator(sqlDialectFrom, getDbmsName());
 				if (!translator.canConvert(sqlDialectFrom, getDbmsName())) {
-					warnConvertQuery(sqlDialectFrom);
-					sqlTranslators.put(sqlDialectFrom, null); // avoid trying to set up the translator again the next time
-					return;
+					sqlTranslators.put(translatorKey, null); // avoid trying to set up the translator again the next time
+					return null;
 				}
 				sqlTranslators.put(translatorKey, translator);
+				return translator;
+			} catch (IllegalArgumentException e) {
+				sqlTranslators.put(translatorKey, null); // avoid trying to set up the translator again the next time
+				return null;
+			} catch (Exception e) {
+				throw new JdbcException("Could not translate sql query from " + sqlDialectFrom + " to " + getDbmsName(), e);
 			}
-			List<String> multipleQueries = splitQuery(queryExecutionContext.getQuery());
-			StringBuilder convertedQueries = null;
-			for (String singleQuery : multipleQueries) {
-				String convertedQuery = translator.translate(singleQuery);
-				if (convertedQuery != null) {
-					if (convertedQueries==null) {
-						convertedQueries = new StringBuilder();
-					} else {
-						convertedQueries.append("\n");
-					}
-					convertedQueries.append(convertedQuery);
-				}
-			}
-			queryExecutionContext.setQuery(convertedQueries!=null?convertedQueries.toString():"");
 		}
+		return sqlTranslators.get(translatorKey);
+	}
+
+	@Override
+	@Nonnull
+	public String convertQuery(@Nonnull String query, @Nonnull String sqlDialectFrom) throws SQLException, JdbcException {
+		if (!isQueryConversionRequired(sqlDialectFrom)) {
+			return query;
+		}
+		ISqlTranslator translator = getSqlTranslator(sqlDialectFrom);
+		if (translator == null) {
+			warnConvertQuery(sqlDialectFrom);
+			return query;
+		}
+		List<String> multipleQueries = splitQuery(query);
+		StringBuilder convertedQueries = new StringBuilder();
+		for (String singleQuery : multipleQueries) {
+			String convertedQuery = translator.translate(singleQuery);
+			if (convertedQuery != null) {
+				if (convertedQueries.length() > 0) {
+					convertedQueries.append("\n");
+				}
+				convertedQueries.append(convertedQuery);
+			}
+		}
+		return convertedQueries.toString();
 	}
 
 	protected void warnConvertQuery(String sqlDialectFrom) {
@@ -619,8 +635,8 @@ public class GenericDbmsSupport implements IDbmsSupport {
 					// A semicolon between single quotes is ignored (number of single quotes in the query must be zero or an even number)
 					int countApos = StringUtils.countMatches(line, "'");
 					// A semicolon directly after 'END' is ignored when there is also a 'BEGIN' in the query
-					int countBegin = Misc.countRegex(line.toUpperCase().replaceAll("\\s+", "  "), "\\sBEGIN\\s");
-					int countEnd = Misc.countRegex(line.toUpperCase().replaceAll(";", "; "), "\\sEND;");
+					int countBegin = StringUtil.countRegex(line.toUpperCase().replaceAll("\\s+", "  "), "\\sBEGIN\\s");
+					int countEnd = StringUtil.countRegex(line.toUpperCase().replaceAll(";", "; "), "\\sEND;");
 					if ((countApos == 0 || (countApos & 1) == 0) && countBegin==countEnd) {
 						splittedQueries.add(line.trim());
 						i = j + 1;
@@ -640,5 +656,15 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
 		+ "') AND " + expiryDateField + " < ?"+(maxRows>0?" FETCH FIRST "+maxRows+ " ROWS ONLY":"")+")");
 		return query;
+	}
+
+	@Override
+	public boolean isStoredProcedureOutParametersSupported() {
+		return true;
+	}
+
+	@Override
+	public boolean isStoredProcedureResultSetSupported() {
+		return true;
 	}
 }

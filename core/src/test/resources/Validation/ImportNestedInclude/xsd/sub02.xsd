@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://nn.nl/s02" targetNamespace="http://nn.nl/s02" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:include schemaLocation="sub03.xsd"/>
+	<xs:element name="sub02">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="string" type="sub03"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+</xs:schema>

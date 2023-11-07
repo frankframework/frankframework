@@ -18,5 +18,5 @@ package nl.nn.adapterframework.stream;
 public interface IThreadCreator {
 
 	public void setThreadLifeCycleEventListener(ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener);
-	
+
 }

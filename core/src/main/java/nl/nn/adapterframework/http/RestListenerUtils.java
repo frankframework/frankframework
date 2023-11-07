@@ -27,9 +27,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * Some utilities for working with
- * {@link nl.nn.adapterframework.http.RestListener RestListener}.
- * 
+ * Some utilities for working with {@link RestListener}.
+ *
  * @author Peter Leeuwenburgh
  */
 public class RestListenerUtils {

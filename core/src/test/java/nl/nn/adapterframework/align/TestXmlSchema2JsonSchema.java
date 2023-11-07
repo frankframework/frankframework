@@ -1,23 +1,23 @@
 package nl.nn.adapterframework.align;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.StringReader;
 import java.net.URL;
-import java.util.Set;
-
-import javax.json.JsonStructure;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.leadpony.justify.api.JsonSchema;
+import org.leadpony.justify.api.JsonValidationService;
+import org.leadpony.justify.api.ProblemHandler;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.ValidationMessage;
-
+import jakarta.json.JsonStructure;
+import jakarta.json.stream.JsonParser;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -37,14 +37,12 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 		testXml2JsonSchema(schemaFile, namespace, inputFile, rootElement, true, true, expectValidRoundTrip,	expectedFailureReason);
 	}
 
-	public void testXml2JsonSchema(String schemaFile, String namespace, String xml, String rootElement, boolean compactArrays, boolean skipJsonRootElements, boolean expectValidRoundTrip, String expectedFailureReason) throws Exception {
+	public void testXml2JsonSchema(String schemaFile, String namespace, String inputFile, String rootElement, boolean compactArrays, boolean skipJsonRootElements, boolean expectValidRoundTrip, String expectedFailureReason) throws Exception {
 
-		URL schemaUrl = getSchemaURL(schemaFile);
 		String jsonSchemaFile = schemaFile.replace(".xsd", (skipJsonRootElements ? "-compact-" : "-full-") + rootElement + ".jsd");
 		URL jsonSchemaUrl = getSchemaURL(jsonSchemaFile);
 		String expectedJsonSchema = jsonSchemaUrl == null ? null : StreamUtil.streamToString(jsonSchemaUrl.openStream(), "\n", "utf-8");
-		String xmlString = getTestFile(xml + ".xml");
-		String jsonString = getTestFile(xml + (skipJsonRootElements ? "-compact" : "-full") + ".json");
+		String jsonString = getTestFile(inputFile + (skipJsonRootElements ? "-compact" : "-full") + ".json");
 
 		Json2XmlValidator validator = new Json2XmlValidator();
 		validator.registerForward(new PipeForward("success", null));
@@ -74,7 +72,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 			fail("no schema generated for [" + rootElement + "]");
 		}
 		String jsonSchemaContent = Misc.jsonPretty(jsonschema.toString());
-		System.out.println("result compactArrays [" + compactArrays + "] skipJsonRootElements [" + skipJsonRootElements + "] json:\n" + jsonSchemaContent);
+		LOG.info("result compactArrays [{}] skipJsonRootElements [{}] json:\n{}", compactArrays, skipJsonRootElements, jsonSchemaContent);
 		if (StringUtils.isEmpty(jsonSchemaContent)) {
 			fail("json schema is empty");
 		}
@@ -84,9 +82,9 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 			//String schemaPretty = jsonPrettyPrint("{" + jsonSchemaContent + "}");
 			//schemaPretty = schemaPretty.substring(1, schemaPretty.length() - 1).trim();
 
-			//System.out.println("expected [" + expectedJsonSchema + "]");
-			//System.out.println("actual   [" + jsonSchemaContent + "]");
-			assertEquals("generated does not match [" + jsonSchemaFile + "]", expectedJsonSchema, jsonSchemaContent);
+			LOG.debug("expected [{}]", expectedJsonSchema);
+			LOG.debug("actual [{}]", jsonSchemaContent);
+			MatchUtils.assertJsonEquals("generated does not match [" + jsonSchemaFile + "]", expectedJsonSchema, jsonSchemaContent);
 
 //	    	if (!expectValid) {
 //				fail("expected to fail with reason ["+ expectedFailureReason +"]");
@@ -97,20 +95,28 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 		// validate the json against the generated schema
 		if (compactArrays==skipJsonRootElements) {
 			if (StringUtils.isNotEmpty(jsonString)) {
-				JsonSchemaFactory factory = JsonSchemaFactory.getInstance();
-				JsonSchema schema = factory.getSchema(jsonSchemaContent);
-
-				ObjectMapper mapper = new ObjectMapper();
-				JsonNode node = mapper.readTree(jsonString);
-
-				Set<ValidationMessage> errors = schema.validate(node);
-
-				System.out.println(jsonString);
-				System.out.println(errors);
-				assertEquals(errors.toString(), 0, errors.size());
+				validateJson(jsonString,jsonSchemaContent);
 			}
 		}
 
 	}
 
+	public void validateJson(String jsonString, String jsonSchemaContent) {
+		JsonValidationService service = JsonValidationService.newInstance();
+		JsonSchema schema = service.readSchema(new StringReader(jsonSchemaContent));
+		final List<String> problems = new LinkedList<>();
+		// Problem handler which will print problems found.
+		ProblemHandler handler = service.createProblemPrinter(problems::add);
+
+		try (JsonParser parser = service.createParser(new StringReader(jsonString), schema, handler)) {
+			while (parser.hasNext()) {
+				parser.next();
+				// Could do something useful here, like posting the event on a JsonEventHandler.
+			}
+		}
+
+		LOG.debug("jsonString: {}", jsonString);
+		LOG.debug("problems: {}", problems);
+		assertEquals(0, problems.size(), problems.toString());
+	}
 }

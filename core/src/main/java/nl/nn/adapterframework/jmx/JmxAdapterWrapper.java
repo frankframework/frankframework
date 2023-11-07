@@ -49,7 +49,6 @@ public class JmxAdapterWrapper extends AdapterLifecycleWrapperBase implements In
 		}
 	}
 
-	
 	@Override
 	public void addAdapter(Adapter adapter) {
 		log.debug("registering adapter [" + adapter.getName() + "] to the JMX server");

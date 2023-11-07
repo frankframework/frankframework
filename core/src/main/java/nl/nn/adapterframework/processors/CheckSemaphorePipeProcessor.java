@@ -52,7 +52,7 @@ public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 				pipeRunResult = chain.apply(message);
 			} catch(InterruptedException e) {
 				throw new PipeRunException(pipe, "Interrupted acquiring semaphore", e);
-			} finally { 
+			} finally {
 				s.release();
 			}
 		} else { //no restrictions on the maximum number of threads (s==null)

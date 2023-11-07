@@ -1,0 +1,1 @@
+{"_id":{"$oid":"60866fc0d5a55e251e95a085"},"student_id":"Adriaan","average_grade":7.68}

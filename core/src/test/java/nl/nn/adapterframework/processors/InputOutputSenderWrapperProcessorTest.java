@@ -1,14 +1,15 @@
 package nl.nn.adapterframework.processors;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderBase;
 import nl.nn.adapterframework.senders.SenderSeries;
@@ -20,7 +21,7 @@ public class InputOutputSenderWrapperProcessorTest {
 	private PipeLineSession session; 
 	private String secondSenderOutput;
 	
-	@Before
+	@BeforeEach
 	public void setUp() {
 		session = new PipeLineSession();
 		secondSenderOutput = null;
@@ -32,37 +33,38 @@ public class InputOutputSenderWrapperProcessorTest {
 		SenderWrapperProcessor target = new SenderWrapperProcessor() {
 
 			@Override
-			public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				return senderWrapperBase.sendMessage(message, session);
 			}
 		};
 		
 		processor.setSenderWrapperProcessor(target);
 
-		Message actual = processor.sendMessage(sender, new Message(input), session);
+		SenderResult actual = processor.sendMessage(sender, new Message(input), session);
 		
-		assertEquals("unexpected output of last sender", expectedSecondSenderOutput, secondSenderOutput);
-		assertEquals("unexpected wrapper output", expectedWrapperOutput, actual.asString());
-		assertEquals("unexpected session variable value", expectedSessionKeyValue, Message.asString(session.get("storedResult")));
+		assertEquals(expectedSecondSenderOutput, secondSenderOutput, "unexpected output of last sender");
+		assertEquals(expectedWrapperOutput, actual.getResult().asString(), "unexpected wrapper output");
+		assertEquals(true, actual.isSuccess(), "unexpected wrapper output");
+		assertEquals(expectedSessionKeyValue, Message.asString(session.get("storedResult")), "unexpected session variable value");
 	}
 	
 	public SenderWrapperBase getSenderWrapper() {
 		SenderSeries senderSeries = new SenderSeries();
 		senderSeries.registerSender(new SenderBase() {
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
-					return new Message("Sender 1: ["+message.asString()+"]");
+					return new SenderResult("Sender 1: ["+message.asString()+"]");
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}
 			}});
 		senderSeries.registerSender(new SenderBase() {
 			@Override
-			public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					secondSenderOutput = "Sender 2: ["+message.asString()+"]";
-					return new Message(secondSenderOutput);
+					return new SenderResult(secondSenderOutput);
 				} catch (IOException e) {
 					throw new SenderException(e);
 				}

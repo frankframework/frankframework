@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,20 +33,17 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.encryption.KeystoreType;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class CmisSessionBuilder {
 	private final Logger log = LogUtil.getLogger(this);
 
 	private BindingTypes bindingType = null;
-	/**
-	 * 'atompub', 'webservices' or 'browser'
-	 */
-	private enum BindingTypes {
+
+	public enum BindingTypes {
 		ATOMPUB, WEBSERVICES, BROWSER;
 	}
 
@@ -83,8 +80,8 @@ public class CmisSessionBuilder {
 	private String proxyUserName;
 	private String proxyPassword;
 
-	public final static String OVERRIDE_WSDL_URL = "http://fake.url";
-	public final static String OVERRIDE_WSDL_KEY = "override_wsdl_key";
+	public static final String OVERRIDE_WSDL_URL = "http://fake.url";
+	public static final String OVERRIDE_WSDL_KEY = "override_wsdl_key";
 	private String overrideEntryPointWSDL;
 
 	private IScopeProvider scopeProvider = null;
@@ -116,7 +113,7 @@ public class CmisSessionBuilder {
 
 	/**
 	 * @param userName to connect or empty when no username
-	 * @param password 
+	 * @param password
 	 * @return a {@link Session} connected to the CMIS repository
 	 * @throws CmisSessionException when the CmisSessionBuilder fails to connect to cmis repository
 	 */
@@ -155,10 +152,10 @@ public class CmisSessionBuilder {
 			// we can manually override this wsdl by reading it from the classpath.
 			//TODO: Does this work with any binding type?
 			if(overrideEntryPointWSDL != null) {
-				URL url = ClassUtils.getResourceURL(scopeProvider, overrideEntryPointWSDL);
+				URL url = ClassLoaderUtils.getResourceURL(scopeProvider, overrideEntryPointWSDL);
 				if(url != null) {
 					try {
-						parameterMap.put(OVERRIDE_WSDL_KEY, Misc.streamToString(url.openStream()));
+						parameterMap.put(OVERRIDE_WSDL_KEY, StreamUtil.streamToString(url.openStream()));
 
 						//We need to setup a fake URL in order to initialize the CMIS Session
 						parameterMap.setWebServicesBindingUrl(OVERRIDE_WSDL_URL);
@@ -192,8 +189,8 @@ public class CmisSessionBuilder {
 		//SSL
 		if (keystore!=null || truststore!=null || allowSelfSignedCertificates) {
 			CredentialFactory keystoreCf = new CredentialFactory(keystoreAuthAlias, null, keystorePassword);
-			CredentialFactory keystoreAliasCf = StringUtils.isNotEmpty(keystoreAliasAuthAlias) || StringUtils.isNotEmpty(keystoreAliasPassword) 
-							?  new CredentialFactory(keystoreAliasAuthAlias, null, keystoreAliasPassword) 
+			CredentialFactory keystoreAliasCf = StringUtils.isNotEmpty(keystoreAliasAuthAlias) || StringUtils.isNotEmpty(keystoreAliasPassword)
+							?  new CredentialFactory(keystoreAliasAuthAlias, null, keystoreAliasPassword)
 							: keystoreCf;
 			CredentialFactory truststoreCf = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
 
@@ -276,7 +273,7 @@ public class CmisSessionBuilder {
 		keystorePassword = string;
 		return this;
 	}
-	
+
 	public CmisSessionBuilder setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 		return this;
@@ -394,9 +391,8 @@ public class CmisSessionBuilder {
 	/**
 	 * @param bindingType See {@link CmisSessionBuilder.BindingTypes} for possible binding types
 	 */
-	public CmisSessionBuilder setBindingType(String bindingType) {
-		this.bindingType = EnumUtils.parse(BindingTypes.class, bindingType);
-
+	public CmisSessionBuilder setBindingType(BindingTypes bindingType) {
+		this.bindingType = bindingType;
 		return this;
 	}
 
@@ -435,7 +431,7 @@ public class CmisSessionBuilder {
 			}
 		}).toString();
 	}
-	
+
 	public String getKeystore() {
 		return keystore;
 	}

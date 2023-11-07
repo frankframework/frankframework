@@ -1,13 +1,13 @@
 package nl.nn.adapterframework.senders;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringReader;
 
-import javax.json.Json;
-import javax.json.JsonStructure;
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
@@ -21,8 +21,6 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		return new JsonXsltSender();
 	}
 
-
-
 	@Test
 	public void basic() throws Exception {
 		sender.setStyleSheetName("/Xslt3/orgchart.xslt");
@@ -34,7 +32,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		Message message = new Message(input);
 		PipeRunResult prr = sender.sendMessage(message, session, null);
 		String jsonOut=prr.getResult().asString();
-		assertJsonEqual(null,expectedJson,jsonOut);
+		assertJsonEqual(expectedJson,jsonOut, null);
 	}
 
 	@Test
@@ -67,17 +65,17 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		String textOut=result.getResult().asString();
 		assertEquals(expectedText,textOut);
 	}
-	
+
 	public static JsonStructure string2Json(String json) {
 		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
 		return jsonStructure;
 	}
 
-	public void assertJsonEqual(String description, String jsonExp, String jsonAct) {
+	public void assertJsonEqual(String jsonExp, String jsonAct, String description) {
 		JsonStructure jExp=string2Json(jsonExp);
 		log.debug("jsonAct: ["+jsonAct+"]");
 		JsonStructure jAct=string2Json(jsonAct);
-		assertEquals(description,jExp.toString(),jAct.toString());
+		assertEquals(jExp.toString(), jAct.toString(), description);
 		//assertEquals(description,inputJson,jsonOut);
 	}
 

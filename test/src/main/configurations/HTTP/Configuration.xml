@@ -1,20 +1,25 @@
-<!DOCTYPE configuration [
-	<!ENTITY WebServiceListenerSender SYSTEM "./ConfigurationWebServiceListenerSender.xml">
-	<!ENTITY WebServiceListenerSenderAddress SYSTEM "./ConfigurationWebServiceListenerSenderAddress.xml">
-	<!ENTITY WebServiceListenerSenderAttachments SYSTEM "./ConfigurationWebServiceListenerSenderAttachments.xml">
-	<!ENTITY WebServiceListenerSenderServiceNamespaceURI SYSTEM "./ConfigurationWebServiceListenerSenderServiceNamespaceURI.xml">
-	<!ENTITY WebServiceListenerSenderNoSoap SYSTEM "./ConfigurationWebServiceListenerSenderNoSoap.xml">
-	<!ENTITY HttpListenerSender SYSTEM "./ConfigurationHttpListenerSender.xml">
-	<!ENTITY RestListener SYSTEM "./ConfigurationRestListener.xml">
-	<!ENTITY ApiListener SYSTEM "./ConfigurationApiListener.xml">
-]>
-<configuration name="HTTP">
-	&WebServiceListenerSender;
-	&WebServiceListenerSenderAddress;
-	&WebServiceListenerSenderAttachments;
-	&WebServiceListenerSenderServiceNamespaceURI;
-	&WebServiceListenerSenderNoSoap;
-	&HttpListenerSender;
-	&RestListener;
-	&ApiListener;
+<configuration>
+
+	<SharedResources>
+		<HttpSession
+			name="SharedHttpSession"
+			allowSelfSignedCertificates="true"
+			verifyHostname="false"
+			timeout="1000"
+			authAlias="${framework.api.user.alias}"
+			proxyHost="${proxy.host}"
+			proxyPort="${proxy.port}"
+			proxyUsername="${proxy.username}"
+			proxyPassword="${proxy.password}" 
+		/>
+	</SharedResources>
+
+	<Include ref="./ConfigurationWebServiceListenerSender.xml"/>
+	<Include ref="./ConfigurationWebServiceListenerSenderAddress.xml"/>
+	<Include ref="./ConfigurationWebServiceListenerSenderAttachments.xml"/>
+	<Include ref="./ConfigurationWebServiceListenerSenderServiceNamespaceURI.xml"/>
+	<Include ref="./ConfigurationWebServiceListenerSenderNoSoap.xml"/>
+	<Include ref="./ConfigurationApiListener.xml"/>
+	<Include ref="./ConfigurationHttpListenerSender.xml"/>
+	<Include ref="./ConfigurationRestListener.xml"/>
 </configuration>

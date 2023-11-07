@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2018-2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,18 +15,19 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
+
 /**
  * Singleton class that knows about the ServiceListeners that are active.
  * <br/>
@@ -37,13 +38,13 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  * @author Johan Verrips
  * @author Niels Meijer
- * 
+ *
  * @see ServiceClient
  */
 public class ServiceDispatcher  {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private ConcurrentSkipListMap<String, ServiceClient> registeredListeners = new ConcurrentSkipListMap<String, ServiceClient>();
+	private ConcurrentSkipListMap<String, ServiceClient> registeredListeners = new ConcurrentSkipListMap<>();
 	private static ServiceDispatcher self = null;
 
 	/**
@@ -58,40 +59,31 @@ public class ServiceDispatcher  {
 	}
 
 	/**
-	 * Dispatch a request.
-	 * 
-	 * @since 4.3
+	 * Dispatch a request {@link Message} to a service by its configured name.
+	 *
+	 * @param serviceName ServiceName given to the {@link ServiceClient} implementation that is to be called
+	 * @param message {@link Message} to be processed
+	 * @param session Existing {@link PipeLineSession}.
+	 * @return {@link Message} with the result of the requested adapter execution.
+	 * @throws ListenerException If there was an error in request execution.
 	 */
-	public String dispatchRequest(String serviceName, String correlationId, String request, Map<String,Object> requestContext) throws ListenerException {
-		if (log.isDebugEnabled()) {
-			log.debug("dispatchRequest for service ["+serviceName+"] correlationId ["+correlationId+"] message ["+request+"]");
-		}
+	public Message dispatchRequest(String serviceName, Message message, PipeLineSession session) throws ListenerException {
+		log.debug("dispatchRequest for service [{}] correlationId [{}] message [{}]", serviceName, session != null ? session.getCorrelationId() : null, message);
 
 		ServiceClient client = registeredListeners.get(serviceName);
 		if (client == null) {
-			throw new ListenerException("service ["+serviceName+"] is not registered");
+			throw new ListenerException("service ["+ serviceName +"] is not registered");
 		}
-
-		String result;
-		try {
-			result = client.processRequest(correlationId, new Message(request), requestContext).asString();
-		} catch (IOException e) {
-			throw new ListenerException(e);
-		}
-		if (result == null) {
-			log.warn("result is null!");
-		}
-
-		return result;
+		return client.processRequest(message, session);
 	}
 
 	/**
 	 * Retrieve the names of the registered listeners in alphabetical order.
-	 * @return Iterator with the names.
+	 * @return Set with the names.
 	 */
-	public Iterator<String> getRegisteredListenerNames() {
-		SortedSet<String> sortedKeys = new TreeSet<String>(registeredListeners.keySet());
-		return sortedKeys.iterator();
+	public SortedSet<String> getRegisteredListenerNames() {
+		SortedSet<String> sortedKeys = new TreeSet<>(registeredListeners.keySet());
+		return Collections.unmodifiableSortedSet(sortedKeys);
 	}
 
 	/**
@@ -99,13 +91,15 @@ public class ServiceDispatcher  {
 	 * @return true if the service is registered at this dispatcher, otherwise false
 	 */
 	public boolean isRegisteredServiceListener(String name) {
-		return (registeredListeners.get(name)!=null);
+		return registeredListeners.get(name) != null;
 	}
 
-	public void registerServiceClient(String name, ServiceClient listener) throws ListenerException{
+	public synchronized void registerServiceClient(String name, ServiceClient listener) throws ListenerException {
+		if(StringUtils.isEmpty(name)) {
+			throw new ListenerException("Cannot register a ServiceClient without name");
+		}
 		if (isRegisteredServiceListener(name)) {
-			//TODO throw ListenerException if already registered!
-			log.warn("listener ["+name+"] already registered with ServiceDispatcher");
+			throw new ListenerException("Dispatcher already has a ServiceClient registered under name ["+name+"]");
 		}
 
 		registeredListeners.put(name, listener);

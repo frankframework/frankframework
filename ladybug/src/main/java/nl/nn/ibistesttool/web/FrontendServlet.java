@@ -15,11 +15,8 @@
 */
 package nl.nn.ibistesttool.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
-import nl.nn.adapterframework.lifecycle.ServletManager;
 
 /**
  * @author Jaco de Groot
@@ -30,7 +27,7 @@ public class FrontendServlet extends nl.nn.testtool.web.FrontendServlet implemen
 
 	@Override
 	public String getUrlMapping() {
-		return getDefaultMapping();
+		return "/iaf" + getDefaultMapping();
 	}
 
 	@Override
@@ -42,10 +39,4 @@ public class FrontendServlet extends nl.nn.testtool.web.FrontendServlet implemen
 	public String[] getAccessGrantingRoles() {
 		return DynamicRegistration.Servlet.ALL_IBIS_USER_ROLES;
 	}
-
-	@Autowired
-	public void setServletManager(ServletManager servletManager) {
-		servletManager.register(this);
-	}
-
 }

@@ -1,21 +1,20 @@
 /*
-Copyright 2017 - 2021 WeAreFrank!
+   Copyright 2017-2022 WeAreFrank!
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+       http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.migration;
 
-import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.sql.SQLException;
@@ -45,7 +44,7 @@ import liquibase.lockservice.LockService;
 import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.BytesResource;
+import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.AppConstants;
@@ -53,7 +52,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * LiquiBase implementation for IAF
- * 
+ *
  * @author	Niels Meijer
  * @since	7.0-B4
  *
@@ -64,24 +63,26 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
 
-	private Resource getChangeLog() {
+	@Override
+	public Resource getChangeLog() {
 		AppConstants appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
-		URL resource = getResource(changeLogFile);
-		if(resource == null) {
-			String msg = "unable to find database changelog file [" + changeLogFile + "]";
-			msg += " classLoader [" + getConfigurationClassLoader() + "]";
-			log.debug(msg);
-			return null;
+		ClassLoader classLoader = getConfigurationClassLoader();
+		if (classLoader instanceof ClassLoaderBase) {
+			URL url = ((ClassLoaderBase)classLoader).getLocalResource(changeLogFile);
+			if (url==null) {
+				log.debug("database changelog file [{}] not found as local resource of classLoader [{}]", changeLogFile, classLoader);
+				return null;
+			}
 		}
 
-		try {
-			return new BytesResource(resource.openStream(), changeLogFile, getConfiguration());
-		} catch (IOException e) {
-			log.debug("unable to open or read changelog ["+changeLogFile+"]", e);
+		Resource resource = Resource.getResource(this, changeLogFile);
+		if(resource == null) {
+			log.debug("unable to find database changelog file [{}] in classLoader [{}]", changeLogFile, classLoader);
+			return null;
 		}
-		return null;
+		return resource;
 	}
 
 	private Liquibase createMigrator() throws SQLException, LiquibaseException {
@@ -93,10 +94,13 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 			throw new LiquibaseException("no resource provided");
 		}
 
-		ResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(resource);
-		DatabaseConnection connection = getDatabaseConnection();
+		try (ResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(resource)) {
+			DatabaseConnection connection = getDatabaseConnection();
 
-		return new Liquibase(resource.getSystemId(), resourceAccessor, connection);
+			return new Liquibase(resource.getSystemId(), resourceAccessor, connection);
+		} catch (Exception e) {
+			throw new LiquibaseException("unable to close ResourceAccessor", e);
+		}
 	}
 
 	private DatabaseConnection getDatabaseConnection() throws SQLException {
@@ -202,15 +206,10 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 
 	@Override
 	public void update(Writer writer, Resource resource) throws JdbcException {
-		try (Liquibase migrator = createMigrator(resource)){
+		try (Liquibase migrator = createMigrator(resource)) {
 			migrator.update(contexts, labelExpression, writer);
 		} catch (Exception e) {
 			throw new JdbcException("unable to generate database migration script", e);
 		}
-	}
-
-	@Override
-	public boolean hasMigrationScript() {
-		return getChangeLog() != null;
 	}
 }

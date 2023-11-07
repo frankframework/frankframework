@@ -1,0 +1,11 @@
+Date: DATE
+From: "Me, Myself and I" <myself@address.org>
+Reply-To: to@address.com
+To: dummy <me@address.org>
+Message-ID: MESSAGE-ID
+Subject: My Subject
+MIME-Version: 1.0
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+My Message Goes Here

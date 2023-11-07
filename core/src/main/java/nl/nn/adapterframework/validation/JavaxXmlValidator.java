@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2022, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,13 +20,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.xml.XMLConstants;
-import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -40,10 +38,14 @@ import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XSGrammar;
 import org.apache.xerces.xs.StringList;
 import org.apache.xerces.xs.XSModel;
-import org.w3c.dom.ls.LSInput;
-import org.w3c.dom.ls.LSResourceResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
+import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 
@@ -64,24 +66,24 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 //	private static final Map<String, URL> globalRegistry = new HashMap<String, URL>();
 //
 //	static {
-//		globalRegistry.put("http://schemas.xmlsoap.org/soap/envelope/", ClassUtils.getResourceURL("/Tibco/xsd/soap/envelope.xsd"));
-//		//globalRegistry.put("http://ing.nn.afd/AFDTypes",                ClassUtils.getResourceURL("/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/AFDTypes.xsd"));
+//		globalRegistry.put("http://schemas.xmlsoap.org/soap/envelope/", ClassLoaderUtils.getResourceURL("/Tibco/xsd/soap/envelope.xsd"));
+//		//globalRegistry.put("http://ing.nn.afd/AFDTypes",                ClassLoaderUtils.getResourceURL("/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/AFDTypes.xsd"));
 //	}
 
-	private Map<String, Schema> javaxSchemas = new LinkedHashMap<String, Schema>();
+	private final Map<String, Schema> javaxSchemas = new LinkedHashMap<>();
 
 	@Override
-	public void configure(String logPrefix) throws ConfigurationException {
+	public void configure(IConfigurationAware owner) throws ConfigurationException {
 		if (!isXmlSchema1_0()) {
 			throw new ConfigurationException("class ("+this.getClass().getName()+") only supports XmlSchema version 1.0, no ["+getXmlSchemaVersion()+"]");
 		}
-		super.configure(logPrefix);
+		super.configure(owner);
 	}
 
 	@Override
 	public void start() throws ConfigurationException {
 		super.start();
-		String schemasId = null;
+		String schemasId;
 		schemasId = schemasProvider.getSchemasId();
 		if (schemasId != null) {
 			getSchemaObject(schemasId, schemasProvider.getSchemas());
@@ -92,11 +94,11 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	public JavaxValidationContext createValidationContext(PipeLineSession session, RootValidations rootValidations, Map<List<String>, List<String>> invalidRootNamespaces) throws ConfigurationException, PipeRunException {
 		// clear session variables
 		super.createValidationContext(session, rootValidations, invalidRootNamespaces);
-	
+
 		String schemasId;
 		Schema schema;
-		Set<String> namespaceSet=new HashSet<String>();
-		List<XSModel> xsModels=null;
+		Set<String> namespaceSet = new HashSet<>();
+		List<XSModel> xsModels = null;
 
 		start();
 		schemasId = schemasProvider.getSchemasId();
@@ -110,20 +112,21 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 			org.apache.xerces.jaxp.validation.XSGrammarPoolContainer xercesSchema = (org.apache.xerces.jaxp.validation.XSGrammarPoolContainer)schema;
 			xercesSchema.getGrammarPool();
 
-			xsModels=new LinkedList<XSModel>();
+			xsModels = new ArrayList<>();
 			Grammar[] grammars=xercesSchema.getGrammarPool().retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
-			for(int i=0;i<grammars.length;i++) {
-				XSModel model=((XSGrammar)grammars[i]).toXSModel();
+			//namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'. N.B. beware, this will cause SoapValidator to miss validation failure of a non-namespaced SoapBody
+			for (Grammar grammar : grammars) {
+				XSModel model = ((XSGrammar) grammar).toXSModel();
 				xsModels.add(model);
-				StringList namespaces=model.getNamespaces();
-				for (int j=0;j<namespaces.getLength();j++) {
-					String namespace=namespaces.item(j);
+				StringList namespaces = model.getNamespaces();
+				for (int j = 0; j < namespaces.getLength(); j++) {
+					String namespace = namespaces.item(j);
 					namespaceSet.add(namespace);
 				}
 			}
 		}
 
-		JavaxValidationContext result= new JavaxValidationContext(schemasId, schema, namespaceSet, xsModels);
+		JavaxValidationContext result = new JavaxValidationContext(schemasId, schema, namespaceSet, xsModels);
 		result.init(schemasProvider, schemasId, namespaceSet, rootValidations, invalidRootNamespaces, ignoreUnknownNamespaces);
 		return result;
 	}
@@ -144,12 +147,32 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		Schema schema = javaxSchemas.get(schemasId);
 		if (schema == null) {
 			SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-			factory.setResourceResolver(new LSResourceResolver() {
+			factory.setErrorHandler(new ErrorHandler() {
 				@Override
-				public LSInput resolveResource(String s, String s1, String s2, String s3, String s4) {
-					return null;
+				public void warning(SAXParseException e) {
+					handleException(e, SuppressKeys.XSD_VALIDATION_WARNINGS_SUPPRESS_KEY);
+				}
+
+				@Override
+				public void error(SAXParseException e) {
+					handleException(e, SuppressKeys.XSD_VALIDATION_ERROR_SUPPRESS_KEY);
+				}
+
+				@Override
+				public void fatalError(SAXParseException e) throws SAXException {
+					handleException(e, SuppressKeys.XSD_VALIDATION_FATAL_ERROR_SUPPRESS_KEY);
+					throw e;
+				}
+
+				private void handleException(SAXParseException e, SuppressKeys suppressKey) {
+					if (suppressKey != null) {
+						ConfigurationWarnings.add(getOwner(), log, e.toString(), suppressKey);
+					} else {
+						ConfigurationWarnings.add(getOwner(), log, e.toString());
+					}
 				}
 			});
+			factory.setResourceResolver((s, s1, s2, s3, s4) -> null);
 			try {
 				Collection<Source> sources = getSchemaSources(schemas);
 				schema = factory.newSchema(sources.toArray(new Source[sources.size()]));
@@ -162,16 +185,16 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 		return schema;
 	}
 
-	protected List<Source> getSchemaSources(List<nl.nn.adapterframework.validation.Schema> schemas) throws IOException, XMLStreamException, ConfigurationException {
-		List<Source> result = new ArrayList<Source>();
+	protected List<Source> getSchemaSources(List<nl.nn.adapterframework.validation.Schema> schemas) throws IOException {
+		List<Source> result = new ArrayList<>();
 		for (nl.nn.adapterframework.validation.Schema schema : schemas) {
-			result.add(new StreamSource(schema.getInputStream(), schema.getSystemId()));
+			result.add(new StreamSource(schema.getReader(), schema.getSystemId()));
 		}
 		return result;
 	}
 
-	protected List<XSModel> getXSModels(List<nl.nn.adapterframework.validation.Schema> schemas) throws IOException, XMLStreamException, ConfigurationException {
-		List<XSModel> result = new ArrayList<XSModel>();
+	protected List<XSModel> getXSModels(List<nl.nn.adapterframework.validation.Schema> schemas) {
+		List<XSModel> result = new ArrayList<>();
 		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
 		for (nl.nn.adapterframework.validation.Schema schema : schemas) {
 			XSModel xsModel = xsLoader.loadURI(schema.getSystemId());
@@ -192,7 +215,7 @@ class JavaxValidationContext extends ValidationContext {
 	Schema schema;
 	Set<String> namespaceSet;
 	List<XSModel> xsModels;
-	
+
 	JavaxValidationContext(String schemasId, Schema schema, Set<String> namespaceSet, List<XSModel> xsModels) {
 		super();
 		this.schemasId=schemasId;
@@ -215,5 +238,5 @@ class JavaxValidationContext extends ValidationContext {
 	public List<XSModel> getXsModels() {
 		return xsModels;
 	}
-	
+
 }

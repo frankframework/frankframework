@@ -17,29 +17,23 @@ package nl.nn.adapterframework.testtool;
 
 import java.util.Map;
 
+import lombok.Getter;
+import nl.nn.adapterframework.core.PipeLineSession;
+
 /**
  * @author Jaco de Groot
  */
 public class ListenerMessage {
-	private String correlationId;
-	private String message;
-	private Map context;
+	private @Getter String message;
+	private @Getter Map context;
 
-	public ListenerMessage(String correlationId, String message, Map context) {
-		this.correlationId = correlationId;
+	public ListenerMessage(String message, Map context) {
 		this.message = message;
 		this.context = context;
 	}
 
 	public String getCorrelationId() {
-		return correlationId;
+		return (String)context.get(PipeLineSession.CORRELATION_ID_KEY);
 	}
 
-	public String getMessage() {
-		return message;
-	}
-
-	public Map getContext() {
-		return context;
-	}
 }

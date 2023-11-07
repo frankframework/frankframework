@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -206,6 +207,7 @@ public class LockerTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testLockWaitTimeout() throws Exception {
+		assumeFalse("works on Oracle, but causes '(SQLRecoverableException) SQLState [08003], errorCode [17008]: Gesloten verbinding' on subsequent tests", productKey.equals("Oracle"));
 		cleanupLocks();
 		locker.setTxManager(txManager);
 		locker.setObjectId("myLocker");
@@ -335,7 +337,7 @@ public class LockerTest extends TransactionManagerTestBase {
 				log.warn("exception for second insert: "+e.getMessage(), e);
 			} finally {
 				if(mainItx != null) {
-					mainItx.commit();
+					mainItx.complete();
 				}
 			}
 

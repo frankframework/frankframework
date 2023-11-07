@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,16 +22,15 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.IDataIterator;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PeekableDataIterator;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ReaderLineIterator;
 
 /**
  * Sends a message to a Sender for each line of its input, that must be an InputStream.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
@@ -39,7 +38,7 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 
 	private @Getter String endOfLineString;
 	private @Getter String startOfLineString;
-	
+
 	protected Reader getReader(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
 		if (input==null) {
 			throw new SenderException("cannot obtain reader from null input");
@@ -47,7 +46,7 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 		try {
 			return input.asReader();
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix(session)+"cannot open stream", e);
+			throw new SenderException("cannot open stream", e);
 		}
 	}
 
@@ -58,11 +57,11 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 
 	@Override
 	protected String getItem(IDataIterator<String> it) throws SenderException {
-		StringBuffer item = new StringBuffer(it.next());
+		StringBuilder item = new StringBuilder(it.next());
 		if (StringUtils.isNotEmpty(getEndOfLineString()) || StringUtils.isNotEmpty(getStartOfLineString())) {
 			String peeked = ((PeekableDataIterator<String>)it).peek();
-			while (peeked!=null && 
-					(StringUtils.isEmpty(getStartOfLineString()) || !peeked.startsWith(getStartOfLineString())) && 
+			while (peeked!=null &&
+					(StringUtils.isEmpty(getStartOfLineString()) || !peeked.startsWith(getStartOfLineString())) &&
 					(StringUtils.isEmpty(getEndOfLineString())   || !item.toString().endsWith(getEndOfLineString()))) {
 				item.append(System.getProperty("line.separator")).append(it.next());
 				peeked = ((PeekableDataIterator<String>)it).peek();
@@ -71,16 +70,19 @@ public class StreamLineIteratorPipe extends StringIteratorPipe {
 		return item.toString();
 	}
 
-	@IbisDoc({"1", "If set, each record has to end with this string. If a line read doesn't end with this string more lines are added (including line separators) until the total record ends with the given string", ""})
+	/** If set, each record has to end with this string. If a line read doesn't end with this string more lines are added (including line separators) until the total record ends with the given string */
 	public void setEndOfLineString(String string) {
 		endOfLineString = string;
 	}
-	@IbisDoc({"2", "Marks the start of a new record. If set, a new record is started when this line is read.", ""})
+	/** Marks the start of a new record. If set, a new record is started when this line is read. */
 	public void setStartOfLineString(String string) {
 		startOfLineString = string;
 	}
 
-	@IbisDoc({"3", "If set to <code>false</code>, the inputstream is not closed after it has been used", "true"})
+	/**
+	 * If set to <code>false</code>, the inputstream is not closed after it has been used
+	 * @ff.default true
+	 */
 	public void setCloseInputstreamOnExit(boolean b) {
 		setCloseIteratorOnExit(b);
 	}

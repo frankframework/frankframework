@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.senders;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
@@ -24,7 +24,7 @@ public class EchoSenderTest extends SenderTestBase<EchoSender> {
 		sender.open();
 		String input = "<dummy/>";
 		Message message = new Message(input);
-		String result = sender.sendMessage(message, session).asString();
+		String result = sender.sendMessageOrThrow(message, session).asString();
 		assertEquals(input, result);
 	}
 }

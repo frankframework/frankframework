@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,17 +20,16 @@ import java.io.IOException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 
 
 /**
  * Selects an exitState, based on the last (filename) part of the path that is the input.
- * 
+ *
  * <p><b>Exits:</b>
  * <table border="1">
  * <tr><th>state</th><th>condition</th></tr>
@@ -56,7 +55,7 @@ public class FilenameSwitch extends AbstractPipe {
 			}
 		}
 	}
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward="";
@@ -64,9 +63,9 @@ public class FilenameSwitch extends AbstractPipe {
 		try {
 			sInput = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
-	    PipeForward pipeForward=null;
+		PipeForward pipeForward=null;
 
 		int slashPos=sInput.lastIndexOf('/');
 		if (slashPos>0) {
@@ -80,31 +79,33 @@ public class FilenameSwitch extends AbstractPipe {
 		if (isToLowercase()) {
 			forward=forward.toLowerCase();
 		}
-		log.debug(getLogPrefix(session)+ "determined forward ["+forward+"]");
+		log.debug("determined forward [{}]", forward);
 
-		if (findForward(forward) != null) 
+		if (findForward(forward) != null)
 			pipeForward=findForward(forward);
 		else {
-			log.info(getLogPrefix(session)+"determined forward ["+forward+"], which is not defined. Will use ["+getNotFoundForwardName()+"] instead");
+			log.info("determined forward [{}], which is not defined. Will use [{}] instead", forward, getNotFoundForwardName());
 			pipeForward=findForward(getNotFoundForwardName());
 		}
-		
+
 		if (pipeForward==null) {
-			  throw new PipeRunException (this, getLogPrefix(session)+"cannot find forward or pipe named ["+forward+"]");
+			throw new PipeRunException (this, "cannot find forward or pipe named ["+forward+"]");
 		}
 		return new PipeRunResult(pipeForward, message);
 	}
-	
-	
-	@IbisDoc({"forward returned when the forward or pipename derived from the filename that was the input could not be found.", ""})
+
+	/** forward returned when the forward or pipename derived from the filename that was the input could not be found. */
 	public void setNotFoundForwardName(String notFound){
 		notFoundForwardName=notFound;
 	}
 	public String getNotFoundForwardName(){
 		return notFoundForwardName;
 	}
-	
-	@IbisDoc({"convert the result to lowercase, before searching for a corresponding forward", "true"})
+
+	/**
+	 * convert the result to lowercase, before searching for a corresponding forward
+	 * @ff.default true
+	 */
 	public void setToLowercase(boolean b) {
 		toLowercase = b;
 	}

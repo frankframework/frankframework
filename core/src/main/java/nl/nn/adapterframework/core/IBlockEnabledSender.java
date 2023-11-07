@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,20 +18,20 @@ package nl.nn.adapterframework.core;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Allows to leverage sending messages in blocks. 
+ * Allows to leverage sending messages in blocks.
  * @param <H> something shared for sending messages in a block, like a connection.
  */
 public interface IBlockEnabledSender<H> extends ISenderWithParameters {
-	
+
 	/**
 	 * open a resource that can be used multiple times when {@link #sendMessage(Object, Message, PipeLineSession)} is called.
 	 */
 	public H openBlock(PipeLineSession session) throws SenderException, TimeoutException;
-	
+
 	/**
 	 * close the resource that is opened by {@link #openBlock(PipeLineSession)}. It is important that this method is always called
 	 * after processing with the blockHandle ends. It should effectively be called in a finally clause of a try around the openBlock.
 	 */
 	public void closeBlock(H blockHandle, PipeLineSession session) throws SenderException;
-	public Message sendMessage(H blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException;
+	public SenderResult sendMessage(H blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException;
 }

@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationStrategy {
-	protected Logger log = LogUtil.getLogger(this);
+	private Logger log = LogUtil.getLogger(this);
 
 //	private boolean refreshTokenOn401; // retrying unchallenged request/responses might cause endless authentication loops
 
@@ -49,7 +49,7 @@ public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationS
 	public Queue<AuthOption> select(Map<String, Header> challenges, HttpHost authhost, HttpResponse response, HttpContext context) throws MalformedChallengeException {
 		final HttpClientContext clientContext = HttpClientContext.adapt(context);
 
-		final Queue<AuthOption> options = new LinkedList<AuthOption>();
+		final Queue<AuthOption> options = new LinkedList<>();
 
 		final CredentialsProvider credsProvider = clientContext.getCredentialsProvider();
 		if (credsProvider == null) {
@@ -57,11 +57,11 @@ public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationS
 			return options;
 		}
 
-		final AuthScope authScope = new AuthScope(authhost, "", OAuthAuthenticationScheme.SCHEME_NAME);
+		final AuthScope authScope = new AuthScope(authhost, "", OAuthAuthenticationScheme.SCHEME_NAME_AUTO);
 		final Credentials credentials = credsProvider.getCredentials(authScope);
 		if (credentials != null) {
 			// always add OAuth as an authentication option, if any challenges are returned by server
-			options.add(new AuthOption(new OAuthAuthenticationScheme(), credentials));
+			options.add(new AuthOption(new OAuthAuthenticationScheme(true), credentials));  // refresh token if preemptive authentication with 'auto' token did not work
 		}
 
 		options.addAll(super.select(challenges, authhost, response, clientContext));

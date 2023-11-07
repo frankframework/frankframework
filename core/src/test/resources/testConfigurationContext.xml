@@ -9,27 +9,19 @@
 	default-autowire="byName"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean name="configurationDigester" class="nl.nn.adapterframework.testutil.ConfigurationDigesterMock" scope="singleton" />
+	<import resource="testApplicationContext.xml" />
+	<import resource="SpringConfigurationContext.xml" />
 
-	<bean name="lifecycleProcessor" class="nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor" />
+	<!--
+		Spring file used to overwrite certain beans that should be mocked during testing.
+		Mocked classes should contain the primary attribute to ensure they are used!
+	-->
 
-	<bean name="configurationWarnings" class="nl.nn.adapterframework.configuration.ConfigurationWarnings" />
-	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings" />
+	<bean primary="true" name="configurationDigester" class="nl.nn.adapterframework.testutil.mock.ConfigurationDigesterMock" />
 
-	<bean name="adapterManager" class="nl.nn.adapterframework.configuration.AdapterManager" autowire="byType" scope="singleton" />
-	<bean name="scheduleManager" class="nl.nn.adapterframework.configuration.ScheduleManager" autowire="byType" scope="singleton" />
+	<bean primary="true" name="jdbcMigrator" class="nl.nn.adapterframework.testutil.mock.DatabaseMigratorMock" scope="prototype" lazy-init="true" />
 
-	<bean name="listenerContainer" class="nl.nn.adapterframework.receivers.PullingListenerContainer" scope="prototype" />
-	<bean name="taskExecutor" class="org.springframework.core.task.SimpleAsyncTaskExecutor" scope="singleton" />
+	<bean primary="true" name="eventPublisher" class="nl.nn.adapterframework.testutil.mock.EventPublisherMock" />
 
-	<bean name="flowDiagramManager" class="nl.nn.adapterframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
-
-	<bean name="metricsRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistry" autowire="byName"/>
-	<bean name="configurationMetrics" class="nl.nn.adapterframework.statistics.MetricsInitializer" />
-
-	<!-- Suppress Spring initialisation warnings by providing a dummy class -->
-	<bean id="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" lazy-init="true" />
-
-	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
-	<bean id="ConfigurationMessageListener" class="nl.nn.adapterframework.testutil.ConfigurationMessageEventListener" scope="singleton" />
+	<bean id="ConfigurationMessageListener" class="nl.nn.adapterframework.testutil.ConfigurationMessageEventListener" />
 </beans>

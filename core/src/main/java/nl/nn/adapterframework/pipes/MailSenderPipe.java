@@ -41,7 +41,7 @@ import nl.nn.adapterframework.senders.MailSender;
  */
 
 public class MailSenderPipe extends MessageSendingPipe {
-		
+
 	public MailSenderPipe() {
 		super();
 		setSender(new MailSender());

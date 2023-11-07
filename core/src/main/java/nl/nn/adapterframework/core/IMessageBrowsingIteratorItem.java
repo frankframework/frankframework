@@ -34,7 +34,7 @@ public interface IMessageBrowsingIteratorItem extends AutoCloseable {
 	String getHost() throws ListenerException;
 	String getCommentString() throws ListenerException;
 	String getLabel() throws ListenerException;
-	
+
 	/**
 	 * close() must be called, in a finally clause, after the item is not used anymore, 
 	 * to allow to free resources.

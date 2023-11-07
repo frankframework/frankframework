@@ -27,9 +27,7 @@
             <field name="MESSAGEID">Test Tool correlation id</field>
             <field name="CORRELATIONID">Test Tool correlation id</field>
             <field name="MESSAGEDATE">2022-01-20 17:48:05</field>
-            <field name="COMMENTS">exitState [SUCCESS], result [String: &lt;request action="store"&gt;
-	&lt;test&gt;hello73&lt;/test&gt;
-&lt;/request&gt;]</field>
+            <field name="COMMENTS" null="true"/>
             <field name="MESSAGE">&lt;request action="store"&gt;
 	&lt;test&gt;hello73&lt;/test&gt;
 &lt;/request&gt;</field>

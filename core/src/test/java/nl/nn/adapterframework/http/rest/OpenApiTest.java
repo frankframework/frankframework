@@ -8,8 +8,8 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
-import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.threading.IsolatedThread;
 import nl.nn.adapterframework.testutil.threading.RunInThreadRule;
@@ -29,15 +29,15 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "get", null)
 			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit("200")
-			.addExit("500")
+			.addExit(200)
+			.addExit(500)
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simple.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -50,14 +50,14 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "post", null)
 			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit("200")
+			.addExit(200)
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simplePost.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -70,14 +70,14 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "post", null)
 			.setInputValidator("transaction.xsd", "transaction", null, null)
-			.addExit("200")
+			.addExit(200)
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/transaction.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -90,14 +90,14 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "post", null)
 			.setInputValidator("Options.xsd", "Options", null, null)
-			.addExit("200")
+			.addExit(200)
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/Options.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -110,14 +110,14 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "post", null)
 			.setInputValidator("multipleChoices.xsd", "EmbeddedChoice", null, null)
-			.addExit("200")
+			.addExit(200)
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/multipleChoices.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -130,15 +130,15 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "post", null)
 			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit("200")
-			.addExit("500", null, "true")
+			.addExit(200)
+			.addExit(500, null, true)
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simplePostWithEmptyExit.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -151,14 +151,14 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri, "get", "operationId")
 			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null)
-			.addExit("200")
+			.addExit(200)
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelope.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -172,20 +172,20 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri, "get", null)
 			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
-			.addExit("200")
+			.addExit(200)
 			.build(true);
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri, "post", null)
 			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
-			.addExit("200")
+			.addExit(200)
 			.build(true);
 
 		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findConfigForUri(uri).getMethods().size());
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopeQueryParam.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -199,24 +199,27 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri+"/{pattern}", "get", null)
 			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
-			.addExit("200")
-			.addExit("500")
-			.addExit("403")
+			.addExit(200)
+			.addExit(500)
+			.addExit(403)
 			.build(true);
 
 		new AdapterBuilder("myAdapterName", "get envelope adapter description")
 			.setListener(uri+"/{pattern}/sub/{path}", "post", null)
 			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
-			.addExit("200")
-			.addExit("500")
-			.addExit("403")
+			.addExit(200)
+			.addExit(500)
+			.addExit(403)
 			.build(true);
 
 		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri(uri).size());
-		String result = callOpenApi(uri+"/mock-pattern");
-
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopePathParamQueryParam.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+
+		String result = callOpenApi(uri+"/{pattern}");
+		MatchUtils.assertJsonEquals(expected, result);
+
+		String encodedResult = callOpenApi(uri+"/%7Bpattern%7D");
+		MatchUtils.assertJsonEquals("Test should pass in escaped form!", expected, encodedResult);
 	}
 
 	@Test
@@ -231,40 +234,40 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "each exit have specific element name")
 			.setListener(uri, "get", null)
 			.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
-			.addExit("200","EnvelopeResponse","false")
-			.addExit("500","EnvelopeError500", "false")
-			.addExit("403","EnvelopeError403","false")
+			.addExit(200,"EnvelopeResponse", false)
+			.addExit(500,"EnvelopeError500", false)
+			.addExit(403,"EnvelopeError403", false)
 			.build(true);
 
 		new AdapterBuilder("myAdapterName", "200 code will retrieve the ref from first of response root")
 			.setListener(uri+"/test", "get", null)
 			.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
-			.addExit("200",null,"false")
-			.addExit("500","EnvelopeError500", "false")
-			.addExit("403","EnvelopeError403","false")
+			.addExit(200,null,false)
+			.addExit(500,"EnvelopeError500", false)
+			.addExit(403,"EnvelopeError403", false)
 			.build(true);
 
 		new AdapterBuilder("myAdapterName", "no element name responseRoot will be used as source for refs")
 			.setListener(uri+"/elementNames", "get", null)
 			.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
-			.addExit("200")
-			.addExit("500")
-			.addExit("403")
+			.addExit(200)
+			.addExit(500)
+			.addExit(403)
 			.build(true);
 
 		new AdapterBuilder("myAdapterName", "403 empty exit")
 			.setListener(uri+"/{pattern}/sub/{path}", "post", null)
 			.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
-			.addExit("200")
-			.addExit("500")
-			.addExit("403",null,"true")
+			.addExit(200)
+			.addExit(500)
+			.addExit(403, null, true)
 			.build(true);
 
 		assertEquals("more then 4 registered pattern found!", 4, dispatcher.findMatchingConfigsForUri(uri).size());
 		String result = callOpenApi(uri);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/envelopeExits.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -278,22 +281,22 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("listPets", "List all pets")
 			.setListener(uriBase, "get", null)
 			.setInputValidator("petstore.xsd", null, "Pets", null)
-			.addExit("200")
-			.addExit("500", "Error", "false")
+			.addExit(200)
+			.addExit(500, "Error", false)
 			.build(true);
 
 		new AdapterBuilder("createPets", "Create a pet")
 			.setListener(uriBase, "post", null)
 			.setInputValidator("petstore.xsd", "Pet", "Pet", null)
-			.addExit("201", null, "true")
-			.addExit("500", "Error", "false")
+			.addExit(201, null, true)
+			.addExit(500, "Error", false)
 			.build(true);
 
 		new AdapterBuilder("showPetById", "Info for a specific pet")
 			.setListener(uriBase+"/{petId}", "get", null)
 			.setInputValidator("petstore.xsd", null, "Pet", null)
-			.addExit("200")
-			.addExit("500", "Error", "false")
+			.addExit(200)
+			.addExit(500, "Error", false)
 			.build(true);
 
 		//getPets.start(getPets, postPet, getPet); //Async start
@@ -308,7 +311,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = callOpenApi(uriBase);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/petstore.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -321,22 +324,22 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri+"users", "get", null)
 			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit("200")
-			.addExit("500")
+			.addExit(200)
+			.addExit(500)
 			.build(true);
-		
+
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri+"test", "get", null)
 			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit("200")
-			.addExit("500")
+			.addExit(200)
+			.addExit(500)
 			.build(true);
 
 		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri(uri).size());
 		String result = callOpenApi(uri+"users");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/simpleRoot.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -349,21 +352,21 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri+"/validator", "get", null)
 			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit("200")
-			.addExit("500")
+			.addExit(200)
+			.addExit(500)
 			.build(true);
-		
+
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri+"/noValidator", "get", null)
-			.addExit("200")
-			.addExit("500")
+			.addExit(200)
+			.addExit(500)
 			.build(true);
 
 		assertEquals("more then 2 registered pattern found!", 2, dispatcher.findMatchingConfigsForUri(uri).size());
 		String result = callOpenApi(uri+"/validator");
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/noValidatorForOneEndpoint.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -377,8 +380,8 @@ public class OpenApiTest extends OpenApiTestBase {
 			.setListener(uri, "get", null, null)
 			.setHeaderParams("envelopeId, envelopeType")
 			.setInputValidator("simple.xsd", null, "user", null)
-			.addExit("200")
-			.addExit("500")
+			.addExit(200)
+			.addExit(500)
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
@@ -389,7 +392,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = service(request);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/twoHeaderParams.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 //	@Test
@@ -403,8 +406,8 @@ public class OpenApiTest extends OpenApiTestBase {
 //			.setListener(uri, "get", null, null)
 //			.setCookieParams("envelopeId, envelopeType")
 //			.setValidator("simple.xsd", null, "user", null)
-//			.addExit("200")
-//			.addExit("500")
+//			.addExit(200)
+//			.addExit(500)
 //			.build(true);
 //
 //		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
@@ -413,7 +416,7 @@ public class OpenApiTest extends OpenApiTestBase {
 //		request.setPathInfo(uri + "/openapi.json");
 //		Cookie[] cookies = {new Cookie("envelopeId", "dummy"), new Cookie("envelopeType", "dummyType")};
 //		request.setCookies(cookies);
-//		
+//
 //		String result = service(request);
 //
 //		String expected = TestFileUtils.getTestFile("/OpenApi/cookieParams.json");
@@ -432,8 +435,8 @@ public class OpenApiTest extends OpenApiTestBase {
 //			.setHeaderParams("headerparam")
 //			.setCookieParams("envelopeId, envelopeType")
 //			.setValidator("simple.xsd", null, "user", null)
-//			.addExit("200")
-//			.addExit("500")
+//			.addExit(200)
+//			.addExit(500)
 //			.build(true);
 //
 //		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
@@ -443,7 +446,7 @@ public class OpenApiTest extends OpenApiTestBase {
 //		Cookie[] cookies = {new Cookie("envelopeId", "dummy"), new Cookie("envelopeType", "dummyType")};
 //		request.setCookies(cookies);
 //		request.addHeader("headerparam", "dummy");
-//		
+//
 //		String result = service(request);
 //
 //		String expected = TestFileUtils.getTestFile("/OpenApi/parametersFromCookieAndHeader.json");
@@ -462,7 +465,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.setListener(uri, "get", null, null)
 			.setHeaderParams("parameter")
 			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
-			.addExit("200")
+			.addExit(200)
 			.build(true);
 
 		assertEquals("more then 2 registered pattern found!", 1, dispatcher.findConfigForUri(uri).getMethods().size());
@@ -472,7 +475,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = service(request);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/validatorParamFromHeaderNotQuery.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -486,7 +489,7 @@ public class OpenApiTest extends OpenApiTestBase {
 			.setListener(uri, "get", null, null)
 			.setMessageIdHeader("x-message-id")
 			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", null)
-			.addExit("200")
+			.addExit(200)
 			.build(true);
 
 
@@ -497,9 +500,9 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = service(request);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/messageIdHeaderTest.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
-	
+
 	@Test
 	@IsolatedThread
 	public void testHeaderParamIsnotAddedAsQueryParam() throws Exception {
@@ -513,8 +516,8 @@ public class OpenApiTest extends OpenApiTestBase {
 			.setListener(uri, "get", null, null)
 			.setHeaderParams("envelopeId, envelopeType")
 			.setInputValidator("simple.xsd", null, "user", p)
-			.addExit("200")
-			.addExit("500")
+			.addExit(200)
+			.addExit(500)
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
@@ -525,7 +528,7 @@ public class OpenApiTest extends OpenApiTestBase {
 		String result = service(request);
 
 		String expected = TestFileUtils.getTestFile("/OpenApi/twoHeaderParams.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -538,15 +541,15 @@ public class OpenApiTest extends OpenApiTestBase {
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "get", null, null)
 			.setOutputValidator("simple.xsd", "user")
-			.addExit("200")
-			.addExit("500")
+			.addExit(200)
+			.addExit(500)
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
 
 		String result = callOpenApi(uri);
 		String expected = TestFileUtils.getTestFile("/OpenApi/outputValidator.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -560,15 +563,15 @@ public class OpenApiTest extends OpenApiTestBase {
 			.setListener(uri, "post", null, null)
 			.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse, EnvelopeError500", null)
 			.setOutputValidator("simple.xsd", "user")
-			.addExit("200")
-			.addExit("500", "EnvelopeError500", "false")
+			.addExit(200)
+			.addExit(500, "EnvelopeError500", false)
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
 
 		String result = callOpenApi(uri);
 		String expected = TestFileUtils.getTestFile("/OpenApi/inputOutputValidators.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 
 	@Test
@@ -580,14 +583,14 @@ public class OpenApiTest extends OpenApiTestBase {
 
 		new AdapterBuilder("myAdapterName", "description4simple-get")
 			.setListener(uri, "get", null, null)
-			.addExit("200")
-			.addExit("500")
+			.addExit(200)
+			.addExit(500)
 			.build(true);
 
 		assertEquals("more then 1 registered pattern found!", 1, dispatcher.findMatchingConfigsForUri(uri).size());
 
 		String result = callOpenApi(uri);
 		String expected = TestFileUtils.getTestFile("/OpenApi/noValidator.json");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
+		MatchUtils.assertJsonEquals(expected, result);
 	}
 }

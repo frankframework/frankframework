@@ -1,6 +1,6 @@
 <throwable>
   <class>nl.nn.adapterframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-ForEachChildElementPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ForEachChildElementPipe] caught exception: Pipe [ForEachChildElementPipe_Record] msgId [Test Tool correlation id] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] call to JavaListener [ForEachChildElementPipe_Record] resulted in exitState [ERROR] exitCode [0]</message>
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-ForEachChildElementPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ForEachChildElementPipe] caught exception: Pipe [ForEachChildElementPipe_Record] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): exitState=ERROR</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
@@ -8,15 +8,15 @@
       <cause>
         <throwable>
           <class>nl.nn.adapterframework.core.ListenerException</class>
-          <message>Pipe [ForEachChildElementPipe_Record] msgId [Test Tool correlation id] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] call to JavaListener [ForEachChildElementPipe_Record] resulted in exitState [ERROR] exitCode [0]</message>
+          <message>Pipe [ForEachChildElementPipe_Record] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): exitState=ERROR</message>
           <cause>
             <throwable>
               <class>nl.nn.adapterframework.core.PipeRunException</class>
-              <message>Pipe [ForEachChildElementPipe_Record] msgId [Test Tool correlation id] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] call to JavaListener [ForEachChildElementPipe_Record] resulted in exitState [ERROR] exitCode [0]</message>
+              <message>Pipe [ForEachChildElementPipe_Record] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): exitState=ERROR</message>
               <cause>
                 <throwable>
                   <class>nl.nn.adapterframework.core.SenderException</class>
-                  <message>(SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] call to JavaListener [ForEachChildElementPipe_Record] resulted in exitState [ERROR] exitCode [0]</message>
+                  <message>(SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): exitState=ERROR</message>
                   <cause>
                     <throwable>
                       <class>nl.nn.adapterframework.xml.SaxException</class>
@@ -24,15 +24,15 @@
                       <cause>
                         <throwable>
                           <class>javax.xml.transform.TransformerException</class>
-                          <message>nl.nn.adapterframework.xml.SaxException: IbisLocalSender [ForEachChildElementPipe_Record-sender] call to JavaListener [ForEachChildElementPipe_Record] resulted in exitState [ERROR] exitCode [0]</message>
+                          <message>nl.nn.adapterframework.xml.SaxException: exitState=ERROR</message>
                           <cause>
                             <throwable>
                               <class>nl.nn.adapterframework.xml.SaxException</class>
-                              <message>IbisLocalSender [ForEachChildElementPipe_Record-sender] call to JavaListener [ForEachChildElementPipe_Record] resulted in exitState [ERROR] exitCode [0]</message>
+                              <message>exitState=ERROR</message>
                               <cause>
                                 <throwable>
                                   <class>nl.nn.adapterframework.core.SenderException</class>
-                                  <message>IbisLocalSender [ForEachChildElementPipe_Record-sender] call to JavaListener [ForEachChildElementPipe_Record] resulted in exitState [ERROR] exitCode [0]</message>
+                                  <message>exitState=ERROR</message>
                                 </throwable>
                               </cause>
                             </throwable>

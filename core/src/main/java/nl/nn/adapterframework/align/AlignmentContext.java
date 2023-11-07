@@ -15,79 +15,36 @@
 */
 package nl.nn.adapterframework.align;
 
-import java.util.Set;
-
 import org.apache.xerces.xs.XSTypeDefinition;
-import org.xml.sax.Attributes;
 
 /**
  * Top of a stack of parsed elements, that represent the current position in the aligned document.
  */
 public class AlignmentContext {
 
-	private AlignmentContext parent;
-	
-	private String namespaceUri;
-	private String localName;
-	private String qName;
-	private Attributes attributes;
+	private final AlignmentContext parent;
+	private final String localName;
+	private final XSTypeDefinition typeDefinition;
 
-	private XSTypeDefinition typeDefinition;
-	private int indentLevel;
+	public AlignmentContext() {
+		this(null, null, null);
+	}
 
-	private Set<String> multipleOccurringChildElements=null;
-	private boolean parentOfSingleMultipleOccurringChildElement=false;
-
-	public AlignmentContext(AlignmentContext parent, String namespaceUri, String localName, String qName,
-			Attributes attributes, XSTypeDefinition typeDefinition, int indentLevel,
-			Set<String> multipleOccurringChildElements, boolean parentOfSingleMultipleOccurringChildElement) {
-		super();
+	public AlignmentContext(AlignmentContext parent, String localName, XSTypeDefinition typeDefinition) {
 		this.parent = parent;
-		this.namespaceUri = namespaceUri;
 		this.localName = localName;
-		this.qName = qName;
-		this.attributes = attributes;
 		this.typeDefinition = typeDefinition;
-		this.indentLevel = indentLevel;
-		this.multipleOccurringChildElements = multipleOccurringChildElements;
-		this.parentOfSingleMultipleOccurringChildElement = parentOfSingleMultipleOccurringChildElement;
 	}
 
 	public AlignmentContext getParent() {
 		return parent;
 	}
 
-	public String getNamespaceUri() {
-		return namespaceUri;
-	}
-
 	public String getLocalName() {
 		return localName;
-	}
-
-	public String getqName() {
-		return qName;
-	}
-
-	public Attributes getAttributes() {
-		return attributes;
 	}
 
 	public XSTypeDefinition getTypeDefinition() {
 		return typeDefinition;
 	}
-
-	public int getIndentLevel() {
-		return indentLevel;
-	}
-
-	public Set<String> getMultipleOccurringChildElements() {
-		return multipleOccurringChildElements;
-	}
-
-	public boolean isParentOfSingleMultipleOccurringChildElement() {
-		return parentOfSingleMultipleOccurringChildElement;
-	}
-
-
 }

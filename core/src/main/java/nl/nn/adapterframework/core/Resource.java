@@ -21,25 +21,25 @@ import java.net.URL;
 
 import javax.xml.transform.Source;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.FilenameUtils;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Reference to a resource, for instance on the classpath. Can be accessed multiple times.
- * 
+ *
  * @author Gerrit van Brakel
  *
  */
 public abstract class Resource implements IScopeProvider {
 	protected IScopeProvider scopeProvider;
 
-	public Resource(IScopeProvider scopeProvider) {
+	protected Resource(IScopeProvider scopeProvider) {
 		if(scopeProvider == null) {
 			throw new IllegalStateException("a scopeProvider must be present");
 		}
@@ -59,15 +59,15 @@ public abstract class Resource implements IScopeProvider {
 		if(scopeProvider == null) {
 			scopeProvider = new GlobalScopeProvider(); // if no scope has been provided, assume to use the default 'global' scope.
 		}
-		String ref=resource.startsWith(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME)?resource.substring(ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME.length()):resource;
-		URL url = ClassUtils.getResourceURL(scopeProvider, ref, allowedProtocols);
+		String ref= resource.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME) ? resource.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length()) : resource;
+		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, ref, allowedProtocols);
 		if (url==null) {
 			return null;
 		}
 
 		String systemId;
 		if (ref.indexOf(':')<0) {
-			systemId=ClassLoaderBase.CLASSPATH_RESOURCE_SCHEME+ref;
+			systemId= IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME+ref;
 		} else {
 			systemId=url.toExternalForm();
 		}

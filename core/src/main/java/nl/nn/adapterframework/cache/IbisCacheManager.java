@@ -48,9 +48,9 @@ public class IbisCacheManager {
 
 	private IbisCacheManager() {
 		Configuration cacheManagerConfig = new Configuration();
-		String cacheDir = AppConstants.getInstance().getResolvedProperty(CACHE_DIR_KEY);
+		String cacheDir = AppConstants.getInstance().getProperty(CACHE_DIR_KEY);
 		if (StringUtils.isNotEmpty(cacheDir)) {
-			log.debug("setting cache directory to ["+cacheDir+"]");
+			log.debug("setting cache directory to [{}]", cacheDir);
 			DiskStoreConfiguration diskStoreConfiguration = new DiskStoreConfiguration();
 			diskStoreConfiguration.setPath(cacheDir);
 			cacheManagerConfig.addDiskStore(diskStoreConfiguration);
@@ -78,13 +78,13 @@ public class IbisCacheManager {
 	}
 
 	public Ehcache addCache(Cache cache) {
-		log.debug("registering cache ["+cache.getName()+"]");
-		cacheManager.addCache(cache);
+		log.debug("registering cache [{}]", cache.getName());
+		cacheManager.addCache(cache); //ObjectExistsException
 		return cacheManager.getEhcache(cache.getName());
 	}
 
 	public void destroyCache(String cacheName) {
-		log.debug("deregistering cache ["+cacheName+"]");
+		log.debug("destroying cache [{}]", cacheName);
 		cacheManager.removeCache(cacheName);
 	}
 
@@ -96,7 +96,7 @@ public class IbisCacheManager {
 		if (self==null) {
 			return;
 		}
-		String cacheNames[]=self.cacheManager.getCacheNames();
+		String[] cacheNames = self.cacheManager.getCacheNames();
 		for (int i=0;i<cacheNames.length;i++) {
 			D subdata=hski.openGroup(data, cacheNames[i], "cache");
 			Ehcache cache=self.cacheManager.getEhcache(cacheNames[i]);

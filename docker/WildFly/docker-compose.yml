@@ -1,0 +1,7 @@
+version: "3"
+services:
+    WildFly:
+        image: iaf-test-as-wildfly
+        restart: unless-stopped
+        ports:
+            - "80:8080"

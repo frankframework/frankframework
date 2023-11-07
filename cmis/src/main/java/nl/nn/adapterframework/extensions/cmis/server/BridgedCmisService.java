@@ -70,7 +70,7 @@ public class BridgedCmisService extends FilterCmisService {
 	public CmisBinding createCmisBinding() {
 
 		//Make sure cmisbridge properties are defined
-		if(APP_CONSTANTS.getResolvedProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"url") == null)
+		if(APP_CONSTANTS.getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"url") == null)
 			throw new CmisConnectionException("no bridge properties found");
 
 		CmisSessionBuilder sessionBuilder = new CmisSessionBuilder();
@@ -80,7 +80,7 @@ public class BridgedCmisService extends FilterCmisService {
 
 			//Remove set from the method name
 			String setter = firstCharToLower(method.getName().substring(3));
-			String value = APP_CONSTANTS.getResolvedProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+setter);
+			String value = APP_CONSTANTS.getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+setter);
 			if(value == null)
 				continue;
 

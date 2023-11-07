@@ -1,9 +1,0 @@
-version: "3"
-services:
-  oracleserver:
-    image: iaf-test-db-oracle
-    restart: unless-stopped
-    ports:
-      - "1521:1521"
-    expose:
-      - "1521"

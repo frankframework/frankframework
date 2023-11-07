@@ -27,10 +27,10 @@ import nl.nn.adapterframework.jdbc.JdbcException;
  * @since  
  */
 public class CachedStatGroupTable extends StatGroupTable {
-	
+
 	private static Map cache=Collections.synchronizedMap(new HashMap());
 	private String mapKey;
-	
+
 	public CachedStatGroupTable(String tableName, String keyColumn, String parentKeyColumn, String instanceKeyColumn, String nameColumn, String typeColumn, String sequence) {
 		super(tableName,keyColumn,parentKeyColumn,instanceKeyColumn,nameColumn,typeColumn,sequence);
 		mapKey=tableName+"/"+keyColumn+"/"+parentKeyColumn+"/"+nameColumn+"/"+typeColumn;

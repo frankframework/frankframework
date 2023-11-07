@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class JsonElementContainer implements ElementContainer {
 	protected Logger log = LogUtil.getLogger(this.getClass());
-	
+
 	private String name;
 	private boolean xmlArrayContainer;
 	private boolean repeatedElement;
@@ -54,7 +54,12 @@ public class JsonElementContainer implements ElementContainer {
 	public String stringContent;
 	private Map<String,Object> contentMap;
 	private List<Object> array;
-	
+
+	public static final CharSequenceTranslator ESCAPE_JSON = new AggregateTranslator(new CharSequenceTranslator[] {
+			new LookupTranslator(new String[][] { { "\"", "\\\"" }, { "\\", "\\\\" } }),
+			new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE())
+		});
+
 	public JsonElementContainer(String name, boolean xmlArrayContainer, boolean repeatedElement, boolean skipArrayElementContainers, String attributePrefix, String mixedContentLabel, XSTypeDefinition typeDefinition) {
 		this.name=name;
 		this.xmlArrayContainer=xmlArrayContainer;
@@ -87,10 +92,6 @@ public class JsonElementContainer implements ElementContainer {
 			}
 		}
 	}
-	
-	public static final CharSequenceTranslator ESCAPE_JSON = new AggregateTranslator(new CharSequenceTranslator[] {
-			new LookupTranslator(new String[][] { { "\"", "\\\"" }, { "\\", "\\\\" } }),
-			new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE())});
 
 	@Override
 	public void setNull() {
@@ -133,7 +134,7 @@ public class JsonElementContainer implements ElementContainer {
 					textContainer.stringContent += content;
 				}
 				return;
-			} 
+			}
 			throw new IllegalStateException("already created map for element ["+name+"] and no mixexContentLabel set");
 		}
 		if (array!=null) {
@@ -153,10 +154,10 @@ public class JsonElementContainer implements ElementContainer {
 			} else {
 				stringContent+=content;
 			}
-			if (log.isTraceEnabled()) log.trace("resulting stringContent ["+stringContent+"] stringContent.toString ["+stringContent.toString()+"] toString ["+toString()+"]");
+			log.trace("resulting stringContent [{}] toString [{}]", ()->stringContent, this::toString);
 		}
 	}
-	
+
 	/*
 	 * connects child to parent
 	 */
@@ -168,9 +169,9 @@ public class JsonElementContainer implements ElementContainer {
 		}
 		if (isXmlArrayContainer() && content.isRepeatedElement() && skipArrayElementContainers) {
 			if (array==null) {
-				array=new LinkedList<Object>();
+				array=new LinkedList<>();
 				setType(content.getType());
-			} 
+			}
 			array.add(content.getContent());
 			return;
 		}
@@ -212,22 +213,22 @@ public class JsonElementContainer implements ElementContainer {
 		}
 		return value;
 	}
-	
+
 	public Object getContent() {
 		if (nil) {
 			return null;
 		}
-		if (stringContent!=null) {
-	        switch (getType()) {
-	        case BOOLEAN:
+		if(stringContent != null) {
+			switch (getType()) {
+			case BOOLEAN:
 				return stringContent;
-	        case NUMERIC:
+			case NUMERIC:
 				return stripLeadingZeroes(stringContent);
 			default:
-				if (log.isTraceEnabled()) log.trace("getContent quoted stringContent ["+stringContent+"]");
-//				String result=StringEscapeUtils.escapeJson(stringContent.toString()); // this also converts diacritics into unicode escape sequences
-				String result=ESCAPE_JSON.translate(stringContent.toString()); 
-				return '"'+result+'"';
+				if(log.isTraceEnabled()) log.trace("getContent quoted stringContent [" + stringContent + "]");
+//				String result=StringEscapeUtils.escapeJson(stringContent); // this also converts diacritics into unicode escape sequences
+				String result = ESCAPE_JSON.translate(stringContent);
+				return '"' + result + '"';
 			}
 		}
 		if (array!=null) {
@@ -245,7 +246,6 @@ public class JsonElementContainer implements ElementContainer {
 		return "{}";
 	}
 
-	
 	@Override
 	public String toString() {
 		Object content = getContent();

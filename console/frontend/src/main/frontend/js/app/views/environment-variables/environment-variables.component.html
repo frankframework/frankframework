@@ -1,0 +1,93 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+	<div class="row">
+		<div class="col-lg-12 tabs-container">
+			<ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+				<li ng-class="{active : $ctrl.selectedConfiguration == 'All'}"><a ng-click="$ctrl.changeConfiguration('All')">Global</a></li>
+				<li ng-class="{active : $ctrl.selectedConfiguration == configuration.name}" ng-repeat="configuration in $ctrl.configurations">
+					<a ng-click="$ctrl.changeConfiguration(configuration.name)">{{::configuration.name}}</a>
+				</li>
+			</ul>
+		</div>
+		<div class="col-lg-12">
+			<div class="ibox float-e-margins">
+				<div class="ibox-title summary">
+					<h4>Environment Variables</h4>
+				</div>
+				<div class="ibox-content">
+					<div class="col-md-12 m-b-lg">
+						<div class="input-group" id="searchbar">
+							<input type="text" class="form-control" placeholder="Search ... (Ctrl + Shift + F)" ng-model="$ctrl.searchFilter" ng-model-options="{debounce: 500}" name="search" />
+							<i ng-show="$ctrl.searchFilter.length" ng-click="$ctrl.searchFilter = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true" />
+							<span class="input-group-addon">
+								<i class="fa fa-search" aria-hidden="true"></i>
+							</span>
+						</div>
+					</div>
+					<div>
+						<h2>Application Constants <small class="m-l-sm">&nbsp;({{$ctrl.filteredConfigVariables.length}})</small></h2>
+						<table class="table">
+							<thead>
+								<tr>
+									<td><strong>Property</strong></td>
+									<td><strong>Value</strong></td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="vari in $ctrl.filteredConfigVariables = ($ctrl.configProperties | variablesFilter : $ctrl.searchFilter) | orderBy:'key'">
+									<td class="col-lg-3">{{::vari.key}}</td>
+									<td class="col-lg-9">{{::vari.val}}</td>
+								</tr>
+								<tr ng-if="$ctrl.filteredConfigVariables.length == 0">
+									<td colspan="2">No variables found matching '{{$ctrl.searchFilter}}'</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div>
+						<h2>Environment Variables <small class="m-l-sm">&nbsp;({{$ctrl.filteredEnvVariables.length}})</small></h2>
+						<table class="table">
+							<thead>
+								<tr>
+									<td><strong>Property</strong></td>
+									<td><strong>Value</strong></td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="vari in $ctrl.filteredEnvVariables = ($ctrl.environmentProperties | variablesFilter : $ctrl.searchFilter) | orderBy:'key'">
+									<td class="col-lg-3">{{::vari.key}}</td>
+									<td class="col-lg-9">{{::vari.val}}</td>
+								</tr>
+								<tr ng-if="$ctrl.filteredEnvVariables.length == 0">
+									<td colspan="2">No variables found matching '{{$ctrl.searchFilter}}'</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div>
+						<h2>System Properties <small class="m-l-sm">&nbsp;({{$ctrl.filteredSysVariables.length}})</small></h2>
+						<table class="table">
+							<thead>
+								<tr>
+									<td><strong>Property</strong></td>
+									<td><strong>Value</strong></td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="vari in $ctrl.filteredSysVariables = ($ctrl.systemProperties | variablesFilter : $ctrl.searchFilter) | orderBy:'key'">
+									<td class="col-lg-3">{{::vari.key}}</td>
+									<td class="col-lg-9">{{::vari.val}}</td>
+								</tr>
+								<tr ng-if="$ctrl.filteredSysVariables.length == 0">
+									<td colspan="2">No variables found matching '{{$ctrl.searchFilter}}'</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

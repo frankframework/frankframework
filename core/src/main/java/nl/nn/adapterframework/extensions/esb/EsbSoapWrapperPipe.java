@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2017, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2017, 2020 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,21 +15,22 @@
 */
 package nl.nn.adapterframework.extensions.esb;
 
-import java.util.StringTokenizer;
-
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ISender;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Extension to SoapWrapperPipe for separate modes.
@@ -37,7 +38,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <p><b>Configuration </b><i>(where deviating from SoapWrapperPipe)</i><b>:</b>
  * <table border="1">
  * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>{@link #setMode(String) mode}</td><td>either <code>i2t</code> (ifsa2tibco), <code>reg</code> (regular) or <code>bis</code> (Business Integration Services)</td><td>reg</td></tr>
+ * <tr><td>{@link #setMode(Mode) mode}</td><td>either <code>i2t</code> (ifsa2tibco), <code>reg</code> (regular) or <code>bis</code> (Business Integration Services)</td><td>reg</td></tr>
  * <tr><td>{@link #setCmhVersion(int) cmhVersion}</td><td>(only used when <code>mode=reg</code>) Common Message Header version (1 or 2)</td><td>1 when <code>mode=reg</code>, 0 otherwise</td></tr>
  * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>if direction=<code>unwrap</code>: </td><td>soapHeader</td></tr>
  * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>if direction=<code>wrap</code> and mode=<code>i2t</code>:</td><td>/xml/xsl/esb/soapHeader.xsl</td></tr>
@@ -83,7 +84,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>mode</td><td>copied from <code>mode</code></td></tr>
  * <tr><td>cmhVersion</td><td>copied from <code>cmhVersion</code></td></tr>
- * <tr><td>namespace</td><td>"http://nn.nl/XSD/Generic/MessageHeader/2" (only when $mode=reg and $cmhVersion=2)</br>"http://nn.nl/XSD/Generic/MessageHeader/1" (otherwise)</td></tr>
+ * <tr><td>namespace</td><td>"http://nn.nl/XSD/Generic/MessageHeader/2" (only when $mode=reg and $cmhVersion=2)<br/>"http://nn.nl/XSD/Generic/MessageHeader/1" (otherwise)</td></tr>
  * <tr><td>businessDomain</td><td>&nbsp;</td></tr>
  * <tr><td>serviceName</td><td>&nbsp;</td></tr>
  * <tr><td>serviceContext</td><td>&nbsp;</td></tr>
@@ -138,11 +139,11 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied and if not already existing a Result tag will be added<br/>else only the root tag will be copied</td></tr>
  * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag (only applicable for $paradigm 'Response'); if $errorCode is empty and a Result tag already exists then skip this element including its child elements</td></tr>
  * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns=$namespace</td></tr>
- * <tr><td>Status</td><td>2</td><td>if $errorCode is empty then 'OK'</br>else 'ERROR'</td></tr>
+ * <tr><td>Status</td><td>2</td><td>if $errorCode is empty then 'OK'<br/>else 'ERROR'</td></tr>
  * <tr><td>ErrorList</td><td>2</td><td>if $errorCode is empty then skip this element including its child elements</td></tr>
  * <tr><td>Error</td><td>3</td><td>&nbsp;</td></tr>
  * <tr><td>Code</td><td>4</td><td>$errorCode</td></tr>
- * <tr><td>Reason</td><td>4</td><td>if $errorReason is not empty then $errorReason</br>else it will be derived from $errorCode:
+ * <tr><td>Reason</td><td>4</td><td>if $errorReason is not empty then $errorReason<br/>else it will be derived from $errorCode:
  *   <table border="1">
  *   <tr><th>errorCode</th><th>errorText</th></tr>
  *   <tr><td>ERR6002</td><td>Service Interface Request Time Out</td></tr>
@@ -169,7 +170,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><th>name</th><th>default</th></tr>
  * <tr><td>mode</td><td>copied from <code>mode</code></td></tr>
  * <tr><td>cmhVersion</td><td>copied from <code>cmhVersion</code></td></tr>
- * <tr><td>namespace</td><td>"http://nn.nl/XSD/Generic/MessageHeader/2" (only when $mode=reg and $cmhVersion=2)</br>"http://nn.nl/XSD/Generic/MessageHeader/1" (otherwise)</td></tr>
+ * <tr><td>namespace</td><td>"http://nn.nl/XSD/Generic/MessageHeader/2" (only when $mode=reg and $cmhVersion=2)<br/>"http://nn.nl/XSD/Generic/MessageHeader/1" (otherwise)</td></tr>
  * <tr><td>errorCode</td><td>&nbsp;</td></tr>
  * <tr><td>errorReason</td><td>&nbsp;</td></tr>
  * <tr><td>errorDetailCode</td><td>&nbsp;</td></tr>
@@ -189,11 +190,11 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>[Payload]</td><td>0</td><td>if $errorCode is empty then the complete payload will be copied and if not already existing a Result tag will be added<br/>else only the root tag will be copied</td></tr>
  * <tr><td>Result</td><td>1</td><td>this element will be the last child in the copied root tag (only applicable for $paradigm 'Response' and 'Reply'); if $errorCode is empty and a Result tag already exists then skip this element including its child elements</td></tr>
  * <tr><td>&nbsp;</td><td>&nbsp;</td><td>xmlns=$namespace</td></tr>
- * <tr><td>Status</td><td>2</td><td>if $errorCode is empty then 'OK'</br>else 'ERROR'</td></tr>
+ * <tr><td>Status</td><td>2</td><td>if $errorCode is empty then 'OK'<br/>else 'ERROR'</td></tr>
  * <tr><td>ErrorList</td><td>2</td><td>if $errorCode is empty then skip this element including its child elements</td></tr>
  * <tr><td>Error</td><td>3</td><td>&nbsp;</td></tr>
  * <tr><td>Code</td><td>4</td><td>$errorCode</td></tr>
- * <tr><td>Reason</td><td>4</td><td>if $errorReason is not empty then $errorReason</br>else it will be derived from $errorCode:
+ * <tr><td>Reason</td><td>4</td><td>if $errorReason is not empty then $errorReason<br/>else it will be derived from $errorCode:
  *   <table border="1">
  *   <tr><th>errorCode</th><th>errorText</th></tr>
  *   <tr><td>ERR6002</td><td>Service Interface Request Time Out</td></tr>
@@ -231,61 +232,65 @@ import nl.nn.adapterframework.util.AppConstants;
  * </p>
  * @author Peter Leeuwenburgh
  */
+@Category("NN-Special")
 public class EsbSoapWrapperPipe extends SoapWrapperPipe {
-	protected final static String OUTPUTNAMESPACEBASEURI = "http://nn.nl/XSD";
-	protected final static String BUSINESSDOMAIN = "businessDomain";
-	protected final static String SERVICENAME = "serviceName";
-	protected final static String SERVICECONTEXT = "serviceContext";
-	protected final static String SERVICECONTEXTVERSION = "serviceContextVersion";
-	protected final static String OPERATIONNAME = "operationName";
-	protected final static String OPERATIONVERSION = "operationVersion";
-	protected final static String PARADIGM = "paradigm";
-	protected final static String APPLICATIONNAME = "applicationName";
-	protected final static String APPLICATIONFUNCTION = "applicationFunction";
-	protected final static String MESSAGINGLAYER = "messagingLayer";
-	protected final static String SERVICELAYER = "serviceLayer";
-	protected final static String DESTINATION = "destination";
-	protected final static String PHYSICALDESTINATION = "physicalDestination";
-	protected final static String FROMID= "fromId";
-	protected final static String CPAID = "cpaId";
-	protected final static String CONVERSATIONID = "conversationId";
-	protected final static String MESSAGEID = "messageId";
-	protected final static String CORRELATIONID = "correlationId";
-	protected final static String EXTERNALREFTOMESSAGEID = "externalRefToMessageId";
-	protected final static String TIMESTAMP = "timestamp";
-	protected final static String FIXRESULTNAMESPACE = "fixResultNamespace";
-	protected final static String TRANSACTIONID = "transactionId";
-	protected final static String MODE = "mode";
-	protected final static String CMHVERSION = "cmhVersion";
+	protected static final String OUTPUTNAMESPACEBASEURI = "http://nn.nl/XSD";
+	protected static final String BUSINESSDOMAIN = "businessDomain";
+	protected static final String SERVICENAME = "serviceName";
+	protected static final String SERVICECONTEXT = "serviceContext";
+	protected static final String SERVICECONTEXTVERSION = "serviceContextVersion";
+	protected static final String OPERATIONNAME = "operationName";
+	protected static final String OPERATIONVERSION = "operationVersion";
+	protected static final String PARADIGM = "paradigm";
+	protected static final String APPLICATIONNAME = "applicationName";
+	protected static final String APPLICATIONFUNCTION = "applicationFunction";
+	protected static final String MESSAGINGLAYER = "messagingLayer";
+	protected static final String SERVICELAYER = "serviceLayer";
+	protected static final String DESTINATION = "destination";
+	protected static final String PHYSICALDESTINATION = "physicalDestination";
+	protected static final String FROMID= "fromId";
+	protected static final String CPAID = "cpaId";
+	protected static final String CONVERSATIONID = "conversationId";
+	protected static final String MESSAGEID = "messageId";
+	protected static final String CORRELATIONID = "correlationId";
+	protected static final String EXTERNALREFTOMESSAGEID = "externalRefToMessageId";
+	protected static final String TIMESTAMP = "timestamp";
+	protected static final String FIXRESULTNAMESPACE = "fixResultNamespace";
+	protected static final String TRANSACTIONID = "transactionId";
+	protected static final String MODE = "mode";
+	protected static final String CMHVERSION = "cmhVersion";
 
-	private boolean useFixedValues = false; 
-	private boolean fixResultNamespace = false; 
+	private @Getter boolean useFixedValues = false;
+	private @Getter boolean fixResultNamespace = false;
 	private String p2pAlias;
 	private String esbAlias;
 
-	public static enum Mode  {
+	private @Getter Mode mode = Mode.REG;
+	private @Getter int cmhVersion = 0;
+	private @Getter boolean addOutputNamespace = false;
+	private @Getter boolean retrievePhysicalDestination = true;
+
+	protected enum Mode {
+		/** ifsa2tibco */
 		I2T,
+		/** Regular */
 		REG,
+		/** Business Integration Services */
 		BIS
 	}
 
-	private Mode mode = Mode.REG;
-	private int cmhVersion = 0;
-	private boolean addOutputNamespace = false;
-	private boolean retrievePhysicalDestination = true;
-	
 	@Override
 	public void configure() throws ConfigurationException {
-		if (mode == Mode.REG) {
+		if (getMode() == Mode.REG) {
 			if (cmhVersion == 0) {
 				cmhVersion = 1;
 			} else if (cmhVersion < 0 || cmhVersion > 2) {
-				ConfigurationWarnings.add(this, log, "cmhVersion ["+cmhVersion+"] for mode ["+mode.toString()+"] should be set to '1' or '2', assuming '1'");
+				ConfigurationWarnings.add(this, log, "cmhVersion ["+cmhVersion+"] for mode ["+getMode().toString()+"] should be set to '1' or '2', assuming '1'");
 				cmhVersion = 1;
 			}
 		} else {
 			if (cmhVersion != 0) {
-				ConfigurationWarnings.add(this, log, "cmhVersion ["+cmhVersion+"] for mode ["+mode.toString()+"] should not be set, assuming '0'");
+				ConfigurationWarnings.add(this, log, "cmhVersion ["+cmhVersion+"] for mode ["+getMode().toString()+"] should not be set, assuming '0'");
 				cmhVersion = 0;
 			}
 		}
@@ -294,16 +299,16 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 				setSoapHeaderSessionKey(DEFAULT_SOAP_HEADER_SESSION_KEY);
 			}
 			if (StringUtils.isEmpty(getSoapHeaderStyleSheet())) {
-				if (mode == Mode.BIS) {
+				if (getMode() == Mode.BIS) {
 					setSoapHeaderStyleSheet("/xml/xsl/esb/bisSoapHeader.xsl");
 				} else {
 					setSoapHeaderStyleSheet("/xml/xsl/esb/soapHeader.xsl");
 				}
 			}
 			if (StringUtils.isEmpty(getSoapBodyStyleSheet())) {
-				if (mode == Mode.REG) {
+				if (getMode() == Mode.REG) {
 					setSoapBodyStyleSheet("/xml/xsl/esb/soapBody.xsl");
-				} else if (mode == Mode.BIS) {
+				} else if (getMode() == Mode.BIS) {
 					setSoapBodyStyleSheet("/xml/xsl/esb/bisSoapBody.xsl");
 				}
 			}
@@ -394,7 +399,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return getParameterValue(APPLICATIONFUNCTION);
 	}
 
-	private void stripDestination() throws ConfigurationException {
+	private void stripDestination() {
 		ParameterList parameterList = getParameterList();
 		Parameter pd = parameterList.findParameter(DESTINATION);
 		Parameter ppd = parameterList.findParameter(PHYSICALDESTINATION);
@@ -411,7 +416,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			}
 		}
 		Parameter p;
-		if (StringUtils.isNotEmpty(destination)) { 
+		if (StringUtils.isNotEmpty(destination)) {
 			if(destination.startsWith("ESB.") || destination.startsWith("P2P.")
 					|| (StringUtils.isNotEmpty(esbAlias) && destination.startsWith(esbAlias + "."))
 					|| (StringUtils.isNotEmpty(p2pAlias) && destination.startsWith(p2pAlias + "."))
@@ -422,17 +427,15 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 				// Destination = [MessagingLayer].[BusinessDomain].[ApplicationName].[ApplicationFunction].[Paradigm]
 				boolean p2p = false;
 				boolean esbDestinationWithoutServiceContext = false;
-				StringTokenizer st = new StringTokenizer(destination,".");
 				int count = 0;
-				while (st.hasMoreTokens()) {
+				for (final String str : StringUtil.split(destination, ".")) {
 					count++;
-					String str = st.nextToken();
-					p = new Parameter();
+					p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 					switch (count) {
 						case 1:
 							if (str.equals("P2P")
 									|| (StringUtils.isNotEmpty(p2pAlias) && str.equalsIgnoreCase(p2pAlias))
-									) {
+							) {
 								p2p = true;
 							} else {
 								esbDestinationWithoutServiceContext = isEsbDestinationWithoutServiceContext(destination);
@@ -489,11 +492,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 							}
 							break;
 						case 9:
-							if (esbDestinationWithoutServiceContext) {
-								// not possible
-							} else {
+							if (!esbDestinationWithoutServiceContext) {
 								p.setName(PARADIGM);
 							}
+
 							break;
 						default:
 					}
@@ -501,15 +503,30 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 					addParameter(p);
 				}
 			} else {
-				addParameter(new Parameter(MESSAGINGLAYER, "P2P"));
+				p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+				p.setName(MESSAGINGLAYER);
+				p.setValue("P2P");
+				addParameter(p);
 				//
-				addParameter(new Parameter(BUSINESSDOMAIN, "?"));
+				p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+				p.setName(BUSINESSDOMAIN);
+				p.setValue("?");
+				addParameter(p);
 				//
-				addParameter(new Parameter(APPLICATIONNAME, "?"));
+				p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+				p.setName(APPLICATIONNAME);
+				p.setValue("?");
+				addParameter(p);
 				//
-				addParameter(new Parameter(APPLICATIONFUNCTION, destination.replaceAll("\\W", "_")));
+				p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+				p.setName(APPLICATIONFUNCTION);
+				p.setValue(destination.replaceAll("\\W", "_"));
+				addParameter(p);
 				//
-				addParameter(new Parameter(PARADIGM, "?"));
+				p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+				p.setName(PARADIGM);
+				p.setValue("?");
+				addParameter(p);
 			}
 		}
 	}
@@ -517,27 +534,23 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	private void addParameters() {
 		ParameterList parameterList = getParameterList();
 		Parameter p;
-		String paradigm = null;
-		p = parameterList.findParameter(PARADIGM);
-		if (p!=null) {
-			paradigm = p.getValue();
-		}
 		if (parameterList.findParameter(FROMID)==null) {
-			addParameter(new Parameter(FROMID, AppConstants.getInstance().getProperty("instance.name", "")));
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p.setName(FROMID);
+			p.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
+			addParameter(p);
 		}
-		if (mode != Mode.BIS) {
-			if (parameterList.findParameter(CPAID)==null) {
-				p = new Parameter();
-				p.setName(CPAID);
-				p.setSessionKey(getSoapHeaderSessionKey());
-				p.setXpathExpression("MessageHeader/HeaderFields/CPAId");
-				p.setRemoveNamespaces(true);
-				p.setDefaultValue("n/a");
-				addParameter(p);
-			}
+		if (getMode() != Mode.BIS && parameterList.findParameter(CPAID)==null) {
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p.setName(CPAID);
+			p.setSessionKey(getSoapHeaderSessionKey());
+			p.setXpathExpression("MessageHeader/HeaderFields/CPAId");
+			p.setRemoveNamespaces(true);
+			p.setDefaultValue("n/a");
+			addParameter(p);
 		}
 		if (parameterList.findParameter(CONVERSATIONID)==null) {
-			p = new Parameter();
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(CONVERSATIONID);
 			p.setSessionKey(getSoapHeaderSessionKey());
 			p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
@@ -551,7 +564,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			addParameter(p);
 		}
 		if (parameterList.findParameter(MESSAGEID)==null) {
-			p = new Parameter();
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(MESSAGEID);
 			if (isUseFixedValues()) {
 				p.setPattern("{fixedhostname}_{fixeduid}");
@@ -561,10 +574,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			addParameter(p);
 		}
 		if (parameterList.findParameter(EXTERNALREFTOMESSAGEID)==null) {
-			p = new Parameter();
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(EXTERNALREFTOMESSAGEID);
 			p.setSessionKey(getSoapHeaderSessionKey());
-			if (mode == Mode.BIS) {
+			if (getMode() == Mode.BIS) {
 				p.setXpathExpression("MessageHeader/HeaderFields/MessageId");
 			} else {
 				p.setXpathExpression("MessageHeader/HeaderFields/ExternalRefToMessageId");
@@ -572,10 +585,13 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			p.setRemoveNamespaces(true);
 			addParameter(p);
 		}
-		if (mode != Mode.BIS) {
-			if (parameterList.findParameter(CORRELATIONID)==null) {
+		if (getMode() != Mode.BIS && parameterList.findParameter(CORRELATIONID)==null) {
+			String paradigm = null;
+			p = parameterList.findParameter(PARADIGM);
+			if (p!=null) {
+				paradigm = p.getValue();
 				if (paradigm!=null && paradigm.equals("Response")) {
-					p = new Parameter();
+					p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 					p.setName(CORRELATIONID);
 					p.setSessionKey(getSoapHeaderSessionKey());
 					p.setXpathExpression("MessageHeader/HeaderFields/MessageId");
@@ -585,7 +601,7 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			}
 		}
 		if (parameterList.findParameter(TIMESTAMP)==null) {
-			p = new Parameter();
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(TIMESTAMP);
 			if (isUseFixedValues()) {
 				p.setPattern("{fixeddate,date,yyyy-MM-dd'T'HH:mm:ss}");
@@ -595,45 +611,28 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			addParameter(p);
 		}
 		if (parameterList.findParameter(FIXRESULTNAMESPACE)==null) {
-			addParameter(new Parameter(FIXRESULTNAMESPACE, String.valueOf(isFixResultNamespace())));
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p.setName(FIXRESULTNAMESPACE);
+			p.setValue(String.valueOf(isFixResultNamespace()));
+			addParameter(p);
 		}
 		if (parameterList.findParameter(TRANSACTIONID)==null) {
-			p = new Parameter();
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(TRANSACTIONID);
 			p.setSessionKey(getSoapHeaderSessionKey());
 			p.setXpathExpression("MessageHeader/HeaderFields/TransactionId");
 			p.setRemoveNamespaces(true);
 			addParameter(p);
 		}
-		addParameter(new Parameter(MODE, getMode()));
-		addParameter(new Parameter(CMHVERSION, String.valueOf(getCmhVersion())));
-	}
+		p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+		p.setName(MODE);
+		p.setValue(getMode().toString());
+		addParameter(p);
 
-	@IbisDoc({"either <code>i2t</code> (ifsa2tibco), <code>reg</code> (regular) or <code>bis</code> (Business Integration Services)", "reg"})
-	public void setMode(String string) {
-		mode = Mode.valueOf(string.toUpperCase());
-	}
-
-	public String getMode() {
-		return mode.toString();
-	}
-
-	@IbisDoc({"<b>Only used when <code>mode=reg</code>!</b> Sets the Common Message Header version. 1 or 2", "1"})
-	public void setCmhVersion(int i) {
-		cmhVersion = i;
-	}
-
-	public int getCmhVersion() {
-		return cmhVersion;
-	}
-
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion')", "false"})
-	public void setAddOutputNamespace(boolean b) {
-		addOutputNamespace = b;
-	}
-
-	public boolean isAddOutputNamespace() {
-		return addOutputNamespace;
+		p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+		p.setName(CMHVERSION);
+		p.setValue(String.valueOf(getCmhVersion()));
+		addParameter(p);
 	}
 
 	public static boolean isValidNamespace(String namespace) {
@@ -643,10 +642,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			if (split.length == 9 || split.length == 10) {
 				for (int i = 0; i < split.length; i++) {
 					if (i == 1) {
-						if (split[i].length() != 0) {
+						if (!split[i].isEmpty()) {
 							return false;
 						}
-					} else if (split[i].length() == 0) {
+					} else if (split[i].isEmpty()) {
 						return false;
 					}
 				}
@@ -656,31 +655,25 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		return false;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code>", "true"})
-	public void setRetrievePhysicalDestination(boolean b) {
-		retrievePhysicalDestination = b;
-	}
-
-	public boolean isRetrievePhysicalDestination() {
-		return retrievePhysicalDestination;
-	}
-	
 	public boolean retrievePhysicalDestinationFromSender (ISender sender) {
-		if (sender != null && sender instanceof EsbJmsSender) {
+		if (sender instanceof EsbJmsSender) {
 			EsbJmsSender ejSender = (EsbJmsSender)sender;
 			String physicalDestination = ejSender.getPhysicalDestinationShortName();
 			if (physicalDestination==null) {
 				physicalDestination="?";
 			}
-			addParameter(new Parameter(PHYSICALDESTINATION, physicalDestination));
+			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p.setName(PHYSICALDESTINATION);
+			p.setValue(physicalDestination);
+			addParameter(p);
 			return true;
 		}
 		return false;
 	}
-	
+
 	public boolean retrievePhysicalDestinationFromListener (IListener listener) throws JmsException {
-		if (listener != null && listener instanceof EsbJmsListener) {
-			EsbJmsListener ejListener = (EsbJmsListener) listener; 
+		if (listener instanceof EsbJmsListener) {
+			EsbJmsListener ejListener = (EsbJmsListener) listener;
 			if (!ejListener.isSynchronous()) {
 				return false;
 			}
@@ -705,7 +698,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 					physicalDestination = physicalDestination + ".?";
 				}
 			}
-			addParameter(new Parameter(PHYSICALDESTINATION, physicalDestination));
+			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+			p.setName(PHYSICALDESTINATION);
+			p.setValue(physicalDestination);
+			addParameter(p);
 			return true;
 		}
 		return false;
@@ -713,44 +709,66 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 
 	public static boolean isEsbDestinationWithoutServiceContext(String destination) {
 		int dotCount = StringUtils.countMatches(destination, ".");
-		if (dotCount < 8) {
-			return true;
-		}
-		return false;
+		return dotCount < 8;
 	}
 
 	public static boolean isEsbNamespaceWithoutServiceContext(String namespace) {
 		int slashCount = StringUtils.countMatches(namespace, "/");
-		if (slashCount < 9) {
-			return true;
-		}
-		return false;
+		return slashCount < 9;
+	}
+	/**
+	 * @ff.default REG
+	 */
+	public void setMode(Mode mode) {
+		this.mode = mode;
 	}
 
-	@IbisDoc({"If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)", "false"})
+	/**
+	 * <b>Only used when <code>mode=reg</code>!</b> Sets the Common Message Header version. 1 or 2
+	 * @ff.default 1
+	 */
+	public void setCmhVersion(int i) {
+		cmhVersion = i;
+	}
+
+	/**
+	 * (only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion')
+	 * @ff.default false
+	 */
+	public void setAddOutputNamespace(boolean b) {
+		addOutputNamespace = b;
+	}
+
+	/**
+	 * (only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code>
+	 * @ff.default true
+	 */
+	public void setRetrievePhysicalDestination(boolean b) {
+		retrievePhysicalDestination = b;
+	}
+
+	/**
+	 * If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)
+	 * @ff.default false
+	 */
 	public void setUseFixedValues(boolean b) {
 		useFixedValues = b;
 	}
 
-	public boolean isUseFixedValues() {
-		return useFixedValues;
-	}
-
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed", "false"})
+	/**
+	 * (only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed
+	 * @ff.default false
+	 */
 	public void setFixResultNamespace(boolean b) {
 		fixResultNamespace = b;
 	}
 
-	public boolean isFixResultNamespace() {
-		return fixResultNamespace;
-	}
-
-	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as P2P", ""})
+	/** When the messagingLayer part of the destination has this value interpret it as P2P */
 	public void setP2pAlias(String p2pAlias) {
 		this.p2pAlias = p2pAlias;
 	}
 
-	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as ESB", ""})
+	/** When the messagingLayer part of the destination has this value interpret it as ESB */
 	public void setEsbAlias(String esbAlias) {
 		this.esbAlias = esbAlias;
 	}

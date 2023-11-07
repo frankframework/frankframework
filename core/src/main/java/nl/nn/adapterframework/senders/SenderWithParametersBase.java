@@ -15,13 +15,19 @@
 */
 package nl.nn.adapterframework.senders;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
+import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.Message;
 
 /**
  * Provides a base class for senders with parameters.
@@ -66,17 +72,26 @@ public abstract class SenderWithParametersBase extends SenderBase implements ISe
 
 	protected String getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, String attributeValue) {
 		if (pvl!=null && pvl.contains(parameterName)) {
-			return pvl.getParameterValue(parameterName).asStringValue(attributeValue);
+			return pvl.get(parameterName).asStringValue(attributeValue);
 		}
 		return attributeValue;
 	}
 
 	protected int getParameterOverriddenAttributeValue(ParameterValueList pvl, String parameterName, int attributeValue) {
 		if (pvl!=null && pvl.contains(parameterName)) {
-			return pvl.getParameterValue(parameterName).asIntegerValue(attributeValue);
+			return pvl.get(parameterName).asIntegerValue(attributeValue);
 		}
 		return attributeValue;
 	}
+
+	protected @Nullable ParameterValueList getParameterValueList(Message input, PipeLineSession session) throws SenderException {
+		try {
+			return getParameterList()!=null ? getParameterList().getValues(input, session) : null;
+		} catch (ParameterException e) {
+			throw new SenderException("cannot determine parameter values", e);
+		}
+	}
+
 
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {

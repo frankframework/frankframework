@@ -23,16 +23,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.Logger;
+
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
-import nl.nn.adapterframework.statistics.percentiles.MicroMeterPercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimatorRanked;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Keeps statistics (min, max, count etc).
@@ -40,8 +43,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Johan Verrips / Gerrit van Brakel
  */
 public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
-
-	private static final boolean calculatePercentiles = true;
+	protected static Logger log = LogUtil.getLogger(StatisticsKeeper.class);
 
 	private String name = null;
 	private long first = Long.MIN_VALUE;
@@ -50,6 +52,8 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 	private S mark;
 	private long[] classBoundaries;
 	private long[] classCounts;
+
+	public static final String BASICS_KEY="Statistics.basics.class";
 
 	public static final int NUM_STATIC_ITEMS=8;
 	public static final int NUM_INTERVAL_ITEMS=6;
@@ -63,6 +67,16 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 
 	public static final String percentileConfigKey="Statistics.percentiles";
 	public static final String DEFAULT_P_LIST="50,90,95,98";
+
+	public static final String PERCENTILE_PUBLISH_KEY="Statistics.percentiles.publish";
+	public static final String HISTOGRAM_PUBLISH_KEY="Statistics.histograms.publish";
+	public static final String PERCENTILES_INTERNAL_KEY="Statistics.percentiles.internal";
+	public static final String PERCENTILE_PRECISION_KEY="Statistics.percentiles.precision";
+
+	private boolean publishPercentiles;
+	private boolean publishHistograms;
+	private boolean calculatePercentiles;
+	private int percentilePrecision;
 
 	protected PercentileEstimator pest;
 
@@ -79,7 +93,7 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 	 * @see AppConstants
 	 */
 	public StatisticsKeeper(String name) {
-		this(name, (B)new MicroMeterBasics(), statConfigKey, DEFAULT_BOUNDARY_LIST);
+		this(name, null, statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
 
 	protected StatisticsKeeper(String name, B basics) {
@@ -87,30 +101,39 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 	}
 
 	public void initMetrics(MeterRegistry registry, String name, Iterable<Tag> tags) {
-		double[] serviceLevelObjectives = new double[classBoundaries.length];
-		for (int i=0;i<classBoundaries.length;i++) {
-			serviceLevelObjectives[i]=classBoundaries[i];
-		}
-		double[] percentiles = new double[pest.getNumPercentiles()];
-		for (int i=0;i<pest.getNumPercentiles();i++) {
-			percentiles[i]=((double)pest.getPercentage(i))/100;
-		}
 		DistributionSummary.Builder builder = DistributionSummary
 				.builder(name)
 				.baseUnit(getUnits())
 				.tags(tags)
-				.tag("name", getName())
-				.percentilePrecision(2)
-				.serviceLevelObjectives(serviceLevelObjectives)
-				.publishPercentiles(percentiles)
-//				.publishPercentileHistogram()
-				;
+				.tag("name", getName());
+		double[] percentiles=null;
+		if (publishPercentiles || publishHistograms) {
+			builder.percentilePrecision(percentilePrecision);
+
+			if (pest!=null && pest.getNumPercentiles()>0) {
+				percentiles = new double[pest.getNumPercentiles()];
+				for (int i=0;i<pest.getNumPercentiles();i++) {
+					percentiles[i]=((double)pest.getPercentage(i))/100.0;
+				}
+				builder.publishPercentiles(percentiles);
+			}
+
+			if (classBoundaries.length>0) {
+				double[] serviceLevelObjectives = new double[classBoundaries.length];
+				for (int i=0;i<classBoundaries.length;i++) {
+					serviceLevelObjectives[i]=classBoundaries[i];
+				}
+				builder.serviceLevelObjectives(serviceLevelObjectives);
+			}
+			if (publishHistograms) {
+				builder.publishPercentileHistogram();
+			}
+		}
 		DistributionSummary distributionSummary = builder.register(registry);
 
 		if (cumulative instanceof MicroMeterBasics) {
 			((MicroMeterBasics)cumulative).setDistributionSummary(distributionSummary);
 			mark=cumulative.takeSnapshot();
-			pest = new MicroMeterPercentileEstimator(distributionSummary, percentiles);
 		} else {
 			this.distributionSummary = distributionSummary;
 		}
@@ -118,6 +141,33 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 
 	protected StatisticsKeeper(String name, B basics, String boundaryConfigKey, String defaultBoundaryList) {
 		super();
+		AppConstants appConstants = AppConstants.getInstance();
+
+		if (basics==null) {
+			String basicsClass = appConstants.getString(BASICS_KEY, Basics.class.getName());
+			try {
+				basics = (B)ClassUtils.newInstance(basicsClass);
+			} catch (Exception e) {
+				log.warn("Could not instantiate Basics class ["+basicsClass+"]", e);
+				basics = (B)new Basics();
+			}
+		}
+
+		StringTokenizer boundariesTokenizer = appConstants.getTokenizedProperty(boundaryConfigKey, defaultBoundaryList);
+
+		publishPercentiles = appConstants.getBoolean(PERCENTILE_PUBLISH_KEY, false);
+		publishHistograms = appConstants.getBoolean(HISTOGRAM_PUBLISH_KEY, false);
+		calculatePercentiles = appConstants.getBoolean(PERCENTILES_INTERNAL_KEY, false);
+		percentilePrecision = appConstants.getInt(PERCENTILE_PRECISION_KEY, 1);
+		initialize(name, basics, boundariesTokenizer, publishPercentiles, publishHistograms, calculatePercentiles, percentilePrecision);
+	}
+
+	public StatisticsKeeper(String name, B basics, StringTokenizer boundariesTokenizer, boolean publishPercentiles, boolean publishHistograms, boolean calculatePercentiles, int percentilePrecision) {
+		super();
+		initialize(name, basics, boundariesTokenizer, publishPercentiles, publishHistograms, calculatePercentiles, percentilePrecision);
+	}
+
+	protected void initialize(String name, B basics, StringTokenizer boundariesTokenizer, boolean publishPercentiles, boolean publishHistograms, boolean calculatePercentiles, int percentilePrecision) {
 		this.name = name;
 		try {
 			cumulative=basics;
@@ -128,10 +178,9 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 
 		List classBoundariesBuffer = new ArrayList();
 
-		StringTokenizer tok = AppConstants.getInstance().getTokenizedProperty(boundaryConfigKey, defaultBoundaryList);
 
-		while (tok.hasMoreTokens()) {
-			classBoundariesBuffer.add(new Long(Long.parseLong(tok.nextToken())));
+		while (boundariesTokenizer.hasMoreTokens()) {
+			classBoundariesBuffer.add(new Long(Long.parseLong(boundariesTokenizer.nextToken())));
 		}
 		classBoundaries = new long[classBoundariesBuffer.size()];
 		classCounts = new long[classBoundariesBuffer.size()];
@@ -139,7 +188,12 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 			classBoundaries[i] = ((Long) classBoundariesBuffer.get(i)).longValue();
 		}
 
-		if (calculatePercentiles) {
+		this.publishPercentiles = publishPercentiles;
+		this.publishHistograms = publishHistograms;
+		this.calculatePercentiles = publishPercentiles || publishHistograms || calculatePercentiles;
+		this.percentilePrecision = percentilePrecision;
+
+		if (this.calculatePercentiles) {
 //			pest = new PercentileEstimatorBase(percentileConfigKey,DEFAULT_P_LIST,1000);
 			pest = new PercentileEstimatorRanked(percentileConfigKey,DEFAULT_P_LIST,100);
 		}
@@ -312,7 +366,7 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 			XmlBuilder item = new XmlBuilder("item");
 			items.addSubElement(item);
 			item.addAttribute("index",""+i);
-			item.addAttribute("name",XmlUtils.encodeChars(getItemName(i)));
+			item.addAttribute("name", XmlEncodingUtils.encodeChars(getItemName(i)));
 			item.addAttribute("type", getItemType(i).name());
 			item.addAttribute("value",ItemUtil.getItemValueFormated(this,i));
 		}

@@ -1,0 +1,6 @@
+<requests>
+	<request>hello</request>
+	<request>mdc local</request>
+	<request>mdc export</request>
+	<request>mdc local</request>
+</requests>

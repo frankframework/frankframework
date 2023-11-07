@@ -15,13 +15,13 @@
 */
 package nl.nn.adapterframework.http.mime;
 
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class MultipartUtils {

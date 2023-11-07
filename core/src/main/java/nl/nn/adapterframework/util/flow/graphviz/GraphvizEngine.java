@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020-2022 WeAreFrank!
+   Copyright 2018-2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
+import nl.nn.adapterframework.extensions.javascript.JavascriptException;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.flow.FlowGenerationException;
 import nl.nn.adapterframework.util.flow.GraphvizJsFlowGenerator;
 import nl.nn.adapterframework.util.flow.ResultHandler;
@@ -45,7 +46,7 @@ public class GraphvizEngine {
 	private String fileFormat = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG");
 
 	// Available JS Engines. Lower index has priority.
-	private static String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8,nl.nn.adapterframework.extensions.javascript.Nashorn").split(",");
+	private static final String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8").split(",");
 
 	private Options defaultOptions = null;
 
@@ -67,25 +68,17 @@ public class GraphvizEngine {
 			this.graphvizVersion = graphvizVersion;
 		}
 
-		determineOptions();
-
-		//Create the GraphvizEngine, make sure it can find and load the required libraries
-		getEngine();
-	}
-
-	private Options determineOptions() {
-		Format format;
 		try {
-			format = Format.valueOf(fileFormat.toUpperCase());
+			Format format = Format.valueOf(fileFormat.toUpperCase());
+			defaultOptions = Options.create().format(format);
+			if(log.isDebugEnabled()) log.debug("Setting Graphviz options to ["+defaultOptions+"]");
 		}
 		catch(IllegalArgumentException e) {
 			throw new IllegalArgumentException("unknown format["+fileFormat.toUpperCase()+"], must be one of "+Format.values());
 		}
 
-		defaultOptions = Options.create().format(format);
-
-		if(log.isDebugEnabled()) log.debug("Setting Graphviz options to ["+defaultOptions+"]");
-		return defaultOptions;
+		//Create the GraphvizEngine, make sure it can find and load the required libraries
+		getEngine();
 	}
 
 	/**
@@ -135,11 +128,11 @@ public class GraphvizEngine {
 	}
 
 	private String getVizJsSource(String version) throws IOException {
-		URL api = ClassUtils.getResourceURL("/js/viz-" + version + ".js");
-		URL engine = ClassUtils.getResourceURL("/js/viz-full.render-" + version + ".js");
-		if(api == null || engine == null)
+		URL vizWrapperURL = ClassLoaderUtils.getResourceURL("/js/viz-" + version + ".js");
+		URL vizRenderURL = ClassLoaderUtils.getResourceURL("/js/viz-full.render-" + version + ".js");
+		if(vizWrapperURL == null || vizRenderURL == null)
 			throw new IOException("failed to open vizjs file for version ["+version+"]");
-		return Misc.streamToString(api.openStream()) + Misc.streamToString(engine.openStream());
+		return StreamUtil.streamToString(vizWrapperURL.openStream()) + StreamUtil.streamToString(vizRenderURL.openStream());
 	}
 
 
@@ -147,7 +140,7 @@ public class GraphvizEngine {
 	 * Creates the GraphvizEngine instance
 	 * @throws IOException when the VizJS file can't be found
 	 */
-	private Engine getEngine() throws IOException {
+	private synchronized Engine getEngine() throws IOException {
 		if(null == engine) {
 			log.debug("creating new VizJs engine");
 			String visJsSource = getVizJsSource(graphvizVersion);
@@ -214,7 +207,7 @@ public class GraphvizEngine {
 				throw new UnsupportedOperationException("no usable Javascript engines found, tried "+Arrays.toString(engines));
 		}
 
-		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary) throws Exception {
+		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary) throws JavascriptException {
 			log.info("Starting runtime for Javascript Engine...");
 			engine.setGlobalAlias("GraphvizJS"); //Set a global alias so all scripts can be cached
 			engine.startRuntime();

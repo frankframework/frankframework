@@ -1,0 +1,113 @@
+{
+    "securityRoles": {
+        "SR_Admin": {
+            "role-name": "IbisAdmin",
+            "allowed": false,
+            "specialSubjects": [
+                "AllAuthenticatedUsers"
+            ],
+            "description": "Administrator, can start and stop adapters and set schedules",
+            "groups": [
+            ]
+        },
+        "SR_DataAdmin": {
+            "role-name": "IbisDataAdmin",
+            "allowed": false,
+            "specialSubjects": [
+                "AllAuthenticatedUsers"
+            ],
+            "description": "DataAdministrator, can see messages in errorStorage and delete or re-submit them",
+            "groups": [
+            ]
+        },
+        "SR_Tester": {
+            "role-name": "IbisTester",
+            "allowed": false,
+            "specialSubjects": [
+                "AllAuthenticatedUsers"
+            ],
+            "description": "can send test messages",
+            "groups": [
+            ]
+        },
+        "SR_Observer": {
+            "role-name": "IbisObserver",
+            "allowed": false,
+            "specialSubjects": [
+                "AllAuthenticatedUsers"
+            ],
+            "description": "user who can look in configurations, statistics and log files",
+            "groups": [
+            ]
+        },
+        "SR_IbisWebService": {
+            "role-name": "IbisWebService",
+            "allowed": false,
+            "specialSubjects": [
+                "AllAuthenticatedUsers"
+            ],
+            "description": "IbisWebService, can call the web services (SOAP) provided by the Ibis",
+            "groups": [
+            ]
+        }
+    },
+    "datasources": [
+        {
+            "connectionPoolProperties": "mockPoolProperties type [JDBC] jndi [jdbc/testconfiguration]",
+            "datasourceName": "jdbc/testconfiguration",
+            "info": "user [null] url [null] product [null] product version [null] driver [null] driver version [null] datasource [Mock for DataSource, HASHCODE]"
+        }
+    ],
+    "authEntries": [
+        {
+            "password": "*********",
+            "alias": "alias1",
+            "username": "username1"
+        },
+        {
+            "password": "************",
+            "alias": "alias2",
+            "username": null
+        },
+        {
+            "password": "*** ERROR ***",
+            "alias": "test",
+            "username": "*** ERROR ***"
+        }
+    ],
+    "jmsRealms": [
+        {
+            "name": "dummyJmsRealm1",
+            "connectionPoolProperties": "mockPoolProperties type [JDBC] jndi [dummyDatasourceName]",
+            "datasourceName": "dummyDatasourceName",
+            "info": "user [null] url [null] product [null] product version [null] driver [null] driver version [null] datasource [Mock for DataSource, HASHCODE]"
+        },
+        {
+            "queueConnectionFactoryName": "dummyQCF",
+            "name": "dummyJmsRealm2",
+            "connectionPoolProperties": "mockPoolProperties type [JMS] jndi [dummyQCF]",
+            "info": null
+        }
+    ],
+    "serverProps": {
+        "maximumTransactionTimeout": 28801,
+        "totalTransactionLifetimeTimeout": 28800
+    },
+    "sapSystems": [
+    ],
+    "xmlComponents": {
+        "SAXParserFactory-class": "org.apache.xerces.jaxp.SAXParserFactoryImpl",
+        "DocumentBuilderFactory1-class": "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl",
+        "DocumentBuilderFactory2-class": "org.apache.xerces.jaxp.DocumentBuilderFactoryImpl",
+        "TransformerFactory1-class": "org.apache.xalan.processor.TransformerFactoryImpl",
+        "TransformerFactory2-class": "net.sf.saxon.TransformerFactoryImpl",
+        "XMLEventFactory-class": "org.apache.xerces.stax.XMLEventFactoryImpl",
+        "XMLInputFactory-class": "nl.nn.adapterframework.xml.StaxParserFactory",
+        "XMLOutputFactory-class": "com.sun.xml.stream.ZephyrWriterFactory",
+        "MessageFactory-class": "com.sun.xml.messaging.saaj.soap.MessageFactoryImpl",
+        "Xerces-Version": "Xerces-J 2.12.2-xml-schema-1.1",
+        "Xalan-Version": "Xalan Java 2.7.3",
+        "Saxon-Version": "SAXON-HE 10.9J from Saxonica",
+        "Woodstox-Version": "woodstox 5.0; xml1.1 enabled"
+    }
+}

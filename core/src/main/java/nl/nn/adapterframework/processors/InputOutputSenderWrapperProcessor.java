@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
 import nl.nn.adapterframework.stream.Message;
@@ -32,7 +33,7 @@ import nl.nn.adapterframework.stream.Message;
 public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBase {
 
 	@Override
-	public Message sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(SenderWrapperBase senderWrapperBase, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Message senderInput=message;
 		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreInputInSessionKey())) {
 			try {
@@ -61,19 +62,24 @@ public class InputOutputSenderWrapperProcessor extends SenderWrapperProcessorBas
 				throw new SenderException("Could not preserve input",e);
 			}
 		}
-		Message result = senderWrapperProcessor.sendMessage(senderWrapperBase, senderInput, session);
-		if (StringUtils.isNotEmpty(senderWrapperBase.getStoreResultInSessionKey())) {
-			if (!senderWrapperBase.isPreserveInput()) {
-				try {
-					message.preserve();
-				} catch (IOException e) {
-					throw new SenderException("Could not preserve result",e);
+		SenderResult result = senderWrapperProcessor.sendMessage(senderWrapperBase, senderInput, session);
+		if (result.isSuccess()) {
+			if (StringUtils.isNotEmpty(senderWrapperBase.getStoreResultInSessionKey())) {
+				if (!senderWrapperBase.isPreserveInput()) {
+					try {
+						message.preserve();
+					} catch (IOException e) {
+						throw new SenderException("Could not preserve result",e);
+					}
 				}
+				if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
+				session.put(senderWrapperBase.getStoreResultInSessionKey(), result.getResult());
 			}
-			if (log.isDebugEnabled()) log.debug(senderWrapperBase.getLogPrefix()+"storing results in session variable ["+senderWrapperBase.getStoreResultInSessionKey()+"]");
-			session.put(senderWrapperBase.getStoreResultInSessionKey(), result);
+			if (senderWrapperBase.isPreserveInput()) {
+				return new SenderResult(message);
+			}
 		}
-		return senderWrapperBase.isPreserveInput()?message:result;
+		return result;
 	}
 
 }

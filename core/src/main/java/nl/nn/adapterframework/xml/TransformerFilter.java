@@ -33,7 +33,7 @@ public class TransformerFilter extends FullXmlFilter {
 	private @Getter ErrorListener errorListener;
 	private ThreadConnectingFilter threadConnectingFilter;
 
-	public TransformerFilter(ThreadConnector threadConnector, TransformerHandler transformerHandler, ContentHandler handler, boolean removeNamespacesFromInput) {
+	public TransformerFilter(ThreadConnector threadConnector, TransformerHandler transformerHandler, ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) {
 		super();
 		if (threadConnector != null) {
 			handler = threadConnectingFilter = new ThreadConnectingFilter(threadConnector, handler);
@@ -107,6 +107,9 @@ public class TransformerFilter extends FullXmlFilter {
 			inputHandler = new NamespaceRemovingFilter(inputHandler);
 		}
 		setContentHandler(inputHandler);
+		if (!handleLexicalEvents) {
+			setLexicalHandler(null);
+		}
 	}
 
 

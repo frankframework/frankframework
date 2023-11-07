@@ -1,8 +1,8 @@
 <results>
-  <result senderClass="SenderWrapper" type="SenderException">IbisLocalSender [null] exception calling JavaListener [SendersExceptionInSubAdapter]: Pipe [Call ExceptionPipe] msgId [Test Tool correlation id] caught exception: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+  <result senderClass="SenderWrapper" type="SenderException" success="false">IbisLocalSender exception calling JavaListener [SendersExceptionInSubAdapter]: Pipe [Call ExceptionPipe] caught exception: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;test/&gt;</result>
-  <result senderClass="SenderWrapper" type="String">[LESS_THAN]</result>
-  <result senderClass="SenderWrapper" type="String">
+  <result senderClass="SenderWrapper" success="true" forwardName="0" errorMessage="exitState=SUCCESS" type="String">[LESS_THAN]</result>
+  <result senderClass="SenderWrapper" success="true" type="String">
     <email>
       <recipients>
         <recipient type="to">rfax@natned</recipient>

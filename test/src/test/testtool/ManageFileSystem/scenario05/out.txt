@@ -4,7 +4,7 @@
 	</completionInformation>
 	<results>
 		<result item="1">
-			<exception>unable to process [null] action for File [null]: Remove directory for [TESTDATA_DIR/ManageFileSystem] has failed. Directory does not exist.</exception>
+			<exception>unable to process [RMDIR] action for File [null]: Remove directory for [TESTDATA_DIR/ManageFileSystem] has failed. Directory does not exist.</exception>
 		</result>
 		<result item="2">
 TESTDATA_DIR/ManageFileSystem

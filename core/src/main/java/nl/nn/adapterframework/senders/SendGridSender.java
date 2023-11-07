@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,31 +38,30 @@ import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 import com.sendgrid.helpers.mail.objects.Personalization;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
-import nl.nn.adapterframework.http.HttpSender;
-import nl.nn.adapterframework.http.HttpSenderBase;
+import nl.nn.adapterframework.http.HttpSession;
+import nl.nn.adapterframework.http.HttpSessionBase;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Sender that sends a mail via SendGrid v3 (cloud-based SMTP provider).
- * 
+ *
  * Sample XML file can be found in the path: iaf-core/src/test/resources/emailSamplesXML/emailSample.xml
  * @author alisihab
  */
 public class SendGridSender extends MailSenderBase implements HasKeystore, HasTruststore {
 
-	private final String HTTPSENDERBASE = "nl.nn.adapterframework.http.HttpSenderBase";
-
-	private String url="http://smtp.sendgrid.net";
 	private SendGrid sendGrid;
-	private HttpSenderBase httpSender;
+	private HttpSessionBase httpSession;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -70,17 +69,16 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		if (StringUtils.isEmpty(getCredentialFactory().getPassword())) {
 			throw new ConfigurationException("Please provide an API key");
 		}
-		httpSender = new HttpSender();
-		httpSender.setUrl(url);
-		httpSender.configure();
+		httpSession = new HttpSession();
+		httpSession.configure();
 	}
 
 	@Override
 	public void open() throws SenderException {
 		super.open();
-		httpSender.open();
+		httpSession.start();
 
-		CloseableHttpClient httpClient = httpSender.getHttpClient();
+		CloseableHttpClient httpClient = httpSession.getHttpClient();
 		if(httpClient == null)
 			throw new SenderException("no HttpClient found, did it initialize properly?");
 
@@ -91,57 +89,67 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	@Override
 	public void close() throws SenderException {
 		super.close();
-		httpSender.close();
+		httpSession.stop();
 	}
 
 	@Override
-	public String sendEmail(MailSession mailSession) throws SenderException {
-		String result = null;
-
-		Mail mail = null;
+	public String sendEmail(MailSessionBase mailSession) throws SenderException {
+		String result;
+		Mail mail;
 
 		try {
-			mail = createEmail(mailSession);
+			mail = createEmail((GridMailSession)mailSession);
 		} catch (Exception e) {
 			throw new SenderException("Exception occured while composing email", e);
 		}
 
-		try {
-			Request request = new Request();
-			request.setMethod(Method.POST);
-			request.setEndpoint("mail/send");
-			request.setBody(mail.build());
-			Response response = sendGrid.api(request);
-			result = response.getBody();
-			log.debug("Mail send result" + result);
-			return result;
-		} catch (Exception e) {
-			throw new SenderException(
-					getLogPrefix() + "exception sending mail with subject [" + mail.getSubject() + "]", e);
+		if (mailSession.hasWhitelistedRecipients()) {
+			try {
+				Request request = new Request();
+				request.setMethod(Method.POST);
+				request.setEndpoint("mail/send");
+				request.setBody(mail.build());
+				Response response = sendGrid.api(request);
+				result = response.getBody();
+				log.debug("Mail send result: [{}]", result);
+				return result;
+			} catch (Exception e) {
+				throw new SenderException(
+						getLogPrefix() + "exception sending mail with subject [" + mail.getSubject() + "]", e);
+			}
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("No recipients left after whitelisting, mail is not send");
+			}
+			return "Mail not send, no recipients left after whitelisting";
 		}
+	}
+
+	@Override
+	protected GridMailSession createMailSession() throws SenderException {
+		return new GridMailSession();
 	}
 
 	/**
 	 * Creates sendgrid mail object
 	 */
-	private Mail createEmail(MailSession mailSession) throws SenderException, DomBuilderException, IOException {
+	private Mail createEmail(GridMailSession gridMailSession) throws SenderException, DomBuilderException, IOException {
 		Mail mail = new Mail();
-		Personalization personalization = new Personalization();
+		Personalization personalization = gridMailSession.getPersonalization();
 
-		List<EMail> emailList = mailSession.getRecipientList();
-		EMail from = mailSession.getFrom();
-		EMail replyTo = mailSession.getReplyto();
-		setEmailAddresses(mail, personalization, emailList, from, replyTo);
+		EMail from = gridMailSession.getFrom();
+		EMail replyTo = gridMailSession.getReplyTo();
+		setEmailAddresses(mail, gridMailSession, from, replyTo);
 
-		String subject = mailSession.getSubject();
+		String subject = gridMailSession.getSubject();
 		setSubject(mail, personalization, subject);
 
-		setMessage(mail, mailSession);
+		setMessage(mail, gridMailSession);
 
-		List<MailAttachmentStream> attachmentList = mailSession.getAttachmentList();
+		List<MailAttachmentStream> attachmentList = gridMailSession.getAttachmentList();
 		setAttachments(mail, attachmentList);
 
-		Collection<Node> headers = mailSession.getHeaders();
+		Collection<Node> headers = gridMailSession.getHeaders();
 		setHeader(mail, personalization, headers);
 		mail.addPersonalization(personalization);
 		return mail;
@@ -149,12 +157,12 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 	/**
 	 * Sets header of mail object if header exists
-	 * @param mail 
-	 * @param personalization 
-	 * @param headers 
+	 * @param mail {@link Mail} address to send to
+	 * @param personalization {@link Personalization} options of the mail
+	 * @param headers Mail headers, as {@link Collection<Node>}
 	 */
 	private void setHeader(Mail mail, Personalization personalization, Collection<Node> headers) {
-		if (headers != null && headers.size() > 0) {
+		if (headers != null && !headers.isEmpty()) {
 			Iterator<Node> iter = headers.iterator();
 			while (iter.hasNext()) {
 				Element headerElement = (Element) iter.next();
@@ -168,12 +176,8 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 	/**
 	 * Adds attachments to mail Object if there is any
-	 * @param mail 
-	 * @param attachmentList 
-	 * @throws SenderException 
-	 * @throws IOException 
 	 */
-	private void setAttachments(Mail mail, List<MailAttachmentStream> attachmentList) throws SenderException, IOException {
+	private void setAttachments(Mail mail, List<MailAttachmentStream> attachmentList) {
 		if (attachmentList != null) {
 			Iterator<MailAttachmentStream> iter = attachmentList.iterator();
 			while (iter.hasNext()) {
@@ -188,7 +192,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	/**
 	 * Sets content of email to mail Object
 	 */
-	private void setMessage(Mail mail, MailSession mailSession) {
+	private void setMessage(Mail mail, MailSessionBase mailSession) {
 		String message = mailSession.getMessage();
 		String messageType = mailSession.getMessageType();
 
@@ -229,43 +233,13 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	}
 
 	/**
-	 * Sets recipients, sender and replyto to mail object 
-	 * @param mail 
-	 * @param personalization 
-	 * @param list 
-	 * @param replyTo 
-	 * @param from 
-	 * @throws SenderException 
+	 * Sets recipients, sender and replyto to mail object
 	 */
-	private void setEmailAddresses(Mail mail, Personalization personalization, List<EMail> list, EMail from,
-			EMail replyTo) throws SenderException {
-		if (list != null && !list.isEmpty()) {
-			for (EMail e : list) {
-				if ("cc".equalsIgnoreCase(e.getType())) {
-					Email cc = new Email();
-					cc.setName(e.getName());
-					cc.setEmail(e.getAddress());
-					personalization.addCc(cc);
-				} else if ("bcc".equalsIgnoreCase(e.getType())) {
-					Email bcc = new Email();
-					bcc.setName(e.getName());
-					bcc.setEmail(e.getAddress());
-					personalization.addBcc(bcc);
-				} else if ("to".equalsIgnoreCase(e.getType())) {
-					Email to = new Email();
-					to.setEmail(e.getAddress());
-					to.setName(e.getName());
-					personalization.addTo(to);
-				} else {
-					throw new SenderException("Recipients not found");
-				}
-			}
-		} else {
-			throw new SenderException("Recipients not found");
-		}
+	private void setEmailAddresses(Mail mail, GridMailSession gridMailSession, EMail from, EMail replyTo) throws SenderException {
+		gridMailSession.setRecipientsOnMessage(new StringBuilder());
+
 		Email fromEmail = new Email();
 		if (from != null && from.getAddress() != null && !from.getAddress().isEmpty()) {
-			fromEmail.setEmail(from.getAddress());
 			fromEmail.setEmail(from.getAddress());
 			fromEmail.setName(from.getName());
 			mail.setFrom(fromEmail);
@@ -281,58 +255,59 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		}
 	}
 
-	//Properties inherited from HttpSenderBase
+	//Properties inherited from HttpSessionBase
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setTimeout(int i) {
 		super.setTimeout(i);
-		httpSender.setTimeout(i);
+		httpSession.setTimeout(i);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setMaxConnections(int i) {
-		httpSender.setMaxConnections(i);
+		httpSession.setMaxConnections(i);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setMaxExecuteRetries(int i) {
-		httpSender.setMaxExecuteRetries(i);
+		httpSession.setMaxExecuteRetries(i);
 	}
 
 
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setProxyHost(String string) {
-		httpSender.setProxyHost(string);
+		httpSession.setProxyHost(string);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setProxyPort(int i) {
-		httpSender.setProxyPort(i);
+		httpSession.setProxyPort(i);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setProxyAuthAlias(String string) {
-		httpSender.setProxyAuthAlias(string);
+		httpSession.setProxyAuthAlias(string);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setProxyUsername(String string) {
-		httpSender.setProxyUsername(string);
+		httpSession.setProxyUsername(string);
 	}
+
 	@Deprecated
 	@ConfigurationWarning("Please use \"proxyUsername\" instead")
 	public void setProxyUserName(String string) {
 		setProxyUsername(string);
 	}
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setProxyPassword(String string) {
-		httpSender.setProxyPassword(string);
+		httpSession.setProxyPassword(string);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setProxyRealm(String string) {
-		httpSender.setProxyRealm(string);
+		httpSession.setProxyRealm(string);
 	}
 
 
@@ -360,186 +335,226 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setKeystore(String keystore) {
-		httpSender.setKeystore(keystore);
+		httpSession.setKeystore(keystore);
 	}
 	@Override
 	public String getKeystore() {
-		return httpSender.getKeystore();
+		return httpSession.getKeystore();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setKeystoreType(KeystoreType keystoreType) {
-		httpSender.setKeystoreType(keystoreType);
+		httpSession.setKeystoreType(keystoreType);
 	}
 	@Override
 	public KeystoreType getKeystoreType() {
-		return httpSender.getKeystoreType();
+		return httpSession.getKeystoreType();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
-		httpSender.setKeystoreAuthAlias(keystoreAuthAlias);
+		httpSession.setKeystoreAuthAlias(keystoreAuthAlias);
 	}
 	@Override
 	public String getKeystoreAuthAlias() {
-		return httpSender.getKeystoreAuthAlias();
+		return httpSession.getKeystoreAuthAlias();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setKeystorePassword(String keystorePassword) {
-		httpSender.setKeystorePassword(keystorePassword);
+		httpSession.setKeystorePassword(keystorePassword);
 	}
 	@Override
 	public String getKeystorePassword() {
-		return httpSender.getKeystorePassword();
+		return httpSession.getKeystorePassword();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setKeystoreAlias(String keystoreAlias) {
-		httpSender.setKeystoreAlias(keystoreAlias);
+		httpSession.setKeystoreAlias(keystoreAlias);
 	}
 	@Override
 	public String getKeystoreAlias() {
-		return httpSender.getKeystoreAlias();
+		return httpSession.getKeystoreAlias();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
-		httpSender.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
+		httpSession.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
 	@Override
 	public String getKeystoreAliasAuthAlias() {
-		return httpSender.getKeystoreAliasAuthAlias();
+		return httpSession.getKeystoreAliasAuthAlias();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
-		httpSender.setKeystoreAliasPassword(keystoreAliasPassword);
+		httpSession.setKeystoreAliasPassword(keystoreAliasPassword);
 	}
 	@Override
 	public String getKeystoreAliasPassword() {
-		return httpSender.getKeystoreAliasPassword();
+		return httpSession.getKeystoreAliasPassword();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
-		httpSender.setKeyManagerAlgorithm(keyManagerAlgorithm);
+		httpSession.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
 	@Override
 	public String getKeyManagerAlgorithm() {
-		return httpSender.getKeyManagerAlgorithm();
+		return httpSession.getKeyManagerAlgorithm();
 	}
 
-	
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setTruststore(String truststore) {
-		httpSender.setTruststore(truststore);
+		httpSession.setTruststore(truststore);
 	}
 	@Override
 	public String getTruststore() {
-		return httpSender.getTruststore();
+		return httpSession.getTruststore();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setTruststoreType(KeystoreType truststoreType) {
-		httpSender.setTruststoreType(truststoreType);
+		httpSession.setTruststoreType(truststoreType);
 	}
 	@Override
 	public KeystoreType getTruststoreType() {
-		return httpSender.getTruststoreType();
+		return httpSession.getTruststoreType();
 	}
 
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
-		httpSender.setTruststoreAuthAlias(truststoreAuthAlias);
+		httpSession.setTruststoreAuthAlias(truststoreAuthAlias);
 	}
 	@Override
 	public String getTruststoreAuthAlias() {
-		return httpSender.getTruststoreAuthAlias();
+		return httpSession.getTruststoreAuthAlias();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setTruststorePassword(String truststorePassword) {
-		httpSender.setTruststorePassword(truststorePassword);
+		httpSession.setTruststorePassword(truststorePassword);
 	}
 	@Override
 	public String getTruststorePassword() {
-		return httpSender.getTruststorePassword();
+		return httpSession.getTruststorePassword();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
-		httpSender.setTrustManagerAlgorithm(trustManagerAlgorithm);
+		httpSession.setTrustManagerAlgorithm(trustManagerAlgorithm);
 	}
 	@Override
 	public String getTrustManagerAlgorithm() {
-		return httpSender.getTrustManagerAlgorithm();
+		return httpSession.getTrustManagerAlgorithm();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setVerifyHostname(boolean verifyHostname) {
-		httpSender.setVerifyHostname(verifyHostname);
+		httpSession.setVerifyHostname(verifyHostname);
 	}
 	@Override
 	public boolean isVerifyHostname() {
-		return httpSender.isVerifyHostname();
+		return httpSession.isVerifyHostname();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setAllowSelfSignedCertificates(boolean testModeNoCertificatorCheck) {
-		httpSender.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
+		httpSession.setAllowSelfSignedCertificates(testModeNoCertificatorCheck);
 	}
 	@Override
 	public boolean isAllowSelfSignedCertificates() {
-		return httpSender.isAllowSelfSignedCertificates();
+		return httpSession.isAllowSelfSignedCertificates();
 	}
 
 	@Override
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
-		httpSender.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
+		httpSession.setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
 	@Override
 	public boolean isIgnoreCertificateExpiredException() {
-		return httpSender.isIgnoreCertificateExpiredException();
+		return httpSession.isIgnoreCertificateExpiredException();
 	}
 
-	
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setFollowRedirects(boolean b) {
-		httpSender.setFollowRedirects(b);
+		httpSession.setFollowRedirects(b);
 	}
 
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setStaleChecking(boolean b) {
-		httpSender.setStaleChecking(b);
+		httpSession.setStaleChecking(b);
 	}
-	
-	@IbisDocRef({HTTPSENDERBASE})
+
+	@ReferTo(HttpSessionBase.class)
 	public void setStaleTimeout(int timeout) {
-		httpSender.setStaleTimeout(timeout);
+		httpSession.setStaleTimeout(timeout);
 	}
 
 
-	@IbisDocRef({HTTPSENDERBASE})
+	@ReferTo(HttpSessionBase.class)
 	public void setProtocol(String protocol) {
-		httpSender.setProtocol(protocol);
+		httpSession.setProtocol(protocol);
+	}
+
+	public class GridMailSession extends MailSessionBase {
+		private @Getter @Setter Personalization personalization = null;
+
+		public GridMailSession() throws SenderException {
+			super();
+			this.setPersonalization(new Personalization());
+		}
+
+		@Override
+		protected void addRecipientToMessage(EMail recipient) throws SenderException {
+			if ("cc".equalsIgnoreCase(recipient.getType())) {
+				Email cc = new Email();
+				cc.setName(recipient.getName());
+				cc.setEmail(recipient.getAddress());
+				personalization.addCc(cc);
+			} else if ("bcc".equalsIgnoreCase(recipient.getType())) {
+				Email bcc = new Email();
+				bcc.setName(recipient.getName());
+				bcc.setEmail(recipient.getAddress());
+				personalization.addBcc(bcc);
+			} else if ("to".equalsIgnoreCase(recipient.getType())) {
+				Email to = new Email();
+				to.setEmail(recipient.getAddress());
+				to.setName(recipient.getName());
+				personalization.addTo(to);
+			} else {
+				throw new SenderException("Recipients not found");
+			}
+		}
+
+		@Override
+		protected boolean hasWhitelistedRecipients() {
+			List<Email> tos = personalization.getTos();
+			List<Email> ccs = personalization.getCcs();
+			List<Email> bccs = personalization.getBccs();
+
+			return (tos != null && !tos.isEmpty())
+				|| (ccs != null && !ccs.isEmpty())
+				|| (bccs != null && !bccs.isEmpty());
+		}
 	}
 }

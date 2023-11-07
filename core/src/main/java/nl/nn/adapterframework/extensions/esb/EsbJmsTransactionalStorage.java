@@ -31,6 +31,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.jms.JmsTransactionalStorage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
@@ -38,10 +39,11 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 /**
  * ESB (Enterprise Service Bus) extension of JmsTransactionalStorage.
- * 
+ *
  * <p>
  * Depending on the <code>type</code> of the <code>TransactionalStorage</code>
  * one of the following messages is sent:
@@ -51,7 +53,7 @@ import nl.nn.adapterframework.util.TransformerPool;
  * <li><code>messageLog</code>:
  * ESB.Infrastructure.US.Log.BusinessLog.2.AuditLog.1.Action</li>
  * </ul>
- * 
+ * </p>
  * <p>
  * <b>Configuration </b><i>(where deviating from
  * JmsTransactionalStorage)</i><b>:</b>
@@ -63,9 +65,10 @@ import nl.nn.adapterframework.util.TransformerPool;
  * </tr>
  * </table>
  * </p>
- * 
+ *
  * @author Peter Leeuwenburgh
  */
+@Category("NN-Special")
 public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTransactionalStorage<S> {
 	private TransformerPool exceptionLogTp = null;
 	private TransformerPool auditLogTp = null;
@@ -161,8 +164,8 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 	private Map<String,Object> createParameterValues(String messageId, String correlationId, Date receivedDate, String comments, S message) throws JMSException, DomBuilderException, TransformerException, IOException {
 		Map<String,Object> parameterValues = new HashMap<>();
 		parameterValues.put("fromId", AppConstants.getInstance().getProperty("instance.name", ""));
-		parameterValues.put("conversationId", 	Misc.getHostname() + "_" + Misc.createSimpleUUID());
-		parameterValues.put("messageId", 		Misc.getHostname() + "_" + Misc.createSimpleUUID());
+		parameterValues.put("conversationId", 	Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());
+		parameterValues.put("messageId", 		Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());
 		parameterValues.put("timestamp", 		DateUtils.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"));
 		parameterValues.put("msgMessageId", 	messageId);
 		parameterValues.put("msgCorrelationId", correlationId);

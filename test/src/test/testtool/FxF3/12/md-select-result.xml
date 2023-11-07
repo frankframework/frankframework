@@ -40,8 +40,8 @@
       <field name="MESSAGEID">ID:LPAB00000018345-49524-1531481830794-3:14:7:1:1</field>
       <field name="CORRELATIONID">Test Tool correlation id</field>
       <field name="MESSAGEDATE">2018-07-13 13:38:46</field>
-      <field name="COMMENTS">too many retries; Cannot align JSON: Validation using FxfXmlValidator with 'xml/wsdl/OnCompletedTransferNotify_FxF3_1.1.4_abstract.wsdl' failed:
-/: javax.json.stream.JsonParsingException: Unexpected char 78 at (line no=1, column no=2, offset=1)
+      <field name="COMMENTS">too many redeliveries or retries; Pipe [- pipeline inputValidator] Cannot align JSON: Validation using FxfXmlValidator with 'xml/wsdl/OnCompletedTransferNotify_FxF3_1.1.4_abstract.wsdl' failed:
+/: jakarta.json.stream.JsonParsingException: Unexpected char 78 at (line no=1, column no=2, offset=1)
 	at org.glassfish.json.JsonTokenizer.unexpectedChar(JsonTokenizer.java:532)
 	at org.glassfish.json.JsonTokenizer.nextToken(JsonTokenizer.java:415)
 	at org.glassfish.json.JsonParserImpl$ArrayContext.getNextEvent(JsonParserImpl.java:303)

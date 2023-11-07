@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,15 +24,15 @@ import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.processors.SenderWrapperProcessor;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.stream.Message;
 
 /**
  * Baseclass for Wrappers for senders, that allows to get input from a session variable, and to store output in a session variable.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -82,10 +82,10 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 
 	protected abstract boolean isSenderConfigured();
 
-	public abstract Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
+	public abstract SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		if (senderWrapperProcessor!=null) {
 			return senderWrapperProcessor.sendMessage(this, message, session);
 		}
@@ -98,27 +98,30 @@ public abstract class SenderWrapperBase extends SenderWithParametersBase impleme
 	}
 
 
-	@IbisDoc({"1", "If set, input is taken from this session key, instead of regular input", ""})
+	/** If set, input is taken from this session key, instead of regular input */
 	public void setGetInputFromSessionKey(String string) {
 		getInputFromSessionKey = string;
 	}
 
-	@IbisDoc({"2", "If set, this fixed value is taken as input, instead of regular input", ""})
+	/** If set, this fixed value is taken as input, instead of regular input */
 	public void setGetInputFromFixedValue(String string) {
 		getInputFromFixedValue = string;
 	}
 
-	@IbisDoc({"3", "If set <code>true</code>, the input of a pipe is restored before processing the next one", "false"})
+	/**
+	 * If set <code>true</code>, the input of a pipe is restored before processing the next one
+	 * @ff.default false
+	 */
 	public void setPreserveInput(boolean preserveInput) {
 		this.preserveInput = preserveInput;
 	}
 
-	@IbisDoc({"4", "If set, the result is stored under this session key", ""})
+	/** If set, the result is stored under this session key */
 	public void setStoreResultInSessionKey(String string) {
 		storeResultInSessionKey = string;
 	}
 
-	@IbisDoc({"5", "If set, the input is stored under this session key", ""})
+	/** If set, the input is stored under this session key */
 	public void setStoreInputInSessionKey(String string) {
 		storeInputInSessionKey = string;
 	}

@@ -1,0 +1,11 @@
+<root>
+	<names>
+		<name>Peter</name>
+		<name>Jaco</name>
+		<name>Niels</name>
+	</names>
+	<firstnames>
+		<name>Gerrit</name>
+		<name>Jeroen</name>
+	</firstnames>
+</root>

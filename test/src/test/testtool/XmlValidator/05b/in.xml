@@ -3,7 +3,7 @@
 	<Agreement>
 		<InternalExternalIndicator>99</InternalExternalIndicator>
 		<InternalAgreement>
-			<Id2>a</Id2>
+			<Id>a</Id>
 			<AgreementType>a</AgreementType>
 			<SalesOrganisation>
 				<SalesOrgRole>99</SalesOrgRole>
@@ -12,7 +12,7 @@
 			</SalesOrganisation>
 		</InternalAgreement>
 	</Agreement>
-	<PartyAgreementRoleType>99</PartyAgreementRoleType>
+	<PartyAgreementRoleType>199</PartyAgreementRoleType>
 	<RoleTypeSequenceNumber>999</RoleTypeSequenceNumber>
 	<AsIsDate>1957-08-13</AsIsDate>
 	<ContactPointUsageType>99</ContactPointUsageType>

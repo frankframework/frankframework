@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@ package nl.nn.adapterframework.extensions.sap.jco3.handlers;
 
 import java.util.List;
 
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -28,9 +26,11 @@ import com.sap.conn.jco.JCoMetaData;
 import com.sap.conn.jco.JCoParameterList;
 import com.sap.conn.jco.JCoRecord;
 
+import nl.nn.adapterframework.util.LogUtil;
+
 /**
  * Handler that serves as a base for other SAP XML element handlers.
- * 
+ *
  * @author  Jaco de Groot
  * @since   5.0
  */
@@ -39,14 +39,14 @@ public abstract class Handler extends DefaultHandler {
 
 	protected Handler childHandler;
 	protected boolean parsedStringField = false;
-	protected StringBuffer stringFieldValue = new StringBuffer();
+	protected StringBuilder stringFieldValue = new StringBuilder();
 	protected int unknownElementDepth = 0;
 	protected boolean done = false;
 
 	protected abstract void startElement(String localName);
 	protected abstract void endElement(String localName);
-	
-	
+
+
 	@Override
 	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
 		if (childHandler != null) {

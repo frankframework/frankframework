@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 
 import javax.xml.transform.TransformerException;
@@ -42,9 +41,10 @@ import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -56,8 +56,8 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @author Jaco de Groot (jaco@dynasol.nl)
  */
 public class PipeDescriptionProvider {
-	private Map<Configuration, Map<String, PipeDescription>> pipeDescriptionCaches = new WeakHashMap<>();
-	private Map<Configuration, Document> documents = new WeakHashMap<>();
+	private final Map<Configuration, Map<String, PipeDescription>> pipeDescriptionCaches = new WeakHashMap<>();
+	private final Map<Configuration, Document> documents = new WeakHashMap<>();
 	private static final String INPUT_VALIDATOR_CHECKPOINT_NAME = "InputValidator";
 	private static final String OUTPUT_VALIDATOR_CHECKPOINT_NAME = "OutputValidator";
 	private static final String INPUT_WRAPPER_CHECKPOINT_NAME = "InputWrapper";
@@ -132,11 +132,7 @@ public class PipeDescriptionProvider {
 			}
 
 			Configuration configuration = (Configuration) pipeLine.getApplicationContext();
-			Map<String, PipeDescription> pipeDescriptionCache = pipeDescriptionCaches.get(configuration);
-			if (pipeDescriptionCache == null) {
-				pipeDescriptionCache = new HashMap<>();
-				pipeDescriptionCaches.put(configuration, pipeDescriptionCache);
-			}
+			Map<String, PipeDescription> pipeDescriptionCache = pipeDescriptionCaches.computeIfAbsent(configuration, k -> new HashMap<>());
 			pipeDescription = pipeDescriptionCache.get(xpathExpression);
 			if (pipeDescription == null) {
 				pipeDescription = new PipeDescription();
@@ -192,7 +188,8 @@ public class PipeDescriptionProvider {
 		}
 	}
 
-	private void addResourceNamesToPipeDescription(Node element, PipeDescription pipeDescription) {
+	//Protected for tests
+	protected void addResourceNamesToPipeDescription(Node element, PipeDescription pipeDescription) {
 		NamedNodeMap attributes = element.getAttributes();
 		for (int i = 0, size = attributes.getLength(); i < size; i++) {
 			Attr attribute = (Attr) attributes.item(i);
@@ -201,19 +198,18 @@ public class PipeDescriptionProvider {
 					|| "schema".equals(attribute.getName())
 					|| "wsdl".equals(attribute.getName())
 					|| "fileName".equals(attribute.getName())
+					|| "filename".equals(attribute.getName())
 					|| "schemaLocation".equals(attribute.getName())) {
 				if ("schemaLocation".equals(attribute.getName())) {
- 					StringTokenizer st = new StringTokenizer(attribute.getValue(),", \t\r\n\f");
- 					while (st.hasMoreTokens()) {
- 						st.nextToken();
- 						String resourceName = st.nextToken();
- 						if (!pipeDescription.containsResourceName(resourceName)) {
- 							pipeDescription.addResourceName(resourceName);
- 						}
- 					}
+					int index = 0;
+					for(String resourceName : StringUtil.split(attribute.getValue(), ", \t\r\n\f")) {
+						if(index++ % 2 == 1 && pipeDescription.doesNotContainResourceName(resourceName)) {
+							pipeDescription.addResourceName(resourceName);
+						}
+					}
 				} else {
 					String resourceName = attribute.getValue();
-					if (!pipeDescription.containsResourceName(resourceName)) {
+					if (pipeDescription.doesNotContainResourceName(resourceName)) {
 						pipeDescription.addResourceName(resourceName);
 					}
 				}
@@ -234,9 +230,9 @@ public class PipeDescriptionProvider {
 	public String getResource(PipeLine pipeLine, String resourceName) {
 		String resource;
 		try {
-			URL resourceUrl = ClassUtils.getResourceURL(pipeLine, resourceName);
+			URL resourceUrl = ClassLoaderUtils.getResourceURL(pipeLine, resourceName);
 			if(resourceUrl != null)
-				resource = Misc.resourceToString(resourceUrl, "\n", false);
+				resource = StreamUtil.resourceToString(resourceUrl, "\n", false);
 			else
 				resource = "File not found: " + resourceName;
 		} catch(IOException e) {

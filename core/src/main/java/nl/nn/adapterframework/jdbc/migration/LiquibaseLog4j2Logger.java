@@ -19,7 +19,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.spi.ExtendedLogger;
 
-import liquibase.logging.LogMessageFilter;
 import liquibase.logging.core.AbstractLogger;
 
 /**
@@ -32,74 +31,74 @@ public class LiquibaseLog4j2Logger extends AbstractLogger {
 	private static final String FQCN = LiquibaseLog4j2Logger.class.getName();
 	private ExtendedLogger logger;
 
-	public LiquibaseLog4j2Logger(Class<?> clazz, LogMessageFilter filter) {
-		super(filter);
+	public LiquibaseLog4j2Logger(Class<?> clazz) {
+		super();
 
 		logger = (ExtendedLogger) LogManager.getLogger(clazz);
 	}
 
 	@Override
 	public void log(java.util.logging.Level level, String message, Throwable e) {
-		logger.logIfEnabled(FQCN, Level.TRACE, null, filterMessage(message), e);
+		logger.logIfEnabled(FQCN, Level.TRACE, null, message, e);
 	}
 
 	@Override
 	public void severe(String message) {
-		logger.logIfEnabled(FQCN, Level.ERROR, null, filterMessage(message));
+		logger.logIfEnabled(FQCN, Level.ERROR, null, message);
 	}
 
 	@Override
 	public void severe(String message, Throwable e) {
-		logger.logIfEnabled(FQCN, Level.ERROR, null, filterMessage(message), e);
+		logger.logIfEnabled(FQCN, Level.ERROR, null, message, e);
 	}
 
 	@Override
 	public void warning(String message) {
-		logger.logIfEnabled(FQCN, Level.WARN, null, filterMessage(message));
+		logger.logIfEnabled(FQCN, Level.WARN, null, message);
 	}
 
 	@Override
 	public void warning(String message, Throwable e) {
-		logger.logIfEnabled(FQCN, Level.WARN, null, filterMessage(message), e);
+		logger.logIfEnabled(FQCN, Level.WARN, null, message, e);
 	}
 
 	@Override
 	public void info(String message) {
-		logger.logIfEnabled(FQCN, Level.INFO, null, filterMessage(message));
+		logger.logIfEnabled(FQCN, Level.INFO, null, message);
 	}
 
 	@Override
 	public void info(String message, Throwable e) {
-		logger.logIfEnabled(FQCN, Level.INFO, null, filterMessage(message), e);
+		logger.logIfEnabled(FQCN, Level.INFO, null, message, e);
 	}
 
 	@Override
 	public void config(String message) {
-		logger.logIfEnabled(FQCN, Level.INFO, null, filterMessage(message));
+		logger.logIfEnabled(FQCN, Level.INFO, null, message);
 	}
 
 	@Override
 	public void config(String message, Throwable e) {
-		logger.logIfEnabled(FQCN, Level.INFO, null, filterMessage(message), e);
+		logger.logIfEnabled(FQCN, Level.INFO, null, message, e);
 	}
 
 	@Override
 	public void debug(String message) {
-		logger.logIfEnabled(FQCN, Level.DEBUG, null, filterMessage(message));
+		logger.logIfEnabled(FQCN, Level.DEBUG, null, message);
 	}
 
 	@Override
 	public void debug(String message, Throwable e) {
-		logger.logIfEnabled(FQCN, Level.DEBUG, null, filterMessage(message), e);
+		logger.logIfEnabled(FQCN, Level.DEBUG, null, message, e);
 	}
 
 	@Override
 	public void fine(String message) {
-		logger.logIfEnabled(FQCN, Level.DEBUG, null, filterMessage(message));
+		logger.logIfEnabled(FQCN, Level.DEBUG, null, message);
 	}
 
 	@Override
 	public void fine(String message, Throwable e) {
-		logger.logIfEnabled(FQCN, Level.DEBUG, null, filterMessage(message), e);
+		logger.logIfEnabled(FQCN, Level.DEBUG, null, message, e);
 	}
 }

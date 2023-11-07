@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.nn.adapterframework.extensions.sap.SapException;
-import nl.nn.adapterframework.extensions.sap.jco3.SapSystem;
+import nl.nn.adapterframework.extensions.sap.jco3.SapSystemImpl;
 
 import org.springframework.transaction.support.ResourceHolderSupport;
 import org.springframework.util.Assert;
@@ -65,7 +65,7 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 	 * @param sapSystem the SapSystem that this
 	 * resource holder is associated with (may be <code>null</code>)
 	 */
-	public JcoResourceHolder(SapSystem sapSystem) {
+	public JcoResourceHolder(SapSystemImpl sapSystem) {
 	}
 
 	/**
@@ -74,7 +74,7 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 	 * resource holder is associated with (may be <code>null</code>)
 	 * @param destination the JCoDestination
 	 */
-	public JcoResourceHolder(SapSystem sapSystem, JCoDestination destination) {
+	public JcoResourceHolder(SapSystemImpl sapSystem, JCoDestination destination) {
 		addDestination(destination);
 	}
 
@@ -96,7 +96,7 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 	 * @param destination the JCoDestination
 	 * @param tid the TID
 	 */
-	public JcoResourceHolder(SapSystem sapSystem, JCoDestination destination, String tid) {
+	public JcoResourceHolder(SapSystemImpl sapSystem, JCoDestination destination, String tid) {
 		addDestination(destination);
 		addTid(tid, destination);
 		this.frozen = true;

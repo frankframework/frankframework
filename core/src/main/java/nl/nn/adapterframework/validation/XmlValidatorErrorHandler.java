@@ -41,7 +41,7 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 
 	public XmlValidatorErrorHandler(XmlValidatorContentHandler xmlValidatorContentHandler, String mainMessage) {
 		this.xmlValidatorContentHandler = xmlValidatorContentHandler;
-		XmlBuilder message = new XmlBuilder("message");;
+		XmlBuilder message = new XmlBuilder("message");
 		message.setValue(mainMessage);
 		xmlReasons.addSubElement(message);
 		reasons = mainMessage + ":";

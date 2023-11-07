@@ -24,7 +24,7 @@ import org.xml.sax.Attributes;
  *
  */
 public class NamespaceRemovingAttributesWrapper extends AttributesWrapper {
-	
+
 	public NamespaceRemovingAttributesWrapper(Attributes source) {
 		super(source,"xmlns");
 	}

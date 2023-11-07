@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,82 +15,67 @@
  */
 package nl.nn.adapterframework.filesystem;
 
-import org.apache.logging.log4j.Logger;
-
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.LogUtil;
+import lombok.Getter;
 
 /**
  * Baseclass for {@link IMailFileSystem MailFileSystems}.
- * 
+ *
  * @author Gerrit van Brakel
  *
  */
 public abstract class MailFileSystemBase<M,A,C extends AutoCloseable> extends ConnectedFileSystemBase<M,C> implements IMailFileSystem<M,A> {
-	protected Logger log = LogUtil.getLogger(this);
 
-	private String authAlias;
-	private String username;
-	private String password;
-	private String basefolder;
-	private boolean readMimeContents=false;
-	private String replyAddressFields = REPLY_ADDRESS_FIELDS_DEFAULT;
+	private @Getter String authAlias;
+	private @Getter String username;
+	private @Getter String password;
+	private @Getter String baseFolder;
+	private @Getter boolean readMimeContents=false;
+	private @Getter String replyAddressFields = REPLY_ADDRESS_FIELDS_DEFAULT;
 
 	@Override
 	public String getPhysicalDestinationName() {
 		return "baseFolder ["+getBaseFolder()+"]";
 	}
 
-	@IbisDoc({"1", "Alias used to obtain accessToken or username and password for authentication to Exchange mail server. " + 
-			"If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used. " + 
-			"If the alias refers to a password without a username, the password is treated as the accessToken.", ""})
+	/** 
+	 * Alias used to obtain accessToken or username and password for authentication to Exchange mail server.
+	 * If the alias refers to a combination of a username and a password, the deprecated Basic Authentication method is used.
+	 * If the alias refers to a password without a username, the password is treated as the accessToken.
+	 */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
-	public String getAuthAlias() {
-		return authAlias;
-	}
 
-	@IbisDoc({"2", "Username for authentication to mail server.", ""})
+	/** Username for authentication to mail server. */
 	public void setUsername(String username) {
 		this.username = username;
 	}
-	public String getUsername() {
-		return username;
-	}
 
-	@IbisDoc({"3", "Password for authentication to mail server.", ""})
+	/** Password for authentication to mail server. */
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	public String getPassword() {
-		return password;
-	}
 
 
-	@IbisDoc({"4", "Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used", ""})
-	public void setBaseFolder(String basefolder) {
-		this.basefolder = basefolder;
-	}
-	public String getBaseFolder() {
-		return basefolder;
+	/** Folder (subfolder of root or of inbox) to look for mails. If empty, the inbox folder is used */
+	public void setBaseFolder(String baseFolder) {
+		this.baseFolder = baseFolder;
 	}
 
-	@IbisDoc({"5", "If set <code>true</code>, the contents will be read in MIME format", "false"})
+	/**
+	 * If set <code>true</code>, the contents will be read in MIME format
+	 * @ff.default false
+	 */
 	public void setReadMimeContents(boolean readMimeContents) {
 		this.readMimeContents = readMimeContents;
 	}
-	public boolean isReadMimeContents() {
-		return readMimeContents;
-	}
 
-	@IbisDoc({"6", "Comma separated list of fields to try as response address", REPLY_ADDRESS_FIELDS_DEFAULT})
+	/** 
+	 * Comma separated list of fields to try as response address
+	 * @ff.default {@value #REPLY_ADDRESS_FIELDS_DEFAULT}
+	 */
 	public void setReplyAddressFields(String replyAddressFields) {
 		this.replyAddressFields = replyAddressFields;
-	}
-	@Override
-	public String getReplyAddressFields() {
-		return replyAddressFields;
 	}
 
 }

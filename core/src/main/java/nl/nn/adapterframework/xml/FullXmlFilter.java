@@ -24,12 +24,13 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 import org.xml.sax.helpers.XMLFilterImpl;
 
+import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private LexicalHandler lexicalHandler;
+	private @Setter LexicalHandler lexicalHandler;
 
 	public FullXmlFilter() {
 		super();
@@ -46,7 +47,7 @@ public class FullXmlFilter extends XMLFilterImpl implements LexicalHandler {
 	public void setContentHandler(ContentHandler handler) {
 		super.setContentHandler(handler);
 		if (handler instanceof LexicalHandler) {
-			lexicalHandler=(LexicalHandler)handler;
+			setLexicalHandler ((LexicalHandler)handler);
 		}
 	}
 

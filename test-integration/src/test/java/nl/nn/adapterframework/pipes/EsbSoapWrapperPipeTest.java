@@ -8,6 +8,7 @@ import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPipe> {
@@ -39,7 +40,6 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		addParam("errorDetailText","errorDetailText-value");
 		addParam("operation","operation-value");
 		addParam("operationVersion","operationVersion-value");
-		pipe.setNamespaceAware(true);
 		pipe.configure();
 		pipe.start();
 		
@@ -87,7 +87,6 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		addParam("errorDetailText",errorDetailText);
 		addParam("operation",null);
 		addParam("operationVersion",null);
-		pipe.setNamespaceAware(true);
 		pipe.configure();
 		pipe.start();
 		
@@ -108,7 +107,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		TestAssertions.assertXpathValueEquals(errorCode, 		result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/Code");
 		TestAssertions.assertXpathValueEquals(errorReason, 		result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/Reason");
 		TestAssertions.assertXpathValueEquals(errorDetailCode, 	result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/DetailList/Detail/Code");
-		TestAssertions.assertXpathValueEquals(XmlUtils.encodeChars(errorDetailText), 	result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/DetailList/Detail/Text");
+		TestAssertions.assertXpathValueEquals(XmlEncodingUtils.encodeChars(errorDetailText), 	result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/DetailList/Detail/Text");
 	}
 
 	@Test
@@ -143,7 +142,6 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		addParam("errorDetailText",errorDetailText);
 		addParam("operation",operation);
 		addParam("operationVersion",operationVersion);
-		pipe.setNamespaceAware(true);
 		pipe.configure();
 		pipe.start();
 		
@@ -164,7 +162,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		TestAssertions.assertXpathValueEquals(errorCode, 		result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/Code");
 		TestAssertions.assertXpathValueEquals(errorReason, 		result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/Reason");
 		TestAssertions.assertXpathValueEquals(errorDetailCode, 	result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/DetailList/Detail/Code");
-		TestAssertions.assertXpathValueEquals(XmlUtils.encodeChars(errorDetailText), 	result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/DetailList/Detail/Text");
+		TestAssertions.assertXpathValueEquals(XmlEncodingUtils.encodeChars(errorDetailText), 	result, "/Envelope/Body/"+rootElement+"/Result/ErrorList/Error/DetailList/Detail/Text");
 	}
 
 	@Test

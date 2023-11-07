@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.jndi;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,18 +26,19 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 
 import lombok.SneakyThrows;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Baseclass for Object lookups.
- * 
+ *
  * @author Gerrit van Brakel
- * 
+ *
  * @param <O> Object class used by clients
  * @param <L> Class looked up
  */
 public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
-	protected Logger log = LogUtil.getLogger(this);
+	protected final Logger log = LogUtil.getLogger(this);
 
 	protected Map<String,O> objects = new ConcurrentHashMap<>();
 
@@ -77,17 +79,20 @@ public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
 	private O compute(L object, String jndiName) {
 		return augment(object, jndiName);
 	}
-	
+
 	@Override
 	public void destroy() throws Exception {
 		Exception masterException=null;
-		for (Object object:objects.values()) {
+		for (Entry<String,O> entry:objects.entrySet()) {
+			String name = entry.getKey();
+			O object = entry.getValue();
 			if (object instanceof AutoCloseable) {
 				try {
+					log.debug("closing ["+ClassUtils.nameOf(object)+"] object ["+name+"]");
 					((AutoCloseable)object).close();
 				} catch (Exception e) {
 					if (masterException==null) {
-						masterException = new Exception("Exception caught closing objects held by ("+getClass().getSimpleName()+")", e);
+						masterException = new Exception("Exception caught closing ["+ClassUtils.nameOf(object)+"] object ["+name+"] held by ("+getClass().getSimpleName()+")", e);
 					} else {
 						masterException.addSuppressed(e);
 					}

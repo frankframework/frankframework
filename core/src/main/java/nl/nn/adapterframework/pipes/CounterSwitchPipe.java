@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2016, 2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Default;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
 
@@ -35,6 +37,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author  Peter Leeuwenburgh
  */
 
+@ElementType(ElementTypes.ROUTER)
 public class CounterSwitchPipe extends FixedForwardPipe {
 	private int divisor = 2;
 
@@ -63,14 +66,14 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 			forward = "" + (getDivisor() - (count % getDivisor()));
 		}
 
-		log.debug(getLogPrefix(session) + "determined forward [" + forward + "]");
+		log.debug("determined forward [{}]", forward);
 
 		pipeForward = findForward(forward);
 
 		if (pipeForward == null) {
-			throw new PipeRunException(this, getLogPrefix(null) + "cannot find forward or pipe named [" + forward + "]");
+			throw new PipeRunException(this, "cannot find forward or pipe named [" + forward + "]");
 		}
-		log.debug(getLogPrefix(session) + "resolved forward [" + forward + "] to path [" + pipeForward.getPath() + "]");
+		log.debug("resolved forward [{}] to path [{}]", forward, pipeForward.getPath());
 		return new PipeRunResult(pipeForward, message);
 	}
 
@@ -78,7 +81,7 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 		return divisor;
 	}
 
-	@IbisDoc({" ", "2"})
+	@Default ("2")
 	public void setDivisor(int i) {
 		divisor = i;
 	}

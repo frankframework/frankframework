@@ -27,50 +27,45 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.mail.BodyPart;
-import javax.mail.Flags;
-import javax.mail.Folder;
-import javax.mail.Header;
-import javax.mail.Message;
-import javax.mail.Message.RecipientType;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Part;
-import javax.mail.Session;
-import javax.mail.Store;
-import javax.mail.Transport;
-import javax.mail.UIDFolder;
-import javax.mail.URLName;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import com.sun.mail.imap.AppendUID;
 import com.sun.mail.imap.IMAPFolder;
 import com.sun.mail.imap.IMAPMessage;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.Flags;
+import jakarta.mail.Folder;
+import jakarta.mail.Header;
+import jakarta.mail.Message;
+import jakarta.mail.Message.RecipientType;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Part;
+import jakarta.mail.Session;
+import jakarta.mail.Store;
+import jakarta.mail.Transport;
+import jakarta.mail.UIDFolder;
+import jakarta.mail.URLName;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.http.PartMessage;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "IMAP";
-	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String host;
 	private @Getter int port = 993;
 
 	private Session emailSession = Session.getInstance(System.getProperties());
-
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -154,6 +149,11 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
+	public String getParentFolder(Message f) throws FileSystemException {
+		return f.getFolder().getFullName();
+	}
+
+	@Override
 	public Message toFile(String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
@@ -211,7 +211,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 			if (!folder.isOpen()) {
 				folder.open(Folder.READ_WRITE);
 			}
-			Message messages[] = folder.getMessages();
+			Message[] messages = folder.getMessages();
 			return messages.length;
 		} catch (MessagingException e) {
 			invalidateConnectionOnRelease = true;
@@ -233,7 +233,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 			if (!folder.isOpen()) {
 				folder.open(Folder.READ_WRITE);
 			}
-			Message messages[] = folder.getMessages();
+			Message[] messages = folder.getMessages();
 			return FileSystemUtils.getDirectoryStream(Arrays.asList(messages));
 		} catch (MessagingException e) {
 			invalidateConnectionOnRelease = true;
@@ -253,13 +253,13 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public Message moveFile(Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public Message moveFile(Message f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			AppendUID results[];
+			AppendUID[] results;
 			try (IMAPFolder destination = getFolder(baseFolder, destinationFolder)) {
-				Message messages[] = new Message[1];
+				Message[] messages = new Message[1];
 				messages[0] = f;
 				destination.open(Folder.READ_WRITE);
 				IMAPFolder src = (IMAPFolder) f.getFolder();
@@ -281,13 +281,13 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public Message copyFile(final Message f, String destinationFolder, boolean createFolder) throws FileSystemException {
+	public Message copyFile(final Message f, String destinationFolder, boolean createFolder, boolean resultantMustBeReturned) throws FileSystemException {
 		IMAPFolder baseFolder = getConnection();
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			AppendUID results[];
+			AppendUID[] results;
 			try (IMAPFolder destination = getFolder(baseFolder, destinationFolder)) {
-				Message messages[] = new Message[1];
+				Message[] messages = new Message[1];
 				messages[0] = f;
 				destination.open(Folder.READ_WRITE);
 				IMAPFolder src = (IMAPFolder) f.getFolder();
@@ -525,7 +525,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	@Override
 	public Map<String, Object> getAdditionalFileProperties(Message f) throws FileSystemException {
 		try {
-			Map<String, Object> result = new LinkedHashMap<String, Object>();
+			Map<String, Object> result = new LinkedHashMap<>();
 			result.put(IMailFileSystem.TO_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.TO));
 			result.put(IMailFileSystem.CC_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.CC));
 			result.put(IMailFileSystem.BCC_RECEPIENTS_KEY, getRecipientsOfType(f, RecipientType.BCC));
@@ -590,7 +590,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 			}
 		}
 		String name = urlName == null ? "<no url>" : urlName.toString();
-		return Misc.concatStrings(name," ", super.getPhysicalDestinationName());
+		return StringUtil.concatStrings(name," ", super.getPhysicalDestinationName());
 	}
 
 	@Override
@@ -610,7 +610,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	private class MimeContentMessage extends nl.nn.adapterframework.stream.Message {
 
 		public MimeContentMessage(IMAPMessage imapMessage) {
-			super(() -> imapMessage.getMimeStream(), null, imapMessage.getClass());
+			super(imapMessage::getMimeStream, null, imapMessage.getClass());
 		}
 	}
 

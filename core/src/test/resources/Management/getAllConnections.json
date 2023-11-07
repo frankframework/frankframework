@@ -1,0 +1,11 @@
+{
+    "data": [
+        {
+            "domain": "JVM",
+            "destination": "internal: ListenerName",
+            "adapterName": "TestAdapter",
+            "componentName": "ListenerName",
+            "direction": "Inbound"
+        }
+    ]
+}

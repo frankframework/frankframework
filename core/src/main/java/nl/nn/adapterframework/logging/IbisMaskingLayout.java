@@ -30,14 +30,14 @@ import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.apache.logging.log4j.util.StackLocatorUtil;
 
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * This is a wrapper for Log4j2 layouts.
- * It enables us to: </br>
- * - limit log message length</br>
- * - apply global masking</br>
- * - apply local (thread-wise) masking</br>
+ * It enables us to: <br/>
+ * - limit log message length<br/>
+ * - apply global masking<br/>
+ * - apply local (thread-wise) masking<br/>
  *
  * @author Murat Kaan Meral
  */
@@ -80,8 +80,8 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		String message = msg.getFormattedMessage();
 
 		if (StringUtils.isNotEmpty(message)) {
-			message = Misc.hideAll(message, globalReplace);
-			message = Misc.hideAll(message, threadLocalReplace.get());
+			message = StringUtil.hideAll(message, globalReplace);
+			message = StringUtil.hideAll(message, threadLocalReplace.get());
 
 			int length = message.length();
 			if (maxLength > 0 && length > maxLength) {
@@ -118,15 +118,17 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 
 	/**
 	 * When converting from a (Log4jLogEvent) to a mutable LogEvent ensure to not invoke any getters but assign the fields directly.
-	 * @see "https://issues.apache.org/jira/browse/LOG4J2-1179"
-	 * @see "https://issues.apache.org/jira/browse/LOG4J2-1382"
-	 * 
+	 *
 	 * Directly calling RewriteAppender.append(LogEvent) can do 44 million ops/sec, but when calling rewriteLogger.debug(msg) to invoke
 	 * a logger that calls this appender, all of a sudden throughput drops to 37 thousand ops/sec. That's 1000x slower.
-	 * 
+	 *
 	 * Rewriting the event ({@link MutableLogEvent#initFrom(LogEvent)}) includes invoking caller location information, {@link LogEvent#getSource()}
-	 * This is done by taking a snapshot of the stack and walking it, @see {@link StackLocatorUtil#calcLocation(String)}).
+	 * This is done by taking a snapshot of the stack and walking it, see {@link StackLocatorUtil#calcLocation(String)}).
 	 * Hence avoid this at all costs, fixed from version 2.6 (LOG4J2-1382) use a builder instance to update the @{link Message}.
+	 * 
+	 * @see "https://issues.apache.org/jira/browse/LOG4J2-1179"
+	 * @see "https://issues.apache.org/jira/browse/LOG4J2-1382"
+	 * @see StackLocatorUtil#calcLocation(String)
 	 */
 	private LogEvent updateLogEventMessage(LogEvent event, Message message) {
 		if(event instanceof Log4jLogEvent) {
@@ -143,7 +145,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	}
 
 	/**
-	 * Mutable LogEvent which masks messages using global and local regex strings, 
+	 * Mutable LogEvent which masks messages using global and local regex strings,
 	 * and shortens the message to a maximum length, if necessary.
 	 *
 	 * @param event Event to be serialized to a String.

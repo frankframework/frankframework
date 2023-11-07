@@ -22,6 +22,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Extension to SoapWrapperPipe for API Management.
@@ -32,7 +33,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>{@link #setSoapHeaderSessionKey(String) soapHeaderSessionKey}</td><td>if direction=<code>wrap</code>: </td><td>soapHeader</td></tr>
  * <tr><td>{@link #setSoapHeaderStyleSheet(String) soapHeaderStyleSheet}</td><td>if direction=<code>wrap</code>: </td><td>/xml/xsl/api/soapHeader.xsl</td></tr>
  * </table>
- * <p>
+ * </p><p>
  * <b>/xml/xsl/api/soapHeader.xsl:</b>
  * <table border="1">
  * <tr><th>element</th><th>level</th><th>value</th></tr>
@@ -50,7 +51,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * <tr><td>from_out</td><td>property 'instance.name'</td></tr>
  * <tr><td>conversationId</td><td>if applicable, copied from the original (received) SOAP Header</td></tr>
  * </table>
- * <p>
+ * </p>
  * @author Peter Leeuwenburgh
  */
 
@@ -77,7 +78,7 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 		ParameterList parameterList = getParameterList();
 		Parameter p;
 		if (parameterList.findParameter(CONVERSATIONID) == null) {
-			p = new Parameter();
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(CONVERSATIONID);
 			p.setSessionKey(getSoapHeaderSessionKey());
 			p.setXpathExpression("MessageHeader/HeaderFields/ConversationId");
@@ -88,14 +89,16 @@ public class ApiSoapWrapperPipe extends SoapWrapperPipe {
 			addParameter(p);
 		}
 		if (parameterList.findParameter(FROM_IN) == null) {
-			p = new Parameter();
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName(FROM_IN);
 			p.setSessionKey(getSoapHeaderSessionKey());
 			p.setXpathExpression("MessageHeader/From");
 			addParameter(p);
 		}
-
-		addParameter(new Parameter(FROM_OUT, AppConstants.getInstance().getProperty("instance.name", "")));
+		p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
+		p.setName(FROM_OUT);
+		p.setValue(AppConstants.getInstance().getProperty("instance.name", ""));
+		addParameter(p);
 
 	}
 }

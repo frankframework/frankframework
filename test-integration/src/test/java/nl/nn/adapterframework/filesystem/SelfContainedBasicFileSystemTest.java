@@ -1,14 +1,14 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends BasicFileSystemTestBase<F, FS>{
 
@@ -35,12 +35,12 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 //		log.debug("file subject ["+fileSystem.getAdditionalFileProperties(f).get("subject")+"]");
 //		log.debug("file props ["+fileSystem.getAdditionalFileProperties(f)+"]");
 	}
-	
+
 //	public void listAllFilesInFolder(String folderName) throws FileSystemException {
 //		Iterator<F> it = fileSystem.listFiles(folderName);
 //		while (it!=null && it.hasNext()) {
 //			displayFile(it.next());
-//		}		
+//		}
 //	}
 
 	public void testFiles()  throws Exception{
@@ -59,30 +59,28 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 				displayFile(it.next());
 				fail("just created folder ["+folderName+"] should be emtpty");
 			}
-			assertFalse("just created folder ["+folderName+"] should be emtpty", it!=null && it.hasNext());
+			assertFalse(it!=null && it.hasNext(), "just created folder ["+folderName+"] should be emtpty");
 		}
 		F sourceFile = null;
 		F destFile1 = null;
 		try(DirectoryStream<F> ds = fileSystem.listFiles(sourceOfMessages_folder)) {
 			Iterator<F> it = ds.iterator();
-			assertTrue("there must be at least one messsage in the sourceOfMessages_folder ["+sourceOfMessages_folder+"]", it!=null && it.hasNext());
+			assertTrue(it!=null && it.hasNext(), "there must be at least one messsage in the sourceOfMessages_folder ["+sourceOfMessages_folder+"]");
 
 			sourceFile =  it.next();
-			assertTrue("file retrieved from folder should exist", fileSystem.exists(sourceFile));
-			//assertFalse("name of source file should not appear in just created folder", fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(sourceFile)));
+			assertTrue(fileSystem.exists(sourceFile), "file retrieved from folder should exist");
 			//displayFile(sourceFile);
 
-			destFile1 = fileSystem.copyFile(sourceFile, folderName, false);
-			assertTrue("source file should still exist after copy", fileSystem.exists(sourceFile));
+			destFile1 = fileSystem.copyFile(sourceFile, folderName, false, true);
+			assertTrue(fileSystem.exists(sourceFile), "source file should still exist after copy");
 
 			//displayFile(destFile1);
-			assertNotNull("destination file should be not null after copy", destFile1);
-			assertTrue("destination file should exist after copy", fileSystem.exists(destFile1));
-			//assertTrue("name of destination file should exist in folder after copy", fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(destFile1)));
+			assertNotNull(destFile1, "destination file should be not null after copy");
+			assertTrue(fileSystem.exists(destFile1), "destination file should exist after copy");
 		}
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folderName)) {
 			Iterator<F> it = ds.iterator();
-			assertTrue("must be able to find file just copied to folder ["+folderName+"]", it!=null && it.hasNext());
+			assertTrue(it!=null && it.hasNext(), "must be able to find file just copied to folder ["+folderName+"]");
 		}
 		if (!fileSystem.folderExists(folderName2)) {
 			fileSystem.createFolder(folderName2);
@@ -91,20 +89,20 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 
 		F destFile1copy = fileSystem.toFile(folderName, fileSystem.getName(destFile1));
 		assertTrue(fileSystem.exists(destFile1copy));
-		
-		F destFile2 = fileSystem.moveFile(destFile1, folderName2, false);
+
+		F destFile2 = fileSystem.moveFile(destFile1, folderName2, false, true);
 		assertTrue(fileSystem.exists(sourceFile));
-		assertFalse("moved file should not exist in source folder anymore", fileSystem.exists(destFile1copy));
+		assertFalse(fileSystem.exists(destFile1copy), "moved file should not exist in source folder anymore");
 		assertTrue(fileSystem.exists(destFile2));
 
 		fileSystem.deleteFile(destFile2);
-		assertFalse("file should not exist anymore after being deleted", fileSystem.exists(destFile2));
+		assertFalse(fileSystem.exists(destFile2), "file should not exist anymore after being deleted");
 
 		fileSystem.removeFolder(folderName2, false);
-		assertFalse(fileSystem.folderExists(folderName2));
+		assertFalse(fileSystem.folderExists(folderName2), "folder ["+folderName2+"] should not exist anymore after being deleted");
 
 		fileSystem.removeFolder(folderName, false);
-		assertFalse(fileSystem.folderExists(folderName));
+		assertFalse(fileSystem.folderExists(folderName), "folder ["+folderName+"] should not exist anymore after being deleted");
 	}
 
 	public void testFileSystemUtils()  throws Exception{
@@ -124,37 +122,37 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 				displayFile(it.next());
 				fail("just created folder ["+folderName+"] should be emtpty");
 			}
-			assertFalse("just created folder ["+folderName+"] should be emtpty", it!=null && it.hasNext());
+			assertFalse(it!=null && it.hasNext(), "just created folder ["+folderName+"] should be emtpty");
 		}
 		F sourceFile = null;
 		F destFile1 = null;
 		try(DirectoryStream<F> ds = fileSystem.listFiles(sourceOfMessages_folder)) {
 			Iterator<F> it = ds.iterator();
-			assertTrue("there must be at least one messsage in the sourceOfMessages_folder ["+sourceOfMessages_folder+"]", it!=null && it.hasNext());
-			
+			assertTrue(it!=null && it.hasNext(), "there must be at least one messsage in the sourceOfMessages_folder ["+sourceOfMessages_folder+"]");
+
 			sourceFile =  it.next();
-			assertTrue("source file should exist", fileSystem.exists(sourceFile));
+			assertTrue(fileSystem.exists(sourceFile), "source file should exist");
 			//assertFalse("name of source file should not appear in just created folder", fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(sourceFile)));
-			
-			destFile1 = FileSystemUtils.copyFile(fileSystem, sourceFile, folderName, true, 0, false);
-			assertTrue("source file should still exist after copy", fileSystem.exists(sourceFile));
+
+			destFile1 = FileSystemUtils.copyFile(fileSystem, sourceFile, folderName, true, 0, false, true);
+			assertTrue(fileSystem.exists(sourceFile), "source file should still exist after copy");
 
 			//displayFile(destFile1);
-			assertTrue("destination file should exist after copy", fileSystem.exists(destFile1));
+			assertTrue(fileSystem.exists(destFile1), "destination file should exist after copy");
 			//assertTrue("name of destination file should exist in folder after copy", fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(destFile1)));
 		}
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folderName)) {
 			Iterator<F> it = ds.iterator();
-			assertTrue("must be able to find file just copied to folder ["+folderName+"]", it!=null && it.hasNext());
+			assertTrue(it!=null && it.hasNext(), "must be able to find file just copied to folder ["+folderName+"]");
 		}
 		if (!fileSystem.folderExists(folderName2)) {
 			fileSystem.createFolder(folderName2);
 		}
 		assertTrue(fileSystem.folderExists(folderName2));
 
-		F destFile2 = FileSystemUtils.moveFile(fileSystem, destFile1, folderName2, true, 0, false);
+		F destFile2 = FileSystemUtils.moveFile(fileSystem, destFile1, folderName2, true, 0, false, true);
 		assertTrue(fileSystem.exists(sourceFile));
-		//assertFalse("moved file should not exist in source folder anymore", fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(destFile1)));
+		//assertFalse(fileSystem.filenameExistsInFolder(folderName, fileSystem.getName(destFile1)), "moved file should not exist in source folder anymore");
 		assertTrue(fileSystem.exists(destFile2));
 
 		fileSystem.deleteFile(destFile2);

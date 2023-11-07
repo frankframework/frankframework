@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2019 Nationale-Nederlanden
+   Copyright 2013, 2015, 2019 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,11 +25,12 @@ import org.quartz.SchedulerException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Registers a trigger in the scheduler so that the message is send to a javalistener
@@ -53,14 +54,14 @@ public class SchedulerSender extends SenderWithParametersBase {
 		if (StringUtils.isEmpty(cronExpressionPattern)) {
 			throw new ConfigurationException("Property [cronExpressionPattern] is empty");
 		}
-		
-		Parameter p = new Parameter();
+
+		Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 		p.setName("_cronexpression");
 		p.setPattern(cronExpressionPattern);
 		addParameter(p);
 
 		if (StringUtils.isNotEmpty(jobNamePattern)) {
-			p = new Parameter();
+			p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("_jobname");
 			p.setPattern(jobNamePattern);
 			addParameter(p);
@@ -84,22 +85,20 @@ public class SchedulerSender extends SenderWithParametersBase {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
 		try {
-			String correlationID = session==null ? "" : session.getMessageId();
+			String correlationID = session==null ? "" : session.getCorrelationId();
 			ParameterValueList values = paramList.getValues(message, session);
 			String jobName = getName() + correlationID;
-			String cronExpression = values.getParameterValue("_cronexpression").asStringValue();
+			String cronExpression = values.get("_cronexpression").asStringValue();
 			if (StringUtils.isNotEmpty(jobNamePattern)) {
-				jobName = values.getParameterValue("_jobname").asStringValue();
+				jobName = values.get("_jobname").asStringValue();
 			}
 			schedule(jobName, cronExpression, correlationID, message.asString());
-			return new Message(jobName);
-		}
-		catch(SenderException e) {
+			return new SenderResult(jobName);
+		} catch(SenderException e) {
 			throw e;
-		}
-		catch(Exception e) {
+		} catch(Exception e) {
 			throw new SenderException("Error during scheduling " + message, e);
 		}
 	}
@@ -122,12 +121,12 @@ public class SchedulerSender extends SenderWithParametersBase {
 		}
 	}
 
-	@IbisDoc({"expression that generates the cron trigger", ""})
+	/** expression that generates the cron trigger */
 	public void setCronExpressionPattern(String string) {
 		cronExpressionPattern = string;
 	}
 
-	@IbisDoc({"job group in which the new trigger is to be created (optional)", ""})
+	/** job group in which the new trigger is to be created (optional) */
 	public void setJobGroup(String string) {
 		if(StringUtils.isNotEmpty(string))
 			jobGroup = string;
@@ -135,12 +134,12 @@ public class SchedulerSender extends SenderWithParametersBase {
 			jobGroup = null;
 	}
 
-	@IbisDoc({"pattern that leads to the name of the registered trigger(optional)", ""})
+	/** pattern that leads to the name of the registered trigger(optional) */
 	public void setJobNamePattern(String string) {
 		jobNamePattern = string;
 	}
 
-	@IbisDoc({"java listener to be called when scheduler trigger fires", ""})
+	/** java listener to be called when scheduler trigger fires */
 	public void setJavaListener(String string) {
 		javaListener = string;
 	}

@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.FrankDocGroup;
 import nl.nn.adapterframework.doc.Optional;
 
@@ -25,6 +27,7 @@ import nl.nn.adapterframework.doc.Optional;
  * 
  */
 @FrankDocGroup(order = 50, name = "Wrappers")
+@ElementType(ElementTypes.WRAPPER)
 public interface IWrapperPipe extends IPipe {
 
 	enum Direction { WRAP, UNWRAP; };

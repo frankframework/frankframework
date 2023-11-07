@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,17 +18,20 @@ package nl.nn.adapterframework.jdbc;
 import java.io.Reader;
 import java.sql.ResultSet;
 
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 
 /**
  * Pipe that batch-transforms the lines in a CLOB.
- * 
+ *
  * N.B. the readerFactory is not used by this class.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@Deprecated
+@ConfigurationWarning("BatchClobTransformerPipe: Not tested and maintained, please look for alternatives if you use BatchClobTransformerPipe inform WeAreFrank! that there are no suitable alternatives for your use-case")
 public class BatchClobTransformerPipe extends BatchTransformerPipeBase {
 
 
@@ -40,5 +43,4 @@ public class BatchClobTransformerPipe extends BatchTransformerPipeBase {
 			throw new SenderException(e);
 		}
 	}
-	
 }

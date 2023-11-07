@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import nl.nn.adapterframework.core.INamedObject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.core.INamedObject;
 
 /**
  * Base class for items of global lists.
@@ -39,9 +39,9 @@ import org.apache.logging.log4j.Logger;
 public class GlobalListItem implements INamedObject {
 	protected Logger log = LogUtil.getLogger(this);
 
-    private static Hashtable<String, GlobalListItem> items = new Hashtable<String, GlobalListItem>();
-    private String name;
-    private String aliasFor;
+	private static Hashtable<String, GlobalListItem> items = new Hashtable<>();
+	private String name;
+	private String aliasFor;
 
 	/**
 	 * configure() will be called once for each item registered, except for the aliasses.
@@ -49,11 +49,11 @@ public class GlobalListItem implements INamedObject {
 	protected void configure() {
 	}
 
-    /**
-     * Get an item by Name.
-     * Descender classes should implement a similar method, that returns an object of its own type.
-     */
-    protected static GlobalListItem getItem(String itemName) {
+	/**
+	 * Get an item by Name. Descender classes should implement a similar method,
+	 * that returns an object of its own type.
+	 */
+	protected static GlobalListItem getItem(String itemName) {
 		GlobalListItem result = null;
 
 		result = items.get(itemName);
@@ -67,49 +67,55 @@ public class GlobalListItem implements INamedObject {
 				throw new NullPointerException("no alias ["+aliasName+"] list item found for name ["+itemName+"] ");
 			}
 		}
-        return result;
-    }
-    /**
-     * Get the system names as an Iterator, alphabetically sorted
-     * @return Iterator with the realm names, alphabetically sorted
-     */
-    public static Iterator<String> getRegisteredNames() {
-        SortedSet<String> sortedKeys = new TreeSet<String>(items.keySet());
-        return sortedKeys.iterator();
-    }
-    /**
-     * Gets a list with system names.
-     */
-    public static List<String> getRegisteredNamesAsList() {
-        Iterator<String> it = getRegisteredNames();
-        List<String> result = new ArrayList<String>();
-        while (it.hasNext()) {
-            result.add(it.next());
-        }
-        return result;
-    }
-    
-    /**
-     * Register an item in the list
-     */
-    public void registerItem(Object dummyParent) {
-    	if (StringUtils.isEmpty(getAliasFor())) {
+		return result;
+	}
+
+	/**
+	 * Get the system names as an Iterator, alphabetically sorted
+	 * 
+	 * @return Iterator with the realm names, alphabetically sorted
+	 */
+	public static Iterator<String> getRegisteredNames() {
+		SortedSet<String> sortedKeys = new TreeSet<>(items.keySet());
+		return sortedKeys.iterator();
+	}
+
+	/**
+	 * Gets a list with system names.
+	 */
+	public static List<String> getRegisteredNamesAsList() {
+		Iterator<String> it = getRegisteredNames();
+		List<String> result = new ArrayList<>();
+		while(it.hasNext()) {
+			result.add(it.next());
+		}
+		return result;
+	}
+
+	/**
+	 * Register an item in the list
+	 */
+	public void registerItem(Object dummyParent) {
+		if(StringUtils.isEmpty(getAliasFor())) {
 			configure();
-    	}
+		}
 		items.put(getName(), this);
-        log.debug("globalItemList registered item [" + toString() + "]");
-    }
-    
-    public String toString(){
-        return ToStringBuilder.reflectionToString(this);
-    }
+		log.debug("globalItemList registered item [" + toString() + "]");
+	}
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this);
+	}
 
 	/**
 	 * The name under which the item can be retrieved.
 	 */
+	@Override
 	public void setName(String string) {
 		name = string;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}

@@ -24,11 +24,11 @@ import javax.jms.QueueBrowser;
 import javax.jms.Session;
 import javax.naming.NamingException;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Helper class for browsing queues.
@@ -42,7 +42,7 @@ public class JmsQueueBrowserIterator implements IMessageBrowsingIterator {
 	private final Session session;
 	private final QueueBrowser queueBrowser;
 	private final Enumeration  enm;
-		
+
 	public JmsQueueBrowserIterator(JMSFacade facade, Queue destination, String selector) throws JMSException, NamingException, JmsException {
 		this.facade=facade;
 		this.session=facade.createSession();
@@ -51,7 +51,7 @@ public class JmsQueueBrowserIterator implements IMessageBrowsingIterator {
 		} else {
 			this.queueBrowser=session.createBrowser(destination, selector);
 		}
-		this.enm=queueBrowser.getEnumeration(); 
+		this.enm=queueBrowser.getEnumeration();
 	}
 
 	@Override
@@ -72,6 +72,6 @@ public class JmsQueueBrowserIterator implements IMessageBrowsingIterator {
 			throw new ListenerException("error closing queuebrowser",e);
 		}
 		facade.closeSession(session);
-	} 
+	}
 
 }

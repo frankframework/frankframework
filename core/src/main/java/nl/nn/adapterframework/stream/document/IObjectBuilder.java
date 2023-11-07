@@ -21,8 +21,8 @@ public interface IObjectBuilder extends AutoCloseable {
 
 	public INodeBuilder addField(String fieldName) throws SAXException;
 	public ArrayBuilder addRepeatedField(String fieldName) throws SAXException;
-	
+
 	@Override
 	public void close() throws SAXException;
-	
+
 }

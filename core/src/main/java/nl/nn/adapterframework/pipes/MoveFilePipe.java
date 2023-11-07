@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,18 +25,17 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 
 /**
  * Pipe for moving files to another directory.
  *
- * 
+ *
  * @author  John Dekker
  * @author  Jaco de Groot (***@dynasol.nl)
  * @author  Gerrit van Brakel
- * 
+ *
  * @deprecated Please use LocalFileSystemPipe with action="move"
  */
 @Deprecated
@@ -60,7 +59,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 	private String prefix;
 	private String suffix;
 	private boolean throwException = false;
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -71,7 +70,6 @@ public class MoveFilePipe extends FixedForwardPipe {
 			throw new ConfigurationException("Property [move2dir] is not set");
 		}
 	}
-	
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
@@ -97,7 +95,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 					if (StringUtils.isEmpty(getMove2fileSessionKey())) {
 						dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFile.getName()));
 					} else {
-						dstFile = new File(getMove2dir(), retrieveDestinationChild(session.getMessage(getMove2fileSessionKey()).asString()));
+						dstFile = new File(getMove2dir(), retrieveDestinationChild(session.getString(getMove2fileSessionKey())));
 					}
 				} else {
 					dstFile = new File(getMove2dir(), retrieveDestinationChild(getMove2file()));
@@ -117,14 +115,14 @@ public class MoveFilePipe extends FixedForwardPipe {
 				if (StringUtils.isEmpty(getWildcardSessionKey())) {
 					wc = getWildcard();
 				} else {
-					wc = session.getMessage(getWildcardSessionKey()).asString();
+					wc = session.getString(getWildcardSessionKey());
 				}
 				//WildCardFilter filter = new WildCardFilter(wc);
 				//File[] srcFiles = srcFile.listFiles(filter);
 				File[] srcFiles = FileUtils.getFiles(srcFile.getPath(), wc, null, -1);
-				int count = (srcFiles == null ? 0 : srcFiles.length);
+				int count = srcFiles.length;
 				if (count==0) {
-					log.info(getLogPrefix(session) + "no files with wildcard [" + wc + "] found in directory [" + srcFile.getAbsolutePath() +"]");
+					log.info("no files with wildcard [{}] found in directory [{}]", wc, srcFile.getAbsolutePath());
 				}
 				for (int i = 0; i < count; i++) {
 					dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFiles[i].getName()));
@@ -132,7 +130,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 				}
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
 		/* if parent source directory is empty, delete the directory */
@@ -147,20 +145,19 @@ public class MoveFilePipe extends FixedForwardPipe {
 			if (srcDirectory.exists()) {
 				if (srcDirectory.list().length==0) {
 					boolean success = srcDirectory.delete();
-					if (!success){
-					   log.warn( getLogPrefix(session) + "could not delete directory [" + srcDirectory.getAbsolutePath() +"]");
-					} 
-					else {
-					   log.info(getLogPrefix(session) + "deleted directory [" + srcDirectory.getAbsolutePath() +"]");
-					} 
+					if(!success) {
+						log.warn("could not delete directory [{}]", srcDirectory.getAbsolutePath());
+					} else {
+						log.info("deleted directory [{}]", srcDirectory.getAbsolutePath());
+					}
 				} else {
-					   log.info(getLogPrefix(session) + "directory [" + srcDirectory.getAbsolutePath() +"] is not empty");
+					log.info("directory [{}] is not empty", srcDirectory.getAbsolutePath());
 				}
 			} else {
-				   log.info(getLogPrefix(session) + "directory [" + srcDirectory.getAbsolutePath() +"] doesn't exist");
+				log.info("directory [{}] doesn't exist", srcDirectory.getAbsolutePath());
 			}
 		}
-		
+
 		return new PipeRunResult(getSuccessForward(), (dstFile==null?srcFile.getAbsolutePath():dstFile.getAbsolutePath()));
 	}
 
@@ -177,48 +174,45 @@ public class MoveFilePipe extends FixedForwardPipe {
 		}
 		return newChild;
 	}
-	
+
 	private void moveFile(PipeLineSession session, File srcFile, File dstFile) throws PipeRunException {
 		try {
 			if (!dstFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (dstFile.getParentFile().mkdirs()) {
-						log.debug( getLogPrefix(session) + "created directory [" + dstFile.getParent() +"]");
+						log.debug( "created directory [{}]", dstFile.getParent());
 					} else {
-						log.warn( getLogPrefix(session) + "directory [" + dstFile.getParent() +"] could not be created");
+						log.warn( "directory [{}] could not be created", dstFile.getParent());
 					}
 				} else {
-					log.warn( getLogPrefix(session) + "directory [" + dstFile.getParent() +"] does not exists");
+					log.warn( "directory [{}] does not exists", dstFile.getParent());
 				}
 			}
-			
+
 			if (isAppend()) {
 				if (FileUtils.appendFile(srcFile,dstFile,getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
-					throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]"); 
-				} else {
-					srcFile.delete();
-					log.info(getLogPrefix(session)+"moved file ["+srcFile.getAbsolutePath()+"] to file ["+dstFile.getAbsolutePath()+"]");
-				}			 
+					throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]");
+				}
+				srcFile.delete();
+				log.info("moved file [{}] to file [{}]", srcFile.getAbsolutePath(), dstFile.getAbsolutePath());
 			} else {
 				if (!isOverwrite() && getNumberOfBackups()==0) {
 					if (dstFile.exists() && isThrowException()) {
-						throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"] because it already exists"); 
-					} else {
-						dstFile = FileUtils.getFreeFile(dstFile);
+						throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"] because it already exists");
 					}
+					dstFile = FileUtils.getFreeFile(dstFile);
 				}
 				if (FileUtils.moveFile(srcFile, dstFile, isOverwrite(), getNumberOfBackups(), getNumberOfAttempts(), getWaitBeforeRetry()) == null) {
-					throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]"); 
-				} else {
-					log.info(getLogPrefix(session)+"moved file ["+srcFile.getAbsolutePath()+"] to file ["+dstFile.getAbsolutePath()+"]");
-				}			 
+					throw new PipeRunException(this, "Could not move file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]");
+				}
+				log.info("moved file [{}] to file [{}]", srcFile.getAbsolutePath(), dstFile.getAbsolutePath());
 			}
 		} catch(Exception e) {
-			throw new PipeRunException(this, "Error while moving file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]", e); 
+			throw new PipeRunException(this, "Error while moving file [" + srcFile.getAbsolutePath() + "] to file ["+dstFile.getAbsolutePath()+"]", e);
 		}
 	}
-	
-	@IbisDoc({"name of the file to move (if not specified, the input for this pipe is assumed to be the name of the file", ""})
+
+	/** name of the file to move (if not specified, the input for this pipe is assumed to be the name of the file */
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
@@ -226,7 +220,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return filename;
 	}
 
-	@IbisDoc({"base directory where files are moved from", ""})
+	/** base directory where files are moved from */
 	public void setDirectory(String string) {
 		directory = string;
 	}
@@ -234,7 +228,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return directory;
 	}
 
-	@IbisDoc({"session key that contains the name of the filter to use (only used if wildcard is not set)", ""})
+	/** session key that contains the name of the filter to use (only used if wildcard is not set) */
 	public void setWildcardSessionKey(String string) {
 		wildcardSessionKey = string;
 	}
@@ -242,7 +236,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return wildcardSessionKey;
 	}
 
-	@IbisDoc({"filter of files to replace", ""})
+	/** filter of files to replace */
 	public void setWildcard(String string) {
 		wildcard = string;
 	}
@@ -250,7 +244,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return wildcard;
 	}
 
-	@IbisDoc({"destination directory", ""})
+	/** destination directory */
 	public void setMove2dir(String string) {
 		move2dir = string;
 	}
@@ -258,7 +252,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return move2dir;
 	}
 
-	@IbisDoc({"name of the destination file (if not specified, the name of the file to move is taken)", ""})
+	/** name of the destination file (if not specified, the name of the file to move is taken) */
 	public void setMove2file(String string) {
 		move2file = string;
 	}
@@ -266,7 +260,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return move2file;
 	}
 
-	@IbisDoc({"session key that contains the name of the file to use (only used if move2file is not set)", ""})
+	/** session key that contains the name of the file to use (only used if move2file is not set) */
 	public void setMove2fileSessionKey(String move2fileSessionKey) {
 		this.move2fileSessionKey = move2fileSessionKey;
 	}
@@ -274,7 +268,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return move2fileSessionKey;
 	}
 
-	@IbisDoc({"maximum number of attempts before throwing an exception", "10"})
+	/**
+	 * maximum number of attempts before throwing an exception
+	 * @ff.default 10
+	 */
 	public void setNumberOfAttempts(int i) {
 		numberOfAttempts = i;
 	}
@@ -282,7 +279,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return numberOfAttempts;
 	}
 
-	@IbisDoc({"Time <i>in milliseconds</i> between attempts", "1000"})
+	/**
+	 * Time <i>in milliseconds</i> between attempts
+	 * @ff.default 1000
+	 */
 	public void setWaitBeforeRetry(long l) {
 		waitBeforeRetry = l;
 	}
@@ -290,7 +290,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return waitBeforeRetry;
 	}
 
-	@IbisDoc({"number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.", "5"})
+	/**
+	 * number of copies held of a file with the same name. backup files have a dot and a number suffixed to their name. if set to 0, no backups will be kept.
+	 * @ff.default 5
+	 */
 	public void setNumberOfBackups(int i) {
 		numberOfBackups = i;
 	}
@@ -298,7 +301,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return numberOfBackups;
 	}
 
-	@IbisDoc({"when set <code>true</code>, the destination file will be deleted if it already exists. when set <code>false</code> and <code>numberofbackups</code> set to 0, a counter is added to the destination filename ('basename_###.ext')", "false"})
+	/**
+	 * when set <code>true</code>, the destination file will be deleted if it already exists. when set <code>false</code> and <code>numberofbackups</code> set to 0, a counter is added to the destination filename ('basename_###.ext')
+	 * @ff.default false
+	 */
 	public void setOverwrite(boolean b) {
 		overwrite = b;
 	}
@@ -306,7 +312,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return overwrite;
 	}
 
-	@IbisDoc({" when set <code>true</code> and the destination file already exists, the content of the file to move is written to the end of the destination file. this implies <code>overwrite=false</code>", "false"})
+	/**
+	 *  when set <code>true</code> and the destination file already exists, the content of the file to move is written to the end of the destination file. this implies <code>overwrite=false</code>
+	 * @ff.default false
+	 */
 	public void setAppend(boolean b) {
 		append = b;
 	}
@@ -314,7 +323,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return append;
 	}
 
-	@IbisDoc({"when set to <code>true</code>, the directory from which a file is moved is deleted when it contains no other files", "false"})
+	/**
+	 * when set to <code>true</code>, the directory from which a file is moved is deleted when it contains no other files
+	 * @ff.default false
+	 */
 	public void setDeleteEmptyDirectory(boolean b) {
 		deleteEmptyDirectory = b;
 	}
@@ -322,7 +334,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return deleteEmptyDirectory;
 	}
 
-	@IbisDoc({"when set to <code>true</code>, the directory to move to is created if it does not exist", "false"})
+	/**
+	 * when set to <code>true</code>, the directory to move to is created if it does not exist
+	 * @ff.default false
+	 */
 	public void setCreateDirectory(boolean b) {
 		createDirectory = b;
 	}
@@ -330,7 +345,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return createDirectory;
 	}
 
-	@IbisDoc({"string which is inserted at the start of the destination file", ""})
+	/** string which is inserted at the start of the destination file */
 	public void setPrefix(String string) {
 		prefix = string;
 	}
@@ -338,7 +353,7 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return prefix;
 	}
 
-	@IbisDoc({"string which is inserted at the end of the destination file (and replaces the extension if present)", ""})
+	/** string which is inserted at the end of the destination file (and replaces the extension if present) */
 	public void setSuffix(String string) {
 		suffix = string;
 	}
@@ -346,7 +361,10 @@ public class MoveFilePipe extends FixedForwardPipe {
 		return suffix;
 	}
 
-	@IbisDoc({"when <code>true</code>, <code>numberofbackups</code> is set to 0 and the destination file already exists a piperunexception is thrown (instead of adding a counter to the destination filename)", "false"})
+	/**
+	 * when <code>true</code>, <code>numberofbackups</code> is set to 0 and the destination file already exists a piperunexception is thrown (instead of adding a counter to the destination filename)
+	 * @ff.default false
+	 */
 	public void setThrowException(boolean b) {
 		throwException = b;
 	}

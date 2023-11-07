@@ -17,12 +17,14 @@ package nl.nn.adapterframework.processors;
 
 import org.springframework.transaction.PlatformTransactionManager;
 
-import nl.nn.adapterframework.core.PipeLineSession;
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
+import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -32,7 +34,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  */
 public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase {
 
-	private PlatformTransactionManager txManager;
+	private @Getter @Setter PlatformTransactionManager txManager;
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
@@ -91,7 +93,7 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 				}
 			} finally {
 				//txManager.commit(txStatus);
-				itx.commit();
+				itx.complete();
 			}
 		} catch (RuntimeException e) {
 			throw new PipeRunException(null, "RuntimeException calling PipeLine with tx attribute ["
@@ -99,10 +101,4 @@ public class TransactionAttributePipeLineProcessor extends PipeLineProcessorBase
 		}
 	}
 
-	public void setTxManager(PlatformTransactionManager txManager) {
-		this.txManager = txManager;
-	}
-	public PlatformTransactionManager getTxManager() {
-		return txManager;
-	}
 }

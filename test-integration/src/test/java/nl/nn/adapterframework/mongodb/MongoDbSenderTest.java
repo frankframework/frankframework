@@ -3,11 +3,11 @@ package nl.nn.adapterframework.mongodb;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 
 import org.hamcrest.core.StringContains;
 import org.junit.Test;
@@ -102,7 +102,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		Message result = sendMessage(students.build().toString());
 		assertThat(result.asString(),StringContains.containsString("\"insertedIds\":"));
 	}
-	
+
 	@Test
 	public void testFindOne() throws Exception {
 		sender.setAction(MongoAction.FINDONE);

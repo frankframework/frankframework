@@ -1,1 +1,1 @@
-{"_id":{"$oid":"60866fc0d5a55e251e95a085"},"student_id":"Harry","class_id":"1a","scores":[4,5,6]}
+{"_id":{"$oid":"60866fc0d5a55e251e95a085"},"student_id":"Harry","class_id":"first"}

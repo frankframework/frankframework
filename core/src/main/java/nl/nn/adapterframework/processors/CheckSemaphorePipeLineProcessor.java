@@ -19,9 +19,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import nl.nn.adapterframework.core.IPipe;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
@@ -51,7 +51,7 @@ public class CheckSemaphorePipeLineProcessor extends PipeLineProcessorBase {
 				pipeLineResult = pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 			} catch(InterruptedException e) {
 				throw new PipeRunException(pipe, "Interrupted acquiring PipeLine semaphore", e);
-			} finally { 
+			} finally {
 				s.release();
 			}
 		} else { //no restrictions on the maximum number of threads (s==null)

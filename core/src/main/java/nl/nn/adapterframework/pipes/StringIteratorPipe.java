@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,12 +26,11 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * IteratingPipe that has Strings as items.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class StringIteratorPipe extends IteratingPipe<String> {
@@ -63,14 +62,13 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 		}
 	}
 
-	
 	@Override
 	protected IteratingPipe<String>.ItemCallback createItemCallBack(PipeLineSession session, ISender sender, Writer writer) {
 		return new ItemCallback(session, sender, writer) {
 
 			private int itemCounter=0;
 			private int totalItems=0;
-			private StringBuffer items = new StringBuffer();
+			private StringBuilder items = new StringBuilder();
 			private String previousKey=null;
 			private boolean processingInBlocks=false;
 
@@ -87,7 +85,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 					items.append(getBlockPrefix());
 				}
 			}
-			
+
 			private StopReason finalizeBlock() throws SenderException, TimeoutException, IOException {
 				if (processingInBlocks && isCombineBlocks() && itemCounter>0) {
 					itemCounter=0;
@@ -98,15 +96,15 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 				}
 				return null;
 			}
-			
+
 			@Override
 			public StopReason handleItem(String item) throws SenderException, TimeoutException, IOException {
 				if (processInBlocksBySize && itemCounter==0) {
 					startBlock();
-				} 
+				}
 				if (processInBlocksByKey) {
 					String key = getKey(item);
-					if (!key.equals(previousKey)) { 
+					if (!key.equals(previousKey)) {
 						StopReason stopReason = finalizeBlock();
 						if(stopReason != null) {
 							return stopReason;
@@ -115,7 +113,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 						previousKey=key;
 					}
 				}
-				String itemInEnvelope = getLinePrefix()+(isEscapeXml()?XmlUtils.encodeChars(item):item)+getLineSuffix();
+				String itemInEnvelope = getLinePrefix()+(isEscapeXml() ? XmlEncodingUtils.encodeChars(item) : item)+getLineSuffix();
 				StopReason result = null;
 				if (processingInBlocks && isCombineBlocks()) {
 					items.append(itemInEnvelope);
@@ -127,7 +125,7 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 					result = super.handleItem(itemInEnvelope);
 				}
 				if (getMaxItems()>0 && ++totalItems>=getMaxItems()) {
-					log.debug(getLogPrefix(session)+"count ["+totalItems+"] reached maxItems ["+getMaxItems()+"], stopping loop");
+					log.debug("count [{}] reached maxItems [{}], stopping loop", totalItems, getMaxItems());
 					return StopReason.MAX_ITEMS_REACHED;
 				}
 				return result;
@@ -143,51 +141,69 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 	}
 
 	@Override
-	@IbisDoc({"1", "Controls multiline behaviour. If set to a value greater than 0, it specifies the number of rows send in a block to the sender.", "0 (one line at a time, no prefix of suffix)"})
+	/**
+	 * Controls multiline behaviour. If set to a value greater than 0, it specifies the number of rows send in a block to the sender.
+	 * @ff.default 0 (one line at a time, no prefix of suffix)
+	 */
 	public void setBlockSize(int i) {
 		stringIteratorPipeBlockSize = i;
 	}
 
-	@IbisDoc({"2", "If <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0); " + 
-			"A sequence of lines with the same key is put in one block and send to the sender. Cannot be used in combination with blockSize.", "-1"})
+	/**
+	 * If <code>startPosition &gt;= 0</code>, this field contains the start position of the key in the current record (first character is 0);
+	 * A sequence of lines with the same key is put in one block and send to the sender. Cannot be used in combination with blockSize.
+	 * @ff.default -1
+	 */
 	public void setStartPosition(int i) {
 		startPosition = i;
 	}
 
-	@IbisDoc({"3", "If <code>endPosition &gt;= startPosition</code>, this field contains the end position of the key in the current record", "-1"})
+	/**
+	 * If <code>endPosition &gt;= startPosition</code>, this field contains the end position of the key in the current record
+	 * @ff.default -1
+	 */
 	public void setEndPosition(int i) {
 		endPosition = i;
 	}
 
-	@IbisDoc({"4", "If <code>true</code>, all items in a block are sent at once. If set false, items are sent individually, potentially leveraging block enabled sending capabilities of the sender", "true"})
+	/**
+	 * If <code>true</code>, all items in a block are sent at once. If set false, items are sent individually, potentially leveraging block enabled sending capabilities of the sender
+	 * @ff.default true
+	 */
 	public void setCombineBlocks(boolean combineBlocks) {
 		this.combineBlocks = combineBlocks;
 	}
 
-
-
-	
-	@IbisDoc({"5", "If <code>combineBlocks = true</code>, this string is inserted at the start of each block. Requires <code>blockSize</code> or <code>startPosition</code> and <code>endPosition</code> to be set too.", "&lt;block&gt;"})
+	/**
+	 * If <code>combineBlocks = true</code>, this string is inserted at the start of each block. Requires <code>blockSize</code> or <code>startPosition</code> and <code>endPosition</code> to be set too.
+	 * @ff.default &lt;block&gt;
+	 */
 	public void setBlockPrefix(String string) {
 		blockPrefix = string;
 	}
 
-	@IbisDoc({"6", "If <code>combineBlocks = true</code>, this string is inserted at the end of the set of lines. Requires <code>blockSize</code> or <code>startPosition</code> and <code>endPosition</code> to be set too.", "&lt;/block&gt;"})
+	/**
+	 * If <code>combineBlocks = true</code>, this string is inserted at the end of the set of lines. Requires <code>blockSize</code> or <code>startPosition</code> and <code>endPosition</code> to be set too.
+	 * @ff.default &lt;/block&gt;
+	 */
 	public void setBlockSuffix(String string) {
 		blockSuffix = string;
 	}
 
-	@IbisDoc({"7", "This string is inserted at the start of each item", ""})
+	/** This string is inserted at the start of each item */
 	public void setLinePrefix(String string) {
 		linePrefix = string;
 	}
 
-	@IbisDoc({"8", "This string is appended at the end of each item", ""})
+	/** This string is appended at the end of each item */
 	public void setLineSuffix(String string) {
 		lineSuffix = string;
 	}
 
-	@IbisDoc({"9", "Escape XML characters in each item", "false"})
+	/**
+	 * Escape XML characters in each item
+	 * @ff.default false
+	 */
 	public void setEscapeXml(boolean escapeXml) {
 		this.escapeXml = escapeXml;
 	}

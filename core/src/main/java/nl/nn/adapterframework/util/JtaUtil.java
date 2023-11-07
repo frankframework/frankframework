@@ -49,7 +49,6 @@ public class JtaUtil {
 //		}   
 //	}
 
-	
 	public static String displayTransactionStatus(TransactionStatus txStatus) {
 		String result;
 		result="txName ["+TransactionSynchronizationManager.getCurrentTransactionName()+"]";
@@ -76,7 +75,7 @@ public class JtaUtil {
 				Object resource = resources.get(key);
 				result += ClassUtils.nameOf(key)+"("+key+"): "+ClassUtils.nameOf(resource)+"("+resource+")\n";
 				if (resource instanceof JmsResourceHolder) {
-					JmsResourceHolder jrh = (JmsResourceHolder)resource; 
+					JmsResourceHolder jrh = (JmsResourceHolder)resource;
 					result+="  connection: "+jrh.getConnection()+", session: "+jrh.getSession()+"\n";
 				}
 			}
@@ -86,7 +85,7 @@ public class JtaUtil {
 			result += "synchronizations:\n";
 			for (int i=0; i<synchronizations.size(); i++) {
 				TransactionSynchronization synchronization = synchronizations.get(i);
-				result += ClassUtils.nameOf(synchronization)+"("+synchronization+")\n"; 
+				result += ClassUtils.nameOf(synchronization)+"("+synchronization+")\n";
 			}
 		}
 		return result;

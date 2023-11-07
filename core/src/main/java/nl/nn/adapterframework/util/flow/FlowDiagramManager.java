@@ -33,6 +33,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -55,8 +56,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	private static Logger log = LogUtil.getLogger(FlowDiagramManager.class);
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private File adapterFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.adapter.dir"));
-	private File configFlowDir = new File(APP_CONSTANTS.getResolvedProperty("flow.config.dir"));
+	private File adapterFlowDir = new File(APP_CONSTANTS.getProperty("flow.adapter.dir"));
+	private File configFlowDir = new File(APP_CONSTANTS.getProperty("flow.config.dir"));
 	private @Setter ApplicationContext applicationContext;
 
 	private IFlowGenerator flowGenerator;
@@ -75,9 +76,8 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		}
 	}
 
-	public String getMediaType() {
-		MediaType type = (flowGenerator != null) ? flowGenerator.getMediaType() : MediaType.TEXT_PLAIN;
-		return type.toString();
+	public MimeType getMediaType() {
+		return (flowGenerator != null) ? flowGenerator.getMediaType() : MediaType.TEXT_PLAIN;
 	}
 
 	/**
@@ -168,7 +168,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		}
 
 		String configurationsXml = getConfigurationXml(configurations);
-		String name = "configurations[*ALL*]";
+		String name = "configurations[ALL]";
 
 		generateFlowDiagram(name, configurationsXml, destFile);
 	}

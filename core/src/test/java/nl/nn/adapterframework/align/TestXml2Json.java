@@ -1,14 +1,14 @@
 package nl.nn.adapterframework.align;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URL;
 
-import javax.json.JsonStructure;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import jakarta.json.JsonStructure;
 
 /**
  * @author Gerrit van Brakel
@@ -17,7 +17,7 @@ public class TestXml2Json extends AlignTestBase {
 
 	@Override
 	public void testFiles(String schemaFile, String namespace, String rootElement, String inputFile, boolean potentialCompactionProblems, String expectedFailureReason) throws Exception {
-		 boolean expectValidRoundTrip=true;
+		boolean expectValidRoundTrip=true;
 
 		testXml2Json(schemaFile, inputFile, rootElement, false, false, expectValidRoundTrip, expectedFailureReason);
 		testXml2Json(schemaFile, inputFile, rootElement, true, false, expectValidRoundTrip, expectedFailureReason);
@@ -29,19 +29,19 @@ public class TestXml2Json extends AlignTestBase {
 		URL schemaUrl=getSchemaURL(schemaFile);
 		String xmlString=getTestFile(xml+".xml");
 
-		 boolean expectValid=expectedFailureReason==null;
+		boolean expectValid=expectedFailureReason==null;
 
 		// check the validity of the input XML
 		if (expectValid) {
-			assertEquals("XML invalid", expectValid, Utils.validate(schemaUrl, xmlString));
+			assertEquals(expectValid, Utils.validate(schemaUrl, xmlString), "XML invalid");
 		}
 
-		System.out.println("input xml:"+xmlString);
+		LOG.debug("input xml:"+xmlString);
 		JsonStructure json;
 		String jsonOut;
 		try {
 			jsonOut=Xml2Json.translate(xmlString, schemaUrl, compactArrays, skipJsonRootElements).toString(true);
-			System.out.println("result compactArrays ["+compactArrays+"] skipJsonRootElements ["+skipJsonRootElements+"] json:\n" +jsonOut);
+			LOG.debug("result compactArrays ["+compactArrays+"] skipJsonRootElements ["+skipJsonRootElements+"] json:\n" +jsonOut);
 			if (!expectValid) {
 				fail("expected to fail with reason ["+ expectedFailureReason +"]");
 			}
@@ -49,16 +49,18 @@ public class TestXml2Json extends AlignTestBase {
 		} catch (Exception e) {
 			if (expectValid) {
 				e.printStackTrace();
-				System.out.println("exception compactArrays ["+compactArrays+"] skipJsonRootElements ["+skipJsonRootElements+"]");
+				LOG.error("exception compactArrays ["+compactArrays+"] skipJsonRootElements ["+skipJsonRootElements+"]");
 				fail(e.getMessage());
 			}
 			return;
 		}
 		if (expectValidRoundTrip) {
-			String backToXml1=Json2Xml.translate(json, schemaUrl, compactArrays, skipJsonRootElements?rootElement:null, null);
-			//System.out.println("back to xml compactArrays ["+compactArrays+"] xml:\n" +backToXml1);
-			String backToXml2=Json2Xml.translate(json, schemaUrl, !compactArrays, skipJsonRootElements?rootElement:null, null);
-			//System.out.println("back to xml compactArrays ["+!compactArrays+"] xml:\n" +backToXml2);
+			if(LOG.isDebugEnabled()) {
+				String backToXml1=Json2Xml.translate(json, schemaUrl, compactArrays, skipJsonRootElements?rootElement:null, null);
+				LOG.debug("back to xml compactArrays ["+compactArrays+"] xml:\n" +backToXml1);
+				String backToXml2=Json2Xml.translate(json, schemaUrl, !compactArrays, skipJsonRootElements?rootElement:null, null);
+				LOG.debug("back to xml compactArrays ["+!compactArrays+"] xml:\n" +backToXml2);
+			}
 
 			String jsonCompactExpected=getTestFile(xml+"-compact.json");
 			String jsonFullExpected=getTestFile(xml+"-full.json");
@@ -121,7 +123,7 @@ public class TestXml2Json extends AlignTestBase {
 	}
 
 //	private String getTestFile(String file) throws IOException, TimeoutException {
-//		URL url=ClassUtils.getResourceURL(this, file);
+//		URL url=ClassLoaderUtils.getResourceURL(this, file);
 //		if (url==null) {
 //			return null;
 //		}
@@ -254,7 +256,7 @@ public class TestXml2Json extends AlignTestBase {
 
 	@Override
 	@Test
-	@Ignore("test on erronous json input")
+	@Disabled("test on erronous json input")
 	public void testMixedContentUnknown() throws Exception {
 		super.testMixedContentUnknown();
 	}

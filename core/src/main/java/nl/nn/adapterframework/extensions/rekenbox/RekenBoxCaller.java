@@ -26,30 +26,33 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Counter;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
+
 /**
  * Perform a call to a RekenBox.
  *
  * The inputmessage is written to a temporary file and passed as inputfile to the rekenbox. The contents of the outputfile of the
  * rekenbox is returned as output message. The name of the rekenbox, as determined from the inputfile, is optionally written to
  * the pipeLineSession.
- * 
- * 
- * <p><b>Note:</b><br>
+ *
+ *
+ * <p><b>Note:</b><br/>
  * The rekenbox-name is currently determined from the first 8 characters of the file, or up
  * to the first space (' ') or colon (':') character. Beware that if the first character of the
  * file is a newline character or something similar, less characters are available to pass the
  * rekenbox-name on. Especially if the inputmessages are constructed by means of an XSLT-stylesheet,
  * messages often start with a newline character.
  * </p>
- * 
+ *
  * @author Gerrit van Brakel
  */
+@Category("NN-Special")
 public class RekenBoxCaller extends FixedForwardPipe {
-	
+
 	private String runPath="";
 	private String executableExtension="exe"; //bat, com or exe
 	private String inputOutputDirectory;
@@ -58,7 +61,7 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	private boolean cleanup=true;
 	private String commandLineType="straight";
 	private String rekenboxSessionKey=null; // output-property to communicate the name of the rekenbox to adios2Xml converter
-	
+
 	private String dataFilenamePrefix ="rb";
 	private long maxRequestNumber=1000;
 	private NumberFormat formatter;
@@ -66,14 +69,15 @@ public class RekenBoxCaller extends FixedForwardPipe {
 
 	private File inputOutputDir;
 
+	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(getCommandLineType()) || 
-			!(getCommandLineType().equals("straight") || 
-			  getCommandLineType().equals("switches") || 
-			  getCommandLineType().equals("redirected"))) {
-			  	throw new ConfigurationException("commandLineType ["+getCommandLineType()+"] must be one of 'straigth', 'switches' or 'redirected'");
-			  }
+		if (StringUtils.isEmpty(getCommandLineType()) ||
+			!(getCommandLineType().equals("straight") ||
+			getCommandLineType().equals("switches") ||
+			getCommandLineType().equals("redirected"))) {
+				throw new ConfigurationException("commandLineType ["+getCommandLineType()+"] must be one of 'straigth', 'switches' or 'redirected'");
+			}
 		inputOutputDir= new File(getInputOutputDirectory());
 		if (!inputOutputDir.exists()) {
 			throw new ConfigurationException("inputOutputDirectory ["+getInputOutputDirectory()+"] does not exist");
@@ -83,10 +87,10 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		}
 		formatter = new DecimalFormat("000000000000".substring(0,Long.toString(getMaxRequestNumber()).length()));
 		String baseFileName=getBaseFileName();
-		log.debug(getLogPrefix(null)+"first filename will be ["+baseFileName+"]");
+		log.debug("first filename will be [{}]", baseFileName);
 		requestCounter.decrease();
 	}
-	
+
 	protected boolean inputFileExists(long requestno,String extension) {
 		return new File(inputOutputDir,makeFileName(requestno,extension)).exists();
 	}
@@ -94,13 +98,11 @@ public class RekenBoxCaller extends FixedForwardPipe {
 	protected String makeFileName(long requestno, String extension) {
 		return getDataFilenamePrefix() + formatter.format(requestno)+extension;
 	}
-	
+
 	public String getBaseFileName() {
-		boolean didReset=false;
 		long requestno;
-		
 		for(requestno=requestCounter.increase(); inputFileExists(requestno,".INV"); requestno=requestCounter.increase()) {
-			if (!didReset && requestno>=getMaxRequestNumber()) {
+			if (requestno>=getMaxRequestNumber()) {
 				synchronized (requestCounter){
 					if (requestCounter.getValue()>=getMaxRequestNumber())	{
 						requestCounter.decrease(getMaxRequestNumber());
@@ -120,10 +122,9 @@ public class RekenBoxCaller extends FixedForwardPipe {
 		try {
 			sInput = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
-	
-	
+
 		String rekenboxName=getRekenBoxName();
 		if (StringUtils.isEmpty(rekenboxName)) {
 			rekenboxName = sInput;
@@ -132,88 +133,81 @@ public class RekenBoxCaller extends FixedForwardPipe {
 			// find end or position of first colon.
 			rekenboxName = (rekenboxName+":").substring(0, (rekenboxName+":").indexOf(":")).trim();
 		}
-	
+
 		if (rekenboxName.equals("")) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot determine rekenboxName from ["+sInput+"]");
+			throw new PipeRunException(this, "cannot determine rekenboxName from ["+sInput+"]");
 		}
-		
+
 		int i=rekenboxName.length();
 		int n=sInput.length();
-		while (i<n && " :;".indexOf(sInput.charAt(i))>=0) {
+		while(i < n && " :;".indexOf(sInput.charAt(i)) >= 0) {
 			i++;
 		}
 		String rekenboxInput = sInput.substring(i);
-		
-	    String exeName = runPath+rekenboxName+ "."+executableExtension;
-		if (!(new File(exeName).exists())) {
-			throw new PipeRunException(this, getLogPrefix(session)+"executable file ["+exeName+"] does not exist; requestmessage: ["+sInput+"]");
-		}
-	
-		if (getRekenboxSessionKey() != null) {
-	        session.put(getRekenboxSessionKey(),rekenboxName);
-	    }
 
-	    String baseFileName=getBaseFileName();
-	    String inputFileName=inputOutputDirectory+baseFileName+".INV";
-	    String outputFileName=inputOutputDirectory+baseFileName+".UIT";
-	    
-	    String callAndArgs;
+		String exeName = runPath + rekenboxName + "." + executableExtension;
+		if(!(new File(exeName).exists())) {
+			throw new PipeRunException(this, "executable file [" + exeName + "] does not exist; requestmessage: [" + sInput + "]");
+		}
+
+		if(getRekenboxSessionKey() != null) {
+			session.put(getRekenboxSessionKey(), rekenboxName);
+		}
+
+		String baseFileName = getBaseFileName();
+		String inputFileName = inputOutputDirectory + baseFileName + ".INV";
+		String outputFileName = inputOutputDirectory + baseFileName + ".UIT";
+
+		String callAndArgs;
 		String callType = getCommandLineType();
-		if ((callType==null) || (callType.equals("switches")))  {
-			callAndArgs =  exeName+" /I"+inputFileName + " /U"+outputFileName + " /P"+templateDir;
-		}
-		else
-		  if (callType.equals("straight"))  {
-			callAndArgs =  exeName+" "+inputFileName + " "+outputFileName + " "+templateDir;
-		}
-		else
-		  if (callType.equals("redirected"))  {
-			callAndArgs =  exeName+" "+inputFileName + " "+templateDir;
-		}
-		else
-		  throw new PipeRunException(this, getLogPrefix(session)+"unknown commandLineType: "+callType);
-	
-	    try {
-	        // put input in a file
-			Misc.stringToFile( rekenboxInput, inputFileName);
+		if((callType==null) || (callType.equals("switches")))  {
+			callAndArgs = exeName + " /I" + inputFileName + " /U" + outputFileName + " /P" + templateDir;
+		} else if(callType.equals("straight")) {
+			callAndArgs = exeName + " " + inputFileName + " " + outputFileName + " " + templateDir;
+		} else if(callType.equals("redirected")) {
+			callAndArgs = exeName + " " + inputFileName + " " + templateDir;
+		} else
+			throw new PipeRunException(this, "unknown commandLineType: " + callType);
+
+		try {
+			// put input in a file
+			StreamUtil.stringToFile(rekenboxInput, inputFileName);
 
 			// precreating outputfile is necessary for L76HB000
-			log.debug(getLogPrefix(session)+" precreating outputfile ["+outputFileName+"]");
+			log.debug("precreating outputfile [{}]", outputFileName);
 			new File(outputFileName).createNewFile();
-			
-			log.debug(getLogPrefix(session)+" will issue command ["+callAndArgs+"]");
-	  
-			// execute 
-	        Runtime rt = Runtime.getRuntime();
-	
-	        Process child = rt.exec(callAndArgs);
+
+			log.debug("will issue command [{}]", callAndArgs);
+
+			// execute
+			Runtime rt = Runtime.getRuntime();
+
+			Process child = rt.exec(callAndArgs);
 			String result;
-			
-			if (callType.equals("redirected"))  {
-				result=Misc.streamToString(child.getInputStream(),"\n", true);
-				
+
+			if(callType.equals("redirected")) {
+				result = StreamUtil.streamToString(child.getInputStream(), "\n", true);
+
 			} else {
 				child.waitFor();
-	        
+
 				// read output
-				result=Misc.fileToString(outputFileName, "\n", true);
+				result = StreamUtil.fileToString(outputFileName, "\n", true);
 			}
-			log.debug(getLogPrefix(session)+" completed call. Process exit code is: " + child.exitValue());
-	        
-			
-	//		log.debug("Pipe ["+name+"] retrieved result ["+result+"]");
-		    return new PipeRunResult(getSuccessForward(), result);
-			
-	    } catch (Exception e) {
-		   	throw new PipeRunException(this, getLogPrefix(session)+"got Exception executing rekenbox", e);
-	    } finally {
+			log.debug("completed call. Process exit code is: {}", child.exitValue());
+
+			// log.debug("Pipe ["+name+"] retrieved result ["+result+"]");
+			return new PipeRunResult(getSuccessForward(), result);
+
+		} catch (Exception e) {
+			throw new PipeRunException(this, "got Exception executing rekenbox", e);
+		} finally {
 			// cleanup
-			if (isCleanup()){
+			if(isCleanup()){
 				new File(inputFileName).delete();
 				new File(outputFileName).delete();
 			}
-	    }
-	    
+		}
 	}
 
 	/** Fixed name of the rekenbox (or wrapper) to be called. If empty, the name is determined from the request */

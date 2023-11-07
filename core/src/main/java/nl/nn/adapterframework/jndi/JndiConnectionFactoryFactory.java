@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFa
 	public ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException {
 		return get(connectionFactoryName);
 	}
-	
+
 	@Override
 	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException {
 		return get(connectionFactoryName, jndiEnvironment);
@@ -42,7 +42,7 @@ public class JndiConnectionFactoryFactory extends JndiObjectFactory<ConnectionFa
 
 	@Override
 	public List<String> getConnectionFactoryNames() {
-		return new ArrayList<String>(objects.keySet());
+		return new ArrayList<>(objects.keySet());
 	}
 
 }

@@ -1,0 +1,4 @@
+<root xmlns:ns1="urn:test" >
+	<x >x</x>
+	<y xmlns:ns1="urn:test" />
+</root>

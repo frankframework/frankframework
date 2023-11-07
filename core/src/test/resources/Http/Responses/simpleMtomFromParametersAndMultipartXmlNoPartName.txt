@@ -1,0 +1,37 @@
+POST http://127.0.0.1/ HTTP/1.1
+Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
+Correlation-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb2
+custom-header: value
+Content-Type: multipart/related; boundary="IGNORE"; charset=UTF-8; type="application/xop+xml"; start="<request>"; start-info="text/xml"
+
+--IGNORE
+Content-Transfer-Encoding: base64
+Content-Type: application/xop+xml; charset=UTF-8
+Content-ID: <request>
+
+<xml>input</xml>
+--IGNORE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Content-ID: <string-part>
+
+<string content/>
+--IGNORE
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: binary
+Content-ID: <binary-part>
+
+mock pdf content
+--IGNORE
+Content-Type: application/pdf
+Content-Transfer-Encoding: binary
+Content-ID: <part_file>
+
+<dummy xml file/>
+--IGNORE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Content-ID: <stringPart>
+
+mock pdf content
+--IGNORE--

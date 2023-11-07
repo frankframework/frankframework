@@ -31,7 +31,7 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 	private Object captureStream;
 	private int caputureSize;
 	private String charset;
-	
+
 	public MessageOutputStreamCap(INamedObject owner, IForwardTarget next) {
 		super(owner, next, null);
 	}
@@ -105,8 +105,7 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 			return;
 		}
 	}
-	
-	
+
 	@Override
 	public void captureCharacterStream(Writer writer, int maxSize) {
 		captureStream = writer;
@@ -118,5 +117,4 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 		captureStream = outputStream;
 		caputureSize = maxSize;
 	}
-	
 }

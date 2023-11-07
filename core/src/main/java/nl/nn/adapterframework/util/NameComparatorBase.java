@@ -46,21 +46,21 @@ public abstract class NameComparatorBase<T> implements Comparator<T> {
 		while(result ==0 && end_pos0<s0.length() && end_pos1<s1.length()) {
 			start_pos0=skipWhitespace(s0, start_pos0);
 			start_pos1=skipWhitespace(s1, start_pos1);
-			end_pos0=getNextIndex(s0, start_pos0, numeric);			
+			end_pos0=getNextIndex(s0, start_pos0, numeric);
 			end_pos1=getNextIndex(s1, start_pos1, numeric);
 			String part0=s0.substring(start_pos0,end_pos0);
 			String part1=s1.substring(start_pos1,end_pos1);
 			if (numeric) {
 				long lres;
 				try {
-					lres = Long.parseLong(part0)-Long.parseLong(part1); 
+					lres = Long.parseLong(part0)-Long.parseLong(part1);
 				} catch (NumberFormatException e) {
 					lres = part0.compareTo(part1);
 				}
 				if (lres!=0) {
 					if (lres<0) {
 						return -1;
-					} 
+					}
 					return 1;
 				}
 			} else {
@@ -91,15 +91,15 @@ public abstract class NameComparatorBase<T> implements Comparator<T> {
 
 		result = compareStringsNaturalOrder(f0,f1,false);
 		if (result!=0) {
-			return result; 
+			return result;
 		}
 		result = compareStringsNaturalOrder(f0,f1,true);
 		if (result!=0) {
-			return result; 
+			return result;
 		}
 		result = f0.compareToIgnoreCase(f1);
 		if (result!=0) {
-			return result; 
+			return result;
 		}
 		result = f0.compareTo(f1);
 		if (result==0) {

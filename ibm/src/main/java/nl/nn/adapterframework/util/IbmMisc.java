@@ -18,7 +18,7 @@ package nl.nn.adapterframework.util;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.transform.Transformer;
@@ -37,103 +37,103 @@ import com.ibm.ws.threadContext.ComponentMetaDataAccessorImpl;
  * @since 5.0.29
  */
 public class IbmMisc {
-    private static final Logger LOG = LogUtil.getLogger(IbmMisc.class);
+	private static final Logger LOG = LogUtil.getLogger(IbmMisc.class);
 	public static final String GETCONNPOOLPROP_XSLT = "xml/xsl/getConnectionPoolProperties.xsl";
 	public static final String GETJMSDEST_XSLT = "xml/xsl/getJmsDestinations.xsl";
 
 	// Used in iaf-core Misc class
-    public static String getApplicationDeploymentDescriptorPath() throws IOException {
-        final String appName = ComponentMetaDataAccessorImpl.getComponentMetaDataAccessor().getComponentMetaData().getJ2EEName().getApplication();
-        final AdminService adminService = AdminServiceFactory.getAdminService();
-        final String cellName = adminService.getCellName();
-        String appPath =
-                System.getProperty("user.install.root")
-                        + File.separator
-                        + "config"
-                        + File.separator
-                        + "cells"
-                        + File.separator
-                        + cellName
-                        + File.separator
-                        + "applications"
-                        + File.separator
-                        + appName
-                        + ".ear"
-                        + File.separator
-                        + "deployments"
-                        + File.separator
-                        + appName
-                        + File.separator
-                        + "META-INF";
-        LOG.debug("applicationDeploymentDescriptorPath [" + appPath + "]");
-        return appPath;
-    }
+	public static String getApplicationDeploymentDescriptorPath() {
+		final String appName = ComponentMetaDataAccessorImpl.getComponentMetaDataAccessor().getComponentMetaData().getJ2EEName().getApplication();
+		final AdminService adminService = AdminServiceFactory.getAdminService();
+		final String cellName = adminService.getCellName();
+		String appPath =
+				System.getProperty("user.install.root")
+						+ File.separator
+						+ "config"
+						+ File.separator
+						+ "cells"
+						+ File.separator
+						+ cellName
+						+ File.separator
+						+ "applications"
+						+ File.separator
+						+ appName
+						+ ".ear"
+						+ File.separator
+						+ "deployments"
+						+ File.separator
+						+ appName
+						+ File.separator
+						+ "META-INF";
+		LOG.debug("applicationDeploymentDescriptorPath [" + appPath + "]");
+		return appPath;
+	}
 
 	// Used in iaf-core Misc class
-    public static String getConfigurationResourcePath() throws IOException {
-        final AdminService adminService = AdminServiceFactory.getAdminService();
-        final String cellName = adminService.getCellName();
-        final String nodeName = adminService.getNodeName();
-        final String processName = adminService.getProcessName();
-        String crFile =
-                System.getProperty("user.install.root")
-                        + File.separator
-                        + "config"
-                        + File.separator
-                        + "cells"
-                        + File.separator
-                        + cellName
-                        + File.separator
-                        + "nodes"
-                        + File.separator
-                        + nodeName
-                        + File.separator
-                        + "servers"
-                        + File.separator
-                        + processName
-                        + File.separator
-                        + "resources.xml";
-        LOG.debug("configurationResourcesPath [" + crFile + "]");
-        return crFile;
-    }
+	public static String getConfigurationResourcePath() {
+		final AdminService adminService = AdminServiceFactory.getAdminService();
+		final String cellName = adminService.getCellName();
+		final String nodeName = adminService.getNodeName();
+		final String processName = adminService.getProcessName();
+		String crFile =
+				System.getProperty("user.install.root")
+						+ File.separator
+						+ "config"
+						+ File.separator
+						+ "cells"
+						+ File.separator
+						+ cellName
+						+ File.separator
+						+ "nodes"
+						+ File.separator
+						+ nodeName
+						+ File.separator
+						+ "servers"
+						+ File.separator
+						+ processName
+						+ File.separator
+						+ "resources.xml";
+		LOG.debug("configurationResourcesPath [" + crFile + "]");
+		return crFile;
+	}
 
 	// Used in iaf-core Misc class
-    public static String getConfigurationServerPath() throws IOException {
-        final AdminService adminService = AdminServiceFactory.getAdminService();
-        final String cellName = adminService.getCellName();
-        final String nodeName = adminService.getNodeName();
-        final String processName = adminService.getProcessName();
-        String csFile =
-                System.getProperty("user.install.root")
-                        + File.separator
-                        + "config"
-                        + File.separator
-                        + "cells"
-                        + File.separator
-                        + cellName
-                        + File.separator
-                        + "nodes"
-                        + File.separator
-                        + nodeName
-                        + File.separator
-                        + "servers"
-                        + File.separator
-                        + processName
-                        + File.separator
-                        + "server.xml";
-        LOG.debug("configurationServerPath [" + csFile + "]");
-        return csFile;
-    }
+	public static String getConfigurationServerPath() {
+		final AdminService adminService = AdminServiceFactory.getAdminService();
+		final String cellName = adminService.getCellName();
+		final String nodeName = adminService.getNodeName();
+		final String processName = adminService.getProcessName();
+		String csFile =
+				System.getProperty("user.install.root")
+						+ File.separator
+						+ "config"
+						+ File.separator
+						+ "cells"
+						+ File.separator
+						+ cellName
+						+ File.separator
+						+ "nodes"
+						+ File.separator
+						+ nodeName
+						+ File.separator
+						+ "servers"
+						+ File.separator
+						+ processName
+						+ File.separator
+						+ "server.xml";
+		LOG.debug("configurationServerPath [" + csFile + "]");
+		return csFile;
+	}
 
-	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) throws IOException, DomBuilderException, TransformerException, SAXException {
+	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) throws IOException, TransformerException, SAXException {
 		// providerType: 'JDBC' or 'JMS'
-		URL url = ClassUtils.getResourceURL(GETCONNPOOLPROP_XSLT);
+		URL url = ClassLoaderUtils.getResourceURL(GETCONNPOOLPROP_XSLT);
 		if (url == null) {
 			throw new IOException("cannot find resource ["
 					+ GETCONNPOOLPROP_XSLT + "]");
 		}
 		Transformer t = XmlUtils.createTransformer(url, 2);
-		Map<String, Object> parameters = new Hashtable<>();
+		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("providerType", providerType);
 		parameters.put("jndiName", jndiName);
 		XmlUtils.setTransformerParameters(t, parameters);
@@ -145,8 +145,8 @@ public class IbmMisc {
 		return connectionPoolProperties;
 	}
 
-	public static String getJmsDestinations(String confResString) throws IOException, DomBuilderException, TransformerException, SAXException {
-		URL url = ClassUtils.getResourceURL(GETJMSDEST_XSLT);
+	public static String getJmsDestinations(String confResString) throws IOException, TransformerException, SAXException {
+		URL url = ClassLoaderUtils.getResourceURL(GETJMSDEST_XSLT);
 		if (url == null) {
 			throw new IOException("cannot find resource [" + GETJMSDEST_XSLT + "]");
 		}
@@ -156,7 +156,7 @@ public class IbmMisc {
 
 		return jmsDestinations;
 	}
-	
+
 	private static String chomp(String string, int length, boolean isEmpty) {
 		if (isEmpty && StringUtils.isEmpty(string)) {
 			return "[#EMPTY#]";

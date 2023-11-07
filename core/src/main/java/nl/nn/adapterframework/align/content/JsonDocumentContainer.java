@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2017 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,22 +19,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.json.stream.JsonGenerator;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xs.XSTypeDefinition;
 
+import jakarta.json.stream.JsonGenerator;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Helper class to construct JSON from XML events.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class JsonDocumentContainer extends TreeContentContainer<JsonElementContainer>{
 	protected Logger log = LogUtil.getLogger(this.getClass());
-	
+
 	private String name;
 	private boolean skipArrayElementContainers;
 	private boolean skipRootElement;
@@ -43,13 +42,13 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 
 	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
 	private final int MAX_INDENT=INDENTOR.length/2;
-	
+
 	public JsonDocumentContainer(String name, boolean skipArrayElementContainers, boolean skipRootElement) {
 		this.name=name;
 		this.skipArrayElementContainers=skipArrayElementContainers;
 		this.skipRootElement=skipRootElement;
 	}
-	
+
 	@Override
 	protected JsonElementContainer createElementContainer(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition) {
 		return new JsonElementContainer(localName, xmlArrayContainer, repeatedElement, skipArrayElementContainers, attributePrefix, mixedContentLabel, typeDefinition);
@@ -61,12 +60,11 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 		parent.addContent(child);
 	}
 
-	
 	@Override
 	public String toString() {
 		return toString(true);
 	}
-	
+
 	public String toString(boolean indent) {
 		Object content=getRoot().getContent();
 		if (content==null) {
@@ -76,25 +74,25 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 			Map map=(Map)content;
 			content=map.values().toArray()[0];
 		}
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		toString(sb,content,indent?0:-1);
 		return sb.toString();
 //		Map config  =new HashMap<String,Object>();
 //		config.put(JsonGenerator.PRETTY_PRINTING,true);
 //		JsonGeneratorFactory gf = Json.createGeneratorFactory(config);
-//		
+//
 //		StringWriter writer = new StringWriter();
 //		JsonGenerator generator = gf.createGenerator(writer);
 //		generate(generator, null, content);
 //		generator.close();
 //		return writer.toString();
 	}
-	
-	protected void toString(StringBuffer sb, Object item, int indentLevel) {
+
+	protected void toString(StringBuilder sb, Object item, int indentLevel) {
 		if (item==null) {
 			sb.append("null");
 		} else if (item instanceof String) {
-			sb.append(item); 
+			sb.append(item);
 		} else if (item instanceof Map) {
 			sb.append("{");
 			if (indentLevel>=0) indentLevel++;
@@ -129,17 +127,17 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 
 	protected void generate(JsonGenerator g, String key, Object item) {
 		if (item==null) {
-			if (key!=null) g.writeNull(key); else g.writeNull(); 
+			if (key!=null) g.writeNull(key); else g.writeNull();
 		} else if (item instanceof String) {
-			if (key!=null) g.write(key,(String)item); else g.write((String)item); 
+			if (key!=null) g.write(key,(String)item); else g.write((String)item);
 		} else if (item instanceof Map) {
-			if (key!=null) g.writeStartObject(key); else g.writeStartObject(); 
+			if (key!=null) g.writeStartObject(key); else g.writeStartObject();
 			for (Entry<String,Object> entry:((Map<String,Object>)item).entrySet()) {
 				generate(g, entry.getKey(), entry.getValue());
 			}
 			g.writeEnd();
 		} else if (item instanceof List) {
-			if (key!=null) g.writeStartArray(key); else g.writeStartArray(); 
+			if (key!=null) g.writeStartArray(key); else g.writeStartArray();
 			for (Object subitem:(List)item) {
 				generate(g, null, subitem);
 			}
@@ -150,7 +148,7 @@ public class JsonDocumentContainer extends TreeContentContainer<JsonElementConta
 	}
 
 
-	private void newLine(StringBuffer sb, int indentLevel) {
+	private void newLine(StringBuilder sb, int indentLevel) {
 		if (indentLevel>=0)  {
 			sb.append(INDENTOR, 0, (indentLevel<MAX_INDENT?indentLevel:MAX_INDENT)*2+1);
 		}

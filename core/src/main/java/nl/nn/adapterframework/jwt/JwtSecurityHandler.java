@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,47 +19,48 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.util.StringUtil;
 
 public class JwtSecurityHandler implements ISecurityHandler {
 
-	private @Getter Map<String, Object> claimsSet;
-	private @Getter String roleClaim;
+	private final @Getter Map<String, Object> claimsSet;
+	private final @Getter String roleClaim;
+	private final @Getter String principalNameClaim; //Defaults to JWTClaimNames#SUBJECT
 
-	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim) {
+	public JwtSecurityHandler(Map<String, Object> claimsSet, String roleClaim, String principalNameClaim) {
 		this.claimsSet = claimsSet;
 		this.roleClaim = roleClaim;
+		this.principalNameClaim = principalNameClaim;
 	}
 
+	//JWTClaimNames#AUDIENCE claim may be a String or List<String>. Others are either a String or Long (epoch date)
 	@Override
 	public boolean isUserInRole(String role, PipeLineSession session) {
-		String claim = (String) getClaimsSet().get(roleClaim);
-		return role.equals(claim);
+		Object claim = claimsSet.get(roleClaim);
+		if(claim instanceof String) {
+			return role.equals(claim);
+		} else if(claim instanceof List) {
+			List<String> claimList = (List<String>) claim;
+			return claimList.stream().anyMatch(role::equals);
+		}
+		return false;
 	}
 
 	@Override
 	public Principal getPrincipal(PipeLineSession session) {
-		Principal principal = new Principal() {
-
-			@Override
-			public String getName() {
-				return (String) getClaimsSet().get("sub");
-			}
-
-		};
-		return principal;
+		return () -> (String) claimsSet.get(principalNameClaim);
 	}
 
 	public void validateClaims(String requiredClaims, String exactMatchClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
-			List<String> claims = Stream.of(requiredClaims.split("\\s*,\\s*")).collect(Collectors.toList());
+			List<String> claims = StringUtil.split(requiredClaims);
 			for (String claim : claims) {
 				if(!claimsSet.containsKey(claim)) {
 					throw new AuthorizationException("JWT missing required claims: ["+claim+"]");
@@ -69,12 +70,15 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
-			Map<String, String> claims = Stream.of(exactMatchClaims.split("\\s*,\\s*"))
-					.map(s -> s.split("\\s*=\\s*")).collect(Collectors.toMap(item -> item[0], item -> item[1]));
-			for (String key : claims.keySet()) {
-				String expectedValue = claims.get(key);
-				String value = (String) claimsSet.get(key);
-				if(!value.equals(expectedValue)) {
+			Map<String, String> claims = StringUtil.splitToStream(exactMatchClaims)
+					.map(s -> StringUtil.split(s, "="))
+					.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)));
+
+			for (Map.Entry<String, String> entry : claims.entrySet()) {
+				String key = entry.getKey();
+				String expectedValue = entry.getValue();
+				Object value = claimsSet.get(key);
+				if(!expectedValue.equals(value)) { //Value may be a List, Long or String
 					throw new AuthorizationException("JWT "+key+" claim has value ["+value+"], must be ["+expectedValue+"]");
 				}
 			}

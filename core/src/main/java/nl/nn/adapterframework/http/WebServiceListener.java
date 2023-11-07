@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.http;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.xml.soap.SOAPConstants;
 import javax.xml.ws.soap.SOAPBinding;
@@ -27,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
-import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -36,32 +34,44 @@ import nl.nn.adapterframework.configuration.HasSpecialDefaultValues;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.cxf.MessageProvider;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
- * Listener that allows a {@link nl.nn.adapterframework.receivers.Receiver} to receive messages as a SOAP webservice.
+ * Listener that allows a {@link Receiver} to receive messages as a SOAP webservice.
  * The structure of the SOAP messages is expressed in a WSDL (Web Services Description Language) document.
- * The Frank!Framework generates a WSDL document for each adapter that contains WebServiceListener-s. You can
+ * The Frank!Framework generates a WSDL document for each adapter that contains WebServiceListeners. You can
  * find these documents in the Frank!Console under main menu item Webservices, heading Available WSDL's.
  * The WSDL documents that we generate document how the SOAP services can be accessed. In particular, the
  * URL of a SOAP service can be found in an XML element <code>&lt;soap:address&gt;</code> with
  * <code>soap</code> pointing to namespace <code>http://schemas.xmlsoap.org/wsdl/soap/</code>.
  *
+ * <br/>If <code>address</code> is set, then for each request:<ul>
+ * <li>MIME headers are described in a 'mimeHeaders'-XML stored under session key 'mimeHeaders'</li>
+ * <li>Attachments present in the request are described by an 'attachments'-XML stored under session key 'attachments'</li>
+ * <li>SOAP protocol is stored under a session key 'soapProtocol'</li>
+ * <li>SOAP action is stored under a session key 'SOAPAction'</li>
+ * </ul>
+ * and for each response a multipart message is constructed if a 'multipart'-XML is provided in sessionKey specified by multipartXmlSessionKey.
+ *
  * @author Gerrit van Brakel
  * @author Jaco de Groot
  * @author Niels Meijer
  */
-public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues, ApplicationContextAware {
+public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Http";
 	private @Getter boolean soap = true;
 	private @Getter String serviceNamespaceURI;
 	private SoapWrapper soapWrapper = null;
+	private String servletUrlMapping = AppConstants.getInstance().getString("servlet.SoapProviderServlet.urlMapping", "services");
 
 	/* CXF Implementation */
 	private @Getter String address;
@@ -85,10 +95,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			throw new ConfigurationException("address cannot contain colon ( : ) character");
 
 		if (StringUtils.isNotEmpty(getAttachmentSessionKeys())) {
-			StringTokenizer stringTokenizer = new StringTokenizer(getAttachmentSessionKeys(), " ,;");
-			while (stringTokenizer.hasMoreTokens()) {
-				attachmentSessionKeysList.add(stringTokenizer.nextToken());
-			}
+			attachmentSessionKeysList.addAll(StringUtil.split(getAttachmentSessionKeys(), " ,;"));
 		}
 
 		if (isSoap()) {
@@ -165,7 +172,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	}
 
 	@Override
-	public Message processRequest(String correlationId, Message message, Map<String, Object> requestContext) throws ListenerException {
+	public Message processRequest(Message message, PipeLineSession session) throws ListenerException {
 		if (!attachmentSessionKeysList.isEmpty()) {
 			XmlBuilder xmlMultipart = new XmlBuilder("parts");
 			for(String attachmentSessionKey: attachmentSessionKeysList) {
@@ -176,17 +183,17 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 				part.addAttribute("mimeType", "application/octet-stream");
 				xmlMultipart.addSubElement(part);
 			}
-			requestContext.put(getMultipartXmlSessionKey(), xmlMultipart.toXML());
+			session.put(getMultipartXmlSessionKey(), xmlMultipart.toXML());
 		}
 
 		if (isSoap()) {
 			try {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"received SOAPMSG [" + message + "]");
-				Message request = soapWrapper.getBody(message);
-				Message result = super.processRequest(correlationId, request, requestContext);
+				Message request = soapWrapper.getBody(message, false, session, null);
+				Message result = super.processRequest(request, session);
 
 				String soapNamespace = SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE;
-				String soapProtocol = (String) requestContext.get("soapProtocol");
+				String soapProtocol = (String) session.get("soapProtocol");
 				if(SOAPConstants.SOAP_1_2_PROTOCOL.equals(soapProtocol)) {
 					soapNamespace = SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE;
 				}
@@ -198,7 +205,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			}
 		}
 
-		return super.processRequest(correlationId, message, requestContext);
+		return super.processRequest(message, session);
 	}
 
 	public String getLogPrefix() {
@@ -208,7 +215,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	@Override
 	public String getPhysicalDestinationName() {
 		if(StringUtils.isNotEmpty(getAddress())) {
-			return "address ["+getAddress()+"]";
+			return "address [/"+servletUrlMapping+"/"+getAddress()+"]";
 		}
 		else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			return "serviceNamespaceURI ["+getServiceNamespaceURI()+"]";
@@ -216,20 +223,31 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		return "name ["+getName()+"]";
 	}
 
-	@IbisDoc({"when <code>true</code> the soap envelope is removed from received messages and a soap envelope is added to returned messages (soap envelope will not be visible to the pipeline)", "true"})
+	/**
+	 * If <code>true</code> the SOAP envelope is removed from received messages and a SOAP envelope is added to returned messages (SOAP envelope will not be visible to the pipeline)
+	 * @ff.default true
+	 */
 	public void setSoap(boolean b) {
 		soap = b;
 	}
 
-	@IbisDoc({"namespace of the service that is provided by the adapter of this listener", ""})
+	/**
+	 * Namespace of the service that is provided by the adapter of this listener.
+	 * If specified, requests posted to https://mydomain.com/ibis4something/servlet/rpcrouter that have this namespace in their body  will be handled by this listener,
+	 * where mydomain.com and ibis4something refer to 'your ibis'.
+	 */
 	public void setServiceNamespaceURI(String string) {
 		serviceNamespaceURI = string;
 	}
+
 	public void setApplicationFaultsAsSoapFaults(boolean b) {
 		setApplicationFaultsAsExceptions(b);
 	}
 
-	@IbisDoc({ "The address to listen to, e.g the part &lt;address&gt; in https://mydomain.com/ibis4something/services/&lt;address&gt;, where mydomain.com and ibis4something refer to 'your ibis'","" })
+	/**
+	 * The address to listen to, e.g the part &lt;address&gt; in https://mydomain.com/ibis4something/services/&lt;address&gt;,
+	 * where mydomain.com and ibis4something refer to 'your ibis'.
+	 */
 	public void setAddress(String address) {
 		if(!address.isEmpty()) {
 			if(address.startsWith("/"))
@@ -239,14 +257,20 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 	}
 
+	/** If set, MTOM is enabled on the SOAP binding */
 	public void setMtomEnabled(boolean mtomEnabled) {
 		this.mtomEnabled = mtomEnabled;
 	}
 
+	/** Comma separated list of session keys to hold contents of attachments of the request */
 	public void setAttachmentSessionKeys(String attachmentSessionKeys) {
 		this.attachmentSessionKeys = attachmentSessionKeys;
 	}
 
+	/**
+	 * Key of session variable that holds the description (name, sessionKey, mimeType) of the parts present in the request. Only used if attachmentSessionKeys are specified
+	 * @ff.default multipartXml
+	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}

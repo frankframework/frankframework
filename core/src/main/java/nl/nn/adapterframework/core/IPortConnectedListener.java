@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,21 +21,22 @@ import nl.nn.adapterframework.receivers.Receiver;
  * Interface extending IPushingListener for listeners which connect to a
  * ListenerPort or other type of named endpoint, from which they receive
  * their messages.
- * 
+ *
  * Current implementations are PushingJmsListener and the EJB version of
  * IfsaProviderListener.
- * 
+ *
  * @author Tim van der Leeuw
  *
  */
 public interface IPortConnectedListener<M> extends IPushingListener<M> {
 
 	public IbisExceptionListener getExceptionListener();
-	public String getListenerPort();
 	public IMessageHandler<M> getHandler();
 
 	public void setReceiver(Receiver<M> receiver);
 	public Receiver<M> getReceiver();
 
 	public IListenerConnector<M> getListenerPortConnector();
+
+	default void checkTransactionManagerValidity() {}
 }

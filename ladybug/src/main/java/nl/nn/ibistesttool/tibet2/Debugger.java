@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -26,59 +27,64 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
+import nl.nn.testtool.TestTool;
 import nl.nn.testtool.run.ReportRunner;
 
 /**
  * @author Jaco de Groot
  */
 public class Debugger extends nl.nn.ibistesttool.Debugger {
-	private static final String RESEND_ADAPTER = "ResendFromExceptionLog";
+	private static final String RESEND_ADAPTER_NAME = "ResendFromExceptionLog";
+	private static final String RESEND_ADAPTER_CONFIG = "main";
 
 	@Override
 	public List<String> getStubStrategies() {
 		List<String> stubStrategies = new ArrayList<>();
-		stubStrategies.add(STUB_STRATEGY_NEVER);
+		stubStrategies.add(TestTool.STUB_STRATEGY_NEVER);
 		return stubStrategies;
 	}
 
 	@Override
 	public String getDefaultStubStrategy() {
-		return STUB_STRATEGY_NEVER;
+		return TestTool.STUB_STRATEGY_NEVER;
 	}
 
 	@Override
 	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
-		String errorMessage = null;
-		if ("Table EXCEPTIONLOG".equals(originalReport.getName())) {
-			List<Checkpoint> checkpoints = originalReport.getCheckpoints();
-			Checkpoint checkpoint = checkpoints.get(0);
-			String inputMessage = checkpoint.getMessageWithResolvedVariables(reportRunner);
-			IAdapter adapter = ibisManager.getRegisteredAdapter(RESEND_ADAPTER);
-			if (adapter != null) {
-				PipeLineSession pipeLineSession = new PipeLineSession();
-				synchronized(inRerun) {
-					inRerun.add(correlationId);
-				}
-				try {
-					if(securityContext.getUserPrincipal() != null)
-						pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
-					PipeLineResult processResult = adapter.processMessage(correlationId, new Message(inputMessage), pipeLineSession);
-					if (!(processResult.isSuccessful() && processResult.getResult().asString().equalsIgnoreCase("<ok/>"))) {
-						errorMessage = "Rerun failed. Result of adapter " + RESEND_ADAPTER + ": " + processResult.getResult().asString();
-					}
-				} catch (IOException e) {
-					errorMessage = "Rerun failed. Exception in adapter " + RESEND_ADAPTER + ": (" + e.getClass().getName()+") " + e.getMessage();
-				} finally {
-					synchronized(inRerun) {
-						inRerun.remove(correlationId);
-					}
-				}
-			} else {
-				errorMessage = "Adapter '" + RESEND_ADAPTER + "' not found";
-			}
-		} else {
-			errorMessage = super.rerun(correlationId, originalReport, securityContext, reportRunner);
+		if (!"Table EXCEPTIONLOG".equals(originalReport.getName())) {
+			return super.rerun(correlationId, originalReport, securityContext, reportRunner);
 		}
-		return errorMessage;
+
+		List<Checkpoint> checkpoints = originalReport.getCheckpoints();
+		Checkpoint checkpoint = checkpoints.get(0);
+		String inputMessage = checkpoint.getMessageWithResolvedVariables(reportRunner);
+		Configuration config = ibisManager.getConfiguration(RESEND_ADAPTER_CONFIG);
+		if (config == null) {
+			return "Configuration '" + RESEND_ADAPTER_CONFIG + "' not found";
+		}
+		IAdapter adapter = config.getRegisteredAdapter(RESEND_ADAPTER_NAME);
+		if (adapter == null) {
+			return "Adapter '" + RESEND_ADAPTER_NAME + "' not found";
+		}
+		PipeLineSession pipeLineSession = new PipeLineSession();
+		synchronized(inRerun) {
+			inRerun.add(correlationId);
+		}
+		try {
+			if(securityContext.getUserPrincipal() != null) {
+				pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
+			}
+			PipeLineResult processResult = adapter.processMessage(correlationId, new Message(inputMessage), pipeLineSession);
+			if (!(processResult.isSuccessful() && processResult.getResult().asString().equalsIgnoreCase("<ok/>"))) {
+				return "Rerun failed. Result of adapter " + RESEND_ADAPTER_NAME + ": " + processResult.getResult().asString();
+			}
+			return null;
+		} catch (IOException e) {
+			return "Rerun failed. Exception in adapter " + RESEND_ADAPTER_NAME + ": (" + e.getClass().getName()+") " + e.getMessage();
+		} finally {
+			synchronized(inRerun) {
+				inRerun.remove(correlationId);
+			}
+		}
 	}
 }

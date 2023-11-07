@@ -24,12 +24,12 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 
 	@Override
 	protected void setStyleSheetNameSessionKey(String styleSheetNameSessionKey) {
-		pipe.setStyleSheetNameSessionKey(styleSheetNameSessionKey);		
+		pipe.setStyleSheetNameSessionKey(styleSheetNameSessionKey);
 	}
-	
+
 	@Override
 	protected void setXpathExpression(String xpathExpression) {
-		pipe.setXpathExpression(xpathExpression);		
+		pipe.setXpathExpression(xpathExpression);
 	}
 
 	@Override
@@ -61,6 +61,12 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 	protected void setXslt2(boolean xslt2) {
 		pipe.setXslt2(xslt2);
 	}
+
+	@Override
+	protected void setHandleLexicalEvents(boolean handleLexicalEvents) {
+		pipe.setHandleLexicalEvents(handleLexicalEvents);
+	}
+
 
 	@Test
 	public void testSessionKey() throws Exception {

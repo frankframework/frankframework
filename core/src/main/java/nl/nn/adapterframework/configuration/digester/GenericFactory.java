@@ -51,15 +51,15 @@ package nl.nn.adapterframework.configuration.digester;
  */
 public class GenericFactory extends AbstractSpringPoweredDigesterFactory {
 
-    /**
-     * Return name of current element prefixed with the string "proto-" as
-     * bean-name.
-     *
-     * @see nl.nn.adapterframework.configuration.digester.AbstractSpringPoweredDigesterFactory#getSuggestedBeanName()
-     */
-    @Override
-    public String getSuggestedBeanName() {
-        return "proto-" + getDigester().getCurrentElementName();
-    }
+	/**
+	 * Return name of current element prefixed with the string "proto-" as
+	 * bean-name.
+	 *
+	 * @see nl.nn.adapterframework.configuration.digester.AbstractSpringPoweredDigesterFactory#getSuggestedBeanName()
+	 */
+	@Override
+	public String getSuggestedBeanName() {
+		return "proto-" + getDigester().getCurrentElementName();
+	}
 
 }

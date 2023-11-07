@@ -1,45 +1,54 @@
 {
-    "openapi":"3.0.0",
-    "info":{
-        "title":"TestConfiguration",
-        "description":"OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
-        "version":"unknown"
+    "openapi": "3.0.0",
+    "info": {
+        "title": "TestConfiguration",
+        "description": "OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
+        "version": "unknown"
     },
-    "servers":[
+    "servers": [
         {
-            "url":"http://mock-hostname/mock-context-path/mock-servlet-path"
+            "url": "http://mock-hostname/mock-context-path/mock-servlet-path"
         }
     ],
-    "paths":{
-        "/outputValidator":{
-            "post":{
-                "summary":"description4simple-get",
-                "requestBody":{
-                    "content":{
-                        "*/*":{
-                            "schema":{
-                                "$ref":"#/components/schemas/EnvelopeRequest"
+    "paths": {
+        "/outputValidator": {
+            "post": {
+                "summary": "description4simple-get",
+                "requestBody": {
+                    "content": {
+                        "*/*": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EnvelopeRequest"
                             }
                         }
                     }
                 },
-                "responses":{
-                    "200":{
-                        "description":"OK",
-                        "content":{
-                            "*/*":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/user"
+                "parameters": [
+                    {
+                        "name": "Message-Id",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/user"
                                 }
                             }
                         }
                     },
-                    "500":{
-                        "description":"Internal Server Error",
-                        "content":{
-                            "*/*":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/user"
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/user"
                                 }
                             }
                         }
@@ -48,46 +57,46 @@
             }
         }
     },
-    "components":{
-        "schemas":{
-            "EnvelopeError403":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "message403":{
-                        "type":"string"
+    "components": {
+        "schemas": {
+            "EnvelopeError403": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "message403": {
+                        "type": "string"
                     }
                 },
-                "required":[
+                "required": [
                     "message403"
                 ]
             },
-            "EnvelopeResponse":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "envelopeID":{
-                        "type":"number",
-                        "maximum":18446744073709551615,
-                        "minimum":0
+            "EnvelopeResponse": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "envelopeID": {
+                        "type": "number",
+                        "maximum": 18446744073709551615,
+                        "minimum": 0
                     },
-                    "setID":{
-                        "type":"number",
-                        "maximum":18446744073709551615,
-                        "minimum":0
+                    "setID": {
+                        "type": "number",
+                        "maximum": 18446744073709551615,
+                        "minimum": 0
                     },
-                    "type":{
-                        "type":"string"
+                    "type": {
+                        "type": "string"
                     },
-                    "envelopeCreationDate":{
-                        "type":"string",
-                        "format":"date-time"
+                    "envelopeCreationDate": {
+                        "type": "string",
+                        "format": "date-time"
                     },
-                    "retried":{
-                        "type":"boolean"
+                    "retried": {
+                        "type": "boolean"
                     }
                 },
-                "required":[
+                "required": [
                     "envelopeID",
                     "setID",
                     "type",
@@ -95,47 +104,47 @@
                     "retried"
                 ]
             },
-            "EnvelopeRequest":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "envelopeID":{
-                        "type":"number",
-                        "maximum":18446744073709551615,
-                        "minimum":0
+            "EnvelopeRequest": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "envelopeID": {
+                        "type": "number",
+                        "maximum": 18446744073709551615,
+                        "minimum": 0
                     }
                 },
-                "required":[
+                "required": [
                     "envelopeID"
                 ]
             },
-            "EnvelopeError500":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "message500":{
-                        "type":"string"
+            "EnvelopeError500": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "message500": {
+                        "type": "string"
                     }
                 },
-                "required":[
+                "required": [
                     "message500"
                 ]
             },
-            "user":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "email":{
-                        "type":"string"
+            "user": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "email": {
+                        "type": "string"
                     },
-                    "username":{
-                        "type":"string"
+                    "username": {
+                        "type": "string"
                     },
-                    "password":{
-                        "type":"string"
+                    "password": {
+                        "type": "string"
                     }
                 },
-                "required":[
+                "required": [
                     "email",
                     "username",
                     "password"

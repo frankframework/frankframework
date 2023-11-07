@@ -15,6 +15,9 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http;
 
+import java.io.IOException;
+import java.util.Date;
+
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -24,12 +27,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-import java.util.Date;
+import nl.nn.adapterframework.util.LogUtil;
 
 public class CacheControlFilter implements Filter {
 
@@ -51,7 +51,7 @@ public class CacheControlFilter implements Filter {
 		resp.setDateHeader("Last-Modified", new Date().getTime());
 		resp.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0");
 		resp.setHeader("Pragma", "no-cache");
-		log.trace("disabling cache for uri ["+req.getRequestURI()+"]");
+		log.trace("disabling cache for uri [{}]", req::getRequestURI);
 		chain.doFilter(request, response);
 	}
 

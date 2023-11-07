@@ -42,7 +42,7 @@ public class ThreadConnectableDataSourceTransactionManager extends DataSourceTra
 
 	@Override
 	public void resumeTransaction(Object transaction, Object resources) {
-		resume(transaction, (SuspendedResourcesHolder)resources);	
+		resume(transaction, (SuspendedResourcesHolder)resources);
 	}
 
 }

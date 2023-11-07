@@ -36,7 +36,7 @@
 				<forward name="exception" path="fixedInsertRollback2"/>
 			</pipe>
 
-			<!-- This should rollback -->
+			<!-- This should rollback, due to a missing parameter -->
 			<pipe name="fixedInsertRollback2" className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('SURNAME',?,NULL,NULL)" queryType="insert" />
 				<forward name="success" path="EXIT" />

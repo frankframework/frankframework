@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,10 +22,15 @@ import java.util.Iterator;
 
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.functional.ThrowingFunction;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> implements IMessageBrowser<F> {
@@ -34,9 +39,9 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 	private FS fileSystem;
 	private String folder;
 	private String messageIdPropertyKey;
-	
-	private String hideRegex = null;
-	private String hideMethod = "all";
+
+	private @Getter @Setter String hideRegex = null;
+	private @Getter @Setter HideMethod hideMethod = HideMethod.ALL;
 
 
 	public FileSystemMessageBrowser(FS fileSystem, String folder, String messageIdPropertyKey) {
@@ -44,7 +49,7 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 		this.folder = folder;
 		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
-	
+
 	@Override
 	public boolean isTransacted() {
 		return false;
@@ -69,24 +74,35 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, browseMessage(storageKey), messageIdPropertyKey);
 	}
 
-	@Override
-	public boolean containsMessageId(String originalMessageId) throws ListenerException {
-		try {
-			return fileSystem.exists(fileSystem.toFile(folder, originalMessageId));
-		} catch (FileSystemException e) {
-			throw new ListenerException(e);
+	protected boolean contains(String value, ThrowingFunction<IMessageBrowsingIteratorItem,String,ListenerException> field) throws ListenerException {
+		try (IMessageBrowsingIterator it=getIterator()){
+			while (it.hasNext()) {
+				IMessageBrowsingIteratorItem item = it.next();
+				if (value.equals(field.apply(item))) {
+					return true;
+				}
+			}
+			return false;
 		}
 	}
 
 	@Override
-	public boolean containsCorrelationId(String correlationId) throws ListenerException {
-		return false;
+	public boolean containsMessageId(String originalMessageId) throws ListenerException {
+		return contains(originalMessageId, IMessageBrowsingIteratorItem::getOriginalId);
 	}
 
 	@Override
-	public F browseMessage(String storageKey) throws ListenerException {
+	public boolean containsCorrelationId(String correlationId) throws ListenerException {
+		return contains(correlationId, IMessageBrowsingIteratorItem::getCorrelationId); // N.B. getCorrelationId currently always returns null
+	}
+
+	@Override
+	public RawMessageWrapper<F> browseMessage(String storageKey) throws ListenerException {
 		try {
-			return fileSystem.toFile(folder, storageKey);
+			F file = fileSystem.toFile(folder, storageKey);
+			RawMessageWrapper<F> result = new RawMessageWrapper<>(file, storageKey, null);
+			result.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
+			return result;
 		} catch (FileSystemException e) {
 			throw new ListenerException(e);
 		}
@@ -121,24 +137,6 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 			throw new ListenerException(e);
 		}
 		return count;
-	}
-
-	@Override
-	public void setHideRegex(String hideRegex) {
-		this.hideRegex = hideRegex;
-	}
-	@Override
-	public String getHideRegex() {
-		return hideRegex;
-	}
-
-	@Override
-	public void setHideMethod(String hideMethod) {
-		this.hideMethod = hideMethod;
-	}
-	@Override
-	public String getHideMethod() {
-		return hideMethod;
 	}
 
 }

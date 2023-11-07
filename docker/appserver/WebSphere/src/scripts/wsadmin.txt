@@ -1,2 +1,0 @@
-cd /opt/IBM/WebSphere/AppServer/bin/
-wsadmin.sh -lang jython -user wsadmin -password wsadmin

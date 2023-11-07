@@ -23,7 +23,7 @@
 				getInputFromFixedValue="&lt;dummy/&gt;"
 				>
 				<param name="hostname" value="${hostname}" />
-				<param name="message" sessionkey="originalMessage" />
+				<param name="message" sessionKey="originalMessage" />
 				<param name="mailaddresses" value="${errorreport.mailaddresses.fail}" />
 				<param name="result" value="testmail" />
 				<forward name="success" path="SendMail" />

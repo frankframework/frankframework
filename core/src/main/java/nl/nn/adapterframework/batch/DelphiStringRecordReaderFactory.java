@@ -19,16 +19,19 @@ import java.io.InputStream;
 import java.io.Reader;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * {@link IReaderFactory} that provides a reader that reads Delphi records containing Strings.
- * 
+ *
  * @author  Gerrit van Brakel
- * @since   4.10  
+ * @since   4.10
+ * @deprecated Warning: non-maintained functionality.
  */
+@Deprecated
+@ConfigurationWarning("Warning: non-maintained functionality.")
 public class DelphiStringRecordReaderFactory implements IReaderFactory {
 
 	private int stringLength=50;
@@ -36,14 +39,19 @@ public class DelphiStringRecordReaderFactory implements IReaderFactory {
 	private String separator="|";
 	private String separatorReplacement="_";
 
+	@Override
 	public void configure() throws ConfigurationException {
 	}
 
+	@Override
 	public Reader getReader(InputStream in, String charset, String streamId, PipeLineSession session) throws SenderException {
-		return new DelphiStringRecordReader(in,charset,getStringLength(),getStringsPerRecord(),getSeparator(),getSeparatorReplacement()); 
+		return new DelphiStringRecordReader(in,charset,getStringLength(),getStringsPerRecord(),getSeparator(),getSeparatorReplacement());
 	}
 
-	@IbisDoc({"separator placed between each string read", "|"})
+	/**
+	 * separator placed between each string read
+	 * @ff.default |
+	 */
 	public void setSeparator(String string) {
 		separator = string;
 	}
@@ -51,7 +59,10 @@ public class DelphiStringRecordReaderFactory implements IReaderFactory {
 		return separator;
 	}
 
-	@IbisDoc({"the maximum length of each string. each string is preceded by a one byte length indication.", "50"})
+	/**
+	 * the maximum length of each string. each string is preceded by a one byte length indication.
+	 * @ff.default 50
+	 */
 	public void setStringLength(int i) {
 		stringLength = i;
 	}
@@ -59,7 +70,10 @@ public class DelphiStringRecordReaderFactory implements IReaderFactory {
 		return stringLength;
 	}
 
-	@IbisDoc({"the number of strings read for each record. 0 means file consists of one logical record", "0"})
+	/**
+	 * the number of strings read for each record. 0 means file consists of one logical record
+	 * @ff.default 0
+	 */
 	public void setStringsPerRecord(int i) {
 		stringsPerRecord = i;
 	}
@@ -67,7 +81,10 @@ public class DelphiStringRecordReaderFactory implements IReaderFactory {
 		return stringsPerRecord;
 	}
 
-	@IbisDoc({"replacement character, used when separator is found in string read", "_"})
+	/**
+	 * replacement character, used when separator is found in string read
+	 * @ff.default _
+	 */
 	public void setSeparatorReplacement(String string) {
 		separatorReplacement = string;
 	}

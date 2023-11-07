@@ -1,13 +1,14 @@
 package nl.nn.adapterframework.extensions.cmis;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.extensions.cmis.CmisSender.CmisAction;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.senders.SenderTestBase;
 
 public class CmisSenderTest extends SenderTestBase<CmisSender> {
@@ -18,84 +19,60 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 	}
 
 	@Test
-	public void testValidAction() {
-		String dummyString = "CREATE";
-		sender.setAction(dummyString);
-
-		assertEquals(dummyString.toLowerCase(), sender.getAction());
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testInvalidAction() {
-		String dummyString = "CREATED";
-		sender.setAction(dummyString);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testNonExistingBindingType() {
-		sender.setBindingType("WEBTOMBROWSER");
+	public void testEmptyUrlOverrideEntryPointWSDLNull() {
+		assertThrows(IllegalArgumentException.class, ()->sender.setUrl(""));
 	}
 
 	@Test
-	public void testExistingBindingTypes() {
-		sender.setBindingType(BindingType.BROWSER.value());
-		sender.setBindingType(BindingType.ATOMPUB.value());
-		sender.setBindingType(BindingType.WEBSERVICES.value());
-		//All BindingTypes should be parsed (and thus not throw an exception)
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testEmptyUrlOverrideEntryPointWSDLNull() {
-		sender.setUrl("");
-	}
-
-	@Test(expected = IllegalArgumentException.class)
 	public void testEmptyRepository() {
-		sender.setRepository("");
+		assertThrows(IllegalArgumentException.class, ()->sender.setRepository(""));
 	}
 
-	@Test(expected = SenderException.class)
+	@Test
 	public void testOverrideEntryPointWSDLWithoutWebservice() throws Exception {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
 		sender.setOverrideEntryPointWSDL(dummyString);
 		sender.setRepository(dummyString);
-		sender.setBindingType("browser");
-		sender.setAction("dynamic");
+		sender.setBindingType(BindingTypes.BROWSER);
+		sender.setAction(CmisAction.DYNAMIC);
 		sender.configure();
-		sender.open();
+
+		assertThrows(SenderException.class, sender::open);
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void testCreateActionWithNoSession() throws ConfigurationException {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
 		sender.setOverrideEntryPointWSDL(dummyString);
 		sender.setRepository(dummyString);
-		sender.setBindingType("webservices");
-		sender.setAction("create");
-		sender.configure();
+		sender.setBindingType(BindingTypes.WEBSERVICES);
+		sender.setAction(CmisAction.CREATE);
+		assertThrows(ConfigurationException.class, sender::configure);
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void testGetActionWithNoSession() throws ConfigurationException {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
 		sender.setRepository(dummyString);
-		sender.setBindingType("webservices");
-		sender.setAction("get");
+		sender.setBindingType(BindingTypes.WEBSERVICES);
+		sender.setAction(CmisAction.GET);
 		sender.setGetProperties(true);
-		sender.configure();
+		assertThrows(ConfigurationException.class, sender::configure);
 	}
 
-	@Test(expected = CmisConnectionException.class)
+	@Test
 	public void testSuccessfulConfigure() throws Exception {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
 		sender.setRepository(dummyString);
-		sender.setBindingType("webservices");
-		sender.setAction("find");
+		sender.setBindingType(BindingTypes.WEBSERVICES);
+		sender.setAction(CmisAction.FIND);
 		sender.configure();
-		sender.open();//Should configure and open just fine, but fail trying to connect to an endpoint.
+
+		//Should configure and open just fine, but fail trying to connect to an endpoint.
+		assertThrows(CmisConnectionException.class, sender::open);
 	}
 }

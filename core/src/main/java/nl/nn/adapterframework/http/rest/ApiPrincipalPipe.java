@@ -16,6 +16,16 @@
 
 package nl.nn.adapterframework.http.rest;
 
+import java.io.IOException;
+import java.rmi.server.UID;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.servlet.annotation.ServletSecurity;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -26,18 +36,9 @@ import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 
-import javax.servlet.annotation.ServletSecurity;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.rmi.server.UID;
-import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.List;
-
 /**
 * Pipe to manage the ApiPrincipal handling
-* 
+*
 * @author Niels Meijer
 *
 */
@@ -67,26 +68,26 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {
-			throw new PipeRunException(this, getLogPrefix(session)+"got null input");
+			throw new PipeRunException(this, "got null input");
 		}
 		String input;
 		try {
 			input = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
 		if(getAction().equals("get")) {
 			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
 			if(userPrincipal == null)
-				throw new PipeRunException(this, getLogPrefix(session) + "unable to locate ApiPrincipal");
+				throw new PipeRunException(this, "unable to locate ApiPrincipal");
 
 			return new PipeRunResult(getSuccessForward(), userPrincipal.getData());
 		}
 		if(getAction().equals("set")) {
 			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
 			if(userPrincipal == null)
-				throw new PipeRunException(this, getLogPrefix(session) + "unable to locate ApiPrincipal");
+				throw new PipeRunException(this, "unable to locate ApiPrincipal");
 
 			userPrincipal.setData(input);
 			cache.put(userPrincipal.getToken(), userPrincipal, authTTL);
@@ -122,7 +123,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 		if(getAction().equals("remove")) {
 			ApiPrincipal userPrincipal = (ApiPrincipal) session.get(PipeLineSession.API_PRINCIPAL_KEY);
 			if(userPrincipal == null)
-				throw new PipeRunException(this, getLogPrefix(session) + "unable to locate ApiPrincipal");
+				throw new PipeRunException(this, "unable to locate ApiPrincipal");
 
 			cache.remove(userPrincipal.getToken());
 			return new PipeRunResult(getSuccessForward(), "");

@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.ldap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
 
 import org.custommonkey.xmlunit.Diff;
@@ -13,25 +13,25 @@ import org.custommonkey.xmlunit.Difference;
 import org.custommonkey.xmlunit.DifferenceConstants;
 import org.custommonkey.xmlunit.DifferenceListener;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
+import com.unboundid.ldap.listener.InMemoryListenerConfig;
 import com.unboundid.ldap.sdk.LDAPConnection;
-import com.unboundid.ldap.sdk.LDAPException;
 
 import nl.nn.adapterframework.ldap.LdapSender.Operation;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	InMemoryDirectoryServer inMemoryDirectoryServer = null;
@@ -39,33 +39,28 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 	@Override
 	public LdapSender createSender() throws Exception {
-		LDAPConnection connection = null;
-		try {
-			connection = inMemoryDirectoryServer.getConnection();
-		} catch (LDAPException e) {
-			if(!TestAssertions.isTestRunningOnGitHub()) {
-				fail(e.getMessage());
-			}
-		}
+		LDAPConnection connection = inMemoryDirectoryServer.getConnection();
 
-		assumeNotNull(connection);
 		LdapSender ldapSender = new LdapSender();
 		ldapSender.setLdapProviderURL("ldap://localhost:" + connection.getConnectedPort());
 		return ldapSender;
 	}
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		XMLUnit.setIgnoreWhitespace(true);
 		XMLUnit.setIgnoreAttributeOrder(true);
 
 		InMemoryDirectoryServerConfig config = new InMemoryDirectoryServerConfig(baseDNs);
 		config.setSchema(null);
+		// Custom InMemoryListenerConfig because InetAddress.getLocalhost() does not always resolve to correct ip address
+		InMemoryListenerConfig listenerConfig = new InMemoryListenerConfig("localhost", InetAddress.getByName("127.0.0.1"), 0, null, null, null);
+		config.setListenerConfigs(listenerConfig);
 		inMemoryDirectoryServer = new InMemoryDirectoryServer(config);
 
 		String ldifDataFile = "Ldap/data.ldif";
-		URL ldifDataUrl = ClassUtils.getResourceURL(ldifDataFile);
+		URL ldifDataUrl = ClassLoaderUtils.getResourceURL(ldifDataFile);
 		if (ldifDataUrl == null) {
 			fail("cannot find resource [" + ldifDataFile + "]");
 		}
@@ -74,8 +69,8 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		super.setUp();
 	}
 
-	@After
 	@Override
+	@AfterEach
 	public void tearDown() throws Exception {
 		if(inMemoryDirectoryServer != null) {
 			inMemoryDirectoryServer.shutDown(true);
@@ -172,12 +167,12 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	}
 
 	private void compareXML(String expectedFile, String result) throws SAXException, IOException {
-		URL expectedUrl = ClassUtils.getResourceURL(expectedFile);
+		URL expectedUrl = ClassLoaderUtils.getResourceURL(expectedFile);
 		if (expectedUrl == null) {
 			throw new IOException("cannot find resource [" + expectedUrl + "]");
 		}
 
-		String expected = Misc.resourceToString(expectedUrl);
+		String expected = StreamUtil.resourceToString(expectedUrl);
 		Diff diff = XMLUnit.compareXML(expected, result);
 		diff.overrideDifferenceListener(new DifferenceListener() {
 			@Override
@@ -211,6 +206,6 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 			}
 		});
-		assertTrue(diff.toString(), diff.identical());
+		assertTrue(diff.identical(), diff.toString());
 	}
 }

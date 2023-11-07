@@ -19,21 +19,19 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 
-import javax.json.Json;
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
-import javax.json.stream.JsonParserFactory;
-
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
+import jakarta.json.Json;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParser.Event;
+import jakarta.json.stream.JsonParserFactory;
 import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class JsonUtils {
 	private static Logger log = LogUtil.getLogger(JsonUtils.class);
 
-	
 	public static void parseJson(String json, JsonEventHandler handler) throws SAXException {
 		parseJson(new StringReader(json),handler);
 	}
@@ -65,30 +63,30 @@ public class JsonUtils {
 	}
 	public static void parseJson(JsonParser parser, JsonEventHandler handler) throws SAXException {
 		try {
-			handler.startDocument();	
+			handler.startDocument();
 			while (parser.hasNext()) {
 				Event event = parser.next();
-	
+
 				switch (event) {
-	
+
 					case START_ARRAY:
 						handler.startArray();
 						break;
 					case END_ARRAY:
 						handler.endArray();
 						break;
-	
+
 					case START_OBJECT:
 						handler.startObject();
 						break;
 					case END_OBJECT:
 						handler.endObject();
 						break;
-	
+
 					case KEY_NAME:
 						handler.startObjectEntry(parser.getString());
 						break;
-	
+
 					case VALUE_STRING:
 						handler.primitive(parser.getString());
 						break;
@@ -116,5 +114,4 @@ public class JsonUtils {
 			handler.endDocument();
 		}
 	}
-	
 }

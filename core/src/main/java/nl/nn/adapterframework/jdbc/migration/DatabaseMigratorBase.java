@@ -112,7 +112,11 @@ public abstract class DatabaseMigratorBase implements IConfigurationAware, Initi
 	/**
 	 * Check whether the configuration contains liquibase script that can be translated into sql statements in the classpath
 	 */
-	public abstract boolean hasMigrationScript();
+	public boolean hasMigrationScript() {
+		return getChangeLog() != null;
+	}
+
+	public abstract Resource getChangeLog();
 
 	protected final void logConfigurationMessage(String message) {
 		configuration.publishEvent(new ConfigurationMessageEvent(this, message));

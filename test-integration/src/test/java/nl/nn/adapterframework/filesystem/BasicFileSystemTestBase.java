@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -16,56 +16,44 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
 
-public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>> {
-	protected Logger log = LogUtil.getLogger(this);
+public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>> extends ConfiguredTestBase {
 
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-	
 	protected FS fileSystem;
 
 	/**
-	 * Returns the file system 
+	 * Returns the file system
 	 * @return fileSystem
 	 * @throws ConfigurationException
 	 */
 	protected abstract FS createFileSystem() throws ConfigurationException;
 
 
-	@Before
+	@BeforeEach
 	public void setUp() throws IOException, ConfigurationException, FileSystemException {
 		log.debug("setUp start");
 		fileSystem = createFileSystem();
+		autowireByName(fileSystem);
 		log.debug("filesystem created, configure()");
 		fileSystem.configure();
 		log.debug("filesystem configured, open()");
 		fileSystem.open();
 		log.debug("setUp finished");
 	}
-	
-	@After 
+
+	@AfterEach
 	public void tearDown() throws Exception {
 		log.debug("tearDown start");
 		fileSystem.close();
 		log.debug("tearDown finished");
-	}
-
-
-
-	protected void equalsCheck(String content, String actual) {
-		assertEquals(content, actual);
 	}
 
 	@Test
@@ -85,12 +73,11 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 			return null;
 		}
 	}
-	
+
 	/**
 	 * asserts a number of files to be present in folder.
 	 */
 	public void fileSystemTestListFile(int numFilesExpected, String folder) throws Exception {
-		
 		Set<F> files = new HashSet<F>();
 		Set<String> filenames = new HashSet<String>();
 		int count = 0;
@@ -106,19 +93,19 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 				count++;
 			}
 
-			assertEquals("number of files found by listFiles()", numFilesExpected, count);
-			assertEquals("Size of set of files", numFilesExpected, files.size());
-			assertEquals("Size of set of filenames", numFilesExpected, filenames.size());
-			
+			assertEquals(numFilesExpected, count, "number of files found by listFiles()");
+			assertEquals(numFilesExpected, files.size(), "Size of set of files");
+			assertEquals(numFilesExpected, filenames.size(), "Size of set of filenames");
+
 			for (String filename:filenames) {
 				F f=fileSystem.toFile(folder, filename);
-				assertNotNull("file must be found by filename ["+filename+"]",f);
-				assertTrue("file must exist when referred to by filename ["+filename+"]",fileSystem.exists(f));
+				assertNotNull(f, "file must be found by filename ["+filename+"]");
+				assertTrue(fileSystem.exists(f), "file must exist when referred to by filename ["+filename+"]");
 			}
-			
+
 			// read each the files
 			for(F f: files) {
-				Message in=fileSystem.readFile(f, null); 
+				Message in=fileSystem.readFile(f, null);
 				log.debug("reading file ["+fileSystem.getName(f)+"]");
 				String contentsString= in.asString();
 				log.debug("contents ["+contentsString+"]");
@@ -128,7 +115,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 				log.debug("canonicalname ["+canonicalname+"]");
 				Date modificationTime=fileSystem.getModificationTime(f);
 				log.debug("modificationTime ["+(modificationTime==null?null:DateUtils.format(modificationTime))+"]");
-	
+
 				Map<String,Object> properties=fileSystem.getAdditionalFileProperties(f);
 				for (Entry<String,Object>entry:properties.entrySet()) {
 					String key=entry.getKey();
@@ -147,7 +134,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 								valueList+=", "+list.get(i);
 							}
 							log.debug("property ["+key+"] value list ["+valueList+"]");
-						}	
+						}
 					} else if (value instanceof Map) {
 						Map<Object,Object> map=(Map)value;
 						if (map.isEmpty()) {
@@ -156,7 +143,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 							for (Entry subentry:map.entrySet()) {
 								log.debug("property ["+key+"."+subentry.getKey()+"] value ["+subentry.getValue()+"]");
 							}
-						}	
+						}
 					} else if (value instanceof Date) {
 						log.debug("property ["+key+"] date value ["+value+"]");
 					} else {
@@ -170,7 +157,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 
 	public void fileSystemTestRandomFileShouldNotExist(String randomFileName) throws Exception {
 		F f=fileSystem.toFile(randomFileName);
-		assertFalse("RandomFileShouldNotExist",fileSystem.exists(f));
+		assertFalse(fileSystem.exists(f), "RandomFileShouldNotExist");
 	}
 
 }

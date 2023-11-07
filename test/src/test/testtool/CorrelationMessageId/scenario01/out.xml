@@ -1,5 +1,4 @@
 <root>
-	<item>cid=[Test Tool correlation id]</item>
-	<item>messageId=[Test Tool correlation id]</item>
-	<item>tcid=[Test Tool correlation id]</item>
+	<item>cid=[Test Tool correlation id(1)]</item>
+	<item>messageId=[Test Tool correlation id(1)]</item>
 </root>

@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,6 +33,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -100,20 +101,29 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			response = doPatch(host, (HttpPatch) request, context);
 		else if(request instanceof HttpDelete)
 			response = doDelete(host, (HttpDelete) request, context);
+		else if(request instanceof HttpHead)
+			response = doHead(host, (HttpHead) request, context);
 		else
 			throw new Exception("mock method not implemented");
 
 		return buildResponse(response);
 	}
 
-	public InputStream doGet(HttpHost host, HttpGet request, HttpContext context) {
+	private InputStream doGet(HttpHost host, HttpGet request, HttpContext context) {
 		assertEquals("GET", request.getMethod());
 		StringBuilder response = new StringBuilder();
+		response.append("HOST " + host.toHostString() + lineSeparator);
 		response.append(request.toString() + lineSeparator);
 
 		appendHeaders(request, response);
 
 		return new ByteArrayInputStream(response.toString().getBytes());
+	}
+
+	private InputStream doHead(HttpHost host, HttpHead request, HttpContext context) {
+		assertEquals("HEAD", request.getMethod());
+		assertEquals("HEAD / HTTP/1.1", request.toString());
+		return null; //HEAD requests do not have a body
 	}
 
 	private void appendHeaders(HttpRequestBase request, StringBuilder response) {
@@ -130,7 +140,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		}
 	}
 
-	public InputStream doPost(HttpHost host, HttpPost request, HttpContext context) throws IOException {
+	private InputStream doPost(HttpHost host, HttpPost request, HttpContext context) throws IOException {
 		assertEquals("POST", request.getMethod());
 		StringBuilder response = new StringBuilder();
 		response.append(request.toString() + lineSeparator);
@@ -170,7 +180,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		return new ByteArrayInputStream(response.toString().getBytes());
 	}
 
-	public InputStream doPut(HttpHost host, HttpPut request, HttpContext context) throws IOException {
+	private InputStream doPut(HttpHost host, HttpPut request, HttpContext context) throws IOException {
 		assertEquals("PUT", request.getMethod());
 		StringBuilder response = new StringBuilder();
 		response.append(request.toString() + lineSeparator);
@@ -207,7 +217,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		return new ByteArrayInputStream(response.toString().getBytes());
 	}
 
-	public InputStream doDelete(HttpHost host, HttpDelete request, HttpContext context) {
+	private InputStream doDelete(HttpHost host, HttpDelete request, HttpContext context) {
 		assertEquals("DELETE", request.getMethod());
 		StringBuilder response = new StringBuilder();
 		response.append(request.toString() + lineSeparator);

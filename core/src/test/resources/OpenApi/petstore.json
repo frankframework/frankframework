@@ -1,63 +1,81 @@
 {
-    "openapi":"3.0.0",
-    "info":{
-        "title":"TestConfiguration",
-        "description":"OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
-        "version":"unknown"
+    "openapi": "3.0.0",
+    "info": {
+        "title": "TestConfiguration",
+        "description": "OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
+        "version": "unknown"
     },
-    "servers":[
+    "servers": [
         {
-            "url":"http://mock-hostname/mock-context-path/mock-servlet-path"
+            "url": "http://mock-hostname/mock-context-path/mock-servlet-path"
         }
     ],
-    "paths":{
-        "/pets":{
-            "get":{
-                "summary":"List all pets",
-                "responses":{
-                    "200":{
-                        "description":"OK",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/Pets"
+    "paths": {
+        "/pets": {
+            "get": {
+                "summary": "List all pets",
+                "parameters": [
+                    {
+                        "name": "Message-Id",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Pets"
                                 }
                             }
                         }
                     },
-                    "500":{
-                        "description":"Internal Server Error",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/Error"
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
                                 }
                             }
                         }
                     }
                 }
             },
-            "post":{
-                "summary":"Create a pet",
-                "requestBody":{
-                    "content":{
-                        "*/*":{
-                            "schema":{
-                                "$ref":"#/components/schemas/Pet"
+            "post": {
+                "summary": "Create a pet",
+                "requestBody": {
+                    "content": {
+                        "*/*": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Pet"
                             }
                         }
                     }
                 },
-                "responses":{
-                    "201":{
-                        "description":"Created"
+                "parameters": [
+                    {
+                        "name": "Message-Id",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
                     },
-                    "500":{
-                        "description":"Internal Server Error",
-                        "content":{
-                            "application/json":{
-                                "schema":{
-                                    "$ref":"#/components/schemas/Error"
+                    "500": {
+                        "description": "Internal Server Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
                                 }
                             }
                         }
@@ -66,45 +84,45 @@
             }
         }
     },
-    "components":{
-        "schemas":{
-            "Pet":{
-                "$ref":"#/components/schemas/petType"
+    "components": {
+        "schemas": {
+            "Pet": {
+                "$ref": "#/components/schemas/petType"
             },
-            "Pets":{
-                "type":"array",
-                "minItems":1,
-                "items":{
-                    "$ref":"#/components/schemas/petType"
+            "Pets": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                    "$ref": "#/components/schemas/petType"
                 }
             },
-            "Error":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "message":{
-                        "type":"string"
+            "Error": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "message": {
+                        "type": "string"
                     }
                 },
-                "required":[
+                "required": [
                     "message"
                 ]
             },
-            "petType":{
-                "type":"object",
-                "additionalProperties":false,
-                "properties":{
-                    "id":{
-                        "type":"integer"
+            "petType": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "id": {
+                        "type": "integer"
                     },
-                    "name":{
-                        "type":"string"
+                    "name": {
+                        "type": "string"
                     },
-                    "tag":{
-                        "type":"string"
+                    "tag": {
+                        "type": "string"
                     }
                 },
-                "required":[
+                "required": [
                     "id",
                     "name"
                 ]

@@ -15,9 +15,9 @@
 */
 package nl.nn.adapterframework.processors;
 
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Baseclass for PipelineProcessors.
@@ -33,5 +33,4 @@ public abstract class PipeLineProcessorBase implements PipeLineProcessor {
 	public void setPipeLineProcessor(PipeLineProcessor pipeLineProcessor) {
 		this.pipeLineProcessor = pipeLineProcessor;
 	}
-	
 }

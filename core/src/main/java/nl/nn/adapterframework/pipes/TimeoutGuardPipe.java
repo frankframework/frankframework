@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,21 +15,20 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
 /**
  * Extension to FixedForwardPipe for interrupting processing when timeout is exceeded.
- * 
+ *
  * @ff.parameter timeout When a parameter with name timeout is present, it is used instead of the timeout specified by the attribute
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 public abstract class TimeoutGuardPipe extends FixedForwardPipe {
@@ -44,7 +43,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
+				throw new PipeRunException(this, "exception on extracting parameters", e);
 			}
 		}
 		int timeout_work;
@@ -55,7 +54,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			timeout_work = Integer.valueOf(timeout_work_str);
 		}
 
-		log.debug(getLogPrefix(session) + "setting timeout of [" + timeout_work + "] s");
+		log.debug("setting timeout of [{}] s", timeout_work);
 		TimeoutGuard tg = new TimeoutGuard(timeout_work, getName()) {
 			@Override
 			protected void abort() {
@@ -108,7 +107,10 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 		//kill other threads
 	}
 
-	@IbisDoc({"when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)", "true"})
+	/**
+	 * when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)
+	 * @ff.default true
+	 */
 	public void setThrowException(boolean b) {
 		throwException = b;
 	}
@@ -121,7 +123,10 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 		return timeout;
 	}
 
-	@IbisDoc({"timeout in seconds of obtaining a result", "30"})
+	/**
+	 * timeout in seconds of obtaining a result
+	 * @ff.default 30
+	 */
 	public void setTimeout(int i) {
 		timeout = i;
 	}

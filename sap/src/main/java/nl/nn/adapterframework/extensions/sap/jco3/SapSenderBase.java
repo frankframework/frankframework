@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,19 +26,16 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.extensions.sap.jco3.tx.DestinationFactoryUtils;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.stream.Message;
 
 /**
  * Base class for functions that call SAP.
  * 
- * @ff.parameter sapSystemName  points to {@link SapSystem} to use; required when attribute <code>sapSystemName</code> is empty
+ * @ff.parameter sapSystemName  points to {@link SapSystemImpl} to use; required when attribute <code>sapSystemName</code> is empty
 
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
@@ -87,23 +84,18 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		closeFacade();
 	}
 
-	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return sendMessage(message,null);
-	}
-
-	public SapSystem getSystem(ParameterValueList pvl) throws SapException {
+	public SapSystemImpl getSystem(ParameterValueList pvl) throws SapException {
 		if (StringUtils.isNotEmpty(getSapSystemName())) {
 			return getSapSystem();
 		}
 		if (pvl==null) {
 			throw new SapException("no parameters to determine sapSystemName from");
 		}
-		String SapSystemName=pvl.getParameterValue(getSapSystemNameParam()).asStringValue(null);
+		String SapSystemName=pvl.get(getSapSystemNameParam()).asStringValue(null);
 		if (StringUtils.isEmpty(SapSystemName)) {
 			throw new SapException("could not determine sapSystemName using parameter ["+getSapSystemNameParam()+"]");
 		}
-		SapSystem result = getSapSystem(SapSystemName);
+		SapSystemImpl result = getSapSystem(SapSystemName);
 		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"determined SapSystemName ["+SapSystemName+"]"); 
 		if (result==null) {
 			log.warn(getLogPrefix()+"could not find a SapSystem ["+SapSystemName+"] from Parameter ["+getSapSystemNameParam()+"]");
@@ -111,7 +103,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return getSapSystem(SapSystemName);
 	}
 
-	public JCoDestination getDestination(PipeLineSession session, SapSystem sapSystem) throws SenderException, SapException, JCoException {
+	public JCoDestination getDestination(PipeLineSession session, SapSystemImpl sapSystem) throws SenderException, SapException, JCoException {
 		JCoDestination result;
 		if (isSynchronous()) {
 			if (StringUtils.isNotEmpty(getLuwHandleSessionKey())) {
@@ -135,7 +127,7 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 		return result;
 	}
 
-	public String getTid(JCoDestination destination, SapSystem sapSystem) throws SapException, JCoException {
+	public String getTid(JCoDestination destination, SapSystemImpl sapSystem) throws SapException, JCoException {
 		if (isSynchronous()) {
 			return null;
 		}
@@ -156,17 +148,23 @@ public abstract class SapSenderBase extends SapFunctionFacade implements ISender
 	}
 
 
-	@IbisDoc({"1", "session key in which LUW information is stored. If set, actions that share a LUW-handle will be executed using the same destination. Can only be used for synchronous functions", ""})
+	/** Session key in which LUW information is stored. If set, actions that share a LUW-handle will be executed using the same destination. Can only be used for synchronous functions */
 	public void setLuwHandleSessionKey(String string) {
 		luwHandleSessionKey = string;
 	}
 
-	@IbisDoc({"2", "name of the parameter used to indicate the name of the {@link SapSystem} used by this object if the attribute <code>sapSystemName</code> is empty", "sapSystemName"})
+	/**
+	 * Name of the parameter used to indicate the name of the {@link SapSystem} used by this object if the attribute <code>sapSystemName</code> is empty
+	 * @ff.default sapSystemName
+	 */
 	public void setSapSystemNameParam(String string) {
 		sapSystemNameParam = string;
 	}
 
-	@IbisDoc({"3", "when <code>false</code>, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When <code>false</code>, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed.", "false"})
+	/**
+	 * If <code>false</code>, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When <code>false</code>, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed.
+	 * @ff.default false
+	 */
 	protected void setSynchronous(boolean b) {
 		synchronous = b;
 	}

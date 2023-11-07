@@ -17,11 +17,11 @@ package nl.nn.adapterframework.statistics.parser;
 
 import java.text.DecimalFormat;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.statistics.Basics;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  * Record use to gather statistics data from a file.
@@ -32,7 +32,7 @@ public class SummaryRecord extends Basics {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private String name;
-	
+
 	public void registerItem(Item item) {
 		String name=item.getName();
 		String value=item.getValue();
@@ -51,7 +51,7 @@ public class SummaryRecord extends Basics {
 			} else
 			if (ITEM_NAME_SUMSQ.equals(name)) {
 				sumOfSquares=Long.parseLong(value);
-			} 
+			}
 		}
 	}
 

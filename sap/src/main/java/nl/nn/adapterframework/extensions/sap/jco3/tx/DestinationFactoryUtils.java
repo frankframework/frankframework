@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.extensions.sap.jco3.tx;
 
 import nl.nn.adapterframework.extensions.sap.SapException;
-import nl.nn.adapterframework.extensions.sap.jco3.SapSystem;
+import nl.nn.adapterframework.extensions.sap.jco3.SapSystemImpl;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
@@ -29,7 +29,7 @@ import com.sap.conn.jco.JCoException;
  * for obtaining transactional resources.
  *
  * <p>based on {@link org.springframework.jms.connection.ConnectionFactoryUtils}
- * 
+ *
  * @author  Gerrit van Brakel
  * @author  Jaco de Groot
  * @since   5.0
@@ -43,7 +43,7 @@ public abstract class DestinationFactoryUtils {
 	 * @param sapSystem the SapSystem that the Session originated from
 	 * @return whether the Destination is transactional
 	 */
-	public static boolean isDestinationTransactional(JCoDestination destination, SapSystem sapSystem) {
+	public static boolean isDestinationTransactional(JCoDestination destination, SapSystemImpl sapSystem) {
 		if (destination == null || sapSystem == null) {
 			return false;
 		}
@@ -64,10 +64,10 @@ public abstract class DestinationFactoryUtils {
 	 * SapSystem needs to handle transaction enlistment underneath the covers.
 	 * @return the TID, or <code>null</code> if none found
 	 * @throws SapException in case of JCo failure
-	 * @throws JCoException 
+	 * @throws JCoException
 	 */
 	public static String getTransactionalTid(
-			final SapSystem sapSystem, final JCoDestination existingDestination, final boolean synchedLocalTransactionAllowed)
+			final SapSystemImpl sapSystem, final JCoDestination existingDestination, final boolean synchedLocalTransactionAllowed)
 			throws SapException, JCoException {
 
 		return doGetTransactionalTid(sapSystem, new ResourceFactory() {
@@ -95,7 +95,7 @@ public abstract class DestinationFactoryUtils {
 	}
 
 	public static JCoDestination getTransactionalDestination(
-			final SapSystem sapSystem, final boolean synchedLocalTransactionAllowed) 
+			final SapSystemImpl sapSystem, final boolean synchedLocalTransactionAllowed)
 			throws SapException, JCoException {
 
 		return doGetTransactionalDestination(sapSystem, new ResourceFactory() {
@@ -131,7 +131,7 @@ public abstract class DestinationFactoryUtils {
 	 * @return the transactional String, or <code>null</code> if none found
 	 * @throws JCoException in case of failure
 	 */
-	public static String doGetTransactionalTid(SapSystem sapSystem, ResourceFactory resourceFactory)
+	public static String doGetTransactionalTid(SapSystemImpl sapSystem, ResourceFactory resourceFactory)
 			throws JCoException {
 
 		Assert.notNull(sapSystem, "SapSystem must not be null");
@@ -183,7 +183,7 @@ public abstract class DestinationFactoryUtils {
 	 * @return the transactional JCoDestination, or <code>null</code> if none found
 	 * @throws JCoException in case of failure
 	 */
-	public static JCoDestination doGetTransactionalDestination(SapSystem sapSystem, ResourceFactory resourceFactory) throws JCoException {
+	public static JCoDestination doGetTransactionalDestination(SapSystemImpl sapSystem, ResourceFactory resourceFactory) throws JCoException {
 
 		Assert.notNull(sapSystem, "SapSystem must not be null");
 		Assert.notNull(resourceFactory, "ResourceFactory must not be null");

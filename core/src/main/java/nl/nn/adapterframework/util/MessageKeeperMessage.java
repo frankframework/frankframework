@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.logging.IbisMaskingLayout;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Set;
 /**
  * A message for the MessageKeeper. <br/>
  * Although this could be an inner class of the MessageKeeper,
@@ -35,7 +35,7 @@ public class MessageKeeperMessage {
 	private Date messageDate=new Date();
 	private String messageText;
 	private MessageKeeperLevel messageLevel;
-	
+
 	/**
 	* Set the messagetext of this message. The text will be xml-encoded.
 	*/
@@ -57,10 +57,10 @@ public class MessageKeeperMessage {
 	private String maskMessage(String message) {
 		if (StringUtils.isNotEmpty(message)) {
 			Set<String> hideRegex = IbisMaskingLayout.getGlobalReplace();
-			message = Misc.hideAll(message, hideRegex);
+			message = StringUtil.hideAll(message, hideRegex);
 
 			Set<String> threadHideRegex = IbisMaskingLayout.getThreadLocalReplace();
-			message = Misc.hideAll(message, threadHideRegex);
+			message = StringUtil.hideAll(message, threadHideRegex);
 		}
 		return message;
 	}

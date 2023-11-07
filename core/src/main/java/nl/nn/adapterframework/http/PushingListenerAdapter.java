@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2017, 2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,11 @@ package nl.nn.adapterframework.http;
 
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -29,27 +32,32 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.doc.Protected;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link nl.nn.adapterframework.receivers.Receiver}
+ * Baseclass of a {@link IPushingListener IPushingListener} that enables a {@link Receiver}
  * to receive messages from Servlets.
  * </table>
- * @author  Gerrit van Brakel 
+ * @author  Gerrit van Brakel
  * @since   4.12
  */
 public abstract class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter @Setter ApplicationContext applicationContext;
+
+	private @Getter String name;
+	private @Getter boolean applicationFaultsAsExceptions=true;
+	private @Getter boolean running;
 
 	private IMessageHandler<Message> handler;
-	private String name;
-	private boolean applicationFaultsAsExceptions=true;
-	private boolean running;
 
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
 	/**
 	 * initialize listener and register <code>this</code> to the JNDI
 	 */
@@ -71,31 +79,38 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 
 
 	@Override
-	public String getIdFromRawMessage(Message rawMessage, Map<String, Object> threadContext) {
-		return null;
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
+		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
+
 	@Override
-	public Message extractMessage(Message rawMessage, Map<String, Object> threadContext) {
-		return rawMessage;
+	public Message extractMessage(@Nonnull RawMessageWrapper<Message> rawMessage, @Nonnull Map<String, Object> context) {
+		return rawMessage.getRawMessage();
 	}
+
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		// descendants can override this method when specific actions are required
 	}
 
 	@Override
-	public Message processRequest(String correlationId, Message rawMessage, Map<String, Object> requestContext) throws ListenerException {
-		Message message = extractMessage(rawMessage, requestContext);
+	public Message processRequest(Message rawMessage, PipeLineSession session) throws ListenerException {
+		RawMessageWrapper<Message> rawMessageWrapper = new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
+		// NB: This seems pointless, but I guess that a subclass could override extractMessage() and make it do something more revolutionary.
+		Message message = extractMessage(rawMessageWrapper, session);
 		try {
-			log.debug("PushingListenerAdapter.processRequerawMmessagest() for correlationId ["+correlationId+"]");
-			return handler.processRequest(this, correlationId, rawMessage, message, requestContext);
+			log.debug("PushingListenerAdapter.processRequest() for correlationId [{}]", session::getCorrelationId);
+			return handler.processRequest(this, rawMessageWrapper, message, session);
 		} catch (ListenerException e) {
 			if (isApplicationFaultsAsExceptions()) {
 				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");
 				throw e;
 			}
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
+			String correlationId = session.getCorrelationId();
 			return handler.formatException(null,correlationId, message, e);
+		} finally {
+			ThreadContext.clearAll();
 		}
 	}
 
@@ -104,11 +119,6 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	public String toString() {
 		//Including the handler causes StackOverflowExceptions on Receiver.toString() which also prints the listener
 		return ReflectionToStringBuilder.toStringExclude(this, "handler");
-	}
-
-	@Override
-	public String getName() {
-		return name;
 	}
 
 	/**
@@ -128,16 +138,11 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 //		this.exceptionListener=exceptionListener;
 	}
 
-	public boolean isApplicationFaultsAsExceptions() {
-		return applicationFaultsAsExceptions;
-	}
 	public void setApplicationFaultsAsExceptions(boolean b) {
 		applicationFaultsAsExceptions = b;
 	}
 
-	public boolean isRunning() {
-		return running;
-	}
+	@Protected
 	public void setRunning(boolean running) {
 		this.running = running;
 	}

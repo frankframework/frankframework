@@ -1,5 +1,6 @@
 .idea
 *.iml
+*.log
 target
 lib
 bin
@@ -13,3 +14,4 @@ bin
 **/META-INF/maven
 **/META-INF/MANIFEST.MF
 .flattened-pom.xml
+.metadata

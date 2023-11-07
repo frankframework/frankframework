@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
 import com.sap.conn.jco.JCoException;
+
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Singleton that has the different sapSystems. <br/>
@@ -57,7 +57,7 @@ public class SapSystemFactory {
 			log.error("no SapSystem found under name [" + sapSystem	+ "], factory contents [" + toString() + "]");
 			return null;
 		}
-		nl.nn.adapterframework.extensions.sap.jco3.SapSystem sapSystem3 = (nl.nn.adapterframework.extensions.sap.jco3.SapSystem) sapSystem;
+		SapSystem sapSystem3 = (SapSystem) sapSystem;
 		try {
 			return sapSystem3.getDestination().toString();
 		} catch (JCoException e) {

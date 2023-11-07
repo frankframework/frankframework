@@ -1,5 +1,5 @@
 /*
-Copyright 2021 WeAreFrank!
+Copyright 2021, 2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,10 +25,9 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.util.ClassUtils;
 
-import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 
 public abstract class ApplicationWarningsBase implements ApplicationContextAware, InitializingBean, DisposableBean {
 	private ApplicationContext applicationContext;
@@ -38,10 +37,6 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 	@Override
 	public void afterPropertiesSet() {
 		appConstants = AppConstants.getInstance(applicationContext.getClassLoader());
-
-		if(warnings == null) {
-			warnings = new LinkedList<>();
-		}
 	}
 
 	protected void addWarnings(List<String> warnings) {
@@ -50,7 +45,7 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 
 	@Override
 	public void destroy() throws Exception {
-		warnings = null;
+		warnings.clear();
 	}
 
 	public int size() {
@@ -81,26 +76,11 @@ public abstract class ApplicationWarningsBase implements ApplicationContextAware
 		return Collections.unmodifiableList(warnings);
 	}
 
-	/**
-	 * Returns the name of the object. In case a Spring proxy is being used, 
-	 * the name will be something like XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d
-	 * ClassUtils.getUserClass() makes sure the original class will be returned.
-	 */
-	protected String getObjectName(Object o) {
-		String result = ClassUtils.getUserClass(o).getSimpleName();
-		if (o instanceof INamedObject) { //This assumes that setName has already been called
-			String named = ((INamedObject) o).getName();
-			if (StringUtils.isNotEmpty(named)) {
-				return result+=" ["+named+"]";
-			}
-		}
-		return result;
-	}
 
 	private String prefixLogMessage(Object source, String message) {
 		String msg = "";
 		if(source != null) {
-			msg = getObjectName(source)+" ";
+			msg = ClassUtils.nameOf(source)+" ";
 		}
 
 		return msg += message;

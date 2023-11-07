@@ -10,10 +10,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.extensions.cmis.CmisSender.CmisAction;
+import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 
 public class CmisSenderTest {
 
@@ -21,38 +23,38 @@ public class CmisSenderTest {
 	private String repo;
 	private String titanUser;
 	private String titanPassword;
-	
+
 	private String id1;
 	private String id2;
-	
+
 	private int length1=0;
 	private int length2=0;
-	
+
 	private String testProperties="CmisSender.properties";
 	private Properties properties;
 
 	private int numParallel=5; // not used for ramp up test
-	
+
 	private int numCycles=10;
 	private int maxConnections=20;
 	private int numSenders=2;
-	
+
 	private boolean testViaHttpSender=false;
-	
+
 	private int threadCount[] = {  1,  5, 10, 15, 20, 25, 30 };
-	
-	private StringBuffer results=new StringBuffer();
+
+	private StringBuilder results=new StringBuilder();
 	private String separator="\t";
 
-	
-	
+
+
 	private CmisSender cmisSenders[];
 	private HttpSender httpSenders[];
-	
+
 	@Before
 	public void setUp() throws Exception {
 		properties=new Properties();
-		properties.load(ClassUtils.getResourceURL(testProperties).openStream());
+		properties.load(ClassLoaderUtils.getResourceURL(testProperties).openStream());
 		url=properties.getProperty("url");
 		repo=properties.getProperty("repo");
 		titanUser=properties.getProperty("titanUser");
@@ -73,19 +75,19 @@ public class CmisSenderTest {
 			}
 		}
 	}
-	
+
 	@After
 	public void tearDown() {
 		// nothing
 	}
-	
+
 	public CmisSender createCmisSender(int i) throws Exception {
 		CmisSender sender = new CmisSender();
 		sender.setName("CmisSender "+i);
 		sender.setUrl(url);
 		sender.setRepository(repo);
-		sender.setAction("get");
-		sender.setBindingType("browser");
+		sender.setAction(CmisAction.GET);
+		sender.setBindingType(BindingTypes.BROWSER);
 		sender.setUsername(titanUser);
 		sender.setPassword(titanPassword);
 		sender.setMaxConnections(maxConnections);
@@ -111,37 +113,37 @@ public class CmisSenderTest {
 		sender.open();
 		return sender;
 	}
-	
+
 	@Test
 	public void testGet() throws Exception {
 		testGet(0);
 	}
-	
+
 	public void testGet(int i) throws Exception {
 		String id=id1;
 //		int expectedLength=length1;
 		String result;
 		PipeLineSession session = new PipeLineSession();
-	
-		int index=i % numSenders;
-		
-		if (testViaHttpSender) {
-			Message message=new Message(""); 
 
-			result=httpSenders[index].sendMessage(message, session).asString();
-			
+		int index=i % numSenders;
+
+		if (testViaHttpSender) {
+			Message message=new Message("");
+
+			result=httpSenders[index].sendMessageOrThrow(message, session).asString();
+
 		} else {
 			Message message=new Message("<cmis><id>"+id+"</id></cmis>");
-			result=cmisSenders[index].sendMessage(message, session).asString();
+			result=cmisSenders[index].sendMessageOrThrow(message, session).asString();
 		}
-		
+
 		assertNotNull(result);
 //		assertEquals(expectedLength,result.length());
 	}
 
 	@Test
 	public void testGetMultipleTimes() throws Exception {
-	
+
 		long t0=System.currentTimeMillis();
 		for (int i=0;i<numCycles;i++) {
 			testGet();
@@ -186,7 +188,7 @@ public class CmisSenderTest {
 		String result=length1+separator+numParallel+separator+totalCycles+separator+totalTime+separator+totalTimeTesting;
 		System.out.println(result);
 		results.append(result).append("\n");
-		
+
     }
 
     @Test
@@ -197,7 +199,7 @@ public class CmisSenderTest {
     	testGet();
     	testParallel(numParallel);
     }
-    
+
     @Test
     public void testRampUp() throws Exception {
     	System.out.println("warming up...");
@@ -210,13 +212,13 @@ public class CmisSenderTest {
     	}
     	System.out.println(results);
     }
-    
+
 
     private class CmisSenderTester extends Thread {
 
 		private long total;
 		private int cycles=0;
-    	
+
     	@Override
 		public void run() {
     		long t0=System.currentTimeMillis();
@@ -231,7 +233,7 @@ public class CmisSenderTest {
 			long t1=System.currentTimeMillis();
 			total=t1-t0;
 		}
-   	
+
     }
-    
+
 }

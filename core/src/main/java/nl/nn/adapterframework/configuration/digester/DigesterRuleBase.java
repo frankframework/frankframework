@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,17 +15,17 @@
 */
 package nl.nn.adapterframework.configuration.digester;
 
+import java.beans.PropertyDescriptor;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.digester3.Rule;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.util.ClassUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
@@ -33,11 +33,18 @@ import org.xml.sax.SAXParseException;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
+import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
+import nl.nn.adapterframework.core.CanUseSharedResource;
+import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.IbisException;
+import nl.nn.adapterframework.core.SharedResource;
 import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.scheduler.job.IbisActionJob;
 import nl.nn.adapterframework.scheduler.job.Job;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringResolver;
 
@@ -53,20 +60,17 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	private boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", preparse);//True when pre-parsed
 
 	/**
-	 * Returns the name of the object. In case a Spring proxy is being used, 
+	 * The current adapter-instance being parsed by the digester. This is needed for the configurable suppression of deprecation-warnings.
+	 */
+	private IAdapter currentAdapter = null;
+
+	/**
+	 * Returns the name of the object. In case a Spring proxy is being used,
 	 * the name will be something like XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d
 	 * ClassUtils.getUserClass() makes sure the original class will be returned.
 	 */
 	protected String getObjectName() {
-		Object o = getBean();
-		String result = ClassUtils.getUserClass(o).getSimpleName();
-		if (o instanceof INamedObject) { //This assumes that setName has already been called
-			String named = ((INamedObject) o).getName();
-			if (StringUtils.isNotEmpty(named)) {
-				return result+=" ["+named+"]";
-			}
-		}
-		return result;
+		return ClassUtils.nameOf(getBean());
 	}
 
 	/**
@@ -74,12 +78,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 * Display location information conform {@link IbisException} when the cause is a {@link SAXParseException}.
 	 */
 	protected final void addLocalWarning(String msg) {
-		String message = msg;
-		if(includeLineInformation) {
-			Locator loc = getDigester().getDocumentLocator();
-			message = "on line ["+loc.getLineNumber()+"] column ["+loc.getColumnNumber()+"] "+msg;
-		}
-		configurationWarnings.add(getBean(), log, message);
+		configurationWarnings.add(getBean(), log, getLocationString() + msg);
 	}
 
 	/**
@@ -90,7 +89,27 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	}
 
 	/**
-	 * @return an {@link nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader IConfigurationClassLoader}.
+	 * Add a warning message to the current configuration, unless the suppression key is
+	 * supporessed in the configuration.
+	 *
+	 * @param msg Message to add
+	 * @param suppressionKey {@link SuppressKeys} to check.
+	 */
+	protected final void addSuppressableWarning(String msg, SuppressKeys suppressionKey) {
+		configurationWarnings.add(getBean(), log, getLocationString() + msg, suppressionKey, currentAdapter);
+	}
+
+	private String getLocationString() {
+		if (!includeLineInformation) {
+			return "";
+		}
+		Locator loc = getDigester().getDocumentLocator();
+		return "on line ["+loc.getLineNumber()+"] column ["+loc.getColumnNumber()+"] ";
+
+	}
+
+	/**
+	 * @return an {@link IConfigurationClassLoader}.
 	 */
 	protected final ClassLoader getClassLoader() {
 		if(applicationContext == null) {
@@ -111,7 +130,7 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	 * @return the resolved class of the current object
 	 */
 	protected final Class<?> getBeanClass() {
-		return ClassUtils.getUserClass(getBean());
+		return org.springframework.util.ClassUtils.getUserClass(getBean());
 	}
 
 	/**
@@ -132,17 +151,31 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 		if(top instanceof INamedObject) { //We must set the name first, to improve logging and configuration warnings
 			String name = map.remove("name");
 			if(StringUtils.isNotEmpty(name)) {
-				BeanUtils.setProperty(top, "name", name);
+				ClassUtils.invokeSetter(top, "setName", name);
 			}
+		}
+
+		if (top instanceof IAdapter) {
+			currentAdapter = (IAdapter) top;
 		}
 
 		//Since we are directly instantiating the correct job (by className), functions are no longer required by the digester's attribute handler.
 		//They are however still required for the JobFactory to determine the correct job class, in order to avoid ConfigurationWarnings.
-		if(top instanceof IJob && !(top instanceof Job)) {
+		if(top instanceof IJob && !(top instanceof Job) && !(top instanceof IbisActionJob)) {
 			map.remove("function");
 		}
 
 		handleBean();
+
+		if(top instanceof CanUseSharedResource && map.containsKey("sharedResourceName")) {
+			String sharedResourceName = SharedResource.SHARED_RESOURCE_PREFIX + map.get("sharedResourceName");
+			if(applicationContext.containsBean(sharedResourceName)) {
+				SharedResource<?> container = applicationContext.getBean(sharedResourceName, SharedResource.class);
+				dontSetSharedResourceAttributes(container, map);
+			} else {
+				addLocalWarning("shared resource ["+map.get("sharedResourceName")+"] does not exist");
+			}
+		}
 
 		for (Entry<String, String> entry : map.entrySet()) {
 			String attribute = entry.getKey();
@@ -150,6 +183,24 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 				log.trace("checking attribute ["+attribute+"] on bean ["+getObjectName()+"]");
 			}
 			handleAttribute(attribute, entry.getValue(), map);
+		}
+	}
+
+	/** Check if attribute-'map' contains attributes (methods) that also exist in 'sharedResource'. */
+	private void dontSetSharedResourceAttributes(SharedResource<?> sharedResource, Map<String, String> map) {
+		PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(sharedResource.getClass());
+		for(PropertyDescriptor pd : pds) {
+			String attributeName = pd.getName();
+			if(map.containsKey(attributeName)) {
+				addLocalWarning("ignoring attribute ["+attributeName+"] as it is managed by the shared resource ["+sharedResource.getName()+"]");
+			}
+		}
+	}
+
+	@Override
+	public void end(String namespace, String name) throws Exception {
+		if ("adapter".equalsIgnoreCase(name)) {
+			currentAdapter = null;
 		}
 	}
 

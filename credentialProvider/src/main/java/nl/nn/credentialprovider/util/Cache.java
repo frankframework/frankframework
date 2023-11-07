@@ -1,0 +1,41 @@
+/*
+   Copyright 2022 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package nl.nn.credentialprovider.util;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+public class Cache<K,V,E extends Exception> {
+
+	private Map<K,CacheEntry<V>> delegate;
+	private int timeToLiveMillis;
+
+	public Cache(int timeToLiveMillis) {
+		this.timeToLiveMillis = timeToLiveMillis;
+		delegate = new ConcurrentHashMap<>();
+	}
+
+	public V computeIfAbsentOrExpired(K key, ThrowingFunction<K,V,E> valueSupplier) throws E {
+		CacheEntry<V> entry = delegate.computeIfAbsent(key, k -> new CacheEntry<>());
+		synchronized (entry) {
+			if (entry.isExpired()) {
+				entry.update(valueSupplier.apply(key), timeToLiveMillis);
+			}
+			return entry.getValue();
+		}
+	}
+
+}

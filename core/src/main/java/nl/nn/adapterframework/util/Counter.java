@@ -21,7 +21,7 @@ package nl.nn.adapterframework.util;
  * @author Gerrit van Brakel
  */
 public class Counter {
-	
+
 	private long value = 0 ;
 
 	public Counter(int startValue) {
@@ -41,7 +41,7 @@ public class Counter {
 		return value+=amount;
 	}
 	public synchronized void clear() {
-		value=0;	
+		value=0;
 	}
 	public synchronized long getValue() {
 		return value;

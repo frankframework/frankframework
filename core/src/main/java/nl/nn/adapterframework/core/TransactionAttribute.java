@@ -35,8 +35,8 @@ public enum TransactionAttribute implements DocumentedEnum {
 	@EnumLabel("NotSupported") 	NOTSUPPORTED(TransactionDefinition.PROPAGATION_NOT_SUPPORTED),
 	/** Do not support a current transaction; throw an exception if a current transaction exists. */
 	@EnumLabel("Never") 		NEVER(TransactionDefinition.PROPAGATION_NEVER);
-	
-	private @Getter int transactionAttributeNum;
+
+	private final @Getter int transactionAttributeNum;
 
 	private TransactionAttribute(int transactionAttributeNum) {
 		this.transactionAttributeNum=transactionAttributeNum;

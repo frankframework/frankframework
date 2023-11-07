@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2017 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2017 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.impl.xs.SchemaGrammar;
 import org.apache.xerces.jaxp.validation.XMLSchema11Factory;
@@ -40,30 +39,26 @@ import org.apache.xerces.util.SecurityManager;
 import org.apache.xerces.util.ShadowedSymbolTable;
 import org.apache.xerces.util.SymbolTable;
 import org.apache.xerces.util.XMLGrammarPoolImpl;
-import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
 import org.apache.xerces.xni.grammars.XMLGrammarPool;
 import org.apache.xerces.xni.grammars.XSGrammar;
-import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLInputSource;
-import org.apache.xerces.xni.parser.XMLParseException;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.cache.EhCache;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
 
 
 /**
@@ -75,7 +70,7 @@ import nl.nn.adapterframework.xml.ClassLoaderXmlEntityResolver;
  */
 public class XercesXmlValidator extends AbstractXmlValidator {
 
-	private String DEFAULT_XML_SCHEMA_VERSION="1.1";
+	private static final String DEFAULT_XML_SCHEMA_VERSION = "1.1";
 
 	/** Property identifier: grammar pool. */
 	public static final String GRAMMAR_POOL = Constants.XERCES_PROPERTY_PREFIX + Constants.XMLGRAMMAR_POOL_PROPERTY;
@@ -96,7 +91,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	protected static final String EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID = Constants.SAX_FEATURE_PREFIX + Constants.EXTERNAL_PARAMETER_ENTITIES_FEATURE;
 
 	/** Disallow doctype declarations feature id (http://apache.org/xml/features/disallow-doctype-decl). */
-	protected static final String DISSALLOW_DOCTYPE_DECL_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
+	protected static final String DISALLOW_DOCTYPE_DECL_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.DISALLOW_DOCTYPE_DECL_FEATURE;
 
 	/** Schema full checking feature id (http://apache.org/xml/features/validation/schema-full-checking). */
 	protected static final String SCHEMA_FULL_CHECKING_FEATURE_ID = Constants.XERCES_FEATURE_PREFIX + Constants.SCHEMA_FULL_CHECKING;
@@ -108,16 +103,16 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private static final int maxInitialised = AppConstants.getInstance().getInt("xmlValidator.maxInitialised", -1);
 	private static final boolean sharedSymbolTable = AppConstants.getInstance().getBoolean("xmlValidator.sharedSymbolTable", false);
 	private static final int sharedSymbolTableSize = AppConstants.getInstance().getInt("xmlValidator.sharedSymbolTable.size", BIG_PRIME);
-	private int entityExpansionLimit = AppConstants.getInstance().getInt("xmlValidator.entityExpansionLimit", 100000);
+	private final int entityExpansionLimit = AppConstants.getInstance().getInt("xmlValidator.entityExpansionLimit", 100000);
 
-	private static AtomicLong counter = new AtomicLong();
-	private String preparseResultId;
+	private static final AtomicLong counter = new AtomicLong();
+	private final String preparseResultId;
 	private PreparseResult preparseResult;
 
 	private static EhCache<PreparseResult> cache;
 	static {
 		if (maxInitialised != -1) {
-			cache = new EhCache<PreparseResult>();
+			cache = new EhCache<>();
 			cache.setMaxElementsInMemory(maxInitialised);
 			cache.setEternal(true);
 			try {
@@ -135,14 +130,14 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public void configure(String logPrefix) throws ConfigurationException {
+	public void configure(IConfigurationAware owner) throws ConfigurationException {
 		if (StringUtils.isEmpty(getXmlSchemaVersion())) {
 			setXmlSchemaVersion(AppConstants.getInstance(getConfigurationClassLoader()).getString("xml.schema.version", DEFAULT_XML_SCHEMA_VERSION));
 			if (!isXmlSchema1_0() && !"1.1".equals(getXmlSchemaVersion())) {
 				throw new ConfigurationException("class ("+this.getClass().getName()+") only supports XmlSchema version 1.0 and 1.1, no ["+getXmlSchemaVersion()+"]");
 			}
 		}
-		super.configure(logPrefix);
+		super.configure(owner);
 	}
 
 	@Override
@@ -183,9 +178,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 	private synchronized PreparseResult preparse(String schemasId, List<Schema> schemas) throws ConfigurationException {
 		SymbolTable symbolTable = getSymbolTable();
 		XMLGrammarPool grammarPool = new XMLGrammarPoolImpl();
-		Set<String> namespaceSet = new HashSet<String>();
+		Set<String> namespaceSet = new HashSet<>();
 		XMLGrammarPreparser preparser = new XMLGrammarPreparser(symbolTable);
-		preparser.setEntityResolver(new ClassLoaderXmlEntityResolver(this));
+		preparser.setEntityResolver(new IntraGrammarPoolEntityResolver(this, schemas));
 		preparser.registerPreparser(XMLGrammarDescription.XML_SCHEMA, null);
 		preparser.setProperty(GRAMMAR_POOL, grammarPool);
 		preparser.setFeature(NAMESPACES_FEATURE_ID, true);
@@ -202,9 +197,9 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 				throw new ConfigurationException(msg, e);
 			}
 		}
-		MyErrorHandler errorHandler = new MyErrorHandler(this);
-		errorHandler.warn = warn;
+		XercesValidationErrorHandler errorHandler = new XercesValidationErrorHandler(getOwner()!=null ? getOwner() : this, warn);
 		preparser.setErrorHandler(errorHandler);
+		//namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'. N.B. beware, this will cause SoapValidator to miss validation failure of a non-namespaced SoapBody
 		Set<Grammar> namespaceRegisteredGrammars = new HashSet<>();
 		for (Schema schema : schemas) {
 			Grammar grammar = preparse(preparser, schemasId, schema);
@@ -291,14 +286,14 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 			validatorHandler=schemaObject.newValidatorHandler();
 		} catch (SAXException e) {
-			throw new ConfigurationException(logPrefix + "Cannot create schema", e);
+			throw new ConfigurationException(logPrefix + " Cannot create schema", e);
 		}
 		try {
 			//validatorHandler.setFeature(NAMESPACES_FEATURE_ID, true);
 			validatorHandler.setFeature(VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
-			validatorHandler.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
+			validatorHandler.setFeature(DISALLOW_DOCTYPE_DECL_FEATURE_ID, true);
 
 
 			SecurityManager securityManager = new SecurityManager();
@@ -325,7 +320,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			// parser.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // this feature is not recognized
 //			parser.setFeature(EXTERNAL_GENERAL_ENTITIES_FEATURE_ID, false); // this one appears to be not working
 //			parser.setFeature(EXTERNAL_PARAMETER_ENTITIES_FEATURE_ID, false);
-//			parser.setFeature(DISSALLOW_DOCTYPE_DECL_FEATURE_ID, true);
+//			parser.setFeature(DISALLOW_DOCTYPE_DECL_FEATURE_ID, true);
 			parser.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			parser.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());
 			parser.setErrorHandler(context.getErrorHandler());
@@ -333,15 +328,15 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			mgr.setEntityExpansionLimit(entityExpansionLimit);
 			parser.setProperty(SECURITY_MANAGER_PROPERTY_ID, mgr);
 		} catch (SAXNotRecognizedException e) {
-			throw new XmlValidatorException(logPrefix + "parser does not recognize necessary feature", e);
+			throw new XmlValidatorException(logPrefix + " parser does not recognize necessary feature", e);
 		} catch (SAXNotSupportedException e) {
-			throw new XmlValidatorException(logPrefix + "parser does not support necessary feature", e);
+			throw new XmlValidatorException(logPrefix + " parser does not support necessary feature", e);
 		}
 		return parser;
 	}
 
 
-	private static XMLInputSource schemaToXMLInputSource(Schema schema) throws IOException, ConfigurationException {
+	private static XMLInputSource schemaToXMLInputSource(Schema schema) throws IOException {
 		// SystemId is needed in case the schema has an import. Maybe we should
 		// already resolve this at the SchemaProvider side (except when
 		// noNamespaceSchemaLocation is being used this is already done in
@@ -349,7 +344,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		// mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes)).
 		// See comment in method XmlValidator.getSchemas() too.
 		// See ClassLoaderXmlEntityResolver too.
-		return new XMLInputSource(null, schema.getSystemId(), null, schema.getInputStream(), null);
+		return new XMLInputSource(null, schema.getSystemId(), null, schema.getReader(), null);
 	}
 
 	@Override
@@ -362,11 +357,11 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 
 class XercesValidationContext extends ValidationContext {
 
-	private PreparseResult preparseResult;
+	private final PreparseResult preparseResult;
 
 	XercesValidationContext(PreparseResult preparseResult) {
 		super();
-		this.preparseResult=preparseResult;
+		this.preparseResult = preparseResult;
 	}
 
 	@Override
@@ -395,93 +390,21 @@ class XercesValidationContext extends ValidationContext {
 }
 
 class PreparseResult {
-	private String schemasId;
-	private SymbolTable symbolTable;
-	private XMLGrammarPool grammarPool;
-	private Set<String> namespaceSet;
-	private List<XSModel> xsModels=null;
-
-	public String getSchemasId() {
-		return schemasId;
-	}
-	public void setSchemasId(String schemasId) {
-		this.schemasId = schemasId;
-	}
-
-	public SymbolTable getSymbolTable() {
-		return symbolTable;
-	}
-
-	public void setSymbolTable(SymbolTable symbolTable) {
-		this.symbolTable = symbolTable;
-	}
-
-	public XMLGrammarPool getGrammarPool() {
-		return grammarPool;
-	}
-
-	public void setGrammarPool(XMLGrammarPool grammarPool) {
-		this.grammarPool = grammarPool;
-	}
-
-	public Set<String> getNamespaceSet() {
-		return namespaceSet;
-	}
-
-	public void setNamespaceSet(Set<String> namespaceSet) {
-		this.namespaceSet = namespaceSet;
-	}
+	private @Getter @Setter String schemasId;
+	private @Getter @Setter SymbolTable symbolTable;
+	private @Getter @Setter XMLGrammarPool grammarPool;
+	private @Getter @Setter Set<String> namespaceSet;
+	private @Setter List<XSModel> xsModels = null;
 
 	public List<XSModel> getXsModels() {
-		if (xsModels==null) {
-			xsModels=new LinkedList<XSModel>();
-			Grammar[] grammars=grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
-			for(int i=0;i<grammars.length;i++) {
-				xsModels.add(((XSGrammar)grammars[i]).toXSModel());
+		if (xsModels == null) {
+			xsModels = new LinkedList<>();
+			Grammar[] grammars = grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
+			for (Grammar grammar : grammars) {
+				xsModels.add(((XSGrammar) grammar).toXSModel());
 			}
 		}
 		return xsModels;
 	}
 
-	public void setXsModels(List<XSModel> xsModels) {
-		this.xsModels = xsModels;
-	}
-
 }
-class MyErrorHandler implements XMLErrorHandler {
-	protected Logger log = LogUtil.getLogger(this);
-	protected boolean warn = true;
-	private IConfigurationAware source;
-
-	public MyErrorHandler(IConfigurationAware source) {
-		this.source = source;
-	}
-
-	@Override
-	public void warning(String domain, String key, XMLParseException e) throws XNIException {
-		if (warn) {
-			ConfigurationWarnings.add(source, log, e.getMessage());
-		}
-	}
-
-	@Override
-	public void error(String domain, String key, XMLParseException e) throws XNIException {
-		// In case the XSD doesn't exist throw an exception to prevent the
-		// the adapter from starting.
-		if (e.getMessage() != null && e.getMessage().startsWith("schema_reference.4: Failed to read schema document '")) {
-			throw e;
-		}
-		if (warn) {
-			ConfigurationWarnings.add(source, log, e.getMessage());
-		}
-	}
-
-	@Override
-	public void fatalError(String domain, String key, XMLParseException e) throws XNIException {
-		if (warn) {
-			ConfigurationWarnings.add(source, log, e.getMessage());
-		}
-		throw new XNIException(e);
-	}
-}
-

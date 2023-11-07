@@ -1,0 +1,10 @@
+{
+    "severity": "CRITICAL",
+    "filter": "tralala",
+    "period": "no-int",
+    "sources": [],
+    "threshold": 1,
+    "type": "no-enum",
+    "events": [],
+    "adapters": []
+}

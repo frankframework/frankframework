@@ -2,20 +2,31 @@ package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.soap.SoapVersion;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
+import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
+import nl.nn.adapterframework.validation.XmlValidatorContentHandler;
 import nl.nn.adapterframework.validation.XmlValidatorException;
 
 
@@ -32,6 +43,19 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	private static final String BASIC					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl";
 	private static final String SIVTR					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1.wsdl";
 	private static final String SIVTRX					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1x.wsdl";
+	private static final String MULTIPLE_OPERATIONS		= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/multipleOperations.wsdl";
+
+	TestAppender testAppender;
+	@BeforeEach
+	void before() {
+		testAppender = TestAppender.newBuilder().build();
+		TestAppender.addToRootLogger(testAppender);
+	}
+
+	@AfterEach
+	void after() {
+		TestAppender.removeAppender(testAppender);
+	}
 
 	@Override
 	public WsdlXmlValidator createPipe() {
@@ -63,6 +87,194 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	}
 
 	@Test
+	public void wsdlValidateWithMultiImportUseAbsolutePath() throws Exception {
+		// Arrange
+		WsdlXmlValidator validator = pipe;
+		validator.setWsdl("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/root-import-ok.wsdl");
+		validator.setSoapBody("Body");
+		validator.setSoapVersion(SoapVersion.AUTO);
+		validator.setIgnoreUnknownNamespaces(true);
+		validator.setThrowException(true);
+		validator.registerForward(new PipeForward("success", null));
+
+		// Act
+		validator.configure();
+		validator.start();
+
+		// Assert
+		assertEquals(0, getConfigurationWarnings().size(), "Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()));
+	}
+
+	@Test
+	public void wsdlValidateWithMultiImportOfXsdDifferentPaths() throws Exception {
+		// Arrange
+		WsdlXmlValidator validator = pipe;
+		validator.setWsdl("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/root-import-not-ok.wsdl");
+		validator.setSoapBody("A");
+		validator.setSoapVersion(SoapVersion.AUTO);
+		validator.setIgnoreUnknownNamespaces(true);
+		validator.setThrowException(true);
+		validator.registerForward(new PipeForward("success", null));
+
+		int nrOfWarningsBefore = getConfigurationWarnings().size();
+
+		// Act
+		validator.configure();
+
+		// Assert
+		assertTrue(testAppender.getLogLines()
+				.stream().anyMatch(w -> w.contains("Multiple XSDs for namespace 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
+		assertTrue(getConfigurationWarnings().getWarnings()
+				.stream().anyMatch(w -> w.contains("Identical XSDs with different source path imported for same namespace. This is likely an error.\n Namespace: 'http://xmlns/overlappendeNamespace'")), "Expected configuration warning not found");
+
+		// Act pt2
+		validator.start();
+		Message soapMessage = MessageTestUtils.getMessage("/Validation/WsdlValidatorMultipleImportFromDifferentRoots/soapInput.xml");
+		PipeRunResult prr = validator.doPipe(soapMessage, session);
+
+		// Assert
+		assertTrue(prr.isSuccessful());
+		// TODO: This test should get more explicit configuration warnings
+		assertEquals(nrOfWarningsBefore + 2, getConfigurationWarnings().size(), "Unexpected configuration warnings, got: " + collectionToString(getConfigurationWarnings()));
+	}
+
+	private String collectionToString(ConfigurationWarnings c) {
+		StringBuilder result = new StringBuilder();
+		result.append('[');
+		for (String entry : c.getWarnings()) {
+			if (result.length() > 1) {
+				result.append(',');
+			}
+			result.append(entry);
+		}
+		result.append(']');
+		return result.toString();
+	}
+
+	@Test
+	// when a Soap Fault is returned, it should also pass the validator. It's a XML native element, but has to be supplied as body regardless.
+	public void testSoapFaultResponse() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(SIMPLE);
+		val.setSoapBody("TradePriceRequest,TradePrice,Fault");
+		val.setTargetNamespace("");
+		val.setThrowException(true);
+		val.registerForward(new PipeForward("success", null));
+		val.configure();
+		val.start();
+
+		String soapFault = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\">"
+				+ "<soapenv:Body>"
+				+ "  <soapenv:Fault>\n"
+				+ "    <faultcode>soapenv:Server</faultcode>\n"
+				+ "    <faultstring>test</faultstring>\n"
+				+ "  </soapenv:Fault>\n"
+				+ "</soapenv:Body>"
+				+ "</soapenv:Envelope>";
+		val.validate(soapFault, session);
+	}
+
+	@Test
+	public void testXpath() {
+		XmlValidatorContentHandler handler = new XmlValidatorContentHandler(null, null, null, null);
+		List<String> path = new ArrayList<>();
+		assertEquals("/", handler.getXpath(path));
+		path.add("soap");
+		assertEquals("/soap", handler.getXpath(path));
+		path.add("element");
+		assertEquals("/soap/element", handler.getXpath(path));
+	}
+
+	@Test
+	public void testSoapInputBodyFromSoapAction() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(MULTIPLE_OPERATIONS);
+		val.setThrowException(true);
+		val.registerForward(new PipeForward("success", null));
+		session.put("SOAPAction", "add");
+		val.configure();
+		val.start();
+		val.validate("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
+				+ "	<s:Header/>\n"
+				+ "	<s:Body>\n"
+				+ "		<impl:add>\n"
+				+ "			<impl:numA>3.14</impl:numA>\n"
+				+ "			<impl:numB>3.14</impl:numB>\n"
+				+ "		</impl:add>\n"
+				+ "	</s:Body>\n"
+				+ "</s:Envelope>", session);
+
+		session.put("SOAPAction", "sub");
+		val.validate("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
+				+ "	<s:Header/>\n"
+				+ "	<s:Body>\n"
+				+ "		<impl:sub>\n"
+				+ "			<impl:numA>3.14</impl:numA>\n"
+				+ "			<impl:numC>3.14</impl:numC>\n"
+				+ "		</impl:sub>\n"
+				+ "	</s:Body>\n"
+				+ "</s:Envelope>", session);
+	}
+
+	@Test
+	public void testSoapOutputBodyFromSoapAction() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(MULTIPLE_OPERATIONS);
+		val.setThrowException(true);
+		val.registerForward(new PipeForward("success", null));
+		session.put("SOAPAction", "add");
+		val.configure();
+		val.start();
+		val.validate(Message.asMessage("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
+				+ "	<s:Header/>\n"
+				+ "	<s:Body>\n"
+				+ "		<impl:addResponse>\n"
+				+ "			<impl:addReturn>3.14</impl:addReturn>\n"
+				+ "		</impl:addResponse>\n"
+				+ "	</s:Body>\n"
+				+ "</s:Envelope>"), session, true, null);
+
+		session.put("SOAPAction", "sub");
+		val.validate(Message.asMessage("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
+				+ "	<s:Header/>\n"
+				+ "	<s:Body>\n"
+				+ "		<impl:subResponse>\n"
+				+ "			<impl:subReturn>3.14</impl:subReturn>\n"
+				+ "		</impl:subResponse>\n"
+				+ "	</s:Body>\n"
+				+ "</s:Envelope>"), session, true, null);
+
+		val.validate(Message.asMessage("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
+				+ "	<s:Header/>\n"
+				+ "	<s:Body>\n"
+				+ "		<impl:addResponse>\n"
+				+ "			<impl:addReturn>3.14</impl:addReturn>\n"
+				+ "		</impl:addResponse>\n"
+				+ "	</s:Body>\n"
+				+ "</s:Envelope>"), session, true, null);
+	}
+
+	@Test
+	public void testSoapBodyFromSoapActionWithoutSoapAction() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(MULTIPLE_OPERATIONS);
+		val.setThrowException(true);
+		val.registerForward(new PipeForward("success", null));
+		val.configure();
+		val.start();
+		assertThrows(XmlValidatorException.class, () ->
+				val.validate("<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:impl=\"http://test.example.com\">\n"
+						+ "	<s:Header/>\n"
+						+ "	<s:Body>\n"
+						+ "		<impl:add>\n"
+						+ "			<impl:numA>3.14</impl:numA>\n"
+						+ "			<impl:numB>3.14</impl:numB>\n"
+						+ "		</impl:add>\n"
+						+ "	</s:Body>\n"
+						+ "</s:Envelope>", session));
+	}
+
+	@Test
 	public void wsdlValidateWithReference() throws Exception {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(SIMPLE_WITH_REFERENCE);
@@ -74,7 +286,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
 	}
 
-	@Test(expected = XmlValidatorException.class)
+	@Test
 	public void wsdlValidateWithReferenceFail() throws Exception {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(SIMPLE_WITH_REFERENCE);
@@ -82,7 +294,9 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.registerForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
-		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbolERROR>foo</tickerSymbolERROR></TradePriceRequest></Body></Envelope>", session);
+		assertThrows(XmlValidatorException.class, () ->
+			val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbolERROR>foo</tickerSymbolERROR></TradePriceRequest></Body></Envelope>", session)
+		);
 	}
 
 	@Test
@@ -124,7 +338,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				"", session);
 	}
 
-	@Test(expected = XmlValidatorException.class)
+	@Test
 	public void wsdlTibcoFailEnvelop() throws Exception {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(TIBCO);
@@ -132,7 +346,9 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.registerForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
-		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
+		assertThrows(XmlValidatorException.class, () ->
+
+				val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
 				"  <BodyERROR>\n" +
 				"	<MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
 				"	  <From>\n" +
@@ -156,10 +372,11 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				"	</Request>\n" +
 				"  </BodyERROR>\n" +
 				"</Envelope>\n" +
-				"", session);
+				"", session)
+		);
 	}
 
-	@Test(expected = XmlValidatorException.class)
+	@Test
 	public void wsdlTibcoFailMessage() throws Exception {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(TIBCO);
@@ -167,7 +384,9 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.registerForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
-		val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
+		assertThrows(XmlValidatorException.class, () ->
+
+				val.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n" +
 				"  <Body>\n" +
 				"	<MessageHeader xmlns=\"http://www.ing.com/CSP/XSD/General/Message_2\">\n" +
 				"	  <From>\n" +
@@ -191,10 +410,11 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				"	</Request>\n" +
 				"  </Body>\n" +
 				"</Envelope>\n" +
-				"", session);
+				"", session)
+		);
 	}
 
-	@Ignore("Travis has problems with this")
+	@Disabled("Travis has problems with this")
 	@Test
 	public void wsdlReasonSessionKey() throws Exception {
 		WsdlXmlValidator val = pipe;
@@ -216,7 +436,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		assertEquals("/: Element(s) 'Envelope' not found", lines.get(5));
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void wSoapBodyExistsMultipleTimes() throws Exception {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(DOUBLE_BODY);
@@ -226,7 +446,8 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setAddNamespaceToSchema(true);
 		val.setThrowException(true);
 		val.registerForward(new PipeForward("success", null));
-		val.configure();
+		assertThrows(ConfigurationException.class, val::configure
+		);
 	}
 
 	@Test
@@ -242,8 +463,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		assertEquals(1, getConfigurationWarnings().size());
 		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl] already has a "
-				+ "default value [http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2]",
-				getConfigurationWarnings().get(0));
+				+ "default value [http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2]", getConfigurationWarnings().get(0));
 	}
 
 	@Test
@@ -259,8 +479,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		assertEquals(1, getConfigurationWarnings().size());
 		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] use attribute [soapBodyNamespace] instead of attribute [schemaLocation] with value [http://ibissource.org/XSD/Generic/MessageHeader/2 schema1"
-				+ " http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]",
-				getConfigurationWarnings().get(0));
+				+ " http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]", getConfigurationWarnings().get(0));
 	}
 
 	@Test
@@ -274,8 +493,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		assertEquals(1, getConfigurationWarnings().size());
 		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/SimpleWsdl/simple.wsdl]"
-				+ " should only be set when addNamespaceToSchema=true",
-				getConfigurationWarnings().get(0));
+				+ " should only be set when addNamespaceToSchema=true", getConfigurationWarnings().get(0));
 
 		pipe.validate("<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\"><Body><TradePriceRequest xmlns=\"http://example.com/stockquote.xsd\"><tickerSymbol>foo</tickerSymbol></TradePriceRequest></Body></Envelope>", session);
 	}
@@ -292,7 +510,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-ok.xml");
 		PipeForward forward = pipe.validate(input, session);
-		
+
 		assertEquals("success", forward.getName());
 	}
 
@@ -308,7 +526,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-err.xml");
 		Exception e = assertThrows(Exception.class, ()->pipe.validate(input, session));
-		
+
 		assertThat(e.getMessage(), containsString("Invalid content was found starting with element"));
 		assertThat(e.getMessage(), containsString("CountryKode"));
 	}
@@ -325,7 +543,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-ok.xml");
 		PipeForward forward = pipe.validate(input, session);
-		
+
 		assertEquals("success", forward.getName());
 	}
 
@@ -341,10 +559,8 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 
 		String input = TestFileUtils.getTestFile(ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/in-err.xml");
 		Exception e = assertThrows(Exception.class, ()->pipe.validate(input, session));
-		
+
 		assertThat(e.getMessage(), containsString("Invalid content was found starting with element"));
 		assertThat(e.getMessage(), containsString("CountryKode"));
 	}
-
 }
-

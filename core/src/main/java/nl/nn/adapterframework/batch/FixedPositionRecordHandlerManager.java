@@ -19,21 +19,21 @@ import java.util.Map;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
- * Manager that decides the handlers based on the content of a field in the specified 
+ * Manager that decides the handlers based on the content of a field in the specified
  * position in a record. The fields in the record are of a fixed length.
  * The data beween the start position and end position is taken as key in the flow-table.
- * 
- * 
+ *
+ *
  * @author John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private @Getter int startPosition;
 	private @Getter int endPosition=-1;
-	
+
 	@Override
 	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
 		String value = null;
@@ -59,23 +59,29 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 				}
 			}
 			return rhf;
-		} 
+		}
 		if (endPosition >= record.length()) {
-			value = record.substring(startPosition); 
+			value = record.substring(startPosition);
 		} else {
 			value = record.substring(startPosition, endPosition);
 		}
-		
+
 		return super.getRecordHandlerByKey(value);
 	}
 
 
-	@IbisDoc({"1", "Start position of the field in the record that identifies the recordtype (first character is 0)", "0"})
+	/**
+	 * Start position of the field in the record that identifies the recordtype (first character is 0)
+	 * @ff.default 0
+	 */
 	public void setStartPosition(int i) {
 		startPosition = i;
 	}
 
-	@IbisDoc({"2", "If endposition >= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition < 0 then it depends on the length of the recordkey in the flow", "-1"})
+	/**
+	 * If endposition &gt;= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition &lt; 0 then it depends on the length of the recordkey in the flow
+	 * @ff.default -1
+	 */
 	public void setEndPosition(int i) {
 		endPosition = i;
 	}

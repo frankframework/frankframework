@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,17 +18,35 @@ package nl.nn.adapterframework.stream.document;
 import org.xml.sax.SAXException;
 
 public abstract class ArrayBuilder extends StructureBuilder implements IArrayBuilder {
-	
+
 	public void addElement(String value) throws SAXException {
 		addElement().setValue(value);
 	}
 
-	public void addElement(long value) throws SAXException {
+	public void addElement(Number value) throws SAXException {
 		addElement().setValue(value);
 	}
 
 	public void addElement(boolean value) throws SAXException {
 		addElement().setValue(value);
+	}
+
+	public void addNumberElement(String value) throws SAXException {
+		addElement().setNumberValue(value);
+	}
+
+	public ObjectBuilder addObjectElement() throws SAXException {
+		INodeBuilder field = addElement();
+		ObjectBuilder result = field.startObject();
+		result.field=field;
+		return result;
+	}
+
+	public ArrayBuilder addArrayElement(String elementName) throws SAXException {
+		INodeBuilder field = addElement();
+		ArrayBuilder result = field.startArray(elementName);
+		result.field=field;
+		return result;
 	}
 
 }

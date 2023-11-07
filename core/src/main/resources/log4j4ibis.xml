@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <log4j2:Configuration status="warn" name="${ctx:instance.name}" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="log4j-config.xsd" packages="nl.nn.adapterframework.logging">
 	<!-- https://logging.apache.org/log4j/2.x/manual/customloglevels.html -->
-	<CustomLevels>
-		<CustomLevel name="TERSE" intLevel="550" />
-		<CustomLevel name="BASIC" intLevel="350" />
-	</CustomLevels>
 
-	<!-- Pattern %TC is the NDC or ThreadContext (see IbisNdcPatternConverter) -->
 	<Appenders>
-		<Appender type="Console" name="stdout">
+		<Appender name="stdout" type="Console">
 			<Layout type="IbisPatternLayout">
-				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %TC %c{2} - %m%n</Pattern>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid} %c{2} - %m%n%xEx{short}</Pattern>
 			</Layout>
 		</Appender>
-		<Appender type="RollingFile" name="file" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
+		<Appender name="systemout" type="Console">
+			<Layout type="PatternLayout">
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%xEx{short}</Pattern>
+			</Layout>
+		</Appender>
+		<Appender name="file" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
 			<Filters>
-				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex}" />
+				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex:-}" />
 			</Filters>
 			<Layout type="IbisPatternLayout">
-				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %TC %c{2} - %m%n%iEx</Pattern>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid,adapter,pipe} %c{2} - %m%n%xEx{filters(${ctx:log.stacktrace.filters})}</Pattern>
 			</Layout>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min"  />
 		</Appender>
-		<Appender type="RollingFile" name="XML" fileName="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log.%i">
+		<Appender name="XML" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log.%i">
 			<Filters>
-				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex}" />
+				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex:-}" />
 			</Filters>
 			<Layout type="IbisXmlLayout" />
 			<Policies>
@@ -35,28 +35,28 @@
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="galm" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-galm.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-galm.log.%i">
-			<Layout type="PatternLayout" pattern="%m%n"/>
-			<Policies>
-				<Policy type="SizeBasedTriggeringPolicy" size="100KB" />
-			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="5" fileIndex="min" />
-		</Appender>
-		<Appender type="RollingFile" name="msg" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log.%i" append="true">
-			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
+		<Appender name="msg-text" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log.%i" append="true">
+			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m %X %x%n"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.msg.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="security" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-security.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-security.log.%i">
+		<Appender name="msg-json" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.json" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.json.%i" append="true">
+			<JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json"/>
+			<Policies>
+				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
+			</Policies>
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.msg.maxBackupIndex}" fileIndex="min" />
+		</Appender>
+		<Appender name="security" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-security.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-security.log.%i">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="heartbeat" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log.%i">
+		<Appender name="heartbeat" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log.%i">
 			<Layout type="PatternLayout">
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %m%n</Pattern>
 			</Layout>
@@ -65,7 +65,7 @@
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="config" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml.%i">
+		<Appender name="config" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml.%i">
 			<Layout type="PatternLayout">
 				<Pattern>&lt;event datetime=&quot;%d{yyyy-MM-dd HH:mm:ss,SSS}&quot;&gt;%n%m%n&lt;/event&gt;</Pattern>
 			</Layout>
@@ -75,7 +75,7 @@
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="5" fileIndex="min" />
 		</Appender>
-		<Appender type="RollingFile" name="ladybug" fileName="${ctx:log.dir}/testtool4${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/testtool4${ctx:instance.name.lc}.log.%i">
+		<Appender name="ladybug" type="RollingFile" fileName="${ctx:log.dir}/testtool4${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/testtool4${ctx:instance.name.lc}.log.%i">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %c %m%n"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
@@ -92,27 +92,31 @@
 		<Logger name="org.apache.commons" level="WARN" />
 		<Logger name="org.apache.cxf" level="WARN" />
 		<Logger name="org.apache.cxf.interceptor" level="WARN" />
+		<Logger name="org.apache.http.headers" level="WARN" /> <!-- include a definition, enabling to increase the level in the console -->
+		<Logger name="org.apache.http.wire" level="WARN" /> <!-- include a definition, enabling to increase the level in the console -->
 		<Logger name="org.aspectj.weaver" level="WARN" />
 		<Logger name="bitronix.tm" level="INFO" />
-		<Logger name="nl.nn.adapterframework.jta.btm.BtmJtaTransactionManager" level="INFO" />
+		<Logger name="com.arjuna" level="INFO" />
+		<Logger name="nl.nn.adapterframework.jta.btm.BtmJtaTransactionManager" level="WARN" />
+		<Logger name="nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager" level="WARN" />
 		<Logger name="nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager" level="INFO" />
 		<Logger name="org.mongodb" level="INFO" />
 		<Logger name="org.quartz" level="WARN" />
 		<Logger name="nl.nn.adapterframework.configuration.digester" level="WARN" />
 		<Logger name="microsoft.exchange" level="INFO" />
+		<Logger name="org.springframework.security.web" level="INFO" />
+		<Logger name="org.springframework.security.ldap" level="WARN" />
 
 		<Logger name="liquibase.migrationLog" level="INFO">
-			<AppenderRef ref="stdout"/>
+			<AppenderRef ref="systemout"/>
 			<AppenderRef ref="config"/>
 		</Logger>
 
-		<Logger name="GALM" additivity="false" level="INFO">
-			<AppenderRef ref="galm"/>
-		</Logger>
 		<Logger name="MSG" additivity="false" level="INFO">
-			<AppenderRef ref="msg"/>
+			<AppenderRef ref="msg-text"/>
+			<AppenderRef ref="msg-json"/>
 		</Logger>
-		<Logger name="SEC" additivity="false" level="INFO">
+		<Logger name="SEC" additivity="false" level="${ctx:security.log.level}">
 			<AppenderRef ref="security"/>
 		</Logger>
 		<Logger name="HEARTBEAT" additivity="false" level="INFO">
@@ -120,6 +124,9 @@
 		</Logger>
 		<Logger name="CONFIG" additivity="false" level="INFO">
 			<AppenderRef ref="config"/>
+		</Logger>
+		<Logger name="APPLICATION" additivity="true" level="DEBUG">
+			<AppenderRef ref="systemout"/>
 		</Logger>
 		<Logger name="nl.nn.testtool" additivity="false" level="INFO">
 			<AppenderRef ref="ladybug"/>

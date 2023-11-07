@@ -16,7 +16,7 @@
 	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
 		<property name="extraMetadataFieldExtractors">
 			<list>
-				<bean class="nl.nn.ibistesttool.metadata.StatusExtractor"/>
+				<bean class="nl.nn.testtool.metadata.StatusMetadataFieldExtractor"/>
 				<bean class="nl.nn.testtool.metadata.XpathMetadataFieldExtractor">
 					<property name="name" value="conversationId"/>
 					<property name="label" value="Conversation Id"/>
@@ -71,7 +71,7 @@
 		</property>
 	</bean>
 
-	<bean name="oldSchoolView" class="nl.nn.testtool.filter.View" parent="whiteBoxView">
+	<bean name="oldSchoolView" parent="whiteBoxView" autowire="byName">
 		<property name="name" value="Old school"/>
 		<property name="metadataNames">
 			<list>
@@ -100,7 +100,13 @@
 		</property>
 	</bean>
 
-	<bean name="auditLogStorage" class="nl.nn.ibistesttool.tibet2.Storage" autowire="byName" init-method="init">
+	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory"/>
+
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jndi.JndiDataSourceFactory"/>
+
+	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory"/>
+
+	<bean name="auditLogStorage" class="nl.nn.ibistesttool.tibet2.Storage" autowire="byName">
 		<property name="name" value="Logging"/>
 		<property name="datasourceName" value="jdbc/${instance.name.lc}"/>
 		<property name="table" value="AUDITLOG"/>
@@ -177,7 +183,7 @@
 
 	<bean name="auditLogView" class="nl.nn.ibistesttool.filter.TibetView" scope="prototype">
 		<property name="name" value="Audit log"/>
-		<property name="storage">
+		<property name="debugStorage">
 			<ref bean="auditLogStorage"/>
 		</property>
 		<property name="metadataNames">
@@ -196,12 +202,12 @@
 				<value>FUNCT_ERROR_TEXT</value>
 			</list>
 		</property>
-		<property name="ibisManager">
-			<ref bean="ibisManager"/>
+		<property name="ibisDebugger">
+			<ref bean="ibisDebugger"/>
 		</property>
 	</bean>
 
-	<bean name="exceptionLogStorage" class="nl.nn.ibistesttool.tibet2.Storage" autowire="byName" init-method="init">
+	<bean name="exceptionLogStorage" class="nl.nn.ibistesttool.tibet2.Storage" autowire="byName">
 		<property name="name" value="Logging"/>
 		<property name="datasourceName" value="jdbc/${instance.name.lc}"/>
 		<property name="table" value="EXCEPTIONLOG"/>
@@ -275,7 +281,7 @@
 
 	<bean name="exceptionLogView" class="nl.nn.ibistesttool.filter.TibetView" scope="prototype">
 		<property name="name" value="Exception log"/>
-		<property name="storage">
+		<property name="debugStorage">
 			<ref bean="exceptionLogStorage"/>
 		</property>
 		<property name="metadataNames">
@@ -293,8 +299,8 @@
 				<value>ERROR_TEXT</value>
 			</list>
 		</property>
-		<property name="ibisManager">
-			<ref bean="ibisManager"/>
+		<property name="ibisDebugger">
+			<ref bean="ibisDebugger"/>
 		</property>
 	</bean>
 

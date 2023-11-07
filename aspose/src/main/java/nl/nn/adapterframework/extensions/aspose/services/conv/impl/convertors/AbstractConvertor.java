@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
@@ -41,15 +42,12 @@ import nl.nn.adapterframework.util.LogUtil;
 abstract class AbstractConvertor implements Convertor {
 
 	private static final Logger LOGGER = LogUtil.getLogger(AbstractConvertor.class);
-
 	private List<MediaType> supportedMediaTypes;
-
-	private String pdfOutputlocation;
-
+	protected CisConfiguration configuration;
 	private static AtomicInteger atomicCount = new AtomicInteger(1);
 
-	protected AbstractConvertor(String pdfOutputlocation, MediaType... args) {
-		this.pdfOutputlocation = pdfOutputlocation;
+	protected AbstractConvertor(CisConfiguration configuration, MediaType... args) {
+		this.configuration = configuration;
 		supportedMediaTypes = Arrays.asList(args);
 	}
 
@@ -105,16 +103,16 @@ abstract class AbstractConvertor implements Convertor {
 		CisConversionResult result = new CisConversionResult();
 		File resultFile = null;
 		try {
-			resultFile = UniqueFileGenerator.getUniqueFile(pdfOutputlocation, this.getClass().getSimpleName(), "pdf");
+			resultFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), "pdf");
 			result.setConversionOption(conversionOption);
 			result.setMediaType(mediaType);
 			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(filename));
 			result.setPdfResultFile(resultFile);
 			result.setResultFilePath(resultFile.getAbsolutePath());
 
-			LOGGER.debug("Convert to file... " + filename);
+			LOGGER.debug("Convert to file... {}", filename);
 			convert(mediaType, message, result, charset);
-			LOGGER.debug("Convert to file finished. " + filename);
+			LOGGER.debug("Convert to file finished. {}", filename);
 
 		} catch (Exception e) {
 			if (isPasswordException(e)) {
@@ -128,21 +126,15 @@ abstract class AbstractConvertor implements Convertor {
 		return result;
 	}
 
-	protected String getPdfOutputlocation() {
-		return pdfOutputlocation;
-	}
-	
 	protected int getNumberOfPages(File file) throws IOException {
 		int result = 0;
 		if(file != null) {
-			try (InputStream inStream = new FileInputStream(file)){
+			try (InputStream inStream = new FileInputStream(file)) {
 				Document doc = new Document(inStream);
 				result = doc.getPages().size();
-			} catch (IOException e) {
-				throw e;
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -171,7 +163,7 @@ abstract class AbstractConvertor implements Convertor {
 
 		String fileNamePdf = String.format("conv_%s_%s_%05d%s", this.getClass().getSimpleName(),
 				format.format(new Date()), count, ".bin");
-		return new File(pdfOutputlocation, fileNamePdf);
+		return new File(configuration.getPdfOutputLocation(), fileNamePdf);
 	}
 
 	protected abstract boolean isPasswordException(Exception e);

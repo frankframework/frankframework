@@ -16,15 +16,14 @@ limitations under the License.
 package nl.nn.adapterframework.http.rest;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import nl.nn.adapterframework.util.AppConstants;
 
 public class ApiPrincipal implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	public long init = (new Date()).getTime();
-	public long ttl = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7);
+	public long init = System.currentTimeMillis();
+	public long ttl = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7) * 1000L;
 	public long expires = 0;
 
 	public String data = null;
@@ -39,16 +38,16 @@ public class ApiPrincipal implements Serializable {
 	 * @param ttl
 	 */
 	public ApiPrincipal(int ttl) {
-		this.ttl = ttl*1000;
+		this.ttl = ttl*1000L;
 		updateExpiry();
 	}
 
 	public boolean isLoggedIn() {
-		return (expires - (new Date()).getTime() >= 0);
+		return (expires - System.currentTimeMillis() >= 0);
 	}
 
 	public void updateExpiry() {
-		this.expires = (new Date()).getTime() + this.ttl;
+		this.expires = System.currentTimeMillis() + this.ttl;
 	}
 
 	public void setData(String data) {

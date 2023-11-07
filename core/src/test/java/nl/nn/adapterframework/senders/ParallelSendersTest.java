@@ -1,16 +1,26 @@
 package nl.nn.adapterframework.senders;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 
+	private static final String BASEPATH = "/Senders/ParallelSenders/";
 	private static final int DELAY = 2000;
 
 	@Override
@@ -19,7 +29,11 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		return ps;
 	}
 
-	private class TestSender extends DelaySender {
+	protected String getExpectedTestFile(String path) throws IOException {
+		return TestFileUtils.getTestFile(BASEPATH+path);
+	}
+
+	protected static class TestSender extends DelaySender {
 		public TestSender(String name) {
 			setName(name);
 			setDelayTime(DELAY);
@@ -36,16 +50,16 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.configure();
 		sender.open();
 
-		String expected = TestFileUtils.getTestFile("/Senders/ParallelSenders/test10SubSenders.txt");
+		String expected = getExpectedTestFile("test10SubSenders.txt");
 		assertNotNull("cannot find expected result file", expected);
 
 		Message message = new Message("<dummy/>");
-		String result = sender.sendMessage(message, session).asString();
+		String result = sender.sendMessageOrThrow(message, session).asString();
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 
 		long duration = System.currentTimeMillis() - startTime;
-		System.err.println(duration);
-		assertTrue(duration < DELAY + 1000);
+		int maxDuration = DELAY + 1000;
+		assertTrue(duration < maxDuration, "Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s");
 	}
 
 	@Test
@@ -65,16 +79,48 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.configure();
 		sender.open();
 
-		String expected = TestFileUtils.getTestFile("/Senders/ParallelSenders/test5wrappersWith10SubSenders.txt");
+		String expected = getExpectedTestFile("test5wrappersWith10SubSenders.txt");
 		assertNotNull("cannot find expected result file", expected);
 
 		Message message = new Message("<dummy/>");
-		String result = sender.sendMessage(message, session).asString();
+		String result = sender.sendMessageOrThrow(message, session).asString();
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result);
 
 		long duration = System.currentTimeMillis() - startTime;
-		System.err.println(duration);
 		int maxDuration = (DELAY * amountOfDelaySendersInWrapper) + 1000;
-		assertTrue("Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s", duration < maxDuration);
+		assertTrue(duration < maxDuration, "Test took ["+duration+"]s, maxDuration ["+maxDuration+"]s");
+	}
+
+	@Test
+	public void testSingleExceptionHandling() throws Exception {
+		sender.registerSender(new ExceptionThrowingSender());
+		sender.configure();
+		sender.open();
+
+		SenderResult result = sender.sendMessage(new Message("fakeInput"), session);
+
+		assertFalse(result.isSuccess());
+		assertThat(result.getResult().asString(), containsString("<result senderClass=\"ExceptionThrowingSender\" type=\"SenderException\" success=\"false\">fakeException</result>"));
+	}
+
+	@Test
+	public void testExceptionHandling() throws Exception {
+		sender.registerSender(new EchoSender());
+		sender.registerSender(new ExceptionThrowingSender());
+		sender.registerSender(new EchoSender());
+
+		sender.configure();
+		sender.open();
+
+		SenderResult result = sender.sendMessage(new Message("fakeInput"), session);
+
+		assertFalse(result.isSuccess());
+	}
+
+	private class ExceptionThrowingSender extends SenderBase {
+		@Override
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			throw new SenderException("fakeException");
+		}
 	}
 }

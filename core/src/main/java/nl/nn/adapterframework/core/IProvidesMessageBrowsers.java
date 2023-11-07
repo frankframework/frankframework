@@ -27,5 +27,5 @@ public interface IProvidesMessageBrowsers<M> extends IHasProcessState<M> {
 	 * storage managed by the listener itself (as opposed to a storage configured as a messageLog or errorStorage in the configuration).
 	 */
 	public IMessageBrowser<M> getMessageBrowser(ProcessState state);
-	
+
 }

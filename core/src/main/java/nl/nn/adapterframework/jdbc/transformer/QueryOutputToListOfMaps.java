@@ -15,19 +15,20 @@ limitations under the License.
 */
 package nl.nn.adapterframework.jdbc.transformer;
 
-import nl.nn.adapterframework.stream.Message;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+
+import nl.nn.adapterframework.stream.Message;
+
 public class QueryOutputToListOfMaps extends AbstractQueryOutputTransformer {
-	
+
 	private List<Map<String, String>> rowset;
 	private Map<String, String> currentRow;
 

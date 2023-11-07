@@ -29,7 +29,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>${h2.version}</version>
+			<version>${h2.driver.version}</version>
 		</dependency>
 		<!-- Includes missing javax.jms.JMSExceptions class -->
 		<dependency>
@@ -37,18 +37,36 @@
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+
+		<!-- This should be the only required test dependency to run IbisTester -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-larva</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<version>9.2.29.v20191105</version>
+				<version>9.4.53.v20231009</version>
 				<configuration>
 					<systemProperties>
 						<systemProperty>
 							<name>log.dir</name>
-							<value>./target</value>
+							<value>./target/logs</value>
 						</systemProperty>
 						<systemProperty>
 							<name>log.level</name>
@@ -60,7 +78,7 @@
 						</systemProperty>
 					</systemProperties>
 					<webAppConfig>
-						<webInfIncludeJarPattern>.*/ibis-adapterframework-*\.jar$|.*/classes/.*</webInfIncludeJarPattern>
+						<webInfIncludeJarPattern>.*/ibis-adapterframework-[^/]*\.jar$</webInfIncludeJarPattern>
 						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
 					</webAppConfig>
 					<loginServices>
@@ -123,81 +141,14 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- Ignoring JaCoCo reports because this module does not contain any Java classes.-->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
-
-  <profiles>
-    <!--
-    Copy dependencies from iaf-webapp/pom.xml to make m2e add dependent-module
-    elements to org.eclipse.wst.common.component. Maven doesn't need this copy
-    to add the jar files to the war file. Might be a bug in m2e:
-    https://bugs.eclipse.org/bugs/show_bug.cgi?id=398138
-    Note: Maven will copy the jar files from the war in the local repository
-    which might be an old snapshot.
-    
-    In older versions of Eclipse (Kepler - 20140224-0627) the larva and ladybug modules are not automatically added to the (correct) classpath.
-    Because of this the example module will throw a FileNotFoundException on springIbisTestTool.xml which prevents the IBIS from starting up.
-    In newer versions of Eclipse (at least version 20181214-0600 onwards) this seems to have been resolved.
-    -->
-    <profile>
-      <id>m2e</id>
-      <activation>
-        <property>
-          <name>m2e.version</name>
-        </property>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-larva</artifactId>
-          <scope>runtime</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-ladybug</artifactId>
-        </dependency>
-     </dependencies>
-    </profile>
-    <profile>
-      <id>proprietary</id>
-      <activation>
-        <property>
-          <name>proprietary</name>
-        </property>
-      </activation>
-      <dependencies>
-        <dependency>
-          <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-ifsa</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-tibco</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-sap</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-coolgen</artifactId>
-        </dependency>
-        <dependency>
-          <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-ibm</artifactId>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>cmis</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.ibissource</groupId>
-          <artifactId>ibis-adapterframework-cmis</artifactId>
-          <scope>runtime</scope>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
-
 </project>

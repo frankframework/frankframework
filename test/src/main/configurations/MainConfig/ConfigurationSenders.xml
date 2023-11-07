@@ -24,7 +24,7 @@
 				>
 				<forward name="success" path="Call ExceptionPipe"/>
 			</pipe>
-			
+
 			<pipe
 				name="Call ExceptionPipe"
 				className="nl.nn.adapterframework.pipes.SenderPipe"
@@ -34,7 +34,7 @@
 					javaListener="ExceptionPipe"
 				/>
 				<forward name="success" path="Echo"/>
-				<forward name="exception" path="Echo"/>			
+				<forward name="exception" path="Echo"/>
 			</pipe>
 
 			<pipe name="Echo" className="nl.nn.adapterframework.pipes.EchoPipe">
@@ -219,11 +219,10 @@
 				sessionKey="timestamp"
 				dateFormat="yyyyMMdd HH:mm:ss"
 				>
-				<forward name="success" path="Call SendersException"/>
 			</pipe>
 
 			<pipe
-				name="Call SendersException"
+				name="Call Sender Isolated"
 				className="nl.nn.adapterframework.pipes.SenderPipe"
 				>
 				<sender
@@ -231,13 +230,66 @@
 					javaListener="CompareStringPipe"
 					isolated="true"
 				/>
-				<forward name="success" path="Echo"/>
+			</pipe>
+
+			<pipe
+				name="Call Sender Asynchronous"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					javaListener="CompareStringPipe"
+					synchronous="false"
+				/>
 			</pipe>
 
 			<pipe name="Echo" className="nl.nn.adapterframework.pipes.EchoPipe">
 				<forward name="success" path="READY"/>
 			</pipe>
 
+		</pipeline>
+	</adapter>
+
+	<adapter name="SendToLarva" >
+
+		<receiver>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="SenderToLarva"
+				serviceName="ibis4test-SenderToLarva"
+			/>
+		</receiver>
+
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+				<exit path="InternalError" state="error"/>
+			</exits>
+
+			<pipe
+				name="Call Larva"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
+				>
+				<sender
+					className="nl.nn.adapterframework.senders.IbisJavaSender"
+					serviceName="testtool-SendToLarva"
+				/>
+				<forward name="success" path="Called successfully"/>
+				<forward name="exception" path="Called unsuccessfully"/>
+			</pipe>
+
+			<pipe
+				name="Fallthroug" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="fall through" >
+				<forward name="success" path="InternalError"/>
+			</pipe>
+			<pipe
+				name="Called successfully" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="successful">
+				<forward name="success" path="READY"/>
+			</pipe>
+			<pipe
+				name="Called unsuccessfully" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="unsuccessful">
+				<forward name="success" path="InternalError"/>
+			</pipe>
 		</pipeline>
 	</adapter>
 

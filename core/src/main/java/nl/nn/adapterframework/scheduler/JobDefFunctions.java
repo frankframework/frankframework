@@ -45,7 +45,7 @@ public enum JobDefFunctions implements DocumentedEnum {
 	@EnumLabel("cleanupDatabase") CLEANUPDB(CleanupDatabaseJob.class),
 	@EnumLabel("cleanupFileSystem") CLEANUPFS(CleanupFileSystemJob.class),
 	@EnumLabel("recoverAdapters") RECOVER_ADAPTERS(RecoverAdaptersJob.class),
-	@EnumLabel("checkReload") CHECK_RELOAD(CheckReloadJob.class), 
+	@EnumLabel("checkReload") CHECK_RELOAD(CheckReloadJob.class),
 	@EnumLabel("loadDatabaseSchedules") LOAD_DATABASE_SCHEDULES(LoadDatabaseSchedulesJob.class);
 
 	/**

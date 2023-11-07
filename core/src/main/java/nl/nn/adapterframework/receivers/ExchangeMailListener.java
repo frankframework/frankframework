@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2019 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2016, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,24 +15,40 @@
  */
 package nl.nn.adapterframework.receivers;
 
-import microsoft.exchange.webservices.data.core.service.item.EmailMessage;
-import microsoft.exchange.webservices.data.property.complex.Attachment;
+import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ReferTo;
+import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.filesystem.ExchangeAttachmentReference;
 import nl.nn.adapterframework.filesystem.ExchangeFileSystem;
+import nl.nn.adapterframework.filesystem.ExchangeMessageReference;
 import nl.nn.adapterframework.filesystem.MailListener;
 
 /**
- * Microsoft Exchange Implementation of a {@link nl.nn.adapterframework.filesystem.MailListener}.
+ * Microsoft Exchange Implementation of a {@link MailListener}.
  *
  * @author Gerrit van Brakel
  */
-public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,ExchangeFileSystem> {
+@Category("Advanced")
+public class ExchangeMailListener extends MailListener<ExchangeMessageReference, ExchangeAttachmentReference,ExchangeFileSystem> {
 
-	public final String EXCHANGE_FILE_SYSTEM ="nl.nn.adapterframework.filesystem.ExchangeFileSystem";
+	@Override
+	public void configure() throws ConfigurationException {
+		super.configure();
+		String separator = getFileSystem().getMailboxObjectSeparator();
+		if (StringUtils.isNotEmpty(getInputFolder()) && getInputFolder().contains(separator) ||
+			StringUtils.isNotEmpty(getInProcessFolder()) && getInProcessFolder().contains(separator)){
+			throw new ConfigurationException("Moving items across mailboxes is not supported by ExchangeMailListener for attributes [inputFolder,inProcessFolder]. " +
+				"Please do not use dynamic mailboxes / folders separated by ["+separator+"].");
+		}
+	}
 
 	@Override
 	protected ExchangeFileSystem createFileSystem() {
+		log.debug("Creating new ExchangeFileSystem");
 		return new ExchangeFileSystem();
 	}
 
@@ -48,76 +64,76 @@ public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,E
 		setInProcessFolder(tempFolder);
 	}
 
-	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setMailAddress(String mailAddress) {
 		getFileSystem().setMailAddress(mailAddress);
 	}
 
-	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setUrl(String url) {
 		getFileSystem().setUrl(url);
 	}
 
-	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setClientId(String clientId) {
 		getFileSystem().setClientId(clientId);
 	}
 
-	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setClientSecret(String clientSecret) {
 		getFileSystem().setClientSecret(clientSecret);
 	}
 
-	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setTenantId(String tenantId) {
 		getFileSystem().setTenantId(tenantId);
 	}
 
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to modern authentication using clientId and clientSecret. N.B. username no longer defaults to mailaddress")
-	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setUsername(String username) {
 		getFileSystem().setUsername(username);
 	}
 
 	@Deprecated
 	@ConfigurationWarning("Authentication to Exchange Web Services with username and password will be disabled 2021-Q3. Please migrate to modern authentication using clientId and clientSecret.")
-	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setPassword(String password) {
 		getFileSystem().setPassword(password);
 	}
 
-	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setBaseFolder(String baseFolder) {
 		getFileSystem().setBaseFolder(baseFolder);
 	}
 
-	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setFilter(String filter) {
 		getFileSystem().setFilter(filter);
 	}
 
-	@IbisDocRef({ EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setReplyAddressFields(String replyAddressFields) {
 		getFileSystem().setReplyAddressFields(replyAddressFields);
 	}
 
-	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setProxyHost(String proxyHost) {
 		getFileSystem().setProxyHost(proxyHost);
 	}
 
-	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setProxyPort(int proxyPort) {
 		getFileSystem().setProxyPort(proxyPort);
 	}
 
-	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setProxyUsername(String proxyUsername) {
 		getFileSystem().setProxyUsername(proxyUsername);
 	}
@@ -126,19 +142,89 @@ public class ExchangeMailListener extends MailListener<EmailMessage,Attachment,E
 	public void setProxyUserName(String proxyUsername) {
 		setProxyUsername(proxyUsername);
 	}
-	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setProxyPassword(String proxyPassword) {
 		getFileSystem().setProxyPassword(proxyPassword);
 	}
 
-	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		getFileSystem().setProxyAuthAlias(proxyAuthAlias);
 	}
 
-	@IbisDocRef({EXCHANGE_FILE_SYSTEM})
+	@ReferTo(ExchangeFileSystem.class)
 	public void setProxyDomain(String domain) {
 		getFileSystem().setProxyDomain(domain);
+	}
+
+	@ReferTo(ExchangeFileSystem.class)
+	public void setMailboxObjectSeparator(String separator) {
+		getFileSystem().setMailboxObjectSeparator(separator);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setKeystore(String keystore) {
+		getFileSystem().setKeystore(keystore);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setKeystoreType(KeystoreType keystoreType) {
+		getFileSystem().setKeystoreType(keystoreType);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
+		getFileSystem().setKeystoreAuthAlias(keystoreAuthAlias);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setKeystorePassword(String keystorePassword) {
+		getFileSystem().setKeystorePassword(keystorePassword);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
+		getFileSystem().setKeyManagerAlgorithm(keyManagerAlgorithm);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setKeystoreAlias(String keystoreAlias) {
+		getFileSystem().setKeystoreAlias(keystoreAlias);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
+		getFileSystem().setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
+		getFileSystem().setKeystoreAliasPassword(keystoreAliasPassword);
+	}
+
+	@ReferTo(ExchangeFileSystem.class)
+	public void setTruststore(String truststore) {
+		getFileSystem().setTruststore(truststore);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setTruststoreType(KeystoreType truststoreType) {
+		getFileSystem().setTruststoreType(truststoreType);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
+		getFileSystem().setTruststoreAuthAlias(truststoreAuthAlias);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setTruststorePassword(String truststorePassword) {
+		getFileSystem().setTruststorePassword(truststorePassword);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setTrustManagerAlgorithm(String trustManagerAlgorithm) {
+		getFileSystem().setTrustManagerAlgorithm(trustManagerAlgorithm);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setVerifyHostname(boolean verifyHostname) {
+		getFileSystem().setVerifyHostname(verifyHostname);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setAllowSelfSignedCertificates(boolean allowSelfSignedCertificates) {
+		getFileSystem().setAllowSelfSignedCertificates(allowSelfSignedCertificates);
+	}
+	@ReferTo(ExchangeFileSystem.class)
+	public void setIgnoreCertificateExpiredException(boolean ignoreCertificateExpiredException) {
+		getFileSystem().setIgnoreCertificateExpiredException(ignoreCertificateExpiredException);
 	}
 
 }

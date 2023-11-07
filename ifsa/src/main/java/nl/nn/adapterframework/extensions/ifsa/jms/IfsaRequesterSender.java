@@ -15,10 +15,12 @@
 */
 package nl.nn.adapterframework.extensions.ifsa.jms;
 
+import nl.nn.adapterframework.core.ISender;
+
 /**
- * {@link nl.nn.adapterframework.core.ISender sender} that sends a message to an IFSA service and, in case the messageprotocol is RR (Request-Reply)
+ * {@link ISender sender} that sends a message to an IFSA service and, in case the messageprotocol is RR (Request-Reply)
  * it waits for an reply-message.
- * 
+ *
  * @author Johan Verrips / Gerrit van Brakel
  * @since  4.2
 */

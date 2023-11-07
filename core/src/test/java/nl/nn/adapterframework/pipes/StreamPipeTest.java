@@ -17,7 +17,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 
 public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 
@@ -28,8 +28,8 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	}
 
 	@Override
-	public void setup() throws Exception {
-		super.setup();
+	public void setUp() throws Exception {
+		super.setUp();
 		session = new PipeLineSession();
 	}
 
@@ -119,7 +119,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
 		builder.addTextBody("string1", "<hello>test</hello>");
 
-		URL url = ClassUtils.getResourceURL("/Documents/doc001.pdf");
+		URL url = ClassLoaderUtils.getResourceURL("/Documents/doc001.pdf");
 		File file = new File(url.toURI());
 		builder.addBinaryBody("file1", file, ContentType.APPLICATION_OCTET_STREAM, file.getName());
 
@@ -127,7 +127,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 			builder.addTextBody(pipe.getAntiVirusPartName(), pipe.getAntiVirusPassedMessage());
 		}
 
-		URL url2 = ClassUtils.getResourceURL("/Documents/doc002.pdf");
+		URL url2 = ClassLoaderUtils.getResourceURL("/Documents/doc002.pdf");
 		File file2 = new File(url2.toURI());
 		builder.addBinaryBody("file2", file2, ContentType.APPLICATION_OCTET_STREAM, file2.getName());
 

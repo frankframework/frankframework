@@ -28,7 +28,7 @@ import lombok.Getter;
  * <br/><br/>
  * <b>example:</b> <code><pre>
  *   &lt;Exits&gt;
- *      &lt;Exit name="READY" state="SUCCESS" /&gt;
+ *      &lt;Exit name="{@value PipeLine#DEFAULT_SUCCESS_EXIT_NAME}" state="{@value PipeLine.ExitState#SUCCESS_EXIT_STATE}" /&gt;
  *      &lt;Exit name="Created" state="ERROR" code="201" empty="true" /&gt;
  *      &lt;Exit name="NotModified" state="ERROR" code="304" empty="true" /&gt;
  *      &lt;Exit name="BadRequest" state="ERROR" code="400" empty="true" /&gt;

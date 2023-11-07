@@ -21,8 +21,11 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -34,7 +37,6 @@ import lombok.Setter;
 import net.sf.ehcache.Ehcache;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.metrics.MetricsRegistry;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class MetricsInitializer implements StatisticsKeeperIterationHandler<MetricsInitializer.NodeConfig>, InitializingBean, DisposableBean, ApplicationContextAware {
@@ -44,10 +46,10 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 	private MeterRegistry registry;
 	private NodeConfig root;
 
-	protected class NodeConfig {
-		public String name;
-		public List<Tag> tags;
-		public int groupLevel;
+	protected static class NodeConfig {
+		public final String name;
+		public final List<Tag> tags;
+		public final int groupLevel;
 
 		NodeConfig(String name, List<Tag> tags, int groupLevel) {
 			this.name = name;
@@ -58,10 +60,10 @@ public class MetricsInitializer implements StatisticsKeeperIterationHandler<Metr
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		MetricsRegistry metrics = applicationContext.getBean("metricsRegistry", MetricsRegistry.class);
-		registry = metrics.getRegistry();
-		if(registry == null) {
-			throw new IllegalStateException("unable to initialize MetricsInitializer, no registry set!");
+		try {
+			registry = applicationContext.getBean(MeterRegistry.class);
+		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
+			throw new IllegalStateException("unable to initialize MetricsInitializer, no registry set", e);
 		}
 
 		List<Tag> tags = new LinkedList<>();

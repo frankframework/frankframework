@@ -1,6 +1,6 @@
 <throwable>
   <class>nl.nn.adapterframework.core.SenderException</class>
-  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-TransactionTimeoutHandlingNonTransacted]: (RequestProcessorException) RequestProcessor [ibis4test-TransactionTimeoutHandlingNonTransacted] caught exception: Pipe [delay] msgId [Test Tool correlation id] delay interrupted: (InterruptedException) sleep interrupted</message>
+  <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-TransactionTimeoutHandlingNonTransacted]: (RequestProcessorException) RequestProcessor [ibis4test-TransactionTimeoutHandlingNonTransacted] caught exception: Pipe [delay] delay interrupted: (InterruptedException) sleep interrupted</message>
   <cause>
     <throwable>
       <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
@@ -8,11 +8,11 @@
       <cause>
         <throwable>
           <class>nl.nn.adapterframework.core.ListenerException</class>
-          <message>Pipe [delay] msgId [Test Tool correlation id] delay interrupted: (InterruptedException) sleep interrupted</message>
+          <message>Pipe [delay] delay interrupted: (InterruptedException) sleep interrupted</message>
           <cause>
             <throwable>
               <class>nl.nn.adapterframework.core.PipeRunException</class>
-              <message>Pipe [delay] msgId [Test Tool correlation id] delay interrupted: (InterruptedException) sleep interrupted</message>
+              <message>Pipe [delay] delay interrupted: (InterruptedException) sleep interrupted</message>
               <cause>
                 <throwable>
                   <class>java.lang.InterruptedException</class>

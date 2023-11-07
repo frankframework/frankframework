@@ -1,46 +1,34 @@
 package nl.nn.adapterframework.configuration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
-import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.core.PipeLine.ExitState;
-import nl.nn.adapterframework.core.PipeLineExit;
-import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
-import nl.nn.adapterframework.pipes.EchoPipe;
-import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
-import nl.nn.adapterframework.testutil.TestConfiguration;
-import nl.nn.adapterframework.unmanaged.DefaultIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
-@RunWith(Parameterized.class)
 public class ClassLoaderManagerTest extends Mockito {
 
 	private static IbisContext ibisContext = spy(new IbisContext());
@@ -48,13 +36,11 @@ public class ClassLoaderManagerTest extends Mockito {
 
 	private static final String BASE_DIR = "/ClassLoader";
 	private static final String JAR_FILE = BASE_DIR+ "/zip/classLoader-test.zip";
-	private static final String ADAPTER_SERVICE_NAME = "getJarFileAdapter";
 
 	private static final String CONFIG_0_NAME = "config0";
 	private static final String CONFIG_1_NAME = "config1";
 	private static final String CONFIG_2_NAME = "config2";
 	private static final String CONFIG_3_NAME = "config3";
-	private static final String CONFIG_4_NAME = "config4";
 	private static final String CONFIG_5_NAME = "config5";
 	private static final String CONFIG_6_NAME = "config6";
 
@@ -64,36 +50,29 @@ public class ClassLoaderManagerTest extends Mockito {
 	private String configurationName;
 	private AppConstants appConstants;
 
-	@Parameters(name = "{0} - {1}")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-				{ "", CONFIG_0_NAME },
-				{ "WebAppClassLoader", CONFIG_1_NAME },
-				{ "DirectoryClassLoader", CONFIG_2_NAME },
-				{ "JarFileClassLoader", CONFIG_3_NAME },
-				{ "ServiceClassLoader", CONFIG_4_NAME },
-				{ "DatabaseClassLoader", CONFIG_5_NAME },
-				{ "DummyClassLoader", CONFIG_6_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.WebAppClassLoader", CONFIG_1_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader", CONFIG_2_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader", CONFIG_3_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.ServiceClassLoader", CONFIG_4_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader", CONFIG_5_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.DummyClassLoader", CONFIG_6_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.DefaultClassLoader", "tralla"}
+	public static List<Arguments> data() {
+		return Arrays.asList(new Arguments[] {
+				Arguments.of("", CONFIG_0_NAME),
+				Arguments.of("WebAppClassLoader", CONFIG_1_NAME),
+				Arguments.of("DirectoryClassLoader", CONFIG_2_NAME),
+				Arguments.of("JarFileClassLoader", CONFIG_3_NAME),
+				Arguments.of("DatabaseClassLoader", CONFIG_5_NAME),
+				Arguments.of("DummyClassLoader", CONFIG_6_NAME),
+				Arguments.of("nl.nn.adapterframework.configuration.classloaders.WebAppClassLoader", CONFIG_1_NAME),
+				Arguments.of("nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader", CONFIG_2_NAME),
+				Arguments.of("nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader", CONFIG_3_NAME),
+				Arguments.of("nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader", CONFIG_5_NAME),
+				Arguments.of("nl.nn.adapterframework.configuration.classloaders.DummyClassLoader", CONFIG_6_NAME),
+				Arguments.of("nl.nn.adapterframework.configuration.classloaders.DefaultClassLoader", "tralla")
 		});
 	}
 
-	@BeforeClass
+	@BeforeAll
 	public static void before() throws Exception {
-		createAdapter4ServiceClassLoader(ADAPTER_SERVICE_NAME);
 		mockDatabase();
 	}
 
-	public ClassLoaderManagerTest(String type, String configurationName) throws Exception {
-		AppConstants.removeInstance();
-		appConstants = AppConstants.getInstance();
-
+	public void configureClassloader(String type, String configurationName) throws Exception {
 		if(type == null || type.equals("DummyClassLoader"))
 			skip = true;
 		else if(type.isEmpty()) //If empty string, it's a WebAppClassLoader
@@ -112,10 +91,6 @@ public class ClassLoaderManagerTest extends Mockito {
 			URL file = this.getClass().getResource(JAR_FILE);
 			setLocalProperty("configurations."+configurationName+".jar", file.getFile());
 		}
-
-		if(type.endsWith("ServiceClassLoader")) {
-			setLocalProperty("configurations."+configurationName+".adapterName", ADAPTER_SERVICE_NAME);
-		}
 	}
 
 	/**
@@ -129,13 +104,16 @@ public class ClassLoaderManagerTest extends Mockito {
 		return testPath;
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() throws ConfigurationException, Exception {
+		AppConstants.removeInstance();
+		appConstants = AppConstants.getInstance();
 		String configurationsNames = "";
-		for(Object[] o: data()) {
+		for(Arguments a: data()) {
+			Object[] o = a.get();
 			configurationsNames += o[1]+",";
 			if(o[0] != null) {
-				String value = (String) o[0];
+				String value = "" + (String) o[0];
 				setLocalProperty("configurations."+o[1]+".classLoaderType", value);
 			}
 		}
@@ -161,48 +139,17 @@ public class ClassLoaderManagerTest extends Mockito {
 		doReturn(true).when(rs).next();
 		doReturn("dummy").when(rs).getString(anyInt());
 		URL file = ClassLoaderManager.class.getResource(JAR_FILE);
-		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
+		doReturn(StreamUtil.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
-		doReturn(fq).when(ibisContext).createBeanAutowireByName(FixedQuerySender.class);
-	}
 
-	private static void createAdapter4ServiceClassLoader(String config4Adaptername) throws ConfigurationException {
-		// Mock a configuration with an adapter in it
-		IbisManager ibisManager = spy(new DefaultIbisManager());
-		ibisManager.setIbisContext(ibisContext);
-		Configuration configuration = new TestConfiguration();
-		configuration.setName("dummyConfiguration");
-		configuration.setVersion("1");
-		configuration.setIbisManager(ibisManager);
-
-		Adapter adapter = spy(new Adapter());
-		adapter.setName(config4Adaptername);
-		PipeLine pl = new PipeLine();
-		pl.setFirstPipe("dummy");
-		EchoPipe pipe = new EchoPipe();
-		pipe.setName("dummy");
-		pl.addPipe(pipe);
-		PipeLineExit ple = new PipeLineExit();
-		ple.setPath("success");
-		ple.setState(ExitState.SUCCESS);
-		pl.registerPipeLineExit(ple);
-		adapter.setPipeLine(pl);
-
-		doAnswer(new Answer<PipeLineResult>() {
-			@Override
-			public PipeLineResult answer(InvocationOnMock invocation) throws Throwable {
-				PipeLineSession session = (PipeLineSession) invocation.getArguments()[2];
-				URL file = this.getClass().getResource(JAR_FILE);
-				session.put("configurationJar", Misc.streamToBytes(file.openStream()));
-				return new PipeLineResult();
-			}
-		}).when(adapter).processMessage(anyString(), any(Message.class), any(PipeLineSession.class));
-
-		adapter.setConfiguration(configuration);
-		configuration.registerAdapter(adapter);
-
-		ibisManager.addConfiguration(configuration);
-		when(ibisContext.getIbisManager()).thenReturn(ibisManager);
+		// Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
+		IbisManager ibisManager = mock(IbisManager.class);
+		doReturn(ibisManager).when(ibisContext).getIbisManager();
+		ApplicationContext applicationContext = mock(ApplicationContext.class);
+		doReturn(applicationContext).when(ibisManager).getApplicationContext();
+		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
+		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 	}
 
 	private ClassLoader getClassLoader() throws Exception {
@@ -217,8 +164,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		return config;
 	}
 
-	@Test
-	public void properClassLoaderType() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void properClassLoaderType(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config = getClassLoader();
 
@@ -229,8 +178,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		assertEquals(name, config.getClass().getSimpleName());
 	}
 
-	@Test
-	public void retrieveTestFileNotInClassLoader() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void retrieveTestFileNotInClassLoader(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config = getClassLoader();
 		URL resource = config.getResource("test1.xml");
@@ -238,8 +189,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		MatchUtils.assertTestFileEquals("/test1.xml", resource);
 	}
 
-	@Test
-	public void retrieveTestFileInClassLoaderRoot() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void retrieveTestFileInClassLoaderRoot(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
@@ -249,8 +202,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		MatchUtils.assertTestFileEquals("/ClassLoaderTestFile.xml", resource);
 	}
 
-	@Test
-	public void retrieveTestFileInSubFolder() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void retrieveTestFileInSubFolder(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
@@ -260,8 +215,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		MatchUtils.assertTestFileEquals(BASE_DIR+"/ClassLoaderTestFile.xml", resource);
 	}
 
-	@Test
-	public void retrieveNonExistingTestFile() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void retrieveNonExistingTestFile(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config = getClassLoader();
 		URL resource = config.getResource("dummy-test-file.xml");
@@ -269,8 +226,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		assertNull(resource);
 	}
 
-	@Test
-	public void testInheritanceMakeSureFileIsFoundInBothParentAndChild() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testInheritanceMakeSureFileIsFoundInBothParentAndChild(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		String testConfiguration = "myNewClassLoader";
@@ -295,8 +254,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		appConstants.remove("configurations."+configurationName+".parentConfig");
 	}
 
-	@Test
-	public void reloadString() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void reloadString(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config1 = manager.get(configurationName);
 
@@ -307,8 +268,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		assertEquals(config1.toString(), config2.toString());
 	}
 
-	@Test
-	public void reloadClassLoader() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void reloadClassLoader(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config1 = manager.get(configurationName);
 

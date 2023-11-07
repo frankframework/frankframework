@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import nl.nn.credentialprovider.ICredentials;
 
@@ -33,10 +34,18 @@ import nl.nn.credentialprovider.ICredentials;
  */
 public class CredentialFactory  {
 
-	private ICredentials credentials=null;
+	private ICredentials credentials;
+
+	public CredentialFactory(String alias) {
+		this(alias, null, (Supplier<String>)null);
+	}
 
 	public CredentialFactory(String alias, String defaultUsername, String defaultPassword) {
-		credentials = nl.nn.credentialprovider.CredentialFactory.getCredentials(alias, defaultUsername, defaultPassword);
+		this(alias, ()->defaultUsername, ()->defaultPassword);
+	}
+
+	public CredentialFactory(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+		credentials = nl.nn.credentialprovider.CredentialFactory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 	}
 
 

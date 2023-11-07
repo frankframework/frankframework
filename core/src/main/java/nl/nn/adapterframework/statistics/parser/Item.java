@@ -22,7 +22,7 @@ package nl.nn.adapterframework.statistics.parser;
  * @since   4.9.9
  */
 public class Item {
-	
+
 	private String name;
 	private String value;
 

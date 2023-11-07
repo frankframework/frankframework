@@ -4,16 +4,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.CoreMatchers;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.scheduler.job.LoadDatabaseSchedulesJob;
-import nl.nn.adapterframework.testutil.FixedQuerySenderMock;
-import nl.nn.adapterframework.testutil.FixedQuerySenderMock.ResultSetBuilder;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock;
+import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
@@ -24,7 +24,7 @@ public class DatabaseSchedulerTest extends Mockito {
 	private TestConfiguration configuration;
 	private LoadDatabaseSchedulesJob job;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		configuration = new TestConfiguration();
 		configuration.getIbisManager(); //Sets a dummy IbisManager if non is found
@@ -34,7 +34,7 @@ public class DatabaseSchedulerTest extends Mockito {
 		job.configure();
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() {
 		configuration.close();
 		configuration = null; // <- force GC to cleanup!

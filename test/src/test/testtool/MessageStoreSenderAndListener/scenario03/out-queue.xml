@@ -21,14 +21,7 @@
       <field name="MESSAGEID">1</field>
       <field name="CORRELATIONID">Test Tool correlation id</field>
       <field name="MESSAGEDATE">2022-03-29 08:53:24</field>
-      <field name="COMMENTS">exitState [SUCCESS], result [String: original message [&lt;?xml version='1.0' encoding='UTF-8'?&gt;
-&lt;Envelope&gt;
-	&lt;Header&gt;
-		&lt;MessageID&gt;1&lt;/MessageID&gt;
-		&lt;Message contentType="application/xml" encoding="UTF-8"&gt;test, with comma&lt;/Message&gt;
-	&lt;/Header&gt;
-&lt;/Envelope&gt;
-] key1 [a,b,c] key2 [double quote: ["] single quote [']]], exitcode [200]</field>
+      <field name="COMMENTS" null="true"/>
       <field name="MESSAGE">"&lt;?xml version='1.0' encoding='UTF-8'?&gt;
 &lt;Envelope&gt;
 	&lt;Header&gt;

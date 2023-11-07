@@ -24,7 +24,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Some utilities for working with Esb.
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 public class EsbUtils {
@@ -53,8 +53,7 @@ public class EsbUtils {
 				cfUrl = getProviderURL(managedConnectionFactory);
 				String authDataAlias = getAuthDataAlias(managedConnectionFactory);
 				if (authDataAlias != null) {
-					CredentialFactory cf = new CredentialFactory(authDataAlias,
-							null, null);
+					CredentialFactory cf = new CredentialFactory(authDataAlias);
 					cfUserName = cf.getUsername();
 					cfPassword = cf.getPassword();
 				}
@@ -113,7 +112,7 @@ public class EsbUtils {
 		}
 		return null;
 	}
-	
+
 	public static String getQueueMessageCount(String provUrl, String authAlias,
 			String userName, String password, String queueName,
 			String messageSelector) {

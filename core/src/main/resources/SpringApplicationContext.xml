@@ -1,24 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans
-	xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:context="http://www.springframework.org/schema/context"
-	default-autowire="byName"
-	xsi:schemaLocation="
+		xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:context="http://www.springframework.org/schema/context"
+		default-autowire="byName"
+		xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	">
 
+	<bean id="messageDispatcher" class="nl.nn.adapterframework.management.bus.MessageDispatcher">
+		<property name="packageName" value="nl.nn.adapterframework.management.bus" />
+	</bean>
+
 	<context:property-placeholder />
 
 	<import resource="springUnmanagedDeployment.xml"/>
-
-	<bean
-		name="metrics"
-		class="nl.nn.adapterframework.lifecycle.ApplicationMetrics"
-		autowire="byName"
-		scope="singleton"
-	/>
 
 	<bean
 		name="lowerCasePropertySourcePostProcessor"
@@ -39,6 +36,8 @@
 	<bean id="mongoClientFactory" class="nl.nn.adapterframework.mongodb.JndiMongoClientFactory" />
 
 	<bean id="jdbcPropertySourceFactory" class="nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory" />
+
+	<bean id="VerifyDatabaseConnectionBean" class="nl.nn.adapterframework.lifecycle.VerifyDatabaseConnectionBean" />
 
 	<bean
 		name="hostnamePropertySourcePostProcessor"
@@ -63,27 +62,6 @@
 	<bean id="adapterLifecycleWrapper" autowire="byName" scope="prototype" abstract="true" />
 
 	<bean name="adapterFlowProcessor" class="nl.nn.adapterframework.util.flow.FlowDiagramAdapterWrapper" parent="adapterLifecycleWrapper"/>
-	<bean name="adapterJmxProcessor" class="nl.nn.adapterframework.jmx.JmxAdapterWrapper" parent="adapterLifecycleWrapper"/>
-
-	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
-		<property name="locateExistingServerIfPossible" value="true" /><!-- indicate to first look for a server -->
-		<property name="defaultDomain" value="${instance.name}" />
-		<property name="agentId" value="" /> <!-- an empty string forces the PlatformMbeanServer to be used -->
-	</bean>
-
-	<bean id="namingStrategy" class="nl.nn.adapterframework.jmx.JmxNamingStrategy">
-		<property name="defaultDomain" value="${instance.name}" />
-	</bean>
-
-	<bean name="MBeanManager" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
-		<property name="namingStrategy" ref="namingStrategy" />
-		<property name="server" ref="mbeanServer"/>
-		<property name="ensureUniqueRuntimeObjectNames" value="false" />
-		<property name="assembler">
-			<bean class="nl.nn.adapterframework.jmx.JmxMBeanInfoAssembler" />
-		</property>
-		<property name="registrationPolicy" value="REPLACE_EXISTING"/>
-	</bean>
 
 	<bean
 		name="flowDiagramManager"
@@ -123,7 +101,7 @@
 
 	<bean
 		name="isolatedServiceCaller"
-		class="nl.nn.adapterframework.pipes.IsolatedServiceCaller"
+		class="nl.nn.adapterframework.senders.IsolatedServiceCaller"
 		autowire="byName"
 		scope="singleton"
 	/>
@@ -279,10 +257,11 @@
 
 	<bean
 		name="taskExecutor"
-		class="org.springframework.core.task.SimpleAsyncTaskExecutor"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor"
 		scope="singleton"
 	>
-		<property name="ThreadFactory" ref="namedThreadFactory"/>
+		<property name="threadFactory" ref="namedThreadFactory"/>
+		<property name="queueCapacity" value="0"/>
 	</bean>
 
 	<bean

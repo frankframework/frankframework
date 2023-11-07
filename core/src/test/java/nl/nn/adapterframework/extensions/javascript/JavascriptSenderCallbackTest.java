@@ -17,6 +17,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.senders.EchoSender;
@@ -35,7 +36,7 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 
 	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {{JavaScriptEngines.J2V8}, {JavaScriptEngines.NASHORN}});
+		return Arrays.asList(new Object[][] {{JavaScriptEngines.J2V8}});
 	}
 
 	@Override
@@ -57,14 +58,14 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		sender.configure();
 		sender.open();
 
-		assertEquals("7", sender.sendMessage(dummyInput, session).asString());
+		assertEquals("7", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
 	//An EchoSender will be called in the javascript code.
 	@Test
 	public void javaScriptSenderWithNestedEchoSender() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		Message dummyInput = new Message("dummyinput");
-		sender.setJsFileName("Javascript/JavascriptTest.js"); 
+		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f4");
 		sender.setEngineName(engine);
 
@@ -80,13 +81,13 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		sender.open();
 
 		// See function 4, validates if input to the nested sender is the same as the output of the nested sender
-		assertEquals("true", sender.sendMessage(dummyInput,session).asString());
+		assertEquals("true", sender.sendMessageOrThrow(dummyInput,session).asString());
 	}
 
 	@Test
 	public void promise() throws Exception {
 		Message dummyInput = new Message("dummyinput");
-		sender.setJsFileName("Javascript/JavascriptTest.js"); 
+		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("promise");
 		sender.setEngineName(engine);
 
@@ -97,7 +98,7 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		sender.configure();
 		sender.open();
 
-		Message senderResult = sender.sendMessage(dummyInput, session);
+		Message senderResult = sender.sendMessageOrThrow(dummyInput, session);
 		assertTrue(Message.isEmpty(senderResult));
 		Message promiseResult = promise.getPromiseResult();
 		assertFalse("promise not called", Message.isEmpty(promiseResult));
@@ -108,9 +109,9 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		private @Getter Message promiseResult = null;
 
 		@Override
-		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			promiseResult = message;
-			return Message.nullMessage();
+			return new SenderResult(Message.nullMessage());
 		}
 	};
 }

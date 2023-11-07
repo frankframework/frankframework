@@ -30,17 +30,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class SchedulerFactoryBean extends org.springframework.scheduling.quartz.SchedulerFactoryBean {
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
-		try {
-			super.afterPropertiesSet();
-		}
-		catch(Exception e) {
-			getScheduler().shutdown(true);
-			throw e;
-		}
-	}
-
-	@Override
 	public void setDataSource(DataSource dataSource) {
 		//Make sure this isn't autowired by Spring
 	}

@@ -20,7 +20,10 @@ import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 import org.apache.commons.io.output.XmlStreamWriter;
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +37,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	protected Logger log = LogUtil.getLogger(this);
@@ -42,7 +45,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public static final String DISABLE_OUTPUT_ESCAPING="javax.xml.transform.disable-output-escaping";
 	public static final String ENABLE_OUTPUT_ESCAPING="javax.xml.transform.enable-output-escaping";
 
-	private @Getter Writer writer;
+	private final @Getter Writer writer;
 	private @Setter boolean includeXmlDeclaration=false;
 	private @Setter boolean newlineAfterXmlDeclaration=false;
 	private @Setter boolean includeComments=true;
@@ -53,12 +56,13 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	private int elementLevel=0;
 	private boolean elementJustStarted;
 	private boolean inCdata;
-	private List<PrefixMapping> namespaceDefinitions=new ArrayList<>();
+	private final List<PrefixMapping> newNamespaceDefinitions=new ArrayList<>();
+	private final Map<String,Stack<String>> activeNamespaceDefinitions=new HashMap<>();
 
-	private class PrefixMapping {
+	private static class PrefixMapping {
 
-		public String prefix;
-		public String uri;
+		String prefix;
+		String uri;
 
 		PrefixMapping(String prefix, String uri) {
 			this.prefix=prefix;
@@ -91,7 +95,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	public void startDocument() throws SAXException {
 		try {
 			if (includeXmlDeclaration) {
-				writer.append("<?xml version=\"1.0\" encoding=\""+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"\"?>");
+				writer.append("<?xml version=\"1.0\" encoding=\"").append(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING).append("\"?>");
 				if (newlineAfterXmlDeclaration) {
 					writer.append("\n");
 				}
@@ -123,18 +127,28 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 		if (StringUtils.isNotEmpty(prefixMapping.prefix) ) {
 			writer.append(":").append(prefixMapping.prefix);
 		}
-		writer.append("=\"").append(XmlUtils.encodeChars(prefixMapping.uri)).append("\"");
-	}
-
-	private void storePrefixMapping(List<PrefixMapping> prefixMappingList, String prefix, String uri) {
-		PrefixMapping prefixMapping = new PrefixMapping(prefix,uri);
-		prefixMappingList.add(prefixMapping);
+		writer.append("=\"").append(XmlEncodingUtils.encodeChars(prefixMapping.uri)).append("\"");
 	}
 
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
-		storePrefixMapping(namespaceDefinitions, prefix, uri);
+		PrefixMapping mapping = new PrefixMapping(prefix, uri);
+		Stack<String> prefixMappingStack = activeNamespaceDefinitions.get(prefix);
+		if (prefixMappingStack==null) {
+			prefixMappingStack = new Stack<>();
+			activeNamespaceDefinitions.put(prefix, prefixMappingStack);
+		}
+		if (prefixMappingStack.isEmpty() || !prefixMappingStack.peek().equals(uri)) {
+			newNamespaceDefinitions.add(mapping);
+		}
+		prefixMappingStack.push(uri);
 	}
+
+	@Override
+	public void endPrefixMapping(String prefix) throws SAXException {
+		activeNamespaceDefinitions.get(prefix).pop();
+	}
+
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
@@ -143,16 +157,19 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				writer.append(">");
 			}
 			if (!textMode) {
-				writer.append("<"+qName);
-				for (int i=0; i<attributes.getLength(); i++) {
-					writer.append(" "+attributes.getQName(i)+"=\""+XmlUtils.encodeChars(attributes.getValue(i), true).replace("&#39;", "'")+"\"");
+				writer.append("<").append(qName);
+				for (int i = 0; i < attributes.getLength(); i++) {
+					String attrValue = attributes.getValue(i);
+					if (attrValue != null) {
+						writer.append(" ").append(attributes.getQName(i)).append("=\"").append(XmlEncodingUtils.encodeChars(attrValue, true).replace("&#39;", "'")).append("\"");
+					}
 				}
-				for (int i=0; i<namespaceDefinitions.size(); i++) {
-					writePrefixMapping(namespaceDefinitions.get(i));
+				for (PrefixMapping newNamespaceDefinition : newNamespaceDefinitions) {
+					writePrefixMapping(newNamespaceDefinition);
 				}
 			}
-			namespaceDefinitions.clear();
-			elementJustStarted=true;
+			newNamespaceDefinitions.clear();
+			elementJustStarted = true;
 			elementLevel++;
 		} catch (IOException e) {
 			throw new SaxException(e);
@@ -168,7 +185,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 					elementJustStarted=false;
 					writer.append("/>");
 				} else {
-					writer.append("</"+qName+">");
+					writer.append("</").append(qName).append(">");
 				}
 			}
 		} catch (IOException e) {
@@ -191,7 +208,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 				if (inCdata || !outputEscaping) {
 					writer.append(new String(ch, start, length));
 				} else {
-					writer.append(XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(new String(ch, start, length)).replace("&quot;", "\"").replace("&#39;", "'"));
+					writer.append(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(new String(ch, start, length)).replace("&quot;", "\"").replace("&#39;", "'"));
 				}
 			}
 		} catch (IOException e) {
@@ -234,7 +251,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	}
 
 	@Override
-	public void startDTD(String arg0, String arg1, String arg2) throws SAXException {
+	public void startDTD(String arg0, String arg1, String arg2) {
 //		System.out.println("startDTD");
 	}
 
@@ -274,7 +291,7 @@ public class XmlWriter extends DefaultHandler implements LexicalHandler {
 	}
 
 	@Override
-	public void startEntity(String arg0) throws SAXException {
+	public void startEntity(String arg0) {
 //		System.out.println("startEntity ["+arg0+"]");
 	}
 	@Override

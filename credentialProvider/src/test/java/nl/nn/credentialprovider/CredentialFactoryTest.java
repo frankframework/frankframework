@@ -1,26 +1,32 @@
 package nl.nn.credentialprovider;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-@Ignore("Can only run before other tests that use CredentialFactory")
 public class CredentialFactoryTest {
 
 	@Test
 	public void testFindAliasNoPrefix() {
-		// test depends on setting credentialFactory.class=nl.nn.credentialprovider.MockMapCredentialFactory in test/resources/credentialprovider.properties
+		// test depends on setting credentialFactory.class=nl.nn.credentialprovider.PropertyFileCredentialFactory in test/resources/credentialprovider.properties
+
+		// Act
 		ICredentials c = CredentialFactory.getCredentials("account", null, null);
+
+		// Assert
 		assertEquals("fakeUsername", c.getUsername());
 		assertEquals("fakePassword", c.getPassword());
 	}
-	
+
 	@Test
 	public void testFindAliasWithPrefix() {
+		// test depends on setting credentialFactory.optionalPrefix=fakePrefix: in test/resources/credentialprovider.properties
+
+		// Act
 		ICredentials c = CredentialFactory.getCredentials("fakePrefix:account", null, null);
+
+		// Assert
 		assertEquals("fakeUsername", c.getUsername());
 		assertEquals("fakePassword", c.getPassword());
 	}
-	
 }

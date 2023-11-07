@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021 - 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,44 +15,51 @@
 */
 package nl.nn.adapterframework.testtool;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
  * XSLT provider listener for the Test Tool.
- * 
+ *
  * @author Jaco de Groot
  */
-public class XsltProviderListener {
-	String filename;
-	boolean fromClasspath = false;
+public class XsltProviderListener implements IConfigurable, AutoCloseable {
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter String name;
+
+	private String filename;
 	private int xsltVersion=0; // set to 0 for auto detect.
-	boolean namespaceAware = true;
-	TransformerPool transformerPool = null;
-	String result;
+	private boolean namespaceAware = true;
+	private TransformerPool transformerPool = null;
+	private String result;
 
-	public void init() throws ListenerException {
+	@Override
+	public void configure() throws ConfigurationException {
+		if(filename == null) {
+			throw new ConfigurationException("Could not find filename property for " + getName());
+		}
 		try {
-			Resource stylesheet;
-
-			if (fromClasspath) {
-				stylesheet = Resource.getResource(filename);
-			} else {
-				File file = new File(filename);
-				stylesheet = Resource.getResource(null, file.toURI().toURL().toExternalForm(), "file");
+			Resource stylesheet = Resource.getResource(this, filename);
+			if(stylesheet == null) {
+				throw new ConfigurationException("Could not find file ["+filename+"]");
 			}
-			transformerPool = TransformerPool.getInstance(stylesheet, getXsltVersion());
+			transformerPool = TransformerPool.getInstance(stylesheet, xsltVersion);
 		} catch (Exception e) {
-			throw new ListenerException("Exception creating transformer pool for file '" + filename + "': " + e.getMessage(), e);
+			throw new ConfigurationException("Exception creating transformer pool for file '" + filename + "': " + e.getMessage(), e);
 		}
 	}
 
@@ -78,15 +85,8 @@ public class XsltProviderListener {
 		this.filename = filename;
 	}
 
-	public void setFromClasspath(boolean fromClasspath) {
-		this.fromClasspath = fromClasspath;
-	}
-
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
-	}
-	public int getXsltVersion() {
-		return xsltVersion;
 	}
 
 	/**
@@ -94,9 +94,6 @@ public class XsltProviderListener {
 	 */
 	@Deprecated
 	public void setXslt2(boolean b) {
-//		ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-//		String msg = ClassUtils.nameOf(this) +"["+getName()+"]: the attribute 'xslt2' has been deprecated. Its value is now auto detected. If necessary, replace with a setting of xsltVersion";
-//		configWarnings.add(log, msg);
 		xsltVersion=b?2:1;
 	}
 
@@ -105,6 +102,13 @@ public class XsltProviderListener {
 	 */
 	public void setNamespaceAware(boolean namespaceAware) {
 		this.namespaceAware = namespaceAware;
+	}
+
+	@Override
+	public void close() throws Exception {
+		if(getResult() != null) {
+			throw new ConfigurationException("Found remaining message on XsltProviderListener ["+getName()+"]");
+		}
 	}
 
 }

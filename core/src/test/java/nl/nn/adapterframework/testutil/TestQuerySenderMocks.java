@@ -1,14 +1,15 @@
 package nl.nn.adapterframework.testutil;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
+import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock;
 import nl.nn.adapterframework.util.SpringUtils;
 
 /**

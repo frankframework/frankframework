@@ -19,10 +19,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -30,6 +32,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * Selects an exitState, based on the content-type of a httpServletRequest
  * object as input.
  */
+@ElementType(ElementTypes.ROUTER)
 public class IfMultipart extends AbstractPipe {
 	private String thenForwardName = "then";
 	private String elseForwardName = "else";
@@ -43,7 +46,7 @@ public class IfMultipart extends AbstractPipe {
 			forward = elseForwardName;
 		} else {
 			if (!(message.asObject() instanceof HttpServletRequest)) {
-				throw new PipeRunException(this, getLogPrefix(null) + "expected HttpServletRequest as input, got [" + ClassUtils.nameOf(message) + "]");
+				throw new PipeRunException(this, "expected HttpServletRequest as input, got [" + ClassUtils.nameOf(message) + "]");
 			}
 
 			HttpServletRequest request = (HttpServletRequest) message.asObject();
@@ -55,14 +58,14 @@ public class IfMultipart extends AbstractPipe {
 			}
 		}
 
-		log.debug(getLogPrefix(session) + "determined forward [" + forward + "]");
+		log.debug("determined forward [{}]", forward);
 
 		pipeForward = findForward(forward);
 
 		if (pipeForward == null) {
-			throw new PipeRunException(this, getLogPrefix(null) + "cannot find forward or pipe named [" + forward + "]");
+			throw new PipeRunException(this, "cannot find forward or pipe named [" + forward + "]");
 		}
-		log.debug(getLogPrefix(session) + "resolved forward [" + forward + "] to path [" + pipeForward.getPath() + "]");
+		log.debug("resolved forward [{}] to path [{}]", forward, pipeForward.getPath());
 		return new PipeRunResult(pipeForward, message);
 	}
 

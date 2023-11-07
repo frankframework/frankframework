@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -80,7 +81,7 @@ public class IbisTester {
 		@Override
 		public String call() throws Exception {
 			MockHttpServletRequest request = new MockHttpServletRequest();
-			request.setServletPath("/larva/index.jsp");
+			request.setServletPath("/iaf/larva/index.jsp");
 			boolean silent;
 			if (scenario == null) {
 				application = new MockServletContext("file:" + webAppPath, null);
@@ -98,28 +99,31 @@ public class IbisTester {
 			runScenarios(application, request, writer, silent);
 			if (scenario == null) {
 				String htmlString = "<html><head/><body>" + writer.toString() + "</body></html>";
-				return XmlUtils.toXhtml(htmlString);
+				return XmlUtils.toXhtml(Message.asMessage(htmlString));
 			} else {
 				return writer.toString();
 			}
 		}
 
+		// This is necessarily because we can't depend on the ladybug module
 		public void runScenarios(ServletContext application,
 				HttpServletRequest request, Writer out, boolean silent)
 				throws IllegalArgumentException, SecurityException,
 				IllegalAccessException, InvocationTargetException,
 				NoSuchMethodException, ClassNotFoundException {
 
-			Class<?>[] args_types = new Class<?>[4];
+			Class<?>[] args_types = new Class<?>[5];
 			args_types[0] = ServletContext.class;
 			args_types[1] = HttpServletRequest.class;
 			args_types[2] = Writer.class;
 			args_types[3] = boolean.class;
-			Object[] args = new Object[4];
+			args_types[4] = String.class;
+			Object[] args = new Object[5];
 			args[0] = application;
 			args[1] = request;
 			args[2] = out;
 			args[3] = silent;
+			args[4] = webAppPath;
 			Class.forName("nl.nn.adapterframework.testtool.TestTool").getMethod("runScenarios", args_types).invoke(null, args);
 		}
 	}

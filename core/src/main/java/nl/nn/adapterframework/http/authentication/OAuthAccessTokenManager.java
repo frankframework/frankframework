@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationGrant;
@@ -55,26 +56,29 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 
-import nl.nn.adapterframework.http.HttpSenderBase;
+import nl.nn.adapterframework.http.HttpSessionBase;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 public class OAuthAccessTokenManager {
+	protected Logger log = LogUtil.getLogger(this);
 
 	private URI tokenEndpoint;
 	private Scope scope;
-	private CredentialFactory client_cf;
+	private CredentialFactory clientCredentialFactory;
 	private boolean useClientCredentialsGrant;
-	private HttpSenderBase httpSender;
+	private HttpSessionBase httpSession;
 	private int expiryMs;
-	private boolean basicAuthenticateWithClientCredentials = false;
+	private boolean authenticatedTokenRequest; // if set true, clientId and clientSecret will be added as Basic Authentication header, instead of as request parameters
 
 	private AccessToken accessToken;
 	private long accessTokenRefreshTime;
 
-	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory client_cf, boolean useClientCredentialsGrant, HttpSenderBase httpSender, int expiry) throws HttpAuthenticationException {
+	public OAuthAccessTokenManager(String tokenEndpoint, String scope, CredentialFactory clientCF, boolean useClientCredentialsGrant, boolean authenticatedTokenRequest, HttpSessionBase httpSession, int expiry) throws HttpAuthenticationException {
 		try {
 			this.tokenEndpoint = new URI(tokenEndpoint);
 		} catch (URISyntaxException e) {
@@ -82,9 +86,10 @@ public class OAuthAccessTokenManager {
 		}
 
 		this.scope = StringUtils.isNotEmpty(scope) ? Scope.parse(scope) : null;
-		this.client_cf = client_cf;
+		this.clientCredentialFactory = clientCF;
 		this.useClientCredentialsGrant = useClientCredentialsGrant;
-		this.httpSender = httpSender;
+		this.authenticatedTokenRequest = authenticatedTokenRequest;
+		this.httpSession = httpSession;
 		this.expiryMs = expiry * 1000;
 	}
 
@@ -93,8 +98,8 @@ public class OAuthAccessTokenManager {
 		TokenRequest request = createRequest(credentials);
 		HttpRequestBase apacheHttpRequest = convertToApacheHttpRequest(request.toHTTPRequest());
 
-		CloseableHttpClient apacheHttpClient = httpSender.getHttpClient();
-		TimeoutGuard tg = new TimeoutGuard(1+httpSender.getTimeout()/1000, "token retrieval") {
+		CloseableHttpClient apacheHttpClient = httpSession.getHttpClient();
+		TimeoutGuard tg = new TimeoutGuard(1+httpSession.getTimeout()/1000, "token retrieval") {
 
 			@Override
 			protected void abort() {
@@ -103,6 +108,7 @@ public class OAuthAccessTokenManager {
 
 		};
 		try (CloseableHttpResponse apacheHttpResponse = apacheHttpClient.execute(apacheHttpRequest)) {
+
 			HTTPResponse httpResponse = convertFromApacheHttpResponse(apacheHttpResponse);
 			parseResponse(httpResponse);
 		} catch (IOException e) {
@@ -110,12 +116,12 @@ public class OAuthAccessTokenManager {
 			throw new HttpAuthenticationException(e);
 		} finally {
 			if (tg.cancel()) {
-				throw new HttpAuthenticationException("timeout of ["+httpSender.getTimeout()+"] ms exceeded");
+				throw new HttpAuthenticationException("timeout of ["+httpSession.getTimeout()+"] ms exceeded");
 			}
 		}
 	}
 
-	private TokenRequest createRequest(Credentials credentials) throws HttpAuthenticationException {
+	protected TokenRequest createRequest(Credentials credentials) {
 		AuthorizationGrant grant;
 
 		if (useClientCredentialsGrant) {
@@ -127,8 +133,8 @@ public class OAuthAccessTokenManager {
 		}
 
 		// The credentials to authenticate the client at the token endpoint
-		ClientID clientID = new ClientID(client_cf.getUsername());
-		Secret clientSecret = new Secret(client_cf.getPassword());
+		ClientID clientID = new ClientID(clientCredentialFactory.getUsername());
+		Secret clientSecret = new Secret(clientCredentialFactory.getPassword());
 		ClientAuthentication clientAuth = new ClientSecretBasic(clientID, clientSecret);
 
 		return new TokenRequest(tokenEndpoint, clientAuth, grant, scope);
@@ -148,25 +154,32 @@ public class OAuthAccessTokenManager {
 			// Get the access token
 			accessToken = successResponse.getTokens().getAccessToken();
 			// accessToken will be refreshed when it is half way expiration
-			accessTokenRefreshTime = System.currentTimeMillis() + expiryMs<0 ? 500 * accessToken.getLifetime() : expiryMs;
+			long accessTokenLifetime = accessToken.getLifetime();
+			if (expiryMs<0 && accessTokenLifetime==0) {
+				log.debug("no accessToken lifetime found in accessTokenResponse, and no expiry specified. Token will not be refreshed preemptively");
+				accessTokenRefreshTime = -1;
+			} else {
+				accessTokenRefreshTime = System.currentTimeMillis() + (expiryMs<0 ? 500 * accessTokenLifetime : expiryMs);
+				log.debug("set accessTokenRefreshTime [{}]", ()->DateUtils.format(accessTokenRefreshTime));
+			}
 		} catch (ParseException e) {
 			throw new HttpAuthenticationException("Could not parse TokenResponse: "+httpResponse.getContent(), e);
 		}
 	}
 
 	// convert the Nimbus HTTPRequest into an Apache HttpClient HttpRequest
-	private HttpRequestBase convertToApacheHttpRequest(HTTPRequest httpRequest) throws HttpAuthenticationException {
+	protected HttpRequestBase convertToApacheHttpRequest(HTTPRequest httpRequest) throws HttpAuthenticationException {
 		HttpRequestBase apacheHttpRequest;
 		String query = httpRequest.getQuery();
-		if (!basicAuthenticateWithClientCredentials) {
+		if (!authenticatedTokenRequest) {
 			List<NameValuePair> clientInfo= new LinkedList<>();
-			clientInfo.add(new BasicNameValuePair("client_id",client_cf.getUsername()));
-			clientInfo.add(new BasicNameValuePair("client_secret",client_cf.getPassword()));
-			query = Misc.concatStrings(query, "&", URLEncodedUtils.format(clientInfo, "UTF-8"));
+			clientInfo.add(new BasicNameValuePair("client_id", clientCredentialFactory.getUsername()));
+			clientInfo.add(new BasicNameValuePair("client_secret", clientCredentialFactory.getPassword()));
+			query = StringUtil.concatStrings(query, "&", URLEncodedUtils.format(clientInfo, "UTF-8"));
 		}
 		switch (httpRequest.getMethod()) {
 			case GET:
-				String url = Misc.concatStrings(httpRequest.getURL().toExternalForm(), "?", query);
+				String url = StringUtil.concatStrings(httpRequest.getURL().toExternalForm(), "?", query);
 				apacheHttpRequest = new HttpGet(url);
 				break;
 			case POST:
@@ -212,10 +225,12 @@ public class OAuthAccessTokenManager {
 		return httpResponse;
 	}
 
-	public String getAccessToken(Credentials credentials) throws HttpAuthenticationException {
-		if (accessToken==null || System.currentTimeMillis() > accessTokenRefreshTime) {
-			// retrieve a fresh token if there is none, or it needs to be refreshed
+	public String getAccessToken(Credentials credentials, boolean forceRefresh) throws HttpAuthenticationException {
+		if (forceRefresh || accessToken==null || accessTokenRefreshTime>0 && System.currentTimeMillis() > accessTokenRefreshTime) {
+			log.debug("refresh accessToken");
 			retrieveAccessToken(credentials);
+		} else {
+			log.debug("reusing cached accessToken");
 		}
 		return accessToken.toAuthorizationHeader();
 	}

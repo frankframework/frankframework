@@ -1,0 +1,40 @@
+Date: DATE
+From: myself@address.org
+Reply-To: to@address.com
+To: dummy <me@address.org>, two <me2@address.org>
+Message-ID: MESSAGE-ID
+Subject: My Subject
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="BOUNDARY"
+
+--BOUNDARY
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+My Message Goes Here
+--BOUNDARY
+Content-Type: text/plain; charset=us-ascii; name=test1.txt
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=test1.txt
+
+This is a text message.
+--BOUNDARY
+Content-Type: application/octet-stream; name=test2.txt
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=test2.txt
+
+This is a test file.
+--BOUNDARY
+Content-Type: application/octet-stream; name=test3.txt
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=test3.txt
+
+This is a test file too.
+--BOUNDARY
+Content-Type: application/octet-stream; name=test4.txt
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=test4.txt
+
+This is a base64 test file!
+--BOUNDARY--

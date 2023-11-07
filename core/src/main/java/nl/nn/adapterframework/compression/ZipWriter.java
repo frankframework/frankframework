@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,146 +15,122 @@
 */
 package nl.nn.adapterframework.compression;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
+import java.util.List;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
 
+import nl.nn.adapterframework.collection.CollectionException;
+import nl.nn.adapterframework.collection.CollectorPipeBase.Action;
+import nl.nn.adapterframework.collection.ICollector;
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.stream.PathMessage;
+import nl.nn.adapterframework.util.FileUtils;
 
-/**
- * Helper class to create Zip archives.
- * 
- * @author  Gerrit van Brakel
- * @since   4.9.10
- */
-public class ZipWriter {
-	protected Logger log = LogUtil.getLogger(this);
-	
-	private ZipOutputStream zipoutput;
-	private boolean entryOpen=false;
-	private boolean closeOnExit;
+public class ZipWriter implements ICollector<MessageZipEntry> {
 
-	private ZipWriter(OutputStream resultStream, boolean closeOnExit) {
-		super();
-		this.closeOnExit=closeOnExit;
-		zipoutput=new ZipOutputStream(resultStream);
+	private static final MediaType MIMETYPE_ZIP = new MediaType("application", "zip");
+	static final String PARAMETER_FILENAME="filename";
+	static final String PARAMETER_CONTENTS="contents";
+
+	private final boolean includeFileHeaders;
+	private final String zipLocation;
+
+	static void validateParametersForAction(Action action, ParameterList parameterList) throws ConfigurationException {
+		switch (action) {
+			case OPEN:
+				break;
+			case WRITE:
+			case LAST:
+				if(parameterList == null) {
+					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
+				}
+				Parameter filenameParameter=parameterList.findParameter(PARAMETER_FILENAME);
+				Parameter contentsParameter=parameterList.findParameter(PARAMETER_CONTENTS);
+				if (filenameParameter==null && contentsParameter==null) {
+					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' or parameter '"+PARAMETER_CONTENTS+"' is required");
+				}
+				break;
+			case CLOSE:
+				if (parameterList != null && parameterList.findParameter(PARAMETER_FILENAME)!=null) {
+					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' cannot not be configured on action [close]");
+				}
+				break;
+			case STREAM:
+				if(parameterList == null || parameterList.findParameter(PARAMETER_FILENAME)==null) {
+					throw new ConfigurationException("parameter '"+PARAMETER_FILENAME+"' is required");
+				}
+				break;
+			default:
+				throw new ConfigurationException("unknown action ["+action+"]");
+		}
 	}
 
-	public static ZipWriter getZipWriter(PipeLineSession session, String handlekey) {
-		return (ZipWriter)session.get(handlekey);
+	public ZipWriter(boolean includeFileHeaders) {
+		this(includeFileHeaders, null);
 	}
 
-	public static ZipWriter createZipWriter(PipeLineSession session, String handlekey, OutputStream resultStream, boolean closeOnExit) {
-		ZipWriter handle=new ZipWriter(resultStream,closeOnExit);
-		session.put(handlekey,handle);
-		if (handle.log.isDebugEnabled()) handle.log.debug(handle.getLogPrefix(handlekey)+"opened new zipstream");
-		return handle;
+	/**
+	 * Create a new ZipWriterCollector
+	 * @param includeFileHeaders whether to calculate the size and crc for each entry
+	 * @param zipLocation if exists the file should be placed here, for legacy / deprecated purposes only!
+	 */
+	public ZipWriter(boolean includeFileHeaders, String zipLocation) {
+		this.includeFileHeaders = includeFileHeaders;
+		this.zipLocation = zipLocation;
 	}
 
-	public void openEntry(String filename) throws CompressionException {
-		closeEntry();
-		ZipEntry entry = new ZipEntry(filename);
+	@Override
+	public MessageZipEntry createPart(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
+		String filename = ParameterValueList.getValue(pvl, PARAMETER_FILENAME, "");
 		try {
-			zipoutput.putNextEntry(entry);
-			entryOpen=true;
+			Message contents = ParameterValueList.getValue(pvl, PARAMETER_CONTENTS, input);
+			if (StringUtils.isEmpty(filename) && contents != input) {
+				filename = input.asString();
+			}
+			MessageZipEntry entry = new MessageZipEntry(contents, filename);
+			if (includeFileHeaders) {
+				entry.computeFileHeaders();
+			}
+			return entry;
 		} catch (IOException e) {
-			throw new CompressionException("cannot add zipentry for ["+filename+"]",e);
+			throw new CollectionException("cannot write item", e);
 		}
 	}
 
-	public void closeEntry() throws CompressionException {
-		if (entryOpen) {
-			entryOpen=false;
-			try {
-				zipoutput.closeEntry();
-			} catch (IOException e) {
-				throw new CompressionException("cannot close zipentry",e);
+	@Override
+	public Message build(List<MessageZipEntry> parts) throws IOException {
+		File file;
+		if(StringUtils.isEmpty(zipLocation)) {
+			File collectorsTempFolder = FileUtils.getTempDirectory("collectors");
+			file = File.createTempFile("msg", ".zip", collectorsTempFolder);
+		} else {
+			file = new File(zipLocation);
+		}
+
+		try (FileOutputStream fos = new FileOutputStream(file); ZipOutputStream zipoutput = new ZipOutputStream(fos)) {
+			for(MessageZipEntry entry : parts) {
+				entry.writeEntry(zipoutput);
 			}
 		}
+
+		Message result = StringUtils.isEmpty(zipLocation) ? PathMessage.asTemporaryMessage(file.toPath()) : new FileMessage(file);
+		result.getContext().withMimeType(MIMETYPE_ZIP);
+		return result;
 	}
 
-
-	protected void close() throws CompressionException {
-		closeEntry();
-		try {
-			if (isCloseOnExit()) {
-				zipoutput.close();
-			} else {
-				zipoutput.finish();
-			}
-		} catch (IOException e) {
-			throw new CompressionException("Cannot close ZipStream",e);
-		}
+	@Override
+	public void close() throws Exception {
+		// nothing to close
 	}
-
-	public void writeEntry(String filename, Message contents, boolean close, String charset) throws CompressionException, IOException {
-		if (StringUtils.isEmpty(filename)) {
-			throw new CompressionException("filename cannot be empty");		
-		}
-		openEntry(filename);
-		if (contents!=null) {
-			try (InputStream is = contents.asInputStream( charset)) {
-				Misc.streamToStream(is,getZipoutput());
-			}
-		} else { 
-			log.warn("contents of zip entry ["+filename+"] is null");
-		}
-		closeEntry();
-	}
-
-	public void writeEntryWithCompletedHeader(String filename, Message contents, boolean close, String charset) throws CompressionException, IOException {
-		if (StringUtils.isEmpty(filename)) {
-			throw new CompressionException("filename cannot be empty");		
-		}
-		
-		byte[] contentBytes = null;
-		int size = 0;
-		if (contents!=null) {
-			contentBytes = contents.asByteArray(charset);
-		} else { 
-			log.warn("contents of zip entry ["+filename+"] is null");
-		}
-		
-		CRC32 crc = new CRC32();
-		crc.reset();
-		if (contentBytes!=null) {
-			size = contentBytes.length;
-			crc.update(contentBytes, 0, size);
-		}
-		ZipEntry entry = new ZipEntry(filename);
-		entry.setMethod(ZipEntry.STORED);
-		entry.setCompressedSize(size);
-		entry.setSize(size);
-		entry.setCrc(crc.getValue());
-		getZipoutput().putNextEntry(entry);
-		if (contentBytes!=null) {
-			getZipoutput().write(contentBytes, 0, contentBytes.length);
-		}
-		getZipoutput().closeEntry();
-	}
-		
-	public String getLogPrefix(String handlekey) {
-		return "ZipWriterHandle ["+handlekey+"] ";
-	}
-
-	public void setCloseOnExit(boolean b) {
-		closeOnExit = b;
-	}
-	public boolean isCloseOnExit() {
-		return closeOnExit;
-	}
-
-	public ZipOutputStream getZipoutput() {
-		return zipoutput;
-	}
-
 }

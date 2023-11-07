@@ -42,6 +42,7 @@ import org.xml.sax.SAXException;
 
 import nl.nn.credentialprovider.rolemapping.RoleGroupMapper;
 import nl.nn.credentialprovider.rolemapping.RoleGroupMappingRuleSet;
+import nl.nn.credentialprovider.util.Cache;
 
 
 /**
@@ -56,7 +57,11 @@ import nl.nn.credentialprovider.rolemapping.RoleGroupMappingRuleSet;
  */
 public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupMapper {
 
+	private final String ALL_AUTHENTICATED = "AllAuthenticated";
+
 	private final Log log = LogFactory.getLog(this.getClass());
+
+	private Cache<String,Attributes,NamingException> roleMembershipCache = new Cache<>(3600*1000);
 
 	/**
 	 * The pathname (absolute or relative to Catalina's current working directory "catalina.base")
@@ -148,34 +153,48 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	 */
 	@Override
 	protected List<String> getRoles(JNDIConnection connection, User user) throws NamingException {
-		List<String> roles = user.getRoles();
-		Set<String> allRoles = new LinkedHashSet<>(roles);
-		Queue<String> rolesToCheck = new LinkedList<>(allRoles);
+		long t1 = log.isDebugEnabled() ? System.currentTimeMillis() : 0;
+		int groupCheckCount=0;
+		int nestedRolesFound=0;
+		try {
+			List<String> roles = user.getRoles();
+			Set<String> allRoles = new LinkedHashSet<>(roles);
+			Queue<String> rolesToCheck = new LinkedList<>(allRoles);
 
-		if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles in: "+allRoles);
+			if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles in: "+allRoles);
 
-		String[] attrIds = { getRoleName() };
+			String[] attrIds = { getRoleName() };
 
-		String role;
-		while((role=rolesToCheck.poll())!=null) {
-			Attributes attrs = connection.context.getAttributes(role, attrIds);
+			String role;
+			while((role=rolesToCheck.poll())!=null) {
+				groupCheckCount++;
 
-			for (NamingEnumeration<? extends Attribute> attsEnum= attrs.getAll(); attsEnum.hasMoreElements();) {
-				Attribute attr = attsEnum.next();
-				for (NamingEnumeration<?> attEnum= attr.getAll(); attEnum.hasMoreElements();) {
+				Attributes attrs = roleMembershipCache.computeIfAbsentOrExpired(role, r -> connection.context.getAttributes(r, attrIds));
 
-					String nestedRole = attEnum.next().toString();
-					if (this.containerLog.isTraceEnabled()) this.containerLog.trace("nestedRole: "+nestedRole);
+				for (NamingEnumeration<? extends Attribute> attsEnum= attrs.getAll(); attsEnum.hasMoreElements();) {
+					Attribute attr = attsEnum.next();
+					for (NamingEnumeration<?> attEnum= attr.getAll(); attEnum.hasMoreElements();) {
 
-					if (!allRoles.contains(nestedRole)) {
-						rolesToCheck.add(nestedRole);
-						allRoles.add(nestedRole);
+						String nestedRole = attEnum.next().toString();
+						if (this.containerLog.isTraceEnabled()) this.containerLog.trace("nestedRole: "+nestedRole);
+
+						if (!allRoles.contains(nestedRole)) {
+							rolesToCheck.add(nestedRole);
+							allRoles.add(nestedRole);
+							nestedRolesFound++;
+						}
 					}
 				}
 			}
+			allRoles.add(ALL_AUTHENTICATED);
+			if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles out: "+allRoles);
+			return new ArrayList<>(allRoles);
+		} finally {
+			if (log.isDebugEnabled()) {
+				long t2 = System.currentTimeMillis();
+				log.debug("Role retrieval for user ["+user.getDN()+"] in LDAP took ["+(t2-t1)+"]ms, groupCheckCount ["+groupCheckCount+"] nestedRolesFound ["+nestedRolesFound+"]");
+			}
 		}
-		if (this.containerLog.isTraceEnabled()) this.containerLog.trace("allRoles out: "+allRoles);
-		return new ArrayList<>(allRoles);
 	}
 
 

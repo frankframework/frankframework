@@ -20,7 +20,7 @@ import org.apache.xerces.xs.XSConstants;
 
 public enum ScalarType {
 	UNKNOWN,NUMERIC,BOOLEAN,STRING;
-	
+
 	public static ScalarType findType(XSSimpleType simpleType) {
 		if (simpleType==null) {
 			return UNKNOWN;

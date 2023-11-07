@@ -1,55 +1,118 @@
 <module>
-	<adapter name="ReturnedSessionKeys" description="Test the functioning of the attribute returnedSessionKeys">
-		<receiver returnedSessionKeys="returnCode,reasonCode">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReturnedSessionKeys" />
-		</receiver>
-		<pipeline firstPipe="SetReturnCode">
-			<exits>
-				<exit path="EXIT" state="success" />
-			</exits>
-			<pipe name="SetReturnCode" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="NOT_OK" storeResultInSessionKey="returnCode">
-				<forward name="success" path="SetReasonCode" />
-			</pipe>
-			<pipe name="SetReasonCode" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="INTERNAL_ERROR" storeResultInSessionKey="reasonCode">
-				<forward name="success" path="SwitchThrowException" />
-			</pipe>
-			<pipe name="SwitchThrowException" className="nl.nn.adapterframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage" xpathExpression="request/@throwException" notFoundForwardName="ThrowExceptionFalse">
-				<forward name="true" path="ThrowExceptionTrue" />
-			</pipe>
-			<pipe name="ThrowExceptionTrue" className="nl.nn.adapterframework.pipes.ExceptionPipe">
-				<forward name="success" path="EXIT" />
-			</pipe>
-			<pipe name="ThrowExceptionFalse" className="nl.nn.adapterframework.pipes.ExceptionPipe" throwException="false">
-				<forward name="success" path="EXIT" />
-			</pipe>
-		</pipeline>
-	</adapter>
-
 	<adapter name="ReturnedSessionKeysCaller" description="Test the functioning of the attribute returnedSessionKeys">
 		<receiver>
 			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReturnedSessionKeysCaller" />
 		</receiver>
-		<pipeline firstPipe="ReturnedSessionKeys">
+		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="ReturnedSessionKeys" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReturnedSessionKeys" returnedSessionKeys="returnCode,reasonCode" />
+			<pipe name="SetLocalValue" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="LocalValueParent" storeResultInSessionKey="localValue" preserveInput="true" />
+			<pipe name="SwitchCallerType" className="nl.nn.adapterframework.pipes.XmlSwitch" preserveInput="true" xpathExpression="request/@callerType" />
+			<pipe name="GuardAgainstFallThrough" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="Oops">
+				<forward name="success" path="EXIT" />
+			</pipe>
+
+			<pipe name="IbisJavaSender" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReturnedSessionKeys" returnedSessionKeys="returnCode,reasonCode,dataStream" />
 				<forward name="success" path="Reply_success" />
+				<forward name="400" path="Reply_400" />
 				<forward name="exception" path="Reply_exception" />
 			</pipe>
-			<pipe name="Reply_success" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+			<pipe name="IbisLocalSender" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ReturnedSessionKeys-Local" returnedSessionKeys="returnCode,reasonCode,dataStream" />
+				<forward name="success" path="Reply_success" />
+				<forward name="400" path="Reply_400" />
+				<forward name="exception" path="Reply_exception" />
+			</pipe>
+
+			<pipe name="IbisLocalSenderPreservedMessage" className="nl.nn.adapterframework.pipes.SenderPipe" preserveInput="true">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ReturnedSessionKeys-Local" returnedSessionKeys="returnCode,reasonCode,dataStream" />
+				<forward name="success" path="echopipe2" />
+				<forward name="400" path="Reply_400" />
+				<forward name="exception" path="Reply_exception" />
+			</pipe>
+			<EchoPipe name="echopipe2">
+				<forward name="success" path="EXIT" />
+			</EchoPipe>
+
+			<pipe name="IbisJavaSenderNoReceiverLimit" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="ibis4test-ReturnedSessionKeysNoLimit" returnedSessionKeys="returnCode,reasonCode,dataStream" />
+				<forward name="success" path="Reply_success" />
+				<forward name="400" path="Reply_400" />
+				<forward name="exception" path="Reply_exception" />
+			</pipe>
+			<pipe name="IbisLocalSenderNoReceiverLimit" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ReturnedSessionKeys-LocalNoLimit" returnedSessionKeys="returnCode,reasonCode,dataStream" />
+				<forward name="success" path="Reply_success" />
+				<forward name="400" path="Reply_400" />
+				<forward name="exception" path="Reply_exception" />
+			</pipe>
+
+			<pipe name="Reply_success" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" >
 				<param name="returnCode" sessionKey="returnCode"/>
 				<param name="reasonCode" sessionKey="reasonCode"/>
+				<param name="dataStream" sessionKey="dataStream"/>
+				<param name="localValue" sessionKey="localValue"/>
+				<param name="exitState" sessionKey="exitState"/>
 				<param name="forward" value="success"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="Reply_exception" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+			<pipe name="Reply_400" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" >
 				<param name="returnCode" sessionKey="returnCode"/>
 				<param name="reasonCode" sessionKey="reasonCode"/>
+				<param name="dataStream" sessionKey="dataStream"/>
+				<param name="localValue" sessionKey="localValue"/>
+				<param name="exitState" sessionKey="exitState"/>
+				<param name="forward" value="400"/>
+				<forward name="success" path="EXIT" />
+			</pipe>
+			<pipe name="Reply_exception" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName="ReturnedSessionKeys/Reply.xsl" getInputFromFixedValue="&lt;root&gt;Exception caught&lt;/root&gt;">
+				<param name="returnCode" sessionKey="returnCode"/>
+				<param name="reasonCode" sessionKey="reasonCode"/>
+				<param name="dataStream" sessionKey="dataStream"/>
+				<param name="localValue" sessionKey="localValue"/>
+				<param name="exitState" sessionKey="exitState"/>
 				<param name="forward" value="exception"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
+
+	<adapter name="ReturnedSessionKeysChild" description="Test the functioning of the attribute returnedSessionKeys">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReturnedSessionKeys" returnedSessionKeys="returnCode,dataStream" />
+		</receiver>
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ReturnedSessionKeys-Local" returnedSessionKeys="returnCode,dataStream" />
+		</receiver>
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReturnedSessionKeysNoLimit" />
+		</receiver>
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ReturnedSessionKeys-LocalNoLimit" />
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success" />
+				<exit path="FAIL"  state="error" code="400" />
+				<exit path="EXCEPTION"  state="error" />
+			</exits>
+			<pipe name="SetReturnCode"    className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="NOT_OK" storeResultInSessionKey="returnCode" />
+			<pipe name="SetReasonCode"    className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="INTERNAL_ERROR" storeResultInSessionKey="reasonCode" />
+			<pipe name="SetLocalValue"    className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="LocalValueChild" storeResultInSessionKey="localValue" />
+			<pipe name="SessionKeyBase64" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="U2Vzc2lvbktleSB2YWx1ZSBmcm9tIGlucHV0U3RyZWFt" />
+			<pipe name="decodeKey"        className="nl.nn.adapterframework.pipes.Base64Pipe" direction="decode" preserveInput="true" storeResultInSessionKey="dataStream" />
+			<pipe name="ResultBase64"     className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="PHJvb3Q+UGlwZUxpbmUgcmVzdWx0IGZyb20gaW5wdXRTdHJlYW08L3Jvb3Q+" />
+			<pipe name="decodeResult"     className="nl.nn.adapterframework.pipes.Base64Pipe" direction="decode" />
+			<pipe name="SwitchThrowException" className="nl.nn.adapterframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage" preserveInput="true" 
+					xpathExpression="request/@exit" notFoundForwardName="ThrowExceptionFalse">
+				<forward name="throw" path="ThrowException" />
+			</pipe>
+			<pipe name="ThrowException" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+				<forward name="success" path="EXCEPTION" />
+			</pipe>
+		</pipeline>
+	</adapter>
+
 </module>

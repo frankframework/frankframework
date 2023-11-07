@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -41,21 +42,20 @@ import com.aspose.words.FolderFontSource;
 import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class AsposeFontManager {
 
 	private static final String FONTS_RESOURCE_NAME = "/fonts.zip"; //lots of commonly used fonts
 	private static final String FONTS_RESOURCE_DIR = "/fonts/";
-
 	private static final String TRUETYPE_FONT_EXT = ".ttf";
 
 	private Logger log = LogUtil.getLogger(this);
 
 	private File fontDirectory = null;
-	private GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	private final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 
 	public AsposeFontManager() {
 		this(null);
@@ -75,11 +75,11 @@ public class AsposeFontManager {
 
 		// If an invalid directory was provided, fall back to the ibis default temp directory
 		if (fontDirectory == null) {
-			String tmpdir = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
+			String tmpdir = FileUtils.getTempDirectory();
 			fontDirectory = new File(tmpdir, FONTS_RESOURCE_DIR);
 		}
 
-		// If this fonts (sub-)directory does not exist, try to create it 
+		// If this font (sub-)directory does not exist, try to create it
 		if(!fontDirectory.exists()) {
 			fontDirectory.mkdirs();
 		}
@@ -103,13 +103,12 @@ public class AsposeFontManager {
 
 	/** unpack the fonts.zip archive in the supplied font directory. Does not override existing files */
 	public void unpackDefaultFontArchive() throws IOException {
-		URL fontsUrl = ClassUtils.getResourceURL(FONTS_RESOURCE_NAME);
+		URL fontsUrl = ClassLoaderUtils.getResourceURL(FONTS_RESOURCE_NAME);
 		if(fontsUrl == null) {
 			throw new IllegalStateException("font archive ["+FONTS_RESOURCE_NAME+"] cannot be found");
 		}
 
 		try (InputStream inputStream = new BufferedInputStream(fontsUrl.openStream())) {
-
 			Path fontsDirPath = Paths.get(fontDirectory.toURI());
 
 			try (ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
@@ -118,27 +117,28 @@ public class AsposeFontManager {
 					if (entry == null) {
 						break;
 					}
-					Path target = fontsDirPath.resolve(entry.getName());
-					if (Files.notExists(target)) {
-						Files.copy(zipInputStream, target);
+
+					String filename = FilenameUtils.normalize(entry.getName(), true);
+					if(filename != null) {
+						Path target = fontsDirPath.resolve(filename);
+						if (Files.notExists(target)) {
+							Files.copy(zipInputStream, target);
+						}
 					}
 					zipInputStream.closeEntry();
 				}
 			}
 
 		} catch (IOException e) {
-			log.error("unpacking fonts ["+FONTS_RESOURCE_NAME+"] to directory ["+fontDirectory+"] failed!", e);
+			log.error("unpacking fonts [{}] to directory [{}] failed!", FONTS_RESOURCE_NAME, fontDirectory, e);
 			throw e;
 		}
 	}
 
 	private void loadFontsForWord() {
-		// Retrieve the array of environment-dependent font sources that are searched by
-		// default.
-		// For example this will contain a "Windows\Fonts\" source on a Windows
-		// machines.
-		// We add this array to a new ArrayList to make adding or removing font entries
-		// much easier.
+		// Retrieve the array of environment-dependent font sources that are searched by default.
+		// For example this will contain a "Windows\Fonts\" source on a Windows machines.
+		// We add this array to a new ArrayList to make adding or removing font entries much easier.
 		List<FontSourceBase> fontSources = new ArrayList<>(
 				Arrays.asList(FontSettings.getDefaultInstance().getFontsSources()));
 
@@ -146,8 +146,7 @@ public class AsposeFontManager {
 		// following folder for fonts.
 		FolderFontSource folderFontSource = new FolderFontSource(getFontsPath(), false);
 		// com.aspose.pdf.FolderFontSource
-		// Add the custom folder which contains our fonts to the list of existing font
-		// sources.
+		// Add the custom folder which contains our fonts to the list of existing font sources.
 		fontSources.add(folderFontSource);
 
 		// Convert the list of source back into a primitive array of FontSource objects.
@@ -159,8 +158,8 @@ public class AsposeFontManager {
 
 	private void loadFontsForSlides() {
 		//We have to explicitly set the font directory for unix systems
-		final String[] fontDirectory = new String[] { getFontsPath() };
-		FontsLoader.loadExternalFonts(fontDirectory);
+		final String[] fontDirectories = new String[] { getFontsPath() };
+		FontsLoader.loadExternalFonts(fontDirectories);
 	}
 
 	private void loadFontsForCells() {
@@ -174,19 +173,24 @@ public class AsposeFontManager {
 			File fontFile = new File(fontDirectory, filename);
 
 			Font newFont = createFont(fontFile);
-			log.debug("registering font ["+fontFile.getName()+"]");
-
-			if (!fonts.contains(newFont) && !ge.registerFont(newFont)) {
-				log.warn("font ["+newFont.getFontName()+"] not registered");
+			if(newFont != null) {
+				if(fonts.contains(newFont)) {
+					log.debug("skipping font [{}], already registered", newFont::getFontName);
+				} else if (!ge.registerFont(newFont)) {
+					log.warn("unable to register font [{}] filename [{}]", newFont::getFontName, fontFile::getName);
+				} else {
+					log.debug("registered font [{}] filename [{}]", newFont::getFontName, fontFile::getName);
+				}
 			}
 		}
+
 		ge.preferProportionalFonts();
 	}
 
 	/**
 	 * Get the font. When retrieving the font fails it is logged and
 	 * <code>null</code> is returned.
-	 * 
+	 *
 	 * @param fontFile File location of the font to be loaded
 	 * @return the font or <code>null</code>.
 	 */
@@ -195,13 +199,12 @@ public class AsposeFontManager {
 		if (!name.toLowerCase().endsWith(TRUETYPE_FONT_EXT)) {
 			throw new IllegalArgumentException("Unexpected extension! (file: " + name + " expected extension: " + TRUETYPE_FONT_EXT + ")");
 		}
-		Font result = null;
 		try {
-			result = Font.createFont(Font.TRUETYPE_FONT, fontFile);
+			return Font.createFont(Font.TRUETYPE_FONT, fontFile);
 		} catch (FontFormatException | IOException e) {
-			log.error("Loading font failed! (file: " + name + ")", e);
+			log.warn("unable to load font [{}]", name, e);
 		}
-		return result;
+		return null;
 	}
 
 	public String getFontsPath() {

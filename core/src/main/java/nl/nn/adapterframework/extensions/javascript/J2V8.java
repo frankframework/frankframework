@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,7 @@
 */
 package nl.nn.adapterframework.extensions.javascript;
 
-import java.io.File;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+import java.lang.reflect.Field;
 
 import com.eclipsesource.v8.JavaCallback;
 import com.eclipsesource.v8.JavaVoidCallback;
@@ -29,15 +26,16 @@ import com.eclipsesource.v8.V8Object;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.flow.ResultHandler;
 
 public class J2V8 implements JavascriptEngine<V8> {
 
-	private Logger log = LogUtil.getLogger(this);
 	private V8 v8;
 	private String alias = null;
+
+	private static boolean j2v8LibraryLoaded = false;
+	private static Object j2v8Lock = new Object();
 
 	@Override
 	public void setGlobalAlias(String alias) {
@@ -45,39 +43,31 @@ public class J2V8 implements JavascriptEngine<V8> {
 	}
 
 	/**
-	 * Use the ${ibis.tmpdir} to extract the SO/DLL files into.
-	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
+	 * The V8 runtime (DLL/SO files) have to be extracted somewhere, using an absolute path.
+	 * Defaults to ${ibis.tmpdir}
 	 */
-	private String getTempDirectory() {
-		String directory = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
+	@Override
+	public void startRuntime() throws JavascriptException {
+		String tempDirectory = FileUtils.getTempDirectory();
 
-		if (StringUtils.isNotEmpty(directory)) {
-			File file = new File(directory);
-			if (!file.isAbsolute()) {
-				String absPath = new File("").getAbsolutePath();
-				if(absPath != null) {
-					file = new File(absPath, directory);
+		// preload the library to avoid having to set ALL FILES execute permission
+		if (!j2v8LibraryLoaded) {
+			synchronized (j2v8Lock) {
+				if (!j2v8LibraryLoaded) {
+					FrankJ2V8LibraryLoader.loadLibrary(tempDirectory);
+					// now update the private boolean field in the ancestor that indicates that the library has been loaded.
+					try {
+						Field privateField = V8.class.getDeclaredField("nativeLibraryLoaded");
+						privateField.setAccessible(true); // it additional permissions might be required for this
+						privateField.set(null, true);
+					} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+						throw new JavascriptException("Cannot indicate that native J2V8 library has been loaded", e);
+					}
+					j2v8LibraryLoaded = true;
 				}
 			}
-			if(!file.exists()) {
-				file.mkdirs();
-			}
-			String fileDir = file.getPath();
-			if(StringUtils.isEmpty(fileDir) || !file.isDirectory()) {
-				throw new IllegalStateException("unknown or invalid path ["+((StringUtils.isEmpty(fileDir))?"NULL":fileDir)+"], unable to load J2V8 binaries");
-			}
-			directory = file.getAbsolutePath();
 		}
-		log.info("resolved J2V8 tempDirectory to directory [" + directory + "]");
-
-		//Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
-		return StringUtils.isEmpty(directory) ? null : directory;
-	}
-
-	@Override
-	public void startRuntime() {
-		String directory = getTempDirectory();
-		v8 = V8.createV8Runtime(alias, directory); // The V8 runtime (DLL/SO files) have to be extracted somewhere, using an absolute path. Defaults to ${ibis.tmpdir}
+		v8 = V8.createV8Runtime(alias, tempDirectory);
 	}
 
 	@Override
@@ -115,7 +105,9 @@ public class J2V8 implements JavascriptEngine<V8> {
 			public Object invoke(V8Object receiver, V8Array parameters) {
 				try {
 					Message msg = Message.asMessage(parameters.get(0));
-					return sender.sendMessage(msg, session).asString();
+					try (Message message = sender.sendMessageOrThrow(msg, session)) {
+						return message.asString();
+					}
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}

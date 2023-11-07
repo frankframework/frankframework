@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:integration="http://www.springframework.org/schema/integration"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-5.2.xsd
+		http://www.springframework.org/schema/security https://www.springframework.org/schema/security/spring-security-5.8.xsd
+		"
+	>
+<!-- 	<integration:control-bus dispatcher-pool-size="25" auto-create-channels="true"/> -->
+	<integration:publish-subscribe-channel id="frank-management-bus" />
+
+	<bean name="gateway" class="nl.nn.adapterframework.management.bus.LocalGateway" scope="singleton">
+		<property name="requestChannel" ref="frank-management-bus" />
+	</bean>
+
+	<security:method-security jsr250-enabled="true" pre-post-enabled="false" proxy-target-class="true" secured-enabled="false" />
+
+	<context:property-placeholder />
+
+	<bean id="messageDispatcher" class="nl.nn.adapterframework.management.bus.MessageDispatcher">
+		<property name="packageName" value="nl.nn.adapterframework.management.bus" />
+	</bean>
+
+	<bean id="txManager" class="nl.nn.adapterframework.testutil.mock.TransactionManagerMock" />
+
+	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
+
+	<!-- We're not importing the unmanagedDeployment because we don't want to use JMS/JDBC endpoints -->
+	<!-- <import resource="springUnmanagedDeployment.xml"/> -->
+	<bean name="ibisManager" class="nl.nn.adapterframework.testutil.mock.MockIbisManager" />
+
+	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings"/>
+
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.testutil.mock.DataSourceFactoryMock" />
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.testutil.mock.MockRunnerConnectionFactoryFactory" />
+
+	<bean name="isolatedServiceCaller" class="nl.nn.adapterframework.senders.IsolatedServiceCaller" autowire="byName" scope="singleton" />
+
+	<bean id="schedulerHelper" class="nl.nn.adapterframework.scheduler.SchedulerHelper" lazy-init="true" autowire="byName" />
+	<bean id="scheduler" class="nl.nn.adapterframework.scheduler.SchedulerFactoryBean" lazy-init="true" >
+		<!-- Auto-wiring wires up bean named taskExecutor as threadpool implementation -->
+		<property name="configLocation" value="classpath:quartz.properties"/>
+		<property name="autoStartup" value="false"/>
+		<property name="schedulerName" value="TestScheduler"/>
+		<property name="waitForJobsToCompleteOnShutdown" value="true"/>
+	</bean>
+</beans>

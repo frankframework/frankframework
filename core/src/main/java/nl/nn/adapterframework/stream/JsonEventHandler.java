@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,4 +35,7 @@ public interface JsonEventHandler {
 
 	// Must be able to handle String, long, BigDecimal, boolean, Date and null
 	void primitive(Object value) throws SAXException;
+
+	// handles a string value as numeric (i.e without quotes in JSON)
+	void number(String value) throws SAXException;
 }

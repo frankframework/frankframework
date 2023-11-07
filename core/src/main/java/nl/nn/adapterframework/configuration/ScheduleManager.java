@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,14 +28,18 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
-import nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
 import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.util.RunState;
 
 /**
- * Configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
+ * Container for jobs that are scheduled for periodic execution.
  *
  * @author Niels Meijer
+ *
+ */
+/*
+ * Configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
  */
 public class ScheduleManager extends ConfigurableLifecyleBase implements ApplicationContextAware, AutoCloseable {
 
@@ -44,19 +48,19 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	private final Map<String, IJob> schedules = new LinkedHashMap<>();
 
 	@Override
-	public void configure() {
-		if(!inState(BootState.STOPPED)) {
-			log.warn("unable to configure ["+this+"] while in state ["+getState()+"]");
+	public void configure() throws ConfigurationException {
+		if(!inState(RunState.STOPPED)) {
+			log.warn("unable to configure [{}] while in state [{}]", ()->this, this::getState);
 			return;
 		}
-		updateState(BootState.STARTING);
+		updateState(RunState.STARTING);
 
 		for (IJob jobdef : getSchedulesList()) {
 			try {
 				jobdef.configure();
-				log.info("job scheduled with properties :" + jobdef.toString());
+				log.info("job scheduled with properties: {}", jobdef::toString);
 			} catch (Exception e) {
-				log.error("Could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
+				throw new ConfigurationException("could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
 			}
 		}
 	}
@@ -66,8 +70,8 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	 */
 	@Override
 	public void start() {
-		if(!inState(BootState.STARTING)) {
-			log.warn("unable to start ["+this+"] while in state ["+getState()+"]");
+		if(!inState(RunState.STARTING)) {
+			log.warn("unable to start [{}] while in state [{}]", ()->this, this::getState);
 			return;
 		}
 
@@ -75,23 +79,23 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 			if(jobdef.isConfigured()) {
 				try {
 					schedulerHelper.scheduleJob(jobdef);
-					log.info("job scheduled with properties :" + jobdef.toString());
+					log.info("job scheduled with properties: {}", jobdef::toString);
 				} catch (SchedulerException e) {
-					log.error("Could not schedule job [" + jobdef.getName() + "] cron [" + jobdef.getCronExpression() + "]", e);
+					log.error("could not schedule job [{}] cron [{}]", jobdef.getName(), jobdef.getCronExpression(), e);
 				}
 			} else {
-				log.info("Could not schedule job [" + jobdef.getName() + "] as it is not configured");
+				log.info("could not schedule job [{}] as it is not configured", jobdef::getName);
 			}
 		}
 
 		try {
 			schedulerHelper.startScheduler();
-			log.info("Scheduler started");
+			log.info("scheduler started");
 		} catch (SchedulerException e) {
-			log.error("Could not start scheduler", e);
+			log.error("could not start scheduler", e);
 		}
 
-		updateState(BootState.STARTED);
+		updateState(RunState.STARTED);
 	}
 
 	/**
@@ -99,30 +103,30 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 	 */
 	@Override
 	public void stop() {
-		if(!inState(BootState.STARTED)) {
-			log.warn("forcing ["+this+"] to stop while in state ["+getState()+"]");
+		if(!inState(RunState.STARTED)) {
+			log.warn("forcing [{}] to stop while in state [{}]", ()->this, this::getState);
 		}
-		updateState(BootState.STOPPING);
+		updateState(RunState.STOPPING);
 
-		log.info("stopping all adapters in AdapterManager ["+this+"]");
+		log.info("stopping all jobs in ScheduleManager [{}]", ()->this);
 		List<IJob> scheduledJobs = getSchedulesList();
 		Collections.reverse(scheduledJobs);
 		for (IJob jobDef : scheduledJobs) {
-			log.info("removing trigger for JobDef [" + jobDef.getName() + "]");
+			log.info("removing trigger for JobDef [{}]", jobDef::getName);
 			try {
 				getSchedulerHelper().deleteTrigger(jobDef);
 			}
 			catch (SchedulerException se) {
-				log.error("unable to remove scheduled job ["+jobDef+"]", se);
+				log.error("unable to remove scheduled job [{}]", jobDef, se);
 			}
 		}
 
-		updateState(BootState.STOPPED);
+		updateState(RunState.STOPPED);
 	}
 
 	@Override
 	public void close() throws Exception {
-		if(!inState(BootState.STOPPED)) {
+		if(!inState(RunState.STOPPED)) {
 			stop(); //Call this just in case...
 		}
 
@@ -132,12 +136,16 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 		}
 	}
 
+	/**
+	 * Job that is executed periodically. The time of execution can be configured within the job
+	 * or from outside the configuration through the Frank!Console.
+	 */
 	public void registerScheduledJob(IJob job) {
-		if(!inState(BootState.STOPPED)) {
-			log.warn("cannot add JobDefinition, manager in state ["+getState()+"]");
+		if(!inState(RunState.STOPPED)) {
+			log.warn("cannot add JobDefinition, manager in state [{}]", this::getState);
 		}
 
-		if(log.isDebugEnabled()) log.debug("registering JobDef ["+job+"] with ScheduleManager ["+this+"]");
+		log.debug("registering JobDef [{}] with ScheduleManager [{}]", ()->job, ()->this);
 		if(job.getName() == null) {
 			throw new IllegalStateException("JobDef has no name");
 		}
@@ -152,7 +160,7 @@ public class ScheduleManager extends ConfigurableLifecyleBase implements Applica
 		String name = job.getName();
 
 		schedules.remove(name);
-		if(log.isDebugEnabled()) log.debug("unregistered JobDef ["+name+"] from ScheduleManager ["+this+"]");
+		log.debug("unregistered JobDef [{}] from ScheduleManager [{}]", ()->name, ()->this);
 	}
 
 	public final Map<String, IJob> getSchedules() {

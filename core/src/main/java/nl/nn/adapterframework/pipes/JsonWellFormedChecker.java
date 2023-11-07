@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018, 2020 Nationale-Nederlanden, 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,14 +17,14 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import jakarta.json.Json;
+import jakarta.json.JsonException;
+import jakarta.json.JsonReader;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -34,31 +34,23 @@ import nl.nn.adapterframework.stream.Message;
  * 
  * @author  Tom van der Heijden
  */
+@ElementType(ElementTypes.VALIDATOR)
 public class JsonWellFormedChecker extends FixedForwardPipe {
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		PipeForward forward = getSuccessForward();
+		if(Message.isEmpty(message)) {
+			return new PipeRunResult(findForward("failure"), message);
+		}
 
-		String input;
-		try {
-			input = message.asString();
+		try(JsonReader jr = Json.createReader(message.asReader())) {
+			jr.read();
+		} catch (JsonException e) {
+			return new PipeRunResult(findForward("failure"), message);
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
-		if (input.isEmpty()) {
-			forward = findForward("failure");
-		} else {
-			try {
-				new JSONObject(input);
-			} catch (JSONException ex) {
-				try {
-					new JSONArray(input);
-				} catch (JSONException ex1) {
-					forward = findForward("failure");
-				}
-			}
-		}
-		return new PipeRunResult(forward, message);
+
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 }

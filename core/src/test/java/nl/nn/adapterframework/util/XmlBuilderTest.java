@@ -1,25 +1,22 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
 import org.custommonkey.xmlunit.XMLUnit;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.unboundid.ldap.sdk.LDAPException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.MatchUtils;
 
 public class XmlBuilderTest {
-	
 	private final String UNICODE_CHARACTERS = " aâΔع你好ಡತ";
 	//private final String JAVA_ESCAPED_UNICODE_CHARACTERS = "\u0010 a\u00E2\u0394\u0639\u4F60\u597D\u0CA1\u0CA4";
 	private final String XML_RENDERED_UNICODE_CHARACTERS = "¿#16; aâΔع你好ಡತ";
 
-	@Before
-	public void initXMLUnit() throws LDAPException, IOException {
+	@BeforeEach
+	public void initXMLUnit() throws IOException {
 		XMLUnit.setIgnoreWhitespace(true);
 		XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
 	}
@@ -150,13 +147,13 @@ public class XmlBuilderTest {
 
 	@Test
 	public void testAddEmbeddedCdata1() {
-		
+
 		String value = "<xml>&amp; <![CDATA[cdatastring < > & <tag/> ]]>rest</xml>";
-		
+
 		XmlBuilder root = new XmlBuilder("root");
 		root.setValue(value);
-		
-		String expected = "<root>"+XmlUtils.encodeChars(value)+"</root>";
+
+		String expected = "<root>" + XmlEncodingUtils.encodeChars(value) + "</root>";
 		MatchUtils.assertXmlEquals(expected, root.toXML(false));
 	}
 
@@ -164,27 +161,26 @@ public class XmlBuilderTest {
 	public void testAddEmbeddedCdata2() {
 		String CDATA_START="<![CDATA[";
 		String CDATA_END="]]>";
-		String CDATA_END_REPLACEMENT=CDATA_END.substring(0,1)+CDATA_END+CDATA_START+CDATA_END.substring(1);
-		
-		String value = "<xml>&amp; "+CDATA_START+"cdatastring < > & <tag/> "+CDATA_END+"rest</xml>";
-		
+		String CDATA_END_REPLACEMENT = CDATA_END.substring(0, 1) + CDATA_END + CDATA_START + CDATA_END.substring(1);
+
+		String value = "<xml>&amp; " + CDATA_START + "cdatastring < > & <tag/> " + CDATA_END + "rest</xml>";
+
 		XmlBuilder root = new XmlBuilder("root");
 		root.setCdataValue(value);
-		
-		String expected = "<root>"+CDATA_START+value.replace(CDATA_END, CDATA_END_REPLACEMENT)+CDATA_END+"</root>";
+
+		String expected = "<root>" + CDATA_START + value.replace(CDATA_END, CDATA_END_REPLACEMENT) + CDATA_END + "</root>";
 		MatchUtils.assertXmlEquals(expected, root.toXML(false));
 	}
-	
-	
+
 	@Test
 	public void testControlCharacters1() {
 		XmlBuilder root = new XmlBuilder("root");
 		XmlBuilder subElement = new XmlBuilder("element");
 		subElement.setValue("control char 1a [\u001a]");
 		root.addSubElement(subElement);
-		
+
 		String expected = "<root><element>control char 1a [¿#26;]</element></root>";
-		
+
 		MatchUtils.assertXmlEquals(expected, root.toXML());
 	}
 
@@ -194,31 +190,39 @@ public class XmlBuilderTest {
 		XmlBuilder subElement = new XmlBuilder("element");
 		subElement.setValue("control char 1a [¿#26;]");
 		root.addSubElement(subElement);
-		
+
 		String expected = "<root><element>control char 1a [¿#26;]</element></root>";
-		
+
 		MatchUtils.assertXmlEquals(expected, root.toXML());
 	}
-	
+
 	@Test
 	public void testPrettyPrint() {
 		XmlBuilder root = new XmlBuilder("root");
 		root.addSubElement("elementName", "elementValue");
-		String expected="<root>\n\t<elementName>elementValue</elementName>\n</root>";
+		String expected = "<root>\n\t<elementName>elementValue</elementName>\n</root>";
 		String actual = root.toXML().trim().replaceAll("  ", "\t").replaceAll(System.lineSeparator(), "\n");
 		assertEquals(expected, actual);
 	}
-	
+
 	@Test
 	public void testUnicodeMessage() {
 		XmlBuilder root = new XmlBuilder("root");
 		XmlBuilder subElement = new XmlBuilder("element");
-		subElement.setValue("Unicode characters ["+UNICODE_CHARACTERS+"]");
+		subElement.setValue("Unicode characters [" + UNICODE_CHARACTERS + "]");
 		root.addSubElement(subElement);
-		
-		String expected = "<root><element>Unicode characters ["+XML_RENDERED_UNICODE_CHARACTERS+"]</element></root>";
-		
+
+		String expected = "<root><element>Unicode characters [" + XML_RENDERED_UNICODE_CHARACTERS + "]</element></root>";
+
 		MatchUtils.assertXmlEquals(expected, root.toXML());
 	}
 
+	@Test
+	public void testAttributeNormalization() {
+		XmlBuilder root = new XmlBuilder("root");
+		root.addAttribute("attr1", "a b  c\td\re\nf\r\n\t\ng");
+		String expected = "<root attr1=\"a b  c d e f   g\" />";
+
+		MatchUtils.assertXmlEquals(expected, root.toXML());
+	}
 }

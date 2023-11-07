@@ -31,7 +31,8 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -41,9 +42,10 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Pipe that hashes the input message.
- * 
+ *
  * @author	Niels Meijer
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class HashPipe extends FixedForwardPipe {
 
 	private @Getter String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
@@ -79,14 +81,14 @@ public class HashPipe extends FixedForwardPipe {
 			}
 		}
 		catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "exception extracting authAlias", e);
+			throw new PipeRunException(this, "exception extracting authAlias", e);
 		}
 
 		CredentialFactory accessTokenCf = new CredentialFactory(authAlias, "", secret);
 		String cfSecret = accessTokenCf.getPassword();
 
 		if(cfSecret == null || cfSecret.isEmpty())
-			throw new PipeRunException(this, getLogPrefix(session) + "empty secret, unable to hash");
+			throw new PipeRunException(this, "empty secret, unable to hash");
 
 		try {
 			Mac mac = Mac.getInstance(getAlgorithm().name());
@@ -111,18 +113,18 @@ public class HashPipe extends FixedForwardPipe {
 				case Hex:
 					hash = Hex.encodeHexString(mac.doFinal());
 					break;
-	
+
 				default: // Should never happen, as a ConfigurationException is thrown during configuration if another method is tried
-					throw new PipeRunException(this, getLogPrefix(session) + "error determining hashEncoding");
+					throw new PipeRunException(this, "error determining hashEncoding");
 			}
 
 			return new PipeRunResult(getSuccessForward(), hash);
 		}
 		catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "error reading input", e);
+			throw new PipeRunException(this, "error reading input", e);
 		}
 		catch (IllegalStateException | InvalidKeyException | NoSuchAlgorithmException e) {
-			throw new PipeRunException(this, getLogPrefix(session) + "error creating hash", e);
+			throw new PipeRunException(this, "error creating hash", e);
 		}
 	}
 
@@ -139,7 +141,10 @@ public class HashPipe extends FixedForwardPipe {
 	public void setEncoding(String encoding) {
 		setCharset(encoding);
 	}
-	@IbisDoc({"2", "Character set to use for converting the secret from String to bytes", "UTF-8"})
+	/**
+	 * Character set to use for converting the secret from String to bytes
+	 * @ff.default UTF-8
+	 */
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
@@ -157,12 +162,12 @@ public class HashPipe extends FixedForwardPipe {
 		setHashEncoding(hashEncoding);
 	}
 
-	@IbisDoc({"4", "The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter", ""})
+	/** The secret to hash with. Only used if no parameter secret is configured. The secret is only used when there is no authAlias specified, by attribute or parameter */
 	public void setSecret(String secret) {
 		this.secret = secret;
 	}
 
-	@IbisDoc({"5","authAlias to retrieve the secret from (password field). Only used if no parameter authAlias is configured", ""})
+	/** authAlias to retrieve the secret from (password field). Only used if no parameter authAlias is configured */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}

@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.util;
 
-
 /**
  * A semaphore is a flag used to check whether a resource is currently being 
  * used by another thread or process and wait for the other process to release it.
@@ -29,34 +28,35 @@ package nl.nn.adapterframework.util;
  * A monitor allows only one thread to lock an object at once. A semaphore allows N processes. </p> 
  * <p>The process of grabbing a semaphore for semi-exclusive use is called downing the semaphore because they are 
  * implemented with a countdown integer that decrements for each lock and increments for each unlock.
- * If a semaphore is fully occupied, new threads wanting to use it will wait until some thread releases its l
- * ock by upping the semaphore. For a semaphore to work, the check for full, and the decrement must be done 
+ * If a semaphore is fully occupied, new threads wanting to use it will wait until some thread releases its 
+ * lock by upping the semaphore. For a semaphore to work, the check for full, and the decrement must be done 
  * all in one atomic uninterruptible instruction. This is done by the {@link #release()} method.</p>
  *
- * @author  Gerrit van Brakel 
+ * @author Gerrit van Brakel
  */
 public class Semaphore {
-    private int counter;
-    
-    public Semaphore() {
-        this(0);
-    }
-    public Semaphore(int i) {
-        if (i < 0) throw new IllegalArgumentException(i + " < 0");
-        counter = i;
-    }
-    /**
-     * Decrements internal counter, blocking if the counter is already
-     * zero or less.
-     *
-     * @exception InterruptedException passed from this.wait().
-     */
-    public synchronized void acquire() throws InterruptedException {
-        while (counter <= 0) {
-            this.wait();
-        }
-        counter--;
-    }
+	private int counter;
+
+	public Semaphore() {
+		this(0);
+	}
+
+	public Semaphore(int i) {
+		if(i < 0)
+			throw new IllegalArgumentException(i + " < 0");
+		counter = i;
+	}
+
+	/**
+	 * Decrements internal counter, blocking if the counter is already zero or less.
+	 * @exception InterruptedException passed from this.wait().
+	 */
+	public synchronized void acquire() throws InterruptedException {
+		while(counter <= 0) {
+			this.wait();
+		}
+		counter--;
+	}
 
 	/**
 	 * non blocking decrements internal counter.
@@ -82,18 +82,17 @@ public class Semaphore {
 //		counter--;
 //	}
 
-    /**
-     * Increments internal counter, possibly awakening the thread
-     * wait()ing in acquire()
-     */
-    public synchronized void release() {
-        counter++;
-        if (counter == 1) {
-            this.notify();
-        }
-    }
-    
-    public synchronized boolean isReleased() {
-    	return counter>0;
-    }
+	/**
+	 * Increments internal counter, possibly awakening the thread wait()ing in acquire()
+	 */
+	public synchronized void release() {
+		counter++;
+		if(counter == 1) {
+			this.notify();
+		}
+	}
+
+	public synchronized boolean isReleased() {
+		return counter > 0;
+	}
 }

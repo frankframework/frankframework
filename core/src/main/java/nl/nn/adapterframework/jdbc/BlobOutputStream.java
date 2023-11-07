@@ -38,7 +38,7 @@ public class BlobOutputStream extends FilterOutputStream {
 	private ResultSet resultSet;
 	private XmlBuilder warnings;
 	private boolean open;
-	
+
 	public BlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, int blobColumn, OutputStream blobOutputStream, ResultSet resultSet, XmlBuilder warnings) {
 		super(blobOutputStream);
 		this.dbmsSupport=dbmsSupport;

@@ -6,11 +6,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 
-import javax.json.Json;
-import javax.json.JsonStructure;
-
 import org.junit.Test;
 
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;

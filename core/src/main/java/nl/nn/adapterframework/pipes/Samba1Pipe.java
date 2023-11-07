@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.pipes;
 
 import jcifs.smb.SmbFile;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 
@@ -26,32 +25,35 @@ public class Samba1Pipe extends FileSystemPipe<SmbFile, Samba1FileSystem> {
 		setFileSystem(new Samba1FileSystem());
 	}
 
-	@IbisDoc({ "1", "Shared folder name in the samba server", "" })
+	/** Shared folder name in the samba server */
 	public void setShare(String share) {
 		getFileSystem().setShare(share);
 	}
 
-	@IbisDoc({"2", "the smb share username", "" })
+	/** the smb share username */
 	public void setUsername(String username) {
 		getFileSystem().setUsername(username);
 	}
 
-	@IbisDoc({ "3", "the smb share password", "" })
+	/** the smb share password */
 	public void setPassword(String password) {
 		getFileSystem().setPassword(password);
 	}
 
-	@IbisDoc({ "4", "alias used to obtain credentials for the smb share", "" })
+	/** alias used to obtain credentials for the smb share */
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@IbisDoc({ "5", "in case the user account is bound to a domain", "" })
+	/** in case the user account is bound to a domain */
 	public void setDomain(String domain) {
 		getFileSystem().setDomain(domain);
 	}
 
-	@IbisDoc({ "7", "controls whether hidden files are seen or not", "false" })
+	/**
+	 * controls whether hidden files are seen or not
+	 * @ff.default false
+	 */
 	public void setForce(boolean force) {
 		getFileSystem().setForce(force);
 	}

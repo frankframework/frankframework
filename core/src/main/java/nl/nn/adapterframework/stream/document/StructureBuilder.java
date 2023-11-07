@@ -21,7 +21,7 @@ public abstract class StructureBuilder {
 
 	protected INodeBuilder field;
 	INodeBuilder parent; // package private
-	
+
 	public void close() throws SAXException {
 		try {
 			if (field!=null) {
@@ -42,13 +42,13 @@ public abstract class StructureBuilder {
 	public static ObjectBuilder asObjectBuilder(IDocumentBuilder documentBuilder) throws SAXException {
 		ObjectBuilder result = documentBuilder.startObject();
 		result.parent=documentBuilder;
-		return result; 
+		return result;
 	}
 
 	public static ArrayBuilder asArrayBuilder(IDocumentBuilder documentBuilder, String elementName) throws SAXException {
 		ArrayBuilder result = documentBuilder.startArray(elementName);
 		result.parent=documentBuilder;
-		return result; 
+		return result;
 	}
 
 }

@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.fxf;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.WsdlXmlValidator;
 
 /**
@@ -32,13 +31,17 @@ import nl.nn.adapterframework.pipes.WsdlXmlValidator;
  * @author Jaco de Groot
  */
 public class FxfXmlValidator extends WsdlXmlValidator {
-	private @Getter String direction = "send";
+	private Direction direction = Direction.SEND;
 	private @Getter String fxfVersion = "3.1";
+
+	public enum Direction {
+		SEND,RECEIVE
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		setThrowException(true);
-		if (getDirection().equals("receive")) {
+		if(direction == Direction.RECEIVE) {
 			setWsdl("xml/wsdl/OnCompletedTransferNotify_FxF3_1.1.4_abstract.wsdl");
 			setSoapBody("OnCompletedTransferNotify_Action");
 		} else {
@@ -56,12 +59,14 @@ public class FxfXmlValidator extends WsdlXmlValidator {
 		}
 	}
 
-	@IbisDoc({"1", "either <code>send</code> or <code>receive</code>", "send"})
-	public void setDirection(String direction) {
+	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}
 
-	@IbisDoc({"2", "either 3.1 or 3.2", "3.1"})
+	/**
+	 * either 3.1 or 3.2
+	 * @ff.default 3.1
+	 */
 	public void setFxfVersion(String fxfVersion) {
 		this.fxfVersion = fxfVersion;
 	}

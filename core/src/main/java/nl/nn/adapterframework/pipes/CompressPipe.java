@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.StringTokenizer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -38,21 +39,23 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Pipe to zip or unzip a message or file.
- * 
+ *
  * @author John Dekker
  * @author Jaco de Groot (***@dynasol.nl)
  */
 public class CompressPipe extends StreamingPipe {
+
+	private static final int CHUNK_SIZE = 16384;
 
 	private @Getter boolean messageIsContent;
 	private @Getter boolean resultIsContent;
@@ -64,10 +67,10 @@ public class CompressPipe extends StreamingPipe {
 	private @Getter FileFormat fileFormat;
 
 	public enum FileFormat {
-		/** Gzip format; also used when direction is compress and resultIsContent=<code>true</code> 
+		/** Gzip format; also used when direction is compress and resultIsContent=<code>true</code>
 		 * or when direction is decompress and messageIsContent=<code>true</code> */
 		GZ,
-		/** Zip format; also used when direction is compress and resultIsContent=<code>false</code> 
+		/** Zip format; also used when direction is compress and resultIsContent=<code>false</code>
 		 * or when direction is decompress and messageIsContent=<code>false</code> */
 		ZIP
 	}
@@ -93,10 +96,9 @@ public class CompressPipe extends StreamingPipe {
 				in = message.asInputStream();
 			} else {
 				filename = message.asString();
-				if (compress) {
-					zipMultipleFiles = StringUtils.contains(filename, ";");
-				} else {
-					in = new FileInputStream(filename);
+				zipMultipleFiles = StringUtils.contains(filename, ";");
+				if (!compress || !zipMultipleFiles) {
+					in = Files.newInputStream(Paths.get(filename));
 				}
 			}
 
@@ -109,16 +111,16 @@ public class CompressPipe extends StreamingPipe {
 				}
 			}
 
-			String outFilename = null;
+			String outFilename;
 			if (messageIsContent) {
 				outFilename = FileUtils.getFilename(getParameterList(), session, (File)null, filenamePattern);
 			} else {
-				outFilename = FileUtils.getFilename(getParameterList(), session, new File(filename), filenamePattern);
+				outFilename = FileUtils.getFilename(getParameterList(), session, new File(Objects.requireNonNull(filename)), filenamePattern);
 			}
 
 			File outFile = new File(outputDirectory, outFilename);
 			result = outFile.getAbsolutePath();
-			try(OutputStream stream = new FileOutputStream(outFile)) {
+			try(OutputStream stream = Files.newOutputStream(outFile.toPath())) {
 				processStream(stream, in, zipMultipleFiles, filename, session);
 			}
 
@@ -126,60 +128,73 @@ public class CompressPipe extends StreamingPipe {
 		} catch(Exception e) {
 			PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
 			if (exceptionForward!=null) {
-				log.warn(getLogPrefix(session) + "exception occured, forwarded to ["+exceptionForward.getPath()+"]", e);
-				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(getLogPrefix(session),e,this,message,session.getMessageId(),0));
+				log.warn("exception occurred, forwarded to ["+exceptionForward.getPath()+"]", e);
+				return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(null,e,this,message,session.getMessageId(),0));
 			}
-			throw new PipeRunException(this, getLogPrefix(session) + "Unexpected exception during compression", e);
+			throw new PipeRunException(this, "Unexpected exception during compression", e);
 		}
 	}
 
-	private void processStream(OutputStream out, InputStream in, boolean zipMultipleFiles, String filename, PipeLineSession session) throws Exception {
+	private void processStream(final OutputStream out, final InputStream in, boolean zipMultipleFiles, String filename, PipeLineSession session) throws Exception {
 		if (zipMultipleFiles) {
-			try (ZipOutputStream zipper = new ZipOutputStream(out)) {
-				StringTokenizer st = new StringTokenizer(filename, ";");
-				while (st.hasMoreElements()) {
-					String fn = st.nextToken();
-					String zipEntryName = getZipEntryName(fn, session);
-					zipper.putNextEntry(new ZipEntry(zipEntryName));
-					in = new FileInputStream(fn);
-					try {
-						StreamUtil.copyStream(in, zipper, 4096);
-					} finally {
-						zipper.closeEntry();
-					}
-				}
-			}
+			zipMultipleFiles(out, filename, session);
 		} else {
 			if (compress) {
-				if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && resultIsContent) {
-					out = new GZIPOutputStream(out);
-				} else {
-					ZipOutputStream zipper = new ZipOutputStream(out); 
-					String zipEntryName = getZipEntryName(filename, session);
-					zipper.putNextEntry(new ZipEntry(zipEntryName));
-					out = zipper;
-				}
+				compressSingleFile(out, in, filename, session);
 			} else {
-				if (getFileFormat() == FileFormat.GZ || getFileFormat() == null && messageIsContent) {
-					in = new GZIPInputStream(in);
+				decompressSingleFile(out, in, filename, session);
+			}
+		}
+	}
+
+	private void decompressSingleFile(OutputStream out, InputStream in, String filename, PipeLineSession session) throws IOException, ParameterException {
+		if ((getFileFormat() == FileFormat.GZ) || ((getFileFormat() == null) && messageIsContent)) {
+			try (InputStream copyFrom = new GZIPInputStream(in); OutputStream copyTo = out;) {
+				StreamUtil.copyStream(copyFrom, copyTo, CHUNK_SIZE);
+			}
+		} else {
+			try (ZipInputStream zipper = new ZipInputStream(in); OutputStream copyTo = out;) {
+				String zipEntryName = getZipEntryName(filename, session);
+				if (zipEntryName.isEmpty()) {
+					// Use first entry found
+					zipper.getNextEntry();
 				} else {
-					ZipInputStream zipper = new ZipInputStream(in);
-					String zipEntryName = getZipEntryName(filename, session);
-					if (zipEntryName.equals("")) {
-						// Use first entry found
-						zipper.getNextEntry();
-					} else {
-						// Position the stream at the specified entry
-						ZipEntry zipEntry = zipper.getNextEntry();
-						while (zipEntry != null && !zipEntry.getName().equals(zipEntryName)) {
-							zipEntry = zipper.getNextEntry();
-						}
+					// Position the stream at the specified entry
+					ZipEntry zipEntry = zipper.getNextEntry();
+					while (zipEntry != null && !zipEntry.getName().equals(zipEntryName)) {
+						zipEntry = zipper.getNextEntry();
 					}
-					in = zipper;
+				}
+				StreamUtil.copyStream(zipper, copyTo, CHUNK_SIZE);
+			}
+		}
+	}
+
+	private void compressSingleFile(OutputStream out, InputStream in, String filename, PipeLineSession session) throws IOException, ParameterException {
+		if ((getFileFormat() == FileFormat.GZ) || ((getFileFormat() == null) && resultIsContent)) {
+			try (OutputStream copyTo = new GZIPOutputStream(out); InputStream copyFrom = in;) {
+				StreamUtil.copyStream(copyFrom, copyTo, CHUNK_SIZE);
+			}
+		} else {
+			try (ZipOutputStream zipper = new ZipOutputStream(out); InputStream copyFrom = in;) {
+				String zipEntryName = getZipEntryName(filename, session);
+				zipper.putNextEntry(new ZipEntry(zipEntryName));
+				StreamUtil.copyStream(copyFrom, zipper, CHUNK_SIZE);
+			}
+		}
+	}
+
+	private void zipMultipleFiles(OutputStream out, String filename, PipeLineSession session) throws IOException, ParameterException {
+		try (ZipOutputStream zipper = new ZipOutputStream(out)) {
+			for (String s : StringUtil.split(filename, ";")) {
+				String zipEntryName = getZipEntryName(s, session);
+				zipper.putNextEntry(new ZipEntry(zipEntryName));
+				try (InputStream fin = Files.newInputStream(Paths.get(s))) {
+					StreamUtil.copyStream(fin, zipper, CHUNK_SIZE);
+				} finally {
+					zipper.closeEntry();
 				}
 			}
-
-			StreamUtil.copyStream(in, out, 4096);
 		}
 	}
 
@@ -195,39 +210,51 @@ public class CompressPipe extends StreamingPipe {
 		return FileUtils.getFilename(getParameterList(), session, new File(input), zipEntryPattern);
 	}
 
-	@IbisDoc({"if <code>true</code> the pipe compresses, otherwise it decompress", "false"})
+	/**
+	 * if <code>true</code> the pipe compresses, otherwise it decompress
+	 * @ff.default false
+	 */
 	public void setCompress(boolean b) {
 		compress = b;
 	}
 
-	@IbisDoc({"required if result is a file, the pattern for the result filename", ""})
+	/** required if result is a file, the pattern for the result filename. Can be set with variables e.g. {file}.{ext}.zip in this example the {file} and {ext} variables are resolved with sessionKeys with the same name */
 	public void setFilenamePattern(String string) {
 		filenamePattern = string;
 	}
 
-	@IbisDoc({"flag indicates whether the message is the content or the path to a file with the contents. for multiple files use ';' as delimiter", "false"})
+	/**
+	 * flag indicates whether the message is the content or the path to a file with the contents. for multiple files use ';' as delimiter
+	 * @ff.default false
+	 */
 	public void setMessageIsContent(boolean b) {
 		messageIsContent = b;
 	}
 
-	@IbisDoc({"required if result is a file, the directory in which to store the result file", ""})
+	/** required if result is a file, the directory in which to store the result file */
 	public void setOutputDirectory(String string) {
 		outputDirectory = string;
 	}
 
-	@IbisDoc({"flag indicates whether the result must be written to the message or to a file (filename = message)", "false"})
+	/**
+	 * flag indicates whether the result must be written to the message or to a file (filename = message)
+	 * @ff.default false
+	 */
 	public void setResultIsContent(boolean b) {
 		resultIsContent = b;
 	}
 
-	@IbisDoc({"the pattern for the zipentry name in case a zipfile is read or written", ""})
+	/** the pattern for the zipentry name in case a zipfile is read or written */
 	public void setZipEntryPattern(String string) {
 		zipEntryPattern = string;
 	}
 
 	@Deprecated
 	@ConfigurationWarning("It should not be necessary to specify convert2String. If you encounter a situation where it is, please report to Frank!Framework Core Team")
-	@IbisDoc({"if <code>true</code> result is returned as character data, otherwise as binary data", "false"})
+	/**
+	 * if <code>true</code> result is returned as character data, otherwise as binary data
+	 * @ff.default false
+	 */
 	public void setConvert2String(boolean b) {
 		convert2String = b;
 	}

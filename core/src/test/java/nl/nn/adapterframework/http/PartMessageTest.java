@@ -1,23 +1,23 @@
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeBodyPart;
+import java.nio.file.Path;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.util.MimeType;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeBodyPart;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -103,13 +103,11 @@ public class PartMessageTest {
 	}
 
 	@Test
-	public void testSerialize() throws Exception {
-		TemporaryFolder folder = new TemporaryFolder();
-		folder.create();
-		File source = folder.newFile();
+	public void testSerialize(@TempDir Path folder) throws Exception {
+		File source = folder.resolve("testSerialize").toFile();
 		MessageTest.writeContentsToFile(source, testString);
 
-		TestPart testPart = new TestPart(source.toURL());
+		TestPart testPart = new TestPart(source.toURI().toURL());
 		Message in = new PartMessage(testPart, "UTF-8");
 
 		//assertEquals(testStringLength, in.size());
@@ -133,9 +131,9 @@ public class PartMessageTest {
 			Message out = serializationTester.deserialize(wire);
 
 			assertEquals(PartMessage.class, out.getClass());
-			assertTrue(label, out.isBinary());
-			assertEquals(label, "UTF-8", out.getCharset());
-			assertEquals(label, testString,out.asString());
+			assertTrue(out.isBinary(), label);
+			assertEquals("UTF-8", out.getCharset(), label);
+			assertEquals(testString,out.asString(), label);
 			assertEquals(testStringLength, out.size());
 		}
 	}

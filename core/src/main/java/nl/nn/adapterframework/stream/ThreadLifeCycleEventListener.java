@@ -22,5 +22,5 @@ public interface ThreadLifeCycleEventListener<T> {
 	public <O> O threadCreated(T ref, O request);
 	public <O> O threadEnded(T ref, O result);
 	public Throwable threadAborted(T ref, Throwable t);
-	
+
 }

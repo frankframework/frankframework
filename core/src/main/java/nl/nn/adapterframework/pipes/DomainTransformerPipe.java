@@ -29,7 +29,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.stream.Message;
@@ -51,7 +52,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Peter Leeuwenburgh
  * @since   4.9
  */
-
+@ElementType(ElementTypes.TRANSLATOR)
 public class DomainTransformerPipe extends FixedForwardPipe {
 
 	private static final String DT_START = "%![DT{";
@@ -130,7 +131,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 				int endPos =
 					invoerString.indexOf(DT_END, startPos + DT_START.length());
 				if (endPos == -1 || endPos > nextStartPos) {
-					log.warn(getLogPrefix(session) + "Found a start delimiter without an end delimiter at position [" + startPos + "] in ["+ invoerString+ "]");
+					log.warn("Found a start delimiter without an end delimiter at position [" + startPos + "] in ["+ invoerString+ "]");
 					builder.append(invoerChars, startPos, nextStartPos - startPos);
 					copyFrom = nextStartPos;
 				} else {
@@ -138,7 +139,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 					StringTokenizer st = new StringTokenizer(invoerSubstring, DT_SEPARATOR);
 					int aantalTokens = st.countTokens();
 					if (aantalTokens < 2 || aantalTokens > 3) {
-						log.warn(getLogPrefix(session)	+ "Only 2 or 3 tokens are allowed in [" + invoerSubstring + "]");
+						log.warn("Only 2 or 3 tokens are allowed in [" + invoerSubstring + "]");
 						builder.append(invoerChars, startPos, endPos - startPos + DT_END.length());
 						copyFrom = endPos + DT_END.length();
 					} else {
@@ -150,7 +151,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 						}
 						if (!type.equals(TYPE_STRING)
 							&& !type.equals(TYPE_NUMBER)) {
-							log.warn(getLogPrefix(session) + "Only types ["+ TYPE_STRING+ ","+ TYPE_NUMBER+ "] are allowed in ["+ invoerSubstring+ "]");
+							log.warn("Only types ["+ TYPE_STRING+ ","+ TYPE_NUMBER+ "] are allowed in ["+ invoerSubstring+ "]");
 							builder.append(invoerChars, startPos, endPos - startPos + DT_END.length());
 							copyFrom = endPos + DT_END.length();
 						} else {
@@ -168,7 +169,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 			builder.append(invoerChars, copyFrom, invoerChars.length - copyFrom);
 
 		} catch (Throwable t) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming domain", t);
+			throw new PipeRunException(this, " Exception on transforming domain", t);
 		}
 
 		return new PipeRunResult(getSuccessForward(), builder.toString());
@@ -196,7 +197,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		try {
 			qs.open();
 		} catch (Throwable t) {
-			PipeStartException pse = new PipeStartException(getLogPrefix(null) + "could not start", t);
+			PipeStartException pse = new PipeStartException("could not start", t);
 			pse.setPipeNameInError(getName());
 			throw pse;
 		}
@@ -204,7 +205,6 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 
 	@Override
 	public void stop() {
-		log.info(getLogPrefix(null) + "is closing");
 		qs.close();
 	}
 
@@ -217,22 +217,34 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		this.datasourceName = datasourceName;
 	}
 
-	@IbisDoc({"the name of the table that contains the mapping", "mapping"})
+	/**
+	 * the name of the table that contains the mapping
+	 * @ff.default mapping
+	 */
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
 	}
 
-	@IbisDoc({"the name of the column labels are stored in", "label"})
+	/**
+	 * the name of the column labels are stored in
+	 * @ff.default label
+	 */
 	public void setLabelField(String labelField) {
 		this.labelField = labelField;
 	}
 
-	@IbisDoc({"the name of the column source values are stored in", "valuein"})
+	/**
+	 * the name of the column source values are stored in
+	 * @ff.default valuein
+	 */
 	public void setValueInField(String valueInField) {
 		this.valueInField = valueInField;
 	}
 
-	@IbisDoc({"the name of the column destination values are stored in", "valueout"})
+	/**
+	 * the name of the column destination values are stored in
+	 * @ff.default valueout
+	 */
 	public void setValueOutField(String valueOutField) {
 		this.valueOutField = valueOutField;
 	}

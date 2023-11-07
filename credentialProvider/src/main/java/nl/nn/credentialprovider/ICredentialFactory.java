@@ -16,6 +16,7 @@
 package nl.nn.credentialprovider;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 public interface ICredentialFactory {
 
@@ -25,11 +26,11 @@ public interface ICredentialFactory {
 	 */
 	default void initialize() throws Exception {
 		// implementations can do their initialization, and throw an exception if they cannot.
-	};
+	}
 
 	public boolean hasCredentials(String alias);
 
-	public ICredentials getCredentials(String alias, String defaultUsername, String defaultPassword);
+	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier);
 
 	/**
 	 * return a list of all configured aliases, or null if such a list cannot be provided.

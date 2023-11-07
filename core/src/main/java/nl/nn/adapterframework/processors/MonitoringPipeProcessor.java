@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Jaco de Groot
  */
 public class MonitoringPipeProcessor extends PipeProcessorBase {
-	private Logger durationLog = LogUtil.getLogger("LongDurationMessages");
+	private final Logger durationLog = LogUtil.getLogger("LongDurationMessages");
 
 	@Override
 	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
@@ -50,21 +50,21 @@ public class MonitoringPipeProcessor extends PipeProcessorBase {
 		long pipeStartTime= System.currentTimeMillis();
 
 		if (log.isDebugEnabled()){  // for performance reasons
-			StringBuffer sb=new StringBuffer();
+			StringBuilder sb=new StringBuilder();
 			String ownerName=pipeLine.getOwner()==null?"<null>":pipeLine.getOwner().getName();
 			String pipeName=pipe==null?"<null>":pipe.getName();
 			String messageId = pipeLineSession==null?null:pipeLineSession.getMessageId();
-			sb.append("Pipeline of adapter ["+ownerName+"] messageId ["+messageId+"] is about to call pipe ["+ pipeName+"]");
+			sb.append("Pipeline of adapter [").append(ownerName).append("] messageId [").append(messageId).append("] is about to call pipe [").append(pipeName).append("]");
 
 			boolean lir = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", false);
 			if (pipe instanceof AbstractPipe) {
 				AbstractPipe ap = (AbstractPipe) pipe;
 				if (StringUtils.isNotEmpty(ap.getLogIntermediaryResults())) {
-					lir = Boolean.valueOf(ap.getLogIntermediaryResults());
+					lir = Boolean.parseBoolean(ap.getLogIntermediaryResults());
 				}
 			}
 			if (lir) {
-				sb.append(" current result "+ (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" )+" ");
+				sb.append(" current result ").append(message == null ? "<null>" : "(" + message.getClass().getSimpleName() + ") [" + message + "]").append(" ");
 			}
 
 			log.debug(sb.toString());

@@ -18,8 +18,8 @@ package nl.nn.adapterframework.http.cxf;
 import javax.xml.ws.BindingType;
 import javax.xml.ws.ServiceMode;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.stream.Message;
 
@@ -43,8 +43,8 @@ public class MessageProvider extends SOAPProviderBase {
 	}
 
 	@Override
-	Message processRequest(String correlationId, Message message, PipeLineSession pipelineSession) throws ListenerException {
-		return listener.processRequest(correlationId, message, pipelineSession);
+	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
+		return listener.processRequest(message, pipelineSession);
 	}
 
 	@Override

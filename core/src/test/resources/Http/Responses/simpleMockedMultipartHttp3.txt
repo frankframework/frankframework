@@ -1,5 +1,6 @@
 POST http://127.0.0.1/ HTTP/1.1
 Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
+Correlation-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb2
 custom-header: value
 Content-Type: multipart/form-data; boundary=IGNORE; charset=UTF-8
 

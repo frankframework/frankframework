@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2020 Nationale-Nederlanden
+   Copyright 2013, 2015, 2018, 2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,10 +27,10 @@ import nl.nn.adapterframework.util.FileHandler;
 
 /**
  * <p>See {@link FileHandler}</p>
- * 
+ *
  * @author J. Dekker
  * @author Jaco de Groot (***@dynasol.nl)
- * 
+ *
  * @deprecated Please use LocalFileSystemPipe instead
  *
  */
@@ -42,18 +42,14 @@ public class FilePipe extends FixedForwardPipe {
 	public FilePipe() {
 		fileHandler = new FileHandler();
 	}
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		try { 
-			fileHandler.configure();
-		} catch (ConfigurationException e) {
-			throw new ConfigurationException(getLogPrefix(null)+"could not configure",e);
-		}
+		fileHandler.configure();
 	}
-	
-	/** 
+
+	/**
 	 * @see nl.nn.adapterframework.core.IPipe#doPipe(Message, PipeLineSession)
 	 */
 	@Override
@@ -64,9 +60,8 @@ public class FilePipe extends FixedForwardPipe {
 		catch(Exception e) {
 			if (findForward(PipeForward.EXCEPTION_FORWARD_NAME) != null) {
 				return new PipeRunResult(findForward(PipeForward.EXCEPTION_FORWARD_NAME), message);
-			} else {
-				throw new PipeRunException(this, getLogPrefix(session)+"Error while executing file action(s)", e);
 			}
+			throw new PipeRunException(this, "Error while executing file action(s)", e);
 		}
 	}
 

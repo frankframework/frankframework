@@ -29,7 +29,7 @@
 					<property name="label" value="Gebruiker"/>
 					<property name="xpath" value="//profile/entity/attribute[@name='gebruiker.GEBRNM']"/>
 				</bean>
-				<bean class="nl.nn.ibistesttool.metadata.StatusExtractor"/>
+				<bean class="nl.nn.testtool.metadata.StatusMetadataFieldExtractor"/>
 			</list>
 		</property>
 	</bean>

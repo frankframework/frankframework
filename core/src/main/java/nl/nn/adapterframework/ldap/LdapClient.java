@@ -18,6 +18,7 @@ package nl.nn.adapterframework.ldap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.net.URL;
 import java.security.cert.CertPathValidatorException;
 import java.util.HashSet;
@@ -49,13 +50,14 @@ import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Client for LDAP.<br/>
- * 
+ *
  * consider setting the following properties:<br/>
  * - java.naming.provider.url<br/>
  * - com.sun.jndi.ldap.connect.pool<br/>
@@ -68,10 +70,10 @@ import nl.nn.adapterframework.util.LogUtil;
  * create a properties file named <b>Ldap.properties</b> with the attributes and
  * place in the classpath. To override the name of the properties file or to
  * locate the properties within some relative location to classpath, eg,
- * nl/nn/iuf/Ldap.properties or Ldap-highperformance.properties add JVM 
+ * nl/nn/iuf/Ldap.properties or Ldap-highperformance.properties add JVM
  * custom property <b>ldap.props.file</b> to have the file name you want to have.<br/>
  * <br/>
- * Connection pooling is enabled by passing environment property : 
+ * Connection pooling is enabled by passing environment property :
  * <b>"com.sun.jndi.ldap.connect.pool"</b> with <b>"true"</b>.<br/>
  * <br/>
  * Supported attributes are as follows,<br/>
@@ -82,9 +84,9 @@ import nl.nn.adapterframework.util.LogUtil;
  * - com.sun.jndi.ldap.connect.pool.prefsize<br/>
  * - com.sun.jndi.ldap.connect.pool.protocol<br/>
  * - com.sun.jndi.ldap.connect.pool.timeout<br/>
- * 
+ *
  * @see "http://docs.oracle.com/javase/jndi/tutorial/ldap/connect/config.html"
- * 
+ *
  */
 public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	protected static Logger log =  LogUtil.getLogger(LdapClient.class);
@@ -97,7 +99,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     private static final String LDAP_PROPS_DEFAULT_FILENAME = "Ldap.properties";
     private static final String LDAP_PROPS_FILENAME_KEY = "ldap.props.file";
     private static final String LDAP_CONNECTION_POOL_TIMEOUT_DEFAULT = "600000"; // milliseconds that an idle connection may remain in the pool without being closed and removed
-    
+
     //An Array of LDAP JVM custom properties for connection pooling with default values to set
     private static final String[][] LDAP_JVM_PROPS = {
     	{"com.sun.jndi.ldap.connect.pool.authentication", "none simple"},
@@ -137,7 +139,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     	jndiEnv=getJndiEnv(options.entrySet());
 //    	initCache((String)options.get(ATTRIBUTE_CACHE_JNDI_NAME_KEY),(String)options.get(ATTRIBUTE_CACHE_TIME_TO_LIVE_KEY));
     }
-    
+
 
     protected void configure() throws ConfigurationException {
 		if (attributeCache!=null) {
@@ -156,7 +158,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 			attributeCache.close();
 		}
 	}
-   
+
 	@Override
 	public void setCache(ICache<String,Set<String>> cache) {
 		attributeCache=cache;
@@ -174,7 +176,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		jndiEnv.put(Context.INITIAL_CONTEXT_FACTORY, DEFAULT_INITIAL_CONTEXT_FACTORY_NAME);
 		for(Entry<String,Object> entry:(Set<Entry<String,Object>>)optionSet) {
 			if (entry.getKey().equals(JNDI_AUTH_ALIAS_KEY)) {
-				CredentialFactory jndiCf = new CredentialFactory((String)entry.getValue(), null, null);
+				CredentialFactory jndiCf = new CredentialFactory((String)entry.getValue());
 				if (jndiCf.getUsername()!=null)
 					jndiEnv.put(Context.SECURITY_PRINCIPAL, jndiCf.getUsername());
 				if (jndiCf.getPassword()!=null)
@@ -218,7 +220,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
      		throw ne;
     	}
     }
- 
+
     private String arrayToString(String[] values, String separator) {
     	if (values==null || values.length==0) {
     		return "";
@@ -229,15 +231,15 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     	}
     	return result;
     }
-    
+
     public NamingEnumeration<SearchResult> search(DirContext context, String searchDN, String filter, String returnedAttribute, int scope) throws NamingException {
     	String[] returnedAttributes=returnedAttribute==null?null:new String[] {returnedAttribute};
-		return search(context,searchDN, filter, returnedAttributes, scope);			
+		return search(context,searchDN, filter, returnedAttributes, scope);
     }
 
     public NamingEnumeration<SearchResult> search(DirContext context, String searchDN, String filter, Set<String> returnedAttributes, int scope) throws NamingException {
      	String[] returnedAttributesArr=returnedAttributes==null?null:returnedAttributes.toArray(new String[returnedAttributes.size()]);
- 		return search(context,searchDN, filter, returnedAttributesArr, scope);			
+ 		return search(context,searchDN, filter, returnedAttributesArr, scope);
     }
 
     public NamingEnumeration<SearchResult> search(DirContext context, String searchDN, String filter, String[] returnedAttributes, int scope) throws NamingException {
@@ -247,10 +249,10 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		if (returnedAttributes!=null) {
 			sc.setReturningAttributes(returnedAttributes);
 		}
-		return context.search(searchDN, filter, sc);			
+		return context.search(searchDN, filter, sc);
     }
 
-    
+
     public NamingEnumeration<SearchResult> searchSubtree(DirContext context, String searchDN, String filter, String param, Set<String> returnedAttributes) throws NamingException {
     	return searchSubtree(context, searchDN, filter, new Object[] {param},returnedAttributes.toArray(new String[returnedAttributes.size()]));
     }
@@ -260,7 +262,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     public NamingEnumeration<SearchResult> searchSubtree(DirContext context, String searchDN, String filter, Object[] params, String returnedAttribute) throws NamingException {
     	return searchSubtree(context,searchDN,filter,params,returnedAttribute==null?null:new String[] {returnedAttribute});
     }
-   
+
     public NamingEnumeration<SearchResult> searchSubtree(DirContext context, String searchDN, String filter, Object[] params, String[] returnedAttributes) throws NamingException {
     	if (log.isDebugEnabled()) log.debug("searchDN ["+searchDN+"] filter ["+filter+"] params "+(params==null?"null":params.length==1?"["+params[0]:" length ["+params.length)+"]");
 		SearchControls sc = new SearchControls();
@@ -275,7 +277,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 //    	Set<String> results=new LinkedHashSet<String>();
 //    	Set<String> toBeSearched=new LinkedHashSet<String>();
 //       	Set<String> searched=new LinkedHashSet<String>();
-//       	
+//
 //		int nestingLevel=0;
 //		DirContext context = getContext();
 //		try {
@@ -287,7 +289,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 //		    		results.add(getFirstAttribute(primaryResults.next()));
 //		    	}
 //			} catch(PartialResultException e) {
-//				if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e); 
+//				if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e);
 //			} finally {
 //				primaryResults.close();
 //			}
@@ -308,15 +310,15 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 //				    		if (!results.contains(secondaryResult)) {
 //				    			if (log.isDebugEnabled()) log.debug("nestingLevel ["+nestingLevel+"] found secondary membership ["+secondaryResult+"]");
 //				    			results.add(secondaryResult);
-//				    			if (!searched.contains(secondaryResult) && 
-//				    				!searchingNow.contains(secondaryResult) && 
+//				    			if (!searched.contains(secondaryResult) &&
+//				    				!searchingNow.contains(secondaryResult) &&
 //				    				!toBeSearched.contains(secondaryResult)) {
 //				    				toBeSearched.add(secondaryResult);
 //				    			}
 //				    		}
 //				    	}
 //					} catch(PartialResultException e) {
-//						if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e); 
+//						if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e);
 //					} finally {
 //						secondaryResults.close();
 //					}
@@ -327,12 +329,12 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 //			context.close();
 //		}
 //    }
-  
+
     public Set<String> searchRecursivelyViaAttributes(String uid, String baseDn, String attribute) throws NamingException {
     	Set<String> results=new LinkedHashSet<String>();
     	Set<String> toBeSearched=new LinkedHashSet<String>();
        	Set<String> searched=new LinkedHashSet<String>();
-       	
+
        	DirContext context=getContext();
        	try {
 			int nestingLevel=0;
@@ -352,8 +354,8 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 			    		if (!results.contains(secondaryResult)) {
 			    			if (log.isDebugEnabled()) log.debug("nestingLevel ["+nestingLevel+"] found secondary membership ["+secondaryResult+"]");
 			    			results.add(secondaryResult);
-			    			if (!searched.contains(secondaryResult) && 
-			    				!searchingNow.contains(secondaryResult) && 
+			    			if (!searched.contains(secondaryResult) &&
+			    				!searchingNow.contains(secondaryResult) &&
 			    				!toBeSearched.contains(secondaryResult)) {
 			    				toBeSearched.add(secondaryResult);
 			    			}
@@ -414,7 +416,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		}
 		return searchObjectForMultiValuedAttribute(context, objectDN,baseDn,attribute);
     }
-    
+
    /**
      * Search LDAP without filter, for example to find attributes of a specific user/object.
      */
@@ -426,11 +428,11 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
        		context.close();
        	}
 	}
- 
+
     protected Set<String> searchObjectForMultiValuedAttribute(DirContext context, String objectDN, String baseDn, String attribute) throws NamingException {
     	return getAttributeSet(searchInObject(context, objectDN, baseDn, attribute));
     }
-    
+
     public String searchObjectForSingleAttributeWithCache(String objectDN, String baseDn, String attribute) throws NamingException {
        	DirContext context=getContext();
        	try {
@@ -514,13 +516,13 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	    		result=getFirstAttribute(searchResultEnum.next());
 	    	}
 		} catch(PartialResultException e) {
-			if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e); 
+			if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e);
 		} finally {
 			searchResultEnum.close();
 		}
 		return result;
     }
-    
+
     public String getFirstAttribute(SearchResult searchResult) throws NamingException {
 		Attributes attributes=searchResult.getAttributes();
 		NamingEnumeration<? extends Attribute> attrenum= attributes.getAll();
@@ -536,7 +538,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     }
 
     /**
-     * Returns a Set of attribute values. The key of the attributes is ignored. 
+     * Returns a Set of attribute values. The key of the attributes is ignored.
      */
     public Set<String> getAttributeSet(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
     	Set<String> result=new LinkedHashSet<String>();
@@ -545,14 +547,14 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 			@Override
 			public void handle(Attribute key, Object value) {
 				getData().add((String)value);
-			} 
-    		
+			}
+
     	});
 		return result;
     }
 
     /**
-     * Returns a Map of attribute values. Only the first (or maybe the last...) value of each attribute is returned. 
+     * Returns a Map of attribute values. Only the first (or maybe the last...) value of each attribute is returned.
      */
     public Map<String,String> getAttributeMap(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
     	Map<String,String> result=new LinkedHashMap<String,String>();
@@ -561,14 +563,14 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 			@Override
 			public void handle(Attribute key, Object value) {
 				getData().put(key.getID(), (String)value);
-			} 
-    		
+			}
+
     	});
 		return result;
     }
 
     /**
-     * Returns a MultiMap of attribute values.  
+     * Returns a MultiMap of attribute values.
      */
     public Map<String,List<String>> getAttributeMultiMap(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
     	Map<String,List<String>> result=new LinkedHashMap<String,List<String>>();
@@ -579,11 +581,11 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 				List<String> list=getData().get(key.getID());
 				if (list==null) {
 					list=new LinkedList<String>();
-					getData().put(key.getID(), list); 
+					getData().put(key.getID(), list);
 				}
 				list.add((String)value);
-			} 
-    		
+			}
+
     	});
 		return result;
     }
@@ -610,14 +612,14 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	    		}
 	    	}
 		} catch(PartialResultException e) {
-			if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e); 
+			if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e);
 		} finally {
 			searchResultEnum.close();
 		}
     }
 
     /**
-     * runs a set of attribute values through a Mapper. Only the first value of each attribute is mapped. 
+     * runs a set of attribute values through a Mapper. Only the first value of each attribute is mapped.
      */
     public void mapMultipleAttributes(NamingEnumeration<SearchResult> searchResultEnum, Callback<Attribute,Object> callback) throws NamingException {
     	try {
@@ -641,14 +643,14 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	    		}
 	    	}
 		} catch(PartialResultException e) {
-			if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e); 
+			if (log.isDebugEnabled()) log.debug("ignoring Exception: "+e);
 		} finally {
 			searchResultEnum.close();
 		}
     }
 
     public String checkPassword(String userDN, String password, String baseDN, String returnedAttribute) throws NamingException {
-    	
+
     	if (userDN==null || userDN.equals("") || password==null || password.equals("")) {
     		return null;
     	}
@@ -680,41 +682,42 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 
 	private static void setLdapJvmProperties(String resourceName){
 		if (log.isDebugEnabled()) log.debug("[TAI] LDAP properties file ["+resourceName+"]");
-	   	
-    	Properties ldapProperties = new Properties();
-    	try {
-    		URL url=ClassUtils.getResourceURL(resourceName);
-    		if (url!=null) {
-        		log.info("LDAP properties loading from file ["+url.toString()+"]");
-    			InputStream propertyStream = ClassUtils.urlToStream(url,10000);
-        		ldapProperties.load(propertyStream);
-    		}
-    		
-    		for(String[] prop:LDAP_JVM_PROPS){
-    			String property=prop[0];
-    			String propertyValue=ldapProperties.getProperty(property);
-    			if (propertyValue!=null) {
-    	   			setLdapJvmProperty(property,propertyValue,false);
-    			} else {
-        			String defaultValue=prop[1];
-    	   			setLdapJvmProperty(property,defaultValue,true);
-    			}
+
+		Properties ldapProperties = new Properties();
+		try {
+			URL url = ClassLoaderUtils.getResourceURL(resourceName);
+			if (url != null) {
+				log.info("LDAP properties loading from file [" + url.toString() + "]");
+				try(InputStream is = StreamUtil.urlToStream(url, 10000); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+					ldapProperties.load(reader);
+				}
 			}
-			
+
+			for (String[] prop : LDAP_JVM_PROPS) {
+				String property = prop[0];
+				String propertyValue = ldapProperties.getProperty(property);
+				if (propertyValue != null) {
+					setLdapJvmProperty(property, propertyValue, false);
+				} else {
+					String defaultValue = prop[1];
+					setLdapJvmProperty(property, defaultValue, true);
+				}
+			}
+
 		} catch (IOException e) {
 			log.error("Error reading LDAP properties", e);
 		}
 	}
-	
-	
+
+
 	/**
 	 * Set as JVM custom properties relevant for LDAP configuration supplied as options map for Login module.
 	 * defaultVal == null does not set the custom property if unavailable in options Map.
-	 * 
+	 *
 	 * @param property custom property to set
 	 * @param propValue value to set for the custom property
 	 * @param isDefault when true, signals propValue to be set from a default
-	 */	
+	 */
 	private static void setLdapJvmProperty(String property, String propValue, boolean isDefault) {
 		String currentValue = System.getProperty(property);
 //		log.info("LDAP JVM property ["+ property +"] current ["+currentValue+"] new ["+propValue+"] default ["+defaultVal+"]");
@@ -731,7 +734,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 					if (log.isDebugEnabled()) log.debug("JVM custom property [" + property + "] current value [" + currentValue + "] is not changed");
 				}
 			}
-			
+
 		} else {
 			if (log.isDebugEnabled()) log.debug("JVM custom property [" + property + "] current value [" + currentValue + "], no value or default specified");
 		}

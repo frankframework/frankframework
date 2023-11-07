@@ -13,43 +13,37 @@
 
 	<bean
 		name="txManagerReal"
-		class="org.springframework.transaction.jta.JtaTransactionManager"
+		class="nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager"
+		depends-on="narayanaConfig"
 		>
-		<property name="transactionManager" ref="narayanaTransactionManager"/>
-		<property name="userTransaction" ref="userTransaction"/>
+		<property name="statusFile" value="${transactionmanager.log.dir}/status.txt" />
+		<property name="uidFile"  value="${transactionmanager.log.dir}/tm-uid.txt" />
+		<property name="uid" value="${transactionmanager.uid}" />
 	</bean>
 
-	<bean
-		name="narayanaTransactionManager"
-		class="com.arjuna.ats.jta.TransactionManager"
-		factory-method="transactionManager"
-		depends-on="narayanaConfig,recoveryManager,defaultDataSource"
-	/>
-
-	<bean
-		name="userTransaction"
-		class="com.arjuna.ats.jta.UserTransaction"
-		factory-method="userTransaction"
-		depends-on="narayanaConfig,recoveryManager,defaultDataSource"
-	/>
 
 	<bean id="narayanaConfig" class="nl.nn.adapterframework.jta.narayana.NarayanaConfigurationBean">
 		<property name="properties">
 			<props>
 				<prop key="JDBCEnvironmentBean.isolationLevel">2</prop> <!-- TRANSACTION_READ_COMMITTED -->
-				<prop key="CoreEnvironmentBean.nodeIdentifier">${transactionmanager.uid}</prop>
 				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${transactionmanager.log.dir}</prop>
 				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${transactionmanager.log.dir}</prop>
 				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${transactionmanager.log.dir}</prop>
+				<prop key="CoordinatorEnvironmentBean.defaultTimeout">${transactionmanager.defaultTransactionTimeout}</prop>
+
+				<prop key="CoordinatorEnvironmentBean.txReaperTimeout">${transactionmanager.narayana.reapTime}</prop>
+				<prop key="CoordinatorEnvironmentBean.txReaperMode">DYNAMIC</prop>
+				<prop key="CoordinatorEnvironmentBean.txReaperZombieMax">2</prop> <!-- default 8. how many stuck threads need to be present before things are logged -->
+				<prop key="CoordinatorEnvironmentBean.txReaperTraceGracePeriod">${transactionmanager.narayana.stuckTime}</prop>
+				<prop key="CoordinatorEnvironmentBean.txReaperTraceInterval">${transactionmanager.narayana.stuckTimerTime}</prop>
 			</props>
 		</property>
 	</bean>
 
-	<bean id="recoveryManager" class="nl.nn.adapterframework.jta.narayana.NarayanaRecoveryManager" depends-on="narayanaConfig" />
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaDataSourceFactory" autowire="byName" />
-	<bean id="transactionHelper" class="org.jboss.narayana.jta.jms.TransactionHelperImpl">
-		<constructor-arg ref="narayanaTransactionManager"/>
+	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaDataSourceFactory" depends-on="txManagerReal" >
+		<property name="transactionManager" ref="txManagerReal"/>
 	</bean>
-	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaConnectionFactoryFactory" autowire="byName" />
-
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaConnectionFactoryFactory" depends-on="txManagerReal" >
+		<property name="transactionManager" ref="txManagerReal"/>
+	</bean>
 </beans>

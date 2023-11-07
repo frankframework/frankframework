@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.util.ConcurrencyThrottleSupport;
@@ -29,8 +30,9 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Guard;
@@ -44,10 +46,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@Category("Advanced")
 public class ParallelSenders extends SenderSeries {
 
 	private @Getter int maxConcurrentThreads = 0;
-	private TaskExecutor executor;
+	private @Getter TaskExecutor executor;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -63,9 +66,11 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Guard guard = new Guard();
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
+		boolean success=true;
+		String errorMessage=null;
 
 		for (ISender sender: getSenders()) {
 			guard.addResource();
@@ -100,7 +105,19 @@ public class ParallelSenders extends SenderSeries {
 			resultXml.addAttribute("senderName", sender.getName());
 			Throwable throwable = pse.getThrowable();
 			if (throwable==null) {
-				Message result = pse.getReply();
+				SenderResult senderResult = pse.getReply();
+				success &= senderResult.isSuccess();
+				resultXml.addAttribute("success", senderResult.isSuccess());
+				if (senderResult.getForwardName()!=null) {
+					resultXml.addAttribute("forwardName", senderResult.getForwardName());
+				}
+				if (StringUtils.isNotEmpty(senderResult.getErrorMessage())) {
+					resultXml.addAttribute("errorMessage", senderResult.getErrorMessage());
+					if (errorMessage==null) {
+						errorMessage=senderResult.getErrorMessage();
+					}
+				}
+				Message result = senderResult.getResult();
 				if (result==null) {
 					resultXml.addAttribute("type", "null");
 				} else {
@@ -112,12 +129,14 @@ public class ParallelSenders extends SenderSeries {
 					}
 				}
 			} else {
+				success=false;
 				resultXml.addAttribute("type", ClassUtils.nameOf(throwable));
+				resultXml.addAttribute("success", false);
 				resultXml.setValue(throwable.getMessage());
 			}
 			resultsXml.addSubElement(resultXml);
 		}
-		return new Message(resultsXml.toXML());
+		return new SenderResult(success, new Message(resultsXml.toXML()), errorMessage, null);
 	}
 
 	@Override
@@ -145,7 +164,10 @@ public class ParallelSenders extends SenderSeries {
 		super.registerSender(sender);
 	}
 
-	@IbisDoc({"Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.", "0"})
+	/**
+	 * Set the upper limit to the amount of concurrent threads that can be run simultaneously. Use 0 to disable.
+	 * @ff.default 0
+	 */
 	public void setMaxConcurrentThreads(int maxThreads) {
 		if(maxThreads < 1)
 			maxThreads = 0;

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN" "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<!-- Checkstyle-Suppressions-Configuration: Frank!Framework Description: none -->
+<suppressions>
+	<suppress files="TransformerHandlerImpl\.java" checks="[a-zA-Z0-9]*"/>
+	<suppress files="FilenameUtils\.java" checks="[a-zA-Z0-9]*"/>
+	<suppress files="IbisLoggerConfigurationFactory\.java" checks="[a-zA-Z0-9]*"/>
+	<suppress files="IbisTester\.java" checks="[a-zA-Z0-9]*"/>
+	<suppress files="CalendarParser\.java" checks="[a-zA-Z0-9]*"/>
+	<suppress files="LdapClient\.java" checks="[a-zA-Z0-9]*"/>
+</suppressions>

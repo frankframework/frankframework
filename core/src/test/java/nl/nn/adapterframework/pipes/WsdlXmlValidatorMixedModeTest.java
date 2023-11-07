@@ -15,6 +15,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 
 
@@ -32,10 +33,10 @@ public class WsdlXmlValidatorMixedModeTest {
 
 	private PipeLineSession session = new PipeLineSession();
 
-
+	private TestConfiguration configuration = new TestConfiguration();
 
 	public WsdlXmlValidator getInputValidator() throws Exception {
-		WsdlXmlValidator val = new ApiWsdlXmlValidator();
+		WsdlXmlValidator val = configuration.createBean(ApiWsdlXmlValidator.class);
 		val.setWsdl(WSDL);
 		val.setSoapBody(REQUEST_SOAP_BODY);
 		val.setThrowException(true);
@@ -46,7 +47,7 @@ public class WsdlXmlValidatorMixedModeTest {
 		return val;
 	}
 	public WsdlXmlValidator getOutputValidator() throws Exception {
-		WsdlXmlValidator val = new ApiWsdlXmlValidator();
+		WsdlXmlValidator val = configuration.createBean(ApiWsdlXmlValidator.class);
 		val.setWsdl(WSDL);
 		val.setSoapBody(RESPONSE_SOAP_BODY);
 		val.setThrowException(true);
@@ -57,7 +58,7 @@ public class WsdlXmlValidatorMixedModeTest {
 		return val;
 	}
 	public WsdlXmlValidator getMixedValidator() throws Exception  {
-		WsdlXmlValidator val = new ApiWsdlXmlValidator();
+		WsdlXmlValidator val = configuration.createBean(ApiWsdlXmlValidator.class);
 		val.setWsdl(WSDL);
 		val.setSoapBody(REQUEST_SOAP_BODY);
 		val.setOutputSoapBody(RESPONSE_SOAP_BODY);

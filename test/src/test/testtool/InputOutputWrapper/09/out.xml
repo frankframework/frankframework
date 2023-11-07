@@ -1,1 +1,5 @@
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><soapenv:Body><soapenv:Fault><faultcode>soapenv:Server</faultcode><faultstring><![CDATA[Pipe [- pipeline outputWrapper] msgId [Test Tool correlation id]  Unexpected exception during (un)wrapping : (XPathException): (SAXParseException) line [2] column [1]: XML document structures must start and end within the same entity.]]></faultstring></soapenv:Fault></soapenv:Body></soapenv:Envelope>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Body>
+    <soapenv:Fault>
+      <faultcode>soapenv:Server</faultcode>
+      <faultstring><![CDATA[Pipe [- pipeline outputWrapper] Unexpected exception during (un)wrapping : (XPathException): (SAXParseException) line [2] column [1]: XML document structures must start and end within the same entity.]]></faultstring></soapenv:Fault></soapenv:Body></soapenv:Envelope>

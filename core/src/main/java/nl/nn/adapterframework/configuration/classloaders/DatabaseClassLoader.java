@@ -17,6 +17,8 @@ package nl.nn.adapterframework.configuration.classloaders;
 
 import java.util.Map;
 
+import org.springframework.context.ApplicationContext;
+
 import nl.nn.adapterframework.configuration.ClassLoaderException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 
@@ -37,7 +39,8 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 	protected Map<String, byte[]> loadResources() throws ClassLoaderException {
 		Map<String, Object> configuration = null;
 		try { //Make sure there's a database present
-			configuration = ConfigurationUtils.getConfigFromDatabase(getIbisContext(), getConfigurationName(), datasourceName);
+			ApplicationContext ac = getIbisContext().getIbisManager().getApplicationContext();
+			configuration = ConfigurationUtils.getActiveConfigFromDatabase(ac, getConfigurationName(), datasourceName);
 		}
 		catch (Throwable t) {
 			//Make the error a little bit more IBIS-developer intuitive

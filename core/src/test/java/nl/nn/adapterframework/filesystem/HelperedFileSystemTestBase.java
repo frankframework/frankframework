@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 
 public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 
 	protected IFileSystemTestHelper helper;
-	
+
 	protected abstract IFileSystemTestHelper getFileSystemTestHelper() throws IOException;
 
 	/**
@@ -22,7 +22,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	protected boolean _fileExists(String folder, String filename) throws Exception {
 		return helper._fileExists(folder,filename);
 	}
-	
+
 	/**
 	 * Checks if a folder with the specified name exists.
 	 */
@@ -30,7 +30,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	protected boolean _folderExists(String folderName) throws Exception {
 		return helper._folderExists(folderName);
 	}
-	
+
 	/**
 	 * Deletes the file with the specified name.
 	 */
@@ -38,7 +38,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	protected void _deleteFile(String folder, String filename) throws Exception {
 		helper._deleteFile(folder, filename);
 	}
-	
+
 	/**
 	 * Creates a file with the specified name and returns output stream to be able to write that file.
 	 */
@@ -54,7 +54,7 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 	protected InputStream _readFile(String folder, String filename) throws Exception {
 		return helper._readFile(folder, filename);
 	}
-	
+
 	/**
 	 * Creates a folder.
 	 */
@@ -71,15 +71,19 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 		helper._deleteFolder(folderName);
 	}
 
-	@Before
+	@BeforeEach
+	@Override
 	public void setUp() throws Exception {
 		helper = getFileSystemTestHelper();
 		helper.setUp();
+		super.setUp();
 	}
-	
-	@After
+
+	@AfterEach
+	@Override
 	public void tearDown() throws Exception {
-		helper.tearDown();
+		if (helper!=null) helper.tearDown();
+		super.tearDown();
 	}
 
 }

@@ -2,6 +2,7 @@
 	<adapter name="ApiListener_SimpleInsert">
 		<receiver
 			checkForDuplicates="true"
+			checkForDuplicatesMethod="CORRELATIONID"
 			processResultCacheSize="0"
 			>
 			<listener
@@ -134,6 +135,7 @@
 				name="successOrException"
 				className="nl.nn.adapterframework.pipes.XmlSwitch" forwardNameSessionKey="statusCode">
 				<forward name="200" path="EXIT" />
+				<forward name="304" path="EXIT" />
 				<forward name="500" path="FixedResultOnException" />
 			</pipe>
 
@@ -142,4 +144,47 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+
+	<adapter name="ApiListener_LargeStreamProducer">
+		<receiver
+			processResultCacheSize="0"
+		>
+			<listener
+				name="LargeStreamProducer"
+				className="nl.nn.adapterframework.http.rest.ApiListener"
+				uriPattern="largeStream"
+				method="get"
+			/>
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="ManyBlocks" className="nl.nn.adapterframework.pipes.LargeBlockTester" direction="produce" blockSize="10000" blockCount="20" sleepBetweenServedBlocks="100"/>
+		</pipeline>
+	</adapter>
+
+	<adapter name="ApiListener_LargeStreamConsumer">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ApiListener_LargeStream" />
+		</receiver>
+		<pipeline>
+			<pipe name="callApiListener"
+				className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.http.HttpSender"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/largeStream"
+					resultStatusCodeSessionKey="statusCode"
+					allowSelfSignedCertificates="true"
+					verifyHostname="false"
+					authAlias="${framework.api.user.alias}"
+				/>
+			</pipe>
+
+			<pipe
+				name="consume"
+				className="nl.nn.adapterframework.pipes.LargeBlockTester" direction="consume" blockSize="10000" blockCount="20"
+			/>
+		</pipeline>
+	</adapter>
+
 </module>

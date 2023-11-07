@@ -1,5 +1,5 @@
 <browse delay='true'>
 	<jmsRealm>qcf_tibco_esb_ff</jmsRealm>
-	<destinationName>jms/UpdateMessageAction</destinationName>
+	<destinationName>${tibco.ff_queue}</destinationName>
 	<destinationType>QUEUE</destinationType>
 </browse>

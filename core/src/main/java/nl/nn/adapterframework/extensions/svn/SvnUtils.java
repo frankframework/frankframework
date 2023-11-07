@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Some utilities for working with SVN.
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 public class SvnUtils {
@@ -56,9 +56,8 @@ public class SvnUtils {
 	}
 
 	private static String getHeadHtml(String urlString) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		HttpSender httpSender = null;
+		HttpSender httpSender = new HttpSender();
 		try {
-			httpSender = new HttpSender();
 			httpSender.setUrl(urlString);
 			httpSender.setAllowSelfSignedCertificates(true);
 			httpSender.setVerifyHostname(false);
@@ -67,19 +66,17 @@ public class SvnUtils {
 			httpSender.setMethodType(HttpMethod.HEAD);
 			httpSender.configure();
 			httpSender.open();
-			String result = httpSender.sendMessage(new Message(""), null).asString();
-			return result;
-		} finally {
-			if (httpSender != null) {
-				httpSender.close();
+			try (Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), null)) {
+				return result.asString();
 			}
+		} finally {
+			httpSender.close();
 		}
 	}
 
 	private static String getReportHtml(String urlString, String revision, String path) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		HttpSender httpSender = null;
+		HttpSender httpSender = new HttpSender();
 		try {
-			httpSender = new HttpSender();
 			httpSender.setUrl(urlString);
 			httpSender.setAllowSelfSignedCertificates(true);
 			httpSender.setVerifyHostname(false);
@@ -95,12 +92,11 @@ public class SvnUtils {
 					+ "<S:limit>1</S:limit>" + "<S:path>" + path + "</S:path>"
 					+ "</S:log-report>";
 
-			String result = httpSender.sendMessage(new Message(logReportRequest), null).asString();
-			return result;
-		} finally {
-			if (httpSender != null) {
-				httpSender.close();
+			try (Message result = httpSender.sendMessageOrThrow(new Message(logReportRequest), null)) {
+				return result.asString();
 			}
+		} finally {
+			httpSender.close();
 		}
 	}
 

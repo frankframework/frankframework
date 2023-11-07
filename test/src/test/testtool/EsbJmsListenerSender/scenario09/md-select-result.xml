@@ -1,34 +1,34 @@
 <manageDatabaseRLY>
-<completionInformation>
-<returnCode>OK</returnCode>
-</completionInformation>
-<results>
-<result item="1">
-<result>
-  <fielddefinition>
-    <field columnClassName="java.math.BigDecimal" columnDisplaySize="22" columnTypeName="NUMBER" isCurrency="true" name="MESSAGEKEY" precision="38" scale="0" type="NUMERIC"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="1" columnTypeName="CHAR" isCurrency="false" name="TYPE" precision="1" scale="0" type="CHAR"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="SLOTID" precision="100" scale="0" type="VARCHAR"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="HOST" precision="100" scale="0" type="VARCHAR"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="MESSAGEID" precision="100" scale="0" type="VARCHAR"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="256" columnTypeName="VARCHAR2" isCurrency="false" name="CORRELATIONID" precision="256" scale="0" type="VARCHAR"/>
-    <field columnClassName="oracle.sql.TIMESTAMP" columnDisplaySize="11" columnTypeName="TIMESTAMP" isCurrency="false" name="MESSAGEDATE" precision="0" scale="6" type="TIMESTAMP"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="1000" columnTypeName="VARCHAR2" isCurrency="false" name="COMMENTS" precision="1000" scale="0" type="VARCHAR"/>
-    <field columnClassName="oracle.sql.BLOB" columnDisplaySize="4000" columnTypeName="BLOB" isCurrency="false" name="MESSAGE" precision="-1" scale="0" type="BLOB"/>
-    <field columnClassName="oracle.sql.TIMESTAMP" columnDisplaySize="11" columnTypeName="TIMESTAMP" isCurrency="false" name="EXPIRYDATE" precision="0" scale="6" type="TIMESTAMP"/>
-    <field columnClassName="java.lang.String" columnDisplaySize="100" columnTypeName="VARCHAR2" isCurrency="false" name="LABEL" precision="100" scale="0" type="VARCHAR"/>
-  </fielddefinition>
-  <rowset>
-    <row number="0">
-      <field name="MESSAGEKEY">13479</field>
-      <field name="TYPE">L</field>
-      <field name="SLOTID">IFSA://NLIBIS4TEST/EsbJmsFFSenderWithRead</field>
-      <field name="HOST">LPAB00000018345</field>
-      <field name="MESSAGEID">ID:LPAB00000018345-49375-1531481506023-3:14:90:1:1</field>
-      <field name="CORRELATIONID">Test Tool correlation id</field>
-      <field name="MESSAGEDATE">2018-07-13 13:33:52</field>
-      <field name="COMMENTS">no audit trail</field>
-      <field name="MESSAGE">&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"&gt;&lt;soapenv:Header&gt;&lt;MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"&gt;
+  <completionInformation>
+    <returnCode>OK</returnCode>
+  </completionInformation>
+  <results>
+    <result item="1">
+      <result>
+        <fielddefinition>
+          <field name="MESSAGEKEY" type="BIGINT" columnDisplaySize="20" precision="64" scale="0" isCurrency="false" columnTypeName="BIGINT" columnClassName="java.lang.Long"/>
+          <field name="TYPE" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHARACTER" columnClassName="java.lang.String"/>
+          <field name="SLOTID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+          <field name="HOST" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+          <field name="MESSAGEID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+          <field name="CORRELATIONID" type="VARCHAR" columnDisplaySize="256" precision="256" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+          <field name="MESSAGEDATE" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+          <field name="COMMENTS" type="VARCHAR" columnDisplaySize="1000" precision="1000" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+          <field name="MESSAGE" type="BLOB" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="BINARY LARGE OBJECT" columnClassName="java.sql.Blob"/>
+          <field name="EXPIRYDATE" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
+          <field name="LABEL" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="CHARACTER VARYING" columnClassName="java.lang.String"/>
+        </fielddefinition>
+        <rowset>
+          <row number="0">
+            <field name="MESSAGEKEY">9</field>
+            <field name="TYPE">L</field>
+            <field name="SLOTID">IFSA://NLIBIS4TEST/EsbJmsFFSenderWithRead</field>
+            <field name="HOST">LPZWNL000040524</field>
+            <field name="MESSAGEID">ID:EMS_DEV_ESB_P2P_LARGE.2A22636BE02F3A7D5BAC:12</field>
+            <field name="CORRELATIONID">Test Tool correlation id(9)</field>
+            <field name="MESSAGEDATE">2022-11-29 11:43:14</field>
+            <field name="COMMENTS">no audit trail</field>
+            <field name="MESSAGE">&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"&gt;&lt;soapenv:Header&gt;&lt;MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"&gt;
    &lt;From&gt;
       &lt;Id&gt;Ibis4Test&lt;/Id&gt;
    &lt;/From&gt;
@@ -37,9 +37,9 @@
    &lt;/To&gt;
    &lt;HeaderFields&gt;
       &lt;CPAId&gt;n/a&lt;/CPAId&gt;
-      &lt;ConversationId&gt;LPAB00000018345_0a000a68--57947f26_1649369402a_-7f3b&lt;/ConversationId&gt;
-      &lt;MessageId&gt;LPAB00000018345_0a000a68--57947f26_1649369402a_-7f3a&lt;/MessageId&gt;
-      &lt;Timestamp&gt;2018-07-13T13:33:52&lt;/Timestamp&gt;
+      &lt;ConversationId&gt;LPZWNL000040524_0a720973--51ce1329_184c2fb4dd5_-7fb3&lt;/ConversationId&gt;
+      &lt;MessageId&gt;LPZWNL000040524_0a720973--51ce1329_184c2fb4dd5_-7fb2&lt;/MessageId&gt;
+      &lt;Timestamp&gt;2022-11-29T11:43:14&lt;/Timestamp&gt;
    &lt;/HeaderFields&gt;
    &lt;Service&gt;
       &lt;Name&gt;Test&lt;/Name&gt;
@@ -51,22 +51,22 @@
       &lt;/Action&gt;
    &lt;/Service&gt;
 &lt;/MessageHeader&gt;
-&lt;/soapenv:Header&gt;&lt;soapenv:Body&gt;&lt;request xmlns="http://nn.nl/XSD/Infrastructure/Test/TestIAF/1/UpdateMessage/1" action="subcall_local_exception"&gt;&#13;
-	&lt;value&gt;test&lt;/value&gt;&#13;
+&lt;/soapenv:Header&gt;&lt;soapenv:Body&gt;&lt;request xmlns="http://nn.nl/XSD/Infrastructure/Test/TestIAF/1/UpdateMessage/1" action="subcall_local_exception"&gt;
+	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;&lt;/soapenv:Body&gt;&lt;/soapenv:Envelope&gt;</field>
-      <field name="EXPIRYDATE">2018-08-12 13:33:52</field>
-      <field name="LABEL" null="true"/>
-    </row>
-    <row number="1">
-      <field name="MESSAGEKEY">13480</field>
-      <field name="TYPE">E</field>
-      <field name="SLOTID">IFSA://NLIBIS4TEST/EsbJmsFFListener</field>
-      <field name="HOST">LPAB00000018345</field>
-      <field name="MESSAGEID">ID:LPAB00000018345-49375-1531481506023-3:14:90:1:1</field>
-      <field name="CORRELATIONID">Test Tool correlation id</field>
-      <field name="MESSAGEDATE">2018-07-13 13:33:52</field>
-      <field name="COMMENTS">too many retries; ERROR</field>
-      <field name="MESSAGE">&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"&gt;&lt;soapenv:Header&gt;&lt;MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"&gt;
+            <field name="EXPIRYDATE">2022-12-29 11:43:14</field>
+            <field name="LABEL" null="true"/>
+          </row>
+          <row number="1">
+            <field name="MESSAGEKEY">10</field>
+            <field name="TYPE">E</field>
+            <field name="SLOTID">IFSA://NLIBIS4TEST/EsbJmsFFListener</field>
+            <field name="HOST">LPZWNL000040524</field>
+            <field name="MESSAGEID">ID:EMS_DEV_ESB_P2P_LARGE.2A22636BE02F3A7D5BAC:12</field>
+            <field name="CORRELATIONID">Test Tool correlation id(9)</field>
+            <field name="MESSAGEDATE">2022-11-29 11:43:14</field>
+            <field name="COMMENTS">too many retries; Pipe [exception] ERROR</field>
+            <field name="MESSAGE">&lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"&gt;&lt;soapenv:Header&gt;&lt;MessageHeader xmlns="http://nn.nl/XSD/Generic/MessageHeader/1"&gt;
    &lt;From&gt;
       &lt;Id&gt;Ibis4Test&lt;/Id&gt;
    &lt;/From&gt;
@@ -75,9 +75,9 @@
    &lt;/To&gt;
    &lt;HeaderFields&gt;
       &lt;CPAId&gt;n/a&lt;/CPAId&gt;
-      &lt;ConversationId&gt;LPAB00000018345_0a000a68--57947f26_1649369402a_-7f3b&lt;/ConversationId&gt;
-      &lt;MessageId&gt;LPAB00000018345_0a000a68--57947f26_1649369402a_-7f3a&lt;/MessageId&gt;
-      &lt;Timestamp&gt;2018-07-13T13:33:52&lt;/Timestamp&gt;
+      &lt;ConversationId&gt;LPZWNL000040524_0a720973--51ce1329_184c2fb4dd5_-7fb3&lt;/ConversationId&gt;
+      &lt;MessageId&gt;LPZWNL000040524_0a720973--51ce1329_184c2fb4dd5_-7fb2&lt;/MessageId&gt;
+      &lt;Timestamp&gt;2022-11-29T11:43:14&lt;/Timestamp&gt;
    &lt;/HeaderFields&gt;
    &lt;Service&gt;
       &lt;Name&gt;Test&lt;/Name&gt;
@@ -89,15 +89,14 @@
       &lt;/Action&gt;
    &lt;/Service&gt;
 &lt;/MessageHeader&gt;
-&lt;/soapenv:Header&gt;&lt;soapenv:Body&gt;&lt;request xmlns="http://nn.nl/XSD/Infrastructure/Test/TestIAF/1/UpdateMessage/1" action="subcall_local_exception"&gt;&#13;
-	&lt;value&gt;test&lt;/value&gt;&#13;
+&lt;/soapenv:Header&gt;&lt;soapenv:Body&gt;&lt;request xmlns="http://nn.nl/XSD/Infrastructure/Test/TestIAF/1/UpdateMessage/1" action="subcall_local_exception"&gt;
+	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;&lt;/soapenv:Body&gt;&lt;/soapenv:Envelope&gt;</field>
-      <field name="EXPIRYDATE" null="true"/>
-      <field name="LABEL" null="true"/>
-    </row>
-  </rowset>
-</result>
-
-</result>
-</results>
+            <field name="EXPIRYDATE" null="true"/>
+            <field name="LABEL" null="true"/>
+          </row>
+        </rowset>
+      </result>
+    </result>
+  </results>
 </manageDatabaseRLY>

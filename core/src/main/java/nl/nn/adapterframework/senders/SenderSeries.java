@@ -26,6 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -35,19 +36,19 @@ import nl.nn.adapterframework.util.ClassUtils;
 
 /**
  * Series of Senders, that are executed one after another.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
 public class SenderSeries extends SenderWrapperBase {
 
-	private List<ISender> senderList = new LinkedList<ISender>();
-	private Map<ISender, StatisticsKeeper> statisticsMap = new HashMap<ISender, StatisticsKeeper>();
+	private List<ISender> senderList = new LinkedList<>();
+	private Map<ISender, StatisticsKeeper> statisticsMap = new HashMap<>();
 	private @Getter @Setter boolean synchronous=true;
 
 	@Override
 	protected boolean isSenderConfigured() {
-		return senderList.size()!=0;
+		return !senderList.isEmpty();
 	}
 
 	@Override
@@ -75,25 +76,30 @@ public class SenderSeries extends SenderWrapperBase {
 	}
 
 	@Override
-	public Message doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		String correlationID = session==null ? null : session.getMessageId();
+	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		String correlationID = session==null ? null : session.getCorrelationId();
+		SenderResult result=null;
 		long t1 = System.currentTimeMillis();
 		for (ISender sender: getSenders()) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"sending correlationID ["+correlationID+"] message ["+message+"] to sender ["+sender.getName()+"]");
-			message = sender.sendMessage(message,session);
+			result = sender.sendMessage(message, session);
+			if (!result.isSuccess()) {
+				return result;
+			}
+			message = result.getResult();
 			long t2 = System.currentTimeMillis();
 			StatisticsKeeper sk = getStatisticsKeeper(sender);
 			sk.addValue(t2-t1);
 			t1=t2;
 		}
-		return message;
+		return result!=null ? result : new SenderResult(message);
 	}
 
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		//Object senderData=hski.openGroup(data,getName(),"sender");
 		for (ISender sender: getSenders()) {
-			hski.handleStatisticsKeeper(data,getStatisticsKeeper(sender));		
+			hski.handleStatisticsKeeper(data,getStatisticsKeeper(sender));
 			if (sender instanceof HasStatistics) {
 				((HasStatistics)sender).iterateOverStatistics(hski,data,action);
 			}
@@ -105,7 +111,6 @@ public class SenderSeries extends SenderWrapperBase {
 	public boolean consumesSessionVariable(String sessionKey) {
 		if (super.consumesSessionVariable(sessionKey)) {
 			return true;
-			
 		}
 		for (ISender sender:senderList) {
 			if (sender.consumesSessionVariable(sessionKey)) {
@@ -121,9 +126,9 @@ public class SenderSeries extends SenderWrapperBase {
 	public final void setSender(ISender sender) {
 		registerSender(sender);
 	}
-	
-	/** 
-	 * one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input. 
+
+	/**
+	 * one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input.
 	 * @ff.mandatory
 	 */
 	public void registerSender(ISender sender) {
@@ -131,7 +136,7 @@ public class SenderSeries extends SenderWrapperBase {
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added
 		statisticsMap.put(sender, new StatisticsKeeper("-> "+ClassUtils.nameOf(sender)));
 	}
-	
+
 	protected Iterable<ISender> getSenders() {
 		return senderList;
 	}

@@ -54,7 +54,7 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 		if (input==null) {
 			throw new PipeRunException(this,"got null input instead of String containing filename");
 		}
-		
+
 		String filename;
 		try {
 			filename = input.asString();
@@ -64,23 +64,21 @@ public class FileLineIteratorPipe extends StreamLineIteratorPipe {
 		File file = new File(filename);
 
 		try {
-			
 			PipeRunResult result = super.doPipe(new FileMessage(file, getCharset()), session);
 			if (! StringUtils.isEmpty(getMove2dirAfterTransform())) {
 				File move2 = new File(getMove2dirAfterTransform(), file.getName());
-				file.renameTo(move2); 
+				file.renameTo(move2);
 			}
 			return result;
 		} catch (PipeRunException e) {
 			if (! StringUtils.isEmpty(getMove2dirAfterError())) {
 				File move2 = new File(getMove2dirAfterError(), file.getName());
-				file.renameTo(move2); 
+				file.renameTo(move2);
 			}
 			throw e;
 		}
 	}
 
-	
 	/**
 	 * Directory where input file is moved to in case of a successful transformation
 	 */

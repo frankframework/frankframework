@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,12 +26,8 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
-import javax.mail.BodyPart;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64InputStream;
@@ -51,18 +47,19 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MIME;
-import org.apache.http.entity.mime.content.InputStreamBody;
-import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
@@ -70,84 +67,35 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.DocumentedEnum;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.http.mime.MessageContentBody;
 import nl.nn.adapterframework.http.mime.MultipartEntityBuilder;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Sender for the HTTP protocol using GET, POST, PUT or DELETE.
- * 
+ * Sender for the HTTP protocol using {@link nl.nn.adapterframework.http.HttpSenderBase.HttpMethod HttpMethod}. By default, any response code outside the 2xx or 3xx range
+ * is considered an error and the <code>exception</code> forward of the SenderPipe is followed if present and if there
+ * is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...)
+ * are returned by this sender so they are available to the SenderPipe.
+ *
  * <p><b>Expected message format:</b></p>
- * <p>GET methods expect a message looking like this</p>
+ * <p>GET methods expect a message looking like this:
  * <pre>
- *   param_name=param_value&another_param_name=another_param_value
+ *    param_name=param_value&another_param_name=another_param_value
  * </pre>
- * <p>POST AND PUT methods expect a message similar as GET, or looking like this</p>
+ * <p>POST AND PUT methods expect a message similar as GET, or looking like this:
  * <pre>
  *   param_name=param_value
  *   another_param_name=another_param_value
  * </pre>
  *
- * <p>
- * Note 1:
- * Some certificates require the &lt;java_home&gt;/jre/lib/security/xxx_policy.jar files to be upgraded to unlimited strength. Typically, in such a case, an error message like 
- * <code>Error in loading the keystore: Private key decryption error: (java.lang.SecurityException: Unsupported keysize or algorithm parameters</code> is observed.
- * For IBM JDKs these files can be downloaded from http://www.ibm.com/developerworks/java/jdk/security/50/ (scroll down to 'IBM SDK Policy files')
- * </p>
- * Replace in the directory java\jre\lib\security the following files:
- * <ul>
- * <li>local_policy.jar</li>
- * <li>US_export_policy.jar</li>
- * </ul>
- * <p>
- * Note 2:
- * To debug ssl-related problems, set the following system property:
- * <ul>
- * <li>IBM / WebSphere: <code>-Djavax.net.debug=true</code></li>
- * <li>SUN: <code>-Djavax.net.debug=all</code></li>
- * </ul>
- * </p>
- * <p>
- * Note 3:
- * In case <code>javax.net.ssl.SSLHandshakeException: unknown certificate</code>-exceptions are thrown, 
- * probably the certificate of the other party is not trusted. Try to use one of the certificates in the path as your truststore by doing the following:
- * <ul>
- *   <li>open the URL you are trying to reach in InternetExplorer</li>
- *   <li>click on the yellow padlock on the right in the bottom-bar. This opens the certificate information window</li>
- *   <li>click on tab 'Certificeringspad'</li>
- *   <li>double click on root certificate in the tree displayed. This opens the certificate information window for the root certificate</li>
- *   <li>click on tab 'Details'</li>
- *   <li>click on 'Kopieren naar bestand'</li>
- *   <li>click 'next', choose 'DER Encoded Binary X.509 (.CER)'</li>
- *   <li>click 'next', choose a filename</li>
- *   <li>click 'next' and 'finish'</li>
- * 	 <li>Start IBM key management tool ikeyman.bat, located in Program Files/IBM/WebSphere Studio/Application Developer/v5.1.2/runtimes/base_v51/bin (or similar)</li>
- *   <li>create a new key-database (Sleuteldatabase -> Nieuw...), or open the default key.jks (default password="changeit")</li>
- *   <li>add the generated certificate (Toevoegen...)</li>
- *   <li>store the key-database in JKS format</li>
- *   <li>if you didn't use the standard keydatabase, then reference the file in the truststore-attribute in Configuration.xml (include the file as a resource)</li>
- *   <li>use jks for the truststoreType-attribute</li>
- *   <li>restart your application</li>
- *   <li>instead of IBM ikeyman you can use the standard java tool <code>keytool</code> as follows: 
- *      <code>keytool -import -alias <i>yourAlias</i> -file <i>pathToSavedCertificate</i></code></li>
- * </ul>
- * <p>
- * Note 4:
- * In case <code>cannot create or initialize SocketFactory: (IOException) Unable to verify MAC</code>-exceptions are thrown,
- * please check password or authAlias configuration of the correspondig certificate. 
- * </p>
- * 
- * <p>
- * Note 5:
+ * Note:
  * When used as MTOM sender and MTOM receiver doesn't support Content-Transfer-Encoding "base64", messages without line feeds will give an error.
  * This can be fixed by setting the Content-Transfer-Encoding in the MTOM sender.
  * </p>
@@ -167,7 +115,6 @@ public class HttpSender extends HttpSenderBase {
 	private @Getter boolean streamResultToServlet=false;
 
 	private @Getter boolean paramsInUrl=true;
-	private @Getter boolean ignoreRedirects=false;
 	private @Getter String firstBodyPartName=null;
 
 	private @Getter Boolean multipartResponse=null;
@@ -178,22 +125,20 @@ public class HttpSender extends HttpSenderBase {
 
 	private @Getter PostType postType = PostType.RAW;
 
-	public enum PostType implements DocumentedEnum {
-		RAW("raw text/xml/json"), // text/html;charset=UTF8
-		BINARY("binary content"), //application/octet-stream
-//		SWA("Soap with Attachments"), // text/xml
-		URLENCODED("x-www-form-urlencoded"), // application/x-www-form-urlencoded
-		FORMDATA("form-data"), // multipart/form-data
-		MTOM("mtom"); // multipart/related
+	private static final MimeType APPLICATION_XOP_XML = MimeType.valueOf("application/xop+xml");
 
-		private String description;
-		PostType(String description) {
-			this.description = description;
-		}
-		@Override
-		public String toString() {
-			return description;
-		}
+	public enum PostType {
+		/** The input message is sent unchanged as character data, like text, XML or JSON, with possibly parameter data appended */
+		RAW, // text/html;charset=UTF8
+		/** The input message is sent unchanged as binary data */
+		BINARY, //application/octet-stream
+//		SWA("Soap with Attachments"), // text/xml
+		/** Yields a x-www-form-urlencoded form entity */
+		URLENCODED,
+		/** Yields a multipart/form-data form entity */
+		FORMDATA,
+		/** Yields a MTOM multipart/related form entity */
+		MTOM;
 	}
 
 	@Override
@@ -229,16 +174,16 @@ public class HttpSender extends HttpSenderBase {
 			}
 		}
 
-		URI uri = null;
+		URI uri;
 		try {
 			uri = encodeQueryParameters(url);
 		} catch (UnsupportedEncodingException | URISyntaxException e) {
 			throw new SenderException("error encoding queryparameters in url ["+url.toString()+"]", e);
 		}
 
-		if(postType.equals(PostType.URLENCODED) || postType.equals(PostType.FORMDATA) || postType.equals(PostType.MTOM)) {
+		if(postType==PostType.URLENCODED || postType==PostType.FORMDATA || postType==PostType.MTOM) {
 			try {
-				return getMultipartPostMethodWithParamsInBody(uri, message.asString(), parameters, session);
+				return getMultipartPostMethodWithParamsInBody(uri, message, parameters, session);
 			} catch (IOException e) {
 				throw new SenderException(getLogPrefix()+"unable to read message", e);
 			}
@@ -271,9 +216,9 @@ public class HttpSender extends HttpSenderBase {
 	protected HttpRequestBase getMethod(URI uri, Message message, ParameterValueList parameters) throws SenderException {
 		try {
 			boolean queryParametersAppended = false;
-			StringBuffer relativePath = new StringBuffer(uri.getRawPath());
+			StringBuilder relativePath = new StringBuilder(uri.getRawPath());
 			if (!StringUtils.isEmpty(uri.getQuery())) {
-				relativePath.append("?"+uri.getQuery());
+				relativePath.append("?").append(uri.getQuery());
 				queryParametersAppended = true;
 			}
 
@@ -296,10 +241,10 @@ public class HttpSender extends HttpSenderBase {
 			case PUT:
 			case PATCH:
 				HttpEntity entity;
-				if(postType.equals(PostType.RAW)) {
+				if(postType == PostType.RAW) {
 					String messageString = BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message) ? message.asString() : "";
 					if (parameters!=null) {
-						StringBuffer msg = new StringBuffer(messageString);
+						StringBuilder msg = new StringBuilder(messageString);
 						appendParameters(true,msg,parameters);
 						if (StringUtils.isEmpty(messageString) && msg.length()>1) {
 							messageString=msg.substring(1);
@@ -308,8 +253,8 @@ public class HttpSender extends HttpSenderBase {
 						}
 					}
 					entity = new ByteArrayEntity(messageString.getBytes(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING), getFullContentType());
-				} else if(postType.equals(PostType.BINARY)) {
-					entity = new InputStreamEntity(message.asInputStream(), getFullContentType());
+				} else if(postType == PostType.BINARY) {
+					entity = new HttpMessageEntity(message, getFullContentType());
 				} else {
 					throw new SenderException("PostType ["+postType.name()+"] not allowed!");
 				}
@@ -355,16 +300,15 @@ public class HttpSender extends HttpSenderBase {
 
 	/**
 	 * Returns a multi-parted message, either as X-WWW-FORM-URLENCODED, FORM-DATA or MTOM
-	 * @throws IOException 
 	 */
-	protected HttpPost getMultipartPostMethodWithParamsInBody(URI uri, String message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
+	private HttpPost getMultipartPostMethodWithParamsInBody(URI uri, Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
 		HttpPost hmethod = new HttpPost(uri);
 
-		if (postType.equals(PostType.URLENCODED) && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
-			List<NameValuePair> requestFormElements = new ArrayList<NameValuePair>();
+		if (postType==PostType.URLENCODED && StringUtils.isEmpty(getMultipartXmlSessionKey())) { // x-www-form-urlencoded
+			List<NameValuePair> requestFormElements = new ArrayList<>();
 
 			if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-				requestFormElements.add(new BasicNameValuePair(getFirstBodyPartName(),message));
+				requestFormElements.add(new BasicNameValuePair(getFirstBodyPartName(), message.asString()));
 				log.debug(getLogPrefix()+"appended parameter ["+getFirstBodyPartName()+"] with value ["+message+"]");
 			}
 			if (parameters!=null) {
@@ -372,18 +316,16 @@ public class HttpSender extends HttpSenderBase {
 					String name = pv.getDefinition().getName();
 					String value = pv.asStringValue("");
 
-					// Skip parameters that are configured as ignored
-					if (skipParameter(name))
-						continue;
-
-					requestFormElements.add(new BasicNameValuePair(name,value));
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+					if (requestOrBodyParamsSet.contains(name) && (StringUtils.isNotEmpty(value) || !parametersToSkipWhenEmptySet.contains(name))) {
+						requestFormElements.add(new BasicNameValuePair(name,value));
+						if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended parameter ["+name+"] with value ["+value+"]");
+					}
 				}
 			}
 			try {
 				hmethod.setEntity(new UrlEncodedFormEntity(requestFormElements, getCharSet()));
 			} catch (UnsupportedEncodingException e) {
-				throw new SenderException(getLogPrefix()+"unsupported encoding for one or more post parameters", e);
+				throw new SenderException(getLogPrefix()+"unsupported encoding for one or more POST parameters", e);
 			}
 		}
 		else { //formdata and mtom
@@ -394,80 +336,54 @@ public class HttpSender extends HttpSenderBase {
 		return hmethod;
 	}
 
-	protected FormBodyPart createMultipartBodypart(String name, String message) {
-		if(postType.equals(PostType.MTOM)) {
-			return createMultipartBodypart(name, message, "application/xop+xml");
-		}
-		return createMultipartBodypart(name, message, null);
-	}
+	private FormBodyPart createStringBodypart(Message message) {
+		MimeType mimeType = (postType == PostType.MTOM) ? APPLICATION_XOP_XML : MediaType.TEXT_PLAIN; // only the first part is XOP+XML, other parts should use their own content-type
+		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create(getFirstBodyPartName(), new MessageContentBody(message, mimeType));
 
-	protected FormBodyPart createMultipartBodypart(String name, String message, String contentType) {
-		ContentType cType = ContentType.create("text/plain", getCharSet());
-		if(StringUtils.isNotEmpty(contentType))
-			cType = ContentType.create(contentType, getCharSet());
-
-		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
-			.setName(name)
-			.setBody(new StringBody(message, cType));
-
-		if (StringUtils.isNotEmpty(getMtomContentTransferEncoding()))
+		// Should only be set when request is MTOM and it's the first BodyPart
+		if (postType == PostType.MTOM && StringUtils.isNotEmpty(getMtomContentTransferEncoding())) {
 			bodyPart.setField(MIME.CONTENT_TRANSFER_ENC, getMtomContentTransferEncoding());
+		}
 
 		return bodyPart.build();
 	}
 
-	protected FormBodyPart createMultipartBodypart(String name, InputStream is, String fileName) {
-		return createMultipartBodypart(name, is, fileName, ContentType.APPLICATION_OCTET_STREAM.getMimeType());
-	}
-
-	protected FormBodyPart createMultipartBodypart(String name, InputStream is, String fileName, String contentType) {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appending filepart ["+name+"] with value ["+is+"] fileName ["+fileName+"] and contentType ["+contentType+"]");
-		FormBodyPartBuilder bodyPart = FormBodyPartBuilder.create()
-			.setName(name)
-			.setBody(new InputStreamBody(is, ContentType.create(contentType, getCharSet()), fileName));
-		return bodyPart.build();
-	}
-
-	protected HttpEntity createMultiPartEntity(String message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
+	private HttpEntity createMultiPartEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws SenderException, IOException {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
 		entity.setCharset(Charset.forName(getCharSet()));
-		if(postType.equals(PostType.MTOM))
+		if(postType == PostType.MTOM)
 			entity.setMtomMultipart();
 
 		if (StringUtils.isNotEmpty(getFirstBodyPartName())) {
-			entity.addPart(createMultipartBodypart(getFirstBodyPartName(), message));
+			entity.addPart(createStringBodypart(message));
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+getFirstBodyPartName()+"] with value ["+message+"]");
 		}
 		if (parameters!=null) {
 			for(ParameterValue pv : parameters) {
 				String name = pv.getDefinition().getName();
+				if (requestOrBodyParamsSet.contains(name)) {
+					Message msg = pv.asMessage();
+					if (!msg.isEmpty() || !parametersToSkipWhenEmptySet.contains(name)) {
 
-				// Skip parameters that are configured as ignored
-				if (skipParameter(name))
-					continue;
+						String fileName = null;
+						String sessionKey = pv.getDefinition().getSessionKey();
+						if (sessionKey != null) {
+							fileName = session.getString(sessionKey + "Name");
+						}
+						if(fileName != null) {
+							log.warn("setting filename using [{}Name] for bodypart [{}]. Consider using a MultipartXml with the attribute [name] instead.", sessionKey, fileName, name);
+						}
 
-				Message msg = pv.asMessage();
-				if (msg.isBinary()) {
-					InputStream fis = msg.asInputStream();
-					String fileName = null;
-					String sessionKey = pv.getDefinition().getSessionKey();
-					if (sessionKey != null) {
-						fileName = session.getMessage(sessionKey + "Name").asString();
+						entity.addPart(name, new MessageContentBody(msg, null, fileName));
+						if (log.isDebugEnabled()) log.debug("{}appended bodypart [{}] with message [{}]", getLogPrefix(), name, msg);
 					}
-
-					entity.addPart(createMultipartBodypart(name, fis, fileName));
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended filepart ["+name+"] with value ["+msg+"] and name ["+fileName+"]");
-				} else {
-					String value = msg.asString();
-					entity.addPart(createMultipartBodypart(name, value));
-					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"appended stringpart ["+name+"] with value ["+value+"]");
 				}
 			}
 		}
 
 		if (StringUtils.isNotEmpty(getMultipartXmlSessionKey())) {
-			String multipartXml = session.getMessage(getMultipartXmlSessionKey()).asString();
+			String multipartXml = session.getString(getMultipartXmlSessionKey());
 			log.debug(getLogPrefix()+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
 			if (StringUtils.isEmpty(multipartXml)) {
 				log.warn(getLogPrefix()+"sessionKey [" +getMultipartXmlSessionKey()+"] is empty");
@@ -479,12 +395,11 @@ public class HttpSender extends HttpSenderBase {
 					throw new SenderException(getLogPrefix()+"error building multipart xml", e);
 				}
 				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-				if (parts==null || parts.size()==0) {
+				if (parts.isEmpty()) {
 					log.warn(getLogPrefix()+"no part(s) in multipart xml [" + multipartXml + "]");
 				} else {
-					Iterator<Node> iter = parts.iterator();
-					while (iter.hasNext()) {
-						Element partElement = (Element) iter.next();
+					for (final Node part : parts) {
+						Element partElement = (Element) part;
 						entity.addPart(elementToFormBodyPart(partElement, session));
 					}
 				}
@@ -499,27 +414,14 @@ public class HttpSender extends HttpSenderBase {
 		String partSessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
 		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
 		Message partObject = session.getMessage(partSessionKey);
-
-		if (partObject.isBinary()) {
-			return createMultipartBodypart(partSessionKey, partObject.asInputStream(), partName, partMimeType);
+		MimeType mimeType = null;
+		if(StringUtils.isNotEmpty(partMimeType)) {
+			mimeType = MimeType.valueOf(partMimeType);
 		}
-		return createMultipartBodypart(partName, partObject.asString(), partMimeType);
-	}
 
-	protected boolean validateResponseCode(int statusCode) {
-		boolean ok = false;
-		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
-			ok = true;
-		} else {
-			if (statusCode==200 || statusCode==201 || statusCode==202 || statusCode==204 || statusCode==206) {
-				ok = true;
-			} else {
-				if (isIgnoreRedirects() && (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT)) {
-					ok = true;
-				}
-			}
-		}
-		return ok;
+		String name = partObject.isBinary() || StringUtils.isBlank(partName) ? partSessionKey : partName;
+		String filename = StringUtils.isNotBlank(partName) ? partName : null;
+		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, filename)).build();
 	}
 
 	@Override
@@ -537,7 +439,8 @@ public class HttpSender extends HttpSenderBase {
 					body = "(" + ClassUtils.nameOf(e) + "): " + e.getMessage();
 				}
 			}
-			throw new SenderException(getLogPrefix() + "httpstatus [" + statusCode + "] reason [" + responseHandler.getStatusLine().getReasonPhrase() + "] body [" + body +"]");
+			log.warn(getLogPrefix() + "httpstatus [" + statusCode + "] reason [" + responseHandler.getStatusLine().getReasonPhrase() + "]");
+			return new Message(body);
 		}
 
 		HttpServletResponse response = null;
@@ -552,9 +455,9 @@ public class HttpSender extends HttpSenderBase {
 
 			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
 				try {
-					String fileName = session.getMessage(getStreamResultToFileNameSessionKey()).asString();
+					String fileName = session.getString(getStreamResultToFileNameSessionKey());
 					File file = new File(fileName);
-					Misc.streamToFile(responseMessage.asInputStream(), file);
+					StreamUtil.streamToFile(responseMessage.asInputStream(), file);
 					return new Message(fileName);
 				} catch (IOException e) {
 					throw new SenderException("cannot find filename to stream result to", e);
@@ -640,31 +543,34 @@ public class HttpSender extends HttpSenderBase {
 
 	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix, String redirectLocation) throws IOException {
 		if (StringUtils.isNotEmpty(contentType)) {
-			response.setHeader("Content-Type", contentType); 
+			response.setHeader("Content-Type", contentType);
 		}
 		if (StringUtils.isNotEmpty(contentDisposition)) {
-			response.setHeader("Content-Disposition", contentDisposition); 
+			response.setHeader("Content-Disposition", contentDisposition);
 		}
 		if (StringUtils.isNotEmpty(redirectLocation)) {
 			response.sendRedirect(redirectLocation);
 		}
 		if (is != null) {
 			try (OutputStream outputStream = response.getOutputStream()) {
-				Misc.streamToStream(is, outputStream);
+				StreamUtil.streamToStream(is, outputStream);
 				log.debug(logPrefix + "copied response body input stream [" + is + "] to output stream [" + outputStream + "]");
 			}
 		}
 	}
 
 	/**
-	 * When <code>methodType=POST</code>, the type of post request
+	 * If <code>methodType</code>=<code>POST</code>, <code>PUT</code> or <code>PATCH</code>, the type of post request
 	 * @ff.default RAW
 	 */
 	public void setPostType(PostType type) {
 		this.postType = type;
 	}
 
-	@IbisDoc({"When false and <code>methodType=POST</code>, request parameters are put in the request body instead of in the url", "true"})
+	/**
+	 * If false and <code>methodType</code>=<code>POST</code>, request parameters are put in the request body instead of in the url
+	 * @ff.default true
+	 */
 	@Deprecated
 	public void setParamsInUrl(boolean b) {
 		if(!b) {
@@ -683,24 +589,19 @@ public class HttpSender extends HttpSenderBase {
 	public void setInputMessageParam(String inputMessageParam) {
 		setFirstBodyPartName(inputMessageParam);
 	}
-	@IbisDoc({"(Only used when <code>methodType=POST</code> and <code>postType=URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Name of the first body part", ""})
+	/** (Only used when <code>methodType</code>=<code>POST</code> and <code>postType</code>=<code>URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content */
 	public void setFirstBodyPartName(String firstBodyPartName) {
 		this.firstBodyPartName = firstBodyPartName;
 	}
 
-	@IbisDoc({"When true, besides http status code 200 (OK) also the code 301 (MOVED_PERMANENTLY), 302 (MOVED_TEMPORARILY) and 307 (TEMPORARY_REDIRECT) are considered successful", "false"})
-	public void setIgnoreRedirects(boolean b) {
-		ignoreRedirects = b;
-	}
-
-	@IbisDoc({"if set, the result is streamed to a file (instead of passed as a string)", ""})
+	/** If set, the result is streamed to a file (instead of passed as a string) */
 	@Deprecated
 	@ConfigurationWarning("no longer required to store the result as a file in the PipeLineSession, the sender can return binary data")
 	public void setStreamResultToFileNameSessionKey(String string) {
 		streamResultToFileNameSessionKey = string;
 	}
 
-	@IbisDoc({"if set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream)", ""})
+	/** If set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream) */
 	@Deprecated
 	@ConfigurationWarning("no longer required to store the result as a stream in the PipeLineSession, the sender can return binary data")
 	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
@@ -713,21 +614,30 @@ public class HttpSender extends HttpSenderBase {
 		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
 	}
 
-	@IbisDoc({"when true, the result is base64 encoded", "false"})
+	/**
+	 * If true, the result is Base64 encoded
+	 * @ff.default false
+	 */
 	@Deprecated
 	@ConfigurationWarning("use Base64Pipe instead")
 	public void setBase64(boolean b) {
 		base64 = b;
 	}
 
-	@IbisDoc({"if set, the result is streamed to the httpservletresponse object of the restservicedispatcher (instead of passed as a string)", "false"})
+	/**
+	 * If set, the result is streamed to the HhttpServletResponse object of the RestServiceDispatcher (instead of passed as a string)
+	 * @ff.default false
+	 */
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
 
 	@Deprecated
 	@ConfigurationWarning("multipart has been replaced by postType='formdata'")
-	@IbisDoc({"when true and <code>methodtype=post</code> and <code>paramsinurl=false</code>, request parameters are put in a multipart/form-data entity instead of in the request body", "false"})
+	/**
+	 * If true and <code>methodType<code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, request parameters are put in a multipart/form-data entity instead of in the request body
+	 * @ff.default false
+	 */
 	public void setMultipart(boolean b) {
 		if(b && !postType.equals(PostType.MTOM)) {
 			postType = PostType.FORMDATA;
@@ -736,12 +646,24 @@ public class HttpSender extends HttpSenderBase {
 
 	@Deprecated
 	@ConfigurationWarning("Unless set explicitly multipart response will be detected automatically")
-	@IbisDoc({"when true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.", "false"})
+	/**
+	 * If true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.
+	 * @ff.default false
+	 */
 	public void setMultipartResponse(Boolean b) {
 		multipartResponse = b;
 	}
 
-	@IbisDoc({"if set and <code>methodtype=post</code> and <code>paramsinurl=false</code>, a multipart/form-data entity is created instead of a request body. for each part element in the session key a part in the multipart entity is created", ""})
+	/**
+	 * If set and <code>methodType</code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, a multipart/form-data entity is created instead of a request body.
+	 * For each part element in the session key a part in the multipart entity is created. Part elements can contain the following attributes:
+	 * <ul>
+	 * <li>name: optional, used as 'filename' in Content-Disposition</li>
+	 * <li>sessionKey: mandatory, refers to contents of part</li>
+	 * <li>mimeType: optional MIME type</li>
+	 * </ul>
+	 * The name of the part is determined by the name attribute, unless that is empty, or the contents is binary. In those cases the sessionKey name is used as name of the part.
+	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}
@@ -756,12 +678,18 @@ public class HttpSender extends HttpSenderBase {
 		this.mtomContentTransferEncoding = mtomContentTransferEncoding;
 	}
 
-	@IbisDoc({"64", "specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.", "false"})
+	/**
+	 * Specifies whether messages will encoded, e.g. spaces will be replaced by '+' etc.
+	 * @ff.default false
+	 */
 	public void setEncodeMessages(boolean b) {
 		encodeMessages = b;
 	}
 
-	@IbisDoc({"65", "if <code>true</code>, the input will be added to the URL for methodType=GET, or for methodType=POST, PUT or PATCH if postType=RAW. This used to be the default behaviour in framework version 7.7 and earlier", "for methodType=GET: <code>false</code>,<br/>for methodTypes POST, PUT, PATCH: <code>true</code> "})
+	/**
+	 * If <code>true</code>, the input will be added to the URL for <code>methodType</code>=<code>GET</code>, or for <code>methodType</code>=<code>POST</code>, <code>PUT</code> or <code>PATCH</code> if <code>postType</code>=<code>RAW</code>. This used to be the default behaviour in framework version 7.7 and earlier
+	 * @ff.default for methodType=<code>GET</code>: <code>false</code>,<br/>for methodTypes <code>POST</code>, <code>PUT</code>, <code>PATCH</code>: <code>true</code>
+	 */
 	public void setTreatInputMessageAsParameters(Boolean b) {
 		treatInputMessageAsParameters = b;
 	}

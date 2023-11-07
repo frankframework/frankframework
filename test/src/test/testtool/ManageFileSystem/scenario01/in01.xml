@@ -1,0 +1,41 @@
+<manageFileSystemREQ>
+	<mkdir>
+		<inputFolder>${testdata.dir}/ManageFileSystem</inputFolder>
+	</mkdir>
+
+	<write>
+		<filename>${testdata.dir}/ManageFileSystem/test.txt</filename>
+		<contents>IyBGcmFuayFSdW5uZXIKClRoaXMgcHJvamVjdCB3aWxsIGhlbHAgeW91IHJ1biB5b3VyIEZyYW5rIGNvbmZpZ3VyYXRpb25zIHdpdGggVG9tY2F0LgoKQWRkIGEgc21hbGw</contents>
+	</write>
+
+	<append>
+		<filename>${testdata.dir}/ManageFileSystem/test.txt</filename>
+		<contents>+ append test</contents>
+	</append>
+
+	<info>
+		<filename>${testdata.dir}/ManageFileSystem/test.txt</filename>
+	</info>
+
+	<read>
+		<filename>${testdata.dir}/ManageFileSystem/test.txt</filename>
+	</read>
+
+	<mkdir>
+		<inputFolder>${testdata.dir}/ManageFileSystem/myNewFolder1</inputFolder>
+	</mkdir>
+
+	<mkdir>
+		<inputFolder>${testdata.dir}/ManageFileSystem/myNewFolder2</inputFolder>
+	</mkdir>
+
+	<copy>
+		<filename>${testdata.dir}/ManageFileSystem/test.txt</filename>
+		<destination>${testdata.dir}/ManageFileSystem/myNewFolder1</destination>
+	</copy>
+
+	<move>
+		<filename>${testdata.dir}/ManageFileSystem/test.txt</filename>
+		<destination>${testdata.dir}/ManageFileSystem/myNewFolder2</destination>
+	</move>
+</manageFileSystemREQ>

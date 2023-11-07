@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,24 +23,27 @@ import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 /**
  * Database Listener that returns a count of messages available, but does not perform any locking or
  * other management of processing messages in parallel.
- * 
+ *
  * @author  Peter Leeuwenburgh
  */
 
 public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<String> {
-	protected final static String KEYWORD_SELECT_COUNT = "select count(";
+	protected static final String KEYWORD_SELECT_COUNT = "select count(";
 
 	private String selectQuery;
 	private boolean trace = false;
@@ -80,17 +83,19 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 		}
 	}
 
+	@Nonnull
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
-		return new LinkedHashMap<String,Object>();
+		return new LinkedHashMap<>();
 	}
 
 	@Override
-	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+		// No-op
 	}
 
 	@Override
-	public String getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<String> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			try (Connection c = getConnection()) {
 				return getRawMessage(c, threadContext);
@@ -103,7 +108,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 		}
 	}
 
-	protected String getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
+	protected RawMessageWrapper<String> getRawMessage(Connection conn, Map<String,Object> threadContext) throws ListenerException {
 		String query = getSelectQuery();
 		try (Statement stmt = conn.createStatement()) {
 			stmt.setFetchSize(1);
@@ -116,7 +121,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 				if (count == 0) {
 					return null;
 				}
-				return "<count>" + count + "</count>";
+				return new RawMessageWrapper<>("<count>" + count + "</count>");
 			}
 		} catch (Exception e) {
 			throw new ListenerException(getLogPrefix() + "caught exception retrieving message using query [" + query + "]", e);
@@ -124,13 +129,8 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 	}
 
 	@Override
-	public String getIdFromRawMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
-		return null;
-	}
-
-	@Override
-	public Message extractMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
-		return Message.asMessage(rawMessage);
+	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String,Object> context) throws ListenerException {
+		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
 	protected ResultSet executeQuery(Connection conn, String query) throws ListenerException {
@@ -146,7 +146,8 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+		// No-op
 	}
 
 	protected void execute(Connection conn, String query) throws ListenerException {
@@ -170,7 +171,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 		}
 	}
 
-	@IbisDoc({"count query that returns the number of available records. when there are available records the pipeline is activated", ""})
+	/** count query that returns the number of available records. when there are available records the pipeline is activated */
 	public void setSelectQuery(String string) {
 		selectQuery = string;
 	}

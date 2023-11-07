@@ -17,13 +17,11 @@ package nl.nn.adapterframework.senders;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -34,7 +32,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-public abstract class SenderBase implements ISender, ApplicationContextAware {
+public abstract class SenderBase implements ISender {
 	protected Logger log = LogUtil.getLogger(this);
 	private String name;
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -64,11 +62,6 @@ public abstract class SenderBase implements ISender, ApplicationContextAware {
 		return SpringUtils.createBean(applicationContext, beanClass);
 	}
 
-	@Override
-	public boolean isSynchronous() {
-		return true;
-	}
-
 	/**
 	 * Returns the true name of the class and not <code>XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d</code>.
 	 * {@link ClassUtils#nameOf(Object)} makes sure the original class will be used.
@@ -79,13 +72,7 @@ public abstract class SenderBase implements ISender, ApplicationContextAware {
 		return ClassUtils.nameOf(this) + " ";
 	}
 
-	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return false;
-	}
-
-
-	@IbisDoc({"name of the sender", ""})
+	/** name of the sender */
 	@Override
 	public void setName(String name) {
 		this.name=name;

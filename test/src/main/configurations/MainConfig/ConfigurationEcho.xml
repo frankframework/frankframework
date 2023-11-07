@@ -1,0 +1,11 @@
+<module>
+	<adapter name="EchoPipe">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="ibis4test-EchoPipe" />
+		</receiver>
+		<pipeline>
+			<pipe name="Echo" className="nl.nn.adapterframework.pipes.EchoPipe" />
+		</pipeline>
+	</adapter>
+</module>

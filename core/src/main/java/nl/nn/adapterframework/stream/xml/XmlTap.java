@@ -33,5 +33,4 @@ public class XmlTap extends XmlTee {
 	public XmlWriter getWriter() {
 		return (XmlWriter)getSecondContentHandler();
 	}
-	
 }

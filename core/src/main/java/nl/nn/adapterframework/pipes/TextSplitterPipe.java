@@ -18,7 +18,8 @@ package nl.nn.adapterframework.pipes;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingPipe;
@@ -28,6 +29,7 @@ import nl.nn.adapterframework.xml.SaxDocumentBuilder;
  * Breaks up the text input in blocks of a maximum length. 
  * By default the maximum block length is 160 characters, to enable them to be send as SMS messages.
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class TextSplitterPipe extends StreamingPipe {
 
 	private int maxBlockLength=160;
@@ -37,12 +39,10 @@ public class TextSplitterPipe extends StreamingPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 
 		try {
-	
-			String result[] = new String[100];
+			String[] result = new String[100];
 			int p, s, o = 0;
-	
 			String inputString = message.asString();
-	
+
 			if (softSplit) {
 				for (p = 0; p < inputString.length() - maxBlockLength;) {
 					// find last space in msg part
@@ -74,9 +74,9 @@ public class TextSplitterPipe extends StreamingPipe {
 					}
 				}
 			}
-	
+
 			try (MessageOutputStream target=getTargetStream(session)) {
-				try (SaxDocumentBuilder saxBuilder = new SaxDocumentBuilder("text", target.asContentHandler())) {
+				try (SaxDocumentBuilder saxBuilder = new SaxDocumentBuilder("text", target.asContentHandler(), false)) {
 					for(int counter = 0; result[counter] != null; counter++) {
 						saxBuilder.addElement("block", result[counter]);
 					}
@@ -88,12 +88,18 @@ public class TextSplitterPipe extends StreamingPipe {
 		}
 	}
 
-	@IbisDoc({"1", "Set the maximum number of characters of a block", "160"})
+	/**
+	 * Set the maximum number of characters of a block
+	 * @ff.default 160
+	 */
 	public void setMaxBlockLength(int maxBlockLength) {
 		this.maxBlockLength = maxBlockLength;
 	}
 
-	@IbisDoc({"2", "If true, try to break up the message at spaces, instead of in the middle of words", "false"})
+	/**
+	 * If true, try to break up the message at spaces, instead of in the middle of words
+	 * @ff.default false
+	 */
 	public void setSoftSplit(boolean softSplit) {
 		this.softSplit = softSplit;
 	}

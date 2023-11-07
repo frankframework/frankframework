@@ -22,7 +22,7 @@ import java.util.Map;
 import nl.nn.adapterframework.stream.Message;
 
 public interface IWithAttachments<F,A> extends IBasicFileSystem<F> {
-	
+
 	public Iterator<A> listAttachments(F f) throws FileSystemException;
 
 	public String getAttachmentName(A a) throws FileSystemException;
@@ -30,7 +30,7 @@ public interface IWithAttachments<F,A> extends IBasicFileSystem<F> {
 	public long getAttachmentSize(A a) throws FileSystemException;
 	public String getAttachmentContentType(A a) throws FileSystemException;
 	public String getAttachmentFileName(A a) throws FileSystemException;
-	
+
 	public F getFileFromAttachment(A a) throws FileSystemException;
 
 	public Map<String, Object> getAdditionalAttachmentProperties(A a) throws FileSystemException;

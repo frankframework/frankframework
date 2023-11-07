@@ -5,6 +5,7 @@
 			cronExpression="${cleanup.filesystem.cron}"
 			description="Cleanup the file system"
 			function="cleanupFileSystem"
+			active="${cleanup.filesystem.active}"
 		>
 			<directoryCleaner
 				directory="${fxf.dir}"

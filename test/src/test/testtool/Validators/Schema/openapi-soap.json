@@ -15,6 +15,13 @@
             "get":{
                 "parameters":[
                     {
+                        "name": "Message-Id",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
                         "name":"Status",
                         "in":"query",
                         "schema":{

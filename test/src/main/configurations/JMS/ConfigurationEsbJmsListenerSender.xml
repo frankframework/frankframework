@@ -12,7 +12,7 @@
 			<pipe name="Send2EsbJms"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
-					destinationName="jms/GetMessageRequest" jmsRealm="qcf_tibco_esb_rr"
+					destinationName="${tibco.rr_queue}" jmsRealm="qcf_tibco_esb_rr"
 					messageProtocol="RR">
 					<param name="SOURCE" value="${hostname}_esbJmsRR" />
 					</sender>
@@ -35,7 +35,7 @@
 			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
 		<receiver>
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
-				destinationName="jms/GetMessageRequest" jmsRealm="qcf_tibco_esb_rr"
+				destinationName="${tibco.rr_queue}" jmsRealm="qcf_tibco_esb_rr"
 				messageProtocol="RR" 
 				messageSelector="SOURCE='${hostname}_esbJmsRR'"/>
 		</receiver>
@@ -68,7 +68,7 @@
 			<pipe name="Send2EsbJms"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
-					destinationName="jms/UpdateMessageAction" jmsRealm="qcf_tibco_esb_ff"
+					destinationName="${tibco.ff_queue}" jmsRealm="qcf_tibco_esb_ff"
 					messageProtocol="FF">
 					<param name="SOURCE" value="${hostname}_FF1" />
 				</sender>
@@ -101,7 +101,7 @@
 			</exits>
 			<pipe name="send2EsbJms">
 				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
-					destinationName="jms/UpdateMessageAction" jmsRealm="qcf_tibco_esb_ff"
+					destinationName="${tibco.ff_queue}" jmsRealm="qcf_tibco_esb_ff"
 					messageProtocol="FF">
 					<param name="SOURCE" value="${hostname}_FF2" />
 				</sender>
@@ -155,7 +155,7 @@
 			<pipe name="Send2EsbJms"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.extensions.esb.EsbJmsSender"
-					destinationName="jms/UpdateMessageAction" jmsRealm="qcf_tibco_esb_ff"
+					destinationName="${tibco.ff_queue}" jmsRealm="qcf_tibco_esb_ff"
 					messageProtocol="FF">
 					<param name="SOURCE" value="${hostname}_FF3" />
 				</sender>
@@ -176,19 +176,22 @@
 		active="${active.tibco}">
 		<receiver transactionAttribute="Required" maxRetries="0">
 			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
-				destinationName="jms/UpdateMessageAction" jmsRealm="qcf_tibco_esb_ff"
+				destinationName="${tibco.ff_queue}" jmsRealm="qcf_tibco_esb_ff"
 				messageProtocol="FF" messageSelector="SOURCE='${hostname}_FF3'" />
 
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/EsbJmsFFListener" />
 		</receiver>
-		<pipeline firstPipe="switchAction" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
 			<inputWrapper
 				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
 				mode="i2t" direction="unwrap" />
+			<pipe name="put something in log context" export="true" className="nl.nn.adapterframework.pipes.LogContextPipe">
+				<param name="testMdc" value="testMdc" />
+			</pipe>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" />
 			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">

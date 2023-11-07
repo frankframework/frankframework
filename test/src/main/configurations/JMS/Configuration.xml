@@ -1,16 +1,11 @@
-<!DOCTYPE configuration [
-	<!ENTITY ConfigurationCompactMessage SYSTEM "./ConfigurationCompactMessage.xml">
-	<!ENTITY ConfigurationEsbJmsListenerSender SYSTEM "./ConfigurationEsbJmsListenerSender.xml">
-	<!ENTITY ConfigurationFxF3 SYSTEM "./ConfigurationFxF3.xml">
-	<!ENTITY ConfigurationJmsListenerSender SYSTEM "./ConfigurationJmsListenerSender.xml">
-	<!ENTITY ConfigurationWsdlGenerator SYSTEM "./ConfigurationWsdlGenerator.xml">
-	<!ENTITY ConfigurationJmsHeaders SYSTEM "./ConfigurationJmsHeaders.xml">
-]>
-<configuration name="JMS">
-	&ConfigurationCompactMessage;
-	&ConfigurationEsbJmsListenerSender;
-	&ConfigurationFxF3;
-	&ConfigurationJmsListenerSender;
-	&ConfigurationWsdlGenerator;
-	&ConfigurationJmsHeaders;
-</configuration>
+<Configuration>
+	<Include ref="ConfigurationCompactMessage.xml"/>
+	<Include ref="ConfigurationEsbJmsListenerSender.xml"/>
+	<Include ref="ConfigurationFxF3.xml"/>
+	<Include ref="ConfigurationJmsListenerSender.xml"/>
+	<Include ref="ConfigurationJmsBytesMessage.xml"/>
+	<Include ref="ConfigurationWsdlGenerator.xml"/>
+	<Include ref="ConfigurationJmsHeaders.xml"/>
+	<Include ref="TestHighDeliveryCountWithEsbJmsListener.xml"/>
+	<Include ref="ConfigurationAwsSqsJmsListenerSender.xml"/>
+</Configuration>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2018, 2020 Nationale-Nederlanden
+   Copyright 2015-2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -23,18 +24,16 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.lifecycle.ApplicationMetrics;
+import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
@@ -42,7 +41,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
- * Create a view for {@link nl.nn.adapterframework.http.RestListener}.
+ * Create a view for {@link RestListener}.
  *
  * <p>
  * <b>expected format after performing the XSLT transformation:</b>
@@ -133,14 +132,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </code>
  * </p>
  * <p>
- * 
+ *
  * @author Peter Leeuwenburgh
  */
 
 public class CreateRestViewPipe extends XsltPipe {
 	private static final String CONTENTTYPE = "contentType";
 	private static final String SRCPREFIX = "srcPrefix";
-	private @Getter @Setter ApplicationMetrics metrics;
 
 	private String contentType = "text/html";
 	private AppConstants appConstants;
@@ -167,7 +165,7 @@ public class CreateRestViewPipe extends XsltPipe {
 		int countSrcPrefix = StringUtils.countMatches(uri, "/");
 		String srcPrefix = StringUtils.repeat("../", countSrcPrefix);
 		session.put(SRCPREFIX, srcPrefix);
-		log.debug(getLogPrefix(session) + "stored [" + srcPrefix + "] in pipeLineSession under key [" + SRCPREFIX + "]");
+		log.debug("stored [{}] in pipeLineSession under key [{}]", srcPrefix, SRCPREFIX);
 
 		PipeRunResult prr = super.doPipe(input, session);
 		Message result = prr.getResult();
@@ -181,11 +179,11 @@ public class CreateRestViewPipe extends XsltPipe {
 			Map<String,Object> parameters = retrieveParameters(httpServletRequest, servletContext, srcPrefix);
 			newResult = XmlUtils.getAdapterSite(result.asString(), parameters);
 		} catch (Exception e) {
-			throw new PipeRunException(this, getLogPrefix(session) + " Exception on transforming page to view", e);
+			throw new PipeRunException(this, "Exception on transforming page to view", e);
 		}
 
 		session.put(CONTENTTYPE, getContentType());
-		log.debug(getLogPrefix(session) + "stored [" + getContentType() + "] in pipeLineSession under key [" + CONTENTTYPE + "]");
+		log.debug("stored [{}] in pipeLineSession under key [{}]", getContentType(), CONTENTTYPE);
 
 		return new PipeRunResult(getSuccessForward(), newResult);
 	}
@@ -198,7 +196,7 @@ public class CreateRestViewPipe extends XsltPipe {
 				+ httpServletRequest.getServerName() + "</serverName>"
 				+ "</servletRequest>" + "</requestInfo>";
 		parameters.put("requestInfo", XmlUtils.buildNode(requestInfoXml));
-		parameters.put("upTime", XmlUtils.buildNode("<upTime>" + (metrics==null?"null":metrics.getUptime()) + "</upTime>"));
+		parameters.put("upTime", XmlUtils.buildNode("<upTime>" + getUptime() + "</upTime>"));
 		String machineNameXml = "<machineName>" + Misc.getHostname() + "</machineName>";
 		parameters.put("machineName", XmlUtils.buildNode(machineNameXml));
 		String fileSystemXml = "<fileSystem>" + "<totalSpace>"
@@ -206,7 +204,7 @@ public class CreateRestViewPipe extends XsltPipe {
 				+ "<freeSpace>" + Misc.getFileSystemFreeSpace()
 				+ "</freeSpace>" + "</fileSystem>";
 		parameters.put("fileSystem", XmlUtils.buildNode(fileSystemXml));
-		String applicationConstantsXml = appConstants.toXml(true);
+		String applicationConstantsXml = toXml(appConstants);
 		parameters.put("applicationConstants", XmlUtils.buildNode(applicationConstantsXml));
 		String processMetricsXml = ProcessMetrics.toXml();
 		parameters.put("processMetrics", XmlUtils.buildNode(processMetricsXml));
@@ -214,6 +212,27 @@ public class CreateRestViewPipe extends XsltPipe {
 		parameters.put(SRCPREFIX, srcPrefix);
 
 		return parameters;
+	}
+
+	private String toXml(AppConstants appConstants) {
+		Enumeration<Object> enumeration = appConstants.keys();
+		XmlBuilder xmlh = new XmlBuilder("applicationConstants");
+		XmlBuilder xml = new XmlBuilder("properties");
+		xmlh.addSubElement(xml);
+
+		while(enumeration.hasMoreElements()) {
+			String propName = (String) enumeration.nextElement();
+
+			XmlBuilder p = new XmlBuilder("property");
+			p.addAttribute("name", propName);
+			p.setValue(appConstants.getProperty(propName));
+			xml.addSubElement(p);
+		}
+		return xmlh.toXML();
+	}
+
+	private String getUptime() {
+		return DateUtils.format(getApplicationContext().getStartupDate(), DateUtils.FORMAT_GENERICDATETIME);
 	}
 
 	private String retrieveMenuBarParameter(String srcPrefix) {
@@ -241,7 +260,10 @@ public class CreateRestViewPipe extends XsltPipe {
 		return imagelink;
 	}
 
-	@IbisDoc({"content type of the servlet response", "text/html"})
+	/**
+	 * content type of the servlet response
+	 * @ff.default text/html
+	 */
 	public void setContentType(String string) {
 		contentType = string;
 	}

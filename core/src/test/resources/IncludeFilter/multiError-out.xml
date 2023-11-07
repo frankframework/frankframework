@@ -1,0 +1,24 @@
+<root>
+	
+<!--start include 'MultiSubOk1.xml'-->
+<MultiSubOK1>
+	MultiSubOK1 header
+	
+<!--start include 'okA.xml'-->
+<okA>
+	OK-A contents
+</okA>
+<!--end include 'okA.xml'-->
+	
+<!--start include 'sub/okB.xml'-->
+<okB>
+	OK-B contents
+</okB>
+<!--end include 'sub/okB.xml'-->
+	MultiSubOK1 header
+</MultiSubOK1>
+<!--end include 'MultiSubOk1.xml'-->
+	
+<!--start include 'ErrA.xml'-->
+<ErrA>
+	<unclosed-elemnt> <!-- this document is not well formed on purpose -->

@@ -10,27 +10,6 @@
 	</description>
 
 	<filter>
-		<filter-name>LoginFilter</filter-name>
-		<filter-class>nl.nn.adapterframework.webcontrol.LoginFilter</filter-class>
-		<init-param>
-			<param-name>allowedExtensions</param-name>
-			<param-value>css js gif jpg png svg</param-value>
-		</init-param>
-		<init-param>
-			<param-name>allowedObserverPaths</param-name>
-			<param-value>/index.jsp /FileViewerServlet /testtool</param-value>
-		</init-param>
-		<init-param>
-			<param-name>allowedDataAdminPaths</param-name>
-			<param-value>/testtool</param-value>
-		</init-param>
-		<init-param>
-			<param-name>allowedTesterPaths</param-name>
-			<param-value>/testtool</param-value>
-		</init-param>
-	</filter>
-
-	<filter>
 		<filter-name>CacheControlFilter</filter-name>
 		<filter-class>nl.nn.adapterframework.http.CacheControlFilter</filter-class>
 	</filter>
@@ -42,16 +21,17 @@
 
 	<filter-mapping>
 		<filter-name>CacheControlFilter</filter-name>
-		<url-pattern>/api/*</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>CacheControlFilter</filter-name>
 		<url-pattern>/iaf/api/*</url-pattern>
 	</filter-mapping>
 
+	<!-- Spring Security -->
+	<filter>
+		<filter-name>springSecurityFilterChain</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+	</filter>
+
 	<filter-mapping>
-		<filter-name>LoginFilter</filter-name>
+		<filter-name>springSecurityFilterChain</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
@@ -78,7 +58,6 @@
 	</mime-mapping>
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
-		<welcome-file>index.jsp</welcome-file>
 	</welcome-file-list>
 
 	<!-- Error pages -->
@@ -96,139 +75,21 @@
 	</login-config>
 
 	<!--
-	LEGACY URL-based security configuration, now superseded by dynamic servlet configuration.
-	See nl.nn.adapterframework.lifecycle.ServletManager
-
 	When a security-constraint element is present Tomcat will authenticate the
 	user for all url's whereas WebSphere does this only for the url's mentioned
 	in the security constraint(s). The PublicAccess security constraint will
 	make Tomcat behave the same as WebSphere.
 	-->
-
-	<!-- security-constraint>
-		<web-resource-collection>
-			<web-resource-name>GUI login</web-resource-name>
-			<description></description>
-			<url-pattern>/iaf/</url-pattern>
-			<url-pattern>/iaf/index.jsp</url-pattern>
-			<http-method>GET</http-method>
-			<http-method>POST</http-method>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisObserver</role-name>
-			<role-name>IbisAdmin</role-name>
-			<role-name>IbisDataAdmin</role-name>
-			<role-name>IbisTester</role-name>
-			<role-name>IbisWebService</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>IAFAPI</web-resource-name>
-			<description></description>
-			<url-pattern>/iaf/api/*</url-pattern>
-			<http-method>OPTIONS</http-method>
-		</web-resource-collection>
-	</security-constraint>
-
-	<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>IAFAPI</web-resource-name>
-			<description></description>
-			<url-pattern>/iaf/api/*</url-pattern>
-			<http-method>GET</http-method>
-			<http-method>POST</http-method>
-			<http-method>PUT</http-method>
-			<http-method>DELETE</http-method>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisObserver</role-name>
-			<role-name>IbisAdmin</role-name>
-			<role-name>IbisDataAdmin</role-name>
-			<role-name>IbisTester</role-name>
-			<role-name>IbisWebService</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-
 	<security-constraint>
 		<display-name>PublicAccess</display-name>
 		<web-resource-collection>
 			<web-resource-name>PublicAccessResourceCollection</web-resource-name>
 			<description>collection of url's for public access (overruled by other collections for specific url's)</description>
 			<url-pattern>/*</url-pattern>
-			<url-pattern>/iaf/api/server/health</url-pattern>
 		</web-resource-collection>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-	<security-constraint>
-		<display-name>ObserverAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>ObserverAccessResourceCollection</web-resource-name>
-			<description>collection of url's for observer access</description>
-			<url-pattern>/FileViewerServlet</url-pattern>
-			<url-pattern>/testtool</url-pattern>
-			<url-pattern>/rest/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisObserver</role-name>
-			<role-name>IbisAdmin</role-name>
-			<role-name>IbisDataAdmin</role-name>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-	<security-constraint>
-		<display-name>TesterAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>TesterAccessResourceCollection</web-resource-name>
-			<description>collection of url's for tester access</description>
-			<url-pattern>/larva/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>CONFIDENTIAL</transport-guarantee>
-		</user-data-constraint>
 	</security-constraint>
 
-	<security-constraint>
-		<display-name>WebServiceAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>WebServiceAccessResourceCollection</web-resource-name>
-			<description>collection of url's for webservice access</description>
-			<url-pattern>/servlet/rpcrouter/*</url-pattern>
-			<url-pattern>/servlet/messagerouter</url-pattern>
-			<url-pattern>/services/*</url-pattern>
-			<url-pattern>/HttpListener</url-pattern>
-			<url-pattern>/rest/*</url-pattern>
-			<url-pattern>/cmis/*</url-pattern>
-		</web-resource-collection>
-		<auth-constraint>
-			<description></description>
-			<role-name>IbisWebService</role-name>
-			<role-name>IbisTester</role-name>
-		</auth-constraint>
-		<user-data-constraint>
-			<transport-guarantee>NONE</transport-guarantee>
-		</user-data-constraint>
-	</security-constraint>
-
+	<!-- These roles are parsed when Spring Security is enabled and uses JEE container authorization. -->
 	<security-role>
 		<description>can call Ibis WebServices</description>
 		<role-name>IbisWebService</role-name>
@@ -248,6 +109,5 @@
 	<security-role>
 		<description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions</description>
 		<role-name>IbisTester</role-name>
-	</security-role -->
-
+	</security-role>
 </web-app>

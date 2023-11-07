@@ -21,8 +21,9 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.doc.Mandatory;
+import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.util.EnumUtils;
 
@@ -46,10 +47,10 @@ public class IbisActionJob extends JobDef {
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		this.ibisAction = EnumUtils.parse(IbisAction.class, "function", jobAction.name()); // Try and parse the JobDefFunction as an IbisAction
+		this.ibisAction = EnumUtils.parse(IbisAction.class, "function", jobAction.name()); // Try and parse the Action as an IbisAction
 
 		if (StringUtils.isEmpty(getAdapterName())) {
-			throw new ConfigurationException("a adapterName must be specified");
+			throw new ConfigurationException("an adapterName must be specified");
 		}
 		Adapter adapter = adapterManager.getAdapter(getAdapterName());
 		if(adapter == null) { //Make sure the adapter is registered in this configuration
@@ -73,8 +74,14 @@ public class IbisActionJob extends JobDef {
 		getIbisManager().handleAction(ibisAction, getConfigurationName(), getAdapterName(), getReceiverName(), "scheduled job ["+getName()+"]", true);
 	}
 
+	@Mandatory
 	public void setAction(Action action) {
-		jobAction = action;
+		this.jobAction = action;
+	}
+
+	@Deprecated
+	public void setFunction(Action function) {
+		setAction(function);
 	}
 
 	/** Configuration on which job operates */

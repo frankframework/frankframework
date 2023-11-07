@@ -1,0 +1,13 @@
+{
+    "messages": [
+        {
+            "expiryDate": 12,
+            "host": "dummy-hostname",
+            "insertDate": 45,
+            "comment": null,
+            "correlationId": "dummyCorrelationId",
+            "id": "dummyMessageId"
+        }
+    ],
+    "numberOfMessages": 1
+}

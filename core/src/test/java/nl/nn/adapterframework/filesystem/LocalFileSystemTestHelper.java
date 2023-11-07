@@ -4,38 +4,39 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.rules.TemporaryFolder;
+import org.apache.commons.io.FileUtils;
 
 public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
-	public TemporaryFolder folder;
+	public Path folder;
 
 
-	public LocalFileSystemTestHelper(TemporaryFolder folder) {
-		this.folder=folder;
+	public LocalFileSystemTestHelper(Path folder2) {
+		this.folder=folder2;
 	}
 
 	@Override
 	public void setUp() throws Exception {
-		// not necessary
+		FileUtils.cleanDirectory(folder.toFile());
 	}
 
 	@Override
 	public void tearDown() throws Exception {
 		// not necessary
 	}
-	
+
 	protected Path getFileHandle(String filename) {
-		return Paths.get(folder.getRoot().getAbsolutePath(), filename);
+		return Paths.get(folder.toAbsolutePath().toString(), filename);
 	}
 	protected Path getFileHandle(String subfolder, String filename) {
 		if (subfolder==null) {
 			return getFileHandle(filename);
 		}
-		return Paths.get(folder.getRoot().getAbsolutePath()+"/"+subfolder, filename);
+		return Paths.get(folder.toAbsolutePath()+"/"+subfolder, filename);
 	}
 
 	@Override
@@ -52,6 +53,10 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 	public OutputStream _createFile(String folder, String filename) throws IOException {
 		Path f = getFileHandle(folder, filename);
 		try {
+			if(folder != null && !Files.exists(f.getParent())) {
+				Files.createDirectories(f.getParent());
+			}
+
 			Files.createFile(f);
 		} catch (IOException e) {
 			throw new IOException("Cannot create file ["+f.toString()+"]",e);
@@ -77,6 +82,12 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public void _deleteFolder(String folderName) throws Exception {
-		_deleteFile(null, folderName);
+		if (folderName != null) {
+			try {
+				_deleteFile(null, folderName);
+			} catch (NoSuchFileException e) {
+				// nothing to delete if the folder doesn't exist.
+			}
+		}
 	}
 }

@@ -23,12 +23,13 @@ import nl.nn.adapterframework.core.PipeLineSession;
 
 /**
  * Resulthandler that writes the transformed record to a String, that is passed to the next Pipe literally.
- * 
+ *
  * @author Gerrit van Brakel
  * @since   4.7
+ * @deprecated Warning: non-maintained functionality.
  */
 public class Result2StringWriter extends ResultWriter {
-	
+
 	@Override
 	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
 		return new StringWriter();
@@ -41,7 +42,7 @@ public class Result2StringWriter extends ResultWriter {
 		String result=null;
 		if (writer!=null) {
 			result = (writer).getBuffer().toString();
-		} 
+		}
 		return result;
 	}
 

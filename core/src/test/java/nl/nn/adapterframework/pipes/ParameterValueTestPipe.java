@@ -18,7 +18,7 @@ public class ParameterValueTestPipe extends FixedForwardPipe {
 			try {
 				pvl = getParameterList().getValues(message, session);
 			} catch (ParameterException e) {
-				throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
+				throw new PipeRunException(this, "exception on extracting parameters", e);
 			}
 		}
 
@@ -27,9 +27,8 @@ public class ParameterValueTestPipe extends FixedForwardPipe {
 
 		if(StringUtils.isNotEmpty(param1)) {
 			return new PipeRunResult(getSuccessForward(), param1);
-		} else {
-			return new PipeRunResult(getSuccessForward(), param2);
 		}
+		return new PipeRunResult(getSuccessForward(), param2);
 	}
 
 }

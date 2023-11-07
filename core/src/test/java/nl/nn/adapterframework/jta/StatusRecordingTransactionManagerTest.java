@@ -3,39 +3,34 @@ package nl.nn.adapterframework.jta;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.IOException;
 
 import javax.transaction.TransactionManager;
 
-import org.junit.Rule;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
 import org.springframework.transaction.TransactionSystemException;
-import org.springframework.util.StreamUtils;
 
 import lombok.Setter;
 
-public class StatusRecordingTransactionManagerTest {
+public class StatusRecordingTransactionManagerTest extends StatusRecordingTransactionManagerTestBase<StatusRecordingTransactionManagerTest.TestableStatusRecordingTransactionManager>{
 
-	public String STATUS_FILE = "status.txt";
-	public String TMUID_FILE = "tm-uid.txt";
+	private TestableStatusRecordingTransactionManager tm;
 
-	private @Mock TransactionManager delegateTransactionManager;
-	public @Rule TemporaryFolder folder = new TemporaryFolder();
+	@Override
+	protected TestableStatusRecordingTransactionManager createTransactionManager() {
+		return new TestableStatusRecordingTransactionManager();
+	}
 
-	private class TestableStatusRecordingTransactionManager extends StatusRecordingTransactionManager {
+
+	protected class TestableStatusRecordingTransactionManager extends StatusRecordingTransactionManager {
 
 		private @Setter boolean pendingTransactionsAfterShutdown = true;
 
 		@Override
 		protected TransactionManager createTransactionManager() throws TransactionSystemException {
-			return delegateTransactionManager;
+			return null;
 		}
 
 		@Override
@@ -54,30 +49,37 @@ public class StatusRecordingTransactionManagerTest {
 
 	}
 
-	public TestableStatusRecordingTransactionManager getStatusRecordingTransactionManager() {
-		TestableStatusRecordingTransactionManager result = new TestableStatusRecordingTransactionManager();
-		result.setStatusFile(folder.getRoot()+"/"+STATUS_FILE);
-		result.setUidFile(folder.getRoot()+"/"+TMUID_FILE);
-		return result;
+	@Override
+	@Before
+	public void setup() throws IOException {
+		TemporaryFolder tmpFolder = new TemporaryFolder();
+		tmpFolder.create();
+		folder = tmpFolder.getRoot().toString();
+		super.setup();
+		delete(tmUidFile);
+	}
+
+	@Override
+	public void tearDown() {
+		if (tm != null) {
+			tm.destroy();
+		}
+		super.tearDown();
 	}
 
 	@Test
 	public void testCleanSetup() {
-		TestableStatusRecordingTransactionManager tm = getStatusRecordingTransactionManager();
+		tm = setupTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
-		assertEquals(delegateTransactionManager, tm.getTransactionManager());
-		String tmUid = tm.getUid();
-		assertNotNull(tmUid);
-		String status = read(STATUS_FILE);
+		String status = read(statusFile);
 		assertEquals("ACTIVE", status);
 	}
 
 	@Test
 	public void testPresetTmUid() {
-		write(TMUID_FILE,"fakeTmUid");
-		TestableStatusRecordingTransactionManager tm = getStatusRecordingTransactionManager();
+		write(tmUidFile,"fakeTmUid");
+		tm = setupTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
-		assertEquals(delegateTransactionManager, tm.getTransactionManager());
 		String tmUid = tm.getUid();
 		assertEquals("fakeTmUid", tmUid);
 
@@ -86,33 +88,32 @@ public class StatusRecordingTransactionManagerTest {
 
 	@Test
 	public void testCleanShutdown() {
-		TestableStatusRecordingTransactionManager tm = getStatusRecordingTransactionManager();
+		tm = setupTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
-		assertEquals(delegateTransactionManager, tm.getTransactionManager());
 		String tmUid = tm.getUid();
 		assertNotNull(tmUid);
 
 		assertStatus("ACTIVE", tmUid);
 
 		tm.destroy();
+		tm = null;
 
 		assertStatus("COMPLETED", tmUid);
 	}
 
 	@Test
 	public void testNoStatusFiles() {
-		TestableStatusRecordingTransactionManager tm = new TestableStatusRecordingTransactionManager();
+		tm = new TestableStatusRecordingTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
-		assertEquals(delegateTransactionManager, tm.getTransactionManager());
 		assertNotNull(tm.getUid());
 		tm.destroy(); // should throw no exception
+		tm = null;
 	}
 
 	@Test
 	public void testShutdownWithPendingTransactions() {
-		TestableStatusRecordingTransactionManager tm = getStatusRecordingTransactionManager();
+		tm = setupTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
-		assertEquals(delegateTransactionManager, tm.getTransactionManager());
 		String tmUid = tm.getUid();
 		assertNotNull(tmUid);
 
@@ -120,59 +121,28 @@ public class StatusRecordingTransactionManagerTest {
 
 		tm.setPendingTransactionsAfterShutdown(false);
 		tm.destroy();
+		tm = null;
 
 		assertStatus("PENDING", tmUid);
 	}
 
 	@Test
 	public void testCreateFolders() {
-		TestableStatusRecordingTransactionManager tm = getStatusRecordingTransactionManager();
-		tm.setUidFile(folder.getRoot()+"/a/b/c/"+TMUID_FILE);
+		tm = setupTransactionManager();
+		tm.setUidFile(folder+"/a/b/c/"+TMUID_FILE);
 		tm.initUserTransactionAndTransactionManager();
-		assertEquals(delegateTransactionManager, tm.getTransactionManager());
 		String tmUid = tm.getUid();
 		assertNotNull(tmUid);
-		String recordedTmUid = read("/a/b/c/"+TMUID_FILE);
+		String recordedTmUid = read(folder+"/a/b/c/"+TMUID_FILE);
 		assertEquals(tmUid, recordedTmUid);
 	}
 
 	@Test
 	public void testTestReadWithWhitespace() {
-		TestableStatusRecordingTransactionManager tm = getStatusRecordingTransactionManager();
+		tm = setupTransactionManager();
 		String value = "fake tm uid";
-		String fullPathTmFile = folder.getRoot()+"/"+TMUID_FILE;
+		String fullPathTmFile = folder+"/"+TMUID_FILE;
 		tm.write(fullPathTmFile, "\n "+value+" \n\n");
 		assertEquals(value, tm.read(fullPathTmFile));
 	}
-
-	public void assertStatus(String status, String tmUid) {
-		assertEquals(status, read(STATUS_FILE));
-		if (tmUid!=null) {
-			assertEquals(tmUid, read(TMUID_FILE));
-		}
-	}
-
-	public void write(String filename, String text) throws TransactionSystemException {
-		Path file = Paths.get(folder.getRoot()+"/"+filename);
-		try {
-			try (OutputStream fos = Files.newOutputStream(file)) {
-				fos.write(text.getBytes(StandardCharsets.UTF_8));
-			}
-		} catch (Exception e) {
-			throw new TransactionSystemException("Cannot write line ["+text+"] to file ["+file+"]", e);
-		}
-	}
-
-	public String read(String filename) {
-		Path file = Paths.get(folder.getRoot()+"/"+filename);
-		if (!Files.exists(file)) {
-			return null;
-		}
-		try (InputStream fis = Files.newInputStream(file)) {
-			return StreamUtils.copyToString(fis, StandardCharsets.UTF_8).trim();
-		} catch (Exception e) {
-			throw new TransactionSystemException("Cannot read from file ["+file+"]", e);
-		}
-	}
-
 }

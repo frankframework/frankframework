@@ -25,7 +25,9 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.IteratingPipe.StopReason;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.XsltSender;
@@ -49,6 +51,12 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	private String messageError="<root><sub name=\"a\">B</sub><sub>error</sub><sub>tail</sub></root>";
 	private String messageDuplNamespace1="<root xmlns=\"urn:test\"><header xmlns=\"urn:header\">x</header><sub xmlns=\"urn:test\">A &amp; B</sub><sub xmlns=\"urn:test\" name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub xmlns=\"urn:test\" name=\"r\">R</sub></root>";
 	private String messageDuplNamespace2="<ns:root xmlns:ns=\"urn:test\"><header xmlns=\"urn:header\">x</header><ns:sub xmlns:ns=\"urn:test\">A &amp; B</ns:sub><ns:sub xmlns:ns=\"urn:test\" name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub><ns:sub xmlns:ns=\"urn:test\" name=\"r\">R</ns:sub></ns:root>";
+	private String messageBasicJson="<root><sub><data>{\"children\":{\"child\":\"1\"}}</data></sub><sub><data>{\"children\":{\"child\":\"2\"}}</data></sub><sub><data>{\"children\":{\"child\":\"3\"}}</data></sub></root>";
+
+	private String expectedBasicOnlyR="<results>\n"+
+			"<result item=\"1\">\n"+
+			"<sub name=\"r\">R</sub>\n"+
+			"</result>\n</results>";
 
 	private String expectedBasicNoNS="<results>\n"+
 			"<result item=\"1\">\n"+
@@ -103,6 +111,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 			"<result item=\"3\">\n"+
 			"<sub name=\"r\" xmlns=\"urn:test\">R</sub>\n"+
 			"</result>\n</results>";
+
 	private String expectedBasicNS2="<results>\n"+
 			"<result item=\"1\">\n"+
 			"<ns:sub xmlns:ns=\"urn:test\">A &amp; B</ns:sub>\n"+
@@ -113,6 +122,18 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 			"<result item=\"3\">\n"+
 			"<ns:sub name=\"r\" xmlns:ns=\"urn:test\">R</ns:sub>\n"+
 			"</result>\n</results>";
+
+	private String expectedBasicJsonConversion="<results>\n"
+			+ "<result item=\"1\">\n"
+			+ "<data><children><child>1</child></children></data>\n"
+			+ "</result>\n"
+			+ "<result item=\"2\">\n"
+			+ "<data><children><child>2</child></children></data>\n"
+			+ "</result>\n"
+			+ "<result item=\"3\">\n"
+			+ "<data><children><child>3</child></children></data>\n"
+			+ "</result>\n"
+			+ "</results>";
 
 	private PipeLineSession session = new PipeLineSession();
 
@@ -136,21 +157,21 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	protected ElementRenderer getElementRenderer(final SwitchCounter sc, final Exception e) {
 		return new ElementRenderer(sc, e);
 	}
-	
+
 	private class ElementRenderer extends EchoSender {
 
 		public SwitchCounter sc;
 		public Exception e;
 		public int callCounter;
-		
+
 		ElementRenderer(SwitchCounter sc, Exception e) {
 			super();
 			this.sc=sc;
 			this.e=e;
 		}
-		
+
 		@Override
-		public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 			callCounter++;
 			if (sc!=null) sc.mark("out");
 			try {
@@ -177,11 +198,11 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	}
 
 	@Override
-	public void setup() throws Exception {
+	public void setUp() throws Exception {
 		assumeFalse(provideStreamForInput);
-		super.setup();
+		super.setUp();
 	}
-	
+
 	@Test
 	public void testBasic() throws Exception {
 		pipe.setSender(getElementRenderer());
@@ -192,6 +213,20 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals(expectedBasicNoNS, actual);
+	}
+
+	@Test
+	public void testJsonInputWithXsltV3() throws Exception {
+		pipe.setSender(getElementRenderer());
+		pipe.setXsltVersion(3);
+		pipe.setStyleSheetName("/ForEachChildElementPipe/xslt3.0_test.xsl");
+		configurePipe();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, messageBasicJson, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expectedBasicJsonConversion, actual);
 	}
 
 	@Test
@@ -389,6 +424,23 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	}
 
 	@Test
+	public void testXPathWithParameter() throws Exception {
+		SwitchCounter sc = new SwitchCounter();
+		pipe.setElementXPathExpression("/root/sub[@name=$param]");
+		// pipe.setNamespaceAware(true);
+		pipe.setSender(getElementRenderer(sc));
+		pipe.addParameter(new Parameter("param","r"));
+		configurePipe();
+		pipe.start();
+
+		ByteArrayInputStream bais = new ByteArrayInputStream(messageBasicNoNS.getBytes());
+		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expectedBasicOnlyR, actual);
+	}
+
+	@Test
 	public void testXPathRemoveNamespacesNonPrefixed() throws Exception {
 		SwitchCounter sc = new SwitchCounter();
 		pipe.setElementXPathExpression("/ns:root/ns:sub");
@@ -496,7 +548,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true));
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
-	} 
+	}
 
 	@Test
 	public void testContainerElement() throws Exception {
@@ -554,7 +606,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 
 		assertEquals(expectedBasicNS1, actual);
 		assertTrue("streaming failure: switch count [" + sc.count + "] should be larger than 2", sc.count > 2);
-	} 
+	}
 
 
 	@Test
@@ -617,7 +669,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		configurePipe();
 		pipe.start();
 
-		
+
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageDuplNamespace1.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = Message.asString(prr.getResult());
@@ -635,7 +687,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		configurePipe();
 		pipe.start();
 
-		
+
 		ByteArrayInputStream bais = new ByteArrayInputStream(messageDuplNamespace2.getBytes());
 		PipeRunResult prr = doPipe(pipe, new LoggingInputStream(bais, sc), session);
 		String actual = Message.asString(prr.getResult());
@@ -902,7 +954,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		assertEquals(expectedBasicNoNS, actual);
 	}
 
-	
+
 	@Test
 	public void testNoDuplicateNamespaces() throws Exception, IOException {
 		pipe.setSender(getElementRenderer());
@@ -999,7 +1051,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		pipe.setTargetElement("Person");
 		pipe.configure();
 		pipe.start();
-		
+
 		URL input = TestFileUtils.getTestFileURL("/XmlFileElementIteratorPipe/input.xml");
 		File file = new File(input.toURI());
 		String expected = TestFileUtils.getTestFile("/XmlFileElementIteratorPipe/ElementNameOutput.xml");
@@ -1034,7 +1086,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 		public int count;
 		private String prevLabel;
 		public Map<String,Integer> hitCount = new HashMap<String,Integer>();
-		
+
 		public void mark(String label) {
 			if (prevLabel==null || !prevLabel.equals(label)) {
 				prevLabel=label;
@@ -1054,7 +1106,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 
 		private int blocksize=10;
 		private SwitchCounter sc;
-		
+
 		public LoggingInputStream(InputStream arg0, SwitchCounter sc) {
 			super(arg0);
 			this.sc=sc;
@@ -1096,8 +1148,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 			}
 			return l;
 		}
-		
-	}
 
+	}
 
 }

@@ -22,7 +22,7 @@ package nl.nn.adapterframework.core;
  * @author  Gerrit van Brakel
  */
 public class ParameterException extends IbisException {
-		
+
 	public ParameterException() {
 		super();
 	}

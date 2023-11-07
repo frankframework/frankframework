@@ -3,6 +3,7 @@ package nl.nn.adapterframework.stream;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assume.assumeNotNull;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Arrays;
@@ -21,6 +22,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.PipeTestBase;
+import nl.nn.adapterframework.testutil.ThrowingAfterCloseInputStream;
 
 @RunWith(Parameterized.class)
 public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends PipeTestBase<P> {
@@ -37,21 +39,22 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 	@Parameters(name = "{index}: {0}: provide [{2}] stream out [{3}]")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{ "classic", 			true, false, false }, 
-			{ "new, no stream", 	false, false, false }, 
-			{ "output to stream", 	false, false, true  }, 
-			{ "consume stream", 	false, true,  false }, 
+			{ "classic", 			true, false, false },
+			{ "new, no stream", 	false, false, false },
+			{ "output to stream", 	false, false, true  },
+			{ "consume stream", 	false, true,  false },
 			{ "stream through",  	false, true,  true  }
 		});
 	}
 
 	@Override
-	public void setup() throws Exception {
-		super.setup();
+	public void setUp() throws Exception {
+		super.setUp();
 		pipe.setStreamingActive(!classic);
 	}
 
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected PipeRunResult doPipe(P pipe, Message input, PipeLineSession session) throws PipeRunException {
 		PipeRunResult prr=null;
@@ -80,31 +83,43 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 				throw new PipeRunException(pipe,"cannot convert input",e);
 			}
 		} else {
-//			if (classic) {
-				prr = pipe.doPipe(input,session);
-//			} else {
-//				prr = pipe.doPipe(input, session, nextPipe);
-//			}
+			// Wrap input-stream in a stream that forces IOExceptions after it is closed; close the session
+			// (and thus any messages attached) after running the pipe so that reading the result message
+			// will verify the original input-stream of the input-message is not used beyond due-date.
+			try (PipeLineSession ignored = session) {
+				Message messageToSend;
+				if (input != null) {
+					if (input.asObject() instanceof InputStream) {
+						input.unscheduleFromCloseOnExitOf(session);
+						messageToSend = new Message(new ThrowingAfterCloseInputStream((InputStream) input.asObject()));
+					} else {
+						messageToSend = input;
+					}
+					messageToSend.closeOnCloseOf(session, pipe);
+				} else {
+					messageToSend = null;
+				}
+				prr = pipe.doPipe(messageToSend,session);
+
+				// Before session closes, unschedule result from close-on-close.
+				if (prr != null && prr.getResult() != null) {
+					prr.getResult().unscheduleFromCloseOnExitOf(session);
+				}
+			}
 		}
 		assertNotNull(prr);
 		assertNotNull(prr.getPipeForward());
-//		if (capProvider!=null) {
-//			Object capResult = capProvider.getCap().getPipeRunResult().getResult().asObject();
-//			assertNotNull("target outputstream has not been written to", capResult);
-//			assertEquals("PipeResult must be equal to result of cap", capResult, prr.getResult().asObject());
-//			assertEquals(1,capProvider.getCap().getCloseCount());
-//		}
 		return prr;
 	}
 
 	private class CapProvider implements IOutputStreamingSupport {
 
 		private CloseObservableCap cap;
-		
+
 		public CapProvider(INamedObject owner) {
 			cap=new CloseObservableCap(owner);
 		}
-		
+
 		@Override
 		public boolean supportsOutputStreamPassThrough() {
 			return false;
@@ -114,31 +129,30 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 		public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
 			return cap;
 		}
-		
+
 		public CloseObservableCap getCap() {
 			return cap;
 		}
-		
+
 	}
-	
+
 	private class CloseObservableCap extends MessageOutputStreamCap {
 
 		private int closeCount=0;
-		
+
 		public CloseObservableCap(INamedObject owner) {
 			super(owner, null);
 		}
-		
+
 		@Override
 		public void afterClose() throws Exception {
 			super.afterClose();
 			closeCount++;
 		}
-		
+
 		public int getCloseCount() {
 			return closeCount;
 		}
 	}
 
-	
 }

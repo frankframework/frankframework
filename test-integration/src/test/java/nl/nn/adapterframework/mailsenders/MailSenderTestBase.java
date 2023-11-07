@@ -10,6 +10,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
@@ -123,7 +124,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(new Message("<dummy><a>s</a></dummy>"), session).asString();
+		String result = sender.sendMessageOrThrow(new Message("<dummy><a>s</a></dummy>"), session).asString();
 		assertEquals(correlationID, result);
 	}
 
@@ -178,7 +179,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.configure();
 		sender.open();
 
-		assertThrows(SenderException.class, () -> sender.sendMessage(null, session));
+		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(null, session));
 	}
 
 	@Test
@@ -234,7 +235,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(null, session).asString();
+		String result = sender.sendMessageOrThrow(null, session).asString();
 		assertEquals(correlationID, result);
 	}
 
@@ -280,15 +281,15 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessage(null, session).asString();
+		String result = sender.sendMessageOrThrow(null, session).asString();
 		assertEquals(correlationID, result);
 	}
 
 	public void sendMessage(String filePath) throws Exception {
 		sender.configure();
 		sender.open();
-		Message sampleMailXML = TestFileUtils.getTestFileMessage(filePath);
-		String result = sender.sendMessage(sampleMailXML, session).asString();
+		Message sampleMailXML = MessageTestUtils.getMessage(filePath);
+		String result = sender.sendMessageOrThrow(sampleMailXML, session).asString();
 		assertEquals(correlationID, result);
 	}
 }

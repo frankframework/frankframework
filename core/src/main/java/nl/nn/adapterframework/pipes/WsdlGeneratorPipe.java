@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2016, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,12 +18,14 @@ package nl.nn.adapterframework.pipes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.soap.WsdlGenerator;
 import nl.nn.adapterframework.stream.Message;
@@ -35,6 +37,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
  * @author Jaco de Groot
  */
+@ElementType(ElementTypes.SESSION)
 public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private String from = "parent";
 
@@ -53,7 +56,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		try {
 			if ("input".equals(getFrom())) {
 				String adapterName = message.asString();
-				adapter = getAdapter().getConfiguration().getIbisManager().getRegisteredAdapter(adapterName);
+				adapter = ((Configuration) getApplicationContext()).getRegisteredAdapter(adapterName);
 				if (adapter == null) {
 					throw new PipeRunException(this, "Could not find adapter: " + adapterName);
 				}
@@ -61,7 +64,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				adapter = getPipeLine().getAdapter();
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, "Could not determine adapter name", e); 
+			throw new PipeRunException(this, "Could not determine adapter name", e);
 		}
 		try {
 			String generationInfo = "at " + RestListenerUtils.retrieveRequestURL(session);
@@ -71,7 +74,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			wsdl.wsdl(outputStream, null);
 			result = outputStream.toString(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (Exception e) {
-			throw new PipeRunException(this, "Could not generate WSDL for adapter [" + adapter.getName() + "]", e); 
+			throw new PipeRunException(this, "Could not generate WSDL for adapter [" + adapter.getName() + "]", e);
 		}
 		return new PipeRunResult(getSuccessForward(), result);
 	}
@@ -80,7 +83,10 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		return from;
 	}
 
-	@IbisDoc({"either parent (adapter of pipeline which contains this pipe) or input (name of adapter specified by input of pipe)", "parent"})
+	/**
+	 * either parent (adapter of pipeline which contains this pipe) or input (name of adapter specified by input of pipe), adapter must be within the same Configuration
+	 * @ff.default parent
+	 */
 	public void setFrom(String from) {
 		this.from = from;
 	}

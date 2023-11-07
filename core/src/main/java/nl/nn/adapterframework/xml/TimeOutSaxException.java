@@ -19,7 +19,7 @@ package nl.nn.adapterframework.xml;
  * SaxException thrown to signal that a timeout occurred.
  */
 public class TimeOutSaxException extends SaxException {
-	
+
 	public TimeOutSaxException() {
 		super();
 	}

@@ -17,10 +17,10 @@ package nl.nn.adapterframework.validation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
@@ -40,8 +40,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	private static final int MAX_NAMESPACE_WARNINGS = 5;
 
 	// state
-	private int level = -1;
-	private List<String> elements = new ArrayList<String>();
+	private List<String> elements = new ArrayList<>();
 
 	private final Set<String> validNamespaces;
 	private final RootValidations rootValidations;
@@ -78,7 +77,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	@Override
 	public void startElement(String namespaceURI, String lName, String qName, Attributes attrs) throws SAXException {
-		
+
 		/*
 		 * When there are root validations that are one element longer than the number of elements on the stack,
 		 * and of those root validations the path to the last element matches the elements on the stack,
@@ -109,15 +108,12 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 								}
 							} else {
 								String message = null;
-								if (invalidRootNamespaces != null) {
-									List<String> invalidNamespaces = invalidRootNamespaces.get(path);
-									if (invalidNamespaces != null && invalidNamespaces.contains(namespaceURI)) {
-										message = "Invalid namespace '" + namespaceURI + "' for element '" + lName + "'";
-										if (xmlValidatorErrorHandler != null) {
-											xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
-										} else {
-											throw new UnknownNamespaceException(message);
-										}
+								if (invalidRootNamespaces != null && !rootValidation.isNamespaceAllowedOnElement(invalidRootNamespaces, namespaceURI, lName)) {
+									message = "Invalid namespace '" + namespaceURI + "' for element '" + lName + "'";
+									if (xmlValidatorErrorHandler != null) {
+										xmlValidatorErrorHandler.addReason(message, null, null, ReasonType.ERROR);
+									} else {
+										throw new UnknownNamespaceException(message);
 									}
 								}
 								rootElementsFound.add(rootValidation);
@@ -134,15 +130,21 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 				}
 			}
 		}
-		level++;
 		elements.add(lName);
-		checkNamespaceExistance(namespaceURI);
+		if(!isInSoapFault()) {
+			checkNamespaceExistance(namespaceURI);
+		}
+	}
+
+	// If the stack contains 'Fault', sub elements of 'Fault' do not contain a namespace
+	private boolean isInSoapFault() {
+		return (elements.size() > 2 && "Fault".equals(elements.get(2)));
 	}
 
 	@Override
 	public void endElement(String namespaceURI, String lName, String qName) throws SAXException {
+		int level = elements.size() -1;
 		elements.remove(level);
-		level--;
 	}
 
 	@Override
@@ -171,7 +173,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 
 	protected void checkNamespaceExistance(String namespace) throws UnknownNamespaceException {
 		if (!ignoreUnknownNamespaces && validNamespaces != null && namespaceWarnings <= MAX_NAMESPACE_WARNINGS) {
-			if (!validNamespaces.contains(namespace) && !("".equals(namespace) && validNamespaces.contains(null))) { 
+			if (!validNamespaces.contains(namespace) && !("".equals(namespace) && validNamespaces.contains(null))) {
 				if (currentInvalidNamespace == null || !(currentInvalidNamespace.equals(namespace))) { // avoid invalid namespace to be reported for each sub element
 					currentInvalidNamespace = namespace;
 					String message = "Unknown namespace '" + namespace + "'";
@@ -196,15 +198,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	}
 
 	public String getXpath(List<String> path) {
-		StringBuilder xpath = new StringBuilder("/");
-		Iterator<String> it = path.iterator();
-		if (it.hasNext()) {
-			xpath.append(it.next());
-		}
-		while (it.hasNext()) {
-			xpath.append('/').append(it.next());
-		}
-		return xpath.toString();
+		return path.stream().collect(Collectors.joining("/", "/", ""));
 	}
 
 	public static class IllegalRootElementException extends SAXException {

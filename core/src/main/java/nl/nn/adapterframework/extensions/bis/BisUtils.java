@@ -36,13 +36,14 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 /**
- * Some utilities for working with BIS. 
- * 
+ * Some utilities for working with BIS.
+ *
  * @author Peter Leeuwenburgh
  * @deprecated Please use BisWrapperPipe
  */
@@ -50,20 +51,20 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 public class BisUtils {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private final static String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
-	private final static String soapHeaderXPath = "soapenv:Envelope/soapenv:Header";
-	private final static String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
-	private final static String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
-	private final static String messageHeaderConversationIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:ConversationId";
-	private final static String messageHeaderExternalRefToMessageIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:MessageId";
+	private static final String soapNamespaceDefs = "soapenv=http://schemas.xmlsoap.org/soap/envelope/";
+	private static final String soapHeaderXPath = "soapenv:Envelope/soapenv:Header";
+	private static final String soapBodyXPath = "soapenv:Envelope/soapenv:Body";
+	private static final String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
+	private static final String messageHeaderConversationIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:ConversationId";
+	private static final String messageHeaderExternalRefToMessageIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:MessageId";
 	//resultInPayload=false (old)
-	private final static String oldBisErrorXPath = "soapenv:Envelope/soapenv:Body/bis:Result/bis:Status='ERROR' or string-length(soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode)&gt;0";
-	private final static String oldBisErrorListXPath = "soapenv:Envelope/soapenv:Body/bis:Result/bis:ErrorList";
+	private static final String oldBisErrorXPath = "soapenv:Envelope/soapenv:Body/bis:Result/bis:Status='ERROR' or string-length(soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode)&gt;0";
+	private static final String oldBisErrorListXPath = "soapenv:Envelope/soapenv:Body/bis:Result/bis:ErrorList";
 	//resultInPayload=true
-	private final static String bisErrorXPath = "soapenv:Envelope/soapenv:Body/*/bis:Result/bis:Status='ERROR' or string-length(soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode)&gt;0";
-	private final static String bisErrorListXPath = "soapenv:Envelope/soapenv:Body/*/bis:Result/bis:ErrorList";
+	private static final String bisErrorXPath = "soapenv:Envelope/soapenv:Body/*/bis:Result/bis:Status='ERROR' or string-length(soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode)&gt;0";
+	private static final String bisErrorListXPath = "soapenv:Envelope/soapenv:Body/*/bis:Result/bis:ErrorList";
 
-	private final static String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
+	private static final String[][] BISERRORS = { { "ERR6002", "Service Interface Request Time Out" }, {
 			"ERR6003", "Invalid Request Message" }, {
 			"ERR6004", "Invalid Backend system response" }, {
 			"ERR6005", "Backend system failure response" }, {
@@ -127,7 +128,7 @@ public class BisUtils {
 		}
 		headerFieldsElement.addSubElement(conversationIdElement);
 		XmlBuilder messageIdElement = new XmlBuilder("MessageId");
-		messageIdElement.setValue(Misc.getHostname() + "_" + Misc.createSimpleUUID());
+		messageIdElement.setValue(Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());
 		headerFieldsElement.addSubElement(messageIdElement);
 		XmlBuilder externalRefToMessageIdElement = new XmlBuilder("ExternalRefToMessageId");
 		if (originalMessageText == null) {

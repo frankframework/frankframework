@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,26 +17,31 @@ package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * Echos input to output. 
- * 
+ * Echos input to output.
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
+@Category("Basic")
 public class EchoSender extends SenderWithParametersBase {
-	
+
 	private boolean synchronous=true;
 
 	@Override
-	public Message sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-		return message;
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		return new SenderResult(message);
 	}
 
-	@IbisDoc({"hack to allow to introduce a correlationid", "true"})
+	/**
+	 * hack to allow to introduce a correlationid
+	 * @ff.default true
+	 */
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}

@@ -94,6 +94,18 @@
 				root="HandlePremiumDueDetailsREQ">
 				<forward name="success" path="EXIT" />
 			</pipe>
+			<!-- IncludeWithoutNamespace -->
+			<pipe name="IncludeWithoutNamespace" className="nl.nn.adapterframework.pipes.Json2XmlValidator" getInputFromFixedValue="{}"
+				schema="/XmlValidator/IncludeWithoutNamespace/main.xsd"
+				root="GetDocument_Error"
+				deepSearch="true">
+				<param name="type" value="aaa" />
+				<param name="title" value="bbb" />
+				<param name="status" value="ccc" />
+				<param name="detail" value="ddd" />
+				<param name="instance" value="eee" />
+				<forward name="success" path="EXIT" />
+			</pipe>
 			<!-- schemaSessionKey -->
 			<pipe name="schemaSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
 				sessionKey="xsdLocation" value="/XmlValidator/schemaSessionKey/ING_REQ1041.xsd">

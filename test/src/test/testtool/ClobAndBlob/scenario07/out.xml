@@ -1,4 +1,4 @@
-<errorMessage timestamp="Thu Feb 24 12:10:59 CET 2022" originator="IAF_ss9 7.8-SNAPSHOT" message="Pipe [readBlobReadAsIfcompressed] msgId [Test Tool correlation id] : [nl.nn.adapterframework.jdbc.FixedQuerySender] [readBlobReadAsIfcompressed-sender] got exception executing a SELECT SQL command: (ZipException) incorrect header check">
+<errorMessage timestamp="Thu Feb 24 12:10:59 CET 2022" originator="IAF_ss9 7.8-SNAPSHOT" message="SenderPipe [readBlobReadAsIfcompressed] msgId [Test Tool correlation id]: [nl.nn.adapterframework.jdbc.FixedQuerySender] [readBlobReadAsIfcompressed-sender] got exception executing a SELECT SQL command: (ZipException) incorrect header check">
 	<location class="nl.nn.adapterframework.pipes.SenderPipe" name="readBlobReadAsIfcompressed"/>
 	<details>nl.nn.adapterframework.core.SenderException: [nl.nn.adapterframework.jdbc.FixedQuerySender] [readBlobReadAsIfcompressed-sender] got exception executing a SELECT SQL command: (ZipException) incorrect header check
 	at nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.executeStatementSet(JdbcQuerySenderBase.java:383)

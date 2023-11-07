@@ -17,122 +17,108 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.NotImplementedException;
+
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Pipe that performs translations between special characters and their xml equivalents.
  * <p>When direction=cdata2text all cdata nodes are converted to text nodes without any other translations.</p>
- * 
+ *
  * @author Peter Leeuwenburgh
  */
+@ElementType(ElementTypes.TRANSLATOR)
 public class EscapePipe extends FixedForwardPipe {
 
-	private String substringStart;
-	private String substringEnd;
-	private String direction = "encode";
+	private @Getter String substringStart;
+	private @Getter String substringEnd;
+	private @Getter Direction direction = Direction.ENCODE;
 	private boolean encodeSubstring = false;
 
+	public enum Direction {
+		ENCODE, DECODE, CDATA2TEXT;
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		String dir = getDirection();
-		if (dir == null) {
+		if (getDirection() == null) {
 			throw new ConfigurationException("direction must be set");
-		}
-		if (!dir.equalsIgnoreCase("encode")
-			&& !dir.equalsIgnoreCase("decode")
-				&& !dir.equalsIgnoreCase("cdata2text")) {
-			throw new ConfigurationException("illegal value for direction [" + dir + "], must be 'encode', 'decode' or 'cdata2text'");
 		}
 		if ((substringStart != null && substringEnd == null) || (substringStart == null && substringEnd != null)) {
 			throw new ConfigurationException("cannot have only one of substringStart or substringEnd");
 		}
 		if (isEncodeSubstring()) {
-			substringStart = XmlUtils.encodeChars(substringStart);
-			substringEnd = XmlUtils.encodeChars(substringEnd);
+			substringStart = XmlEncodingUtils.encodeChars(substringStart);
+			substringEnd = XmlEncodingUtils.encodeChars(substringEnd);
 		}
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-
 		String input;
 		try {
 			input = message.asString();
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
+
 		String substring = null;
 		String result = input;
 		int i = -1;
 		int j = -1;
-		log.debug("input [" + input + "]");
-		log.debug("substringStart [" + substringStart + "]");
-		log.debug("substringEnd [" + substringEnd + "]");
+		log.debug("substringStart [{}] substringEnd [{}] input [{}]", substringStart, substringEnd, input);
 		if (substringStart != null && substringEnd != null) {
 			i = input.indexOf(substringStart);
 			if (i != -1) {
 				j = input.indexOf(substringEnd, i);
 				if (j != -1) {
 					substring = input.substring(i + substringStart.length(), j);
-					if ("encode".equalsIgnoreCase(getDirection())) {
-						substring = XmlUtils.encodeChars(substring);
-					} else {
-						if ("decode".equalsIgnoreCase(getDirection())) {
-							substring = XmlUtils.decodeChars(substring);
-						} else {
-							substring = XmlUtils.cdataToText(substring);
-						}
-					}
+					substring = handle(substring);
 					result = input.substring(0, i + substringStart.length()) + substring + input.substring(j);
 				}
 			}
 		} else {
-			if ("encode".equalsIgnoreCase(getDirection())) {
-				result = XmlUtils.encodeChars(input);
-			} else {
-				if ("decode".equalsIgnoreCase(getDirection())) {
-					result = XmlUtils.decodeChars(input);
-				} else {
-					result = XmlUtils.cdataToText(input);
-				}
-			}
+			result = handle(input);
 		}
 
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	public String getSubstringStart() {
-		return substringStart;
+	private String handle(String input) {
+		switch (getDirection()) {
+		case ENCODE:
+			return XmlEncodingUtils.encodeChars(input);
+		case DECODE:
+			return XmlEncodingUtils.decodeChars(input);
+		case CDATA2TEXT:
+			return XmlUtils.cdataToText(input);
+		default:
+			throw new NotImplementedException("unknown direction ["+getDirection()+"]");
+		}
 	}
 
-	@IbisDoc({"substring to start translation", ""})
+	// ESCAPE BETWEEN
+	/** substring to start translation */
 	public void setSubstringStart(String substringStart) {
 		this.substringStart = substringStart;
 	}
 
-	public String getSubstringEnd() {
-		return substringEnd;
-	}
-
-	@IbisDoc({"substring to end translation", ""})
+	/** substring to end translation */
 	public void setSubstringEnd(String substringEnd) {
 		this.substringEnd = substringEnd;
 	}
 
-	public String getDirection() {
-		return direction;
-	}
-
-	@IbisDoc({"either <code>encode</code>, <code>decode</code> or <code>cdata2text</code>", "encode"})
-	public void setDirection(String direction) {
+	public void setDirection(Direction direction) {
 		this.direction = direction;
 	}
 
@@ -140,7 +126,10 @@ public class EscapePipe extends FixedForwardPipe {
 		return encodeSubstring;
 	}
 
-	@IbisDoc({"when set <code>true</code> special characters in <code>substringstart</code> and <code>substringend</code> are first translated to their xml equivalents", "false"})
+	/**
+	 * when set <code>true</code> special characters in <code>substringstart</code> and <code>substringend</code> are first translated to their xml equivalents
+	 * @ff.default false
+	 */
 	public void setEncodeSubstring(boolean b) {
 		encodeSubstring = b;
 	}

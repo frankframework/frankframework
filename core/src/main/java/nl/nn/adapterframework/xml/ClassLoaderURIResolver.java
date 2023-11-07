@@ -28,21 +28,20 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Resolve URIs used in document(), xsl:import, and xsl:include.
- * 
+ *
  * @author Jaco de Groot
  * @author Gerrit van Brakel
- * @see ClassLoaderXmlEntityResolver
  */
 public class ClassLoaderURIResolver implements URIResolver {
 	protected Logger log = LogUtil.getLogger(this);
 	private IScopeProvider scopeProvider;
-	private List<String> allowedProtocols = ClassUtils.getAllowedProtocols();
-	
+	private List<String> allowedProtocols = ClassLoaderUtils.getAllowedProtocols();
+
 	public ClassLoaderURIResolver(IScopeProvider scopeProvider) {
 		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with scopeProvider ["+scopeProvider+"]");
 		this.scopeProvider = scopeProvider;
@@ -101,7 +100,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 	@Override
 	public Source resolve(String href, String base) throws TransformerException {
 		Resource resource = resolveToResource(href, base);
-		
+
 		try {
 			return resource.asSource();
 		} catch (SAXException|IOException e) {

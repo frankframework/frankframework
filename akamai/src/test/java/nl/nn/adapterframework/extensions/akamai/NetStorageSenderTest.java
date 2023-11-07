@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 package nl.nn.adapterframework.extensions.akamai;
 
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -35,6 +37,7 @@ import nl.nn.adapterframework.util.AppConstants;
 public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 
 	@Override
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		AppConstants.getInstance().setProperty("http.headers.messageid", false);
@@ -64,7 +67,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		NetStorageSender sender = getSender();
 		sender.setAction(Action.DU);
 		sender.configure();
-		assertNull("no content-type should be present", sender.getFullContentType());
+		assertNull(sender.getFullContentType(), "no content-type should be present");
 	}
 
 	@Test
@@ -79,7 +82,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("duAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -103,7 +106,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("duAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -126,7 +129,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("dirAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -149,7 +152,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("deleteAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -175,7 +178,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -202,7 +205,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionMD5.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -230,7 +233,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionMD5.txt"), result.replace("----", "").trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -257,7 +260,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionSHA1.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -285,7 +288,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionSHA1.txt"), result.replace("----", "").trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -312,7 +315,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionSHA256.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -340,7 +343,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("uploadActionSHA256.txt"), result.replace("----", "").trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -363,7 +366,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("mkdirAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -386,7 +389,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("rmdirAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -410,7 +413,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("renameAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -434,7 +437,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("mtimeAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -457,7 +460,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("downloadAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();

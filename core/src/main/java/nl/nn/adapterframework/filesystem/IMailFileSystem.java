@@ -24,7 +24,7 @@ public interface IMailFileSystem<M,A> extends IWithAttachments<M,A> {
 
 	public final String MAIL_MESSAGE_ID = "Message-ID";
 	public final String RETURN_PATH_HEADER="Return-Path";
-	
+
 	/*
 	 * IMailFileSystems should make sure the additionalProperties contain also the following keys:
 	 */
@@ -40,16 +40,15 @@ public interface IMailFileSystem<M,A> extends IWithAttachments<M,A> {
 	public final String BEST_REPLY_ADDRESS_KEY = "bestReplyAddress";
 	public final String REPLY_ADDRESS_FIELDS_DEFAULT=REPLY_TO_RECEPIENTS_KEY+','+FROM_ADDRESS_KEY+','+SENDER_ADDRESS_KEY+','+RETURN_PATH_HEADER;
 
-	
+
 	public String getSubject(M emailMessage) throws FileSystemException;
 
 	public Message getMimeContent(M emailMessage) throws FileSystemException;
-	
+
 	public void forwardMail(M emailMessage, String destination) throws FileSystemException;
 
 	public void extractEmail(M emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException;
 	public void extractAttachment(A attachment, SaxElementBuilder attachmentsXml) throws FileSystemException, SAXException;
-	
+
 	public String getReplyAddressFields();
-	
 }

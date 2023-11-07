@@ -32,7 +32,10 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -47,6 +50,9 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author  Niels Meijer
  * @version 2.0
  */
+@Category("Basic")
+@SupportsOutputStreaming
+@ElementType(ElementTypes.TRANSLATOR)
 public class Base64Pipe extends StreamingPipe {
 
 	private @Getter Direction direction = Direction.ENCODE;
@@ -57,7 +63,7 @@ public class Base64Pipe extends StreamingPipe {
 	private OutputTypes outputType = null;
 	private Boolean convertToString = false;
 
-	private byte lineSeparatorArray[];
+	private byte[] lineSeparatorArray;
 
 	public enum Direction {
 		ENCODE,
@@ -114,13 +120,16 @@ public class Base64Pipe extends StreamingPipe {
 		InputStream base64 = new Base64InputStream(binaryInputStream, directionEncode, getLineLength(), lineSeparatorArray);
 
 		Message result = new Message(base64, message.copyContext().withoutSize().withCharset(directionEncode ? StandardCharsets.US_ASCII.name() : getCharset()));
-		if (getOutputTypeEnum()==OutputTypes.STRING) {
+		if (getOutputTypeEnum() == OutputTypes.STRING) {
 			try {
-				result = new Message(result.asReader());
+				result = new Message(result.asReader(), result.copyContext());
 			} catch (IOException e) {
 				throw new PipeRunException(this,"cannot open stream", e);
 			}
 		}
+		// As we wrap the input-stream, we should make sure it's not closed when the session is closed as that might close this stream before reading it.
+		message.unscheduleFromCloseOnExitOf(session);
+		result.closeOnCloseOf(session, this);
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
@@ -128,11 +137,11 @@ public class Base64Pipe extends StreamingPipe {
 	@Override
 	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
 		MessageOutputStream target = getTargetStream(session);
-		boolean directionEncode = getDirection()==Direction.ENCODE;//TRUE encode - FALSE decode
+		boolean directionEncode = getDirection() == Direction.ENCODE;//TRUE encode - FALSE decode
 		OutputStream targetStream;
 		String outputCharset = directionEncode ? StandardCharsets.US_ASCII.name() : getCharset();
-		if (getOutputTypeEnum()==OutputTypes.STRING) {
-			targetStream = new WriterOutputStream(target.asWriter(), outputCharset !=null? outputCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+		if (getOutputTypeEnum() == OutputTypes.STRING) {
+			targetStream = new WriterOutputStream(target.asWriter(), outputCharset != null ? outputCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} else {
 			targetStream = target.asStream(outputCharset);
 		}
@@ -152,7 +161,10 @@ public class Base64Pipe extends StreamingPipe {
 		convertToString = b;
 	}
 
-	@IbisDoc({"2", "Either <code>string</code> for character output or <code>bytes</code> for binary output. The value <code>stream</code> is no longer used. Streaming is automatic where possible", "string for direction=encode, bytes for direction=decode"})
+	/**
+	 * Either <code>string</code> for character output or <code>bytes</code> for binary output. The value <code>stream</code> is no longer used. Streaming is automatic where possible
+	 * @ff.default string for direction=encode, bytes for direction=decode
+	 */
 	@Deprecated
 	@ConfigurationWarning("It should not be necessary to specify outputType. If you encounter a situation where it is, please report to Frank!Framework Core Team")
 	public void setOutputType(String outputType) {
@@ -166,17 +178,23 @@ public class Base64Pipe extends StreamingPipe {
 		return outputType;
 	}
 
-	@IbisDoc({"3", "Character encoding to be used to when reading input from strings for direction=encode or writing data for direction=decode.", ""})
+	/** Character encoding to be used to when reading input from strings for direction=encode or writing data for direction=decode. */
 	public void setCharset(String string) {
 		charset = string;
 	}
 
-	@IbisDoc({"4", " (Only used when direction=encode) Defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf", "auto"})
+	/**
+	 *  (Only used when direction=encode) Defines separator between lines. Special values: <code>auto</code>: platform default, <code>dos</code>: crlf, <code>unix</code>: lf
+	 * @ff.default auto
+	 */
 	public void setLineSeparator(String lineSeparator) {
 		this.lineSeparator = lineSeparator;
 	}
 
-	@IbisDoc({"5", " (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines", "76"})
+	/**
+	 *  (Only used when direction=encode) Each line of encoded data will be at most of the given length (rounded down to nearest multiple of 4). If linelength &lt;= 0, then the output will not be divided into lines
+	 * @ff.default 76
+	 */
 	public void setLineLength(int lineLength) {
 		this.lineLength = lineLength;
 	}

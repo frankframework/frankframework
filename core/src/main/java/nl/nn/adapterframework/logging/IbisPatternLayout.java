@@ -15,6 +15,10 @@
 */
 package nl.nn.adapterframework.logging;
 
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -25,9 +29,6 @@ import org.apache.logging.log4j.core.impl.LocationAware;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.core.pattern.PatternFormatter;
 import org.apache.logging.log4j.core.pattern.PatternParser;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Implementation of {@link IbisMaskingLayout} to serialize given log events 
@@ -36,7 +37,7 @@ import java.util.List;
 @Plugin(name = "IbisPatternLayout", category = "Core", elementType = "layout", printObject = true)
 public class IbisPatternLayout extends IbisMaskingLayout {
 
-	private final static String DEFAULT_PATTERN = "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %TC %c{2} - %m%n";
+	private static final String DEFAULT_PATTERN = "%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %TC %c{2} - %m%n";
 	private Serializer serializer;
 
 	/**

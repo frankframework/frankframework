@@ -15,10 +15,12 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
+
 /**
  * Defines listening behaviour of message driven receivers.
- * @param <M> the raw message type 
- * 
+ * @param <M> the raw message type
+ *
  * @author Gerrit van Brakel
  * @since 4.2
  */
@@ -30,12 +32,22 @@ public interface IPushingListener<M> extends IListener<M> {
 	 * Each of the received messages must be pushed through handler.processMessage()
 	 */
 	void setHandler(IMessageHandler<M> handler);
-	
+
 	/**
 	 * Set a (single) listener that will be notified of any exceptions.
-	 * The listener should use this listener to notify the receiver of 
+	 * The listener should use this listener to notify the receiver of
 	 * any exception that occurs outside the processing of a message.
 	 */
 	void setExceptionListener(IbisExceptionListener listener);
 
+	/**
+	 * Wrap a raw message in a MessageWrapper. Populate {@link PipeLineSession} with properties
+	 * from the message.
+	 *
+	 * @param rawMessage The raw message data, unwrapped
+	 * @param session {@link PipeLineSession} to populate with properties from the message.
+	 * @return Wrapped raw message
+	 * @throws ListenerException If any exception occurs during wrapping, a {@link ListenerException} is thrown.
+	 */
+	RawMessageWrapper<M> wrapRawMessage(M rawMessage, PipeLineSession session) throws ListenerException;
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.stream.JsonEventHandler;
@@ -31,13 +33,13 @@ import nl.nn.adapterframework.xml.SaxException;
 public class JsonWriter implements JsonEventHandler {
 
 	private Writer writer;
-	
-	private Stack<NodeState> stateStack = new Stack<>();
-	
-	private class NodeState {
+
+	private Deque<NodeState> stateStack = new ArrayDeque<>();
+
+	private static class NodeState {
 		private boolean firstElemSeen;
 		private boolean inArray;
-		
+
 		private NodeState(boolean inArray) {
 			this.inArray=inArray;
 		}
@@ -50,7 +52,7 @@ public class JsonWriter implements JsonEventHandler {
 	public JsonWriter(OutputStream stream) {
 		this(new OutputStreamWriter(stream, StreamUtil.DEFAULT_CHARSET));
 	}
-	
+
 	public JsonWriter(Writer writer) {
 		this.writer=writer;
 		stateStack.push(new NodeState(false));
@@ -80,7 +82,7 @@ public class JsonWriter implements JsonEventHandler {
 			}
 		}
 	}
-	
+
 	@Override
 	public void startObject() throws SAXException {
 		try {
@@ -138,9 +140,11 @@ public class JsonWriter implements JsonEventHandler {
 		try {
 			writeSeparatingComma(false);
 			if (value instanceof String) {
-				writer.write("\""+value+"\"");
+				writer.write("\""+StringEscapeUtils.escapeJson((String)value)+"\"");
+			} else if (value==null) {
+				writer.write("null");
 			} else {
-				writer.write(value.toString());
+				writer.write(StringEscapeUtils.escapeJson(value.toString()));
 			}
 		} catch (IOException e) {
 			throw new SaxException(e);
@@ -148,6 +152,19 @@ public class JsonWriter implements JsonEventHandler {
 	}
 
 
+	@Override
+	public void number(String value) throws SAXException {
+		try {
+			writeSeparatingComma(false);
+			if (value==null) {
+				writer.write("null");
+			} else {
+				writer.write(value);
+			}
+		} catch (IOException e) {
+			throw new SaxException(e);
+		}
+	}
 
 	@Override
 	public String toString() {

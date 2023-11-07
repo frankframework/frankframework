@@ -20,13 +20,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -37,29 +37,29 @@ import org.apache.logging.log4j.Logger;
  */
 public class StatisticsKeeperIterationHandlerCollection implements StatisticsKeeperIterationHandler {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	List iterationHandlerList = new LinkedList();
-	
+
 	final boolean trace=false;
-	
+
 	public StatisticsKeeperIterationHandlerCollection() {
 		super();
 	}
 
 	public void registerStatisticsHandler(StatisticsKeeperIterationHandler handler) {
-		log.debug("registerStatisticsHandler() registering ["+ClassUtils.nameOf(handler)+"]");		
+		log.debug("registerStatisticsHandler() registering ["+ClassUtils.nameOf(handler)+"]");
 		iterationHandlerList.add(handler);
 	}
 
 	@Override
-	public void configure() throws ConfigurationException {	
+	public void configure() throws ConfigurationException {
 		if (trace && log.isDebugEnabled()) log.debug("configure()");
 		for (Iterator it=iterationHandlerList.iterator();it.hasNext();) {
 			StatisticsKeeperIterationHandler handler=(StatisticsKeeperIterationHandler)it.next();
 			handler.configure();
 		}
 	}
-	
+
 	@Override
 	public Object start(Date now, Date mainMark, Date detailMark) throws SenderException {
 		if (trace && log.isDebugEnabled()) log.debug("start()");
@@ -94,7 +94,7 @@ public class StatisticsKeeperIterationHandlerCollection implements StatisticsKee
 		}
 		return groupData;
 	}
-	
+
 	@Override
 	public void closeGroup(Object data) throws SenderException {
 		if (trace && log.isDebugEnabled()) log.debug("closeGroup()");

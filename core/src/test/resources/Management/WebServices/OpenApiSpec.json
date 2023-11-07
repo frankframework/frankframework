@@ -1,0 +1,31 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "TestConfiguration",
+        "description": "OpenApi auto-generated at -timestamp- for TestConfiguration (xxx)",
+        "version": "unknown"
+    },
+    "servers": [
+    ],
+    "paths": {
+        "/api-uri-pattern": {
+            "post": {
+                "parameters": [
+                    {
+                        "name": "Message-Id",
+                        "in": "header",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+        }
+    }
+}

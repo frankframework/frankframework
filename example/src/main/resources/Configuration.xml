@@ -1,10 +1,6 @@
-<!DOCTYPE configuration [
-	<!ENTITY HelloWorld SYSTEM "ConfigurationHelloWorld.xml">
-	<!ENTITY HelloWorlds SYSTEM "ConfigurationHelloWorlds.xml">
-	<!ENTITY HelloBeautifulWorld SYSTEM "ConfigurationHelloBeautifulWorld.xml">
-]>
-<configuration name="Frank2Example">
-	&HelloWorld;
-	&HelloWorlds;
-	&HelloBeautifulWorld;
-</configuration>
+<Configuration>
+	<Include ref="ConfigurationHelloWorld.xml"/>
+	<Include ref="ConfigurationHelloWorlds.xml"/>
+	<Include ref="ConfigurationHelloBeautifulWorld.xml"/>
+	<Include ref="ConfigurationManualExerciseMundo.xml"/>
+</Configuration>

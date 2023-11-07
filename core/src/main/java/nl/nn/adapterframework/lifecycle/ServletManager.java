@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2019-2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,16 +15,17 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import javax.servlet.HttpConstraintElement;
-import javax.servlet.Servlet;
+import javax.servlet.HttpMethodConstraintElement;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
@@ -36,45 +37,59 @@ import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.Environment;
 
+import lombok.Setter;
+import nl.nn.adapterframework.lifecycle.servlets.AuthenticationType;
+import nl.nn.adapterframework.lifecycle.servlets.IAuthenticator;
+import nl.nn.adapterframework.lifecycle.servlets.JeeAuthenticator;
+import nl.nn.adapterframework.lifecycle.servlets.SecuritySettings;
+import nl.nn.adapterframework.lifecycle.servlets.ServletAuthenticatorBase;
+import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * <p>
  * Enables the use of programmatically adding servlets to the given ServletContext.<br/>
  * Run during the ApplicationServers {@link ServletContextListener#contextInitialized(javax.servlet.ServletContextEvent) contextInitialized} phase, before starting servlets.
  * This ensures that all (dynamic) {@link DynamicRegistration.Servlet servlets} are created, before servlets are being created.
- * This in turn avoids a ConcurrentModificationException if this where to be done during a {@link javax.servlet.http.HttpServlet servlet} init phase.
+ * This in turn avoids a ConcurrentModificationException if this where to be done during a {@link javax.servlet.http.HttpServlet servlet} initialization phase.
  * </p>
  * <p>
- * When <code>dtap.stage</code> is set to LOC, the default behaviour of each servlet is not-secured (no authentication) on HTTP.<br/>
- * When <code>dtap.stage</code> is NOT set to LOC, the default behaviour of each servlet is secured (authentication enforced) on HTTPS.
+ * When <code>dtap.stage</code> is set to LOC, the default behavior of each servlet is not-secured (no authentication) on HTTP.<br/>
+ * When <code>dtap.stage</code> is NOT set to LOC, the default behavior of each servlet is secured (authentication enforced) on HTTPS.
  * </p>
  * <p>
- * To change this behaviour the following properties can be used;
+ * To change this behavior the following properties can be used;
  * <code>servlet.servlet-name.transportGuarantee</code> - forces HTTPS when set to CONFIDENTIAL, or HTTP when set to NONE<br/>
  * <code>servlet.servlet-name.securityRoles</code> - use the default IBIS roles or create your own<br/>
  * <code>servlet.servlet-name.urlMapping</code> - path the servlet listens to<br/>
  * <code>servlet.servlet-name.loadOnStartup</code> - automatically load or use lazy-loading (affects application startup time)<br/>
+ * <code>servlet.servlet-name.authenticator</code> - enables authentication on this endpoint<br/>
  * </p>
- * 
+ * NOTE:
+ * Both CONTAINER and NONE are non-configurable default authenticators.
+ *
  * @author Niels Meijer
  *
  */
-public class ServletManager {
+public class ServletManager implements ApplicationContextAware, InitializingBean {
 
 	private ServletContext servletContext = null;
 	private List<String> registeredRoles = new ArrayList<>();
 	private Logger log = LogUtil.getLogger(this);
-	private AppConstants appConstants;
-	private Set<String> servlets = new TreeSet<>();
-	private static boolean webSecurityEnabled = true;
-	private static TransportGuarantee defaultTransportGuarantee = TransportGuarantee.CONFIDENTIAL;
-
-	protected static final String AUTH_ENABLED_KEY = "application.security.http.authentication";
-	protected static final String HTTPS_ENABLED_KEY = "application.security.http.transportGuarantee";
+	private Map<String, ServletConfiguration> servlets = new HashMap<>();
+	private Map<String, IAuthenticator> authenticators = new HashMap<>();
+	private @Setter ApplicationContext applicationContext;
+	private boolean allowUnsecureOptionsRequest = false;
 
 	protected ServletContext getServletContext() {
 		return servletContext;
@@ -84,27 +99,70 @@ public class ServletManager {
 		this.servletContext = servletContext;
 
 		//Add the default IBIS roles
-		registeredRoles.addAll(Arrays.asList("IbisObserver", "IbisAdmin", "IbisDataAdmin", "IbisTester", "IbisWebService"));
-
-		appConstants = AppConstants.getInstance();
-		setupDefaultSecuritySettings(appConstants);
+		registeredRoles.addAll(ServletAuthenticatorBase.DEFAULT_IBIS_ROLES);
 	}
 
-	protected static void setupDefaultSecuritySettings(Properties properties) {
-		boolean isDtapStageLoc = "LOC".equalsIgnoreCase(properties.getProperty("dtap.stage"));
-		String isAuthEnabled = properties.getProperty(AUTH_ENABLED_KEY);
-		webSecurityEnabled = (isAuthEnabled != null) ? Boolean.parseBoolean(isAuthEnabled) : !isDtapStageLoc;
+	@Override // After initialization but before other servlets are wired
+	public void afterPropertiesSet() throws Exception {
+		Environment env = applicationContext.getEnvironment();
+		SecuritySettings.setupDefaultSecuritySettings(env);
+		allowUnsecureOptionsRequest = env.getProperty(ServletAuthenticatorBase.ALLOW_OPTIONS_REQUESTS_KEY, boolean.class, false);
 
-		String constraintType = properties.getProperty(HTTPS_ENABLED_KEY);
-		if (StringUtils.isNotEmpty(constraintType)) {
-			try {
-				defaultTransportGuarantee = EnumUtils.parse(TransportGuarantee.class, constraintType);
-			} catch(IllegalArgumentException e) {
-				LogUtil.getLogger(ServletManager.class).error("unable to set TransportGuarantee", e);
-			}
-		} else if(isDtapStageLoc) {
-			defaultTransportGuarantee = TransportGuarantee.NONE;
+		addDefaultAuthenticator(AuthenticationType.CONTAINER);
+		addDefaultAuthenticator(AuthenticationType.NONE);
+
+		resolveAuthenticators();
+		log.info("found Authenticators {}", authenticators::values);
+	}
+
+	private void addDefaultAuthenticator(AuthenticationType type) {
+		if(!authenticators.containsKey(type.name())) {
+			Class<? extends IAuthenticator> clazz = type.getAuthenticator();
+			IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
+			authenticators.put(type.name(), authenticator);
 		}
+	}
+
+	public void startAuthenticators() {
+		log.info("starting Authenticators {}", authenticators::values);
+
+		for(IAuthenticator authenticator : authenticators.values()) {
+			authenticator.build();
+		}
+	}
+
+	private void resolveAuthenticators() {
+		AppConstants.getInstance()
+				.getListProperty("application.security.http.authenticators")
+				.forEach(this::resolveAndConfigureAuthenticator);
+	}
+
+	private void resolveAndConfigureAuthenticator(String authenticatorName) {
+		AppConstants appConstants = AppConstants.getInstance();
+		String properyPrefix = "application.security.http.authenticators."+authenticatorName+".";
+		String type = AppConstants.getInstance().getProperty(properyPrefix+"type");
+		AuthenticationType auth = null;
+		try {
+			auth = EnumUtils.parse(AuthenticationType.class, type);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalStateException("invalid authenticator type", e);
+		}
+		Class<? extends IAuthenticator> clazz = auth.getAuthenticator();
+		IAuthenticator authenticator = SpringUtils.createBean(applicationContext, clazz);
+
+		for(Method method: clazz.getMethods()) {
+			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+				continue;
+
+			String setter = StringUtil.lcFirst(method.getName().substring(3));
+			String value = appConstants.getProperty(properyPrefix+setter);
+			if(StringUtils.isEmpty(value))
+				continue;
+
+			ClassUtils.invokeSetter(authenticator, method, value);
+		}
+
+		authenticators.put(authenticatorName, authenticator);
 	}
 
 	/**
@@ -122,108 +180,85 @@ public class ServletManager {
 		}
 	}
 
-	public void register(DynamicRegistration.Servlet servlet) {
-		Map<String, String> parameters = null;
-		if(servlet instanceof DynamicRegistration.ServletWithParameters)
-			parameters = ((DynamicRegistration.ServletWithParameters) servlet).getParameters();
-
-		registerServlet(servlet, parameters);
-	}
-
-	public void register(Servlet servletClass, String servletName, String urlMapping) {
-		registerServlet(servletClass, servletName, urlMapping, new String[0], -1, null);
-	}
-
-	private void registerServlet(DynamicRegistration.Servlet servlet, Map<String, String> parameters) {
-		registerServlet(servlet, servlet.getName(), servlet.getUrlMapping(), servlet.getAccessGrantingRoles(), servlet.loadOnStartUp(), parameters);
-	}
-
-	private void registerServlet(Servlet servlet, String servletName, String urlMapping, String[] roles, int loadOnStartup, Map<String, String> initParameters) {
-		if(servletName.contains(" ")) {
-			throw new IllegalArgumentException("unable to instantiate servlet, servlet name may not contain spaces");
-		}
-		if(servlets.contains(servletName)) {
-			throw new IllegalArgumentException("unable to instantiate servlet, servlet name must be unique");
-		}
-
-		log.info("instantiating IbisInitializer servlet name [{}] servletClass [{}]", servletName, servlet);
-
-		String propertyPrefix = "servlet."+servletName+".";
-		if(!appConstants.getBoolean(propertyPrefix+"enabled", true))
+	public void register(ServletConfiguration config) {
+		if(!config.isEnabled()) {
+			log.info("skip instantiating servlet name [{}] not enabled", config::getName);
 			return;
+		}
 
-		getServletContext().log("instantiating IbisInitializer servlet ["+servletName+"]");
+		registerServlet(config);
 
-		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, servlet);
+		String authenticatorName = config.getAuthenticatorName();
+		if(StringUtils.isNotEmpty(authenticatorName)) {
+			IAuthenticator authenticator = authenticators.get(authenticatorName);
+			if(authenticator == null) {
+				throw new IllegalStateException("unable to configure servlet security, authenticator ["+authenticatorName+"] does not exist");
+			}
+			authenticator.registerServlet(config);
+		}
+	}
 
-		int loadOnStartupCopy = appConstants.getInt(propertyPrefix+"loadOnStartup", loadOnStartup);
-		serv.setLoadOnStartup(loadOnStartupCopy);
-		serv.addMapping(getUrlMapping(propertyPrefix, urlMapping));
-		serv.setServletSecurity(getServletSecurity(propertyPrefix, roles));
+	private void registerServlet(ServletConfiguration config) {
+		String servletName = config.getName();
+		if(servlets.containsKey(servletName)) {
+			throw new IllegalArgumentException("unable to instantiate servlet ["+servletName+"], servlet name must be unique");
+		}
 
-		if(initParameters != null && !initParameters.isEmpty()) {
+		log.info("instantiating IbisInitializer servlet name [{}] servletClass [{}]", servletName, config.getServlet());
+
+		ServletRegistration.Dynamic serv = getServletContext().addServlet(servletName, config.getServlet());
+
+		serv.setLoadOnStartup(config.getLoadOnStartup());
+		serv.addMapping(getEndpoints(config.getUrlMapping()));
+		serv.setServletSecurity(getServletSecurity(config));
+
+		if(!config.getInitParameters().isEmpty()) {
 			//Manually loop through the map as serv.setInitParameters will fail all parameters even if only 1 fails...
-			for (String key : initParameters.keySet()) {
-				String value = initParameters.get(key);
+			for(Entry<String, String> entry : config.getInitParameters().entrySet()) {
+				String key = entry.getKey();
+				String value = entry.getValue();
 				if(!serv.setInitParameter(key, value)) {
 					log("unable to set init-parameter ["+key+"] with value ["+value+"] for servlet ["+servletName+"]", Level.ERROR);
 				}
 			}
 		}
 
-		servlets.add(servletName);
-
-		if(log.isDebugEnabled()) logServletInfo(serv, loadOnStartupCopy);
+		servlets.put(servletName, config);
+		logServletInfo(serv, config);
 	}
 
-	private void logServletInfo(Dynamic serv, int loadOnStartupCopy) {
+	// Remove all endpoint excludes
+	private String[] getEndpoints(List<String> list) {
+		return list.stream()
+				.filter(e -> e.charAt(0) != '!')
+				.toArray(String[]::new);
+	}
+
+	private void logServletInfo(Dynamic serv, ServletConfiguration config) {
 		StringBuilder builder = new StringBuilder("registered");
 		builder.append(" servlet ["+serv.getName()+"]");
-		builder.append(" class ["+serv.getClassName()+"]");
-		builder.append(" url(s) "+serv.getMappings());
-		builder.append(" loadOnStartup ["+loadOnStartupCopy+"]");
-		log.debug(builder.toString());
+		builder.append(" configuration ");
+		builder.append(config);
+
+		getServletContext().log(builder.toString());
+
+		if(log.isDebugEnabled()) builder.append(" class ["+serv.getClassName()+"]");
+		log.info(builder::toString);
 	}
 
-	private String[] getUrlMapping(String propertyPrefix, String defaultUrlMappings) {
-		String[] urlMappingsCopy = defaultUrlMappings.split(",");
-		String urlMappingOverride = appConstants.getString(propertyPrefix+"urlMapping", null);
-		if(StringUtils.isNotEmpty(urlMappingOverride)) {
-			urlMappingsCopy = urlMappingOverride.split(",");
+	private ServletSecurityElement getServletSecurity(ServletConfiguration config) {
+		String[] roles = new String[0];
+		if(config.isAuthenticationEnabled() && authenticators.get(config.getAuthenticatorName()) instanceof JeeAuthenticator) {// Only add roles when using  Container Based Authentication
+			roles = config.getSecurityRoles().toArray(new String[0]);
+			declareRoles(roles);
 		}
+		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(config.getTransportGuarantee(), roles);
 
-		List<String> mappings = new ArrayList<>();
-		for(String urlMapping : urlMappingsCopy) {
-			String mapping = urlMapping.trim();
-			if(!mapping.startsWith("/") && !mapping.startsWith("*")) {
-				mapping = "/"+mapping;
-			}
-			mappings.add(mapping);
+		List<HttpMethodConstraintElement> methodConstraints = new ArrayList<>();
+		if(allowUnsecureOptionsRequest) {
+			methodConstraints.add(new HttpMethodConstraintElement("OPTIONS"));
 		}
-
-		return mappings.toArray(new String[0]);
-	}
-
-	private ServletSecurityElement getServletSecurity(String propertyPrefix, String[] defaultRoles) {
-		String[] rolesCopy = new String[0];
-		if(defaultRoles != null && webSecurityEnabled) {
-			rolesCopy = defaultRoles;
-		}
-
-		String roleNames = appConstants.getString(propertyPrefix+"securityroles", null);
-		if(StringUtils.isNotEmpty(roleNames)) {
-			log.warn("property ["+propertyPrefix+"securityroles] has been replaced with ["+propertyPrefix+"securityRoles"+"]");
-		}
-		roleNames = appConstants.getString(propertyPrefix+"securityRoles", roleNames);
-
-		if(StringUtils.isNotEmpty(roleNames)) {
-			rolesCopy = roleNames.split(",");
-		}
-		declareRoles(rolesCopy);
-
-		TransportGuarantee transportGuarantee = getTransportGuarantee(propertyPrefix+"transportGuarantee");
-		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(transportGuarantee, rolesCopy);
-		return new ServletSecurityElement(httpConstraintElement);
+		return new ServletSecurityElement(httpConstraintElement, methodConstraints);
 	}
 
 	private void log(String msg, Level level) {
@@ -233,12 +268,20 @@ public class ServletManager {
 		log.log(level, msg);
 	}
 
+	public ServletConfiguration getServlet(String name) {
+		return servlets.get(name);
+	}
+
+	public Collection<ServletConfiguration> getServlets() {
+		return Collections.unmodifiableCollection(servlets.values());
+	}
+
 	public static ServletSecurity.TransportGuarantee getTransportGuarantee(String propertyName) {
 		AppConstants appConstants = AppConstants.getInstance();
 		String constraintType = appConstants.getString(propertyName, null);
 		if (StringUtils.isNotEmpty(constraintType)) {
 			return EnumUtils.parse(TransportGuarantee.class, constraintType);
 		}
-		return defaultTransportGuarantee;
+		return SecuritySettings.getDefaultTransportGuarantee();
 	}
 }

@@ -23,9 +23,9 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 
 public class TransactionAttributes implements HasTransactionAttribute {
 	protected Logger log = LogUtil.getLogger(this);
@@ -38,11 +38,11 @@ public class TransactionAttributes implements HasTransactionAttribute {
 	public void configure() throws ConfigurationException {
 		txDef = configureTransactionAttributes(log, getTransactionAttribute(), getTransactionTimeout());
 	}
-	
-	public static TransactionDefinition configureTransactionAttributes(Logger log, TransactionAttribute transactionAttribute, int transactionTimeout) throws ConfigurationException {
+
+	public static TransactionDefinition configureTransactionAttributes(Logger log, TransactionAttribute transactionAttribute, int transactionTimeout) {
 		if (isTransacted(transactionAttribute) && transactionTimeout>0) {
-			Integer maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
-			if (maximumTransactionTimeout != null && transactionTimeout > maximumTransactionTimeout) {
+			int maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
+			if (maximumTransactionTimeout > 0 && transactionTimeout > maximumTransactionTimeout) {
 				ApplicationWarnings.add(log, "transaction timeout ["+transactionTimeout+"] exceeds the maximum transaction timeout ["+maximumTransactionTimeout+"]");
 			}
 		}
@@ -50,10 +50,7 @@ public class TransactionAttributes implements HasTransactionAttribute {
 		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+transactionAttribute+"], timeout ["+transactionTimeout+"]");
 		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute.getTransactionAttributeNum(),transactionTimeout);
 	}
-	
-	
 
-	//@IbisDoc({"4", "If set to <code>true</code>, messages will be processed under transaction control. (see below)", "<code>false</code>"})
 	@Deprecated
 	@ConfigurationWarning("implemented as setting of transacted=true as transactionAttribute=Required and transacted=false as transactionAttribute=Supports")
 	public void setTransacted(boolean transacted) {
@@ -68,7 +65,7 @@ public class TransactionAttributes implements HasTransactionAttribute {
 	}
 
 	public static boolean isTransacted(TransactionAttribute txAtt) {
-		return  txAtt==TransactionAttribute.REQUIRED || 
+		return  txAtt==TransactionAttribute.REQUIRED ||
 				txAtt==TransactionAttribute.REQUIRESNEW ||
 				txAtt==TransactionAttribute.MANDATORY;
 	}

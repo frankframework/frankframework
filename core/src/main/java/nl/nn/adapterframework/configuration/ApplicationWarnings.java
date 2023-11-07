@@ -1,5 +1,5 @@
 /*
-Copyright 2021 WeAreFrank!
+Copyright 2021, 2022 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -96,5 +96,13 @@ public class ApplicationWarnings extends ApplicationWarningsBase {
 	@Override
 	public void destroy() {
 		removeInstance(); //Remove static reference when Spring shuts down.
+	}
+
+	public static int getSize() {
+		return getInstance().getWarnings().size();
+	}
+
+	public static List<String> getWarningsList() {
+		return getInstance().getWarnings();
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,13 +33,14 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -60,15 +61,16 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </code></pre>
  * <br/>
  * For input, a 'naam' or a 'nummer'-attribute must be specified. If both are specified, their match is checked.
- * On output, 'nummer', 'naam' and 'waarde'-attributes are always present in each rubriek-element. 
+ * On output, 'nummer', 'naam' and 'waarde'-attributes are always present in each rubriek-element.
  * Where applicable 'index', 'recordnr', 'record' and 'recordindex' are present, too.
  * If sub-records exist, they are present with a 'sub' prefix to all attributes.
  * </p>
- * 
+ *
  * @ff.forward noConversionForwardName when successful, but no conversion took place
- * 
+ *
  * @author Gerrit van Brakel
  */
+@Category("NN-Special")
 public class Adios2XmlPipe extends FixedForwardPipe {
 
 	private Hashtable rubriek2nummer;
@@ -98,96 +100,94 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 	}
 
 	class Xml2AdiosHandler extends DefaultHandler {
-        private StringBuffer result = new StringBuffer(10000);
- 
-        public String getResult() {
-            return result.toString();
-        }
-        public void clear() {
-	        result.setLength(0);
-        }
-        public void startElement(
-            String uri,
-            String localName,
-            String qName,
-            Attributes attributes) throws SAXException {
+		private StringBuilder result = new StringBuilder(10000);
 
-	        String elementName=localName;
-	        if (elementName==null || elementName.equals("")) {
-	        	elementName=qName;
-	        }
-            // log.debug("elementName ["+elementName+"]: @nummer=["+attributes.getValue("nummer")+"] @naam=["+attributes.getValue("naam")+"] @index=["+attributes.getValue("index")+"]");
+		public String getResult() {
+			return result.toString();
+		}
 
-	        
-            if (elementName.equals("rubriek") ) {
-                String nummer = attributes.getValue("nummer");
-                String naam = attributes.getValue("naam");
-                String index = attributes.getValue("index");
-                String recordnr = attributes.getValue("recordnr");
-                String record = attributes.getValue("record");
-                String recordindex = attributes.getValue("recordindex");
-                String waarde = attributes.getValue("waarde");
+		public void clear() {
+			result.setLength(0);
+		}
+
+		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+
+			String elementName = localName;
+			if(elementName == null || elementName.equals("")) {
+				elementName = qName;
+			}
+			// log.debug("elementName ["+elementName+"]:
+			// @nummer=["+attributes.getValue("nummer")+"]
+			// @naam=["+attributes.getValue("naam")+"]
+			// @index=["+attributes.getValue("index")+"]");
+
+			if(elementName.equals("rubriek")) {
+				String nummer = attributes.getValue("nummer");
+				String naam = attributes.getValue("naam");
+				String index = attributes.getValue("index");
+				String recordnr = attributes.getValue("recordnr");
+				String record = attributes.getValue("record");
+				String recordindex = attributes.getValue("recordindex");
+				String waarde = attributes.getValue("waarde");
 
 				// find nummer from naam
-                if (naam != null && !naam.equals("")) {
-	                String nummerByNaam = (String)rubriek2nummer.get(naam);
-                    if (nummerByNaam == null) {
-                        throw new SAXException("cannot find nummer for [" + naam + "] in rubriek");
-                    }
-                    // check if nummer from naam matches nummer in rubriek, if present
-                    if (nummer != null && !nummer.equals("") && !nummer.equals(nummerByNaam)) {
-                        throw new SAXException("nummer [" + nummerByNaam + "] found for naam [" + naam + "] does not match nummer [" + nummer + "] in rubriek");
-                    }
-                    nummer = nummerByNaam;
-                }
-                if (nummer == null || nummer.equals("")) {
-                    throw new SAXException("cannot find 'naam' or 'nummer' in rubriek");
-                }
+				if(naam != null && !naam.equals("")) {
+					String nummerByNaam = (String) rubriek2nummer.get(naam);
+					if(nummerByNaam == null) {
+						throw new SAXException("cannot find nummer for [" + naam + "] in rubriek");
+					}
+					// check if nummer from naam matches nummer in rubriek, if present
+					if(nummer != null && !nummer.equals("") && !nummer.equals(nummerByNaam)) {
+						throw new SAXException("nummer [" + nummerByNaam + "] found for naam [" + naam + "] does not match nummer [" + nummer + "] in rubriek");
+					}
+					nummer = nummerByNaam;
+				}
+				if(nummer == null || nummer.equals("")) {
+					throw new SAXException("cannot find 'naam' or 'nummer' in rubriek");
+				}
 
-                // find recordnr from recordname
-                if (record != null && !record.equals("")) {
-	                String nummerByNaam = (String)record2nummer.get(record);
-                    if (nummerByNaam == null) {
-                        throw new SAXException("cannot find recordnr for record [" + record + "] in rubriek");
-                    }
-                    // check if recordnr from recordname matches recordnr in rubriek, if present
-                    if (recordnr != null && !recordnr.equals("") && !recordnr.equals(nummerByNaam)) {
-                        throw new SAXException("recordnr [" + nummerByNaam + "] found for record [" + record + "] does not match recordnr [" + recordnr + "] in rubriek");
-                    }
-                    recordnr = nummerByNaam;
-                }
-                if (recordnr != null && recordnr.equals("")) {
-	                recordnr=null;
-                }
+				// find recordnr from recordname
+				if(record != null && !record.equals("")) {
+					String nummerByNaam = (String) record2nummer.get(record);
+					if(nummerByNaam == null) {
+						throw new SAXException("cannot find recordnr for record [" + record + "] in rubriek");
+					}
+					// check if recordnr from recordname matches recordnr in rubriek, if present
+					if(recordnr != null && !recordnr.equals("") && !recordnr.equals(nummerByNaam)) {
+						throw new SAXException("recordnr [" + nummerByNaam + "] found for record [" + record + "] does not match recordnr [" + recordnr + "] in rubriek");
+					}
+					recordnr = nummerByNaam;
+				}
+				if(recordnr != null && recordnr.equals("")) {
+					recordnr = null;
+				}
 
-                
-                if (recordnr != null) {
-                    result.append(recordnr);
-                    if (recordindex != null && !recordindex.equals(""))
-                        result.append("[" + recordindex + "]");
-                    result.append(",");
-                }
-                result.append(nummer);
-                if (index != null && !index.equals("")) {
-                    result.append("[" + index + "]");
-                }
-                result.append(":" + waarde + ";"+SystemUtils.LINE_SEPARATOR);
-            } else
-                if (elementName.equals("adios")) {
-                    result.append(attributes.getValue("rekenbox") + ":;"+SystemUtils.LINE_SEPARATOR);
-                }
-        }
-    }
+				if(recordnr != null) {
+					result.append(recordnr);
+					if(recordindex != null && !recordindex.equals(""))
+						result.append("[" + recordindex + "]");
+					result.append(",");
+				}
+				result.append(nummer);
+				if(index != null && !index.equals("")) {
+					result.append("[" + index + "]");
+				}
+				result.append(":" + waarde + ";" + SystemUtils.LINE_SEPARATOR);
+			} else if(elementName.equals("adios")) {
+				result.append(attributes.getValue("rekenbox") + ":;" + SystemUtils.LINE_SEPARATOR);
+			}
+		}
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isNotEmpty(getNoConversionForwardName())) {
 			noConversionForward = findForward(getNoConversionForwardName());
-		} 
+		}
 		if (noConversionForward==null) {
 			noConversionForward=getSuccessForward();
-			log.info(getLogPrefix(null)+"no forward found for ["+getNoConversionForwardName()+"], setting to forward for succes ["+getSuccessForward().getPath()+"]");
+			log.info("no forward found for ["+getNoConversionForwardName()+"], setting to forward for succes ["+getSuccessForward().getPath()+"]");
 		}
 		initializeConversionTables();
 	}
@@ -203,13 +203,13 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 				String inputstring = message.asString();
 				String firstToken = new StringTokenizer(inputstring).nextToken();
 				if (firstToken.startsWith("<")) {
-					log.info(getLogPrefix(session)+"input is already XML, no conversion performed");
+					log.info("input is already XML, no conversion performed");
 					return new PipeRunResult(noConversionForward, inputstring);
 				}
 				result = makeXml(message.asString(),session);
 			}
 		} catch (IOException e) {
-			throw new PipeRunException(this, getLogPrefix(session)+"cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", e);
 		}
 		return new PipeRunResult(getSuccessForward(), result);
 	}
@@ -221,131 +221,117 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		boolean tr;
 		int i;
 		char c;
-	
-		tr=true;
-		for (i=0;i<=s.length()-1;i++) {
+
+		tr = true;
+		for(i = 0; i <= s.length() - 1; i++) {
 			c = s.charAt(i);
 			tr = tr && Character.isDigit(c);
 		}
 		return tr;
 	}
-	
+
 	protected void initializeConversionTables() throws ConfigurationException	{
-	 	// lees de template file en store het in een hashtable
+		// lees de template file en store het in een hashtable
 		if (StringUtils.isNotEmpty(getAdiosDefinities())) {
-		
-			rubriek2nummer = new Hashtable(3000);	 
+
+			rubriek2nummer = new Hashtable(3000);
 			record2nummer  = new Hashtable(1000);
-			nummer2rubriek = new Hashtable(3000);	 
-			nummer2record  = new Hashtable(1000);
-		
-		 	try {
-			    handler = new Xml2AdiosHandler();
+			nummer2rubriek = new Hashtable(3000);
+			nummer2record = new Hashtable(1000);
+
+			try {
+				handler = new Xml2AdiosHandler();
 				SAXParserFactory parserFactory = XmlUtils.getSAXParserFactory();
 				saxParser = parserFactory.newSAXParser();
-		 	} catch (Throwable e) {
-			 	throw new ConfigurationException(getLogPrefix(null)+"cannot configure a parser", e);
-		 	}
-	 	
+			} catch (Throwable e) {
+				throw new ConfigurationException("cannot configure a parser", e);
+			}
+
 			try {
-				URL url = ClassUtils.getResourceURL(this, getAdiosDefinities()); 
-				if (url==null) {
-					throw new ConfigurationException("cannot find adios definitions from resource ["+getAdiosDefinities()+"]");
+				URL url = ClassLoaderUtils.getResourceURL(this, getAdiosDefinities());
+				if(url == null) {
+					throw new ConfigurationException("cannot find adios definitions from resource [" + getAdiosDefinities() + "]");
 				}
-		    	BufferedReader bufinput = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(url.openStream()));
-		 		String line,labelnr,waarde;
-		
-		 		line = bufinput.readLine();
-		
-		 		labelnr="";
-		 		waarde=""; 
-		
-		
-		 		// read in the rubrieken
-		 		while (line != null && !waarde.equals(recordIdentifier)) {
-		 			StringTokenizer st = new StringTokenizer(line,"{};= \n");
-		 		 	if (st.countTokens()>=1) {
-		 				waarde = st.nextToken();
-		 				if (!waarde.equals(recordIdentifier)) {
-		 					waarde = waarde.substring(3);
-		 				} 
-		 				if (st.hasMoreTokens()) {
-		 					labelnr  = st.nextToken();
-		         			//System.out.println("Rubriek label: " + labelnr + "   \t" + waarde);
-		 					if (alldigits(labelnr)) {
-		       					//System.out.println("rubriek label: " + labelnr + "   \t" + waarde);
-		       					
-		       					// als de key al bestaat betekend dit dat er een fout zit in de invoer
-		       					if (nummer2rubriek.containsKey(labelnr)) {
-			       					throw new ConfigurationException("rubriek ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2rubriek.get(labelnr)+"], Waarde2: ["+waarde+"]");
-		       					}
-		       					nummer2rubriek.put(labelnr,waarde);
-		       					rubriek2nummer.put(waarde,labelnr);
-		 					}
-		 				}
-		
-		 			}
-		 			line = bufinput.readLine();	
-		 		}
-		
-		 		// Read in the records
-		 		while (line != null ) {
-		 			StringTokenizer st1 = new StringTokenizer(line,"{};= \n");
-		 			if (st1.countTokens()>=1) {
-		 				waarde = st1.nextToken();
-		 				waarde = waarde.substring(3);
-		 				if (st1.hasMoreTokens()) {
-		 					labelnr  = st1.nextToken();
-		         			//System.out.println("Record label: " + labelnr + "   \t" + waarde);
-		 					if (alldigits(labelnr)){
-		 						//labeln = Integer.parseInt(labelnr);
-		         				//System.out.println("record label: " + labelnr + "   \t" + waarde);
-		
-		         				if (nummer2record.containsKey(labelnr))	{
-			       					throw new ConfigurationException("record ["+labelnr+"] komt meermaals voor. Waarde1: ["+nummer2record.get(labelnr)+"], Waarde2: ["+waarde+"]");
-		       					}
-		       					nummer2record.put(labelnr,waarde);
-		       					record2nummer.put(waarde,labelnr);
-		 					}
-		 				}
-		
-		 			}
-		
-		 			line = bufinput.readLine();
-		 		}
-		 		bufinput.close();
-		 	}
-		 	catch (IOException e) {
-			 	throw new ConfigurationException("IOException on ["+getAdiosDefinities()+"]", e);
-		 	}
+				BufferedReader bufinput = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(url.openStream()));
+				String line, labelnr, waarde;
+
+				line = bufinput.readLine();
+
+				labelnr = "";
+				waarde = "";
+
+				// read in the rubrieken
+				while(line != null && !waarde.equals(recordIdentifier)) {
+					StringTokenizer st = new StringTokenizer(line, "{};= \n");
+					if(st.countTokens() >= 1) {
+						waarde = st.nextToken();
+						if(!waarde.equals(recordIdentifier)) {
+							waarde = waarde.substring(3);
+						}
+						if(st.hasMoreTokens()) {
+							labelnr = st.nextToken();
+							if(alldigits(labelnr)) {
+								// als de key al bestaat betekend dit dat er een fout zit in de invoer
+								if(nummer2rubriek.containsKey(labelnr)) {
+									throw new ConfigurationException("rubriek [" + labelnr + "] komt meermaals voor. Waarde1: [" + nummer2rubriek.get(labelnr) + "], Waarde2: [" + waarde + "]");
+								}
+								nummer2rubriek.put(labelnr, waarde);
+								rubriek2nummer.put(waarde, labelnr);
+							}
+						}
+
+					}
+					line = bufinput.readLine();
+				}
+
+				// Read in the records
+				while(line != null) {
+					StringTokenizer st1 = new StringTokenizer(line, "{};= \n");
+					if(st1.countTokens() >= 1) {
+						waarde = st1.nextToken();
+						waarde = waarde.substring(3);
+						if(st1.hasMoreTokens()) {
+							labelnr = st1.nextToken();
+							if(alldigits(labelnr)) {
+								// labeln = Integer.parseInt(labelnr);
+								if(nummer2record.containsKey(labelnr)) {
+									throw new ConfigurationException("record [" + labelnr + "] komt meermaals voor. Waarde1: [" + nummer2record.get(labelnr) + "], Waarde2: [" + waarde + "]");
+								}
+								nummer2record.put(labelnr, waarde);
+								record2nummer.put(waarde, labelnr);
+							}
+						}
+
+					}
+
+					line = bufinput.readLine();
+				}
+				bufinput.close();
+			} catch (IOException e) {
+				throw new ConfigurationException("IOException on [" + getAdiosDefinities() + "]", e);
+			}
 		}
 	}
-	
-	
+
 	public String findRekenbox(PipeLineSession session) throws PipeRunException {
-	    if (getRekenboxSessionKey() != null) {
-	        try {
-				return session.getMessage(getRekenboxSessionKey()).asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "unable to get rekenbox from session key ["+getRekenboxSessionKey()+"]", e);
-			}
-	    }
-	    return getRekenbox();
+		if(getRekenboxSessionKey() != null) {
+			return session.getString(getRekenboxSessionKey());
+		}
+		return getRekenbox();
 	}
-	
+
 	public String makeAdios(InputSource bericht, PipeLineSession session) throws PipeRunException {
-	
-	    try {
-	        // Parse the input
-	        handler.clear();
-	        saxParser.parse(bericht, handler);
-	        return handler.getResult();
-	
-	    } catch (Throwable t) {
-	        throw new PipeRunException(this, getLogPrefix(session)+"got error while transforming xml to adios, input ["+ bericht+ "]", t);
-	    }
+		try {
+			// Parse the input
+			handler.clear();
+			saxParser.parse(bericht, handler);
+			return handler.getResult();
+
+		} catch (Throwable t) {
+			throw new PipeRunException(this, "got error while transforming xml to adios, input [" + bericht + "]", t);
+		}
 	}
-	
+
 	/**
 	 * The calcbox tool Adios exports the file "NNRSCONS.PAS" = adiosDefinities in configuration attributes.
 	 * this file containts both "rubrieken" and "records" which together form
@@ -361,7 +347,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		if (rekenbox != null) {
 			bericht.addAttribute("rekenbox", rekenbox);
 		}
-	 
+
 		StringTokenizer st1 = new StringTokenizer(s,";\n\r");
 		while (st1.hasMoreTokens()) {
 			String regel=st1.nextToken();
@@ -373,7 +359,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 
 				if (regel.length()>label.length()) {
 					waarde = regel.substring(regel.indexOf(':')+1); // 'waarde' might contain colons, so nextToken() doesn't work correctly
-				} else { 
+				} else {
 					waarde="NVT";
 				}
 				waarde = waarde.trim();
@@ -385,15 +371,15 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 				while(st3.hasMoreTokens()) {
 					String item = st3.nextToken();
 					//log.debug("item ["+item+"]");
-					
+
 					if (st3.hasMoreTokens()) {
 						addItem(item, rubriek, nummer2record, prefix+"record", prefix+"recordnr", prefix+"recordindex" );
 						prefix=prefix+"sub";
 					} else {
 						addItem(item, rubriek, nummer2rubriek, "naam", "nummer", "index" );
-					}				
+					}
 				}
-							
+
 				rubriek.addAttribute("label", label);
 				rubriek.addAttribute("waarde", waarde);
 				bericht.addSubElement(rubriek);
@@ -420,7 +406,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		if (nummer2naam!=null) {
 			naam = (String)nummer2naam.get(item);
 			if (naam==null) {
-				naam="UNKNOWN"; 
+				naam="UNKNOWN";
 			}
 			builder.addAttribute(naamLabel,naam);
 		}
@@ -443,7 +429,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		return adiosDefinities;
 	}
 
-	/** Transformation direction. 
+	/** Transformation direction.
 	 * @ff.default Adios2Xml */
 	public void setDirection(Direction direction) {
 		this.direction = direction;
@@ -479,5 +465,4 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 	public String getNoConversionForwardName() {
 		return noConversionForwardName;
 	}
-
 }

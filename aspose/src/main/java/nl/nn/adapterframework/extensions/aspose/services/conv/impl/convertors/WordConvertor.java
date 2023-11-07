@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
@@ -32,25 +33,23 @@ import com.aspose.words.LoadOptions;
 import com.aspose.words.SaveFormat;
 import com.aspose.words.SaveOptions;
 
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Converts the files which are required and supported by the aspose words
  * library.
- * 
+ *
  */
 class WordConvertor extends AbstractConvertor {
 
 	private static final Logger LOGGER = LogUtil.getLogger(WordConvertor.class);
-	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
-
-	private CisConversionService cisConversionService;
+	private static final Map<MediaType, Supplier<LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
 	static {
-		Map<MediaType, LoadOptions> map = new HashMap<>();
+		Map<MediaType, Supplier<LoadOptions>> map = new HashMap<>();
 
 		// Mapping to loadOptions
 		map.put(new MediaType("application", "msword"), null);
@@ -58,22 +57,21 @@ class WordConvertor extends AbstractConvertor {
 		map.put(new MediaType("application", "vnd.ms-word.document.macroenabled.12"), null);
 
 		// The string value is defined in com.aspose.words.LoadFormat.
-		map.put(new MediaType("text", "plain"), new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
-		map.put(new MediaType("text", "x-log"), new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
-		map.put(new MediaType("text", "csv"), new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
+		map.put(new MediaType("text", "plain"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
+		map.put(new MediaType("text", "x-log"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
+		map.put(new MediaType("text", "csv"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
 
 		// The string value is defined in com.aspose.words.LoadFormat.
-		map.put(new MediaType("application", "rtf"), new LoadOptions(LoadFormat.fromName("RTF"), null, null));
+		map.put(new MediaType("application", "rtf"), ()->new LoadOptions(LoadFormat.fromName("RTF"), null, null));
 
-		map.put(new MediaType("application", "xml"), new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
-		map.put(new MediaType("text", "html"), new HtmlLoadOptions());
-		map.put(new MediaType("application", "xhtml+xml"), new HtmlLoadOptions());
+		map.put(new MediaType("application", "xml"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
+		map.put(new MediaType("text", "html"), ()->new HtmlLoadOptions());
+		map.put(new MediaType("application", "xhtml+xml"), ()->new HtmlLoadOptions());
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
-	protected WordConvertor(CisConversionService cisConversionService, String pdfOutputLocation) {
-		super(pdfOutputLocation, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
-		this.cisConversionService = cisConversionService;
+	protected WordConvertor(CisConfiguration cisConfiguration) {
+		super(cisConfiguration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
 	}
 
 	@Override
@@ -84,15 +82,25 @@ class WordConvertor extends AbstractConvertor {
 		}
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			Document doc = new Document(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
-			new Fontsetter(cisConversionService.getFontsDirectory()).setFontSettings(doc);
+			LoadOptions loadOptions=null;
+			Supplier<LoadOptions> loadOptionsSupplier = MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
+			if (loadOptionsSupplier!=null) {
+				loadOptions = loadOptionsSupplier.get();
+				if(!configuration.isLoadExternalResources()){
+					OfflineResourceLoader resourceLoader = new OfflineResourceLoader();
+					loadOptions.setResourceLoadingCallback(resourceLoader);
+				}
+			}
+
+			Document doc = new Document(inputStream, loadOptions);
+			new Fontsetter(configuration.getFontsDirectory()).setFontSettings(doc);
 			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
 			saveOptions.setMemoryOptimization(true);
 
 			long startTime = new Date().getTime();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), saveOptions);
 			long endTime = new Date().getTime();
-			LOGGER.debug("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			LOGGER.debug("Conversion(save operation in convert method) took  :::  " + (endTime - startTime) + " ms");
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 		}
 	}

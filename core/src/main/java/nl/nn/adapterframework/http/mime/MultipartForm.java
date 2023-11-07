@@ -28,6 +28,7 @@ import org.apache.http.entity.mime.Header;
 import org.apache.http.entity.mime.MIME;
 import org.apache.http.entity.mime.MinimalField;
 import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.util.Args;
 import org.apache.http.util.ByteArrayBuffer;
 
@@ -38,53 +39,47 @@ public class MultipartForm {
 
 	private final List<FormBodyPart> parts;
 
-	private static ByteArrayBuffer encode(
-			final Charset charset, final String string) {
+	private static final ByteArrayBuffer FIELD_SEP = encode(MIME.DEFAULT_CHARSET, ": ");
+	private static final ByteArrayBuffer CR_LF = encode(MIME.DEFAULT_CHARSET, "\r\n");
+	private static final ByteArrayBuffer TWO_DASHES = encode(MIME.DEFAULT_CHARSET, "--");
+
+	private final Charset charset;
+	private final String boundary;
+
+	private static ByteArrayBuffer encode(final Charset charset, final String string) {
 		final ByteBuffer encoded = charset.encode(CharBuffer.wrap(string));
 		final ByteArrayBuffer bab = new ByteArrayBuffer(encoded.remaining());
 		bab.append(encoded.array(), encoded.position(), encoded.remaining());
 		return bab;
 	}
 
-	private static void writeBytes(
-			final ByteArrayBuffer b, final OutputStream out) throws IOException {
+	private static void writeBytes(final ByteArrayBuffer b, final OutputStream out) throws IOException {
 		out.write(b.buffer(), 0, b.length());
 	}
 
-	private static void writeBytes(
-			final String s, final Charset charset, final OutputStream out) throws IOException {
+	private static void writeBytes(final String s, final Charset charset, final OutputStream out) throws IOException {
 		final ByteArrayBuffer b = encode(charset, s);
 		writeBytes(b, out);
 	}
 
-	private static void writeBytes(
-			final String s, final OutputStream out) throws IOException {
+	private static void writeBytes(final String s, final OutputStream out) throws IOException {
 		final ByteArrayBuffer b = encode(MIME.DEFAULT_CHARSET, s);
 		writeBytes(b, out);
 	}
 
-	protected static void writeField(
-			final MinimalField field, final OutputStream out) throws IOException {
+	protected static void writeField(final MinimalField field, final OutputStream out) throws IOException {
 		writeBytes(field.getName(), out);
 		writeBytes(FIELD_SEP, out);
 		writeBytes(field.getBody(), out);
 		writeBytes(CR_LF, out);
 	}
 
-	protected static void writeField(
-			final MinimalField field, final Charset charset, final OutputStream out) throws IOException {
+	protected static void writeField(final MinimalField field, final Charset charset, final OutputStream out) throws IOException {
 		writeBytes(field.getName(), charset, out);
 		writeBytes(FIELD_SEP, out);
 		writeBytes(field.getBody(), charset, out);
 		writeBytes(CR_LF, out);
 	}
-
-	private static final ByteArrayBuffer FIELD_SEP = encode(MIME.DEFAULT_CHARSET, ": ");
-	private static final ByteArrayBuffer CR_LF = encode(MIME.DEFAULT_CHARSET, "\r\n");
-	private static final ByteArrayBuffer TWO_DASHES = encode(MIME.DEFAULT_CHARSET, "--");
-
-	final Charset charset;
-	final String boundary;
 
 	/**
 	 * Creates an instance with the specified settings.
@@ -104,10 +99,7 @@ public class MultipartForm {
 		return this.parts;
 	}
 
-	void doWriteTo(
-		final OutputStream out,
-		final boolean writeContent) throws IOException {
-
+	void doWriteTo(final OutputStream out, final boolean writeContent) throws IOException {
 		final ByteArrayBuffer boundaryEncoded = encode(this.charset, this.boundary);
 		for (final FormBodyPart part: getBodyParts()) {
 			writeBytes(TWO_DASHES, out);
@@ -132,16 +124,13 @@ public class MultipartForm {
 	/**
 	  * Write the multipart header fields; depends on the style.
 	  */
-	protected void formatMultipartHeader(
-			final FormBodyPart part,
-			final OutputStream out) throws IOException {
-
-			// For strict, we output all fields with MIME-standard encoding.
-			final Header header = part.getHeader();
-			for (final MinimalField field: header) {
-				writeField(field, out);
-			}
+	protected void formatMultipartHeader(final FormBodyPart part, final OutputStream out) throws IOException {
+		// For strict, we output all fields with MIME-standard encoding.
+		final Header header = part.getHeader();
+		for (final MinimalField field: header) {
+			writeField(field, out);
 		}
+	}
 
 	/**
 	 * Writes out the content in the specified multipart encoding. This method
@@ -155,7 +144,7 @@ public class MultipartForm {
 	/**
 	 * Determines the total length of the multipart content (content length of
 	 * individual parts plus that of extra elements required to delimit the parts
-	 * from one another). If any of the @{link BodyPart}s contained in this object
+	 * from one another). If any of the {@link FormBodyPart BodyParts} contained in this object
 	 * is of a streaming entity of unknown length the total length is also unknown.
 	 * <p>
 	 * This method buffers only a small amount of data in order to determine the
@@ -187,4 +176,13 @@ public class MultipartForm {
 		}
 	}
 
+	public boolean isRepeatable() {
+		for (final FormBodyPart part: getBodyParts()) {
+			final ContentBody contentBody = part.getBody();
+			if(!(contentBody instanceof StringBody) && !(contentBody instanceof MessageContentBody && ((MessageContentBody) contentBody).isRepeatable())) {
+				return false;
+			}
+		}
+		return true;
+	}
 }

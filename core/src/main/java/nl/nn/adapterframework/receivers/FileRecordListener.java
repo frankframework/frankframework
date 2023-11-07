@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ package nl.nn.adapterframework.receivers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -39,22 +39,23 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.WildCardFilter;
 
 /**
  * File {@link IPullingListener listener} that looks in a directory for files according to a wildcard. When a file is
- * found, it is read in a String object and parsed to records. 
+ * found, it is read in a String object and parsed to records.
  * After reading the file, the file is renamed and moved to a directory.
- * 
- * @author  Johan Verrips
+ *
+ * @author Johan Verrips
  */
 @Deprecated
 @ConfigurationWarning("Please replace with DirectoryListener, in combination with a FileLineIteratorPipe")
-public class FileRecordListener implements IPullingListener {
+public class FileRecordListener implements IPullingListener<String> {
 	protected Logger log = LogUtil.getLogger(this);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -66,31 +67,29 @@ public class FileRecordListener implements IPullingListener {
 	private String directoryProcessedFiles;
 	private String storeFileNameInSessionKey;
 
-	private long recordNo = 0; // the current record number;
+	private long recordNo = 0; // the current record number
 	private String inputFileName; // the name of the file currently in process
 	private ISender sender;
 	private Iterator<String> recordIterator = null;
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult,	Object rawMessage, Map threadContext) throws ListenerException {
-		String tcid = (String) threadContext.get(PipeLineSession.technicalCorrelationIdKey);
-		if (sender != null) {
-			if (processResult.isSuccessful()) {
-				try {
-					sender.sendMessage(processResult.getResult(), null);
-				} catch (Exception e) {
-					throw new ListenerException("error sending message with technical correlationId [" + tcid + " msg [" + processResult.getResult() + "]", e);
-				}
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+		String cid = pipeLineSession.getCorrelationId();
+		if (sender != null && processResult.isSuccessful()) {
+			try {
+				sender.sendMessageOrThrow(processResult.getResult(), null);
+			} catch (Exception e) {
+				throw new ListenerException("error sending message with technical correlationId [" + cid + " msg [" + processResult.getResult() + "]", e);
 			}
 		}
 	}
+
 	/**
 	 * Moves a file to another directory and places a UUID in the name.
+	 *
 	 * @return String with the name of the (renamed and moved) file
-	 * 
 	 */
 	protected String archiveFile(File file) throws ListenerException {
-		boolean success = false;
 		String directoryTo = getDirectoryProcessedFiles();
 		String fullFilePath = "";
 		// Destination directory
@@ -98,7 +97,7 @@ public class FileRecordListener implements IPullingListener {
 		try {
 			fullFilePath = file.getCanonicalPath();
 		} catch (IOException e) {
-			log.warn(getName() + " error retrieving canonical path of file [" + file.getName() + "]");
+			log.warn("{} error retrieving canonical path of file [{}]", this::getName, file::getName);
 			fullFilePath = file.getName();
 		}
 
@@ -106,46 +105,47 @@ public class FileRecordListener implements IPullingListener {
 			throw new ListenerException(getName() + " error renaming directory: The directory [" + directoryTo + "] to move the file [" + fullFilePath + "] is not a directory!");
 		}
 		// Move file to new directory
-		String newFileName = Misc.createSimpleUUID() + "-" + file.getName();
-
+		String newFileName;
 		int dotPosition = file.getName().lastIndexOf(".");
-		if (dotPosition > 0)
-			newFileName = file.getName().substring(0, dotPosition) + "-" + Misc.createSimpleUUID() + file.getName().substring(dotPosition, file.getName().length());
+		if (dotPosition > 0) {
+			newFileName = file.getName().substring(0, dotPosition) + "-" + UUIDUtil.createSimpleUUID() + file.getName().substring(dotPosition);
+		} else {
+			newFileName = UUIDUtil.createSimpleUUID() + "-" + file.getName();
+		}
 
-		success = file.renameTo(new File(dir, newFileName));
+		boolean success = file.renameTo(new File(dir, newFileName));
 		if (!success) {
-			log.error(getName() + " was unable to move file [" + fullFilePath + "] to [" + directoryTo + "]");
+			log.error("{} was unable to move file [{}] to [{}]", getName(), fullFilePath, directoryTo);
 			throw new ListenerException("unable to move file [" + fullFilePath + "] to [" + directoryTo + "]");
-		} else
-			log.info(getName() + " moved file [" + fullFilePath + "] to [" + directoryTo + "]");
+		} else {
+			log.info("{} moved file [{}] to [{}]", getName(), fullFilePath, directoryTo);
+		}
 
-		String result = null;
 		try {
-			result = new File(dir, newFileName).getCanonicalPath();
+			return new File(dir, newFileName).getCanonicalPath();
 		} catch (IOException e) {
 			throw new ListenerException("error retrieving canonical path of renamed file [" + file.getName() + "]", e);
 		}
-		return result;
-
 	}
-	
+
 	@Override
 	public void close() throws ListenerException {
 		try {
-			if (sender != null)
+			if (sender != null) {
 				sender.close();
+			}
 		} catch (SenderException e) {
 			throw new ListenerException("Error closing sender [" + sender.getName() + "]", e);
 		}
 	}
+
 	@Override
-	public void closeThread(Map threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		// nothing special
 	}
-	
+
 	/**
 	 * Configure does some basic checks (directoryProcessedFiles is a directory,  inputDirectory is a directory, wildcard is filled etc.);
-	 *
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
@@ -171,13 +171,14 @@ public class FileRecordListener implements IPullingListener {
 		}
 
 	}
+
 	/**
 	 * Gets a file to process.
 	 */
 	protected File getFileToProcess() {
 		WildCardFilter filter = new WildCardFilter(wildcard);
 		File dir = new File(getInputDirectory());
-		File files[] = dir.listFiles(filter);
+		File[] files = dir.listFiles(filter);
 		int count = (files == null ? 0 : files.length);
 		for (int i = 0; i < count; i++) {
 			File file = files[i];
@@ -188,46 +189,37 @@ public class FileRecordListener implements IPullingListener {
 		}
 		return null;
 	}
-	/**
-	 * Returns the name of the file in process (the {@link #archiveFile(File) archived} file) concatenated with the
-	 * record number. As te {@link #archiveFile(File) archivedFile} method always renames to a 
-	 * unique file, the combination of this filename and the recordnumber is unique, enabling tracing in case of errors
-	 * in the processing of the file.
-	 * Override this method for your specific needs! 
-	 */
-	@Override
-	public String getIdFromRawMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		String correlationId = inputFileName + "-" + recordNo;
-		PipeLineSession.setListenerParameters(threadContext, correlationId, correlationId, null, null);
-		return correlationId;
+
+	private String constructMessageId() {
+		return inputFileName + "-" + recordNo;
 	}
+
 	/**
 	 * Retrieves a single record from a file. If the file is empty or fully processed, it looks wether there
 	 * is a new file to process and returns the first record.
 	 */
 	@Override
-	public synchronized Object getRawMessage(Map threadContext)
-		throws ListenerException {
-		String fullInputFileName = null;
-		if (recordIterator != null) {
-			if (recordIterator.hasNext()) {
-				recordNo += 1;
-				return recordIterator.next();
-			}
+	public synchronized RawMessageWrapper<String> getRawMessage(@Nonnull Map<String, Object> threadContext)
+			throws ListenerException {
+		String fullInputFileName;
+		if (recordIterator != null && recordIterator.hasNext()) {
+			recordNo += 1;
+			String id = constructMessageId();
+			PipeLineSession.updateListenerParameters(threadContext, id, id, null, null);
+			return new RawMessageWrapper<>(recordIterator.next(), id, id);
 		}
 		if (getFileToProcess() != null) {
 			File inputFile = getFileToProcess();
-			log.info(
-				" processing file [" + inputFile.getName() + "] size [" + inputFile.length() + "]");
+			log.info(" processing file [{}] size [{}]", inputFile::getName, inputFile::length);
 
 			if (StringUtils.isNotEmpty(getStoreFileNameInSessionKey())) {
-				threadContext.put(getStoreFileNameInSessionKey(),inputFile.getName());
+				threadContext.put(getStoreFileNameInSessionKey(), inputFile.getName());
 			}
 
 			String fileContent = "";
 			try {
 				fullInputFileName = inputFile.getCanonicalPath();
-				fileContent = Misc.fileToString(fullInputFileName, "\n");
+				fileContent = StreamUtil.fileToString(fullInputFileName, "\n");
 				inputFileName = archiveFile(inputFile);
 
 			} catch (IOException e) {
@@ -235,137 +227,129 @@ public class FileRecordListener implements IPullingListener {
 			} finally {
 				recordNo = 0;
 			}
-			log.info(" processing file [" + fullInputFileName + "]");
+			log.info(" processing file [{}]", fullInputFileName);
 			recordIterator = parseToRecords(fileContent);
 			if (recordIterator.hasNext()) {
 				recordNo += 1;
-				return recordIterator.next();
+				String id = constructMessageId();
+				PipeLineSession.updateListenerParameters(threadContext, id, id, null, null);
+				return new RawMessageWrapper<>(recordIterator.next(), id, id);
 			}
 		}
 
-		// if nothing was found, just sleep thight.
+		// if nothing was found, just sleep tight.
 		try {
 			Thread.sleep(responseTime);
 		} catch (InterruptedException e) {
-			throw new ListenerException("interupted...", e);
+			throw new ListenerException("interrupted...", e);
 		}
 
 		return null;
 	}
-	
+
 	@Override
-	public Message extractMessage(Object rawMessage, Map threadContext) throws ListenerException {
-		return Message.asMessage(rawMessage);
+	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
 	@Override
 	public void open() throws ListenerException {
 		try {
-			if (sender != null)
-				sender.open();
+			if (sender != null) sender.open();
 		} catch (SenderException e) {
 			throw new ListenerException("error opening sender [" + sender.getName() + "]", e);
 		}
-		return;
 	}
 
+	@Nonnull
 	@Override
-	public Map openThread() throws ListenerException {
-		return null;
+	public Map<String, Object> openThread() throws ListenerException {
+		return new HashMap<>();
 	}
+
 	/**
 	 * Parse a String to an Iterator with objects (records). This method
-	 * currently uses the end-of-line character ("\n") as a seperator. 
+	 * currently uses the end-of-line character ("\n") as a seperator.
 	 * This method is easy to extend to satisfy your project needs.
 	 */
 	protected Iterator<String> parseToRecords(String input) {
-		StringTokenizer t = new StringTokenizer(input, "\n");
-		List<String> array = new ArrayList<String>();
-		while (t.hasMoreTokens()) {
-			array.add(t.nextToken());
-		}
-		return array.iterator();
+		return StringUtil.splitToStream(input, "\n").iterator();
 	}
 
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}
+
 	public ISender getSender() {
 		return sender;
 	}
-	
+
 	@Override
 	public String toString() {
-		String result = super.toString();
 		ToStringBuilder ts = new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
 		ts.append("name", getName());
 		ts.append("inputDirectory", getInputDirectory());
 		ts.append("wildcard", getWildcard());
-		result += ts.toString();
-		return result;
 
+		return super.toString() + ts;
 	}
-	
+
 	@Override
-	@IbisDoc({"name of the listener as known to the adapter.", ""})
+	/** name of the listener as known to the adapter. */
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	@Override
 	public String getName() {
 		return name;
 	}
-	
-	/**
-	 * set the directory name to look in for files.
-	 * @see #setWildcard(String)
-	 */
-	@IbisDoc({"set the directory name to look in for files.", ""})
+
+	/** the directory name to look in for files. */
 	public void setInputDirectory(String inputDirectory) {
 		this.inputDirectory = inputDirectory;
 	}
+
 	public String getInputDirectory() {
 		return inputDirectory;
 	}
 
-	/**
-	 * set the {@link WildCardFilter wildcard} to look for files in the specified directory, e.g. "*.inp"
-	 */
-	@IbisDoc({"the {@link nl.nn.adapterframework.util.wildcardfilter wildcard} to look for files in the specified directory, e.g. \"*.inp\"", ""})
+	/** the wildcard to look for files in the specified directory, e.g. \"*.inp\" */
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
+
 	public String getWildcard() {
 		return wildcard;
 	}
 
-	/**
-	 * Sets the directory to store processed files in
-	 * @param directoryProcessedFiles The directoryProcessedFiles to set
-	 */
-	@IbisDoc({"the directory to store processed files in", ""})
+	/** the directory to store processed files in */
 	public void setDirectoryProcessedFiles(String directoryProcessedFiles) {
 		this.directoryProcessedFiles = directoryProcessedFiles;
 	}
+
 	public String getDirectoryProcessedFiles() {
 		return directoryProcessedFiles;
 	}
 
 	/**
-	 * set the time to delay when no records are to be processed and this class has to look for the arrival of a new file
+	 * The time <i>in milliseconds</i> to delay when no records are to be processed, and this class has to look for the arrival of a new file
+	 *
+	 * @ff.default 1000
 	 */
-	@IbisDoc({"The time <i>in milliseconds</i> to delay when no records are to be processed, and this class has to look for the arrival of a new file", "1000"})
 	public void setResponseTime(long responseTime) {
 		this.responseTime = responseTime;
 	}
+
 	public long getResponseTime() {
 		return responseTime;
 	}
 
-	@IbisDoc({"when set, the name of the read file is stored under this session key", ""})
+	/** when set, the name of the read file is stored under this session key */
 	public void setStoreFileNameInSessionKey(String storeFileNameInSessionKey) {
 		this.storeFileNameInSessionKey = storeFileNameInSessionKey;
 	}
+
 	public String getStoreFileNameInSessionKey() {
 		return storeFileNameInSessionKey;
 	}

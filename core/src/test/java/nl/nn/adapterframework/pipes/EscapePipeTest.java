@@ -1,159 +1,201 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.pipes.EscapePipe.Direction;
+import nl.nn.adapterframework.testutil.TestAssertions;
 
 public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
-    @Override
-    public EscapePipe createPipe() {
-        return new EscapePipe();
-    }
+	@Override
+	public EscapePipe createPipe() {
+		return new EscapePipe();
+	}
 
-    @Test
-    public void getterSetterSubstringStart() {
-        String dummyString = "dummyString";
-        pipe.setSubstringStart(dummyString);
-        assertEquals(pipe.getSubstringStart(), dummyString);
-    }
+	@Test(expected = ConfigurationException.class)
+	public void testNullDirectionGiven() throws Exception {
+		pipe.setDirection(null);
+		pipe.configure();
+	}
 
-    @Test
-    public void getterSetterSubstringEnd() {
-        String dummyString = "dummyString";
-        pipe.setSubstringEnd(dummyString);
-        assertEquals(pipe.getSubstringEnd(), dummyString);
-    }
+	@Test(expected = ConfigurationException.class)
+	public void testNoSubstringEnd() throws Exception {
+		pipe.setSubstringStart("Substring");
+		pipe.configure();
+	}
 
-    @Test
-    public void getterSetterDirection() {
-        String dummyString = "dummyString";
-        pipe.setDirection(dummyString);
-        assertEquals(pipe.getDirection(), dummyString);
-    }
+	@Test(expected = ConfigurationException.class)
+	public void testNoSubstringStart() throws Exception {
+		pipe.setSubstringEnd("Substring");
+		pipe.configure();
+	}
 
-    @Test
-    public void getterSetterEncodeSubstring() {
-        pipe.setEncodeSubstring(true);
-        boolean otherBool = pipe.isEncodeSubstring();
-        assertEquals(true, otherBool);
+	@Test
+	public void testMultiLineXmlInput() throws Exception {
+		configureAndStartPipe();
 
-        pipe.setEncodeSubstring(false);
-        otherBool = pipe.isEncodeSubstring();
-        assertEquals(false, otherBool);
-    }
+		PipeRunResult result = doPipe(getResource("multi-line.xml"));
+		String expected = getResource("multi-line.escaped").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
 
-    @Test(expected = ConfigurationException.class)
-    public void testNoDirectionGiven() throws ConfigurationException {
-        pipe.setDirection(null);
-        pipe.configure();
-    }
+	@Test
+	public void testPartialEscapedMultiLineXmlInput() throws Exception { //double escapes
+		configureAndStartPipe();
 
-    @Test(expected = ConfigurationException.class)
-    public void testWrongDirectionGiven() throws ConfigurationException {
-        pipe.setDirection("NoDirection");
-        pipe.configure();
-    }
+		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
+		String expected = getResource("multi-line-partial-escaped.result").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
 
-    @Test(expected = ConfigurationException.class)
-    public void testNoSubstringEnd() throws ConfigurationException {
-        pipe.setSubstringStart("Substring");
-        pipe.configure();
-    }
+	@Test
+	public void testPartialEscapedMultiLineXmlInputSubString() throws Exception { //double escapes
+		pipe.setSubstringStart("<multi>");
+		pipe.setSubstringEnd("</multi>");
+		pipe.setEncodeSubstring(true);
+		configureAndStartPipe();
 
-    @Test(expected = ConfigurationException.class)
-    public void testNoSubstringStart() throws ConfigurationException {
-        pipe.setSubstringEnd("Substring");
-        pipe.configure();
-    }
+		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.result2"));
+		String expected = getResource("multi-line-partial-escaped.xml").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
 
-    @Test
-    public void testNoSubstringAtAll() throws ConfigurationException {
-        pipe.setSubstringEnd("Substring");
-        pipe.setSubstringStart("Substring");
-        pipe.setEncodeSubstring(true);
-        pipe.configure();
-        assertEquals(pipe.getSubstringStart(), "Substring");
-        assertEquals(pipe.getSubstringEnd(), "Substring");
+	@Test
+	public void testDecodeEscapedMultiLineXmlInputWithSubString() throws Exception {
+		pipe.setSubstringStart("<test>");
+		pipe.setSubstringEnd("</test>");
+		pipe.setDirection(Direction.DECODE);
+		configureAndStartPipe();
 
-    }
+		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
+		String expected = getResource("multi-line.xml").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
 
-    @Test
-    public void testNoSubstringWithEncode() throws ConfigurationException {
-        pipe.setEncodeSubstring(true);
-        pipe.configure();
-        assertNull(pipe.getSubstringStart());
-        assertNull(pipe.getSubstringEnd());
-    }
+	@Test //input-output is unchanged / substring is not found, nothing is being de/en-coded
+	public void testDecodeEscapedMultiLineXmlInputWithEncodedSubString() throws Exception {
+		pipe.setSubstringStart("<test>");
+		pipe.setSubstringEnd("</test>");
+		pipe.setEncodeSubstring(true);
+		pipe.setDirection(Direction.DECODE);
+		configureAndStartPipe();
 
-    @Test
-    public void testSubstringWithEncode() throws ConfigurationException {
-        pipe.setEncodeSubstring(true);
-        pipe.setSubstringStart("Substring");
-        pipe.setSubstringEnd("Substring");
-        pipe.configure();
-        assertEquals(pipe.getSubstringStart(), XmlUtils.encodeChars("Substring"));
-        assertEquals(pipe.getSubstringEnd(), XmlUtils.encodeChars("Substring"));
-    }
+		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
+		String expected = getResource("multi-line-partial-escaped.xml").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
 
-    @Test
-    public void testRightSubstringsEncode() throws PipeRunException {
-        pipe.setSubstringStart("Kappa");
-        pipe.setSubstringEnd("Pride");
-        Object input = "KappaPride";
-        pipe.setDirection("encode");
+	@Test
+	public void testDecodeEscapedMultiLineXmlInputWithEncodedSubString2() throws Exception {
+		pipe.setSubstringStart("<multi>");
+		pipe.setSubstringEnd("</multi>");
+		pipe.setEncodeSubstring(true);
+		pipe.setDirection(Direction.DECODE);
+		configureAndStartPipe();
 
-        assertNotNull(doPipe(pipe, input, session).getResult()); // TODO should assert proper return value
-    }
+		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
+		String expected = getResource("multi-line-partial-escaped.result2").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
 
-    @Test
-    public void testRightSubstringsDecode() throws PipeRunException {
-        pipe.setSubstringStart("Kappa");
-        pipe.setSubstringEnd("Pride");
-        Object input = "KappaPride";
-        pipe.setDirection("decode");
+	@Test
+	public void testDecodeMultiLineXmlInput() throws Exception {
+		pipe.setDirection(Direction.DECODE);
+		configureAndStartPipe();
 
-        assertNotNull(doPipe(pipe, input, session).getResult()); // TODO should assert proper return value
-    }
-    @Test
-    public void testRightSubstringsNoDirection() throws PipeRunException {
-        pipe.setSubstringStart("Kappa");
-        pipe.setSubstringEnd("Pride");
-        Object input = "KappaPride";
-        pipe.setDirection("");
+		PipeRunResult result = doPipe(getResource("multi-line.escaped"));
+		String expected = getResource("multi-line.xml").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
 
-        assertNotNull(doPipe(pipe, input, session)); // TODO should assert proper return value
-    }
+	@Test
+	public void testDecodePartialEncodedMultiLineXmlInput() throws Exception {
+		pipe.setDirection(Direction.DECODE);
+		configureAndStartPipe();
 
-    @Test
-    public void testNoSubstringEncode() throws PipeRunException {
-        pipe.setDirection("encode");
-        Object input = "dummyString";
+		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
+		String expected = getResource("multi-line.xml").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
 
-        assertNotNull(doPipe(pipe, input, session).getResult()); // TODO should assert proper return value
-    }
+	@Test //input-output is unchanged / substring is not found, nothing is being de/en-coded
+	public void testDecodePartialEncodedMultiLineXmlInputWithSubString() throws Exception {
+		pipe.setSubstringStart("<root>");
+		pipe.setSubstringEnd("</root>");
+		pipe.setDirection(Direction.DECODE);
+		configureAndStartPipe();
 
-    @Test
-    public void testNoSubstringDecode() throws PipeRunException {
-        pipe.setDirection("decode");
-        Object input = "dummyString";
+		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
+		String expected = getResource("multi-line-partial-escaped.xml").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
 
-        assertNotNull(doPipe(pipe, input, session).getResult()); // TODO should assert proper return value
-    }
+	@Test //input-output is unchanged / substring is not found, nothing is being de/en-coded
+	public void testDecodePartialDoubleEncodedMultiLineXmlInput() throws Exception {
+		pipe.setDirection(Direction.DECODE);
+		configureAndStartPipe();
 
-    @Test
-    public void testNoSubstringNoDirection() throws PipeRunException {
-        pipe.setDirection("");
-        Object input = "dummyString";
+		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.result"));
+		String expected = getResource("multi-line-partial-escaped.xml").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
 
-        assertNotNull(doPipe(pipe, input, session)); // TODO should assert proper return value
-    }
+	@Test
+	public void testDecodePartialEncodedMultiLineXmlInputWithEncodedSubString() throws Exception {
+		pipe.setSubstringStart("<multi>");
+		pipe.setSubstringEnd("</multi>");
+		pipe.setEncodeSubstring(true);
+		pipe.setDirection(Direction.DECODE);
+		configureAndStartPipe();
+
+		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
+		String expected = getResource("multi-line-partial-escaped.result2").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
+
+	@Test
+	public void testCdata2Text() throws Exception {
+		pipe.setDirection(Direction.CDATA2TEXT);
+		configureAndStartPipe();
+
+		PipeRunResult result = doPipe(getResource("multi-line-with-cdata.xml"));
+		String expected = getResource("multi-line-partial-escaped.xml").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
+
+	@Test
+	public void testCdata2TextWithoutCdataInput() throws Exception {
+		pipe.setDirection(Direction.CDATA2TEXT);
+		configureAndStartPipe();
+
+		PipeRunResult result = doPipe(getResource("multi-line.xml"));
+		String expected = getResource("multi-line.xml").asString();
+		TestAssertions.assertEqualsIgnoreRNTSpace(expected, result.getResult().asString());
+	}
+
+	@Test //The substring is the cdata part, without root, which returns null
+	public void testCdata2TextSubStringOnRoot() throws Exception {
+		pipe.setSubstringStart("<test>");
+		pipe.setSubstringEnd("</test>");
+		pipe.setDirection(Direction.CDATA2TEXT);
+		configureAndStartPipe();
+
+		PipeRunResult result = doPipe(getResource("multi-line-with-cdata.xml"));
+		TestAssertions.assertEqualsIgnoreCRLF("<test>null</test>", result.getResult().asString());
+	}
 
 
+	@Test
+	public void testCdata2TextSubString() throws Exception {
+		pipe.setSubstringStart("<test>");
+		pipe.setSubstringEnd("</test>");
+		pipe.setDirection(Direction.CDATA2TEXT);
+		configureAndStartPipe();
+
+		PipeRunResult result = doPipe(getResource("multi-line-with-cdata2.xml"));
+		String expected = getResource("multi-line-partial-escaped.result3").asString();
+		TestAssertions.assertEqualsIgnoreRNTSpace(expected, result.getResult().asString());
+	}
 }

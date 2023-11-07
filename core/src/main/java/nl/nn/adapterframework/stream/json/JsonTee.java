@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ public class JsonTee implements JsonEventHandler {
 
 	private JsonEventHandler first;
 	private JsonEventHandler second;
-	
+
 	public JsonTee(JsonEventHandler first, JsonEventHandler second) {
 		this.first=first;
 		this.second=second;
@@ -76,5 +76,11 @@ public class JsonTee implements JsonEventHandler {
 		first.primitive(value);
 		second.primitive(value);
 	}
-	
+
+	@Override
+	public void number(String value) throws SAXException {
+		first.number(value);
+		second.number(value);
+	}
+
 }

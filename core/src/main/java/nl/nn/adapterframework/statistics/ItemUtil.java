@@ -28,7 +28,7 @@ public class ItemUtil {
 
 	public static void addItem(XmlBuilder xml, String name, String value) {
 		XmlBuilder item = new XmlBuilder("item");
-	
+
 		item.addAttribute("name", name);
 		item.addAttribute("value", value);
 		xml.addSubElement(item);
@@ -56,7 +56,7 @@ public class ItemUtil {
 	public static XmlBuilder toXml(ItemList il, String elementName, String name, DecimalFormat timeFormat, DecimalFormat percentageFormat, DecimalFormat countFormat) {
 		XmlBuilder container = new XmlBuilder(elementName);
 		XmlBuilder stats = getSummaryContainer(container, name);
-	
+
 		for (int i=0; i<il.getItemCount(); i++) {
 			Object item = il.getItemValue(i);
 			if (item==null) {

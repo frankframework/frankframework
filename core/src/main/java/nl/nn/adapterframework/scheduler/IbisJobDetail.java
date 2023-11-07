@@ -37,7 +37,7 @@ public class IbisJobDetail extends JobDetailImpl {
 		if (!StringUtils.equals(thisJobDef.getCronExpression(), otherJobDef.getCronExpression())) {
 			return false;
 		}
-		
+
 		//If the Interval expression is different in both jobs, it's not equal!
 		if (thisJobDef.getInterval() != otherJobDef.getInterval()) {
 			return false;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,27 +25,29 @@ import org.springframework.beans.factory.InitializingBean;
 import com.arjuna.common.util.propertyservice.PropertiesFactory;
 import com.arjuna.common.util.propertyservice.PropertiesFactoryStax;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class NarayanaConfigurationBean implements InitializingBean {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private Properties customProperties;
+	private @Getter @Setter Properties properties;
 
 	private class NarayanaPropertiesFactory extends PropertiesFactoryStax {
 		@Override
 		public Properties getPropertiesFromFile(String propertyFileName, ClassLoader classLoader) {
-			Properties properties;
+			Properties localProperties;
 			try {
-				properties = super.getPropertiesFromFile(propertyFileName, classLoader); //Loads the default narayana-jta.jar/jbossts-properties.xml properties.
+				localProperties = super.getPropertiesFromFile(propertyFileName, classLoader); //Loads the default narayana-jta.jar/jbossts-properties.xml properties.
 			} catch (Throwable t) {
 				log.warn("unable to load properties file, manually trying to set default values", t);
-				properties = readXmlFile(propertyFileName);
+				localProperties = readXmlFile(propertyFileName);
 			}
-			properties.putAll(AppConstants.getInstance()); //Override with properties set in the Ibis
-			properties.putAll(customProperties); //Override with spring configured properties
-			return properties;
+			localProperties.putAll(AppConstants.getInstance()); //Override with properties set in the Ibis
+			localProperties.putAll(properties); //Override with spring configured properties
+			return localProperties;
 		}
 
 		private Properties readXmlFile(String propertyFileName) {
@@ -67,9 +69,5 @@ public class NarayanaConfigurationBean implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() {
 		PropertiesFactory.setDelegatePropertiesFactory(new NarayanaPropertiesFactory());
-	}
-
-	public void setProperties(Properties properties) {
-		this.customProperties = properties;
 	}
 }

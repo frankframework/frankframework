@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2015 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
@@ -24,17 +26,18 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.http.mime.MultipartUtils;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Servlet that listens for REST requests, and handles them over to the RestServiceDispatcher.
@@ -44,8 +47,8 @@ import nl.nn.adapterframework.util.Misc;
 @IbisInitializer
 public class RestListenerServlet extends HttpServletBase {
 	protected Logger log=LogUtil.getLogger(this);
-	private String CorsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
-	private String CorsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
+	private final String CorsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
+	private final String CorsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
 	private RestServiceDispatcher sd=null;
 
@@ -73,9 +76,9 @@ public class RestListenerServlet extends HttpServletBase {
 
 			String pattern = sd.findMatchingPattern(path);
 			if(pattern!=null) {
-				Map methodConfig = sd.getMethodConfig(pattern, "OPTIONS");
+				Map<String, Object> methodConfig = sd.getMethodConfig(pattern, "OPTIONS");
 				if (methodConfig == null) { //If set, it means the adapter handles the OPTIONS request
-					Iterator iter = sd.getAvailableMethods(pattern).iterator();
+					Iterator<String> iter = sd.getAvailableMethods(pattern).iterator();
 					StringBuilder sb = new StringBuilder();
 					sb.append("OPTIONS"); //Append preflight OPTIONS request
 					while (iter.hasNext()) {
@@ -102,25 +105,24 @@ public class RestListenerServlet extends HttpServletBase {
 		try (PipeLineSession messageContext= new PipeLineSession()) {
 			messageContext.setSecurityHandler(securityHandler);
 
-			Enumeration paramnames=request.getParameterNames();
+			Enumeration<String> paramnames=request.getParameterNames();
 			while (paramnames.hasMoreElements()) {
-				String paramname = (String)paramnames.nextElement();
+				String paramname = paramnames.nextElement();
 				String paramvalue = request.getParameter(paramname);
 				if (log.isTraceEnabled()) log.trace("setting parameter ["+paramname+"] to ["+paramvalue+"]");
 				messageContext.put(paramname, paramvalue);
 			}
-			if (!ServletFileUpload.isMultipartContent(request)) {
-				body=Misc.streamToString(request.getInputStream(),"\n",false);
+			if (!MultipartUtils.isMultipart(request)) {
+				body = StreamUtil.streamToString(request.getInputStream(),"\n",false);
 			}
 			try {
 				log.trace("RestListenerServlet calling service ["+path+"]");
-				String result=sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
+				Message result = sd.dispatchRequest(restPath, path, request, contentType, body, messageContext, response, getServletContext());
 
-				if(result == null && messageContext.containsKey("exitcode") && messageContext.containsKey("validateEtag")) {
-					int status = Integer.parseInt( ""+ messageContext.get("exitcode"));
+				if(Message.isNull(result) && messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY) && messageContext.containsKey("validateEtag")) {
+					int status = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 					response.setStatus(status);
-					//TODO: overbodig?
-					if(log.isDebugEnabled()) log.trace("aborted request with status ["+status+"]");
+					log.trace("aborted request with status [{}]", status);
 					return;
 				}
 
@@ -129,15 +131,15 @@ public class RestListenerServlet extends HttpServletBase {
 					response.setHeader("etag", etag);
 
 				int statusCode = 0;
-				if(messageContext.containsKey("exitcode"))
-					statusCode = Integer.parseInt( ""+ messageContext.get("exitcode"));
+				if(messageContext.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY))
+					statusCode = Integer.parseInt( ""+ messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 				if(statusCode > 0)
 					response.setStatus(statusCode);
 
-				if (StringUtils.isEmpty(result)) {
+				if (Message.isEmpty(result)) {
 					log.trace("RestListenerServlet finished with result set in pipeline");
 				} else {
-					contentType=messageContext.getMessage("contentType").asString();
+					contentType=messageContext.getString("contentType");
 					if (StringUtils.isNotEmpty(contentType)) {
 						response.setHeader("Content-Type", contentType);
 					}
@@ -149,8 +151,12 @@ public class RestListenerServlet extends HttpServletBase {
 					if (StringUtils.isNotEmpty(allowedMethods)) {
 						response.setHeader("Allow", allowedMethods);
 					}
-					response.getWriter().print(result);
-					log.trace("RestListenerServlet finished with result ["+result+"] etag ["+etag+"] contentType ["+contentType+"] contentDisposition ["+contentDisposition+"]");
+
+					/*
+					 * Finalize the pipeline and write the result to the response
+					 */
+					writeToResponseStream(response, result);
+					log.trace("RestListenerServlet finished with result [{}] etag [{}] contentType [{}] contentDisposition [{}]", result, etag, contentType, contentDisposition);
 				}
 			} catch (ListenerException e) {
 				if (!response.isCommitted()) {
@@ -164,6 +170,18 @@ public class RestListenerServlet extends HttpServletBase {
 		}
 	}
 
+	private static void writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
+		if (result.isBinary()) {
+			try (InputStream in = result.asInputStream()) {
+				StreamUtil.copyStream(in, response.getOutputStream(), 4096);
+			}
+		} else {
+			try (Reader reader = result.asReader()) {
+				StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096);
+			}
+		}
+	}
+
 	@Override
 	public String getUrlMapping() {
 		return "/rest/*";
@@ -171,6 +189,6 @@ public class RestListenerServlet extends HttpServletBase {
 
 	@Override
 	public String[] getAccessGrantingRoles() {
-		return ALL_IBIS_USER_ROLES;
+		return ALL_IBIS_ROLES;
 	}
 }

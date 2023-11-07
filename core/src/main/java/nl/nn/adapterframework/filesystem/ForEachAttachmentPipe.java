@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 WeAreFrank!
+   Copyright 2020, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,30 +22,30 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> extends IteratingPipe<A> {
 
 	private Set<String> onlyProperties;
 	private Set<String> excludeProperties;
-	
+
 	private FS fileSystem;
-	
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
+		SpringUtils.autowireByName(getApplicationContext(), getFileSystem());
 		getFileSystem().configure();
 	}
-	
+
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
@@ -56,7 +56,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 			throw new PipeStartException("Cannot open fileSystem",e);
 		}
 	}
-	
+
 	@Override
 	public void stop()  {
 		try {
@@ -70,11 +70,11 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	private class AttachmentIterator implements IDataIterator<A> {
 
 		private Iterator<A> it;
-		
+
 		AttachmentIterator(Iterator<A> it) {
-			this.it=it;
+			this.it = it;
 		}
-		
+
 		@Override
 		public boolean hasNext() throws SenderException {
 			return it.hasNext();
@@ -90,12 +90,11 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 			// no action required
 		}
 	}
-	
+
 	@Override
-	protected IDataIterator<A> getIterator(Message message, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
-		
+	protected IDataIterator<A> getIterator(Message message, PipeLineSession session, Map<String, Object> threadContext) throws SenderException {
 		FS ifs = getFileSystem();
-		
+
 		try {
 			F file = ifs.toFile(message.asString());
 			Iterator<A> it = ifs.listAttachments(file);
@@ -149,10 +148,9 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 		return new Message(result.toXML());
 	}
 
-	
 	public String getPhysicalDestinationName() {
-		if (getFileSystem() instanceof HasPhysicalDestination) {
-			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
+		if (getFileSystem() != null) {
+			return getFileSystem().getPhysicalDestinationName();
 		}
 		return null;
 	}
@@ -165,8 +163,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 		this.fileSystem = fileSystem;
 	}
 
-	
-	@IbisDoc({"comma separated list of attachment properties to list", ""})
+	/** comma separated list of attachment properties to list */
 	public void setOnlyProperties(String onlyPropertiesList) {
 		if (onlyProperties==null) {
 			onlyProperties=new LinkedHashSet<String>();
@@ -177,7 +174,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 		return onlyProperties;
 	}
 
-	@IbisDoc({"comma separated list of attachment properties not to list. When specified, 'onlyProperties' is ignored", ""})
+	/** comma separated list of attachment properties not to list. When specified, 'onlyProperties' is ignored */
 	public void setExcludeProperties(String excludePropertiesList) {
 		if (excludeProperties==null) {
 			excludeProperties=new LinkedHashSet<String>();
@@ -187,5 +184,4 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	public Set<String> getExcludePropertiesSet() {
 		return excludeProperties;
 	}
-
 }

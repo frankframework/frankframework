@@ -20,6 +20,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -102,4 +104,21 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		return super.isColumnPresent(conn, schemaName, tableName.toUpperCase(), columnName.toUpperCase());
 	}
 
+	@Override
+	public boolean hasIndexOnColumn(Connection conn, String schemaName, String tableName, String columnName) throws JdbcException {
+		return super.hasIndexOnColumn(conn, schemaName, tableName.toUpperCase(), columnName.toUpperCase());
+	}
+
+	@Override
+	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
+		List<String> columnsUC = columns.stream().map(c -> c.toUpperCase()).collect(Collectors.toList());
+		return doHasIndexOnColumns(conn, "PUBLIC", tableName.toUpperCase(), columnsUC,
+				"INFORMATION_SCHEMA.INDEXES", "INFORMATION_SCHEMA.INDEX_COLUMNS",
+				"TABLE_SCHEMA", "TABLE_NAME", "INDEX_NAME", "COLUMN_NAME", "ORDINAL_POSITION");
+	}
+
+	@Override
+	public boolean isStoredProcedureOutParametersSupported() {
+		return false;
+	}
 }

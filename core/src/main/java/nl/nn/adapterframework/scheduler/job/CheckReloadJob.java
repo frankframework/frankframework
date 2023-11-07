@@ -57,7 +57,7 @@ public class CheckReloadJob extends JobDef {
 		}
 		return atLeastOneConfigrationHasDBClassLoader;
 	}
-	
+
 	@Override
 	public void execute() {
 		IbisManager ibisManager = getIbisManager();
@@ -103,6 +103,7 @@ public class CheckReloadJob extends JobDef {
 			}
 		} catch (Exception e) {
 			getMessageKeeper().add("error while executing query [" + selectQuery + "] (as part of scheduled job execution)", e);
+			return;
 		} finally {
 			qs.close();
 		}
@@ -117,7 +118,7 @@ public class CheckReloadJob extends JobDef {
 			// load new (activated) configs
 			List<String> dbConfigNames = null;
 			try {
-				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(ibisManager.getIbisContext());
+				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(getApplicationContext());
 			} catch (ConfigurationException e) {
 				getMessageKeeper().add("error while retrieving configuration names from database", e);
 			}
@@ -136,7 +137,7 @@ public class CheckReloadJob extends JobDef {
 			}
 		}
 	}
-	
+
 	protected String getDataSource() {
 		return JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.stream.document;
 
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class XmlNodeBuilder implements INodeBuilder {
@@ -24,7 +25,7 @@ public class XmlNodeBuilder implements INodeBuilder {
 	private SaxElementBuilder current;
 
 	public XmlNodeBuilder(SaxElementBuilder current, String elementName) throws SAXException {
-		this.current = current.startElement(elementName);
+		this.current = current.startElement(XmlUtils.cleanseElementName(elementName));
 	}
 
 	@Override
@@ -44,17 +45,26 @@ public class XmlNodeBuilder implements INodeBuilder {
 
 	@Override
 	public void setValue(String value) throws SAXException {
-		current.addValue(value).close();
+		if (value!=null) {
+			current.addValue(value).close();
+		} else {
+			current.addAttribute("nil", "true").close();
+		}
 	}
 
 	@Override
-	public void setValue(long value) throws SAXException {
-		current.addValue(Long.toString(value)).close();
+	public void setValue(Number value) throws SAXException {
+		current.addValue(value.toString()).close();
 	}
 
 	@Override
 	public void setValue(boolean value) throws SAXException {
 		current.addValue(Boolean.toString(value)).close();
+	}
+
+	@Override
+	public void setNumberValue(String value) throws SAXException {
+		setValue(value);
 	}
 
 }

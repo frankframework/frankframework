@@ -1,46 +1,47 @@
 package nl.nn.adapterframework.util;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
-import nl.nn.adapterframework.filesystem.FileNotFoundException;
-import nl.nn.adapterframework.testutil.TestAssertions;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.rules.TemporaryFolder;
+
+import nl.nn.adapterframework.filesystem.FileNotFoundException;
+import nl.nn.adapterframework.testutil.TestAssertions;
 
 public class FileUtilsTest {
 	private final String BASE = "/Util/FileUtils/";
 
-	@ClassRule
-	public static TemporaryFolder testFolder = new TemporaryFolder();
+	@TempDir
+	public static Path testFolder;
 
 	public static String testFolderPath;
 
-	@BeforeClass
+	@BeforeAll
 	public static void setUpTest() throws IOException {
-		testFolderPath = testFolder.getRoot().getPath();
+		testFolderPath = testFolder.toString();
 	}
 
 	private File getFile(String fileName) throws FileNotFoundException {
 		URL pipes = this.getClass().getResource(BASE);
-		assertNotNull("unable to find base ["+BASE+"]", pipes);
+		assertNotNull(pipes, "unable to find base ["+BASE+"]");
 
 		File root = new File(pipes.getPath());
 		if(fileName == null) {
@@ -96,9 +97,9 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testCreateTempDirBaseDir() throws Exception {
+	public void createTempDirectoryTest() throws Exception {
 		File f = new File(testFolderPath);
-		File file = FileUtils.createTempDir(f);
+		File file = FileUtils.createTempDirectory(f);
 		boolean b = file.exists();
 		file.delete();
 		assertTrue(b);
@@ -106,32 +107,32 @@ public class FileUtilsTest {
 
 	@Test
 	public void testRollOver() throws Exception {
-		File f1 = testFolder.newFile("testfile.txt");
+		File f1 = Files.createFile(testFolder.resolve("testfile.txt")).toFile();
 		FileUtils.makeBackups(f1, 1);
-		File rolloverOne = new File(testFolder.getRoot(), "testfile.txt.1");
+		File rolloverOne = new File(testFolder.toString(), "testfile.txt.1");
 		assertTrue(rolloverOne.exists());
 
-		File f2 = testFolder.newFile("testfile2.txt");
+		File f2 = Files.createFile(testFolder.resolve("testfile2.txt")).toFile();
 		FileUtils.makeBackups(f2, 1);
-		File rolloverTwo = new File(testFolder.getRoot(), "testfile.txt.2");
-		assertFalse(rolloverTwo.exists());
+		File rolloverTwo = new File(testFolder.toString(), "testfile2.txt.1");
+		assertTrue(rolloverTwo.exists());
 	}
 
 	@Test
 	public void testRollOverTwice() throws Exception {
-		File f1 = testFolder.newFile("testfile2.txt");
+		File f1 = Files.createFile(testFolder.resolve("testfile2.txt")).toFile();
 		FileUtils.makeBackups(f1, 2);
-		File rolloverOne = new File(testFolder.getRoot(), "testfile2.txt.1");
+		File rolloverOne = new File(testFolder.toString(), "testfile2.txt.1");
 		assertTrue(rolloverOne.exists());
 
-		File f2 = testFolder.newFile("testfile2.txt");
+		File f2 = Files.createFile(testFolder.resolve("testfile2.txt")).toFile();
 		FileUtils.makeBackups(f2, 2);
-		File rolloverTwo = new File(testFolder.getRoot(), "testfile2.txt.2");
+		File rolloverTwo = new File(testFolder.toString(), "testfile2.txt.2");
 		assertTrue(rolloverTwo.exists());
 
-		File f3 = testFolder.newFile("testfile2.txt");
+		File f3 = Files.createFile(testFolder.resolve("testfile2.txt")).toFile();
 		FileUtils.makeBackups(f3, 2);
-		File rolloverThree = new File(testFolder.getRoot(), "testfile2.txt.3");
+		File rolloverThree = new File(testFolder.toString(), "testfile2.txt.3");
 		assertFalse(rolloverThree.exists());
 	}
 
@@ -169,8 +170,8 @@ public class FileUtilsTest {
 
 	@Test
 	public void testGetFirstFileDirectory() throws Exception {
-		testFolder.newFile("myFile.txt");
-		File file = FileUtils.getFirstFile(testFolder.getRoot().getPath(), 50000000);
+		Files.createFile(testFolder.resolve("myFile.txt"));
+		File file = FileUtils.getFirstFile(testFolder.toString(), 50000000);
 		assertNull(file);
 	}
 

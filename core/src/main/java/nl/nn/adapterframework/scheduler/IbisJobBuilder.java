@@ -15,14 +15,14 @@
 */
 package nl.nn.adapterframework.scheduler;
 
-import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
-import nl.nn.adapterframework.scheduler.job.DatabaseJob;
-
 import org.apache.commons.lang3.StringUtils;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
+
+import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
+import nl.nn.adapterframework.scheduler.job.DatabaseJob;
 
 public class IbisJobBuilder {
 
@@ -42,7 +42,7 @@ public class IbisJobBuilder {
 
 		job.setJobClass(jobClass);
 		job.setDescription(description);
-		job.setKey(key); 
+		job.setKey(key);
 		job.setDurability(false);
 		job.setRequestsRecovery(false);
 		job.setJobType(jobType);

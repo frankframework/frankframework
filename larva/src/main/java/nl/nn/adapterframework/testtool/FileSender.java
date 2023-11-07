@@ -15,27 +15,41 @@
 */
 package nl.nn.adapterframework.testtool;
 
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Dir2Xml;
-
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Enumeration;
 
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.helper.ProjectHelperImpl;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
+import nl.nn.adapterframework.util.Dir2Xml;
 
 /**
  * File sender for the Test Tool.
  * 
  * @author Jaco de Groot
  */
-public class FileSender {
+public class FileSender implements IConfigurable {
+	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter String name;
+
 	private String filename;
+	private File file;
 	private String encoding = "UTF-8";
 	private boolean checkDelete = true;
 	private long timeOut = 3000;
@@ -44,7 +58,20 @@ public class FileSender {
 	private boolean deletePath = false;
 	private boolean createPath = false;
 	private boolean runAnt = false;
-	
+
+	@Override
+	public void configure() throws ConfigurationException {
+		String scenarioDirectory = null;
+		try {
+			URL scenarioDirectoryURL = ClassLoaderUtils.getResourceURL(this, ".");
+			scenarioDirectory = new File(scenarioDirectoryURL.toURI()).getAbsolutePath();
+		} catch (URISyntaxException e) {
+			throw new ConfigurationException("Could not find scenario root directory", e);
+		}
+		String absPath = TestTool.getAbsolutePath(scenarioDirectory, filename);
+		file = new File(absPath);
+	}
+
 	/**
 	 * Send the message to the specified file. After writing the message to
 	 * file, this method will check if the file is deleted by another party
@@ -57,31 +84,27 @@ public class FileSender {
 			runAntScript();
 		} else {
 			if (deletePath) {
-				File file = new File(filename);
 				if (file.exists()) {
-					recursiveDelete(filename);
+					recursiveDelete(file);
 				}
 			} else {
 				if (createPath) {
-					File file = new File(filename);
 					if (file.exists()) {
-						throw new SenderException("Path '" + filename + "' already exists.");
+						throw new SenderException("Path '" + file + "' already exists.");
 					}
 					file.mkdirs();
 				} else {
-					File file = new File(filename);
 					if (!overwrite && file.exists()) {
-						throw new SenderException("File '" + filename + "' already exists.");
+						throw new SenderException("File '" + file + "' already exists.");
 					}
 					String pathname = file.getParent();
 					File path = new File(pathname);
 					if (!path.exists()) {
 						path.mkdirs();
 					}
-					try {
-						FileOutputStream fileOutputStream = new FileOutputStream(file);
+
+					try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
 						fileOutputStream.write(message.getBytes(encoding));
-						fileOutputStream.close();
 					} catch(Exception e) {
 						throw new SenderException("Exception writing file '" + filename + "': " + e.getMessage(), e);
 					}
@@ -101,9 +124,9 @@ public class FileSender {
 		}
 	}
 
-	public String getMessage() throws TimeoutException, SenderException {
+	public String getMessage() throws IOException {
 		Dir2Xml dx=new Dir2Xml();
-		dx.setPath(filename);
+		dx.setPath(file.getAbsolutePath());
 		return dx.getRecursiveDirList();
 	}
 
@@ -114,35 +137,33 @@ public class FileSender {
 		consoleLogger.setOutputPrintStream(System.out);
 		consoleLogger.setMessageOutputLevel(Project.MSG_INFO);
 		ant.addBuildListener(consoleLogger);
-		
+
 		// iterate over appConstants and add them as properties
 		AppConstants appConstants = AppConstants.getInstance();
 		@SuppressWarnings("unchecked")
 		Enumeration<String> enums = (Enumeration<String>) appConstants.propertyNames();
 		while (enums.hasMoreElements()) {
 			String key = enums.nextElement();
-			ant.setProperty(key, appConstants.getResolvedProperty(key));
+			ant.setProperty(key, appConstants.getProperty(key));
 		}
 
 		ant.init();
 		ProjectHelper helper = new ProjectHelperImpl();
-		helper.parse(ant, new File(filename));
+		helper.parse(ant, file);
 		ant.executeTarget(ant.getDefaultTarget());
 	}
 
-	private boolean recursiveDelete(String path) {
-		File file = new File(path);
-		String[] dirList = file.list();
+	private boolean recursiveDelete(File path) {
+		String[] dirList = path.list();
 		for (int i = 0; i < dirList.length; i++) {
-			String newPath = path + File.separator + dirList[i];
-			File newFile = new File(newPath);
+			File newFile = new File(path, dirList[i]);
 			if (newFile.isDirectory()) {
-				recursiveDelete(newPath);
+				recursiveDelete(path);
 			} else {
 				newFile.delete();
 			}
 		}
-		return file.delete();
+		return path.delete();
 	}
 
 	/**
@@ -198,4 +219,5 @@ public class FileSender {
 	public void setRunAnt(boolean runAnt) {
 		this.runAnt = runAnt;
 	}
+
 }

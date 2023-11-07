@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,15 +16,13 @@
 package nl.nn.adapterframework.stream.xml;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-
-import javax.json.stream.JsonParser;
-import javax.json.stream.JsonParser.Event;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParser.Event;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.stream.JsonEventHandler;
@@ -33,12 +31,12 @@ import nl.nn.adapterframework.stream.JsonEventHandler;
 public class JsonXslt3XmlHandler implements JsonEventHandler {
 
 	private String TARGETNAMESPACE="http://www.w3.org/2013/XSL/json";
-	
+
 	private @Getter @Setter ContentHandler contentHandler;
-	
-	private boolean elementEnded=false;	
+
+	private boolean elementEnded=false;
 	private String parsedKey=null;
-	
+
 	public JsonXslt3XmlHandler() {
 		super();
 	}
@@ -47,7 +45,7 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 		this();
 		setContentHandler(handler);
 	}
-	
+
 	public boolean parse(String key, JsonParser parser) throws IOException, SAXException {
 		Event event = parser.next();
 		if (event.equals(Event.START_OBJECT)) {
@@ -88,7 +86,7 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 		}
 		return true;
 	}
-	
+
 	private void newLine() throws SAXException {
 		ContentHandler ch=getContentHandler();
 		ch.characters("\n".toCharArray(), 0, 1);
@@ -130,8 +128,7 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 		}
 		endElement(typename);
 	}
-	
-	
+
 
 
 	@Override
@@ -176,7 +173,7 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 		if (value == null) {
 			simpleElement("null", parsedKey, value);
 		} else {
-			if (value instanceof Long || value instanceof BigDecimal) {
+			if (value instanceof Number) {
 				simpleElement("number", parsedKey, value);
 			} else {
 				if (value instanceof Boolean) {
@@ -185,6 +182,15 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 					simpleElement("string", parsedKey, value);
 				}
 			}
+		}
+	}
+
+	@Override
+	public void number(String value) throws SAXException {
+		if (value == null) {
+			simpleElement("null", parsedKey, value);
+		} else {
+			simpleElement("number", parsedKey, value);
 		}
 	}
 

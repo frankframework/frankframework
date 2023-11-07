@@ -1,8 +1,4 @@
-<!DOCTYPE configuration [
-	<!ENTITY ConfigurationMFH SYSTEM "./Configuration_MFH.xml">
-	<!ENTITY UploadFile SYSTEM "./ConfigurationUploadFile.xml">
-]>
-<configuration name="FileHandling">
-	&ConfigurationMFH;
-	&UploadFile;
-</configuration>
+<Configuration>
+	<Include ref="./Configuration_MFH.xml"/>
+	<Include ref="./ConfigurationUploadFile.xml"/>
+</Configuration>

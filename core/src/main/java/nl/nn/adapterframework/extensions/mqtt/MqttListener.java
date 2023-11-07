@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2020 WeAreFrank!
+   Copyright 2017, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package nl.nn.adapterframework.extensions.mqtt;
 
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -27,6 +29,8 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
@@ -35,23 +39,8 @@ import nl.nn.adapterframework.util.RunState;
 /**
  * MQTT listener which will connect to a broker and subscribe to a topic.
  *
- * <p><b>Configuration:</b>
- * <table border="1">
- * <tr><th>attributes</th><th>description</th><th>default</th></tr>
- * <tr><td>className</td><td>nl.nn.adapterframework.extensions.mqtt.MqttListener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setName(String) name}</td><td>name of the listener</td><td>&nbsp;</td></tr>
- * <tr><td>{@link #setClientId(String) clientId}</td><td>see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank">MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)</a></td><td></td></tr>
- * <tr><td>{@link #setBrokerUrl(String) brokerUrl}</td><td>see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank">MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)</a></td><td></td></tr>
- * <tr><td>{@link #setTopic(String) topic}</td><td>see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#subscribe-java.lang.String-" target="_blank">MqttClient.subscribe(java.lang.String topicFilter)</a></td><td></td></tr>
- * <tr><td>{@link #setQos(int) qos}</td><td>see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank">MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)</a></td><td>2</td></tr>
- * <tr><td>{@link #setCleanSession(boolean) cleanSession}</td><td>see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#setCleanSession-boolean-" target="_blank">MqttConnectOptions.setCleanSession(boolean cleanSession)</a></td><td>true</td></tr>
- * <tr><td>{@link #setPersistenceDirectory(String) persistenceDirectory}</td><td>see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/persist/MqttDefaultFilePersistence.html" target="_blank">MqttDefaultFilePersistence</a> and <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html" target="_blank">MqttClient</a></td><td>true</td></tr>
- * <tr><td>{@link #setAutomaticReconnect(boolean) automaticReconnect}</td><td>see <a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttConnectOptions.html#setAutomaticReconnect-boolean-" target="_blank">MqttConnectOptions.setAutomaticReconnect(boolean automaticReconnect)</a> (apart from this recover job will also try to recover)</td><td>true</td></tr>
- * <tr><td>{@link #setCharset(String) charset}</td><td>character encoding of received messages</td><td>UTF-8</td></tr>
- * </table>
- * 
  * Links to <a href="https://www.eclipse.org/paho/files/javadoc" target="_blank">https://www.eclipse.org/paho/files/javadoc</a> are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.
- * 
+ *
  * @author Jaco de Groot
  * @author Niels Meijer
  */
@@ -86,7 +75,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	public void configure() throws ConfigurationException {
 		// See connectionLost(Throwable)
 		receiver.setOnError(Receiver.OnError.RECOVER);
-		// Recover will be triggered when connectionLost was called or listener 
+		// Recover will be triggered when connectionLost was called or listener
 		// could not start in which case client is already disconnected.
 
 		super.configure();
@@ -135,28 +124,30 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void deliveryComplete(IMqttDeliveryToken token) {
+		// No-op
 	}
 
 	@Override
-	public void messageArrived(String topic, MqttMessage message) throws Exception {
-		try {
-			messageHandler.processRawMessage(this, message);
-		} catch(Throwable t) {
-			log.error("Could not process raw message", t);
+	public void messageArrived(String topic, MqttMessage message) {
+		try (PipeLineSession session = new PipeLineSession()) {
+			messageHandler.processRawMessage(this, wrapRawMessage(message, session), session, false);
+		} catch(Exception e) {
+			log.error("Could not process raw message", e);
 		}
 	}
 
 	@Override
-	public String getIdFromRawMessage(MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
-		return "" + rawMessage.getId();
+	public RawMessageWrapper<MqttMessage> wrapRawMessage(MqttMessage message, PipeLineSession session) throws ListenerException {
+		return new RawMessageWrapper<>(message, String.valueOf(message.getId()), null);
 	}
 
 	@Override
-	public Message extractMessage(MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
-		return new Message(rawMessage.getPayload(),getCharset());
+	public Message extractMessage(@Nonnull RawMessageWrapper<MqttMessage> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		return new Message(rawMessage.getRawMessage().getPayload(), getCharset());
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<MqttMessage> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+		// No-op
 	}
 }

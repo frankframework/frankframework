@@ -21,8 +21,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-import nl.nn.credentialprovider.util.Misc;
+import org.apache.commons.lang3.StringUtils;
 
 public class FileSystemCredentials extends Credentials {
 
@@ -31,15 +32,15 @@ public class FileSystemCredentials extends Credentials {
 	private String passwordfile;
 
 
-	public FileSystemCredentials(String alias, String defaultUsername, String defaultPassword, Path root) {
-		this(alias, defaultUsername, defaultPassword, null, null, root);
+	public FileSystemCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, Path root) {
+		this(alias, defaultUsernameSupplier, defaultPasswordSupplier, null, null, root);
 	}
 
-	public FileSystemCredentials(String alias, String defaultUsername, String defaultPassword, String usernamefile, String passwordfile, Path root) {
-		super(alias, defaultUsername, defaultPassword);
+	public FileSystemCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, String usernamefile, String passwordfile, Path root) {
+		super(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 		this.root = root;
-		this.usernamefile = Misc.isNotEmpty(usernamefile) ? usernamefile : FileSystemCredentialFactory.USERNAME_FILE_DEFAULT;
-		this.passwordfile = Misc.isNotEmpty(passwordfile) ? passwordfile : FileSystemCredentialFactory.PASSWORD_FILE_DEFAULT;
+		this.usernamefile = StringUtils.isNotEmpty(usernamefile) ? usernamefile : FileSystemCredentialFactory.USERNAME_FILE_DEFAULT;
+		this.passwordfile = StringUtils.isNotEmpty(passwordfile) ? passwordfile : FileSystemCredentialFactory.PASSWORD_FILE_DEFAULT;
 	}
 
 
@@ -57,19 +58,21 @@ public class FileSystemCredentials extends Credentials {
 
 	@Override
 	protected void getCredentialsFromAlias() {
-		if (Misc.isNotEmpty(getAlias()) && root!=null) {
+		if (StringUtils.isNotEmpty(getAlias()) && root!=null) {
 			try {
 				Path aliasPath = Paths.get(root.toString(), getAlias());
 				if (Files.exists(aliasPath)) {
 					if (Files.isDirectory(aliasPath)) {
-						populateFieldFromFile(getAlias(), usernamefile, u -> setUsername(u));
-						populateFieldFromFile(getAlias(), passwordfile, p -> setPassword(p));
+						populateFieldFromFile(getAlias(), usernamefile, this::setUsername);
+						populateFieldFromFile(getAlias(), passwordfile, this::setPassword);
 					} else {
-						populateFieldFromFile(aliasPath, p -> setPassword(p));
+						populateFieldFromFile(aliasPath, this::setPassword);
 					}
+				} else {
+					throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
 				}
 			} catch (IOException e) {
-				NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]"); 
+				NoSuchElementException nsee=new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]");
 				nsee.initCause(e);
 				throw nsee;
 			}

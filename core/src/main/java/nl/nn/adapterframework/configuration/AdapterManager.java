@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ import lombok.Setter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor;
+import nl.nn.adapterframework.util.RunState;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
@@ -41,22 +43,23 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	private @Getter @Setter ApplicationContext applicationContext;
 	private List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers;
 
-	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
-	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
+	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<>());
+	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<>());
 
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
 
 	public void registerAdapter(Adapter adapter) {
-		if(!inState(BootState.STOPPED)) {
-			log.warn("cannot add adapter, manager in state ["+getState()+"]");
+		if(!inState(RunState.STOPPED)) {
+			log.warn("cannot add adapter, manager in state [{}]", this::getState);
 		}
 
-		if(log.isDebugEnabled()) log.debug("registering adapter ["+adapter+"] with AdapterManager ["+this+"]");
+		// Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
+		if (log.isDebugEnabled()) log.debug("registering adapter [{}] with AdapterManager [{}]", adapter.toString(), this.toString());
 		if(adapter.getName() == null) {
-			throw new IllegalStateException("Adapter has no name");
+			throw new IllegalStateException("adapter has no name");
 		}
 		if(adapters.containsKey(adapter.getName())) {
-			throw new IllegalStateException("Adapter [" + adapter.getName() + "] already registered.");
+			throw new IllegalStateException("adapter [" + adapter.getName() + "] already registered.");
 		}
 
 		adapters.put(adapter.getName(), adapter);
@@ -71,7 +74,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 		}
 
 		adapters.remove(name);
-		if(log.isDebugEnabled()) log.debug("unregistered adapter ["+name+"] from AdapterManager ["+this+"]");
+		log.debug("unregistered adapter [{}] from AdapterManager [{}]", name, this);
 	}
 
 	public void setAdapterLifecycleWrappers(List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers) {
@@ -119,13 +122,13 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 
 	@Override
 	public void configure() {
-		if(!inState(BootState.STOPPED)) {
-			log.warn("unable to configure ["+this+"] while in state ["+getState()+"]");
+		if(!inState(RunState.STOPPED)) {
+			log.warn("unable to configure [{}] while in state [{}]", ()->this, this::getState);
 			return;
 		}
-		updateState(BootState.STARTING);
+		updateState(RunState.STARTING);
 
-		log.info("configuring all adapters in AdapterManager ["+this+"]");
+		log.info("configuring all adapters in AdapterManager [{}]", this);
 
 		for (Adapter adapter : getAdapterList()) {
 			try {
@@ -136,7 +139,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 				}
 				adapter.configure();
 			} catch (ConfigurationException e) {
-				log.error("error configuring adapter ["+adapter.getName()+"]", e);
+				log.error("error configuring adapter [{}]", adapter.getName(), e);
 			}
 		}
 	}
@@ -145,25 +148,25 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	 * Inherited from the Spring {@link Lifecycle} interface.
 	 * Upon registering all Beans in the ApplicationContext (Configuration)
 	 * the {@link LifecycleProcessor} will trigger this method.
-	 * 
+	 *
 	 * Starts all Adapters registered in this manager.
 	 */
 	@Override
 	public void start() {
-		if(!inState(BootState.STARTING)) {
-			log.warn("unable to start ["+this+"] while in state ["+getState()+"]");
+		if(!inState(RunState.STARTING)) {
+			log.warn("unable to start [{}] while in state [{}]", ()->this, this::getState);
 			return;
 		}
 
-		log.info("starting all autostart-configured adapters in AdapterManager ["+this+"]");
+		log.info("starting all autostart-configured adapters in AdapterManager [{}]", this);
 		for (Adapter adapter : getAdapterList()) {
 			if (adapter.configurationSucceeded() && adapter.isAutoStart()) {
-				log.info("Starting adapter [" + adapter.getName() + "]");
+				log.info("Starting adapter [{}]", adapter::getName);
 				adapter.startRunning();
 			}
 		}
 
-		updateState(BootState.STARTED);
+		updateState(RunState.STARTED);
 	}
 
 	/**
@@ -171,25 +174,25 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	 */
 	@Override
 	public void stop() {
-		if(!inState(BootState.STARTED)) {
-			log.warn("forcing ["+this+"] to stop while in state ["+getState()+"]");
+		if(!inState(RunState.STARTED)) {
+			log.warn("forcing [{}] to stop while in state [{}]", ()->this, this::getState);
 		}
-		updateState(BootState.STOPPING);
+		updateState(RunState.STOPPING);
 
-		log.info("stopping all adapters in AdapterManager ["+this+"]");
+		log.info("stopping all adapters in AdapterManager [{}]", this);
 		List<Adapter> adapters = getAdapterList();
 		Collections.reverse(adapters);
 		for (Adapter adapter : adapters) {
-			log.info("stopping adapter [" + adapter.getName() + "]");
+			log.info("stopping adapter [{}]", adapter::getName);
 			adapter.stopRunning();
 		}
 
-		updateState(BootState.STOPPED);
+		updateState(RunState.STOPPED);
 	}
 
 	@Override
 	public void close() {
-		log.info("destroying AdapterManager ["+this+"]");
+		log.info("destroying AdapterManager [{}]", this);
 
 		try {
 			doClose();
@@ -209,24 +212,24 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	 */
 	private void doClose() {
 		while (!getStartAdapterThreads().isEmpty()) {
-			log.debug("Waiting for start threads to end: " + getStartAdapterThreads());
+			log.debug("waiting for start threads to end: {}", ()-> StringUtil.safeCollectionToString(getStartAdapterThreads()));
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				log.warn("Interrupted waiting for start threads to end", e);
+				log.warn("Interrupted thread while waiting for start threads to end", e);
 			}
 		}
 
-		if(!inState(BootState.STOPPED)) {
+		if(!inState(RunState.STOPPED)) {
 			stop(); //Call this just in case...
 		}
 
 		while (!getStopAdapterThreads().isEmpty()) {
-			log.debug("Waiting for stop threads to end: " + getStopAdapterThreads());
+			log.debug("waiting for stop threads to end: {}", () -> StringUtil.safeCollectionToString(getStopAdapterThreads()));
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				log.warn("Interrupted waiting for stop threads to end", e);
+				log.warn("Interrupted thread while waiting for stop threads to end", e);
 			}
 		}
 
@@ -239,11 +242,11 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
-		builder.append(" state ["+getState()+"]");
-		builder.append(" adapters ["+adapters.size()+"]");
+		builder.append(getClass().getSimpleName()).append("@").append(Integer.toHexString(hashCode()));
+		builder.append(" state [").append(getState()).append("]");
+		builder.append(" adapters [").append(adapters.size()).append("]");
 		if(applicationContext != null) {
-			builder.append(" applicationContext ["+applicationContext.getDisplayName()+"]");
+			builder.append(" applicationContext [").append(applicationContext.getDisplayName()).append("]");
 		}
 		return builder.toString();
 	}

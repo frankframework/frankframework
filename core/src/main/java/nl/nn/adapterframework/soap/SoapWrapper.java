@@ -29,6 +29,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.wss4j.common.WSS4JConstants;
 import org.apache.wss4j.common.util.UsernameTokenUtil;
 import org.apache.wss4j.common.util.WSTimeSource;
 import org.apache.wss4j.dom.WSConstants;
@@ -56,7 +57,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Utility class that wraps and unwraps messages from (and into) a SOAP Envelope.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class SoapWrapper {
@@ -64,35 +65,45 @@ public class SoapWrapper {
 
 	private TransformerPool extractBodySoap11;
 	private TransformerPool extractBodySoap12;
-	private TransformerPool extractHeader;
-	private TransformerPool extractFaultCount;
-	private TransformerPool extractFaultCode;
-	private TransformerPool extractFaultString;
-	private static final String NAMESPACE_DEFS_SOAP11 = "soapenv="+SoapVersion.SOAP11.namespace;
-	private static final String NAMESPACE_DEFS_SOAP12 = "soapenv="+SoapVersion.SOAP12.namespace;
+	private TransformerPool extractHeaderSoap11;
+	private TransformerPool extractHeaderSoap12;
+	private TransformerPool extractFaultCount11;
+	private TransformerPool extractFaultCount12;
+	private TransformerPool extractFaultCode11;
+	private TransformerPool extractFaultCode12;
+	private TransformerPool extractFaultString11;
+	private TransformerPool extractFaultString12;
+	private static final String NAMESPACE_DEFS_SOAP11 = "soapenv=" + SoapVersion.SOAP11.namespace;
+	private static final String NAMESPACE_DEFS_SOAP12 = "soapenv=" + SoapVersion.SOAP12.namespace;
 	private static final String EXTRACT_BODY_XPATH = "/soapenv:Envelope/soapenv:Body/*";
 	private static final String EXTRACT_HEADER_XPATH = "/soapenv:Envelope/soapenv:Header/*";
 	private static final String EXTRACT_FAULTCOUNTER_XPATH = "count(/soapenv:Envelope/soapenv:Body/soapenv:Fault)";
-	private static final String EXTRACT_FAULTCODE_XPATH = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode";
-	private static final String EXTRACT_FAULTSTRING_XPATH = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
+	private static final String EXTRACT_FAULTCODE_XPATH_SOAP11 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode";
+	private static final String EXTRACT_FAULTCODE_XPATH_SOAP12 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/soapenv:Code";
+	private static final String EXTRACT_FAULTSTRING_XPATH_SOAP11 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/faultstring";
+	private static final String EXTRACT_FAULTSTRING_XPATH_SOAP12 = "/soapenv:Envelope/soapenv:Body/soapenv:Fault/soapenv:Reason";
+	public static final String SOAP_VERSION_SESSION_KEY = "SoapWrapper.SoapVersion";
 
 	private static SoapWrapper self = null;
 	private @Setter WsuIdAllocator idAllocator = null; //Only used for testing purposes
 
 	private SoapWrapper() {
 		super();
-
 		JCEMapper.registerDefaultAlgorithms();
 	}
 
 	private void init() throws ConfigurationException {
 		try {
-			extractBodySoap11  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_BODY_XPATH, OutputType.XML, false, null, false));
-			extractBodySoap12  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_BODY_XPATH, OutputType.XML, false, null, false));
-			extractHeader      = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_HEADER_XPATH, OutputType.XML));
-			extractFaultCount  = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCOUNTER_XPATH, OutputType.TEXT));
-			extractFaultCode   = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCODE_XPATH, OutputType.TEXT));
-			extractFaultString = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTSTRING_XPATH, OutputType.TEXT));
+			extractBodySoap11   = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_BODY_XPATH, OutputType.XML, false, null, false));
+			extractBodySoap12   = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_BODY_XPATH, OutputType.XML, false, null, false));
+			extractHeaderSoap11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_HEADER_XPATH, OutputType.XML));
+			extractHeaderSoap12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_HEADER_XPATH, OutputType.XML));
+			extractFaultCount11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCOUNTER_XPATH, OutputType.TEXT));
+			extractFaultCount12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_FAULTCOUNTER_XPATH, OutputType.TEXT));
+			extractFaultCode11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTCODE_XPATH_SOAP11, OutputType.TEXT));
+			extractFaultCode12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_FAULTCODE_XPATH_SOAP12, OutputType.TEXT));
+			extractFaultString11 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP11, EXTRACT_FAULTSTRING_XPATH_SOAP11, OutputType.TEXT));
+			extractFaultString12 = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource(NAMESPACE_DEFS_SOAP12, EXTRACT_FAULTSTRING_XPATH_SOAP12, OutputType.TEXT));
 		} catch (TransformerConfigurationException e) {
 			throw new ConfigurationException("cannot create SOAP transformer", e);
 		}
@@ -106,23 +117,23 @@ public class SoapWrapper {
 		return self;
 	}
 
-	public void checkForSoapFault(Message responseBody, Throwable nested) throws SenderException {
+	public void checkForSoapFault(Message responseBody, Throwable nested, PipeLineSession session) throws SenderException {
 		String faultString = null;
 		String faultCode = null;
 		int faultCount = 0;
 		try {
 			responseBody.preserve();
 			faultCount = getFaultCount(responseBody);
-			log.debug("fault count=" + faultCount);
+			log.debug("fault count={}", faultCount);
 			if (faultCount > 0) {
-				faultCode = getFaultCode(responseBody);
-				faultString = getFaultString(responseBody);
-				log.debug("faultCode=" + faultCode + ", faultString=" + faultString);
+				faultCode = getFaultCode(responseBody, session);
+				faultString = getFaultString(responseBody, session);
+				log.debug("faultCode={}, faultString={}", faultCode, faultString);
 			}
-		} catch (SAXException|IOException e) {
+		} catch (SAXException | IOException e) {
 			log.debug("IOException extracting fault message", e);
 		} catch (TransformerException e) {
-			log.debug("TransformerException extracting fault message:" + e.getMessageAndLocation());
+			log.debug("TransformerException extracting fault message: {}", e.getMessageAndLocation());
 		}
 		if (faultCount > 0) {
 			String msg = "SOAP fault [" + faultCode + "]: " + faultString;
@@ -131,35 +142,69 @@ public class SoapWrapper {
 		}
 	}
 
-	public Message getBody(Message message) throws SAXException, TransformerException, IOException  {
-		return getBody(message, false, null, null);
-	}
-	
-	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException  {
+	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException {
 		message.preserve();
-		Message result = new Message(extractBodySoap11.transform(message.asSource()));
-		if (!Message.isEmpty(result)) {
-			if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
-				session.put(soapNamespaceSessionKey, SoapVersion.SOAP11.namespace);
+
+		// First try with Soap 1.1 transform pool, when no result, try with Soap 1.2 transform pool
+		String extractedBody = extractMessageWithTransformers(extractBodySoap11, extractBodySoap12, message, session, soapNamespaceSessionKey);
+		if (StringUtils.isNotEmpty(extractedBody)) {
+			return new Message(extractedBody);
+		}
+
+		if (session != null) {
+			if (StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
+				session.putIfAbsent(soapNamespaceSessionKey, SoapVersion.NONE.namespace);
 			}
-			return result;
-		}
-		result = new Message(extractBodySoap12.transform(message.asSource()));
-		if (!Message.isEmpty(result)) {
-			if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
-				session.put(soapNamespaceSessionKey, SoapVersion.SOAP12.namespace);
+			if (allowPlainXml) {
+				session.putIfAbsent(SOAP_VERSION_SESSION_KEY, SoapVersion.NONE);
 			}
-			return result;
 		}
-		if (session!=null && StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
-			session.put(soapNamespaceSessionKey, SoapVersion.NONE.namespace);
-		}
-		return allowPlainXml ? message : new Message(""); // could replace "" with nullMessage(), but then tests fail.
+		return allowPlainXml ? message : Message.nullMessage();
 	}
 
+	private String extractMessageWithTransformers(TransformerPool transformerS11, TransformerPool transformerS12, Message message, PipeLineSession session, String soapNamespaceSessionKey) throws IOException, TransformerException, SAXException {
+		// If SOAP version is already determined in the session, directly use the SOAP 1.2 transformer
+		SoapVersion soapVersion = getSoapVersionFromSession(session);
+		String extractedMessage;
+		if (soapVersion == SoapVersion.SOAP12) {
+			extractedMessage = transformerS12.transform(message.asSource());
+		} else if (soapVersion == SoapVersion.NONE) {
+			return null;
+		} else {
+			extractedMessage = transformerS11.transform(message.asSource());
+			if (StringUtils.isNotEmpty(extractedMessage)) {
+				soapVersion = SoapVersion.SOAP11;
+			} else {
+				extractedMessage = transformerS12.transform(message.asSource());
+				if (StringUtils.isNotEmpty(extractedMessage)) {
+					soapVersion = SoapVersion.SOAP12;
+				}
+			}
+		}
 
-	public String getHeader(Message message) throws SAXException, TransformerException, IOException {
-		return extractHeader.transform(message.asSource());
+		if (StringUtils.isNotEmpty(extractedMessage)) {
+			if (session != null && soapVersion != null) {
+				session.putIfAbsent(SOAP_VERSION_SESSION_KEY, soapVersion);
+				if (StringUtils.isNotEmpty(soapNamespaceSessionKey)) {
+					session.putIfAbsent(soapNamespaceSessionKey, soapVersion.namespace);
+				}
+			}
+			return extractedMessage;
+		}
+		return null;
+	}
+
+	private SoapVersion getSoapVersionFromSession(final PipeLineSession session) {
+		if (session == null) return null;
+		Object soapVersionObject = session.getOrDefault(SoapWrapper.SOAP_VERSION_SESSION_KEY, null);
+		if (soapVersionObject instanceof SoapVersion) {
+			return (SoapVersion) soapVersionObject;
+		}
+		return null;
+	}
+
+	public String getHeader(final Message message, final PipeLineSession session) throws SAXException, TransformerException, IOException {
+		return extractMessageWithTransformers(extractHeaderSoap11, extractHeaderSoap12, message, session, null);
 	}
 
 	public int getFaultCount(Message message) throws SAXException, TransformerException, IOException {
@@ -167,23 +212,25 @@ public class SoapWrapper {
 			log.warn("getFaultCount(): message is empty");
 			return 0;
 		}
-		String faultCount = extractFaultCount.transform(message.asSource());
+		// Do not optimize transformer with extractMessageWithTransformers() method, since the output is always "0", even though fault parts are not found at all.
+		String faultCount = extractFaultCount11.transform(message.asSource());
+		if (StringUtils.isEmpty(faultCount) || "0".equals(faultCount)) {
+			faultCount = extractFaultCount12.transform(message.asSource());
+		}
 		if (StringUtils.isEmpty(faultCount)) {
 			log.warn("getFaultCount(): could not extract fault count, result is empty");
 			return 0;
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("getFaultCount(): transformation result [" + faultCount + "]");
-		}
+		log.debug("getFaultCount(): transformation result [{}]", faultCount);
 		return Integer.parseInt(faultCount);
 	}
 
-	public String getFaultCode(Message message) throws SAXException, TransformerException, IOException {
-		return extractFaultCode.transform(message.asSource());
+	protected String getFaultCode(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException {
+		return extractMessageWithTransformers(extractFaultCode11, extractFaultCode12, message, session, null);
 	}
 
-	public String getFaultString(Message message) throws SAXException, TransformerException, IOException {
-		return extractFaultString.transform(message.asSource());
+	protected String getFaultString(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException {
+		return extractMessageWithTransformers(extractFaultString11, extractFaultString12, message, session, null);
 	}
 
 	public Message putInEnvelope(Message message, String encodingStyleUri) throws IOException {
@@ -214,21 +261,21 @@ public class SoapWrapper {
 		}
 		if (StringUtils.isNotEmpty(soapHeaderInitial)) {
 			soapHeader = "<soapenv:Header>" + XmlUtils.skipXmlDeclaration(soapHeaderInitial) + "</soapenv:Header>";
-		} 
+		}
 		StringBuilder namespaceClause = new StringBuilder();
 		if (StringUtils.isNotEmpty(namespaceDefs)) {
 			StringTokenizer st1 = new StringTokenizer(namespaceDefs, ", \t\r\n\f");
 			while (st1.hasMoreTokens()) {
 				String namespaceDef = st1.nextToken();
-				log.debug("namespaceDef [" + namespaceDef + "]");
+				log.debug("namespaceDef [{}]", namespaceDef);
 				int separatorPos = namespaceDef.indexOf('=');
 				if (separatorPos < 1) {
-					namespaceClause.append(" xmlns=\"" + namespaceDef + "\"");
+					namespaceClause.append(" xmlns=\"").append(namespaceDef).append("\"");
 				} else {
 					namespaceClause.append(" xmlns:" + namespaceDef.substring(0, separatorPos) + "=\"" + namespaceDef.substring(separatorPos + 1) + "\"");
 				}
 			}
-			log.debug("namespaceClause [" + namespaceClause + "]");
+			log.debug("namespaceClause [{}]", namespaceClause);
 		}
 		String soapns = StringUtils.isNotEmpty(soapNamespace) ? soapNamespace : SoapVersion.SOAP11.namespace;
 		Message result = new Message("<soapenv:Envelope xmlns:soapenv=\"" + soapns + "\"" + encodingStyle + targetObjectNamespaceClause
@@ -242,8 +289,8 @@ public class SoapWrapper {
 
 	public Message createSoapFaultMessage(String faultcode, String faultstring) {
 		String faultCdataString = "<![CDATA[" + faultstring + "]]>";
-		String fault = "<soapenv:Fault>" + "<faultcode>" + faultcode + "</faultcode>" + 
-						"<faultstring>" + faultCdataString + "</faultstring>" + "</soapenv:Fault>";
+		String fault = "<soapenv:Fault>" + "<faultcode>" + faultcode + "</faultcode>" +
+				"<faultstring>" + faultCdataString + "</faultstring>" + "</soapenv:Fault>";
 		try {
 			return putInEnvelope(new Message(fault), null, null, null);
 		} catch (IOException e) {
@@ -277,9 +324,9 @@ public class SoapWrapper {
 			WSSecUsernameToken tokenBuilder = new WSSecUsernameToken(secHeader);
 			tokenBuilder.setIdAllocator(idAllocator);
 			if (passwordDigest) {
-				tokenBuilder.setPasswordType(WSConstants.PASSWORD_DIGEST);
+				tokenBuilder.setPasswordType(WSS4JConstants.PASSWORD_DIGEST);
 			} else {
-				tokenBuilder.setPasswordType(WSConstants.PASSWORD_TEXT);
+				tokenBuilder.setPasswordType(WSS4JConstants.PASSWORD_TEXT);
 			}
 			tokenBuilder.setPrecisionInMilliSeconds(false);
 			tokenBuilder.setUserInfo(user, password);
@@ -294,14 +341,14 @@ public class SoapWrapper {
 
 			WSSecSignature sign = new WSSecSignature(secHeader);
 			sign.setIdAllocator(idAllocator);
-			sign.setCustomTokenValueType(WSConstants.WSS_USERNAME_TOKEN_VALUE_TYPE);
+			sign.setCustomTokenValueType(WSS4JConstants.WSS_USERNAME_TOKEN_VALUE_TYPE);
 			sign.setCustomTokenId(tokenBuilder.getId());
-			sign.setSigCanonicalization(WSConstants.C14N_EXCL_OMIT_COMMENTS);
+			sign.setSigCanonicalization(WSS4JConstants.C14N_EXCL_OMIT_COMMENTS);
 			sign.setAddInclusivePrefixes(false);
 			String signatureValue = UsernameTokenUtil.doPasswordDigest(decodedNonce, created, password); //conform WS-Trust spec
 			sign.setSecretKey(signatureValue.getBytes(StreamUtil.DEFAULT_CHARSET));
 			sign.setKeyIdentifierType(WSConstants.CUSTOM_SYMM_SIGNING); //UT_SIGNING no longer exists since v1.5.11
-			sign.setSignatureAlgorithm(WSConstants.HMAC_SHA1);
+			sign.setSignatureAlgorithm(WSS4JConstants.HMAC_SHA1);
 			sign.build(null);
 
 			tokenBuilder.prependToHeader();

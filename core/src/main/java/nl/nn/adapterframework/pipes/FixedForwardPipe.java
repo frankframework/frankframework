@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,16 +15,18 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -44,6 +46,13 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	private @Getter String ifParam = null;
 	private @Getter String ifValue = null;
 
+	private @Getter String onlyIfSessionKey;
+	private @Getter String onlyIfValue;
+	private @Getter String unlessSessionKey;
+	private @Getter String unlessValue;
+
+	private Parameter ifParameter = null;
+
 	/**
 	 * checks for correct configuration of forward
 	 */
@@ -51,43 +60,53 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		successForward = findForward(PipeForward.SUCCESS_FORWARD_NAME);
-		if (successForward == null)
+		if (successForward == null) {
 			throw new ConfigurationException("has no forward with name [" + PipeForward.SUCCESS_FORWARD_NAME + "]");
+		}
+		if (StringUtils.isNotEmpty(getIfParam())) {
+			if (getParameterList() != null) {
+				ifParameter = getParameterList().findParameter(getIfParam());
+			}
+			if (ifParameter==null) {
+				ConfigurationWarnings.add(this, log, "ifParam ["+getIfParam()+"] not found");
+			}
+		}
 	}
 
 	/**
 	 * called by {@link InputOutputPipeProcessor} to check if the pipe needs to be skipped.
 	 */
-	public PipeRunResult doInitialPipe(Message input, PipeLineSession session) throws PipeRunException {
-		if (isSkipOnEmptyInput() && (input == null || StringUtils.isEmpty(input.toString()))) {
-			return new PipeRunResult(getSuccessForward(), input);
+	public boolean skipPipe(Message input, PipeLineSession session) throws PipeRunException {
+		if (isSkipOnEmptyInput() && Message.isEmpty(input)) {
+			return true;
 		}
-		if (StringUtils.isNotEmpty(getIfParam())) {
-			boolean skipPipe = true;
-
-			ParameterValueList pvl = null;
-			if (getParameterList() != null) {
-				try {
-					pvl = getParameterList().getValues(input, session);
-				} catch (ParameterException e) {
-					throw new PipeRunException(this, getLogPrefix(session) + "exception on extracting parameters", e);
-				}
-			}
-			String ip = getParameterValue(pvl, getIfParam());
-			if (ip == null) {
-				if (getIfValue() == null) {
-					skipPipe = false;
-				}
-			} else {
-				if (getIfValue() != null && getIfValue().equalsIgnoreCase(ip)) {
-					skipPipe = false;
-				}
-			}
-			if (skipPipe) {
-				return new PipeRunResult(getSuccessForward(), input);
+		if (StringUtils.isNotEmpty(getOnlyIfSessionKey())) {
+			Object onlyIfActualValue = session.get(getOnlyIfSessionKey());
+			if (onlyIfActualValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfActualValue)) {
+				log.debug("onlyIfSessionKey [{}] value [{}]: not found or not equal to value [{}]", getOnlyIfSessionKey(), onlyIfActualValue, getOnlyIfValue());
+				return true;
 			}
 		}
-		return null;
+		if (StringUtils.isNotEmpty(getUnlessSessionKey())) {
+			Object unlessActualValue = session.get(getUnlessSessionKey());
+			if (unlessActualValue!=null && (StringUtils.isEmpty(getUnlessValue()) || getUnlessValue().equals(unlessActualValue))) {
+				log.debug("unlessSessionKey [{}] value [{}]: not found or equal to value [{}]", getUnlessSessionKey(), unlessActualValue, getUnlessValue());
+				return true;
+			}
+		}
+		try {
+			if (ifParameter!=null) {
+				Object paramValue = ifParameter.getValue(null, input, session, true);
+				String ifValue = getIfValue();
+				if (ifValue == null) {
+					return paramValue!=null;
+				}
+				return !ifValue.equalsIgnoreCase(Message.asString(paramValue));
+			}
+		} catch (ParameterException | IOException e) {
+			throw new PipeRunException(this, "Cannot evaluate ifParam", e);
+		}
+		return false;
 	}
 
 	protected String getParameterValue(ParameterValueList pvl, String parameterName) {
@@ -101,19 +120,42 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		return null;
 	}
 
-
-	@IbisDoc({"2", "If set, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty", "false"})
+	/**
+	 * If set, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty
+	 * @ff.default false
+	 */
 	public void setSkipOnEmptyInput(boolean b) {
 		skipOnEmptyInput = b;
 	}
 
-	@IbisDoc({"3", "If set, this pipe is only executed when the value of parameter with name <code>ifparam</code> equals <code>ifvalue</code> (otherwise this pipe is skipped)", ""})
+	/** If set, this pipe is only executed when the value of parameter with name <code>ifParam</code> equals <code>ifValue</code> (otherwise this pipe is skipped) */
 	public void setIfParam(String string) {
 		ifParam = string;
 	}
 
-	@IbisDoc({"4", "See <code>ifparam</code>", ""})
+	/** See <code>ifParam</code> */
 	public void setIfValue(String string) {
 		ifValue = string;
 	}
+
+	/** Key of session variable to check if action must be executed. The pipe is only executed if the session variable exists and is not null */
+	public void setOnlyIfSessionKey(String onlyIfSessionKey) {
+		this.onlyIfSessionKey = onlyIfSessionKey;
+	}
+
+	/** Value of session variable 'onlyIfSessionKey' to check if action must be executed. The pipe is only executed if the session variable has the specified value */
+	public void setOnlyIfValue(String onlyIfValue) {
+		this.onlyIfValue = onlyIfValue;
+	}
+
+	/** Key of session variable to check if action must be executed. The pipe is not executed if the session variable exists and is not null */
+	public void setUnlessSessionKey(String unlessSessionKey) {
+		this.unlessSessionKey = unlessSessionKey;
+	}
+
+	/** Value of session variable 'unlessSessionKey' to check if action must be executed. The pipe is not executed if the session variable has the specified value */
+	public void setUnlessValue(String unlessValue) {
+		this.unlessValue = unlessValue;
+	}
+
 }

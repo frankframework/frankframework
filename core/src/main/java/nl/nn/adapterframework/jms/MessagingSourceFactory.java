@@ -21,40 +21,41 @@ import javax.jms.ConnectionFactory;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.util.LogUtil;
 
-import org.apache.logging.log4j.Logger;
-
 /**
- * Factory for {@link MessagingSource}s, to share them for JMS Objects that can use the same. 
- * 
+ * Factory for {@link MessagingSource}s, to share them for JMS Objects that can use the same.
+ *
  * @author Gerrit van Brakel
  */
-public abstract class MessagingSourceFactory  {
+public abstract class MessagingSourceFactory {
 	protected Logger log = LogUtil.getLogger(this);
 
-	protected abstract Map getMessagingSourceMap();
+	protected abstract Map<String,MessagingSource> getMessagingSourceMap();
 	protected abstract Context createContext() throws NamingException;
 	protected abstract ConnectionFactory createConnectionFactory(Context context, String id, boolean createDestination, boolean useJms102) throws IbisException, NamingException;
-	
+
 	protected MessagingSource createMessagingSource(String id, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
 		Context context = getContext();
-		ConnectionFactory connectionFactory = getConnectionFactory(context, id, createDestination, useJms102); 
+		ConnectionFactory connectionFactory = getConnectionFactory(context, id, createDestination, useJms102);
 		return new MessagingSource(id, context, connectionFactory, getMessagingSourceMap(), authAlias, createDestination, useJms102);
 	}
-	
+
 	public synchronized MessagingSource getMessagingSource(String id, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
-		Map messagingSourceMap = getMessagingSourceMap();
-		MessagingSource result = (MessagingSource)messagingSourceMap.get(id);
+		Map<String, MessagingSource> messagingSourceMap = getMessagingSourceMap();
+
+		MessagingSource result = messagingSourceMap.get(id);
 		if (result == null) {
 			result = createMessagingSource(id, authAlias, createDestination, useJms102);
-			log.debug("created new MessagingSource-object for ["+id+"]");
+			log.debug("created new MessagingSource-object for [{}]", id);
 		}
 		result.increaseReferences();
 		return result;
 	}
-	
+
 	protected Context getContext() throws IbisException {
 		try {
 			return createContext();
@@ -70,5 +71,4 @@ public abstract class MessagingSourceFactory  {
 			throw new IbisException("could not obtain connectionFactory ["+id+"]", t);
 		}
 	}
-	
 }

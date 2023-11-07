@@ -23,7 +23,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  * @author Gerrit van Brakel
  */
 public interface PercentileEstimator {
-	
+
 	int getNumPercentiles();
 	int getPercentage(int index);
 	void addValue(long value, long count, long min, long max);

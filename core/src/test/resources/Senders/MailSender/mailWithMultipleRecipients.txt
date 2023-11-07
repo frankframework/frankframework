@@ -1,0 +1,17 @@
+Date: DATE
+From: "Me, Myself and I" <myself@address.org>
+Reply-To: to@address.com
+To: dummy <me@address.org>
+Cc: cc@address.org
+Bcc: bcc@address.org, name <i@address.org>,
+	fulladdress <addresspart1@address.org>,
+	personalpart2 <addresspart2@address.org>
+Message-ID: MESSAGE-ID
+Subject: My Subject
+MIME-Version: 1.0
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 7bit
+x-custom: TEST
+does-this-work: yes
+
+My Message Goes Here

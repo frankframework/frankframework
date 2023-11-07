@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http;
 
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
+import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 
@@ -47,7 +48,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWss.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -67,7 +68,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();;
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWssSoapAction.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -97,7 +98,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();;
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipart.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -129,7 +130,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();;
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipart2.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -160,7 +161,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.configure();
 			sender.open();
 
-			String result = sender.sendMessage(input, pls).asString();
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();
@@ -181,13 +182,13 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			sender.setAllowSelfSignedCertificates(true);
 			sender.setVerifyHostname(false);
 			sender.setMtomEnabled(true);
-	
+
 			sender.addParameter(new Parameter("file", "<xml>I just sent some text! :)</xml>"));
-	
+
 			sender.configure();
 			sender.open();
-	
-			String result = sender.sendMessage(input, pls).asString();
+
+			String result = sender.sendMessageOrThrow(input, pls).asString();
 			assertEqualsIgnoreCRLF(getFile("simpleMockedWssMultipartMtom.txt"), result.trim());
 		} catch (SenderException e) {
 			throw e.getCause();

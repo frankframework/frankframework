@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,17 +22,16 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -51,6 +50,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
+import javax.xml.transform.ErrorListener;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -73,6 +73,7 @@ import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.xalan.processor.TransformerFactoryImpl;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
@@ -86,14 +87,13 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.ext.LexicalHandler;
 
 import com.ctc.wstx.api.ReaderConfig;
 import com.ctc.wstx.stax.WstxInputFactory;
 
-import nl.nn.adapterframework.configuration.Configuration;
+import net.sf.saxon.xpath.XPathFactoryImpl;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IScopeProvider;
 import nl.nn.adapterframework.core.Resource;
@@ -122,21 +122,12 @@ public class XmlUtils {
 
 	public static final int DEFAULT_XSLT_VERSION = AppConstants.getInstance().getInt("xslt.version.default", 2);
 
-	static final String W3C_XML_SCHEMA =       "http://www.w3.org/2001/XMLSchema";
-	static final String JAXP_SCHEMA_LANGUAGE = "http://java.sun.com/xml/jaxp/properties/schemaLanguage";
-	static final String JAXP_SCHEMA_SOURCE =   "http://java.sun.com/xml/jaxp/properties/schemaSource";
-
 	public static final String NAMESPACE_AWARE_BY_DEFAULT_KEY = "xml.namespaceAware.default";
 	public static final String XSLT_STREAMING_BY_DEFAULT_KEY = "xslt.streaming.default";
 	public static final String AUTO_RELOAD_KEY = "xslt.auto.reload";
 	public static final String XSLT_BUFFERSIZE_KEY = "xslt.bufsize";
 	public static final int XSLT_BUFFERSIZE_DEFAULT=4096;
 	public static final String INCLUDE_FIELD_DEFINITION_BY_DEFAULT_KEY = "query.includeFieldDefinition.default";
-
-	public static final String OPEN_FROM_FILE = "file";
-	public static final String OPEN_FROM_URL = "url";
-	public static final String OPEN_FROM_RESOURCE = "resource";
-	public static final String OPEN_FROM_XML = "xml";
 
 	private static Boolean namespaceAwareByDefault = null;
 	private static Boolean xsltStreamingByDefault = null;
@@ -145,14 +136,7 @@ public class XmlUtils {
 	private static Integer buffersize=null;
 
 	private static ConcurrentHashMap<String,TransformerPool> utilityTPs = new ConcurrentHashMap<String,TransformerPool>();
-	public static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
-
-	public static final String IDENTITY_TRANSFORM =
-		"<?xml version=\"1.0\"?><xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">"
-			+ "<xsl:template match=\"@*|*|processing-instruction()|comment()\">"
-			+ "<xsl:copy><xsl:apply-templates select=\"*|@*|text()|processing-instruction()|comment()\" />"
-			+ "</xsl:copy></xsl:template></xsl:stylesheet>";
 
 	private static final String ADAPTERSITE_XSLT = "/xml/xsl/web/adapterSite.xsl";
 
@@ -213,7 +197,10 @@ public class XmlUtils {
 			+ "<xsl:output method=\"text\"/>"
 			+ 	"<xsl:template match=\"/\">"
 			+ 		"<xsl:for-each select=\"/xsl:stylesheet/@*\">"
-			+ 			"<xsl:value-of select=\"concat('stylesheet-',name(),'=',.,';')\"/>"
+			+ 			"<xsl:value-of select=\"concat(name(),'=',.,';')\"/>"
+			+ 		"</xsl:for-each>"
+			+ 		"<xsl:for-each select=\"/xsl:transform/@*\">"
+			+ 			"<xsl:value-of select=\"concat(name(),'=',.,';')\"/>"
 			+ 		"</xsl:for-each>"
 			+ 		"<xsl:for-each select=\"/xsl:stylesheet/xsl:output/@*\">"
 			+ 			"<xsl:value-of select=\"concat('output-',name(),'=',.,';')\"/>"
@@ -234,18 +221,14 @@ public class XmlUtils {
 		}
 	}
 
-	public static Map<String,String> getXsltConfig(Resource source) throws TransformerException, IOException, SAXException {
-			return getXsltConfig(source.asSource());
-	}
-	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException, SAXException {
+	public static Map<String,String> getXsltConfig(Source source) throws TransformerException, IOException {
 		TransformerPool tp = getGetXsltConfigTransformerPool();
 		String metadataString = tp.transform(source);
-		StringTokenizer st1 = new StringTokenizer(metadataString,";");
-		Map<String,String> result = new LinkedHashMap<String,String>();
-		while (st1.hasMoreTokens()) {
-			StringTokenizer st2 = new StringTokenizer(st1.nextToken(),"=");
-			String key=st2.nextToken();
-			String value=st2.nextToken();
+		Map<String,String> result = new LinkedHashMap<>();
+		for (final String s : StringUtil.split(metadataString, ";")) {
+			List<String> kv = StringUtil.split(s, "=");
+			String key = kv.get(0);
+			String value = kv.get(1);
 			result.put(key, value);
 		}
 		return result;
@@ -430,11 +413,6 @@ public class XmlUtils {
 		return getUtilityTransformerPool(()->makeCopyOfSelectXslt(xpath,omitXmlDeclaration,indent),"CopyOfSelect["+xpath+"]",omitXmlDeclaration,indent);
 	}
 
-	public static TransformerPool getIdentityTransformerPool() throws ConfigurationException {
-		return getUtilityTransformerPool(()->IDENTITY_TRANSFORM,"Identity",true,true);
-	}
-
-
 
 	public static synchronized boolean isNamespaceAwareByDefault() {
 		if (namespaceAwareByDefault==null) {
@@ -466,10 +444,9 @@ public class XmlUtils {
 
 	public static synchronized int getBufSize() {
 		if (buffersize==null) {
-			int size=AppConstants.getInstance().getInt(XSLT_BUFFERSIZE_KEY, XSLT_BUFFERSIZE_DEFAULT);
-			buffersize = new Integer(size);
+			buffersize = AppConstants.getInstance().getInt(XSLT_BUFFERSIZE_KEY, XSLT_BUFFERSIZE_DEFAULT);
 		}
-		return buffersize.intValue();
+		return buffersize;
 	}
 
 	public static void parseXml(Resource resource, ContentHandler handler) throws IOException, SAXException {
@@ -515,12 +492,12 @@ public class XmlUtils {
 		return getXMLReader(null, handler);
 	}
 
-	public static XMLReader getXMLReader(Configuration scopeProvider) throws ParserConfigurationException, SAXException {
+	public static XMLReader getXMLReader(IScopeProvider scopeProvider) throws ParserConfigurationException, SAXException {
 		return getXMLReader(true, scopeProvider);
 	}
 
-	private static XMLReader getXMLReader(Resource resource, ContentHandler handler) throws ParserConfigurationException, SAXException {
-		XMLReader xmlReader = getXMLReader(true, resource);
+	private static XMLReader getXMLReader(IScopeProvider scopeProvider, ContentHandler handler) throws ParserConfigurationException, SAXException {
+		XMLReader xmlReader = getXMLReader(true, scopeProvider);
 		xmlReader.setContentHandler(handler);
 		if (handler instanceof LexicalHandler) {
 			xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", handler);
@@ -565,13 +542,7 @@ public class XmlUtils {
 				builder.setEntityResolver(new NonResolvingExternalEntityResolver());
 			}
 			document = builder.parse(src);
-		} catch (SAXParseException e) {
-			throw new DomBuilderException(e);
-		} catch (ParserConfigurationException e) {
-			throw new DomBuilderException(e);
-		} catch (IOException e) {
-			throw new DomBuilderException(e);
-		} catch (SAXException e) {
+		} catch (ParserConfigurationException | IOException | SAXException e) {
 			throw new DomBuilderException(e);
 		}
 		if (document == null) {
@@ -673,9 +644,8 @@ public class XmlUtils {
 					log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the xml declartion, and not any body");
 				}
 				return xmlString.substring(endPos);
-			} else {
-				throw new IllegalArgumentException("no valid xml declaration in string ["+xmlString+"]");
 			}
+			throw new IllegalArgumentException("no valid xml declaration in string ["+xmlString+"]");
 		}
 		return xmlString;
 	}
@@ -692,101 +662,35 @@ public class XmlUtils {
 					log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the DocType declartion, and not any body");
 				}
 				return xmlString.substring(endPos);
-			} else {
-				throw new IllegalArgumentException("no valid xml declaration in string ["+xmlString+"]");
 			}
+			throw new IllegalArgumentException("no valid xml declaration in string ["+xmlString+"]");
 		}
 		return xmlString;
 	}
 
-	public static String readXml(byte[] source, String defaultEncoding, boolean skipDeclaration) throws UnsupportedEncodingException {
-		return readXml(source, 0, source.length, defaultEncoding, skipDeclaration);
-	}
-	public static String readXml(byte[] source, String defaultEncoding, boolean skipDeclaration, boolean useDeclarationEncoding) throws UnsupportedEncodingException {
-		return readXml(source, 0, source.length, defaultEncoding, skipDeclaration, useDeclarationEncoding);
-	}
-
-	public static String readXml(byte[] source, int offset, int length, String defaultEncoding, boolean skipDeclaration) throws UnsupportedEncodingException {
-		return readXml(source, 0, source.length, defaultEncoding, skipDeclaration, true);
-	}
-
-	public static String readXml(byte[] source, int offset, int length, String defaultEncoding, boolean skipDeclaration, boolean useDeclarationEncoding) throws UnsupportedEncodingException {
-		String charset;
-
-		charset=defaultEncoding;
-		if (StringUtils.isEmpty(charset)) {
-			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-		}
-
-		String firstPart = new String(source,offset,length<100?length:100,charset);
-		if (StringUtils.isEmpty(firstPart)) {
-			return null;
-		}
-		if (firstPart.startsWith("<?xml")) {
-			int endPos = firstPart.indexOf("?>")+2;
-			if (endPos>0) {
-				String declaration=firstPart.substring(6,endPos-2);
-				log.debug("parsed declaration ["+declaration+"]");
-				final String encodingTarget= "encoding=\"";
-				int encodingStart=declaration.indexOf(encodingTarget);
-				if (encodingStart>0) {
-					encodingStart+=encodingTarget.length();
-					log.debug("encoding-declaration ["+declaration.substring(encodingStart)+"]");
-					int encodingEnd=declaration.indexOf("\"",encodingStart);
-					if (encodingEnd>0) {
-						if (useDeclarationEncoding) {
-							charset=declaration.substring(encodingStart,encodingEnd);
-						}
-						log.debug("parsed charset ["+charset+"]");
-					} else {
-						log.warn("no end in encoding attribute in declaration ["+declaration+"]");
-					}
-				} else {
-					log.warn("no encoding attribute in declaration ["+declaration+"]");
-				}
-				if (skipDeclaration) {
-					try {
-						while (Character.isWhitespace(firstPart.charAt(endPos))) {
-							endPos++;
-						}
-					} catch (IndexOutOfBoundsException e) {
-						log.debug("ignoring IndexOutOfBoundsException, as this only happens for an xml document that contains only the xml declartion, and not any body");
-					}
-					return new String(source,offset+endPos,length-endPos,charset);
-				}
-			} else {
-				throw new IllegalArgumentException("no valid xml declaration in string ["+firstPart+"]");
-			}
-		}
-		return new String(source,offset,length,charset);
-	}
-
-
 	public static String getNamespaceClause(String namespaceDefs) {
-		String namespaceClause = "";
+		StringBuilder namespaceClause = new StringBuilder();
 		for (Entry<String,String> namespaceDef:getNamespaceMap(namespaceDefs).entrySet()) {
 			String prefixClause=namespaceDef.getKey()==null?"":":"+namespaceDef.getKey();
-			namespaceClause += " xmlns" + prefixClause + "=\"" + namespaceDef.getValue() + "\"";
+			namespaceClause.append(" xmlns").append(prefixClause).append("=\"").append(namespaceDef.getValue()).append("\"");
 		}
-		return namespaceClause;
+		return namespaceClause.toString();
 	}
 
 	public static Map<String,String> getNamespaceMap(String namespaceDefs) {
-		Map<String,String> namespaceMap=new LinkedHashMap<String,String>();
+		Map<String,String> namespaceMap= new LinkedHashMap<>();
 		if (namespaceDefs != null) {
-			StringTokenizer st1 = new StringTokenizer(namespaceDefs,", \t\r\n\f");
-			while (st1.hasMoreTokens()) {
-				String namespaceDef = st1.nextToken();
+			for (final String namespaceDef : StringUtil.split(namespaceDefs, ", \t\r\n\f")) {
 				int separatorPos = namespaceDef.indexOf('=');
-				String prefix=separatorPos < 1?null:namespaceDef.substring(0, separatorPos);
-				String namespace=namespaceDef.substring(separatorPos + 1);
+				String prefix = separatorPos < 1 ? null : namespaceDef.substring(0, separatorPos);
+				String namespace = namespaceDef.substring(separatorPos + 1);
 				namespaceMap.put(prefix, namespace);
 			}
 		}
 		return namespaceMap;
 	}
 
-	public static String createXPathEvaluatorSource(String XPathExpression)	throws TransformerConfigurationException {
+	public static String createXPathEvaluatorSource(String XPathExpression) {
 		return createXPathEvaluatorSource(XPathExpression, OutputType.TEXT);
 	}
 
@@ -825,7 +729,7 @@ public class XmlUtils {
 
 		final String separatorString = separator != null ? " separator=\"" + separator + "\"" : "";
 
-		return createXPathEvaluatorSource(x -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlUtils.encodeChars(xpathExpression) + "\"" + separatorString + "/>", xpathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, ignoreNamespaces, xsltVersion);
+		return createXPathEvaluatorSource(x -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlEncodingUtils.encodeChars(xpathExpression) + "\"" + separatorString + "/>", xpathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, ignoreNamespaces, xsltVersion);
 	}
 
 	public static String createXPathEvaluatorSource(Function<String,String> xpathContainerSupplier, String xpathExpression, OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
@@ -833,10 +737,10 @@ public class XmlUtils {
 			throw new IllegalArgumentException("XPathExpression must be filled");
 		}
 
-		String paramsString = "";
+		StringBuilder paramsString = new StringBuilder();
 		if (params != null) {
 			for (Parameter param: params) {
-				paramsString = paramsString + "<xsl:param name=\"" + param.getName() + "\"/>";
+				paramsString.append("<xsl:param name=\"").append(param.getName()).append("\"/>");
 			}
 		}
 		int version = (xsltVersion == 0) ? DEFAULT_XSLT_VERSION : xsltVersion;
@@ -876,21 +780,6 @@ public class XmlUtils {
 		return xsl;
 	}
 
-
-
-	public static Transformer createXPathEvaluator(String XPathExpression)
-		throws TransformerConfigurationException {
-		return createTransformer(createXPathEvaluatorSource(XPathExpression));
-	}
-
-	public static Transformer createXPathEvaluator(String namespaceDefs, String XPathExpression, OutputType outputMethod)
-		throws TransformerConfigurationException {
-		return createTransformer(createXPathEvaluatorSource(namespaceDefs, XPathExpression, outputMethod));
-	}
-
-	public static Transformer createXPathEvaluator(String XPathExpression, OutputType outputMethod) throws TransformerConfigurationException {
-		return createXPathEvaluator(null, XPathExpression, outputMethod);
-	}
 
 	/**
 	 * Converts a string containing xml-markup to a Source-object, that can be used as the input of a XSLT-transformer.
@@ -991,7 +880,7 @@ public class XmlUtils {
 		return createTransformer(stylesource, xsltVersion);
 	}
 
-	public static Transformer createTransformer(URL url) throws TransformerConfigurationException, IOException {
+	public static Transformer createTransformer(URL url) throws TransformerConfigurationException {
 		try {
 			return createTransformer(url, detectXsltVersion(url));
 		} catch (Exception e) {
@@ -1006,40 +895,38 @@ public class XmlUtils {
 		return createTransformer(stylesource, xsltVersion);
 	}
 
-	public static Transformer createTransformer(Source source) throws TransformerConfigurationException {
-		return createTransformer(source, 0);
-	}
-
 	public static Transformer createTransformer(Source source, int xsltVersion) throws TransformerConfigurationException {
 		TransformerFactory tFactory = getTransformerFactory(xsltVersion);
-		Transformer result = tFactory.newTransformer(source);
 
-		return result;
+		return tFactory.newTransformer(source);
 	}
 
 	public static TransformerFactory getTransformerFactory() {
-		return getTransformerFactory(0);
+		return getTransformerFactory(1);
 	}
 
 	public static TransformerFactory getTransformerFactory(int xsltVersion) {
+		return getTransformerFactory(xsltVersion, new TransformerErrorListener());
+	}
+
+	public static TransformerFactory getTransformerFactory(int xsltVersion, ErrorListener errorListener) {
 		TransformerFactory factory;
-		switch (xsltVersion) {
-		case 2:
-			factory = new net.sf.saxon.TransformerFactoryImpl();
-			// Use ErrorListener to prevent warning "Stylesheet module ....xsl
-			// is included or imported more than once. This is permitted, but
-			// may lead to errors or unexpected behavior" written to System.err
-			// (https://stackoverflow.com/questions/10096086/how-to-handle-duplicate-imports-in-xslt)
-			factory.setErrorListener(new TransformerErrorListener());
-			return factory;
-		default:
-			factory=new org.apache.xalan.processor.TransformerFactoryImpl();
-			factory.setErrorListener(new TransformerErrorListener());
+		if (xsltVersion == 1) {
+			factory = new TransformerFactoryImpl();
+			factory.setErrorListener(errorListener);
 			if (isXsltStreamingByDefault()) {
-				factory.setAttribute(org.apache.xalan.processor.TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
+				factory.setAttribute(TransformerFactoryImpl.FEATURE_INCREMENTAL, Boolean.TRUE);
 			}
 			return factory;
 		}
+		// XSLT version 2 or 3.
+		factory = new net.sf.saxon.TransformerFactoryImpl();
+		// Use ErrorListener to prevent warning "Stylesheet module ....xsl
+		// is included or imported more than once. This is permitted, but
+		// may lead to errors or unexpected behavior" written to System.err
+		// (https://stackoverflow.com/questions/10096086/how-to-handle-duplicate-imports-in-xslt)
+		factory.setErrorListener(errorListener);
+		return factory;
 	}
 
 	public static synchronized DocumentBuilderFactory getDocumentBuilderFactory() {
@@ -1063,149 +950,40 @@ public class XmlUtils {
 		return factory;
 	}
 
-	public static String encodeChars(String string) {
-		return encodeChars(string, false);
-	}
-
-	/**
-	 * Translates special characters to xml equivalents
-	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
-	 * are not changed, hence you might want to use
-	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
-	 */
-	public static String encodeChars(String string, boolean escapeNewLines) {
-		if (string==null) {
+	public static String convertEndOfLines(String input) {
+		if (input==null) {
 			return null;
 		}
-		int length = string.length();
-		char[] characters = new char[length];
-		string.getChars(0, length, characters, 0);
-		return encodeChars(characters, 0, length, escapeNewLines);
+		return input.replaceAll("\r\n?", "\n");
 	}
 
-	public static String encodeCharsAndReplaceNonValidXmlCharacters(String string) {
-		return encodeChars(replaceNonValidXmlCharacters(string));
-	}
-
-	public static String encodeChars(char[] chars, int offset, int length) {
-		return encodeChars(chars, offset, length, false);
-	}
-
-	/**
-	 * Translates special characters to xml equivalents
-	 * like <b>&gt;</b> and <b>&amp;</b>. Please note that non valid xml chars
-	 * are not changed, hence you might want to use
-	 * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
-	 */
-	public static String encodeChars(char[] chars, int offset, int length, boolean escapeNewLines) {
-
-		if (length<=0) {
-			return "";
+	public static String normalizeWhitespace(String input) {
+		if (input==null) {
+			return null;
 		}
-		StringBuilder encoded = new StringBuilder(length);
-		String escape;
-		for (int i = 0; i < length; i++) {
-			char c=chars[offset+i];
-			escape = escapeChar(c, escapeNewLines);
-			if (escape == null)
-				encoded.append(c);
-			else
-				encoded.append(escape);
-		}
-		return encoded.toString();
+		return input.replaceAll("[\t\n\r]", " ");
 	}
 
-	/**
-	 * Translates the five reserved XML characters (&lt; &gt; &amp; &quot; &apos;) to their normal selves
-	 */
-	public static String decodeChars(String string) {
-		StringBuilder decoded = new StringBuilder();
-
-		boolean inEscape = false;
-		int escapeStartPos = 0;
-
-		for (int i = 0; i < string.length(); i++) {
-			char cur=string.charAt(i);
-			if (inEscape) {
-				if ( cur == ';') {
-					inEscape = false;
-					String escapedString = string.substring(escapeStartPos, i + 1);
-					char unEscape = unEscapeString(escapedString);
-					if (unEscape == 0x0) {
-						decoded.append(escapedString);
-					}
-					else {
-						decoded.append(unEscape);
-					}
-				}
-			} else {
-				if (cur == '&') {
-					inEscape = true;
-					escapeStartPos = i;
-				} else {
-					decoded.append(cur);
-				}
-			}
-		}
-		if (inEscape) {
-			decoded.append(string.substring(escapeStartPos));
-		}
-		return decoded.toString();
+	public static String normalizeAttributeValue(String input) {
+		return normalizeWhitespace(convertEndOfLines(input));
 	}
 
-	/**
-	   * Conversion of special xml signs. Please note that non valid xml chars
-	   * are not changed, hence you might want to use
-	   * replaceNonValidXmlCharacters() or stripNonValidXmlCharacters() too.
-	   **/
-	private static String escapeChar(char c, boolean escapeNewLines) {
-		switch (c) {
-			case ('<') :
-				return "&lt;";
-			case ('>') :
-				return "&gt;";
-			case ('&') :
-				return "&amp;";
-			case ('\"') :
-				return "&quot;";
-			case ('\'') :
-				// return "&apos;"; // apos does not work in Internet Explorer
-				return "&#39;";
-			case ('\n')  :
-				if(escapeNewLines)
-					return "&#10;";
-		}
-		return null;
-	}
-
-	private static char unEscapeString(String str) {
-		if (str.equalsIgnoreCase("&lt;"))
-			return '<';
-		else if (str.equalsIgnoreCase("&gt;"))
-			return '>';
-		else if (str.equalsIgnoreCase("&amp;"))
-			return '&';
-		else if (str.equalsIgnoreCase("&quot;"))
-			return '\"';
-		else if (str.equalsIgnoreCase("&apos;") || str.equalsIgnoreCase("&#39;"))
-			return '\'';
-		else
-			return 0x0;
+	public static String cleanseElementName(String candidateName) {
+		return candidateName!=null ? candidateName.replaceAll("[^\\w\\-.]", "_") : null;
 	}
 
 	/**
 	 * encodes a url
 	 */
-
-	static public String encodeURL(String url) {
+	public static String encodeURL(String url) {
 		String mark = "-_.!~*'()\"";
 		StringBuilder encodedUrl = new StringBuilder();
 		int len = url.length();
 		for (int i = 0; i < len; i++) {
 			char c = url.charAt(i);
 			if ((c >= '0' && c <= '9')
-				|| (c >= 'a' && c <= 'z')
-				|| (c >= 'A' && c <= 'Z'))
+					|| (c >= 'a' && c <= 'z')
+					|| (c >= 'A' && c <= 'Z'))
 				encodedUrl.append(c);
 			else {
 				int imark = mark.indexOf(c);
@@ -1221,11 +999,11 @@ public class XmlUtils {
 		return encodedUrl.toString();
 	}
 
-	static private char toHexChar(int digitValue) {
-		if (digitValue < 10)
+	private static char toHexChar(int digitValue) {
+		if (digitValue < 10) {
 			return (char) ('0' + digitValue);
-		else
-			return (char) ('A' + (digitValue - 10));
+		}
+		return (char) ('A' + (digitValue - 10));
 	}
 
 	/**
@@ -1247,7 +1025,7 @@ public class XmlUtils {
 	 *
 	 * @return boolean      The value found.
 	 */
-	static public boolean getChildTagAsBoolean(Element el, String tag) {
+	public static boolean getChildTagAsBoolean(Element el, String tag) {
 		return getChildTagAsBoolean(el, tag, false);
 	}
 	/**
@@ -1271,25 +1049,19 @@ public class XmlUtils {
 	 *
 	 * @return boolean      The value found.
 	 */
-	static public boolean getChildTagAsBoolean(
+	public static boolean getChildTagAsBoolean(
 		Element el,
 		String tag,
 		boolean defaultValue) {
 		String str;
-		boolean bool;
 
 		str = getChildTagAsString(el, tag, null);
 		if (str == null) {
 			return defaultValue;
 		}
-
-		bool = false;
-		if (str.equalsIgnoreCase("true")
-			|| str.equalsIgnoreCase("yes")
-			|| str.equalsIgnoreCase("on")) {
-			bool = true;
-		}
-		return bool;
+		return str.equalsIgnoreCase("true")
+				|| str.equalsIgnoreCase("yes")
+				|| str.equalsIgnoreCase("on");
 	}
 	/**
 	 * Method getChildTagAsLong.
@@ -1303,7 +1075,7 @@ public class XmlUtils {
 	 *                       tag can be found, or if the tag
 	 *                       doesn't have an integer-value.
 	 */
-	static public long getChildTagAsLong(Element el, String tag) {
+	public static long getChildTagAsLong(Element el, String tag) {
 		return getChildTagAsLong(el, tag, 0);
 	}
 	/**
@@ -1318,7 +1090,7 @@ public class XmlUtils {
 	 *
 	 * @return long          The value found.
 	 */
-	static public long getChildTagAsLong(
+	public static long getChildTagAsLong(
 		Element el,
 		String tag,
 		long defaultValue) {
@@ -1349,7 +1121,7 @@ public class XmlUtils {
 	 * @return String       The value found, or null if no matching
 	 *                       tag is found.
 	 */
-	static public String getChildTagAsString(Element el, String tag) {
+	public static String getChildTagAsString(Element el, String tag) {
 		return getChildTagAsString(el, tag, null);
 	}
 	/**
@@ -1364,7 +1136,7 @@ public class XmlUtils {
 	 *
 	 * @return String       The value found.
 	 */
-	static public String getChildTagAsString(
+	public static String getChildTagAsString(
 		Element el,
 		String tag,
 		String defaultValue) {
@@ -1375,7 +1147,7 @@ public class XmlUtils {
 		if (tmpEl != null) {
 			str = getStringValue(tmpEl, true);
 		}
-		return (str.length() == 0) ? (defaultValue) : (str);
+		return (str.isEmpty()) ? (defaultValue) : (str);
 	}
 	/**
 	 * Method getChildTags. Get all direct children of given element which
@@ -1398,15 +1170,11 @@ public class XmlUtils {
 		int len;
 		boolean allChildren;
 
-		c = new LinkedList<Node>();
+		c = new ArrayList<>();
 		nl = el.getChildNodes();
 		len = nl.getLength();
 
-		if ("*".equals(tag)) {
-			allChildren = true;
-		} else {
-			allChildren = false;
-		}
+		allChildren = "*".equals(tag);
 
 		for (int i = 0; i < len; i++) {
 			Node n = nl.item(i);
@@ -1431,7 +1199,7 @@ public class XmlUtils {
 	 * @return Element The element found, or <code>null</code> if no match
 	 *                  found.
 	 */
-	static public Element getFirstChildTag(Element el, String tag) {
+	public static Element getFirstChildTag(Element el, String tag) {
 		NodeList nl;
 		int len;
 
@@ -1448,10 +1216,10 @@ public class XmlUtils {
 		}
 		return null;
 	}
-	static public String getStringValue(Element el) {
+	public static String getStringValue(Element el) {
 		return getStringValue(el, true);
 	}
-	static public String getStringValue(Element el, boolean trimWhitespace) {
+	public static String getStringValue(Element el, boolean trimWhitespace) {
 		StringBuilder sb = new StringBuilder(1024);
 		String str;
 
@@ -1471,85 +1239,10 @@ public class XmlUtils {
 
 	}
 
-	/**
-	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark).
-	 */
-	public static String encodeCdataString(String string) {
-		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, false, true);
-	}
-
-	/**
-	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark)
-	 * appended with #, the character number and ;.
-	 */
-	public static String replaceNonValidXmlCharacters(String string) {
-		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, true, true);
-	}
-
-	public static String replaceNonValidXmlCharacters(String string, char to, boolean appendCharNum, boolean allowUnicodeSupplementaryCharacters) {
-		if (string==null) {
-			return null;
-		} else {
-			int length = string.length();
-			StringBuilder encoded = new StringBuilder(length);
-			int c;
-			int counter = 0;
-			for (int i = 0; i < length; i += Character.charCount(c)) {
-				c=string.codePointAt(i);
-				if (isPrintableUnicodeChar(c, allowUnicodeSupplementaryCharacters)) {
-					encoded.appendCodePoint(c);
-				} else {
-					if (appendCharNum) {
-						encoded.append(to + "#" + c + ";");
-					} else {
-						encoded.append(to);
-					}
-					counter++;
-				}
-			}
-			if (counter>0) {
-				if (log.isDebugEnabled()) log.debug("replaced ["+counter+"] non valid xml characters to ["+to+"] in string of length ["+length+"]");
-			}
-			return encoded.toString();
-		}
-	}
-
-	public static String stripNonValidXmlCharacters(String string, boolean allowUnicodeSupplementaryCharacters) {
-		int length = string.length();
-		StringBuilder encoded = new StringBuilder(length);
-		int c;
-		int counter = 0;
-		for (int i = 0; i < length; i += Character.charCount(c)) {
-			c=string.codePointAt(i);
-			if (isPrintableUnicodeChar(c,
-					allowUnicodeSupplementaryCharacters)) {
-				encoded.appendCodePoint(c);
-			} else {
-				counter++;
-			}
-		}
-		if (counter>0) {
-			if (log.isDebugEnabled()) log.debug("stripped ["+counter+"] non valid xml characters in string of length ["+length+"]");
-		}
-		return encoded.toString();
-	}
-
-	public static boolean isPrintableUnicodeChar(int c) {
-		return isPrintableUnicodeChar(c, false);
-	}
-
-	public static boolean isPrintableUnicodeChar(int c, boolean allowUnicodeSupplementaryCharacters) {
-		return (c == 0x0009)
-			|| (c == 0x000A)
-			|| (c == 0x000D)
-			|| (c >= 0x0020 && c <= 0xD7FF)
-			|| (c >= 0xE000 && c <= 0xFFFD)
-			|| (allowUnicodeSupplementaryCharacters && (c >= 0x00010000 && c <= 0x0010FFFF));
-	}
 
 	/**
 	 * sets all the parameters of the transformer using a Map with parameter values.
-	 * @throws IOException
+	 * @throws IOException If an IOException occurs.
 	 */
 	public static void setTransformerParameters(Transformer t, Map<String,Object> parameters) throws IOException {
 		t.clearParameters();
@@ -1583,7 +1276,7 @@ public class XmlUtils {
 		return transformXml(t, stringToSourceForSingleUse(s, namespaceAware));
 	}
 
-	public static void transformXml(Transformer t, String s, Result result) throws TransformerException, IOException, SAXException {
+	public static void transformXml(Transformer t, String s, Result result) throws TransformerException, SAXException {
 		synchronized (t) {
 			t.transform(stringToSourceForSingleUse(s), result);
 		}
@@ -1600,8 +1293,7 @@ public class XmlUtils {
 
 	}
 
-	public static void transformXml(Transformer t, Source s, Writer out)
-		throws TransformerException, IOException {
+	public static void transformXml(Transformer t, Source s, Writer out) throws TransformerException {
 
 		Result result = new StreamResult(out);
 		synchronized (t) {
@@ -1609,15 +1301,15 @@ public class XmlUtils {
 		}
 	}
 
-	static public boolean isWellFormed(String input) {
+	public static boolean isWellFormed(String input) {
 		return isWellFormed(input, null);
 	}
 
-	static public boolean isWellFormed(String input, String root) {
+	public static boolean isWellFormed(String input, String root) {
 		return isWellFormed(Message.asMessage(input), root);
 	}
 
-	static public boolean isWellFormed(Message input, String root) {
+	public static boolean isWellFormed(Message input, String root) {
 		RootValidations rootValidations = null;
 		if (StringUtils.isNotEmpty(root)) {
 			rootValidations = new RootValidations(root);
@@ -1748,16 +1440,6 @@ public class XmlUtils {
 		}
 	}
 
-	public static String removeUnusedNamespaces(String input) {
-		try {
-			TransformerPool tp = getRemoveUnusedNamespacesTransformerPool(true,false);
-			return tp.transform(input,null);
-		} catch (Exception e) {
-			log.warn("unable to remove unused namespaces", e);
-			return null;
-		}
-	}
-
 	public static String copyOfSelect(String input, String xpath) {
 		try {
 			TransformerPool tp = getCopyOfSelectTransformerPool(xpath, true,false);
@@ -1771,7 +1453,7 @@ public class XmlUtils {
 	public static String canonicalize(String input) throws IOException {
 		XmlWriter xmlWriter = new XmlWriter();
 		xmlWriter.setIncludeComments(false);
-		ContentHandler handler = new PrettyPrintFilter(xmlWriter);
+		ContentHandler handler = new PrettyPrintFilter(xmlWriter, true);
 		handler = new CanonicalizeFilter(handler);
 		try {
 			XmlUtils.parseXml(input, handler);
@@ -1868,15 +1550,14 @@ public class XmlUtils {
 	public static boolean attributesEqual(Attribute attribute1, Attribute attribute2) {
 		if (!attribute1.getName().equals(attribute2.getName())) {
 			return false;
-		} else if (!attribute1.getValue().equals(attribute2.getValue())) {
-			return false;
+		} else {
+			return attribute1.getValue().equals(attribute2.getValue());
 		}
-		return true;
 	}
 
 
 	public static String getAdapterSite(String input, Map parameters) throws IOException, SAXException, TransformerException {
-		URL xsltSource = ClassUtils.getResourceURL(ADAPTERSITE_XSLT);
+		URL xsltSource = ClassLoaderUtils.getResourceURL(ADAPTERSITE_XSLT);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		if (parameters != null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);
@@ -1887,7 +1568,7 @@ public class XmlUtils {
 	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws DomBuilderException, XPathExpressionException {
 		String msg = XmlUtils.removeNamespaces(input);
 
-		Collection<String> c = new LinkedList<>();
+		Collection<String> c = new ArrayList<>();
 		Document doc = buildDomDocument(msg, true, true);
 		XPath xPath = getXPathFactory().newXPath();
 		XPathExpression xPathExpression = xPath.compile(xpathExpr);
@@ -1909,7 +1590,7 @@ public class XmlUtils {
 
 	public static String evaluateXPathNodeSetFirstElement(String input, String xpathExpr) throws DomBuilderException, XPathExpressionException {
 		Collection<String> c = evaluateXPathNodeSet(input, xpathExpr);
-		if (c != null && c.size() > 0) {
+		if (c != null && !c.isEmpty()) {
 			return c.iterator().next();
 		}
 		return null;
@@ -1949,37 +1630,18 @@ public class XmlUtils {
 		return null;
 	}
 
-	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr, String xpathExpr2) throws DomBuilderException, XPathExpressionException {
-		String msg = XmlUtils.removeNamespaces(input);
-
-		Collection<String> c = new LinkedList<>();
-		Document doc = buildDomDocument(msg, true, true);
-		XPath xPath = getXPathFactory().newXPath();
-		XPathExpression xPathExpression = xPath.compile(xpathExpr);
-		Object result = xPathExpression.evaluate(doc, XPathConstants.NODESET);
-		NodeList nodes = (NodeList) result;
-		for (int i = 0; i < nodes.getLength(); i++) {
-			Node node = nodes.item(i);
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				Element element = (Element) node;
-				XPathExpression xPathExpression2 = xPath.compile(xpathExpr2);
-				Object result2 = xPathExpression2.evaluate(element, XPathConstants.STRING);
-				c.add((String) result2);
-			}
-		}
-		if (!c.isEmpty()) {
-			return c;
-		}
-		return null;
-	}
-
-	public static String toXhtml(String htmlString) {
-		if (StringUtils.isNotEmpty(htmlString)) {
-			String xhtmlString = skipDocTypeDeclaration(htmlString.trim());
-			if (xhtmlString.startsWith("<html>") || xhtmlString.startsWith("<html ")) {
+	public static String toXhtml(Message message) throws IOException {
+		if (!Message.isEmpty(message)) {
+			String messageCharset = message.getCharset();
+			String xhtmlString = new String(message.getMagic(512), messageCharset != null ? messageCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
+			if (xhtmlString.contains("<html>") || xhtmlString.contains("<html ")) {
 				CleanerProperties props = new CleanerProperties();
+				props.setOmitDoctypeDeclaration(true);
+				if(messageCharset != null) {
+					props.setCharset(messageCharset);
+				}
 				HtmlCleaner cleaner = new HtmlCleaner(props);
-				TagNode tagNode = cleaner.clean(xhtmlString);
+				TagNode tagNode = cleaner.clean(message.asReader());
 				return new SimpleXmlSerializer(props).getAsString(tagNode);
 			}
 		}
@@ -1991,14 +1653,14 @@ public class XmlUtils {
 	}
 
 	public static synchronized XPathFactory getXPathFactory(int xsltVersion) {
-		switch (xsltVersion) {
-		case 2:
-			return new net.sf.saxon.xpath.XPathFactoryImpl();
-		default:
+		// NB: Currently this method is only called always with XSLT version = 2, but it
+		// should be prepared to work correctly if called with version 1 or 3 as well.
+		if (xsltVersion == 1) {
 			return new org.apache.xpath.jaxp.XPathFactoryImpl();
 		}
+		// XSLT version 2 or 3
+		return new XPathFactoryImpl();
 	}
-
 
 	public static ValidatorHandler getValidatorHandler(URL schemaURL) throws SAXException {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -2011,5 +1673,4 @@ public class XmlUtils {
 		Schema schema = sf.newSchema(schemaSource);
 		return schema.newValidatorHandler();
 	}
-
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,61 +18,54 @@ package nl.nn.adapterframework.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.task.TimeoutGuard;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-
 /**
  * Process execution utilities.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.8
  */
 public class ProcessUtil {
-	private static Logger log = LogUtil.getLogger(ProcessUtil.class);
+	private static final Logger log = LogUtil.getLogger(ProcessUtil.class);
 
 	private static String readStream(InputStream stream) throws IOException {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 
 		BufferedReader bufferedReader = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(stream));
 		String line = null;
 		// read() instead of readLine() results in JVM core dumps (this
 		// also happens when using InputStream or BufferedInputStream)
-		// using WebSphere Studio Application Developer (Windows) 
+		// using WebSphere Studio Application Developer (Windows)
 		// Version: 5.1.2, Build id: 20040506_1735
 		while ((line = bufferedReader.readLine()) != null) {
-			result.append(line + "\n");
+			result.append(line).append("\n");
 		}
 		return result.toString();
 	}
 
-	protected static String getCommandLine(List command) {
+	protected static String getCommandLine(List<String> command) {
 		if (command==null || command.isEmpty()) {
 			return "";
 		}
-		String result=(String)command.get(0);
-		for (int i=1;i<command.size();i++) {
-			result+=" "+command.get(i);
+		StringBuilder result = new StringBuilder((String) command.get(0));
+		for (int i = 1; i < command.size(); i++) {
+			result.append(" ").append(command.get(i));
 		}
-		return result;
+		return result.toString();
 	}
 
-	public static List splitUpCommandString(String command) {
-		List list = new ArrayList();
-		StringTokenizer stringTokenizer = new StringTokenizer(command);
-		while (stringTokenizer.hasMoreElements()) {
-			list.add(stringTokenizer.nextToken());
-		}
-		return list;
+	public static List<String> splitUpCommandString(String command) {
+		return Arrays.asList(command.split("(\\s|\f)+"));
 	}
-
 
 	public static String executeCommand(String command) throws SenderException {
 		try {
@@ -81,22 +74,20 @@ public class ProcessUtil {
 			throw new SenderException(e);
 		}
 	}
-	public static String executeCommand(String command, int timeout) throws TimeoutException, SenderException {
-		return executeCommand(splitUpCommandString(command),timeout);
-	}
+
 	/**
-	 * Execute a command as a process in the operating system. 
+	 * Execute a command as a process in the operating system.
 	 * Timeout is passed in seconds, or 0 to wait indefinitely until the process ends
 	 */
-	public static String executeCommand(List command, int timeout) throws TimeoutException, SenderException {
+	public static String executeCommand(List<String> command, int timeout) throws TimeoutException, SenderException {
 		String output;
 		String errors;
 
 		final Process process;
 		try {
-			process = Runtime.getRuntime().exec((String[])command.toArray(new String[0]));
+			process = Runtime.getRuntime().exec(command.toArray(new String[0]));
 		} catch (Throwable t) {
-			throw new SenderException("Could not execute command ["+getCommandLine(command)+"]",t);
+			throw new SenderException("Could not execute command [" + getCommandLine(command) + "]", t);
 		}
 		TimeoutGuard tg = new TimeoutGuard("ProcessUtil") {
 

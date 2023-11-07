@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>ibis-adapterframework-docker-tomcat</artifactId>
+	<name>Frank!Framework - Docker > Tomcat</name>
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>org.ibissource</groupId>
+		<artifactId>ibis-adapterframework-docker</artifactId>
+		<version>${revision}</version>
+	</parent>
+
+	<modules>
+		<module>webapp</module>
+		<module>example</module>
+		<module>test</module>
+	</modules>
+
+</project>

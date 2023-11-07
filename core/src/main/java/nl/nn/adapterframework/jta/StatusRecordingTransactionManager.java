@@ -34,10 +34,11 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 /**
  * JtaTransactionManager-wrapper that enables to recover transaction logs produced by another instance.
- *  
+ *
  * @author Gerrit van Brakel
  *
  */
@@ -45,7 +46,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 	protected Logger log = LogUtil.getLogger(this);
 
 	private static final long serialVersionUID = 1L;
-	private static final int TMUID_MAX_LENGTH=51;
+	private static final int TMUID_MAX_LENGTH=36; // 51 is valid for BTM. 36 appears to work for Narayana i.c.w. MS_SQL, MySQL and MariaDB, avoiding SQLException: ConnectionImple.registerDatabase - ARJUNA017017: enlist of resource failed
 
 	private @Getter @Setter String statusFile;
 	private @Getter @Setter String uidFile;
@@ -87,7 +88,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 			setUid(recordedTmUid);
 		}
 		if (StringUtils.isEmpty(getUid())) {
-			String tmuid = Misc.getHostname()+"-"+Misc.createSimpleUUID();
+			String tmuid = Misc.getHostname()+"-"+ UUIDUtil.createSimpleUUID();
 			if (tmuid.length()>TMUID_MAX_LENGTH) {
 				tmuid = tmuid.substring(0, TMUID_MAX_LENGTH);
 			}
@@ -103,8 +104,8 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 	@Override
 	public void destroy() {
 		log.info("shutting down transaction manager");
-		boolean transactionsPending = shutdownTransactionManager();
-		writeStatus(transactionsPending ? Status.COMPLETED : Status.PENDING);
+		boolean noTransactionsPending = shutdownTransactionManager();
+		writeStatus(noTransactionsPending ? Status.COMPLETED : Status.PENDING);
 		log.info("transaction manager shutdown completed");
 	}
 

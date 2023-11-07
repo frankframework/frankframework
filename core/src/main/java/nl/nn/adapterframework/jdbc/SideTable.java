@@ -17,10 +17,10 @@ package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  * Utility class to populate and reference side tables.
@@ -30,11 +30,10 @@ import org.apache.logging.log4j.Logger;
  */
 public class SideTable {
 	protected Logger log = LogUtil.getLogger(this);
-	
+
 	private String selectQuery;
 	private String selectNextValueQuery;
 	private String insertQuery;
-	
 
 	public SideTable(String tableName, String keyColumn, String nameColumn, String sequence) {
 		super();
@@ -49,7 +48,7 @@ public class SideTable {
 
 	public int findOrInsert(Connection connection, String name) throws JdbcException {
 		int result;
-		
+
 		result = JdbcUtil.executeIntQuery(connection,selectQuery,name);
 		if (result>=0) {
 			return result;

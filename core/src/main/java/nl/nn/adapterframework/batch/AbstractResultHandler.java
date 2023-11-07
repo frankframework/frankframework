@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.batch;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -25,8 +24,8 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.IWithParameters;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -51,7 +50,7 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 	private boolean defaultResultHandler;
 	private @Getter boolean blockByRecordType=true;
 	private @Getter AbstractPipe pipe;
-	
+
 	protected ParameterList paramList = null;
 
 	@Override
@@ -95,13 +94,12 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		this.pipe = pipe;
 	}
 
-	@IbisDoc({"1", "name of the resulthandler", ""})
 	@Override
 	public void setName(String string) {
 		name = string;
 	}
 
-	@IbisDoc({"<i>deprecated</i> prefix that has to be written before record, if the record is in another block than the previous record", ""})
+	/** Prefix that has to be written before each record, if the record is in another block than the previous record */
 	@Deprecated
 	public void setPrefix(String string) {
 		prefix = string;
@@ -111,13 +109,16 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return StringUtils.isNotEmpty(getPrefix());
 	}
 
-	@IbisDoc({"<i>deprecated</i> suffix that has to be written after the record, if the record is in another block than the next record. <br/>n.b. if a suffix is set without a prefix, it is only used at the end of processing (i.e. at the end of the file) as a final close", ""})
+	/** <i>deprecated</i> suffix that has to be written after the record, if the record is in another block than the next record. <br/>n.b. if a suffix is set without a prefix, it is only used at the end of processing (i.e. at the end of the file) as a final close */
 	@Deprecated
 	public void setSuffix(String string) {
 		suffix = string;
 	}
 
-	@IbisDoc({"2", "if set <code>true</code>, this resulthandler is the default for all {@link recordhandlingflow flow}s that do not have a handler specified", "false"})
+	/**
+	 * if set <code>true</code>, this resulthandler is the default for all {@link RecordHandlingFlow flow}s that do not have a handler specified
+	 * @ff.default false
+	 */
 	@Override
 	public void setDefault(boolean isDefault) {
 		this.defaultResultHandler = isDefault;
@@ -127,7 +128,10 @@ public abstract class AbstractResultHandler implements IResultHandler, IWithPara
 		return defaultResultHandler;
 	}
 
-	@IbisDoc({"when set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType(PipeLineSession, boolean, List, List) RecordHandler.newRecordType} is handled as a block.", "true"})
+	/**
+	 * When set <code>true</code>(default), every group of records, as indicated by {@link IRecordHandler#isNewRecordType RecordHandler.newRecordType} is handled as a block.
+	 * @ff.default true
+	 */
 	public void setBlockByRecordType(boolean b) {
 		blockByRecordType = b;
 	}

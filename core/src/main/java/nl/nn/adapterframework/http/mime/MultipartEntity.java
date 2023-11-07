@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,10 @@
 */
 package nl.nn.adapterframework.http.mime;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.BasicHttpEntity;
@@ -22,22 +26,16 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 
 public class MultipartEntity extends BasicHttpEntity implements HttpEntity {
 
 	private final MultipartForm multipart;
-	private final Header contentType;
-	private final long contentLength;
 
-	MultipartEntity(MultipartForm multipart, final ContentType contentType,final long contentLength) {
+	MultipartEntity(MultipartForm multipart, final ContentType contentType) {
 		super();
 		this.multipart = multipart;
-		this.contentType = new BasicHeader(HTTP.CONTENT_TYPE, contentType.toString());
-		this.contentLength = contentLength;
+		setContentType(new BasicHeader(HTTP.CONTENT_TYPE, contentType.toString()));
+		setContentLength(multipart.getTotalLength());
 	}
 
 	public MultipartForm getMultipart() {
@@ -46,27 +44,17 @@ public class MultipartEntity extends BasicHttpEntity implements HttpEntity {
 
 	@Override
 	public boolean isRepeatable() {
-		return this.contentLength != -1;
+		return multipart.isRepeatable();
 	}
 
 	@Override
 	public boolean isChunked() {
-		return !isRepeatable();
+		return getContentLength() == -1;
 	}
 
 	@Override
 	public boolean isStreaming() {
-		return !isRepeatable();
-	}
-
-	@Override
-	public long getContentLength() {
-		return this.contentLength;
-	}
-
-	@Override
-	public Header getContentType() {
-		return this.contentType;
+		return !isChunked();
 	}
 
 	@Override
@@ -75,18 +63,15 @@ public class MultipartEntity extends BasicHttpEntity implements HttpEntity {
 	}
 
 	@Override
-	public void consumeContent()
-		throws IOException, UnsupportedOperationException{
+	public void consumeContent() throws IOException, UnsupportedOperationException {
 		if (isStreaming()) {
-			throw new UnsupportedOperationException(
-					"Streaming entity does not implement #consumeContent()");
+			throw new UnsupportedOperationException("Streaming entity does not implement #consumeContent()");
 		}
 	}
 
 	@Override
 	public InputStream getContent() {
-		throw new UnsupportedOperationException(
-					"Multipart form entity does not implement #getContent()");
+		throw new UnsupportedOperationException("Multipart form entity does not implement #getContent()");
 	}
 
 	@Override

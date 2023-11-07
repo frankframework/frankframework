@@ -15,9 +15,10 @@
 */
 package nl.nn.credentialprovider;
 
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
-import nl.nn.credentialprovider.util.Misc;
+import org.apache.commons.lang3.StringUtils;
 
 public class Credentials implements ICredentials {
 	protected Logger log = Logger.getLogger(this.getClass().getName());
@@ -25,39 +26,54 @@ public class Credentials implements ICredentials {
 	private String alias;
 	private String username;
 	private String password;
+	private Supplier<String> usernameSupplier;
+	private Supplier<String> passwordSupplier;
 	private boolean gotCredentials=false;
 
-	public Credentials(String alias, String defaultUsername, String defaultPassword) {
+	public Credentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		super();
 		this.alias = alias;
-		username = defaultUsername;
-		password = defaultPassword;
+		usernameSupplier = defaultUsernameSupplier;
+		passwordSupplier = defaultPasswordSupplier;
 	}
 
 
 	private void getCredentials() {
 		if (!gotCredentials) {
-			
-			if (Misc.isNotEmpty(getAlias())) {
+
+			if (StringUtils.isNotEmpty(getAlias())) {
 				try {
 					getCredentialsFromAlias();
 				} catch (RuntimeException e) {
-					
-					if (Misc.isEmpty(username) && Misc.isEmpty(password)) {
+
+					if (usernameSupplier!=null) {
+						username = usernameSupplier.get();
+					}
+					if (passwordSupplier!=null) {
+						password = passwordSupplier.get();
+					}
+
+					if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
 						throw e;
 					}
 				}
+			}
+			if ((username==null || username.equals("")) && usernameSupplier!=null) {
+				username = usernameSupplier.get();
+			}
+			if ((password==null || password.equals("")) && passwordSupplier!=null) {
+				password = passwordSupplier.get();
 			}
 			gotCredentials=true;
 		}
 	}
 
 	protected void getCredentialsFromAlias() {
-		if (Misc.isEmpty(username) && Misc.isEmpty(password)) {
+		if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
 			log.warning("no credential factory for alias ["+alias+"], and no default credentials, username ["+username+"]");
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();

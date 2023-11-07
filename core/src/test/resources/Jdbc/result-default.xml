@@ -1,0 +1,16 @@
+<result>
+	<fielddefinition>
+		<field columnClassName="java.lang.Long" columnDisplaySize="20" columnTypeName="BIGINT" isCurrency="false" name="CNT" precision="64" scale="0" type="BIGINT"/>
+		<field columnClassName="java.lang.String" columnDisplaySize="6" columnTypeName="CHARACTER VARYING" isCurrency="false" name="STR" precision="6" scale="0" type="VARCHAR"/>
+		<field columnClassName="java.lang.Integer" columnDisplaySize="11" columnTypeName="INTEGER" isCurrency="false" name="NUM" precision="32" scale="0" type="INTEGER"/>
+		<field columnClassName="java.lang.Void" columnDisplaySize="4" columnTypeName="NULL" isCurrency="false" name="NULLCOL" precision="1" scale="0" type="NULL"/>
+	</fielddefinition>
+	<rowset>
+		<row number="0">
+			<field name="CNT">0</field>
+			<field name="STR">string</field>
+			<field name="NUM">5</field>
+			<field name="NULLCOL" null="true"/>
+		</row>
+	</rowset>
+</result>

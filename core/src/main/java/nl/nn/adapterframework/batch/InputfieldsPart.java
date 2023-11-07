@@ -27,5 +27,5 @@ public class InputfieldsPart {
 
 	private @Getter @Setter String value;
 	private @Getter @Setter String description;
-	
+
 }

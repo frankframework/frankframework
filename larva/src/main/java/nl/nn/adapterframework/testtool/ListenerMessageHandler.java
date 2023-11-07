@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.testtool;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -27,13 +26,15 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Message handler for JavaListener and WebServiceListener.
- * 
+ *
  * @author Jaco de Groot
  * @author Niels Meijer
  */
@@ -45,9 +46,9 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private long defaultTimeout = TestTool.globalTimeout;
 
 	@Override
-	public Message processRequest(IListener<M> origin, String correlationId, M rawMessage, Message message, Map<String, Object> context) throws ListenerException {
+	public Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException {
 		try {
-			ListenerMessage requestMessage = new ListenerMessage(correlationId, message.asString(), context);
+			ListenerMessage requestMessage = new ListenerMessage(message.asString(), session);
 			requestMessages.add(requestMessage);
 
 			ListenerMessage responseMessage = getResponseMessage(defaultTimeout);
@@ -111,26 +112,28 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 		this.defaultTimeout = defaultTimeout;
 	}
 
-	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage) throws ListenerException {
-		processRawMessage(origin, rawMessage, null, false);
+	public void setRequestTimeOut(int timeout) {
+		setTimeout(timeout);
+	}
+
+	public void setResponseTimeOut(int timeout) {
+		setTimeout(timeout);
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, Map<String, Object> threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
+	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
 		processRawMessage(origin, rawMessage, threadContext, -1, duplicatesAlreadyChecked);
 	}
 
 	@Override
-	public void processRawMessage(IListener<M> origin, M rawMessage, Map<String, Object> threadContext, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
-		String correlationId = origin.getIdFromRawMessage(rawMessage, threadContext);
+	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession threadContext, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
 		Message message = origin.extractMessage(rawMessage, threadContext);
-		processRequest(origin, correlationId, rawMessage, message, threadContext);
+		processRequest(origin, rawMessage, message, threadContext);
 	}
 
 
 	@Override
-	public Message formatException(String origin, String arg1, Message arg2, Throwable arg3) {
+	public Message formatException(String extraInfo, String arg1, Message arg2, Throwable arg3) {
 		NotImplementedException e = new NotImplementedException();
 		log.error("formatException not implemented", e);
 		return null;

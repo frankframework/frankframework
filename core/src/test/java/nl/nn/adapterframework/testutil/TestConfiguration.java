@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.testutil;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.sql.ResultSet;
 
@@ -11,6 +11,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.lifecycle.MessageEventListener;
+import nl.nn.adapterframework.testutil.mock.MockIbisManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -73,10 +74,10 @@ public class TestConfiguration extends Configuration {
 
 	/**
 	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked 
-	 * ResultSet using a {@link FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
+	 * ResultSet using a {@link nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
 	 */
 	public void mockQuery(String query, ResultSet resultSet) {
-		qsPostProcessor.addMock(query, resultSet);
+		qsPostProcessor.addFixedQuerySenderMock(query, resultSet);
 	}
 
 	public void autowireByType(Object bean) {
@@ -95,14 +96,14 @@ public class TestConfiguration extends Configuration {
 	 * Create and register the IbisManger with the Configuration
 	 */
 	@Override
-	public IbisManager getIbisManager() {
+	public synchronized IbisManager getIbisManager() {
 		if(super.getIbisManager() == null) {
 			IbisManager ibisManager = new MockIbisManager();
 			ibisManager.addConfiguration(this);
 			getBeanFactory().registerSingleton("ibisManager", ibisManager);
 			setIbisManager(ibisManager);
 
-			assertTrue("bean IbisManager not found", containsBean("ibisManager"));
+			assertTrue(containsBean("ibisManager"), "bean IbisManager not found");
 		}
 		return super.getIbisManager();
 	}

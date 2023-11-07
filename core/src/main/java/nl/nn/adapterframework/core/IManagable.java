@@ -17,6 +17,7 @@ package nl.nn.adapterframework.core;
 
 import nl.nn.adapterframework.jmx.JmxOperation;
 import nl.nn.adapterframework.util.RunState;
+
 /**
  * Models starting and stopping of objects that support such behaviour.
  *
@@ -24,25 +25,25 @@ import nl.nn.adapterframework.util.RunState;
  * @since 4.0
  */
 public interface IManagable extends IConfigurable {
-    /**
-     * returns the runstate of the object.
-     * Possible values are defined by {@link RunState}.
-     */
-    RunState getRunState();
+	/**
+	 * returns the runstate of the object. Possible values are defined by
+	 * {@link RunState}.
+	 */
+	RunState getRunState();
 
-    /**
-     * Instruct the object that implements <code>IManagable</code> to start working.
-     * The method does not wait for completion of the command; at return of this method,
-     * the object might be still in the STARTING-runstate
-     */
-    @JmxOperation(description = "Start the Adapter")
-    void startRunning();
+	/**
+	 * Instruct the object that implements <code>IManagable</code> to start working.
+	 * The method does not wait for completion of the command; at return of this
+	 * method, the object might be still in the STARTING-runstate
+	 */
+	@JmxOperation(description = "Start the Adapter")
+	void startRunning();
 
-    /**
-     * Instruct the object that implements <code>IManagable</code> to stop working.
-     * The method does not wait for completion of the command; at return of this method,
-     * the object might be still in the STOPPING-runstate
-     */
-    @JmxOperation(description = "Stop the Adapter")
-    void stopRunning();
+	/**
+	 * Instruct the object that implements <code>IManagable</code> to stop working.
+	 * The method does not wait for completion of the command; at return of this
+	 * method, the object might be still in the STOPPING-runstate
+	 */
+	@JmxOperation(description = "Stop the Adapter")
+	void stopRunning();
 }

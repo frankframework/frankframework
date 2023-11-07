@@ -1,18 +1,30 @@
 package nl.nn.adapterframework.jdbc;
 
+import static nl.nn.adapterframework.testutil.MatchUtils.assertJsonEquals;
+import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.assumeTrue;
 
-import org.hamcrest.CoreMatchers;
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.functional.ThrowingConsumer;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.document.DocumentFormat;
+import nl.nn.adapterframework.testutil.ParameterBuilder;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 
@@ -26,16 +38,28 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 	}
 
 	private void assertSenderException(SenderException ex) {
-		if(getDataSourceName().equals("H2")) {
-			assertThat(ex.getMessage(), CoreMatchers.containsString("Syntax error in SQL statement"));
-		} else if(getDataSourceName().equals("PostgreSQL")) {
-			assertThat(ex.getMessage(), CoreMatchers.containsString("No value specified for parameter 1"));
-		} else if(getDataSourceName().equals("Oracle")) {
-			assertThat(ex.getMessage(), CoreMatchers.containsString("errorCode [17041]"));
-		} else if(getDataSourceName().equals("MS_SQL")) {
-			assertThat(ex.getMessage(), CoreMatchers.containsString("The value is not set for the parameter number 1"));
-		} else {
-			assertThat(ex.getMessage(), CoreMatchers.containsString("parameter"));
+		switch (getDataSourceName()) {
+			case "H2":
+				assertThat(ex.getMessage(), containsString("Syntax error in SQL statement"));
+				break;
+			case "DB2":
+				assertThat(ex.getMessage(), containsString("SQLSTATE=42601"));
+				break;
+			case "PostgreSQL":
+				assertThat(ex.getMessage(), containsString("No value specified for parameter 1"));
+				break;
+			case "Oracle":
+				assertThat(ex.getMessage(), containsString("errorCode [17041]"));
+				break;
+			case "MS_SQL":
+				assertThat(ex.getMessage(), containsString("The value is not set for the parameter number 1"));
+				break;
+			case "MariaDB":
+				assertThat(ex.getMessage(), containsString(" escape sequence "));
+				break;
+			default:
+				assertThat(ex.getMessage(), containsString("parameter"));
+				break;
 		}
 	}
 
@@ -64,6 +88,7 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		sender.addParameter(new Parameter("param", "value"));
 
 		sender.configure();
+		assertTrue(sender.getUseNamedParams());
 		sender.open();
 
 		Message result = sendMessage("dummy");
@@ -184,12 +209,141 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		sender.addParameter(new Parameter("param1", "value"));
 
 		sender.setColumnsReturned("tKEY,tVARCHAR");
-
 		sender.configure();
 		sender.open();
 
 		Message result=sendMessage("dummy");
 		assertColumnsReturned(result);
 	}
+
+	@Test
+	public void testAddMonth() throws Exception {
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tDATE) VALUES ('1', ADD_MONTHS(SYSTIMESTAMP,?))");
+		sender.addParameter(ParameterBuilder.create("param", "7").withType(ParameterType.INTEGER));
+		sender.setSqlDialect("Oracle");
+		sender.configure();
+		sender.open();
+
+		Message result=sendMessage("dummy");
+		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
+	}
+
+
+	public void testOutputFormat(DocumentFormat outputFormat, boolean includeFieldDefinition, ThrowingConsumer<String, Exception> asserter) throws Exception {
+		assumeTrue(getDataSourceName().equals("H2"));
+		sender.setQuery("SELECT COUNT(*) as CNT, 'string' as STR, 5 as NUM, null as NULLCOL FROM "+JdbcTestBase.TEST_TABLE+" WHERE 1=0");
+		sender.setOutputFormat(outputFormat);
+		sender.setIncludeFieldDefinition(includeFieldDefinition);
+		sender.setQueryType("select");
+		sender.configure();
+		sender.open();
+
+		Message result = sendMessage("dummy");
+		asserter.accept(result.asString());
+	}
+
+	@Test
+	public void testOutputFormatDefault() throws Exception {
+		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default.xml");
+		testOutputFormat(null, true, r-> assertXmlEquals(expected, r));
+	}
+
+	@Test
+	public void testOutputFormatXml() throws Exception {
+		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml.xml");
+		testOutputFormat(DocumentFormat.XML, true, r-> assertXmlEquals(expected, r));
+	}
+
+	@Test
+	public void testOutputFormatJson() throws Exception {
+		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json.json");
+		testOutputFormat(DocumentFormat.JSON, true, r-> assertJsonEquals(expected, r));
+	}
+
+	@Test
+	public void testOutputFormatDefaultNoFieldDefinitions() throws Exception {
+		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default-nofielddef.xml");
+		testOutputFormat(null, false, r-> assertXmlEquals(expected, r));
+	}
+
+	@Test
+	public void testOutputFormatXmlNoFieldDefinitions() throws Exception {
+		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml-nofielddef.xml");
+		testOutputFormat(DocumentFormat.XML, false, r-> assertXmlEquals(expected, r));
+	}
+
+	@Test
+	public void testOutputFormatJsonNoFieldDefinitions() throws Exception {
+		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json-nofielddef.json");
+		testOutputFormat(DocumentFormat.JSON, false, r-> assertJsonEquals(expected, r));
+	}
+
+	public String getLongString(int sizeInK) {
+		StringBuilder result=new StringBuilder();
+		for(int i=0; i<16; i++) {
+			result.append("0123456789ABCDEF");
+		}
+		String block=result.toString();
+		for(int i=1; i<sizeInK; i++) {
+			result.append(block);
+		}
+		return result.toString();
+	}
+
+	@Test
+	public void testParameterTypeDefault() throws Exception {
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tCLOB) VALUES ('1', ?)");
+		sender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob"));
+		sender.setSqlDialect("Oracle");
+		sender.configure();
+		sender.open();
+
+		String block = getLongString(10);
+
+		session.put("clob", new Message(new StringReader(block)));
+
+		Message result=sendMessage("dummy");
+		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
+	}
+
+	@Test
+	public void testParameterTypeLobStream() throws Exception {
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
+		sender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(ParameterType.CHARACTER));
+		sender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(ParameterType.BINARY));
+		sender.setSqlDialect("Oracle");
+		sender.configure();
+		sender.open();
+
+		String block = getLongString(10000);
+
+		session.put("clob", new Message(new StringReader(block)));
+		session.put("blob", new Message(new ByteArrayInputStream(block.getBytes())));
+		session.put("varchar", new Message(new ByteArrayInputStream(block.getBytes())));
+
+		Message result=sendMessage("dummy");
+		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
+	}
+
+	@Test
+	public void testParameterTypeLobArray() throws Exception {
+		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
+		sender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(ParameterType.CHARACTER));
+		sender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(ParameterType.BINARY));
+		sender.setSqlDialect("Oracle");
+		sender.configure();
+		sender.open();
+
+		String block = getLongString(1000);
+
+		session.put("clob", new Message(block));
+		session.put("blob", new Message(block.getBytes()));
+		session.put("varchar", new Message(block.getBytes()));
+
+		Message result=sendMessage("dummy");
+		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
+	}
+
+
 
 }

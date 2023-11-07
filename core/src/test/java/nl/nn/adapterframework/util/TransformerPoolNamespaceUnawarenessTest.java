@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -39,7 +39,7 @@ public class TransformerPoolNamespaceUnawarenessTest {
 	public String xslt1_unaware_result = XSLT1_UNAWARE_RESULT_7_5678;
 
 	public TransformerPool getTransformerPool(String xpath, String stylesheet, int xsltVersion) throws ConfigurationException {
-		return TransformerPool.configureTransformer0("transformerpool test", null, null, xpath, stylesheet, OutputType.TEXT, false, null, xsltVersion);
+		return TransformerPool.configureTransformer0(null, null, xpath, stylesheet, OutputType.TEXT, false, null, xsltVersion);
 	}
 
 	public void testNamespaceInsensitiveTransformation(String xpath, String stylesheet, int xsltVersion, boolean namespaceAware, String expectedResult) throws Exception {
@@ -50,7 +50,7 @@ public class TransformerPoolNamespaceUnawarenessTest {
 
 		XmlWriter writer = new XmlWriter();
 		writer.setTextMode(true);
-		ContentHandler handler = tp.getTransformerFilter(null, writer, !namespaceAware);
+		ContentHandler handler = tp.getTransformerFilter(null, writer, !namespaceAware, false);
 		XmlUtils.parseXml(NAMESPACED_INPUT_MESSAGE, handler);
 
 		assertEquals(expectedResult, writer.toString());

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,35 +19,39 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.TimeZone;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * This class is a 'comparison helper' for file assertions
- * 
+ *
  * @author Niels Meijer
  */
-public class TestAssertions extends org.junit.Assert {
+public class TestAssertions extends org.junit.jupiter.api.Assertions {
+	private static final Logger LOG = LogUtil.getLogger(TestAssertions.class);
 
-	static public void assertEqualsIgnoreWhitespaces(String expected, String actual) throws IOException {
-		assertEqualsIgnoreWhitespaces(null, trimMultilineString(expected), trimMultilineString(actual));
+	public static void assertEqualsIgnoreWhitespaces(String expected, String actual) throws IOException {
+		assertEqualsIgnoreWhitespaces(trimMultilineString(expected), trimMultilineString(actual), null);
 	}
 
-	static public void assertEqualsIgnoreWhitespaces(String message, String expected, String actual) throws IOException {
-		assertEquals(message, trimMultilineString(expected), trimMultilineString(actual));
+	public static void assertEqualsIgnoreWhitespaces(String expected, String actual, String message) throws IOException {
+		assertEquals(trimMultilineString(expected), trimMultilineString(actual), message);
 	}
 
-	static public void assertEqualsIgnoreRNTSpace(String a, String b) {
+	public static void assertEqualsIgnoreRNTSpace(String a, String b) {
 		assertEquals(removeRegexCharactersFromInput(a, "[\\n\\t\\r ]"), removeRegexCharactersFromInput(b, "[\\n\\t\\r ]"));
 	}
 
@@ -62,7 +66,7 @@ public class TestAssertions extends org.junit.Assert {
 		if(str == null || str.isEmpty())
 			return "";
 
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 
 		BufferedReader bufReader = new BufferedReader(new StringReader(str));
 		String line = null;
@@ -74,32 +78,34 @@ public class TestAssertions extends org.junit.Assert {
 		return buffer.toString();
 	}
 
-	static public void assertEqualsIgnoreCRLF(String expected, String actual) {
-		assertEqualsIgnoreCRLF(null, expected, actual);
+	public static void assertEqualsIgnoreCRLF(String expected, String actual) {
+		assertEqualsIgnoreCRLF(expected, actual, null);
 	}
 
-	static public void assertEqualsIgnoreCRLF(String message, String expected, String actual) {
-		assertEquals(message, expected.trim().replace("\r",""), actual.trim().replace("\r",""));
+	public static void assertEqualsIgnoreCRLF(String expected, String actual, String message) {
+		assertNotNull(expected);
+		assertNotNull(actual);
+		assertEquals(expected.trim().replace("\r",""), actual.trim().replace("\r",""), message);
 	}
 
-	static public void assertXpathValueEquals(String expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
+	public static void assertXpathValueEquals(String expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
 		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
-		
+
 		String result=XmlUtils.transformXml(transformer, source);
-		//System.out.println("xpath ["+xpathExpr+"] result ["+result+"]");
-		assertEquals(xpathExpr,expected,result);
+		LOG.debug("xpath [{}] result [{}]", xpathExpr, result);
+		assertEquals(expected,result,xpathExpr);
 	}
 
-	static public void assertXpathValueEquals(int expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
+	public static void assertXpathValueEquals(int expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
 		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
-		
+
 		String result=XmlUtils.transformXml(transformer, source);
-		System.out.println("xpath ["+xpathExpr+"] result ["+result+"]");
-		assertEquals(xpathExpr,expected+"",result);
+		LOG.debug("xpath [{}] result [{}]", xpathExpr, result);
+		assertEquals(expected+"",result,xpathExpr);
 	}
-	
+
 	@Test
 	public void testAssertEqualsIgnoreWhitespacesNull() throws IOException {
 		assertEqualsIgnoreWhitespaces(null, null);
@@ -128,15 +134,11 @@ public class TestAssertions extends org.junit.Assert {
 
 	@Test
 	public void testAssertEqualsIgnoreWhitespacesFile() throws IOException {
-		URL svg = ClassUtils.getResourceURL("test1.xml");
-		String str1 = Misc.streamToString(svg.openStream());
+		URL svg = ClassLoaderUtils.getResourceURL("test1.xml");
+		String str1 = StreamUtil.streamToString(svg.openStream());
 		String str2 = str1.replace("\r", "");
 
 		assertEqualsIgnoreWhitespaces(str1, str2);
-	}
-
-	public static boolean isTestRunningOnTravis() {
-		return "TRAVIS".equalsIgnoreCase(System.getProperty("CI_SERVICE")) || "TRAVIS".equalsIgnoreCase(System.getenv("CI_SERVICE"));
 	}
 
 	public static boolean isTestRunningOnGitHub() {
@@ -144,10 +146,14 @@ public class TestAssertions extends org.junit.Assert {
 	}
 
 	public static boolean isTestRunningOnCI() {
-		return StringUtils.isNotEmpty(System.getProperty("CI")) || StringUtils.isNotEmpty(System.getenv("CI")) || isTestRunningOnGitHub() || isTestRunningOnTravis();
+		return StringUtils.isNotEmpty(System.getProperty("CI")) || StringUtils.isNotEmpty(System.getenv("CI")) || isTestRunningOnGitHub();
 	}
 
 	public static boolean isTestRunningOnWindows() {
 		return System.getProperty("os.name").startsWith("Windows");
+	}
+
+	public static boolean isTimeZone(TimeZone timeZone) {
+		return TimeZone.getDefault().hasSameRules(timeZone);
 	}
 }

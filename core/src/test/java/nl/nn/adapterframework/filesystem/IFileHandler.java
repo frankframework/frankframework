@@ -9,13 +9,13 @@ public interface IFileHandler {
 	public void configure() throws ConfigurationException;
 
 	public Object handle(Message input, PipeLineSession session, ParameterList paramList) throws Exception;
-	
+
 	public void setActions(String actions);
 	public void setCharset(String charset);
 	public void setOutputType(String outputType);
 
 	public void setFileSource(String fileSource);
-	
+
 	/**
 	 * @param directory in which the file resides or has to be created
 	 */
@@ -32,7 +32,7 @@ public interface IFileHandler {
 	public void setFileName(String filename);
 
 	public void setWriteSuffix(String suffix);
-	
+
 	/**
 	 * @param filenameSessionKey the session key that contains the name of the file to be created
 	 */

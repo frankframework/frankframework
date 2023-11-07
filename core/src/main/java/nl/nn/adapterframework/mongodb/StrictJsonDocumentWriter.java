@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.mongodb;
 
+import java.math.BigDecimal;
 import java.util.Stack;
 
 import org.bson.BSONException;
@@ -29,20 +30,20 @@ import nl.nn.adapterframework.stream.document.IObjectBuilder;
 
 /**
  * StrictJsonWriter to write to FF DocumentBuilder, to generate JSON or XML.
- * 
+ *
  * Based on org.bson.json.StrictCharacterStreamJsonWriter.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class StrictJsonDocumentWriter implements StrictJsonWriter {
 
 	private Stack<AutoCloseable> stack = new Stack<>();
- 	private final StrictCharacterStreamJsonWriterSettings settings;
+	private final StrictCharacterStreamJsonWriterSettings settings;
 	private StrictJsonContext context = new StrictJsonContext(null, JsonContextType.TOP_LEVEL, "");
 	private State state = State.INITIAL;
 	private int curLength; // not yet handled
 	private boolean isTruncated; // not yet handled
-	
+
 	private enum JsonContextType {
 		TOP_LEVEL, DOCUMENT, ARRAY,
 	}
@@ -174,20 +175,19 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 			setNextState();
 		}
 	}
-	
-	
+
 
 
 	@Override
 	public void writeBoolean(final boolean value) {
 		checkState(State.VALUE);
-		
+
 		try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
 			nodeBuilder.setValue(value ? Boolean.TRUE: Boolean.FALSE );
 		} catch (SAXException e) {
 			throwBSONException(e);
 		}
-		
+
 		setNextState();
 	}
 	@Override
@@ -204,7 +204,7 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 		checkState(State.VALUE);
 		try {
 			try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
-				nodeBuilder.setValue(Long.parseLong(value));
+				nodeBuilder.setValue(new BigDecimal(value));
 			}
 		} catch (SAXException e) {
 			throwBSONException(e);
@@ -267,7 +267,7 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 		checkState(State.VALUE);
 		try {
 			try (INodeBuilder nodeBuilder = context.contextType == JsonContextType.ARRAY ? ((IArrayBuilder)stack.peek()).addElement() : (INodeBuilder)stack.pop()) {
-				nodeBuilder.setValue(null);
+				nodeBuilder.setValue((String)null);
 			}
 		} catch (SAXException e) {
 			throwBSONException(e);
@@ -281,7 +281,6 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 	}
 
 
-	
 	/**
 	 * Return true if the output has been truncated due to exceeding the length
 	 * specified in {@link StrictCharacterStreamJsonWriterSettings#getMaxLength()}.

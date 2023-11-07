@@ -18,13 +18,13 @@ package nl.nn.adapterframework.encryption;
 import nl.nn.adapterframework.core.IScopeProvider;
 
 public interface HasTruststore extends IScopeProvider {
-	
+
 	String getTruststore();
 	KeystoreType getTruststoreType();
 	String getTruststoreAuthAlias();
 	String getTruststorePassword();
 	String getTrustManagerAlgorithm();
-	
+
 	boolean isVerifyHostname();
 	boolean isAllowSelfSignedCertificates();
 	boolean isIgnoreCertificateExpiredException();

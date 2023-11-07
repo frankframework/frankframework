@@ -20,6 +20,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.AppConstants;
@@ -27,8 +29,6 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  * Make XML of all statistics info.
@@ -59,15 +59,15 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 
 	@Override
 	public void configure() throws ConfigurationException {
-	}	
+	}
 
 	@Override
 	public XmlBuilder start(Date now, Date mainMark, Date detailMark) {
 		log.debug("StatisticsKeeperXmlBuilder.start()");
-		
+
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
-		
+
 		XmlBuilder root = new XmlBuilder(ROOT_ELEMENT);
 		root.addAttribute("version",STATISTICS_XML_VERSION);
 		root.addAttribute("heapSize", Long.toString (totalMem-freeMem) );
@@ -91,7 +91,7 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		}
 		return root;
 	}
-	
+
 	@Override
 	public void end(XmlBuilder data) {
 		log.debug("StatisticsKeeperXmlBuilder.end()");
@@ -119,7 +119,7 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 	public void handleScalar(XmlBuilder data, String scalarName, Date value){
 		if (value!=null) {
 			handleScalar(data,scalarName,dtf.format(value));
-		} 
+		}
 	}
 
 
@@ -141,7 +141,7 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 	}
 
 	private void addPeriodIndicator(XmlBuilder xml, Date now, String[][] periods, long allowedLength, String suffix, Date mark) {
-		long intervalStart=mark.getTime(); 
+		long intervalStart=mark.getTime();
 		long intervalEnd=now.getTime();
 		if ((intervalEnd-intervalStart)<=allowedLength) {
 			Date midterm=new Date((intervalEnd>>1)+(intervalStart>>1));
@@ -154,7 +154,7 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 
 	private void addNumber(XmlBuilder xml, String name, String value) {
 		XmlBuilder item = new XmlBuilder("item");
-	
+
 		item.addAttribute("name", name);
 		item.addAttribute("value", value);
 		xml.addSubElement(item);

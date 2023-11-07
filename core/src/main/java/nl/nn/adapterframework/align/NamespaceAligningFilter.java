@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,10 @@
 */
 package nl.nn.adapterframework.align;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -41,11 +42,11 @@ public class NamespaceAligningFilter extends XMLFilterImpl {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
 	private XmlAligner aligner;
-	private Stack<ElementInfo> stack = new Stack<>();
+	private Deque<ElementInfo> stack = new ArrayDeque<>();
 
 	private Map<String,String> namespacePrefixes=new HashMap<>();
 
-	private class ElementInfo {
+	private static class ElementInfo {
 		String namespacePrefix;
 		String namespaceUri;
 		boolean namespacePrefixCreated;
