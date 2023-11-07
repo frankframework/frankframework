@@ -121,7 +121,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		String packageName = clazz.getPackageName();
 		if(packageName.contains(".http")) {
 			return 0;
-		} else if(packageName.contains("jms") || packageName.contains(".esb")) {
+		} else if(packageName.contains(".jms") || packageName.contains(".esb")) {
 			return 1;
 		} else if(packageName.contains(".jdbc")) {
 			return 2;
