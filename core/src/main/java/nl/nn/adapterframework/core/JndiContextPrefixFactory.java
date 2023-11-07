@@ -31,7 +31,6 @@ public class JndiContextPrefixFactory implements InitializingBean {
 		JBOSS("java:/"),
 		TIBCOAMX("java:"), // no slash?
 		TOMCAT(JndiLocatorSupport.CONTAINER_PREFIX),
-		WAS(""), //for now only use direct, aka global, JNDI lookups. See https://www.ibm.com/support/pages/javaxnamingnamingexception-name-compenvjdbc-not-found-context-java
 		DEFAULT(JndiLocatorSupport.CONTAINER_PREFIX);
 
 		private String prefix = "";

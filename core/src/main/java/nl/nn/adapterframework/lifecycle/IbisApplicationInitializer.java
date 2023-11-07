@@ -38,10 +38,10 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Starts a Spring Context before all Servlets are initialized. This allows the use of dynamically creating 
+ * Starts a Spring Context before all Servlets are initialized. This allows the use of dynamically creating
  * Spring wired Servlets (using the {@link ServletManager}). These beans can be retrieved later on from within
  * the IbisContext, and are unaffected by the {@link IbisContext#fullReload()}.
- * 
+ *
  * @author Niels Meijer
  *
  */
@@ -132,11 +132,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 	private void determineApplicationServerType(ServletContext servletContext) {
 		String serverInfo = servletContext.getServerInfo();
 		String autoDeterminedApplicationServerType = null;
-		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere Liberty")) {
-			autoDeterminedApplicationServerType = "WLP";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere")) {
-			autoDeterminedApplicationServerType = "WAS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
+		if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
 			autoDeterminedApplicationServerType = "TOMCAT";
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "JBoss")) {
 			autoDeterminedApplicationServerType = "JBOSS";

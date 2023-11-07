@@ -1,59 +1,28 @@
 {
-    "securityRoles": {
-        "SR_Admin": {
-            "role-name": "IbisAdmin",
-            "allowed": false,
-            "specialSubjects": [
-                "AllAuthenticatedUsers"
-            ],
-            "description": "Administrator, can start and stop adapters and set schedules",
-            "groups": [
-            ]
+    "securityRoles": [
+        {
+            "name": "IbisObserver",
+            "allowed": false
         },
-        "SR_DataAdmin": {
-            "role-name": "IbisDataAdmin",
-            "allowed": false,
-            "specialSubjects": [
-                "AllAuthenticatedUsers"
-            ],
-            "description": "DataAdministrator, can see messages in errorStorage and delete or re-submit them",
-            "groups": [
-            ]
+        {
+            "name": "IbisAdmin",
+            "allowed": false
         },
-        "SR_Tester": {
-            "role-name": "IbisTester",
-            "allowed": false,
-            "specialSubjects": [
-                "AllAuthenticatedUsers"
-            ],
-            "description": "can send test messages",
-            "groups": [
-            ]
+        {
+            "name": "IbisDataAdmin",
+            "allowed": false
         },
-        "SR_Observer": {
-            "role-name": "IbisObserver",
-            "allowed": false,
-            "specialSubjects": [
-                "AllAuthenticatedUsers"
-            ],
-            "description": "user who can look in configurations, statistics and log files",
-            "groups": [
-            ]
+        {
+            "name": "IbisTester",
+            "allowed": true
         },
-        "SR_IbisWebService": {
-            "role-name": "IbisWebService",
-            "allowed": false,
-            "specialSubjects": [
-                "AllAuthenticatedUsers"
-            ],
-            "description": "IbisWebService, can call the web services (SOAP) provided by the Ibis",
-            "groups": [
-            ]
+        {
+            "name": "IbisWebService",
+            "allowed": false
         }
-    },
+    ],
     "datasources": [
         {
-            "connectionPoolProperties": "mockPoolProperties type [JDBC] jndi [jdbc/testconfiguration]",
             "datasourceName": "jdbc/testconfiguration",
             "info": "user [null] url [null] product [null] product version [null] driver [null] driver version [null] datasource [Mock for DataSource, HASHCODE]"
         }
@@ -78,21 +47,15 @@
     "jmsRealms": [
         {
             "name": "dummyJmsRealm1",
-            "connectionPoolProperties": "mockPoolProperties type [JDBC] jndi [dummyDatasourceName]",
             "datasourceName": "dummyDatasourceName",
             "info": "user [null] url [null] product [null] product version [null] driver [null] driver version [null] datasource [Mock for DataSource, HASHCODE]"
         },
         {
             "queueConnectionFactoryName": "dummyQCF",
             "name": "dummyJmsRealm2",
-            "connectionPoolProperties": "mockPoolProperties type [JMS] jndi [dummyQCF]",
             "info": null
         }
     ],
-    "serverProps": {
-        "maximumTransactionTimeout": 28801,
-        "totalTransactionLifetimeTimeout": 28800
-    },
     "sapSystems": [
     ],
     "xmlComponents": {
