@@ -498,7 +498,7 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void putByteArrayAsBlob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, byte content[], boolean compressBlob) throws IOException, DbmsException, SQLException {
+	public static void putByteArrayAsBlob(IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, byte[] content, boolean compressBlob) throws IOException, DbmsException, SQLException {
 		if (content != null) {
 			Object blobHandle = dbmsSupport.getBlobHandle(rs, columnIndex);
 			try (OutputStream out = dbmsSupport.getBlobOutputStream(rs, columnIndex, blobHandle)) {

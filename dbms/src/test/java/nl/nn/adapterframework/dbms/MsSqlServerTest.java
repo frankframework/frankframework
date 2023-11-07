@@ -7,11 +7,11 @@ import org.junit.Test;
 
 public class MsSqlServerTest {
 
+	private String selectQuery = "select * from ibisstore";
+
 	public MsSqlServerDbmsSupport createDbmsSupport() {
 		return new MsSqlServerDbmsSupport();
 	}
-
-	private String selectQuery = "select * from ibisstore";
 
 	@Test
 	public void testPrepareQueryTextForWorkQueueReading() throws JdbcException {

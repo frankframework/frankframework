@@ -56,8 +56,8 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 			try (Connection connection = datasource.getConnection()) {
 				return getDbmsSupport(connection);
 			}
-		} catch (SQLException e) {
-			log.warn("SQL exception while trying to get a connection from datasource [" + datasource + "]", e);
+		} catch (SQLException | DbmsException e) {
+			log.warn(String.format("%s exception while trying to get a connection from datasource [" + datasource + "]", e instanceof SQLException ? "SQL" : "DBMS" ), e);
 			return new GenericDbmsSupport();
 		}
 	}
@@ -68,12 +68,12 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 			String name = md.getDatabaseProductName();
 			String version = md.getDatabaseProductVersion();
 			return getDbmsSupport(name, version);
-		} catch (SQLException e1) {
-			throw new RuntimeException("cannot obtain product from connection metadata", e1);
+		} catch (SQLException | DbmsException e) {
+			throw new RuntimeException("cannot obtain product from connection metadata", e);
 		}
 	}
 
-	private IDbmsSupport getDbmsSupport(String product, String productVersion) {
+	private IDbmsSupport getDbmsSupport(String product, String productVersion) throws DbmsException {
 		if (StringUtils.isEmpty(product)) {
 			log.warn("no product found from connection metadata");
 		} else {
@@ -93,7 +93,7 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 								log.debug("creating dbmsSupportClass [" + dbmsSupportClass + "] for product [" + product + "] productVersion [" + productVersion + "]");
 							return (IDbmsSupport) ClassUtils.newInstance(dbmsSupportClass);
 						} catch (Exception e) {
-							throw new RuntimeException("Cannot create dbmsSupportClass [" + dbmsSupportClass + "] for product [" + product + "] productVersion [" + productVersion + "]", e);
+							throw new DbmsException("Cannot create dbmsSupportClass [" + dbmsSupportClass + "] for product [" + product + "] productVersion [" + productVersion + "]", e);
 						}
 					}
 				}

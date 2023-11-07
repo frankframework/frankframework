@@ -465,8 +465,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		}
 	}
 
-	protected boolean doHasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns, String indexTableName, String indexColumnTableName,
-										  String tableOwnerColumnName, String tableNameColumnName, String indexNameColumnName, String columnNameColumnName, String columPositionColumnName) {
+	protected boolean doHasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns, String indexTableName, String indexColumnTableName, String tableOwnerColumnName, String tableNameColumnName, String indexNameColumnName, String columnNameColumnName, String columPositionColumnName) {
 		StringBuilder query = new StringBuilder("select count(*) from " + indexTableName + " ai");
 		for (int i = 1; i <= columns.size(); i++) {
 			query.append(", " + indexColumnTableName + " aic" + i);
