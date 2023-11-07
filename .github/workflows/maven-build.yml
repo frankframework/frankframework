@@ -112,7 +112,7 @@ jobs:
       continue-on-error: true #ignore failure when unable to upload the artifacts
 
     - name: Upload coverage to Codacy when Java == 11
-      if: ${{ matrix.java == '11' && env.USE_PROPRIETARY == 'true' }}
+      if: ${{ matrix.java == '17' && env.USE_PROPRIETARY == 'true' }}
       uses: codacy/codacy-coverage-reporter-action@v1
       continue-on-error: true #ignore failure when unable to upload the artifacts
       with:
