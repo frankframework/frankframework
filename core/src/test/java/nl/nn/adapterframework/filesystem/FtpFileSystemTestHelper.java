@@ -67,7 +67,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	private void open() throws FileSystemException, ConfigurationException {
-		FtpSession ftpSession = new FtpSession();
+		FtpSession ftpSession = new FtpSession() {};
 		ftpSession.setUsername(username);
 		ftpSession.setPassword(password);
 		ftpSession.setHost(host);
