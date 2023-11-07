@@ -17,22 +17,21 @@ package nl.nn.adapterframework.errormessageformatters;
 
 import java.io.IOException;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.INamedObject;
-import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.Misc;
-import nl.nn.adapterframework.util.TransformerPool;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.core.INamedObject;
+import nl.nn.adapterframework.core.Resource;
+import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
+import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.TransformerPool;
 
 /**
  * ErrorMessageFormatter that returns a fixed message with replacements.
- * 
+ *
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
@@ -52,7 +51,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		}
 		if (StringUtils.isNotEmpty(getFilename())) {
 			try {
-				messageToReturn = new Message(messageToReturn.asString() + Misc.resourceToString(ClassUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR));
+				messageToReturn = new Message(messageToReturn.asString() + StreamUtil.resourceToString(ClassLoaderUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR));
 			} catch (Throwable e) {
 				log.error("got exception loading error message file [{}]", getFilename(), e);
 			}
@@ -62,7 +61,8 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {
 			try {
-				messageToReturn = new Message(Misc.replace(messageToReturn.asString(), getReplaceFrom(), getReplaceTo()));
+				String messageAsString = messageToReturn.asString();
+				messageToReturn = new Message(messageAsString.replace(getReplaceFrom(), getReplaceTo()));
 			} catch (IOException e) {
 				log.error("got error formatting errorMessage", e);
 			}
@@ -82,7 +82,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		return messageToReturn;
 	}
 
-	@IbisDoc({"returned message", ""})
+	/** returned message */
 	public void setReturnString(String string) {
 		returnString = string;
 	}
@@ -93,7 +93,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		setFilename(fileName);
 	}
 
-	@IbisDoc({"name of the file containing the resultmessage", ""})
+	/** name of the file containing the resultmessage */
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}

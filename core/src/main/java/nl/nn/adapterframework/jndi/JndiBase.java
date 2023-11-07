@@ -25,15 +25,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.jms.JmsRealm;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
@@ -41,6 +32,13 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.jms.JmsRealm;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
+import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Provides all JNDI functions and is meant to act as a base class.
@@ -95,7 +93,7 @@ public class JndiBase implements IConfigurable {
 		Properties jndiEnv = new Properties();
 
 		if (StringUtils.isNotEmpty(getJndiProperties())) {
-			URL url = ClassUtils.getResourceURL(this, getJndiProperties());
+			URL url = ClassLoaderUtils.getResourceURL(this, getJndiProperties());
 			if (url==null) {
 				throw new NamingException("cannot find jndiProperties from ["+getJndiProperties()+"]");
 			}
@@ -161,12 +159,12 @@ public class JndiBase implements IConfigurable {
 		return context;
 	}
 
-	@IbisDoc({ "maps to the field context.security_authentication", "" })
+	/** maps to the field context.security_authentication */
 	public void setAuthentication(String newAuthentication) {
 		authentication = newAuthentication;
 	}
 
-	@IbisDoc({ "username to connect to context, maps to context.security_credentials", "" })
+	/** username to connect to context, maps to context.security_credentials */
 	public void setCredentials(String newCredentials) {
 		credentials = newCredentials;
 	}
@@ -174,7 +172,7 @@ public class JndiBase implements IConfigurable {
 	/**
 	 * Sets the value of initialContextFactoryName
 	 */
-	@IbisDoc({ "class to use as initial context factory", "" })
+	/** class to use as initial context factory */
 	public void setInitialContextFactoryName(String value) {
 		initialContextFactoryName = value;
 	}
@@ -186,7 +184,7 @@ public class JndiBase implements IConfigurable {
 		providerURL = value;
 	}
 
-	@IbisDoc({ "maps to the field context.security_protocol", "" })
+	/** maps to the field context.security_protocol */
 	public void setSecurityProtocol(String securityProtocol) {
 		this.securityProtocol = securityProtocol;
 	}
@@ -195,7 +193,7 @@ public class JndiBase implements IConfigurable {
 	 * Setter for <code>Context.URL_PKG_PREFIXES</code><br/>
 	 * Creation date: (03-04-2003 8:50:36)
 	 */
-	@IbisDoc({"maps to the field context.url_pkg_prefixes", ""})
+	/** maps to the field context.url_pkg_prefixes */
 	public void setUrlPkgPrefixes(String newUrlPkgPrefixes) {
 		urlPkgPrefixes = newUrlPkgPrefixes;
 	}
@@ -228,12 +226,12 @@ public class JndiBase implements IConfigurable {
 	}
 
 
-	@IbisDoc({"username to connect to context, maps to context.security_principal", ""})
+	/** username to connect to context, maps to context.security_principal */
 	public void setPrincipal(String string) {
 		principal = string;
 	}
 
-	@IbisDoc({"authentication alias, may be used to override principal and credential-settings", ""})
+	/** authentication alias, may be used to override principal and credential-settings */
 	public void setJndiAuthAlias(String string) {
 		jndiAuthAlias = string;
 	}
@@ -246,7 +244,7 @@ public class JndiBase implements IConfigurable {
 		this.jndiProperties = jndiProperties;
 	}
 
-	@IbisDoc({"Name of the sender or the listener", ""})
+	/** Name of the sender or the listener */
 	@Override
 	public void setName(String name) {
 		this.name = name;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package nl.nn.adapterframework.jdbc;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -24,6 +25,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
+import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -37,7 +39,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * Messages are expected to contain sql-text.
  *
  * @ff.parameters All parameters present are applied to the query to be executed.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
@@ -80,7 +82,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	@Override
 	public Connection openBlock(PipeLineSession session) throws SenderException, TimeoutException {
 		try {
-			return super.getConnectionForSendMessage(null);
+			return getConnectionForSendMessage();
 		} catch (JdbcException e) {
 			throw new SenderException("cannot get Connection",e);
 		}
@@ -91,17 +93,12 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 		try {
 			super.closeConnectionForSendMessage(connection, session);
 		} catch (JdbcException | TimeoutException e) {
-			throw new SenderException("cannot close Connection",e);
+			throw new SenderException("cannot close Connection", e);
 		}
 	}
 
 	@Override
-	protected Connection getConnectionForSendMessage(Connection blockHandle) throws JdbcException, TimeoutException {
-		return blockHandle;
-	}
-
-	@Override
-	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeoutException {
+	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) {
 		// postpone close to closeBlock()
 	}
 
@@ -123,4 +120,30 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 		}
 	}
 
+	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+		try {
+			QueryExecutionContext queryExecutionContext = prepareStatementSet(connection, message);
+			try {
+				return executeStatementSet(queryExecutionContext, message, session, next);
+			} finally {
+				closeStatementSet(queryExecutionContext);
+			}
+		} catch (SenderException|TimeoutException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SenderException(e);
+		}
+	}
+
+	protected QueryExecutionContext prepareStatementSet(Connection connection, Message message) throws SenderException {
+		try {
+			QueryExecutionContext result = getQueryExecutionContext(connection, message);
+			if (getBatchSize()>0) {
+				result.getStatement().clearBatch();
+			}
+			return result;
+		} catch (JdbcException | ParameterException | SQLException e) {
+			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
+		}
+	}
 }

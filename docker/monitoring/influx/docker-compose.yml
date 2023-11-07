@@ -1,9 +1,0 @@
-version: "3"
-services:
-  influx:
-    image: iaf-test-monitoring-influx
-    restart: unless-stopped
-    volumes:
-      - ./data/influxdb:/var/lib/influxdb2
-    ports:
-      - 8086:8086

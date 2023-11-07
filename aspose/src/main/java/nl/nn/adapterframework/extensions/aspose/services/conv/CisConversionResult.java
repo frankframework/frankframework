@@ -20,8 +20,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import org.springframework.http.MediaType;
 
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
 import nl.nn.adapterframework.util.XmlBuilder;
 /**
@@ -30,14 +34,16 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class CisConversionResult {
 
-	private static final String PASSWORD_MESSAGE = "Omzetten naar PDF mislukt. Reden: bestand is beveiligd met een wachtwoord!";
+	private static final String PASSWORD_MESSAGE = "Failed to convert to PDF. Reason: The file has been protected with a password.";
 
-	private ConversionOption conversionOption;
-	private MediaType mediaType;
-	private String documentName;
-	private String failureReason;
-	private int numberOfPages;
-	private String resultFilePath;
+	private @Getter @Setter ConversionOption conversionOption;
+	private @Getter @Setter MediaType mediaType;
+	private @Getter @Setter String documentName;
+	private @Getter @Setter String failureReason;
+	private @Getter @Setter int numberOfPages;
+	private @Getter @Setter String resultFilePath;
+	private @Getter @Setter String resultSessionKey;
+
 	/**
 	 * List with documents which where part of the source document (e.g. attachments
 	 * in mails). Will be an empty list if there are no attachments.
@@ -47,12 +53,12 @@ public class CisConversionResult {
 	 * can contain pdf files.
 	 * </p>
 	 */
-	private List<CisConversionResult> attachments = new ArrayList<>();
+	private final List<CisConversionResult> attachments = new ArrayList<>();
 
 	/**
 	 * Converted document when succeeded (otherwise <code>null</code>) -
 	 */
-	private File pdfResultFile;
+	@Setter @Getter private File pdfResultFile;
 
 	public static CisConversionResult createCisConversionResult(ConversionOption conversionOption, MediaType mediaType,
 			String documentName, File pdfResultFile, String failureReason, List<CisConversionResult> argAttachments) {
@@ -104,46 +110,7 @@ public class CisConversionResult {
 		return createFailureResult(conversionOption, mediaTypeReceived, filename, msg.toString(), null);
 	}
 
-	public ConversionOption getConversionOption() {
-		return conversionOption;
-	}
-
-	public void setConversionOption(ConversionOption conversionOption) {
-		this.conversionOption = conversionOption;
-	}
-
-	public MediaType getMediaType() {
-		return mediaType;
-	}
-
-	public void setMediaType(MediaType mediaType) {
-		this.mediaType = mediaType;
-	}
-
-	public String getDocumentName() {
-		return documentName;
-	}
-
-	public void setDocumentName(String documentName) {
-		this.documentName = documentName;
-	}
-
-	public File getPdfResultFile() {
-		return pdfResultFile;
-	}
-
-	public void setPdfResultFile(File pdfResultFile) {
-		this.pdfResultFile = pdfResultFile;
-	}
-
-	public String getFailureReason() {
-		return failureReason;
-	}
-
-	public void setFailureReason(String failureReason) {
-		this.failureReason = failureReason;
-	}
-
+	@Nonnull
 	public List<CisConversionResult> getAttachments() {
 		return Collections.unmodifiableList(attachments);
 	}
@@ -152,24 +119,8 @@ public class CisConversionResult {
 		this.attachments.add(attachment);
 	}
 
-	public boolean isConversionSuccessfull() {
+	public boolean isConversionSuccessful() {
 		return failureReason == null;
-	}
-
-	public int getNumberOfPages() {
-		return numberOfPages;
-	}
-
-	public void setNumberOfPages(int numberOfPages) {
-		this.numberOfPages = numberOfPages;
-	}
-
-	public String getResultFilePath() {
-		return resultFilePath;
-	}
-
-	public void setResultFilePath(String resultFilePath) {
-		this.resultFilePath = resultFilePath;
 	}
 
 	@Override
@@ -179,6 +130,7 @@ public class CisConversionResult {
 		builder.append(String.format("mediaType=[%s]", getMediaType()));
 		builder.append(String.format("documentName=[%s]", getDocumentName()));
 		builder.append(String.format("pdfResultFile=[%s]", getPdfResultFile() == null ? "null" : getPdfResultFile().getName()));
+		builder.append(String.format("sessionKey=[%s]", getResultSessionKey()));
 		builder.append(String.format("failureReason=[%s]", getFailureReason()));
 		builder.append(String.format("attachments=[%s]", getAttachments()));
 
@@ -199,13 +151,12 @@ public class CisConversionResult {
 			main.addAttribute("failureReason", this.getFailureReason());
 			main.addAttribute("numberOfPages", this.getNumberOfPages());
 			main.addAttribute("convertedDocument", this.getResultFilePath());
+			main.addAttribute("sessionKey", this.getResultSessionKey());
 		}
 		List<CisConversionResult> attachmentList = cisConversionResult.getAttachments();
-		if (attachmentList != null && !attachmentList.isEmpty()) {
+		if (!attachmentList.isEmpty()) {
 			XmlBuilder attachmentsAsXml = new XmlBuilder("attachments");
-			for (int i = 0; i < attachmentList.size(); i++) {
-				CisConversionResult attachment = attachmentList.get(i);
-
+			for (CisConversionResult attachment : attachmentList) {
 				XmlBuilder attachmentAsXml = new XmlBuilder("attachment");
 				attachmentAsXml.addAttribute("conversionOption", attachment.getConversionOption().getValue() + "");
 				attachmentAsXml.addAttribute("mediaType", attachment.getMediaType().toString());
@@ -213,6 +164,7 @@ public class CisConversionResult {
 				attachmentAsXml.addAttribute("failureReason", attachment.getFailureReason());
 				attachmentAsXml.addAttribute("numberOfPages", attachment.getNumberOfPages());
 				attachmentAsXml.addAttribute("convertedDocument", attachment.getResultFilePath());
+				attachmentAsXml.addAttribute("sessionKey", attachment.getResultSessionKey());
 				attachmentsAsXml.addSubElement(attachmentAsXml);
 
 				buildXmlFromResult(attachmentAsXml, attachment, false);

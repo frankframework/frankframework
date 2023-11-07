@@ -1,13 +1,16 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -17,21 +20,14 @@ import nl.nn.adapterframework.stream.Message;
 
 public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFileSystem>{
 
-	public TemporaryFolder folder;
-
+	@TempDir
+	public Path folder;
 
 	@Override
 	protected LocalFileSystem createFileSystem() {
 		LocalFileSystem result=new LocalFileSystem();
-		result.setRoot(folder.getRoot().getAbsolutePath());
+		result.setRoot(folder.toAbsolutePath().toString());
 		return result;
-	}
-
-	@Override
-	public void setUp() throws Exception {
-		folder = new TemporaryFolder();
-		folder.create();
-		super.setUp();
 	}
 
 	@Override
@@ -43,7 +39,7 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 	public void fileSystemActorMoveActionTestNoRoot(String destFolder, boolean createDestFolder, boolean setCreateFolderAttribute) throws Exception {
 
 		LocalFileSystem localFileSystemNoRoot=new LocalFileSystem();
-		String srcFolder=folder.getRoot().getAbsolutePath();
+		String srcFolder=folder.toAbsolutePath().toString();
 
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
@@ -66,18 +62,18 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 		actor.open();
 
 		Message message = new Message(srcFolder+"/"+filename);
-		ParameterValueList pvl = params.getValues(message, null);
-		Object result = actor.doAction(message, pvl, null);
+		ParameterValueList pvl = params.getValues(message, session);
+		Object result = actor.doAction(message, pvl, session);
 
 		// test
 		// result should be name of the moved file
-		assertNotNull("name of moved file should not be null", result);
+		assertNotNull(result, "name of moved file should not be null");
 
 		// TODO: result should point to new location of file
 		// TODO: contents of result should be contents of original file
 
-		assertTrue("file should exist in destination folder ["+destFolder+"]", _fileExists(destFolder, filename));
-		assertFalse("file should not exist anymore in original folder ["+srcFolder+"]", _fileExists(null, filename));
+		assertTrue(_fileExists(destFolder, filename), "file should exist in destination folder ["+destFolder+"]");
+		assertFalse(_fileExists(null, filename), "file should not exist anymore in original folder ["+srcFolder+"]");
 	}
 
 
@@ -91,9 +87,10 @@ public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFil
 	}
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExistNoRoot() throws Exception {
-		exception.expectMessage("unable to process ["+FileSystemAction.MOVE+"] action for File ["+folder.getRoot().getAbsolutePath()+"/sendermovefile1.txt]: destination folder ["+folder.getRoot().getAbsolutePath()+"/folder] does not exist");
-		fileSystemActorMoveActionTestNoRoot("folder",false,false);
+		Exception e = assertThrows(Exception.class, () -> fileSystemActorMoveActionTestNoRoot("folder",false,false));
+		assertThat(e.getMessage(), containsString("unable to process ["+FileSystemAction.MOVE+"] action for File ["+folder.toAbsolutePath()+"/sendermovefile1.txt]: destination folder ["+folder.toAbsolutePath()+"/folder] does not exist"));
 	}
+
 	@Test
 	public void fileSystemActorMoveActionTestRootToFolderExistsAndAllowToCreateNoRoot() throws Exception {
 		fileSystemActorMoveActionTestNoRoot("folder",true,true);

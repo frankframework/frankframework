@@ -1,16 +1,30 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
+import java.io.StringReader;
 
-import javax.xml.transform.TransformerException;
+import javax.xml.validation.ValidatorHandler;
 
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.w3c.dom.Document;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.validation.AbstractXmlValidator;
+import nl.nn.adapterframework.validation.DummySchemasProviderImpl;
+import nl.nn.adapterframework.validation.JavaxXmlValidator;
+import nl.nn.adapterframework.validation.ValidationContext;
+import nl.nn.adapterframework.validation.XercesXmlValidator;
+import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 
 public class EntityResolvingTest {
 
@@ -28,20 +42,46 @@ public class EntityResolvingTest {
 	public String SCHEMA_LOCATION_ENTITIES         ="/Entities/schema.xsd";
 
 
-	public String parseAndRenderString(String xsd, String xmlIn) throws Exception {
-		Document doc=XmlUtils.buildDomDocument(xmlIn);
-		String actual=XmlUtils.nodeToString(doc);
-		return actual;
+	@NullSource
+	@ValueSource(classes = {XercesXmlValidator.class, JavaxXmlValidator.class})
+	@ParameterizedTest
+	public void testSmallEntityExpansion(Class<? extends AbstractXmlValidator> impl) throws Exception {
+		// a small number of internal entities are allowed
+		testEntityExpansion(impl, SCHEMA_LOCATION_ENTITIES, INPUT_FILE_SMALL_ENTITIES, true, INPUT_FILE_SMALL_ENTITIES_RESULT);
 	}
 
-	public void testEntityExpansion(String xsd, String inputFile, boolean expectValid, String expectedResult) throws TransformerException, IOException, DomBuilderException {
+	@NullSource
+	@ValueSource(classes = {XercesXmlValidator.class, JavaxXmlValidator.class})
+	@ParameterizedTest
+	public void testTooLargeEntityExpansion(Class<? extends AbstractXmlValidator> impl) throws Exception {
+		// if the number of internal entities exceeds 100.000, and error must be raised
+		testEntityExpansion(impl, SCHEMA_LOCATION_ENTITIES, INPUT_FILE_TOO_LARGE_ENTITIES, false, TOO_MANY_ENTITIES_ERROR_MESSAGE_PATTERN);
+	}
+
+	@NullSource
+	@ValueSource(classes = {XercesXmlValidator.class, JavaxXmlValidator.class})
+	@ParameterizedTest
+	public void testFileExternalEntityExpansion(Class<? extends AbstractXmlValidator> impl) throws Exception {
+		// external entities are not allowed by default
+		testEntityExpansion(impl, SCHEMA_LOCATION_ENTITIES, INPUT_FILE_FILE_EXTERNAL_ENTITIES, true, INPUT_FILE_FILE_EXTERNAL_ENTITIES_RESULT);
+	}
+
+	@NullSource
+	@ValueSource(classes = {XercesXmlValidator.class, JavaxXmlValidator.class})
+	@ParameterizedTest
+	public void testHttpExternalEntityExpansion(Class<? extends AbstractXmlValidator> impl) throws Exception {
+		// external entities are not allowed by default
+		testEntityExpansion(impl, SCHEMA_LOCATION_ENTITIES, INPUT_FILE_HTTP_EXTERNAL_ENTITIES, true, INPUT_FILE_HTTP_EXTERNAL_ENTITIES_RESULT);
+	}
+
+	public void testEntityExpansion(Class<? extends AbstractXmlValidator> impl, String xsd, String inputFile, boolean expectValid, String expectedResult) throws Exception {
 		String xmlIn=TestFileUtils.getTestFile(inputFile);
 		try {
-			String actual=parseAndRenderString(xsd, xmlIn);
+			String actual = parseAndRenderString(impl, xsd, xmlIn);
 			if (!expectValid) {
 				fail("expected to fail with message: "+expectedResult);
 			}
-			String expected=TestFileUtils.getTestFile(expectedResult);
+			String expected = TestFileUtils.getTestFile(expectedResult);
 			assertEquals(expected, actual);
 		} catch (Exception e) {
 			LogUtil.getLogger(this).error("error message: "+e.getMessage());
@@ -54,27 +94,95 @@ public class EntityResolvingTest {
 		}
 	}
 
-	@Test
-	public void testSmallEntityExpansion() throws DomBuilderException, TransformerException, IOException {
-		// a small number of internal entities are allowed
-		testEntityExpansion(SCHEMA_LOCATION_ENTITIES, INPUT_FILE_SMALL_ENTITIES, true, INPUT_FILE_SMALL_ENTITIES_RESULT);
+	public String parseAndRenderString(Class<? extends AbstractXmlValidator> impl, String xsd, String xmlIn) throws Exception {
+		if(impl == null) {
+			return parseAndRenderNative(xsd, xmlIn);
+		}
+		return parseAndRenderWithValidator(impl, xsd, xmlIn);
 	}
 
-	@Test
-	public void testTooLargeEntityExpansion() throws DomBuilderException, TransformerException, IOException {
-		// if the number of internal entities exceeds 100.000, and error must be raised
-		testEntityExpansion(SCHEMA_LOCATION_ENTITIES, INPUT_FILE_TOO_LARGE_ENTITIES, false, TOO_MANY_ENTITIES_ERROR_MESSAGE_PATTERN);
+
+	public String parseAndRenderNative(String xsd, String xmlIn) throws Exception {
+		Document doc=XmlUtils.buildDomDocument(xmlIn);
+		String actual=XmlUtils.nodeToString(doc);
+		return actual;
 	}
 
-	@Test
-	public void testFileExternalEntityExpansion() throws DomBuilderException, TransformerException, IOException {
-		// external entities are not allowed by default
-		testEntityExpansion(SCHEMA_LOCATION_ENTITIES, INPUT_FILE_FILE_EXTERNAL_ENTITIES, true, INPUT_FILE_FILE_EXTERNAL_ENTITIES_RESULT);
+	public String parseAndRenderWithValidator(Class<? extends AbstractXmlValidator> impl, String xsd, String xmlIn) throws Exception {
+//      AbstractXmlValidator instance = implementation.newInstance();
+//      instance.setSchemasProvider(new SchemasProviderImpl(SCHEMA_NAMESPACE, xsd));
+//      instance.setIgnoreUnknownNamespaces(false);
+//      instance.setAddNamespaceToSchema(false);
+//      instance.configure("Setup");
+//      String result=instance.validate(xmlIn, new PipeLineSessionBase(), "test");
+//      System.out.println("Validation Result:"+result);
+//      return instance.get
+//		return result;
+
+		AbstractXmlValidator instance = impl.newInstance();
+		instance.setSchemasProvider(new DummySchemasProviderImpl(SCHEMA_NAMESPACE, xsd));
+		instance.setThrowException(true);
+		instance.setFullSchemaChecking(true);
+		instance.configure(null);
+		instance.start();
+
+		PipeLineSession session = new PipeLineSession();
+		ValidationContext context = instance.createValidationContext(session, null, null);
+		ValidatorHandler validatorHandler = instance.getValidatorHandler(session, context);
+		StringReader sr = new StringReader(xmlIn);
+		InputSource is = new InputSource(sr);
+		final StringBuilder sb = new StringBuilder();
+
+		ContentHandler ch = new DefaultHandler() {
+
+			boolean elementOpen;
+
+			@Override
+			public void characters(char[] ch, int start, int length) throws SAXException {
+				if (elementOpen) {
+					sb.append(">");
+					elementOpen=false;
+				}
+				sb.append(ch, start, length);
+			}
+
+			@Override
+			public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
+				sb.append("<"+localName);
+				sb.append(" xmlns=\"").append(uri).append("\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"");
+				for (int i=0;i<atts.getLength();i++) {
+					sb.append(' ').append(atts.getLocalName(i)).append("=\"").append(atts.getValue(i)).append('"');
+				}
+				elementOpen=true;
+			}
+
+			@Override
+			public void endElement(String uri, String localName, String qName) throws SAXException {
+				if (elementOpen) {
+					sb.append("/>");
+					elementOpen=false;
+				} else {
+					sb.append("</"+localName+">");
+				}
+			}
+
+
+			@Override
+			public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
+				//ignore
+			}
+
+		};
+
+		validatorHandler.setContentHandler(ch);
+
+		instance.validate(is, validatorHandler, session, context);
+
+		XmlValidatorErrorHandler errorHandler = context.getErrorHandler();
+		if (errorHandler.isErrorOccurred()) {
+			throw new SAXException(errorHandler.getReasons());
+		}
+		return sb.toString();
 	}
 
-	@Test
-	public void testHttpExternalEntityExpansion() throws DomBuilderException, TransformerException, IOException {
-		// external entities are not allowed by default
-		testEntityExpansion(SCHEMA_LOCATION_ENTITIES, INPUT_FILE_HTTP_EXTERNAL_ENTITIES, true, INPUT_FILE_HTTP_EXTERNAL_ENTITIES_RESULT);
-	}
 }

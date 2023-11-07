@@ -15,12 +15,16 @@
 */
 package nl.nn.adapterframework.senders;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.ISender;
@@ -30,7 +34,6 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
-import nl.nn.adapterframework.util.FilenameUtils;
 
 public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBase {
 
@@ -38,16 +41,18 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 
 	public abstract S createSender() throws Exception;
 
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
 		session = new PipeLineSession();
-		session.put(PipeLineSession.messageIdKey, testMessageId);
-		session.put(PipeLineSession.correlationIdKey, testCorrelationId);
+		session.put(PipeLineSession.MESSAGE_ID_KEY, testMessageId);
+		session.put(PipeLineSession.CORRELATION_ID_KEY, testCorrelationId);
 		sender = createSender();
 		getConfiguration().autowireByType(sender);
 	}
 
+	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
 		if (sender != null) {
@@ -78,11 +83,16 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 				base = superClass.getSimpleName();
 			}
 		}
-		assertTrue("unable to determine ["+sender+"] name", StringUtils.isNotEmpty(base));
+		assertTrue(StringUtils.isNotEmpty(base), "unable to determine ["+sender+"] name");
 		String relativeUrl = FilenameUtils.normalize("/Senders/" + base + "/" + resource, true);
 
 		URL url = PipeTestBase.class.getResource(relativeUrl);
-		assertNotNull("unable to find resource ["+resource+"] in path ["+relativeUrl+"]", url);
+		assertNotNull(url, "unable to find resource ["+resource+"] in path ["+relativeUrl+"]");
 		return new UrlMessage(url);
+	}
+
+	@Test
+	public void testIfToStringWorks() {
+		assertNotNull(sender.toString()); //And no NPE
 	}
 }

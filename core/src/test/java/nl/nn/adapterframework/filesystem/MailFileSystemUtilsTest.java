@@ -1,13 +1,13 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.UnsupportedEncodingException;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class MailFileSystemUtilsTest {
 

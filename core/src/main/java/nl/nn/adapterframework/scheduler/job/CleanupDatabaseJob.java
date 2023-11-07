@@ -19,9 +19,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.Configuration;
@@ -31,7 +33,7 @@ import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -48,12 +50,12 @@ import nl.nn.adapterframework.util.SpringUtils;
 public class CleanupDatabaseJob extends JobDef {
 	private @Getter int queryTimeout;
 
-	protected class MessageLogObject {
-		private String datasourceName;
-		private String tableName;
-		private String expiryDateField;
-		private String keyField;
-		private String typeField;
+	private static class MessageLogObject {
+		private final String datasourceName;
+		private final String tableName;
+		private final String expiryDateField;
+		private final String keyField;
+		private final String typeField;
 
 		public MessageLogObject(String datasourceName, String tableName, String expiryDateField, String keyField, String typeField) {
 			this.datasourceName = datasourceName;
@@ -68,13 +70,9 @@ public class CleanupDatabaseJob extends JobDef {
 			if(!(o instanceof MessageLogObject)) return false;
 
 			MessageLogObject mlo = (MessageLogObject) o;
-			if (mlo.getDatasourceName().equals(datasourceName) &&
+			return mlo.getDatasourceName().equals(datasourceName) &&
 				mlo.getTableName().equals(tableName) &&
-				mlo.expiryDateField.equals(expiryDateField)) {
-				return true;
-			} else {
-				return false;
-			}
+				mlo.expiryDateField.equals(expiryDateField);
 		}
 
 		public String getDatasourceName() {
@@ -119,9 +117,10 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.configure();
 				qs.open();
 
-				Message result = qs.sendMessageOrThrow(Message.nullMessage(), null);
-				String resultString = result.asString();
-				int numberOfRowsAffected = Integer.parseInt(resultString);
+				int numberOfRowsAffected;
+				try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
+					numberOfRowsAffected = Integer.parseInt(Objects.requireNonNull(result.asString()));
+				}
 				if(numberOfRowsAffected > 0) {
 					getMessageKeeper().add("deleted ["+numberOfRowsAffected+"] row(s) from [IBISLOCK] table. It implies that there have been process(es) that finished unexpectedly or failed to complete. Please investigate the log files!", MessageKeeperLevel.WARN);
 				}
@@ -167,11 +166,16 @@ public class CleanupDatabaseJob extends JobDef {
 
 				boolean deletedAllRecords = false;
 				while(!deletedAllRecords) {
-					Message result = qs.sendMessageOrThrow(Message.nullMessage(), null);
-					String resultString = result.asString();
-					log.info("deleted [" + resultString + "] rows");
-					int numberOfRowsAffected = Integer.valueOf(resultString);
-					if(maxRows<=0 || numberOfRowsAffected<maxRows) {
+					int numberOfRowsAffected;
+					try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), null)) {
+						String resultString = result.asString();
+						log.info("deleted [{}] rows", resultString);
+						if (!NumberUtils.isDigits(resultString)) {
+							throw new SenderException("Sent message result did not result in a number, found: " + resultString);
+						}
+						numberOfRowsAffected = Integer.parseInt(resultString);
+					}
+					if (maxRows <= 0 || numberOfRowsAffected < maxRows) {
 						deletedAllRecords = true;
 					} else {
 						log.info("executing the query again for job [cleanupDatabase]!");
@@ -180,7 +184,7 @@ public class CleanupDatabaseJob extends JobDef {
 			} catch (Exception e) {
 				String msg = "error while deleting expired records from table ["+mlo.getTableName()+"] (as part of scheduled job execution): " + e.getMessage();
 				getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
-				log.error(getLogPrefix()+msg);
+				log.error("{} {}", getLogPrefix(), msg);
 			} finally {
 				if(qs != null) {
 					qs.close();
@@ -197,6 +201,9 @@ public class CleanupDatabaseJob extends JobDef {
 		Set<String> datasourceNames = new HashSet<>();
 		IbisManager ibisManager = getIbisManager();
 		for (Configuration configuration : ibisManager.getConfigurations()) {
+			if (!configuration.isActive()) {
+				continue;
+			}
 			for (IJob jobdef : configuration.getScheduledJobs()) {
 				if (jobdef.getLocker()!=null) {
 					String datasourceName = jobdef.getLocker().getDatasourceName();
@@ -246,6 +253,9 @@ public class CleanupDatabaseJob extends JobDef {
 		List<MessageLogObject> messageLogs = new ArrayList<>();
 		IbisManager ibisManager = getIbisManager();
 		for (Configuration configuration : ibisManager.getConfigurations()) {
+			if (!configuration.isActive()) {
+				continue;
+			}
 			for(IAdapter adapter : configuration.getRegisteredAdapters()) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
 					collectMessageLogs(messageLogs, receiver.getMessageLog());
@@ -263,7 +273,10 @@ public class CleanupDatabaseJob extends JobDef {
 		return messageLogs;
 	}
 
-	@IbisDoc({"The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout", "0"})
+	/**
+	 * The number of seconds the database driver will wait for a statement to execute. If the limit is exceeded, a TimeoutException is thrown. 0 means no timeout
+	 * @ff.default 0
+	 */
 	public void setQueryTimeout(int i) {
 		queryTimeout = i;
 	}

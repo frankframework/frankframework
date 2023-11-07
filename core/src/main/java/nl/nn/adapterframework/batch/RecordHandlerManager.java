@@ -24,15 +24,15 @@ import org.apache.logging.log4j.Logger;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Basic implementation of RecordHandlerManager, that allows only for a single flow.
  * The manager decides which handlers to be used for a specific record.
- * 
- * 
+ *
+ *
  * @author  John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class RecordHandlerManager implements IRecordHandlerManager {
 	protected Logger log = LogUtil.getLogger(this);
@@ -59,7 +59,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 		return flowMap.get(flowName);
 	}
 
-	@IbisDoc({"Element that contains the handlers for a specific record type, to be assigned to the manager"})
+	/** Element that contains the handlers for a specific record type, to be assigned to the manager */
 	@Override
 	public void addHandler(RecordHandlingFlow handlers) {
 		flowMap.put(handlers.getRecordKey(), handlers);
@@ -99,13 +99,16 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	}
 
 	@Override
-	@IbisDoc({"Name of the manager", ""})
+	/** Name of the manager */
 	public void setName(String string) {
 		name = string;
 	}
 
 	@Override
-	@IbisDoc({"This manager is the initial manager, i.e. to be used for the first record", "false"})
+	/**
+	 * This manager is the initial manager, i.e. to be used for the first record
+	 * @ff.default false
+	 */
 	public void setInitial(boolean b) {
 		initial = b;
 	}

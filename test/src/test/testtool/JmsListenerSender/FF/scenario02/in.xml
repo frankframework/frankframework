@@ -1,3 +1,3 @@
-<request action="echo">
+<request action="exception">
 	<value>test</value>
 </request>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -83,15 +83,16 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 		return message.size();
 	}
 
+	// size (getContentLength) and encoding (getContentEncoding) of the InputStream must match the way it is being read / sent!
 	@Override
 	public InputStream getContent() throws IOException {
-		return message.asInputStream();
+		return message.asInputStream(message.getCharset());
 	}
 
 	@Override
 	public void writeTo(OutputStream outStream) throws IOException {
 		int length = Math.toIntExact(getContentLength());
-		try (InputStream inStream = message.asInputStream()) {
+		try (InputStream inStream = getContent()) {
 			final byte[] buffer = new byte[OUTPUT_BUFFER_SIZE];
 			int readLen;
 			if(length < 0) {

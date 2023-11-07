@@ -25,8 +25,8 @@ import nl.nn.adapterframework.doc.Category;
  * the optionally specified http status code. Each Exit should have a unique name. See {@link PipeLineExits Exits}
  * for examples.
  * <br/><br/>
- * When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name READY and
- * state SUCCESS.
+ * When a Pipeline doesn't have an Exits element configured it will be initialized with one Exit having name {@value PipeLine#DEFAULT_SUCCESS_EXIT_NAME} and
+ * state {@value PipeLine.ExitState#SUCCESS_EXIT_STATE}.
  * <br/><br/>
  * The name of an Exit can be referenced by the <code>path</code> attribute of a Forward within a Pipe.
  *
@@ -50,7 +50,7 @@ public class PipeLineExit implements IForwardTarget {
 
 	/**
 	 * The name of the Exit that can be referenced by a {@link PipeForward}'s <code>path</code> attribute. When a Pipeline doesn't have an Exits
-	 * element configured it will be initialized with one Exit having name READY (and state SUCCESS)
+	 * element configured it will be initialized with one Exit having name {@value PipeLine#DEFAULT_SUCCESS_EXIT_NAME} (and state {@link PipeLine.ExitState#SUCCESS SUCCESS})
 	 * @ff.mandatory ignoreInCompatibilityMode
 	 */
 	public void setName(String name) {
@@ -65,7 +65,7 @@ public class PipeLineExit implements IForwardTarget {
 
 	/**
 	 * The state of the Pipeline that is returned to the Receiver for this Exit. When a Pipeline doesn't have an Exits
-	 * element configured it will be initialized with one Exit having state SUCCESS (and name READY)
+	 * element configured it will be initialized with one Exit having state {@link PipeLine.ExitState#SUCCESS SUCCESS} (and name {@value PipeLine#DEFAULT_SUCCESS_EXIT_NAME})
 	 * @ff.mandatory
 	 */
 	public void setState(ExitState value) {
@@ -76,8 +76,8 @@ public class PipeLineExit implements IForwardTarget {
 	 * HTTP statusCode e.g. <code>500</code>
 	 * @ff.default 200
 	 */
-	public void setCode(String code) {
-		this.exitCode = Integer.parseInt(code);
+	public void setCode(int code) {
+		this.exitCode = code;
 	}
 
 	/**

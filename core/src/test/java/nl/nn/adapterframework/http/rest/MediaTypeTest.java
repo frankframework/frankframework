@@ -15,94 +15,104 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 public class MediaTypeTest {
 
 	@Test
 	public void fromValue() {
 		//Test the 3 most commonly used mediaTypes
-		assertEquals("fromValue [XML]", MediaTypes.XML, MediaTypes.fromValue("application/xml"));
-		assertEquals("fromValue [JSON]", MediaTypes.JSON, MediaTypes.fromValue("application/json"));
-		assertEquals("fromValue [TEXT]", MediaTypes.TEXT, MediaTypes.fromValue("text/plain"));
+		assertEquals(MediaTypes.XML, MediaTypes.fromValue("application/xml"), "fromValue [XML]");
+		assertEquals(MediaTypes.JSON, MediaTypes.fromValue("application/json"), "fromValue [JSON]");
+		assertEquals(MediaTypes.TEXT, MediaTypes.fromValue("text/plain"), "fromValue [TEXT]");
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test
 	public void fromValueUnknown() {
-		MediaTypes.fromValue("something/unknown");
+		assertThrows(IllegalArgumentException.class, ()->MediaTypes.fromValue("something/unknown"));
 	}
 
 	@Test
-	public void isConsumableXML() {
-		String acceptHeader = "application/xml;q=0.9";
+	public void includesXML() {
+		String acceptHeader = "application/xml";
 
-		assertTrue("can parse [XML]", MediaTypes.XML.isConsumable(acceptHeader));
-
-		assertFalse("can parse [JSON]", MediaTypes.JSON.isConsumable(acceptHeader));
+		assertTrue(MediaTypes.XML.includes(acceptHeader), "can parse [XML]");
+		assertFalse(MediaTypes.JSON.includes(acceptHeader), "should not be able to parse [JSON]");
 	}
 
 	@Test
-	public void isConsumableJSON() {
-		String acceptHeader = "application/json;q=0.8";
+	public void includesJSON() {
+		String acceptHeader = "application/json";
 
-		assertFalse("can parse [XML]", MediaTypes.XML.isConsumable(acceptHeader));
-
-		assertTrue("can parse [JSON]", MediaTypes.JSON.isConsumable(acceptHeader));
+		assertFalse(MediaTypes.XML.includes(acceptHeader), "should not be able to parse [XML]");
+		assertTrue(MediaTypes.JSON.includes(acceptHeader), "can parse [JSON]");
 	}
 
 	@Test
-	public void isConsumableANY() {
+	public void includesANY() {
 		String acceptHeader = "application/octet-stream";
 
-		assertTrue("can parse anything", MediaTypes.ANY.isConsumable(acceptHeader));
+		assertTrue(MediaTypes.ANY.includes(acceptHeader), "can parse anything");
 	}
 
-	@Test
-	public void isConsumableMULTIPARTS() {
+	@ParameterizedTest
+	@CsvSource({"application/*+xml", "application/xml;q=0.9", "*/*;q=0.8"})
+	public void testWeightedXMLHeaders(String mimeType) {
+		assertTrue(MediaTypes.XML.accepts(mimeType), "XML should accept weighted header ["+mimeType+"]");
+		assertFalse(MediaTypes.XML.includes(mimeType), "Should not allow weighted header");
+	}
+
+	@ParameterizedTest
+	@NullAndEmptySource
+	public void isConsumableEmptyHeader(String mimeType) {
+		// Act / Assert
+		assertTrue(MediaTypes.ANY.includes(mimeType), "ANY accepts NULL or EMPTY value");
+		assertFalse(MediaTypes.XML.includes(mimeType), "XML does not accept NULL or EMPTY value");
+		assertFalse(MediaTypes.JSON.includes(mimeType), "JSON does not accept NULL or EMPTY value");
+	}
+
+	@ParameterizedTest
+	@CsvSource({"multipart/form-data", "multipart/related", "multipart/mixed"})
+	public void isConsumableMULTIPARTS(String header) {
 		//There are different multipart contentTypes, see: https://msdn.microsoft.com/en-us/library/ms527355(v=exchg.10).aspx
 		//Test at least the 3 most commonly used multiparts
-		List<String> acceptHeaders = new ArrayList<String>();
-		acceptHeaders.add("multipart/form-data");
-		acceptHeaders.add("multipart/related");
-		acceptHeaders.add("multipart/mixed");
+		String acceptHeader = header + "; type=text; boundary=--my-top-notch-boundary-";
 
-		for(String header : acceptHeaders) {
-			String acceptHeader = header + "; type=text; q=0.7; boundary=--my-top-notch-boundary-";
-
-			assertTrue("can parse ["+header+"]", MediaTypes.MULTIPART.isConsumable(acceptHeader));
-		}
+		assertTrue(MediaTypes.MULTIPART.includes(acceptHeader), "can parse ["+header+"]");
 	}
 
 	@Test
 	public void defaultJsonCharsetUtf8() {
-		assertEquals("json should not have utf-8 charset", "UTF-8", MediaTypes.JSON.getDefaultCharset().name());
+		assertEquals("UTF-8", MediaTypes.JSON.getDefaultCharset().name(), "json should not have utf-8 charset");
 	}
 
 	@Test
 	public void noCharsetOnOctetstreams() {
-		assertNull("octet-stream should not have a charset", MediaTypes.OCTET.getDefaultCharset());
-		assertNull("pdf should not have a charset", MediaTypes.PDF.getDefaultCharset());
+		assertNull(MediaTypes.OCTET.getDefaultCharset(), "octet-stream should not have a charset");
+		assertNull(MediaTypes.PDF.getDefaultCharset(), "pdf should not have a charset");
 	}
 
 	@Test
 	public void toMimetype() {
-		assertNull("MediaType should not have a charset by default", MediaTypes.ANY.getDefaultCharset());
-		assertEquals("ContentType should be */* without charset", "*/*", MediaTypes.ANY.getMimeType().toString());
+		assertNull(MediaTypes.ANY.getDefaultCharset(), "MediaType should not have a charset by default");
+		assertEquals("*/*", MediaTypes.ANY.getMimeType().toString(), "ContentType should be */* without charset");
 	}
 
 	@Test
 	public void toMimetypeUtf8Charset() {
-		assertEquals("ContentType should have a charset UTF-8", "UTF-8", MediaTypes.TEXT.getDefaultCharset().name());
-		assertEquals("ContentType should be text/plain with utf-8 charset", "text/plain;charset=UTF-8", MediaTypes.TEXT.getMimeType(null).toString());
+		assertEquals("UTF-8", MediaTypes.TEXT.getDefaultCharset().name(), "ContentType should have a charset UTF-8");
+		assertEquals("text/plain;charset=UTF-8", MediaTypes.TEXT.getMimeType(null).toString(), "ContentType should be text/plain with utf-8 charset");
 	}
 
 	@Test
@@ -115,13 +125,13 @@ public class MediaTypeTest {
 		assertEquals("text/plain;charset=US-ASCII", MediaTypes.TEXT.getMimeType("US-ASCII").toString());
 	}
 
-	@Test(expected=UnsupportedCharsetException.class)
+	@Test
 	public void faultyCharset() {
-		MediaTypes.TEXT.getMimeType("ISO-1234");
+		assertThrows(UnsupportedCharsetException.class, ()->MediaTypes.TEXT.getMimeType("ISO-1234"));
 	}
 
-	@Test(expected=UnsupportedCharsetException.class)
+	@Test
 	public void mimeTypeDoesNotSupportCharset() {
-		MediaTypes.PDF.getMimeType("ISO-8859-1");
+		assertThrows(UnsupportedCharsetException.class, ()->MediaTypes.PDF.getMimeType("ISO-8859-1"));
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,16 +22,35 @@ import javax.jms.XAConnectionFactory;
 import org.springframework.beans.factory.DisposableBean;
 
 import bitronix.tm.resource.jms.PoolingConnectionFactory;
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
+import nl.nn.adapterframework.util.AppConstants;
 
 public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory implements DisposableBean {
+
+	private @Getter @Setter int minPoolSize=0;
+	private @Getter @Setter int maxPoolSize=20;
+	private @Getter @Setter int maxIdleTime=60;
+	private @Getter @Setter int maxLifeTime=0;
+
+	public BtmConnectionFactoryFactory() {
+		AppConstants appConstants = AppConstants.getInstance();
+		minPoolSize = appConstants.getInt("transactionmanager.btm.jms.connection.minPoolSize", minPoolSize);
+		maxPoolSize = appConstants.getInt("transactionmanager.btm.jms.connection.maxPoolSize", maxPoolSize);
+		maxIdleTime = appConstants.getInt("transactionmanager.btm.jms.connection.maxIdleTime", maxIdleTime);
+		maxLifeTime = appConstants.getInt("transactionmanager.btm.jms.connection.maxLifeTime", maxLifeTime);
+	}
 
 	@Override
 	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
 		if (connectionFactory instanceof XAConnectionFactory) {
 			PoolingConnectionFactory result = new PoolingConnectionFactory();
 			result.setUniqueName(connectionFactoryName);
-			result.setMaxPoolSize(100);
+			result.setMinPoolSize(getMinPoolSize());
+			result.setMaxPoolSize(getMaxPoolSize());
+			result.setMaxIdleTime(getMaxIdleTime());
+			result.setMaxLifeTime(getMaxLifeTime());
 			result.setAllowLocalTransactions(true);
 			result.setXaConnectionFactory((XAConnectionFactory)connectionFactory);
 			result.init();
@@ -43,6 +62,6 @@ public class BtmConnectionFactoryFactory extends JndiConnectionFactoryFactory im
 
 	@Override
 	public void destroy() throws Exception {
-		objects.values().stream().filter(ds -> ds instanceof PoolingConnectionFactory).forEach(cf -> ((PoolingConnectionFactory)cf).close());
+		objects.values().stream().filter(PoolingConnectionFactory.class::isInstance).forEach(cf -> ((PoolingConnectionFactory)cf).close());
 	}
 }

@@ -18,44 +18,44 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 import com.aspose.pdf.Document;
 import com.aspose.pdf.FileSpecification;
 import com.aspose.pdf.PageMode;
 import com.aspose.pdf.SaveFormat;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileConstants;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * This class will combine seperate pdf files to a single pdf with attachments.
  * None existing files in a CisConversionResult will be skipped!
- * 
+ *
  */
+@Log4j2
 public class PdfAttachmentUtil {
-
-	private static final Logger LOGGER = LogUtil.getLogger(PdfAttachmentUtil.class);
-
 	private List<CisConversionResult> cisConversionResultList;
 
-	private File rootPdf;
+	private final File rootPdf;
 
 	private Document pdfDocument;
 
 	public PdfAttachmentUtil(CisConversionResult cisConversionResultAttachment, File rootFile) {
 		this.cisConversionResultList = new ArrayList<>();
-		cisConversionResultList.add(cisConversionResultAttachment);
+		this.cisConversionResultList.add(cisConversionResultAttachment);
 		this.rootPdf = rootFile;
 	}
 
@@ -78,18 +78,18 @@ public class PdfAttachmentUtil {
 	 * Note: Nothing is changed to the given cisConversionResult object and its
 	 * underlying files.
 	 * </p>
-	 * 
+	 *
 	 * if there are no attachments null is returned otherwise rootPdf.
 	 */
 	protected void addAttachmentInSinglePdf() throws IOException {
 		try {
 			for (CisConversionResult cisConversionResultAttachment : cisConversionResultList) {
 				if (cisConversionResultAttachment.getPdfResultFile() != null) {
-					try (InputStream attachmentDocumentStream = new BufferedInputStream(new FileInputStream(cisConversionResultAttachment.getPdfResultFile()))) {
+					try (InputStream attachmentDocumentStream = new BufferedInputStream(Files.newInputStream(cisConversionResultAttachment.getPdfResultFile().toPath()))) {
 						addFileToPdf(attachmentDocumentStream, cisConversionResultAttachment.getDocumentName(), ConvertorUtil.PDF_FILETYPE);
 					}
 				} else {
-					LOGGER.debug("Skipping file because it is not available.");
+					log.debug("skipping file because it is not available.");
 				}
 			}
 		} finally {
@@ -102,7 +102,6 @@ public class PdfAttachmentUtil {
 
 			pdfDocument.save();
 			pdfDocument.freeMemory();
-			pdfDocument.dispose();
 			pdfDocument.close();
 
 			pdfDocument = null;
@@ -111,27 +110,29 @@ public class PdfAttachmentUtil {
 
 	private void addFileToPdf(InputStream attachmentDocumentStream, String fileName, String extension) {
 		// Determine the document name to use. (Convert any invalid name to a valid
-		// filename.
+		// filename).
 		String documentName = ConvertorUtil.createTidyFilename(convertToValidFileName(fileName), extension);
 
-		LOGGER.debug("Adding attachment with document name \"" + documentName + "\" (original: \"" + fileName + "\")");
+		log.debug("adding attachment with document name [{}] (original: [{}])", documentName, fileName);
 
 		// Add an attachment to document's attachment collection
 		getPdfDocument(rootPdf.getAbsolutePath()).getEmbeddedFiles().add(new FileSpecification(attachmentDocumentStream, documentName));
 	}
 
-	private String convertToValidFileName(String value) {
-		String result = value;
-		if (StringUtils.isNotEmpty(value)) {
-			result = value.replaceAll(FileConstants.REPLACE_CHARACTERS_IN_NAME_REGEX, FileConstants.REPLACE_CHARACTER);
-			if (!result.equals(value)) {
-				LOGGER.debug("Updated filename to a valid filename from \"" + value + "\" to \"" + result + "\"");
-			}
+	@Nullable
+	private String convertToValidFileName(@Nullable String value) {
+		if (StringUtils.isBlank(value)) {
+			return null;
+		}
+		String result = value.replaceAll(FileConstants.REPLACE_CHARACTERS_IN_NAME_REGEX, FileConstants.REPLACE_CHARACTER);
+		if (!result.equals(value)) {
+			log.debug("updated filename to a valid filename from [{}] to [{}]", value, result);
 		}
 		return result;
 	}
 
-	private Document getPdfDocument(String filePath) {
+	@Nonnull
+	private Document getPdfDocument(@Nonnull String filePath) {
 
 		if (pdfDocument == null) {
 			// Open the base pdf.
@@ -145,7 +146,8 @@ public class PdfAttachmentUtil {
 		return pdfDocument;
 	}
 
-	public static Message combineFiles(Message parent, Message attachment, String fileNameToAttach, String charset) throws IOException {
+	@Nonnull
+	public static Message combineFiles(@Nonnull Message parent, @Nonnull Message attachment, String fileNameToAttach, String charset) throws IOException {
 		Document pdfDoc = new Document(parent.asInputStream(charset));
 		pdfDoc.setPageMode(PageMode.UseAttachments);
 

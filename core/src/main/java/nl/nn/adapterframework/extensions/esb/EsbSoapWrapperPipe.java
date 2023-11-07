@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2017, 2020 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013, 2016, 2017, 2020 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.extensions.esb;
 
-import java.util.StringTokenizer;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -26,13 +24,13 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Extension to SoapWrapperPipe for separate modes.
@@ -429,17 +427,15 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 				// Destination = [MessagingLayer].[BusinessDomain].[ApplicationName].[ApplicationFunction].[Paradigm]
 				boolean p2p = false;
 				boolean esbDestinationWithoutServiceContext = false;
-				StringTokenizer st = new StringTokenizer(destination,".");
 				int count = 0;
-				while (st.hasMoreTokens()) {
+				for (final String str : StringUtil.split(destination, ".")) {
 					count++;
-					String str = st.nextToken();
 					p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 					switch (count) {
 						case 1:
 							if (str.equals("P2P")
 									|| (StringUtils.isNotEmpty(p2pAlias) && str.equalsIgnoreCase(p2pAlias))
-									) {
+							) {
 								p2p = true;
 							} else {
 								esbDestinationWithoutServiceContext = isEsbDestinationWithoutServiceContext(destination);
@@ -496,11 +492,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 							}
 							break;
 						case 9:
-							if (esbDestinationWithoutServiceContext) {
-								// not possible
-							} else {
+							if (!esbDestinationWithoutServiceContext) {
 								p.setName(PARADIGM);
 							}
+
 							break;
 						default:
 					}
@@ -647,10 +642,10 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 			if (split.length == 9 || split.length == 10) {
 				for (int i = 0; i < split.length; i++) {
 					if (i == 1) {
-						if (split[i].length() != 0) {
+						if (!split[i].isEmpty()) {
 							return false;
 						}
-					} else if (split[i].length() == 0) {
+					} else if (split[i].isEmpty()) {
 						return false;
 					}
 				}
@@ -728,37 +723,52 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 		this.mode = mode;
 	}
 
-	@IbisDoc({"<b>Only used when <code>mode=reg</code>!</b> Sets the Common Message Header version. 1 or 2", "1"})
+	/**
+	 * <b>Only used when <code>mode=reg</code>!</b> Sets the Common Message Header version. 1 or 2
+	 * @ff.default 1
+	 */
 	public void setCmhVersion(int i) {
 		cmhVersion = i;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion')", "false"})
+	/**
+	 * (only used when <code>direction=wrap</code>) when <code>true</code>, <code>outputNamespace</code> is automatically set using the parameters (if $messagingLayer='P2P' then 'http://nn.nl/XSD/$businessDomain/$applicationName/$applicationFunction' else is serviceContext is not empty 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceContext/$serviceContextVersion/$operationName/$operationVersion' else 'http://nn.nl/XSD/$businessDomain/$serviceName/$serviceVersion/$operationName/$operationVersion')
+	 * @ff.default false
+	 */
 	public void setAddOutputNamespace(boolean b) {
 		addOutputNamespace = b;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code>", "true"})
+	/**
+	 * (only used when <code>direction=wrap</code>) when <code>true</code>, the physical destination is retrieved from the queue instead of using the parameter <code>destination</code>
+	 * @ff.default true
+	 */
 	public void setRetrievePhysicalDestination(boolean b) {
 		retrievePhysicalDestination = b;
 	}
 
-	@IbisDoc({"If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)", "false"})
+	/**
+	 * If <code>true</code>, the fields CorrelationId, MessageId and Timestamp will have a fixed value (for testing purposes only)
+	 * @ff.default false
+	 */
 	public void setUseFixedValues(boolean b) {
 		useFixedValues = b;
 	}
 
-	@IbisDoc({"(only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed", "false"})
+	/**
+	 * (only used when <code>direction=wrap</code>) when <code>true</code> and the Result tag already exists, the namespace is changed
+	 * @ff.default false
+	 */
 	public void setFixResultNamespace(boolean b) {
 		fixResultNamespace = b;
 	}
 
-	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as P2P", ""})
+	/** When the messagingLayer part of the destination has this value interpret it as P2P */
 	public void setP2pAlias(String p2pAlias) {
 		this.p2pAlias = p2pAlias;
 	}
 
-	@IbisDoc({"When the messagingLayer part of the destination has this value interpret it as ESB", ""})
+	/** When the messagingLayer part of the destination has this value interpret it as ESB */
 	public void setEsbAlias(String esbAlias) {
 		this.esbAlias = esbAlias;
 	}

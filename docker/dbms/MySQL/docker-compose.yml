@@ -1,8 +1,0 @@
-version: "3"
-services:
-  mysqlserver:
-    image: iaf-test-db-mysql
-    command: --default-authentication-plugin=mysql_native_password
-    restart: unless-stopped
-    ports:
-      - 3307:3306

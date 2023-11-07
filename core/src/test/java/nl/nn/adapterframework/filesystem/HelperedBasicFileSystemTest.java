@@ -3,10 +3,13 @@ package nl.nn.adapterframework.filesystem;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
 public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends BasicFileSystemTest<F,FS> {
 
 	protected IFileSystemTestHelper helper;
-	
+
 	protected abstract IFileSystemTestHelper getFileSystemTestHelper();
 
 	/**
@@ -18,7 +21,7 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 	protected boolean _fileExists(String folder, String filename) throws Exception {
 		return helper._fileExists(folder,filename);
 	}
-	
+
 	/**
 	 * Checks if a folder with the specified name exists.
 	 */
@@ -26,7 +29,7 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 	protected boolean _folderExists(String folderName) throws Exception {
 		return helper._folderExists(folderName);
 	}
-	
+
 	/**
 	 * Deletes the file with the specified name
 	 */
@@ -34,7 +37,7 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 	protected void _deleteFile(String folder, String filename) throws Exception {
 		helper._deleteFile(folder, filename);
 	}
-	
+
 	/**
 	 * Creates a file with the specified name and returns output stream 
 	 * to be able to write that file.
@@ -51,7 +54,7 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 	protected InputStream _readFile(String folder, String filename) throws Exception {
 		return helper._readFile(folder, filename);
 	}
-	
+
 	/**
 	 * Creates a folder 
 	 */
@@ -68,13 +71,15 @@ public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem
 		helper._deleteFolder(folderName);
 	}
 
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		helper = getFileSystemTestHelper();
 		helper.setUp();
 		super.setUp();
 	}
-	
+
+	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
 		if (helper!=null) helper.tearDown();

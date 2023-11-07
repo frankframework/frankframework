@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2018, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2015-2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -27,7 +28,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -204,7 +204,7 @@ public class CreateRestViewPipe extends XsltPipe {
 				+ "<freeSpace>" + Misc.getFileSystemFreeSpace()
 				+ "</freeSpace>" + "</fileSystem>";
 		parameters.put("fileSystem", XmlUtils.buildNode(fileSystemXml));
-		String applicationConstantsXml = appConstants.toXml(true);
+		String applicationConstantsXml = toXml(appConstants);
 		parameters.put("applicationConstants", XmlUtils.buildNode(applicationConstantsXml));
 		String processMetricsXml = ProcessMetrics.toXml();
 		parameters.put("processMetrics", XmlUtils.buildNode(processMetricsXml));
@@ -212,6 +212,23 @@ public class CreateRestViewPipe extends XsltPipe {
 		parameters.put(SRCPREFIX, srcPrefix);
 
 		return parameters;
+	}
+
+	private String toXml(AppConstants appConstants) {
+		Enumeration<Object> enumeration = appConstants.keys();
+		XmlBuilder xmlh = new XmlBuilder("applicationConstants");
+		XmlBuilder xml = new XmlBuilder("properties");
+		xmlh.addSubElement(xml);
+
+		while(enumeration.hasMoreElements()) {
+			String propName = (String) enumeration.nextElement();
+
+			XmlBuilder p = new XmlBuilder("property");
+			p.addAttribute("name", propName);
+			p.setValue(appConstants.getProperty(propName));
+			xml.addSubElement(p);
+		}
+		return xmlh.toXML();
 	}
 
 	private String getUptime() {
@@ -243,7 +260,10 @@ public class CreateRestViewPipe extends XsltPipe {
 		return imagelink;
 	}
 
-	@IbisDoc({"content type of the servlet response", "text/html"})
+	/**
+	 * content type of the servlet response
+	 * @ff.default text/html
+	 */
 	public void setContentType(String string) {
 		contentType = string;
 	}

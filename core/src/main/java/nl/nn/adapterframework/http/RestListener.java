@@ -29,7 +29,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.rest.ApiListener;
 import nl.nn.adapterframework.pipes.JsonPipe;
 import nl.nn.adapterframework.pipes.JsonPipe.Direction;
@@ -91,11 +90,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	@Override
 	public void open() throws ListenerException {
 		super.open();
-		try {
-			RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), isValidateEtag());
-		} catch (ConfigurationException e) {
-			throw new ListenerException(e);
-		}
+		RestServiceDispatcher.getInstance().registerServiceClient(this, getUriPattern(), getMethod(), getEtagSessionKey(), getContentTypeSessionKey(), isValidateEtag());
 	}
 
 	@Override
@@ -201,31 +196,35 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 	}
 
 
-	@IbisDoc({"Uri pattern to match, the {uri} part in https://mydomain.com/ibis4something/rest/{uri}, where mydomain.com and ibis4something refer to 'your ibis'. ", ""})
+	/** Uri pattern to match, the {uri} part in https://mydomain.com/ibis4something/rest/{uri}, where mydomain.com and ibis4something refer to 'your ibis'.  */
 	public void setUriPattern(String uriPattern) {
 		this.uriPattern = uriPattern;
 	}
 
-	@IbisDoc({"Method (e.g. GET or POST) to match", ""})
+	/** Method (e.g. GET or POST) to match */
 	public void setMethod(String method) {
 		this.method = method;
 	}
 
-	@IbisDoc({"Key of session variable to store etag", ""})
+	/** Key of session variable to store etag */
 	public void setEtagSessionKey(String etagSessionKey) {
 		this.etagSessionKey = etagSessionKey;
 	}
 
-	@IbisDoc({"Key of Session variable that determines requested content type, overrides {@link #setProduces(String) produces}", ""})
+	/** Key of Session variable that determines requested content type, overrides {@link #setProduces(MediaTypes) produces} */
 	public void setContentTypeSessionKey(String contentTypeSessionKey) {
 		this.contentTypeSessionKey = contentTypeSessionKey;
 	}
 
+	/** Can be either <code>/rest</code> or <code>/rest-public</code> and must correspond with the available RestListenerServlet path(s). */
 	public void setRestPath(String restPath) {
 		this.restPath = restPath;
 	}
 
-	@IbisDoc({"Indicates whether this listener supports a view (and a link should be put in the ibis console)", "if <code>method=get</code> then <code>true</code>, else <code>false</code>"})
+	/**
+	 * Indicates whether this listener supports a view (and a link should be put in the ibis console)
+	 * @ff.default if <code>method=get</code> then <code>true</code>, else <code>false</code>
+	 */
 	public void setView(boolean b) {
 		view = b;
 	}
@@ -237,7 +236,10 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		return view;
 	}
 
-	@IbisDoc({"Comma separated list of authorization roles which are granted for this rest service", "IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService"})
+	/**
+	 * Comma separated list of authorization roles which are granted for this rest service
+	 * @ff.default IbisAdmin,IbisDataAdmin,IbisTester,IbisObserver,IbisWebService
+	 */
 	public void setAuthRoles(String string) {
 		authRoles = string;
 	}
@@ -250,27 +252,42 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		writeSecLogMessage = b;
 	}
 
-	@IbisDoc({"Indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once!", "true"})
+	/**
+	 * Indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once!
+	 * @ff.default true
+	 */
 	public void setRetrieveMultipart(boolean b) {
 		retrieveMultipart = b;
 	}
 
-	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link RestServiceDispatcher} receives as input", "XML"})
+	/**
+	 * Mediatype (e.g. XML, JSON, TEXT) the {@link RestServiceDispatcher} receives as input
+	 * @ff.default XML
+	 */
 	public void setConsumes(MediaTypes consumes) {
 		this.consumes = consumes;
 	}
 
-	@IbisDoc({"Mediatype (e.g. XML, JSON, TEXT) the {@link RestServiceDispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message", "XML"})
+	/**
+	 * Mediatype (e.g. XML, JSON, TEXT) the {@link RestServiceDispatcher} sends as output, if set to json the ibis will automatically try to convert the xml message
+	 * @ff.default XML
+	 */
 	public void setProduces(MediaTypes produces) {
 		this.produces = produces;
 	}
 
-	@IbisDoc({"If set to true the ibis will automatically validate and process etags", "false"})
+	/**
+	 * If set to true the ibis will automatically validate and process etags
+	 * @ff.default false
+	 */
 	public void setValidateEtag(boolean b) {
 		this.validateEtag = b;
 	}
 
-	@IbisDoc({"If set to true the ibis will automatically create an etag", "false"})
+	/**
+	 * If set to true the ibis will automatically create an etag
+	 * @ff.default false
+	 */
 	public void setGenerateEtag(boolean b) {
 		this.generateEtag = b;
 	}

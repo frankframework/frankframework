@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,14 +42,13 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.senders.IbisJavaSender;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+
 
 // TODO: When anchors are supported by the Frank!Doc, link to https://github.com/ibissource/ibis-servicedispatcher
 /**
@@ -63,11 +63,11 @@ import nl.nn.adapterframework.util.Misc;
  * @author  Gerrit van Brakel
  */
 @Category("Basic")
-public class JavaListener implements IPushingListener<String>, RequestProcessor, HasPhysicalDestination {
+public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
@@ -78,8 +78,8 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	private @Getter boolean httpWsdl = false;
 
 	private @Getter boolean open=false;
-	private static Map<String, JavaListener> registeredListeners;
-	private @Getter @Setter IMessageHandler<String> handler;
+	private static Map<String, JavaListener<?>> registeredListeners;
+	private @Getter @Setter IMessageHandler<M> handler;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -101,7 +101,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			}
 			open=true;
 		} catch (Exception e) {
-			throw new ListenerException("error occured while starting listener [" + getName() + "]", e);
+			throw new ListenerException("error occurred while starting listener [" + getName() + "]", e);
 		}
 	}
 
@@ -113,61 +113,76 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 			unregisterListener();
 			// unregister from global list
 			if (StringUtils.isNotEmpty(getServiceName())) {
-				// Current DispatcherManager (version 1.3) doesn't have an
-				// unregister method, instead a call to register with a null
-				// value is done.
-				DispatcherManagerFactory.getDispatcherManager().register(getServiceName(), null);
+				DispatcherManagerFactory.getDispatcherManager().unregister(getServiceName());
 			}
 		}
 		catch (Exception e) {
-			throw new ListenerException("error occured while stopping listener [" + getName() + "]", e);
+			throw new ListenerException("error occurred while stopping listener [" + getName() + "]", e);
 		}
 	}
 
 	@Override
+	public RawMessageWrapper<M> wrapRawMessage(M rawMessage, PipeLineSession session) {
+		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
-		if (!isOpen()) {
-			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
-		}
-		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), correlationId);
-		if (context != null) {
-			Object object = context.get("httpRequest");
-			if (object != null) {
-				if (object instanceof HttpServletRequest) {
-					ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
-					context.put(PipeLineSession.securityHandlerKey, securityHandler);
-				} else {
-					log.warn("No securityHandler added for httpRequest [" + object.getClass() + "]");
-				}
+		try {
+			HashMap<String, Object> processContext = context != null ? context : new HashMap<>();
+			processContext.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+			try (Message message = Message.asMessage(rawMessage);
+				Message result = processRequest(new MessageWrapper<>(message, null, correlationId), processContext);) {
+					return result.asString();
 			}
-		}
-		try (PipeLineSession session = new PipeLineSession(context)) {
-			session.put(PipeLineSession.correlationIdKey, correlationId);
-			Message message =  new Message(rawMessage);
-			try {
-				if (throwException) {
-					try {
-						return handler.processRequest(this, rawMessage, message, session).asString();
-					} catch (IOException e) {
-						throw new ListenerException("cannot convert stream", e);
-					}
-				}
-				try {
-					return handler.processRequest(this, rawMessage, message, session).asString();
-				} catch (ListenerException | IOException e) {
-					try {
-						return handler.formatException(null,correlationId, message, e).asString();
-					} catch (IOException e1) {
-						e.addSuppressed(e1);
-						throw new ListenerException(e);
-					}
-				}
-			} finally {
-				Misc.copyContext(getReturnedSessionKeys(), session, context, this);
-			}
+		} catch (IOException e) {
+			throw new ListenerException("cannot convert stream", e);
 		}
 	}
 
+	@Override
+	public Message processRequest(Message message, @Nonnull PipeLineSession session) throws ListenerException {
+		MessageWrapper<M> messageWrapper = new MessageWrapper<>(message, session.getMessageId(), session.getCorrelationId());
+		Message response = processRequest(messageWrapper, session);
+		response.closeOnCloseOf(session, this);
+		return  response;
+	}
+
+	private Message processRequest(@Nonnull MessageWrapper<M> messageWrapper, @Nonnull Map<String, Object> context) throws ListenerException {
+		if (!isOpen()) {
+			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
+		}
+		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), messageWrapper.getCorrelationId());
+		Object object = context.get("httpRequest"); //TODO dit moet weg
+		if (object != null) {
+			if (object instanceof HttpServletRequest) {
+				ISecurityHandler securityHandler = new HttpSecurityHandler((HttpServletRequest)object);
+				context.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
+			} else {
+				log.warn("No securityHandler added for httpRequest [{}]", object::getClass);
+			}
+		}
+		try (PipeLineSession session = new PipeLineSession(context)) {
+			Message message = messageWrapper.getMessage();
+			try {
+				if (throwException) {
+					return handler.processRequest(this, messageWrapper, message, session);
+				} else {
+					try {
+						return handler.processRequest(this, messageWrapper, message, session);
+					} catch (ListenerException e) {
+						// Message with error contains a String so does not need to be preserved.
+						// (Trying to preserve means dealing with extra IOException for which there is no reason here)
+						return handler.formatException(null, session.getCorrelationId(), message, e);
+					}
+				}
+			} finally {
+				session.unscheduleCloseOnSessionExit(message); // The input message should not be managed by this PipelineSession but rather the method invoker
+				session.mergeToParentSession(getReturnedSessionKeys(), context);
+			}
+		}
+	}
 
 	/**
 	 * Register listener so that it can be used by a proxy
@@ -183,16 +198,16 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	/**
 	 * Returns JavaListener registered under the given name
 	 */
-	public static JavaListener getListener(String name) {
+	public static JavaListener<?> getListener(String name) {
 		return getListeners().get(name);
 	}
 
 	/**
 	 * Get all registered JavaListeners
 	 */
-	private static synchronized Map<String, JavaListener> getListeners() {
+	private static synchronized Map<String, JavaListener<?>> getListeners() {
 		if (registeredListeners == null) {
-			registeredListeners = Collections.synchronizedMap(new HashMap<String,JavaListener>());
+			registeredListeners = Collections.synchronizedMap(new HashMap<>());
 		}
 		return registeredListeners;
 	}
@@ -207,20 +222,13 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessage, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<M> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		// do nothing
 	}
 
-
 	@Override
-	public String getIdFromRawMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
-		// do nothing
-		return null;
-	}
-
-	@Override
-	public Message extractMessage(String rawMessage, Map<String,Object> context) throws ListenerException {
-		return new Message(rawMessage);
+	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
 	@Override
@@ -233,7 +241,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 
 
 
-	@IbisDoc({"Internal name of the listener, as known to the adapter. An IbisLocalSender refers to this name in its <code>javaListener</code>-attribute.", ""})
+	/** Internal name of the listener, as known to the adapter. An IbisLocalSender refers to this name in its <code>javaListener</code>-attribute. */
 	@Override
 	@Mandatory
 	public void setName(String name) {
@@ -241,7 +249,7 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 
-	@IbisDoc({"External Name of the listener. An IbisJavaSender refers to this name in its <code>serviceName</code>-attribute.", ""})
+	/** External Name of the listener. An IbisJavaSender refers to this name in its <code>serviceName</code>-attribute. */
 	public void setServiceName(String jndiName) {
 		this.serviceName = jndiName;
 	}
@@ -257,13 +265,16 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 	}
 
 	@Deprecated
-	@IbisDoc({"If set <code>false</code>, the request is executed asynchronously. N.B. be aware that there is no limit on the number of threads generated", "true"})
+	/**
+	 * If set <code>false</code>, the request is executed asynchronously. N.B. be aware that there is no limit on the number of threads generated
+	 * @ff.default true
+	 */
 	public void setSynchronous(boolean b) {
 		synchronous = b;
 	}
 
-	/** 
-	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erronous results. 
+	/**
+	 * Comma separated list of keys of session variables that should be returned to caller, for correct results as well as for erroneous results.
 	 * If not set (not even to an empty value), all session keys can be returned.
 	 * @ff.default all session keys can be returned
 	 */
@@ -271,12 +282,18 @@ public class JavaListener implements IPushingListener<String>, RequestProcessor,
 		returnedSessionKeys = string;
 	}
 
-	@IbisDoc({"Should the JavaListener throw a ListenerException when it occurs or return an error message", "true"})
+	/**
+	 * Should the JavaListener throw a ListenerException when it occurs or return an error message
+	 * @ff.default true
+	 */
 	public void setThrowException(boolean throwException) {
 		this.throwException = throwException;
 	}
 
-	@IbisDoc({"If <code>true</code>, the WSDL of the service provided by this listener will available for download ", "false"})
+	/**
+	 * If <code>true</code>, the WSDL of the service provided by this listener will available for download
+	 * @ff.default false
+	 */
 	public void setHttpWsdl(boolean httpWsdl) {
 		this.httpWsdl = httpWsdl;
 	}

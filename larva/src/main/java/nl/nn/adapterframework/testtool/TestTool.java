@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -45,7 +46,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -77,6 +77,7 @@ import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.parameters.Parameter;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.queues.Queue;
@@ -91,19 +92,21 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
+import nl.nn.adapterframework.util.StringUtil;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * @author Jaco de Groot
  */
 public class TestTool {
-	private static Logger logger = LogUtil.getLogger(TestTool.class);
+	private static final Logger logger = LogUtil.getLogger(TestTool.class);
 	public static final String LOG_LEVEL_ORDER = "[debug], [pipeline messages prepared for diff], [pipeline messages], [wrong pipeline messages prepared for diff], [wrong pipeline messages], [step passed/failed], [scenario passed/failed], [scenario failed], [totals], [error]";
 	private static final String STEP_SYNCHRONIZER = "Step synchronizer";
 	protected static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
-	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 30000);
+	protected static final int DEFAULT_TIMEOUT = AppConstants.getInstance().getInt("larva.timeout", 10000);
 	protected static final String TESTTOOL_BIFNAME = "Test Tool bif name";
-	public static final nl.nn.adapterframework.stream.Message TESTTOOL_DUMMY_MESSAGE = new nl.nn.adapterframework.stream.Message("<TestTool>Dummy message</TestTool>");
+	public static final Message TESTTOOL_DUMMY_MESSAGE = new Message("<TestTool>Dummy message</TestTool>");
 	protected static final String TESTTOOL_CLEAN_UP_REPLY = "<TestTool>Clean up reply</TestTool>";
 	public static final int RESULT_ERROR = 0;
 	public static final int RESULT_OK = 1;
@@ -112,7 +115,7 @@ public class TestTool {
 	private static String zeefVijlNeem = "";
 	private static Writer silentOut = null;
 	private static boolean autoSaveDiffs = false;
-	private static AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
+	private static final AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
 
 	/*
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
@@ -135,11 +138,13 @@ public class TestTool {
 		return IbisApplicationServlet.getIbisContext(application);
 	}
 
+
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, String realPath) {
 		runScenarios(application, request, out, false, realPath);
 	}
 
-	private static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, boolean silent, String realPath) {
+	// Invoked by the IbisTester class
+	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, boolean silent, String realPath) {
 		String paramLogLevel = request.getParameter("loglevel");
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramExecute = request.getParameter("execute");
@@ -150,6 +155,7 @@ public class TestTool {
 			try {
 				timeout = Integer.parseInt(paramGlobalTimeout);
 			} catch(NumberFormatException e) {
+				// Ignore error, use default
 			}
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
@@ -173,7 +179,7 @@ public class TestTool {
 		AppConstants appConstants = AppConstants.getInstance();
 		String logLevel = "wrong pipeline messages";
 		String autoScroll = "true";
-		if (paramLogLevel != null && LOG_LEVEL_ORDER.indexOf("[" + paramLogLevel + "]") > -1) {
+		if (paramLogLevel != null && LOG_LEVEL_ORDER.contains("[" + paramLogLevel + "]")) {
 			logLevel = paramLogLevel;
 		}
 		if (paramAutoScroll == null && paramLogLevel != null) {
@@ -190,27 +196,29 @@ public class TestTool {
 			writers.put("autoscroll", autoScroll);
 			writers.put("usehtmlbuffer", "false");
 			writers.put("uselogbuffer", "true");
-			writers.put("messagecounter", new Integer(0));
-			writers.put("scenariocounter", new Integer(1));
+			writers.put("messagecounter", 0);
+			writers.put("scenariocounter", 1);
 		} else {
 			silentOut = out;
 		}
 
 		TestTool.debugMessage("Start logging to logbuffer until form is written", writers);
-		String asd = appConstants.getResolvedProperty("larva.diffs.autosave");
+		String asd = appConstants.getProperty("larva.diffs.autosave");
 		if (asd!=null) {
 			autoSaveDiffs = Boolean.parseBoolean(asd);
 		}
 		debugMessage("Initialize scenarios root directories", writers);
-		List<String> scenariosRootDirectories = new ArrayList<String>();
-		List<String> scenariosRootDescriptions = new ArrayList<String>();
+		List<String> scenariosRootDirectories = new ArrayList<>();
+		List<String> scenariosRootDescriptions = new ArrayList<>();
 		String currentScenariosRootDirectory = initScenariosRootDirectories(
 				realPath,
 				paramScenariosRootDirectory, scenariosRootDirectories,
 				scenariosRootDescriptions, writers);
-		if (scenariosRootDirectories.size() == 0) {
+		if (scenariosRootDirectories.isEmpty()) {
 			debugMessage("Stop logging to logbuffer", writers);
-			writers.put("uselogbuffer", "stop");
+			if (writers != null) {
+				writers.put("uselogbuffer", "stop");
+			}
 			errorMessage("No scenarios root directories found", writers);
 			return ERROR_NO_SCENARIO_DIRECTORIES_FOUND;
 		}
@@ -223,6 +231,7 @@ public class TestTool {
 			try {
 				waitBeforeCleanUp = Integer.parseInt(paramWaitBeforeCleanUp);
 			} catch(NumberFormatException e) {
+				// Ignore the error, use default
 			}
 		}
 
@@ -309,7 +318,7 @@ public class TestTool {
 											writeHtml("<div class='odd'>", writers, false);
 											evenStep = true;
 										}
-										String step = (String)iterator.next();
+										String step = iterator.next();
 										String stepDisplayName = shortName + " - " + step + " - " + properties.get(step);
 										debugMessage("Execute step '" + stepDisplayName + "'", writers);
 										int stepPassed = executeStep(step, properties, stepDisplayName, queues, writers, timeout, correlationId);
@@ -462,11 +471,11 @@ public class TestTool {
 			while (scenariosRootDirectoriesIterator.hasNext()) {
 				String directory = (String)scenariosRootDirectoriesIterator.next();
 				String description = (String)scenariosRootDescriptionsIterator.next();
-				String option = "<option value=\"" + XmlUtils.encodeChars(directory) + "\"";
+				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(directory) + "\"";
 				if (scenariosRootDirectory.equals(directory)) {
 					option = option + " selected";
 				}
-				option = option + ">" + XmlUtils.encodeChars(description) + "</option>";
+				option = option + ">" + XmlEncodingUtils.encodeChars(description) + "</option>";
 				writeHtml(option, writers, false);
 			}
 			writeHtml("</select>", writers, false);
@@ -509,15 +518,13 @@ public class TestTool {
 			writeHtml(TR_STARTING_TAG, writers, false);
 			writeHtml(TD_STARTING_TAG, writers, false);
 			writeHtml("<select name=\"loglevel\">", writers, false);
-			StringTokenizer tokenizer = new StringTokenizer(LOG_LEVEL_ORDER, ",");
-			while (tokenizer.hasMoreTokens()) {
-				String level = tokenizer.nextToken().trim();
+			for (String level : StringUtil.split(LOG_LEVEL_ORDER)) {
 				level = level.substring(1, level.length() - 1);
-				String option = "<option value=\"" + XmlUtils.encodeChars(level) + "\"";
-				if (((String)writers.get("loglevel")).equals(level)) {
+				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(level) + "\"";
+				if (writers.get("loglevel").equals(level)) {
 					option = option + " selected";
 				}
-				option = option + ">" + XmlUtils.encodeChars(level) + "</option>";
+				option = option + ">" + XmlEncodingUtils.encodeChars(level) + "</option>";
 				writeHtml(option, writers, false);
 			}
 			writeHtml("</select>", writers, false);
@@ -576,12 +583,12 @@ public class TestTool {
 						debugMessage("longName: '" + longName + "'", writers);
 						if (!addedDirectories.contains(longName)) {
 							String shortName = scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1);
-							String option = "<option value=\"" + XmlUtils.encodeChars(longName) + "\"";
+							String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
 							debugMessage("paramExecute: '" + paramExecute + "'", writers);
 							if (paramExecute != null && paramExecute.equals(longName)) {
 								option = option + " selected";
 							}
-							option = option + ">" + XmlUtils.encodeChars(shortName) + "</option>";
+							option = option + ">" + XmlEncodingUtils.encodeChars(shortName) + "</option>";
 							writeHtml(option, writers, false);
 							addedDirectories.add(longName);
 						}
@@ -590,11 +597,11 @@ public class TestTool {
 					String longName = scenarioFile.getAbsolutePath();
 					String shortName = longName.substring(scenariosRootDirectory.length() - 1, longName.length() - ".properties".length());
 					debugMessage("shortName: '" + shortName + "'", writers);
-					String option = "<option value=\"" + XmlUtils.encodeChars(longName) + "\"";
+					String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
 					if (paramExecute != null && paramExecute.equals(longName)) {
 						option = option + " selected";
 					}
-					option = option + ">" + XmlUtils.encodeChars(shortName + " - " + properties.getProperty("scenario.description")) + "</option>";
+					option = option + ">" + XmlEncodingUtils.encodeChars(shortName + " - " + properties.getProperty("scenario.description")) + "</option>";
 					writeHtml(option, writers, false);
 				}
 			}
@@ -632,7 +639,7 @@ public class TestTool {
 				StringWriter buffer = (StringWriter)writers.get(type + "buffer");
 				try {
 					out.write(buffer.toString());
-				} catch(IOException e) {
+				} catch(IOException ignored) {
 				}
 				useBuffer = "false";
 				writers.put("use" + type + "buffer", useBuffer);
@@ -669,7 +676,7 @@ public class TestTool {
 	public static void debugMessage(String message, Map<String, Object> writers) {
 		String method = "debug";
 		logger.debug(message);
-		writeLog(XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(message)) + "<br/>", method, writers, false);
+		writeLog(XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(message)) + "<br/>", method, writers, false);
 	}
 
 	public static void debugPipelineMessage(String stepDisplayName, String message, String pipelineMessage, Map<String, Object> writers) {
@@ -681,8 +688,8 @@ public class TestTool {
 			writeLog("<div class='message container'>", method, writers, false);
 			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
 			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
-			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
+			writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", method, writers, false);
+			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writers.put("messagecounter", new Integer(messageCounter));
@@ -698,8 +705,8 @@ public class TestTool {
 			writeLog("<div class='message container'>", method, writers, false);
 			writeLog("<h4>Step '" + stepDisplayName + "'</h4>", method, writers, false);
 			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
-			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
+			writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", method, writers, false);
+			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlEncodingUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writers.put("messagecounter", new Integer(messageCounter));
@@ -714,8 +721,8 @@ public class TestTool {
 
 			writeLog("<div class='message container'>", method, writers, false);
 			writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
-			writeLog("<h5>" + XmlUtils.encodeChars(message) + "</h5>", method, writers, false);
-			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
+			writeLog("<h5>" + XmlEncodingUtils.encodeChars(message) + "</h5>", method, writers, false);
+			writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(pipelineMessage)) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writers.put("messagecounter", new Integer(messageCounter));
@@ -741,7 +748,7 @@ public class TestTool {
 			writeLog("<div class='resultContainer'>", method, writers, false);
 			writeLog(writeCommands(resultBoxId, true, "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>"), method, writers, false);
 			writeLog("<h5>Result (raw):</h5>", method, writers, false);
-			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
+			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlEncodingUtils.encodeChars(pipelineMessage) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writeLog("<div class='expectedContainer'>", method, writers, false);
@@ -749,7 +756,7 @@ public class TestTool {
 			writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' />", method, writers, false);
 			writeLog("<input type='hidden' name='cmd' />", method, writers, false);
 			writeLog("<h5>Expected (raw):</h5>", method, writers, false);
-			writeLog("<textarea name='expectedBox' id='"+expectedBoxId+"'>" + XmlUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, writers, false);
+			writeLog("<textarea name='expectedBox' id='"+expectedBoxId+"'>" + XmlEncodingUtils.encodeChars(pipelineMessageExpected) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writeLog("<hr/>", method, writers, false);
@@ -762,20 +769,20 @@ public class TestTool {
 			writeLog("<pre id='"+diffBoxId+"' class='diffBox'></pre>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
-			String scenario_passed_failed = "scenario passed/failed";
+			String scenarioPassedFailed = "scenario passed/failed";
 			if (LOG_LEVEL_ORDER.indexOf(
 					"[" + (String) writers.get("loglevel") + "]") == LOG_LEVEL_ORDER
-							.indexOf("[" + scenario_passed_failed + "]")) {
+							.indexOf("[" + scenarioPassedFailed + "]")) {
 				writeLog("<h5 hidden='true'>Difference description:</h5>",
-						scenario_passed_failed, writers, false);
+						scenarioPassedFailed, writers, false);
 				writeLog(
 						"<p class='diffMessage' hidden='true'>"
-								+ XmlUtils.encodeChars(message) + "</p>",
-						scenario_passed_failed, writers, true);
+								+ XmlEncodingUtils.encodeChars(message) + "</p>",
+						scenarioPassedFailed, writers, true);
 			} else {
 				writeLog("<h5>Difference description:</h5>", method, writers,
 						false);
-				writeLog("<p class='diffMessage'>" + XmlUtils.encodeChars(message)
+				writeLog("<p class='diffMessage'>" + XmlEncodingUtils.encodeChars(message)
 						+ "</p>", method, writers, true);
 				writeLog("</form>", method, writers, false);
 				writeLog("</div>", method, writers, false);
@@ -814,7 +821,7 @@ public class TestTool {
 			writeLog("<div class='resultContainer'>", method, writers, false);
 			writeLog(writeCommands(resultBoxId, true, null), method, writers, false);
 			writeLog("<h5>Result (prepared for diff):</h5>", method, writers, false);
-			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlUtils.encodeChars(pipelineMessagePreparedForDiff) + "</textarea>", method, writers, false);
+			writeLog("<textarea name='resultBox' id='"+resultBoxId+"'>" + XmlEncodingUtils.encodeChars(pipelineMessagePreparedForDiff) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			messageCounter++;
@@ -823,7 +830,7 @@ public class TestTool {
 			writeLog("<input type='hidden' name='expectedFileName' value='"+zeefVijlNeem+"' />", method, writers, false);
 			writeLog("<input type='hidden' name='cmd' />", method, writers, false);
 			writeLog("<h5>Expected (prepared for diff):</h5>", method, writers, false);
-			writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, writers, false);
+			writeLog("<textarea name='expectedBox' id='" + expectedBoxId + "'>" + XmlEncodingUtils.encodeChars(pipelineMessageExpectedPreparedForDiff) + "</textarea>", method, writers, false);
 			writeLog("</div>", method, writers, false);
 
 			writeLog("<hr/>", method, writers, false);
@@ -866,32 +873,32 @@ public class TestTool {
 
 	public static void stepPassedMessage(String message, Map<String, Object> writers) {
 		String method = "step passed/failed";
-		writeLog("<h3 class='passed'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
+		writeLog("<h3 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, writers, true);
 	}
 
 	public static void stepAutosavedMessage(String message, Map<String, Object> writers) {
 		String method = "step passed/failed";
-		writeLog("<h3 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
+		writeLog("<h3 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, writers, true);
 	}
 
 	public static void stepFailedMessage(String message, Map<String, Object> writers) {
 		String method = "step passed/failed";
-		writeLog("<h3 class='failed'>" + XmlUtils.encodeChars(message) + "</h3>", method, writers, true);
+		writeLog("<h3 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h3>", method, writers, true);
 	}
 
 	public static void scenarioPassedMessage(String message, Map<String, Object> writers) {
 		String method = "scenario passed/failed";
-		writeLog("<h2 class='passed'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
+		writeLog("<h2 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, writers, true);
 	}
 
 	public static void scenarioAutosavedMessage(String message, Map<String, Object> writers) {
 		String method = "scenario passed/failed";
-		writeLog("<h2 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
+		writeLog("<h2 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, writers, true);
 	}
 
 	public static void scenarioFailedMessage(String message, Map<String, Object> writers) {
 		String method = "scenario failed";
-		writeLog("<h2 class='failed'>" + XmlUtils.encodeChars(message) + "</h2>", method, writers, true);
+		writeLog("<h2 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h2>", method, writers, true);
 	}
 
 	public static void scenariosTotalMessage(String message, Map<String, Object> writers, Writer out, boolean silent) {
@@ -902,7 +909,7 @@ public class TestTool {
 			}
 		} else {
 			String method = "totals";
-			writeLog("<h1 class='total'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+			writeLog("<h1 class='total'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
 		}
 	}
 
@@ -914,7 +921,7 @@ public class TestTool {
 			}
 		} else {
 			String method = "totals";
-			writeLog("<h1 class='passed'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+			writeLog("<h1 class='passed'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
 		}
 	}
 
@@ -926,7 +933,7 @@ public class TestTool {
 			}
 		} else {
 			String method = "totals";
-			writeLog("<h1 class='autosaved'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+			writeLog("<h1 class='autosaved'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
 		}
 	}
 
@@ -938,13 +945,13 @@ public class TestTool {
 			}
 		} else {
 			String method = "totals";
-			writeLog("<h1 class='failed'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+			writeLog("<h1 class='failed'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
 		}
 	}
 
 	public static void errorMessage(String message, Map<String, Object> writers) {
 		String method = "error";
-		writeLog("<h1 class='error'>" + XmlUtils.encodeChars(message) + "</h1>", method, writers, true);
+		writeLog("<h1 class='error'>" + XmlEncodingUtils.encodeChars(message) + "</h1>", method, writers, true);
 		if (silentOut!=null) {
 			try {
 				silentOut.write(message);
@@ -968,7 +975,7 @@ public class TestTool {
 				writeLog("<div class='container'>", method, writers, false);
 				writeLog(writeCommands("messagebox" + messageCounter, true, null), method, writers, false);
 				writeLog("<h5>Stack trace:</h5>", method, writers, false);
-				writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlUtils.encodeChars(XmlUtils.replaceNonValidXmlCharacters(stringWriter.toString())) + "</textarea>", method, writers, false);
+				writeLog("<textarea cols='100' rows='10' id='messagebox" + messageCounter + "'>" + XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(stringWriter.toString())) + "</textarea>", method, writers, false);
 				writeLog("</div>", method, writers, false);
 				writers.put("messagecounter", new Integer(messageCounter));
 				throwable = throwable.getCause();
@@ -988,8 +995,8 @@ public class TestTool {
 			Map<String, String> scenariosRoots = new HashMap<String, String>();
 			Map<String, String> scenariosRootsBroken = new HashMap<String, String>();
 			int j = 1;
-			String directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
-			String description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
+			String directory = appConstants.getProperty("scenariosroot" + j + ".directory");
+			String description = appConstants.getProperty("scenariosroot" + j + ".description");
 			while (directory != null) {
 				if (description == null) {
 					errorMessage("Could not find description for root directory '" + directory + "'", writers);
@@ -997,7 +1004,7 @@ public class TestTool {
 					errorMessage("A root directory named '" + description + "' already exist", writers);
 				} else {
 					String parent = realPath;
-					String m2eFileName = appConstants.getResolvedProperty("scenariosroot" + j + ".m2e.pom.properties");
+					String m2eFileName = appConstants.getProperty("scenariosroot" + j + ".m2e.pom.properties");
 					if (m2eFileName != null) {
 						File m2eFile = new File(realPath, m2eFileName);
 						if (m2eFile.exists()) {
@@ -1009,14 +1016,16 @@ public class TestTool {
 					}
 					directory = getAbsolutePath(parent, directory, true);
 					if (new File(directory).exists()) {
+						debugMessage("directory for ["+description+"] exists: " + directory, writers);
 						scenariosRoots.put(description, directory);
 					} else {
+						debugMessage("directory ["+directory+"] for ["+description+"] does not exist, parent ["+parent+"]", writers);
 						scenariosRootsBroken.put(description, directory);
 					}
 				}
 				j++;
-				directory = appConstants.getResolvedProperty("scenariosroot" + j + ".directory");
-				description = appConstants.getResolvedProperty("scenariosroot" + j + ".description");
+				directory = appConstants.getProperty("scenariosroot" + j + ".directory");
+				description = appConstants.getProperty("scenariosroot" + j + ".description");
 			}
 			TreeSet<String> treeSet = new TreeSet<String>(new CaseInsensitiveComparator());
 			treeSet.addAll(scenariosRoots.keySet());
@@ -1037,7 +1046,7 @@ public class TestTool {
 			debugMessage("Read scenariosrootdirectory parameter", writers);
 			debugMessage("Get current scenarios root directory", writers);
 			if (paramScenariosRootDirectory == null || paramScenariosRootDirectory.equals("")) {
-				String scenariosRootDefault = appConstants.getResolvedProperty("scenariosroot.default");
+				String scenariosRootDefault = appConstants.getProperty("scenariosroot.default");
 				if (scenariosRootDefault != null) {
 					currentScenariosRootDirectory = scenariosRoots.get(scenariosRootDefault);
 				}
@@ -1089,12 +1098,11 @@ public class TestTool {
 	public static Properties readProperties(AppConstants appConstants, File propertiesFile, boolean root, Map<String, Object> writers) {
 		String directory = new File(propertiesFile.getAbsolutePath()).getParent();
 		Properties properties = new Properties();
-		FileInputStream fileInputStreamPropertiesFile = null;
 		try {
-			fileInputStreamPropertiesFile = new FileInputStream(propertiesFile);
-			properties.load(fileInputStreamPropertiesFile);
-			fileInputStreamPropertiesFile.close();
-			fileInputStreamPropertiesFile = null;
+			try(FileInputStream fis = new FileInputStream(propertiesFile); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(fis)) {
+				properties.load(reader);
+			}
+
 			Properties includedProperties = new Properties();
 			int i = 0;
 			String includeFilename = properties.getProperty("include");
@@ -1122,13 +1130,6 @@ public class TestTool {
 		} catch(Exception e) {
 			properties = null;
 			errorMessage("Could not read properties file: " + e.getMessage(), e, writers);
-			if (fileInputStreamPropertiesFile != null) {
-				try {
-					fileInputStreamPropertiesFile.close();
-				} catch(Exception e2) {
-					errorMessage("Could not close file '" + propertiesFile.getAbsolutePath() + "': " + e2.getMessage(), e, writers);
-				}
-			}
 		}
 		return properties;
 	}
@@ -1214,23 +1215,20 @@ public class TestTool {
 
 	public static boolean closeQueues(Map<String, Queue> queues, Properties properties, Map<String, Object> writers, String correlationId) {
 		boolean remainingMessagesFound = false;
-		Iterator<String> iterator;
 		debugMessage("Close jms senders", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
+		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
+			String queueName = entry.getKey();
 			if ("nl.nn.adapterframework.jms.JmsSender".equals(properties.get(queueName + ".className"))) {
-				JmsSender jmsSender = (JmsSender)((Map<?, ?>)queues.get(queueName)).get("jmsSender");
+				JmsSender jmsSender = (JmsSender)(entry.getValue()).get("jmsSender");
 				jmsSender.close();
 				debugMessage("Closed jms sender '" + queueName + "'", writers);
 			}
 		}
 		debugMessage("Close jms listeners", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String queueName = (String)iterator.next();
+		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
+			String queueName = entry.getKey();
 			if ("nl.nn.adapterframework.jms.JmsListener".equals(properties.get(queueName + ".className"))) {
-				PullingJmsListener pullingJmsListener = (PullingJmsListener)((Map<?, ?>)queues.get(queueName)).get("jmsListener");
+				PullingJmsListener pullingJmsListener = (PullingJmsListener)(entry.getValue()).get("jmsListener");
 				if (jmsCleanUp(queueName, pullingJmsListener, writers)) {
 					remainingMessagesFound = true;
 				}
@@ -1239,11 +1237,10 @@ public class TestTool {
 			}
 		}
 		debugMessage("Close jdbc connections", writers);
-		iterator = queues.keySet().iterator();
-		while (iterator.hasNext()) {
-			String name = (String)iterator.next();
+		for(Map.Entry<String, Queue> entry : queues.entrySet()) {
+			String name = entry.getKey();
 			if ("nl.nn.adapterframework.jdbc.FixedQuerySender".equals(properties.get(name + ".className"))) {
-				Map<?, ?> querySendersInfo = (Map<?, ?>)queues.get(name);
+				Queue querySendersInfo = entry.getValue();
 				FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)querySendersInfo.get("prePostQueryFixedQuerySender");
 				if (prePostFixedQuerySender != null) {
 					try {
@@ -1254,10 +1251,9 @@ public class TestTool {
 						 */
 						String preResult = (String)querySendersInfo.get("prePostQueryResult");
 						PipeLineSession session = new PipeLineSession();
-						session.put(PipeLineSession.correlationIdKey, correlationId);
+						session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 						String postResult = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 						if (!preResult.equals(postResult)) {
-
 							String message = null;
 							FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
 							try {
@@ -1344,8 +1340,8 @@ public class TestTool {
 		pullingJmsListener.setTimeOut(10);
 		boolean empty = false;
 		while (!empty) {
-			javax.jms.Message rawMessage = null;
-			Message message = null;
+			RawMessageWrapper<javax.jms.Message> rawMessage = null;
+			Message message;
 			Map<String, Object> threadContext = null;
 			try {
 				threadContext = pullingJmsListener.openThread();
@@ -1403,12 +1399,13 @@ public class TestTool {
 			if (providedCorrelationId == null) {
 				providedCorrelationId = correlationId;
 			}
-			jmsSender.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(fileContent), null);
-			debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
-			result = RESULT_OK;
+			try (Message ignored = jmsSender.sendMessageOrThrow(new Message(fileContent), null)) {
+				debugPipelineMessage(stepDisplayName, "Successfully written to '" + queueName + "':", fileContent, writers);
+				result = RESULT_OK;
+			}
 		} catch(TimeoutException e) {
 			errorMessage("Time out sending jms message to '" + queueName + "': " + e.getMessage(), e, writers);
-		} catch(SenderException e) {
+		} catch(SenderException | IOException e) {
 			errorMessage("Could not send jms message to '" + queueName + "': " + e.getMessage(), e, writers);
 		}
 
@@ -1426,7 +1423,7 @@ public class TestTool {
 			result = queue.executeWrite(stepDisplayName, fileContent, correlationId, xsltParameters);
 			if (result == RESULT_OK) {
 				debugPipelineMessage(stepDisplayName, "Successfully wrote message to '" + queueName + "':", fileContent, writers);
-				logger.debug("Successfully wrote message to '" + queueName + "'");
+				logger.debug("Successfully wrote message to '{}'", queueName);
 			}
 		} catch(TimeoutException e) {
 			errorMessage("Time out sending message to '" + queueName + "': " + e.getMessage(), e, writers);
@@ -1440,16 +1437,16 @@ public class TestTool {
 	private static int executeJmsListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent) {
 		int result = RESULT_ERROR;
 
-		Map jmsListenerInfo = (Map)queues.get(queueName);
+		Map<String, Object> jmsListenerInfo = queues.get(queueName);
 		PullingJmsListener pullingJmsListener = (PullingJmsListener)jmsListenerInfo.get("jmsListener");
-		Map threadContext = null;
+		Map<String, Object> threadContext = null;
 		Message message = null;
 		try {
 			threadContext = pullingJmsListener.openThread();
-			javax.jms.Message rawMessage = pullingJmsListener.getRawMessage(threadContext);
+			RawMessageWrapper<javax.jms.Message> rawMessage = pullingJmsListener.getRawMessage(threadContext);
 			if (rawMessage != null) {
 				message = pullingJmsListener.extractMessage(rawMessage, threadContext);
-				String correlationId = pullingJmsListener.getIdFromRawMessage(rawMessage, threadContext);
+				String correlationId = rawMessage.getId(); // NB: Historically this code extracted message-ID then used that as correlation-ID.
 				jmsListenerInfo.put("correlationId", correlationId);
 			}
 		} catch(ListenerException e) {
@@ -1518,18 +1515,19 @@ public class TestTool {
 	private static int executeJavaListenerOrWebServiceListenerRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, int parameterTimeout) {
 		int result = RESULT_ERROR;
 
-		Map listenerInfo = (Map)queues.get(queueName);
+		Map listenerInfo = queues.get(queueName);
 		ListenerMessageHandler listenerMessageHandler = (ListenerMessageHandler)listenerInfo.get("listenerMessageHandler");
 		if (listenerMessageHandler == null) {
 			errorMessage("No ListenerMessageHandler found", writers);
 		} else {
 			String message = null;
-			ListenerMessage listenerMessage = null;
-			Long timeout = Long.parseLong(""+parameterTimeout);
+			ListenerMessage listenerMessage;
+			Long timeout;
 			try {
 				timeout = Long.parseLong((String) properties.get(queueName + ".timeout"));
 				debugMessage("Timeout set to '" + timeout + "'", writers);
 			} catch (Exception e) {
+				timeout = (long)parameterTimeout;
 			}
 			try {
 				listenerMessage = listenerMessageHandler.getRequestMessage(timeout);
@@ -1570,7 +1568,7 @@ public class TestTool {
 	private static int executeFixedQuerySenderRead(String step, String stepDisplayName, Properties properties, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
-		Map querySendersInfo = (Map)queues.get(queueName);
+		Map querySendersInfo = queues.get(queueName);
 		Integer waitBeforeRead = (Integer)querySendersInfo.get("readQueryWaitBeforeRead");
 
 		if (waitBeforeRead != null) {
@@ -1585,9 +1583,13 @@ public class TestTool {
 			try {
 				String preResult = (String)querySendersInfo.get("prePostQueryResult");
 				debugPipelineMessage(stepDisplayName, "Pre result '" + queueName + "':", preResult, writers);
-				PipeLineSession session = new PipeLineSession();
-				session.put(PipeLineSession.correlationIdKey, correlationId);
-				String postResult = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
+				String postResult;
+				try (PipeLineSession session = new PipeLineSession()) {
+					session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+					Message message = prePostFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session);
+					postResult = message.asString();
+					message.close();
+				}
 				debugPipelineMessage(stepDisplayName, "Post result '" + queueName + "':", postResult, writers);
 				if (preResult.equals(postResult)) {
 					newRecordFound = false;
@@ -1604,14 +1606,14 @@ public class TestTool {
 		}
 		String message = null;
 		if (newRecordFound) {
-			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender)querySendersInfo.get("readQueryQueryFixedQuerySender");
+			FixedQuerySender readQueryFixedQuerySender = (FixedQuerySender) querySendersInfo.get("readQueryQueryFixedQuerySender");
 			try {
 				PipeLineSession session = new PipeLineSession();
-				session.put(PipeLineSession.correlationIdKey, correlationId);
+				session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 				message = readQueryFixedQuerySender.sendMessageOrThrow(TESTTOOL_DUMMY_MESSAGE, session).asString();
 			} catch(TimeoutException e) {
 				errorMessage("Time out on execute query for '" + queueName + "': " + e.getMessage(), e, writers);
-			} catch(IOException | SenderException e) {
+			} catch (IOException | SenderException e) {
 				errorMessage("Could not execute query for '" + queueName + "': " + e.getMessage(), e, writers);
 			}
 		}
@@ -1628,7 +1630,6 @@ public class TestTool {
 				result = compareResult(step, stepDisplayName, fileName, fileContent, message, properties, writers, queueName);
 			}
 		}
-
 		return result;
 	}
 
@@ -1724,7 +1725,7 @@ public class TestTool {
 		if (encoding != null) {
 			Reader inputStreamReader = null;
 			try {
-				StringBuffer stringBuffer = new StringBuffer();
+				StringBuilder stringBuffer = new StringBuilder();
 				inputStreamReader = StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream(fileName), encoding);
 				char[] cbuf = new char[4096];
 				int len = inputStreamReader.read(cbuf);
@@ -1751,13 +1752,11 @@ public class TestTool {
 	// Used by saveResultToFile.jsp
 	public static void windiff(ServletContext application, HttpServletRequest request, String expectedFileName, String result, String expected) throws IOException, SenderException {
 		AppConstants appConstants = AppConstants.getInstance();
-		String windiffCommand = appConstants.getResolvedProperty("larva.windiff.command");
+		String windiffCommand = appConstants.getProperty("larva.windiff.command");
 		if (windiffCommand == null) {
-			String servletPath = request.getServletPath();
-			int i = servletPath.lastIndexOf('/');
-			String realPath = application.getRealPath(servletPath.substring(0, i));
-			List<String> scenariosRootDirectories = new ArrayList<String>();
-			List<String> scenariosRootDescriptions = new ArrayList<String>();
+			String realPath = application.getRealPath("/iaf/");
+			List<String> scenariosRootDirectories = new ArrayList<>();
+			List<String> scenariosRootDescriptions = new ArrayList<>();
 			String currentScenariosRootDirectory = TestTool.initScenariosRootDirectories(
 					realPath,
 					null, scenariosRootDirectories,
@@ -1768,19 +1767,18 @@ public class TestTool {
 		File tempFileExpected = writeTempFile(expectedFileName, expected);
 		String command = windiffCommand + " " + tempFileResult + " " + tempFileExpected;
 		ProcessUtil.executeCommand(command);
+		Files.delete(tempFileResult.toPath());
+		Files.delete(tempFileExpected.toPath());
 	}
 
 	private static File writeTempFile(String originalFileName, String content) throws IOException {
 		String encoding = getEncoding(originalFileName, content);
 
-		String baseName = FileUtils.getBaseName(originalFileName);
-		String extensie = FileUtils.getFileNameExtension(originalFileName);
+		String extension = FileUtils.getFileNameExtension(originalFileName);
 
-		File tempFile = null;
-		tempFile = File.createTempFile("ibistesttool", "."+extensie);
-		tempFile.deleteOnExit();
+		File tempFile = FileUtils.createTempFile("." + extension);
 		String tempFileMessage;
-		if (extensie.equalsIgnoreCase("XML")) {
+		if ("XML".equalsIgnoreCase(extension)) {
 			tempFileMessage = XmlUtils.canonicalize(content);
 		} else {
 			tempFileMessage = content;
@@ -1860,8 +1858,8 @@ public class TestTool {
 				printableActualResult = actualResult;
 			}
 		} else {
-			printableExpectedResult = XmlUtils.replaceNonValidXmlCharacters(expectedResult);
-			printableActualResult = XmlUtils.replaceNonValidXmlCharacters(actualResult);
+			printableExpectedResult = XmlEncodingUtils.replaceNonValidXmlCharacters(expectedResult);
+			printableActualResult = XmlEncodingUtils.replaceNonValidXmlCharacters(actualResult);
 		}
 
 		// Map all identifier based properties once
@@ -2181,7 +2179,7 @@ public class TestTool {
 				if (unzipped == null) {
 					try {
 						debugMessage("Unzip", writers);
-						StringBuffer stringBuffer = new StringBuffer();
+						StringBuilder stringBuffer = new StringBuilder();
 						stringBuffer.append("<tt:file xmlns:tt=\"testtool\">");
 						ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(decodedBytes));
 						stringBuffer.append("<tt:name>" + zipInputStream.getNextEntry().getName() + "</tt:name>");
@@ -2569,7 +2567,7 @@ public class TestTool {
 	}
 
 	public static String formatString(String string, Map<String, Object> writers) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		try {
 			Reader reader = new StringReader(string);
 			BufferedReader br = new BufferedReader(reader);
@@ -2659,8 +2657,6 @@ public class TestTool {
 	 * Caller of mapPropertiesByIdentifier() should not necescarrily know about all attributes related to an ignore.
 	 *
 	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
-	 *
-	 * @return ArrayList<String> attributes
 	*/
 	public static ArrayList<String> findAttributesForIgnore(String propertyName) {
 		ArrayList<String> attributes = null;

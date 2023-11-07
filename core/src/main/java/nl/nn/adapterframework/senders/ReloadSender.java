@@ -24,7 +24,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -93,7 +92,10 @@ public class ReloadSender extends SenderWithParametersBase {
 		return new SenderResult(true, new Message("Reload " + configName + " skipped"), null, "skipped");
 	}
 
-	@IbisDoc({"reload the configuration regardless of the version", "false"})
+	/**
+	 * reload the configuration regardless of the version
+	 * @ff.default false
+	 */
 	public void setForceReload(boolean forceReload) {
 		this.forceReload  = forceReload;
 	}

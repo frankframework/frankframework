@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2021 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2018-2021 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.activation.DataHandler;
 import javax.annotation.Resource;
 import javax.xml.soap.AttachmentPart;
 import javax.xml.soap.MessageFactory;
@@ -54,13 +53,13 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageDataSource;
 import nl.nn.adapterframework.util.MessageUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Base class for handling JAX-WS SOAP messages
- * 
+ *
  * @author Jaco de Groot
  * @author Niels Meijer
  *
@@ -89,8 +88,8 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 	public SOAPMessage invoke(SOAPMessage request) {
 		Message response;
 		try (PipeLineSession pipelineSession = new PipeLineSession()) {
-			String messageId = Misc.createSimpleUUID();
-			PipeLineSession.setListenerParameters(pipelineSession, messageId, messageId, new Date(), null);
+			String messageId = UUIDUtil.createSimpleUUID();
+			PipeLineSession.updateListenerParameters(pipelineSession, messageId, messageId, new Date(), null);
 			log.debug((messageId)+"received message");
 			String soapProtocol = SOAPConstants.SOAP_1_1_PROTOCOL;
 
@@ -190,7 +189,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 			SOAPMessage soapMessage = createSOAPMessage(response, soapProtocol);
 
 			try {
-				String multipartXml = pipelineSession.getMessage(attachmentXmlSessionKey).asString();
+				String multipartXml = pipelineSession.getString(attachmentXmlSessionKey);
 				log.debug(getLogPrefix(messageId)+"building multipart message with MultipartXmlSessionKey ["+multipartXml+"]");
 				if (StringUtils.isNotEmpty(multipartXml)) {
 					Element partsElement;
@@ -203,31 +202,32 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 						throw new WebServiceException(m, e);
 					}
 					Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-					if (parts==null || parts.isEmpty()) {
+					if (parts.isEmpty()) {
 						log.warn(getLogPrefix(messageId)+"no part(s) in multipart xml [" + multipartXml + "]");
 					}
 					else {
-						Iterator<Node> iter = parts.iterator();
-						while (iter.hasNext()) {
-							Element partElement = (Element) iter.next();
-
-							if(StringUtils.isNotEmpty(partElement.getAttribute("name"))) {
-								log.info("multipart xml attribute name is no longer used!");
-							}
+						for (final Node part : parts) {
+							Element partElement = (Element) part;
 
 							String partSessionKey = partElement.getAttribute("sessionKey");
+							String name = partElement.getAttribute("name");
 							Message partObject = pipelineSession.getMessage(partSessionKey);
 
-							if(!partObject.isNull()) {
-								String mimeType = partElement.getAttribute("mimeType");
-								DataHandler dataHander = new DataHandler(new MessageDataSource(partObject, mimeType));
+							if (!partObject.isNull()) {
+								String mimeType = partElement.getAttribute("mimeType"); //Optional, auto detected if not set
+								partObject.unscheduleFromCloseOnExitOf(pipelineSession); // Closed by the SourceClosingDataHandler
+								MessageDataSource ds = new MessageDataSource(partObject, mimeType);
+								SourceClosingDataHandler dataHander = new SourceClosingDataHandler(ds);
 								AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-								attachmentPart.setContentId(partSessionKey);
+								attachmentPart.setContentId(partSessionKey); // ContentID is URLDecoded, it may not contain special characters, see #4661
+
+								String filename = StringUtils.isNotBlank(name) ? name : ds.getName();
+								attachmentPart.addMimeHeader("Content-Disposition", "attachment; name=\""+filename+"\"; filename=\""+filename+"\"");
 								soapMessage.addAttachmentPart(attachmentPart);
 
-								log.debug(getLogPrefix(messageId)+"appended filepart ["+partSessionKey+"] key ["+partSessionKey+"]");
+								log.debug("appended filepart [{}] key [{}]", filename, partSessionKey);
 							} else {
-								log.debug(getLogPrefix(messageId)+"skipping filepart ["+partSessionKey+"] key ["+partSessionKey+"], content is <NULL>");
+								log.debug("skipping filepart [{}] key [{}], content is <NULL>", name, partSessionKey);
 							}
 						}
 					}

@@ -15,43 +15,47 @@
 */
 package nl.nn.adapterframework.util;
 
+import lombok.Getter;
+
 /**
- * Stores a maximum number of elements in a Vector.
- * If, after the maximum has exceeded, another element is put
- * in the vector the oldest element is removed.
- * <p>Creation date: (03-03-2003 9:10:43)</p>
+ * Stores a maximum number of elements in a Vector. If, after the maximum has
+ * exceeded, another element is put in the vector the oldest element is removed.
+ * 
  * @author Johan Verrips
  */
 public class SizeLimitedVector<E> extends java.util.Vector<E> {
 
-	private int maxSize=Integer.MAX_VALUE;
-/**
- * SizeLimitedVector constructor comment.
- */
-public SizeLimitedVector() {
-	super();
-}
-	public SizeLimitedVector(int maxSize){
-		this.maxSize=maxSize;
+	private @Getter int maxSize;
+
+	/**
+	 * SizeLimitedVector constructor comment.
+	 */
+	public SizeLimitedVector() {
+		this(Integer.MAX_VALUE);
 	}
+
+	public SizeLimitedVector(int maxSize) {
+		super();
+		this.maxSize = maxSize;
+	}
+
 	@Override
-	public boolean add(E o){
+	public synchronized boolean add(E o) {
 		super.add(o);
-		if (super.size()>maxSize) super.removeElementAt(0);
+		if(super.size() > maxSize) {
+			super.removeElementAt(0);
+		}
 		return true;
 	}
-	public int getMaxSize() {
-		return maxSize;
-	}
+
 	/**
-	 * sets the Maximum Size to maxSize. If the current size
+	 * sets the Maximum Size to maxSize. If the current size 
 	 * is greater than the maximum size, the top elements are removed.
 	 */
 	public void setMaxSize(int maxSize) {
-		this.maxSize=maxSize;
-		if (this.size()>0){
-			while (size()>maxSize) removeElementAt(0);
+		this.maxSize = maxSize;
+		if(this.size() > 0) {
+			while(size() > maxSize) removeElementAt(0);
 		}
-
 	}
 }

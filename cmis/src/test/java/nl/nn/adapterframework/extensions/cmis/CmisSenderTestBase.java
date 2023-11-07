@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.extensions.cmis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -35,6 +35,7 @@ import org.apache.chemistry.opencmis.client.runtime.util.EmptyItemIterable;
 import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.junit.jupiter.api.Disabled;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -42,7 +43,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 	protected static final boolean STUBBED = true;
@@ -121,6 +122,12 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 		return sender;
 	}
 
+	@Override
+	@Disabled
+	public void testIfToStringWorks() {
+		// Disable this test, the CmisSender is tested in other classes.
+	}
+
 	public static class ObjectIdMock implements Answer<ObjectId> {
 		@Override
 		public ObjectId answer(InvocationOnMock invocation) throws Throwable {
@@ -141,7 +148,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 			this.mimeType = (String) invocation.getArguments()[2];
 			InputStream content = (InputStream) invocation.getArguments()[3];
 
-			stream = Misc.streamToBytes(content);
+			stream = StreamUtil.streamToBytes(content);
 			if(length > 0) { //if a length has been provided, validate it.
 				assertEquals(stream.length, length);
 			}

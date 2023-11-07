@@ -33,9 +33,8 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 
 	@Override
 	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
-		PipeRunResult prr = null;
 		try {
-			prr = chain.apply(message);
+			return chain.apply(message);
 		} catch (Exception e) {
 			Map<String, PipeForward> forwards = pipe.getForwards();
 			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME) && !(pipe instanceof ExceptionPipe)) {
@@ -52,7 +51,5 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 			}
 			throw e;
 		}
-		return prr;
 	}
-
 }

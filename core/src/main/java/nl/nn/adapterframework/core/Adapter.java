@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
@@ -60,6 +60,7 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateManager;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * An Adapter receives a specific type of messages and processes them. It has {@link Receiver Receivers}
@@ -85,14 +86,14 @@ import nl.nn.adapterframework.util.RunStateManager;
 public class Adapter implements IAdapter, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private AppConstants APP_CONSTANTS = AppConstants.getInstance(configurationClassLoader);
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final AppConstants APP_CONSTANTS = AppConstants.getInstance(configurationClassLoader);
 
 	private String name;
 	private @Getter String description;
@@ -105,46 +106,44 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private @Getter Configuration configuration;
 
-	private ArrayList<Receiver<?>> receivers = new ArrayList<>();
+	private final ArrayList<Receiver<?>> receivers = new ArrayList<>();
 	private long lastMessageDate = 0;
 	private @Getter String lastMessageProcessingState; //"OK" or "ERROR"
 	private PipeLine pipeline;
 
-	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
-
-	private class SenderLastExitState {
-		private String lastExitState = null;
-		private long lastExitStateDate = 0;
-
-		public SenderLastExitState (long lastExitStateDate, String lastExitState) {
-			this.lastExitStateDate = lastExitStateDate;
-			this.lastExitState = lastExitState;
-		}
-	}
+	private final Map<String, SenderLastExitState> sendersLastExitState = new HashMap<>();
 
 	private int numOfMessagesInProcess = 0;
 
-	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
-	private CounterStatistic numOfMessagesInError = new CounterStatistic(0);
+	private final CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
+	private final CounterStatistic numOfMessagesInError = new CounterStatistic(0);
 
 	private int hourOfLastMessageProcessed=-1;
-	private long[] numOfMessagesStartProcessingByHour = new long[24];
+	private final long[] numOfMessagesStartProcessingByHour = new long[24];
 
 	private StatisticsKeeper statsMessageProcessingDuration = null;
 
 	private long statsUpSince = System.currentTimeMillis();
 	private IErrorMessageFormatter errorMessageFormatter;
 
-	private RunStateManager runState = new RunStateManager();
+	private final RunStateManager runState = new RunStateManager();
 	private @Getter boolean configurationSucceeded = false;
 	private MessageKeeper messageKeeper; //instantiated in configure()
-	private boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
-
+	private final boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
 
 	private @Getter @Setter TaskExecutor taskExecutor;
 
 	private String composedHideRegex;
 
+	private static class SenderLastExitState {
+		private final String lastExitState;
+		private final long lastExitStateDate;
+
+		public SenderLastExitState(long lastExitStateDate, String lastExitState) {
+			this.lastExitStateDate = lastExitStateDate;
+			this.lastExitState = lastExitState;
+		}
+	}
 
 	/*
 	 * This function is called by Configuration.registerAdapter,
@@ -158,7 +157,7 @@ public class Adapter implements IAdapter, NamedBean {
 		msgLog = LogUtil.getMsgLogger(this);
 		Configurator.setLevel(msgLog.getName(), msgLogLevel);
 		configurationSucceeded = false;
-		log.debug("configuring adapter [" + getName() + "]");
+		log.debug("configuring adapter [{}]", name);
 		if(getName().contains("/")) {
 			throw new ConfigurationException("It is not allowed to have '/' in adapter name ["+getName()+"]");
 		}
@@ -223,7 +222,7 @@ public class Adapter implements IAdapter, NamedBean {
 			log.debug("already configured receiver, skipping");
 		}
 
-		log.info("Adapter [" + name + "] is initializing receiver [" + receiver.getName() + "]");
+		log.info("Adapter [{}] is initializing receiver [{}]", name, receiver.getName());
 		receiver.setAdapter(this);
 		try {
 			receiver.configure();
@@ -239,18 +238,18 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	/**
-	 * sends a warning to the log and to the messagekeeper of the adapter
+	 * send a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
-		log.warn("Adapter [" + getName() + "] "+msg);
+		log.warn("Adapter [{}] {}", name, msg);
 		getMessageKeeper().warn(msg);
 	}
 
 	/**
-	 * sends a warning to the log and to the messagekeeper of the adapter
+	 * send an error to the log and to the messagekeeper of the adapter
 	 */
 	protected void addErrorMessageToMessageKeeper(String msg, Throwable t) {
-		log.error("Adapter [" + getName() + "] " + msg, t);
+		log.error("Adapter [{}] {}", name, msg, t);
 		if (!(t instanceof IbisException)) {
 			msg += " (" + t.getClass().getName() + ")";
 		}
@@ -262,6 +261,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Increase the number of messages in process
 	 */
 	private void incNumOfMessagesInProcess(long startTime) {
+		log.trace("Increase nr messages in processing, synchronize (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		synchronized (statsMessageProcessingDuration) {
 			numOfMessagesInProcess++;
 			lastMessageDate = startTime;
@@ -287,14 +287,18 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			numOfMessagesStartProcessingByHour[hour]++;
 		}
+		log.trace("Messages in processing increased, lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 	}
 	/**
 	 * Decrease the number of messages in process
 	 */
 	private void decNumOfMessagesInProcess(long duration, boolean processingSuccess) {
+		log.trace("Decrease nr messages in processing, synchronize (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		synchronized (statsMessageProcessingDuration) {
 			numOfMessagesInProcess--;
+			log.trace("Increase nr messages processed, synchronize (lock) on numOfMessagesInProcess[{}]", numOfMessagesProcessed);
 			numOfMessagesProcessed.increase();
+			log.trace("Nr messages processed increased, lock released on numOfMessagesProcessed[{}]", numOfMessagesProcessed);
 			statsMessageProcessingDuration.addValue(duration);
 			if (processingSuccess) {
 				lastMessageProcessingState = PROCESS_STATE_OK;
@@ -303,31 +307,41 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			statsMessageProcessingDuration.notifyAll();
 		}
+		log.trace("Messages in processing decreased, lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 	}
 	/**
 	 * The number of messages for which processing ended unsuccessfully.
 	 */
 	private void incNumOfMessagesInError() {
+		log.trace("Increase nr messages in error, synchronize (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		synchronized (statsMessageProcessingDuration) {
+			log.trace("(nested) Increase nr messages in error, synchronize (lock) on numOfMessagesInError[{}]", numOfMessagesInError);
 			numOfMessagesInError.increase();
+			log.trace("(nested) Messages in error increased, lock released on numOfMessagesInError[{}]", numOfMessagesInError);
 		}
+		log.trace("Messages in error increased, lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 	}
 
 	public void setLastExitState(String pipeName, long lastExitStateDate, String lastExitState) {
+		log.trace("Set last exit state, synchronize (lock) on sendersLastExitState[{}]", sendersLastExitState);
 		synchronized (sendersLastExitState) {
 			sendersLastExitState.put(pipeName, new SenderLastExitState(lastExitStateDate, lastExitState));
 		}
+		log.trace("Last exit state set, lock released on sendersLastExitState[{}]", sendersLastExitState);
 	}
 
 	public long getLastExitIsTimeoutDate(String pipeName) {
-		synchronized (sendersLastExitState) {
-			SenderLastExitState sles = sendersLastExitState.get(pipeName);
-			if (sles!=null) {
-				if ("timeout".equals(sles.lastExitState)) {
+		log.trace("Get last exit state, synchronize (lock) on sendersLastExitState[{}]", sendersLastExitState);
+		try {
+			synchronized (sendersLastExitState) {
+				SenderLastExitState sles = sendersLastExitState.get(pipeName);
+				if (sles != null && "timeout".equals(sles.lastExitState)) {
 					return sles.lastExitStateDate;
 				}
+				return 0;
 			}
-			return 0;
+		} finally {
+			log.trace("Got Last exit state, lock released on sendersLastExitState[{}]", sendersLastExitState);
 		}
 	}
 
@@ -336,15 +350,8 @@ public class Adapter implements IAdapter, NamedBean {
 		if (errorMessageFormatter == null) {
 			errorMessageFormatter = new ErrorMessageFormatter();
 		}
-		// you never can trust an implementation, so try/catch!
 		try {
-			Message formattedErrorMessage= errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, messageID, receivedTime);
-
-			try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(this, messageID, null)) {
-				logToMessageLogWithMessageContentsOrSize(Level.INFO, "Error", "result", formattedErrorMessage, null);
-			}
-
-			return formattedErrorMessage;
+			return errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, messageID, receivedTime);
 		} catch (Exception e) {
 			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
 			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
@@ -387,15 +394,6 @@ public class Adapter implements IAdapter, NamedBean {
 		return messageKeeper;
 	}
 
-//	public void forEachStatisticsKeeper(StatisticsKeeperIterationHandler hski, Date now, Date mainMark, Date detailMark, Action action) throws SenderException {
-//		Object root=hski.start(now,mainMark,detailMark);
-//		try {
-//			iterateOverStatistics(hski,root,action);
-//		} finally {
-//			hski.end(root);
-//		}
-//	}
-
 	@Override
 	public void iterateOverStatistics(StatisticsKeeperIterationHandler hski, Object data, Action action) throws SenderException {
 		Object adapterData=hski.openGroup(data,getName(),"adapter");
@@ -404,9 +402,11 @@ public class Adapter implements IAdapter, NamedBean {
 
 		if (action!=Action.FULL &&
 			action!=Action.SUMMARY) {
+			log.trace("Iterating over statistics with lock - synchronize (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 			synchronized (statsMessageProcessingDuration) {
 				iterateOverStatisticsBody(hski,adapterData,action);
 			}
+			log.trace("Iterated over statistics - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		} else {
 			iterateOverStatisticsBody(hski,adapterData,action);
 		}
@@ -418,8 +418,14 @@ public class Adapter implements IAdapter, NamedBean {
 		hski.handleScalar(pipelineData,"messagesInProcess", getNumOfMessagesInProcess());
 		hski.handleScalar(pipelineData,"messagesProcessed", numOfMessagesProcessed);
 		hski.handleScalar(pipelineData,"messagesInError", numOfMessagesInError);
+		log.trace("Get Adapter messagesProcessedThisInterval, synchronize (lock) on numOfMessagesProcessed[{}]", numOfMessagesProcessed);
 		hski.handleScalar(pipelineData,"messagesProcessedThisInterval", numOfMessagesProcessed.getIntervalValue());
+		log.trace("Got Adapter messagesProcessedThisInterval, lock released on numOfMessagesProcessed[{}]", numOfMessagesProcessed);
+
+		log.trace("Get Adapter messagesInErrorThisInterval, synchronize (lock) on numOfMessagesInError[{}]", numOfMessagesInError);
 		hski.handleScalar(pipelineData,"messagesInErrorThisInterval", numOfMessagesInError.getIntervalValue());
+		log.trace("Got Adapter messagesInErrorThisInterval, lock released on numOfMessagesInError[{}]", numOfMessagesInError);
+
 		Object durationStatsData = hski.openGroup(pipelineData, null, "duration");
 		hski.handleStatisticsKeeper(durationStatsData, statsMessageProcessingDuration);
 		hski.closeGroup(durationStatsData);
@@ -463,20 +469,35 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@JmxAttribute(description = "# Messages in Error")
 	public long getNumOfMessagesInError() {
-		synchronized (statsMessageProcessingDuration) {
-			return numOfMessagesInError.getValue();
+		log.trace("Get Adapter num messages in error - synchronized (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		try {
+			synchronized (statsMessageProcessingDuration) {
+				return numOfMessagesInError.getValue();
+			}
+		} finally {
+			log.trace("Got Adapter num messages in error - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		}
 	}
 	@JmxAttribute(description = "# Messages in process")
 	public int getNumOfMessagesInProcess() {
-		synchronized (statsMessageProcessingDuration) {
-			return numOfMessagesInProcess;
+		log.trace("Get Adapter num messages in process - synchronized (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		try {
+			synchronized (statsMessageProcessingDuration) {
+				return numOfMessagesInProcess;
+			}
+		} finally {
+			log.trace("Got Adapter num messages in process - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		}
 	}
 
 	public long[] getNumOfMessagesStartProcessingByHour() {
-		synchronized (statsMessageProcessingDuration) {
-			return numOfMessagesStartProcessingByHour;
+		log.trace("Get Adapter num messages in start processing by hour - synchronized (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		try {
+			synchronized (statsMessageProcessingDuration) {
+				return numOfMessagesStartProcessingByHour;
+			}
+		} finally {
+			log.trace("Got Adapter num messages in start processing by hour - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		}
 	}
 	/**
@@ -485,8 +506,13 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@JmxAttribute(description = "# Messages Processed")
 	public long getNumOfMessagesProcessed() {
-		synchronized (statsMessageProcessingDuration) {
-			return numOfMessagesProcessed.getValue();
+		log.trace("Get Adapter num messages processed - synchronized (lock) on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
+		try {
+			synchronized (statsMessageProcessingDuration) {
+				return numOfMessagesProcessed.getValue();
+			}
+		} finally {
+			log.trace("Got Adapter num messages processed - lock released on statsMessageProcessingDuration[{}]", statsMessageProcessingDuration);
 		}
 	}
 
@@ -519,12 +545,14 @@ public class Adapter implements IAdapter, NamedBean {
 
 	@Override
 	public RunState getRunState() {
-		return runState.getRunState();
+		RunState state = runState.getRunState();
+		log.trace("Adapter [{}] runstate: [{}]", name, state);
+		return state;
 	}
 
 	@JmxAttribute(description = "RunState")
 	public String getRunStateAsString() {
-		return runState.getRunState().toString();
+		return getRunState().toString();
 	}
 
 	/**
@@ -551,33 +579,10 @@ public class Adapter implements IAdapter, NamedBean {
 		return new Date(statsUpSince);
 	}
 
-	private void messageLogResult(String messageId, PipeLineResult result, String duration) {
-		Map<String,String> mdcValues = new HashMap<>();
-		mdcValues.put("exitState", result.getState().name());
-		if (result.getExitCode()!=0) {
-			mdcValues.put("exitCode", Integer.toString(result.getExitCode()));
-		}
-		if (duration!=null) {
-			mdcValues.put("duration", duration);
-		}
-
-		logToMessageLogWithMessageContentsOrSize(Level.INFO, "Pipeline returned", "result", result.getResult(), mdcValues);
-		if (log.isDebugEnabled()) {
-			String exitCode = ", exit-code ["+result.getExitCode()+"]";
-			String format = "got exit-state [{}]"+(result.getExitCode()!=0 ? exitCode : "" ) +" and result [{}] from PipeLine";
-			log.debug("Adapter [{}] messageId [{}] "+format, getName(), messageId, result.getState(), result.getResult());
-		}
-	}
-
-	private void logToMessageLogWithMessageContentsOrSize(Level level, String logMessage, String dataPrefix, Message data, Map<String,String> additionalMdcValues) {
-		Map<String,String> mdcValues = new HashMap<>();
-		mdcValues.put(dataPrefix+".size", getFileSizeAsBytes(data));
-		if (!isMsgLogHidden()) {
-			mdcValues.put(dataPrefix, data.toString());
-		}
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.putAll(mdcValues)) {
-			if (additionalMdcValues!=null) {
-				ctc.putAll(additionalMdcValues);
+	public void logToMessageLogWithMessageContentsOrSize(Level level, String logMessage, String dataPrefix, Message data) {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(dataPrefix+".size", getFileSizeAsBytes(data))) {
+			if (!isMsgLogHidden()) {
+				ctc.put(dataPrefix, data.toString());
 			}
 			msgLog.log(level, logMessage);
 		}
@@ -587,34 +592,44 @@ public class Adapter implements IAdapter, NamedBean {
 	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
 		try {
-			return processMessageWithExceptions(messageId, message, pipeLineSession);
-		} catch (Throwable t) {
-			PipeLineResult result = new PipeLineResult();
-			result.setState(ExitState.ERROR);
-			String msg = "Illegal exception ["+t.getClass().getName()+"]";
-			INamedObject objectInError = null;
-			if (t instanceof ListenerException) {
-				Throwable cause = ((ListenerException) t).getCause();
-				if  (cause instanceof PipeRunException) {
-					PipeRunException pre = (PipeRunException) cause;
-					msg = "error during pipeline processing";
-					objectInError = pre.getPipeInError();
-				} else if (cause instanceof ManagedStateException) {
-					msg = "illegal state";
-					objectInError = this;
-				}
-			}
 			try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(this, messageId, pipeLineSession)) {
-				result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
+				PipeLineResult result = new PipeLineResult();
+				boolean success = false;
+				try {
+					result = processMessageWithExceptions(messageId, message, pipeLineSession);
+					success = true;
+				} catch (Throwable t) {
+					result.setState(ExitState.ERROR);
+					String msg = "Illegal exception ["+t.getClass().getName()+"]";
+					INamedObject objectInError = null;
+					if (t instanceof ListenerException) {
+						Throwable cause = ((ListenerException) t).getCause();
+						if  (cause instanceof PipeRunException) {
+							PipeRunException pre = (PipeRunException) cause;
+							msg = "error during pipeline processing";
+							objectInError = pre.getPipeInError();
+						} else if (cause instanceof ManagedStateException) {
+							msg = "illegal state";
+							objectInError = this;
+						}
+					}
+					result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
+				} finally {
+					logToMessageLogWithMessageContentsOrSize(Level.INFO, "Pipeline "+(success ? "Success" : "Error"), "result", result.getResult());
+				}
+				return result;
 			}
-			return result;
+		} finally {
+			if (ThreadContext.getDepth() == 0) {
+				ThreadContext.clearAll();
+			}
 		}
 	}
 
 	@Override
 	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException {
 
-		PipeLineResult result = new PipeLineResult();
+		PipeLineResult result = null;
 
 		long startTime = System.currentTimeMillis();
 		boolean processingSuccess = true;
@@ -630,82 +645,73 @@ public class Adapter implements IAdapter, NamedBean {
 		incNumOfMessagesInProcess(startTime);
 
 		try {
-			try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(this, messageId, pipeLineSession)) {
-				try {
-					if (StringUtils.isNotEmpty(composedHideRegex)) {
-						IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
-					}
-
-					StringBuilder additionalLogging = new StringBuilder();
-
-					// xPathLogKeys is an EsbJmsListener thing
-					String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
-					if(StringUtils.isNotEmpty(xPathLogKeys)) {
-						StringTokenizer tokenizer = new StringTokenizer(xPathLogKeys, ",");
-						while (tokenizer.hasMoreTokens()) {
-							String logName = tokenizer.nextToken();
-							String xPathResult = (String) pipeLineSession.get(logName);
-							additionalLogging.append(" and ");
-							additionalLogging.append(logName);
-							additionalLogging.append(" [" + xPathResult + "]");
-						}
-					}
-
-					if(msgLog.isDebugEnabled()) {
-						logToMessageLogWithMessageContentsOrSize(Level.DEBUG, "Pipeline started"+additionalLogging, "request", message, null);
-					}
-					log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
-
-					if (Message.isEmpty(message) && isReplaceNullMessage()) {
-						log.debug("Adapter [" + getName() + "] replaces null message with messageId [" + messageId + "] by empty message");
-						message = new Message("");
-					}
-					result = pipeline.process(messageId, message, pipeLineSession);
-
-					String duration;
-					if(msgLogHumanReadable) {
-						duration = Misc.getAge(startTime);
-					} else {
-						duration = Misc.getDurationInMs(startTime);
-					}
-					messageLogResult(messageId, result, duration);
-					return result;
-
-				} catch (Throwable t) {
-					ListenerException e;
-					if (t instanceof ListenerException) {
-						e = (ListenerException) t;
-					} else {
-						e = new ListenerException(t);
-					}
-					processingSuccess = false;
-					incNumOfMessagesInError();
-					addErrorMessageToMessageKeeper("error processing message with messageId [" + messageId+"]: ",e);
-					throw e;
-				} finally {
-					long endTime = System.currentTimeMillis();
-					long duration = endTime - startTime;
-					//reset the InProcess fields, and increase processedMessagesCount
-					decNumOfMessagesInProcess(duration, processingSuccess);
-
-					if (log.isDebugEnabled()) { // for performance reasons
-						log.debug("Adapter: [" + getName()
-								+ "] STAT: Finished processing message with messageId [" + messageId
-								+ "] exit-state [" + result.getState()
-								+ "] started " + DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC)
-								+ " finished " + DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC)
-								+ " total duration: " + duration + " msecs");
-					} else {
-						log.info("Adapter [" + getName() + "] completed message with messageId [" + messageId + "] with exit-state [" + result.getState() + "]");
-					}
-					IbisMaskingLayout.removeThreadLocalReplace();
-				}
+			if (StringUtils.isNotEmpty(composedHideRegex)) {
+				IbisMaskingLayout.addToThreadLocalReplace(composedHideRegex);
 			}
+
+			String additionalLogging = getAdditionalLogging(pipeLineSession);
+			if(msgLog.isDebugEnabled()) {
+				logToMessageLogWithMessageContentsOrSize(Level.DEBUG, "Pipeline started"+additionalLogging, "request", message);
+			}
+			log.info("Adapter [{}] received message with messageId [{}]{}", getName(), messageId, additionalLogging);
+
+			if (Message.isEmpty(message) && isReplaceNullMessage()) {
+				log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
+				message = new Message("");
+			}
+			result = pipeline.process(messageId, message, pipeLineSession);
+			return result;
+
+		} catch (Throwable t) {
+			ListenerException e;
+			if (t instanceof ListenerException) {
+				e = (ListenerException) t;
+			} else {
+				e = new ListenerException(t);
+			}
+			processingSuccess = false;
+			incNumOfMessagesInError();
+			warn("error processing message with messageId [" + messageId + "]: " + e.getMessage());
+			result = new PipeLineResult();
+			result.setState(ExitState.ERROR);
+			result.setResult(new Message(e.getMessage()));
+			throw e;
 		} finally {
-			if (ThreadContext.getDepth() == 0) {
-				ThreadContext.removeStack();
+			long endTime = System.currentTimeMillis();
+			long duration = endTime - startTime;
+			//reset the InProcess fields, and increase processedMessagesCount
+			decNumOfMessagesInProcess(duration, processingSuccess);
+			ThreadContext.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, result.getState().name());
+			if (result.getExitCode()!=0) {
+				ThreadContext.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, Integer.toString(result.getExitCode()));
 			}
+			ThreadContext.put("pipeline.duration", msgLogHumanReadable ? Misc.getAge(startTime) : Long.toString(duration));
+			if (log.isDebugEnabled()) {
+				log.debug("Adapter: [{}] STAT: Pipeline finished processing message with messageId [{}] exit-state [{}] started {} finished {} total duration: {} ms",
+						getName(), messageId, result.getState(),
+						DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC),
+						DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC),
+						duration);
+			} else {
+				log.info("Adapter [{}] Pipeline finished processing message with messageId [{}] with exit-state [{}]", getName(), messageId, result.getState());
+			}
+
+			IbisMaskingLayout.removeThreadLocalReplace();
 		}
+	}
+
+	private static String getAdditionalLogging(final PipeLineSession pipeLineSession) {
+		// xPathLogKeys is an EsbJmsListener thing
+		String additionalLogging;
+		String xPathLogKeys = (String) pipeLineSession.get("xPathLogKeys");
+		if(StringUtils.isNotEmpty(xPathLogKeys)) {
+			additionalLogging = StringUtil.splitToStream(xPathLogKeys)
+					.map(logName -> logName + " [" + pipeLineSession.get(logName) + "]")
+					.collect(Collectors.joining(" and "));
+		} else {
+			additionalLogging = "";
+		}
+		return additionalLogging;
 	}
 
 	// technically, a Receiver is not mandatory, but no useful adapter can do without it.
@@ -714,9 +720,10 @@ public class Adapter implements IAdapter, NamedBean {
 	 * then add a receiver for each channel.
 	 * @ff.mandatory
 	 */
+	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
 	public void registerReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
-		log.debug("Adapter [" + name + "] registered receiver [" + receiver.getName() + "] with properties [" + receiver.toString() + "]");
+		if (log.isDebugEnabled()) log.debug("Adapter [{}] registered receiver [{}] with properties [{}]", name, receiver.getName(), receiver.toString());
 	}
 
 	/**
@@ -735,7 +742,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public void setPipeLine(PipeLine pipeline) throws ConfigurationException {
 		this.pipeline = pipeline;
 		pipeline.setAdapter(this);
-		log.debug("Adapter [" + name + "] registered pipeline [" + pipeline.toString() + "]");
+		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
 	@Override
 	public PipeLine getPipeLine() {
@@ -766,7 +773,7 @@ public class Adapter implements IAdapter, NamedBean {
 			case STARTED:
 			case STOPPING:
 			case EXCEPTION_STOPPING:
-				log.warn("cannot start adapter ["+getName()+"] that is stopping, starting or already started");
+				log.warn("cannot start adapter [{}] that is stopping, starting or already started", name);
 				return;
 			default:
 				break;
@@ -779,16 +786,17 @@ public class Adapter implements IAdapter, NamedBean {
 				try {
 					// See also Receiver.startRunning()
 					if (!configurationSucceeded) {
-						log.error("configuration of adapter [" + getName() + "] did not succeed, therefore starting the adapter is not possible");
+						log.error("configuration of adapter [{}] did not succeed, therefore starting the adapter is not possible", name);
 						warn("configuration did not succeed. Starting the adapter ["+getName()+"] is not possible");
 						runState.setRunState(RunState.ERROR);
 						return;
 					}
 					if (configuration.isUnloadInProgressOrDone()) {
-						log.error("configuration of adapter [" + getName() + "] unload in progress or done, therefore starting the adapter is not possible");
+						log.error("configuration of adapter [{}] unload in progress or done, therefore starting the adapter is not possible", name);
 						warn("configuration unload in progress or done. Starting the adapter ["+getName()+"] is not possible");
 						return;
 					}
+					log.trace("Start Adapter thread - synchronize (lock) on Adapter runState[{}]", runState);
 					synchronized (runState) {
 						RunState currentRunState = getRunState();
 						if (currentRunState!=RunState.STOPPED) {
@@ -798,10 +806,11 @@ public class Adapter implements IAdapter, NamedBean {
 						}
 						runState.setRunState(RunState.STARTING);
 					}
+					log.trace("Start Adapter thread - lock released on Adapter runState[{}]", runState);
 
 					// start the pipeline
 					try {
-						log.debug("Adapter [" + getName() + "] is starting pipeline");
+						log.debug("Adapter [{}] is starting pipeline", name);
 						pipeline.start();
 					} catch (PipeStartException pre) {
 						addErrorMessageToMessageKeeper("got error starting PipeLine", pre);
@@ -817,7 +826,7 @@ public class Adapter implements IAdapter, NamedBean {
 					// this allows the use of test-pipeline without (running) receivers
 					runState.setRunState(RunState.STARTED);
 					getMessageKeeper().add("Adapter [" + getName() + "] up and running");
-					log.info("Adapter [" + getName() + "] up and running");
+					log.info("Adapter [{}] up and running", name);
 
 					// starting receivers
 					for (Receiver<?> receiver: receivers) {
@@ -863,14 +872,15 @@ public class Adapter implements IAdapter, NamedBean {
 						case STARTING:
 						case STOPPING:
 						case STOPPED:
-							log.warn("adapter ["+getName()+"] currently in state [" + getRunState() + "], ignoring stop() command");
+							if (log.isWarnEnabled()) log.warn("adapter [{}] currently in state [{}], ignoring stop() command", getName(), getRunStateAsString());
 							return;
 						default:
 							break;
 					}
 					runState.setRunState(RunState.STOPPING);
-					log.debug("Adapter [" + name + "] is stopping receivers");
+					log.debug("Adapter [{}] is stopping receivers", name);
 					for (Receiver<?> receiver: receivers) {
+						// Will not stop receivers that are in state "STARTING"
 						receiver.stopRunning();
 					}
 					// IPullingListeners might still be running, see also
@@ -879,15 +889,20 @@ public class Adapter implements IAdapter, NamedBean {
 						if(receiver.getRunState() == RunState.ERROR) {
 							continue; // We don't need to stop the receiver as it's already stopped...
 						}
-						while (receiver.getRunState() != RunState.STOPPED) {
-							log.debug("Adapter [" + getName() + "] waiting for receiver [" + receiver.getName() + "] in state ["+receiver.getRunState()+"] to stop");
+						while (!receiver.isStopped()) {
+							if (receiver.getRunState() == RunState.STARTED || receiver.getRunState() == RunState.EXCEPTION_STARTING) {
+								log.debug("Adapter [{}] stopping receiver [{}] which was still starting when stop() command was received", name, receiver.getName());
+								receiver.stopRunning();
+							}
+							// Passing receiver.getRunState() as supplier could cause recursive log invocation so should be avoided
+							if (log.isDebugEnabled()) log.debug("Adapter [{}] waiting for receiver [{}] in state [{}] to stop", name, receiver.getName(), receiver.getRunState());
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e) {
-								log.warn("Interrupted waiting for threads of receiver [" + receiver.getName() + "] to end", e);
+								if (log.isWarnEnabled()) log.warn("Interrupted waiting for threads of receiver [{}] to end", receiver.getName(), e);
 							}
 						}
-						log.info("Adapter [" + getName() + "] successfully stopped receiver [" + receiver.getName() + "]");
+						log.info("Adapter [{}] stopped receiver [{}] {}.", name, receiver.getName(), receiver.isInRunState(RunState.EXCEPTION_STOPPING) ? "with error" : "successfully");
 					}
 					int currentNumOfMessagesInProcess = getNumOfMessagesInProcess();
 					if (currentNumOfMessagesInProcess > 0) {
@@ -895,15 +910,17 @@ public class Adapter implements IAdapter, NamedBean {
 						warn(msg);
 					}
 					waitForNoMessagesInProcess();
-					log.debug("Adapter [" + name + "] is stopping pipeline");
+					log.debug("Adapter [{}] is stopping pipeline", name);
 					pipeline.stop();
 					//Set the adapter uptime to 0 as the adapter is stopped.
 					statsUpSince = 0;
 					runState.setRunState(RunState.STOPPED);
 					getMessageKeeper().add("Adapter [" + name + "] stopped");
+					log.debug("Adapter [{}] now in state STOPPED", name);
 				} catch (Throwable t) {
 					addErrorMessageToMessageKeeper("got error stopping Adapter", t);
 					runState.setRunState(RunState.ERROR);
+					log.warn("Adapter [{}] in state ERROR", name, t);
 				} finally {
 					configuration.removeStopAdapterThread(this);
 				}
@@ -947,11 +964,13 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	public void waitForNoMessagesInProcess() throws InterruptedException {
+		log.trace("Wait until no messages in process - synchronize (lock) on statsMessageProcessingDuration {}", statsMessageProcessingDuration);
 		synchronized (statsMessageProcessingDuration) {
 			while (getNumOfMessagesInProcess() > 0) {
 				statsMessageProcessingDuration.wait(); // waits for notification from decNumOfMessagesInProcess()
 			}
 		}
+		log.trace("No more messages in process - lock released on statsMessageProcessingDuration {}", statsMessageProcessingDuration);
 	}
 
 	/* (non-Javadoc)

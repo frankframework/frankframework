@@ -9,12 +9,12 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class Stub4TesttoolTest {
@@ -251,6 +251,12 @@ public class Stub4TesttoolTest {
 	}
 
 	@Test
+	public void stub4testtoolSamba2Pipe() throws Exception {
+		String directory = STUB4TESTTOOL_DIRECTORY + "/Samba2Pipe";
+		stub4testtoolTest(directory, false);
+	}
+
+	@Test
 	public void stub4testtoolSenderPipe() throws Exception {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/SenderPipe";
 		stub4testtoolTest(directory, false);
@@ -359,7 +365,7 @@ public class Stub4TesttoolTest {
 	}
 
 	private String transformConfiguration(String originalConfig, String xslt, Map<String, Object> parameters) throws ConfigurationException {
-		URL xsltSource = ClassUtils.getResourceURL(xslt);
+		URL xsltSource = ClassLoaderUtils.getResourceURL(xslt);
 		if (xsltSource == null) {
 			throw new ConfigurationException("cannot find resource [" + xslt + "]");
 		}

@@ -37,18 +37,36 @@
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+
+		<!-- This should be the only required test dependency to run IbisTester -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-larva</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<version>9.4.49.v20220914</version>
+				<version>9.4.53.v20231009</version>
 				<configuration>
 					<systemProperties>
 						<systemProperty>
 							<name>log.dir</name>
-							<value>./target</value>
+							<value>./target/logs</value>
 						</systemProperty>
 						<systemProperty>
 							<name>log.level</name>
@@ -60,7 +78,7 @@
 						</systemProperty>
 					</systemProperties>
 					<webAppConfig>
-						<webInfIncludeJarPattern>.*/ibis-adapterframework-*\.jar$|.*/classes/.*</webInfIncludeJarPattern>
+						<webInfIncludeJarPattern>.*/ibis-adapterframework-[^/]*\.jar$</webInfIncludeJarPattern>
 						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
 					</webAppConfig>
 					<loginServices>
@@ -122,6 +140,14 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<!-- Ignoring JaCoCo reports because this module does not contain any Java classes.-->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

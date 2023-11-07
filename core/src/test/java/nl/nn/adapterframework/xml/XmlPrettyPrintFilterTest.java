@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.xml;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringReader;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -52,4 +52,18 @@ public class XmlPrettyPrintFilterTest {
 		assertEquals(expected,xmlWriter.toString());
 	}
 
+	@Test
+	public void testSortingAttributes() throws Exception {
+		String input    = TestFileUtils.getTestFile("/Xslt/AnyXml/in-with-attributes.xml");
+		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/out-with-attributes.xml");
+		XmlWriter xmlWriter = new XmlWriter();
+
+		PrettyPrintFilter filter =  new PrettyPrintFilter(xmlWriter, true);
+
+		InputSource inputSource = new InputSource(new StringReader(input));
+		XMLReader xmlReader = XmlUtils.getXMLReader(filter);
+
+		xmlReader.parse(inputSource);
+		assertEquals(expected,xmlWriter.toString());
+	}
 }

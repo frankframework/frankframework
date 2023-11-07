@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.sap.ISapSender;
 import nl.nn.adapterframework.extensions.sap.SapException;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -141,14 +140,17 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 	}
 
 
-	@IbisDoc({"Name of the RFC-function to be called in the SAP system", ""})
+	/** Name of the RFC-function to be called in the SAP system */
 	@Override
 	public void setFunctionName(String string) {
 		functionName = string;
 	}
 
 
-	@IbisDoc({"Name of the parameter used to obtain the functionName from if the attribute <code>functionName</code> is empty", "functionName"})
+	/**
+	 * Name of the parameter used to obtain the functionName from if the attribute <code>functionName</code> is empty
+	 * @ff.default functionName
+	 */
 	@Override
 	public void setFunctionNameParam(String string) {
 		functionNameParam = string;

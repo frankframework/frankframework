@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 
 public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 
@@ -71,18 +71,19 @@ public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 		helper._deleteFolder(folderName);
 	}
 
-	@Before
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
-		super.setUp();
 		helper = getFileSystemTestHelper();
 		helper.setUp();
+		super.setUp();
 	}
 
-	@After
+	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
-		helper.tearDown();
+		if (helper!=null) helper.tearDown();
+		super.tearDown();
 	}
 
 }

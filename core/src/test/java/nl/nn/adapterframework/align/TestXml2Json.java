@@ -1,14 +1,14 @@
 package nl.nn.adapterframework.align;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URL;
 
-import jakarta.json.JsonStructure;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import jakarta.json.JsonStructure;
 
 /**
  * @author Gerrit van Brakel
@@ -33,7 +33,7 @@ public class TestXml2Json extends AlignTestBase {
 
 		// check the validity of the input XML
 		if (expectValid) {
-			assertEquals("XML invalid", expectValid, Utils.validate(schemaUrl, xmlString));
+			assertEquals(expectValid, Utils.validate(schemaUrl, xmlString), "XML invalid");
 		}
 
 		LOG.debug("input xml:"+xmlString);
@@ -123,7 +123,7 @@ public class TestXml2Json extends AlignTestBase {
 	}
 
 //	private String getTestFile(String file) throws IOException, TimeoutException {
-//		URL url=ClassUtils.getResourceURL(this, file);
+//		URL url=ClassLoaderUtils.getResourceURL(this, file);
 //		if (url==null) {
 //			return null;
 //		}
@@ -256,7 +256,7 @@ public class TestXml2Json extends AlignTestBase {
 
 	@Override
 	@Test
-	@Ignore("test on erronous json input")
+	@Disabled("test on erronous json input")
 	public void testMixedContentUnknown() throws Exception {
 		super.testMixedContentUnknown();
 	}

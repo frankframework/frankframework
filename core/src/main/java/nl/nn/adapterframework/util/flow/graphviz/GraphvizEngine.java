@@ -25,9 +25,9 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
 import nl.nn.adapterframework.extensions.javascript.JavascriptException;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.flow.FlowGenerationException;
 import nl.nn.adapterframework.util.flow.GraphvizJsFlowGenerator;
 import nl.nn.adapterframework.util.flow.ResultHandler;
@@ -46,7 +46,7 @@ public class GraphvizEngine {
 	private String fileFormat = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG");
 
 	// Available JS Engines. Lower index has priority.
-	private static String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8,nl.nn.adapterframework.extensions.javascript.Nashorn").split(",");
+	private static final String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8").split(",");
 
 	private Options defaultOptions = null;
 
@@ -128,11 +128,11 @@ public class GraphvizEngine {
 	}
 
 	private String getVizJsSource(String version) throws IOException {
-		URL vizWrapperURL = ClassUtils.getResourceURL("/js/viz-" + version + ".js");
-		URL vizRenderURL = ClassUtils.getResourceURL("/js/viz-full.render-" + version + ".js");
+		URL vizWrapperURL = ClassLoaderUtils.getResourceURL("/js/viz-" + version + ".js");
+		URL vizRenderURL = ClassLoaderUtils.getResourceURL("/js/viz-full.render-" + version + ".js");
 		if(vizWrapperURL == null || vizRenderURL == null)
 			throw new IOException("failed to open vizjs file for version ["+version+"]");
-		return Misc.streamToString(vizWrapperURL.openStream()) + Misc.streamToString(vizRenderURL.openStream());
+		return StreamUtil.streamToString(vizWrapperURL.openStream()) + StreamUtil.streamToString(vizRenderURL.openStream());
 	}
 
 

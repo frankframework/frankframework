@@ -27,16 +27,14 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.PathMessage;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
@@ -46,7 +44,6 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFileSystem<Path> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "LocalFilesystem";
-	protected Logger log = LogUtil.getLogger(this);
 
 	private String root;
 
@@ -151,10 +148,11 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		if (folderExists(folder)) {
 			try {
 				if(removeNonEmptyFolder) {
-					Files.walk(toFile(folder))
-						.sorted(Comparator.reverseOrder())
+					try (Stream<Path> directoryStream = Files.walk(toFile(folder))) {
+						directoryStream.sorted(Comparator.reverseOrder())
 						.map(Path::toFile)
 						.forEach(File::delete);
+					}
 				} else {
 					Files.delete(toFile(folder));
 				}
@@ -258,8 +256,10 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 		return "root ["+(getRoot()==null?"":getRoot())+"]";
 	}
 
-	@IbisDoc({"Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root. "+
-			"When the root is left unspecified, absolute paths to files and folders can be used", "" })
+	/** 
+	 * Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root.
+	 * When the root is left unspecified, absolute paths to files and folders can be used
+	 */
 	public void setRoot(String root) {
 		this.root = root;
 	}

@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 
@@ -100,13 +99,16 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		return role;
 	}
 
-	@IbisDoc({"the j2ee role to check. ", ""})
+	/** the j2ee role to check.  */
 	public void setRole(String string) {
 		role = string;
 	}
 
 	@Deprecated
-	@IbisDoc({"name of forward returned if user is not allowed to assume the specified role", "notInRole"})
+	/**
+	 * name of forward returned if user is not allowed to assume the specified role
+	 * @ff.default notInRole
+	 */
 	public void setNotInRoleForwardName(String string) {
 		notInRoleForwardName = string;
 	}

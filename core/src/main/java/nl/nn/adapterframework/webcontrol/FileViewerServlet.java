@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.io.Reader;
 import java.net.URL;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -46,13 +45,14 @@ import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.statistics.StatisticsUtil;
 import nl.nn.adapterframework.statistics.parser.StatisticsParser;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -98,15 +98,13 @@ public class FileViewerServlet extends HttpServletBase {
 	private static final String stats_prefix    = "<statisticsCollections>";
 	private static final String stats_postfix	  = "</statisticsCollections>";
 
-	public static final String permissionRules = AppConstants.getInstance().getResolvedProperty("FileViewerServlet.permission.rules");
+	public static final String permissionRules = AppConstants.getInstance().getProperty("FileViewerServlet.permission.rules");
 
 	public static String makeConfiguredReplacements(String input) {
-		StringTokenizer tok=AppConstants.getInstance().getTokenizedProperty(fvConfigKey);
-		while (tok.hasMoreTokens()){
-			String signal=tok.nextToken();
-			String pre=AppConstants.getInstance().getProperty(fvConfigKey+"."+signal+".pre");
-			String post=AppConstants.getInstance().getProperty(fvConfigKey+"."+signal+".post");
-			input=StringUtils.replace(input, signal, pre+signal+post);
+		for (final String signal : AppConstants.getInstance().getListProperty(fvConfigKey)) {
+			String pre = AppConstants.getInstance().getProperty(fvConfigKey + "." + signal + ".pre");
+			String post = AppConstants.getInstance().getProperty(fvConfigKey + "." + signal + ".post");
+			input = StringUtils.replace(input, signal, pre + signal + post);
 		}
 		return StringUtils.replace(input, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
 	}
@@ -115,7 +113,7 @@ public class FileViewerServlet extends HttpServletBase {
 	public static void transformReader(Reader reader, String filename, Map<String, Object> parameters, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException {
 		PrintWriter out = response.getWriter();
 		Reader fileReader = new EncapsulatingReader(reader, input_prefix, input_postfix, true);
-		URL xsltSource = ClassUtils.getResourceURL(stylesheetUrl);
+		URL xsltSource = ClassLoaderUtils.getResourceURL(stylesheetUrl);
 		if (xsltSource!=null) {
 			Transformer transformer = XmlUtils.createTransformer(xsltSource);
 			if (parameters!=null) {
@@ -130,7 +128,7 @@ public class FileViewerServlet extends HttpServletBase {
 
 	public static void transformSource(Source source, Map<String, Object> parameters, HttpServletResponse response, String stylesheetUrl, String title) throws TransformerException, IOException {
 		PrintWriter out = response.getWriter();
-		URL xsltSource = ClassUtils.getResourceURL(stylesheetUrl);
+		URL xsltSource = ClassLoaderUtils.getResourceURL(stylesheetUrl);
 		Transformer transformer = XmlUtils.createTransformer(xsltSource);
 		if (parameters!=null) {
 			XmlUtils.setTransformerParameters(transformer, parameters);
@@ -152,15 +150,15 @@ public class FileViewerServlet extends HttpServletBase {
 
 			out.println("<html>");
 			out.println("<head>");
-			out.println("<title>"+AppConstants.getInstance().getResolvedProperty("instance.name.lc")+"@"+Misc.getHostname()+" - "+title+"</title>");
-			out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\""+AppConstants.getInstance().getProperty(fvConfigKey+".css")+"\">");
+			out.println("<title>"+AppConstants.getInstance().getProperty("instance.name.lc")+"@"+Misc.getHostname()+" - "+title+"</title>");
+			out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\"iaf/"+AppConstants.getInstance().getProperty(fvConfigKey+".css")+"\">");
 			out.println("</head>");
 			out.println("<body>");
 
 			LineNumberReader lnr = new LineNumberReader(reader);
 			String line;
 			while ((line=lnr.readLine())!=null) {
-				out.println(makeConfiguredReplacements(XmlUtils.encodeChars(line))+"<br/>");
+				out.println(makeConfiguredReplacements(XmlEncodingUtils.encodeChars(line))+"<br/>");
 			}
 
 			out.println("</body>");
@@ -176,7 +174,7 @@ public class FileViewerServlet extends HttpServletBase {
 				lastPart=filename;
 			}
 			response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
-			Misc.readerToWriter(reader, out);
+			StreamUtil.readerToWriter(reader, out);
 		}
 		if (type.equalsIgnoreCase("xml")) {
 			response.setContentType("application/xml");
@@ -223,7 +221,7 @@ public class FileViewerServlet extends HttpServletBase {
 			lastPart=filename;
 		}
 		response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
-		Misc.streamToStream(inputStream, outputStream);
+		StreamUtil.streamToStream(inputStream, outputStream);
 		outputStream.close();
 	}
 

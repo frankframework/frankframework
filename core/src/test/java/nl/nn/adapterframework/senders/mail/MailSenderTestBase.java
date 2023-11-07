@@ -1,8 +1,11 @@
 package nl.nn.adapterframework.senders.mail;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,13 +19,12 @@ import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.mail.Session;
-import jakarta.mail.internet.MimeMessage;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.sun.mail.smtp.SMTPMessage;
 
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -37,7 +39,7 @@ import nl.nn.adapterframework.testutil.TestAssertions;
 
 public abstract class MailSenderTestBase<S extends MailSenderBase> extends SenderTestBase<S> {
 
-	@Test(expected = SenderException.class)
+	@Test
 	public void noRecipient() throws Exception {
 		String mailInput = "<email>"
 				+ "<subject>My Subject</subject>"
@@ -47,7 +49,9 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 
 		sender.configure();
 		sender.open();
-		sender.sendMessageOrThrow(new Message(mailInput), session);
+
+		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message(mailInput), session));
+		assertThat(e.getMessage(), containsString("at least 1 recipient must be specified"));
 	}
 
 	private void validateAuthentication(Session session) {
@@ -67,6 +71,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		String rawResult = new String(boas.toByteArray());
 		String expected = getResource(file).asString();
 		rawResult = rawResult.replace(message.getMessageID(), "MESSAGE-ID");
+		rawResult = rawResult.replaceAll(" +\\r?\\n", "\n");
 		rawResult = rawResult.replaceFirst("Date: (.+)", "Date: DATE");
 		int i = rawResult.indexOf("boundary=\"----");
 		if(i > 0) {
@@ -87,6 +92,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		String recipientsXml = "<recipient type=\"to\" name=\"dummy\">me@address.org</recipient>"
 				+ "<recipient type=\"to\" name=\"two\">me2@address.org</recipient>";
 		sender.addParameter(new Parameter("from", "myself@address.org"));
+		sender.addParameter(new Parameter("replyTo", "to@address.com"));
 		sender.addParameter(new Parameter("subject", "My Subject"));
 		sender.addParameter(new Parameter("message", "My Message Goes Here"));
 		sender.addParameter(new Parameter("messageBase64", "false"));
@@ -202,8 +208,8 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		exception.expectMessage("messageType [MessageTypeWithoutASlash] must contain a forward slash ('/')");
-		sender.sendMessageOrThrow(new Message(mailInput), session);
+		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message(mailInput), session));
+		assertThat(e.getMessage(), containsString("messageType [MessageTypeWithoutASlash] must contain a forward slash ('/')"));
 	}
 
 	@Test
@@ -233,7 +239,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		compare("mailWithBase64Message.txt", message);
 	}
 
-	@Test(expected = SenderException.class)
+	@Test
 	public void mailWithoutBase64Message() throws Exception {
 		String mailInput = "<email>"
 				+ "<recipients>"
@@ -241,7 +247,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "</recipients>"
 				+ "<subject>My Subject</subject>"
 				+ "<from name=\"Me, Myself and I\">myself@address.org</from>"
-				+ "<message>not base64 should return in an error</message>"
+				+ "<message>*not base64 should return in an error*</message>"
 				+ "<messageType>text/plain</messageType>"
 				+ "<replyTo>to@address.com</replyTo>"
 				+ "<charset>UTF-8</charset>"
@@ -251,7 +257,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		sender.sendMessageOrThrow(new Message(mailInput), session);
+		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message(mailInput), session));
 	}
 
 	@Test
@@ -394,8 +400,8 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		sender.configure();
 		sender.open();
 
-		exception.expectMessage("mimeType [messageTypeWithoutASlash] of attachment [test.txt] must contain a forward slash ('/')");
-		sender.sendMessageOrThrow(new Message(mailInput), session);
+		SenderException e = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message(mailInput), session));
+		assertThat(e.getMessage(), containsString("mimeType [messageTypeWithoutASlash] of attachment [test.txt] must contain a forward slash ('/')"));
 	}
 
 	@Test
@@ -485,9 +491,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 				+ "<charset>UTF-8</charset>"
 			+ "</email>";
 
-		if(sender instanceof MailSender) {
-			((MailSender) sender).setBounceAddress("my@bounce.nl");
-		}
+		sender.setBounceAddress("my@bounce.nl");
 
 		sender.configure();
 		sender.open();
@@ -570,7 +574,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 					PipeLineSession session2 = new PipeLineSession();
 					sender2.sendMessageOrThrow(new Message(mailInput), session2);
 					Session mailSession2 = (Session) session2.get("mailSession");
-					assertEquals("same session should be used", mailSession1, mailSession2);
+					assertEquals(mailSession1, mailSession2, "same session should be used");
 					validateNDR(mailSession1, bounce);
 					validateNDR(mailSession2, bounce);
 
@@ -580,11 +584,11 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 			futures.add(service.submit(task));
 		}
 
-		List<Session> sessions = new ArrayList<Session>();
+		List<Session> sessions = new ArrayList<>();
 		for (Future<Session> sessionFuture : futures) {
 			try {
 				Session session = sessionFuture.get();
-				assertFalse("session ["+session+"] should not already exist", sessions.contains(session));
+				assertFalse(sessions.contains(session), "session ["+session+"] should not already exist");
 
 				validateAuthentication(session);
 				validateNDR(session, session.getProperty("bounce"));

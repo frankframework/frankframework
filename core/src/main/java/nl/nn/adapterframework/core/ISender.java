@@ -50,7 +50,9 @@ public interface ISender extends IConfigurable {
 	/**
 	 * When <code>true</code>, the result of sendMessage is the reply of the request.
 	 */
-	boolean isSynchronous();
+	default boolean isSynchronous() {
+		return true;
+	}
 
 	/**
 	 * Send a message to some destination (as configured in the Sender object). This method may only be called after the <code>configure() </code>

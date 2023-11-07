@@ -1,6 +1,0 @@
-<manageDatabaseREQ>
-	<select>
-		<tableName>IBISPROP</tableName>
-		<order>NAME</order>
-	</select>
-</manageDatabaseREQ>

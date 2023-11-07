@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.testutil;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,9 +14,6 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import jakarta.json.Json;
-import jakarta.json.JsonStructure;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.DetailedDiff;
@@ -24,8 +21,11 @@ import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
@@ -38,7 +38,7 @@ public class MatchUtils {
 	public static Map<String, Object> stringToMap(String mapInStr) throws IOException {
 		Properties inProps = new Properties();
 		inProps.load(new StringReader(mapInStr));
-		Map<String, Object> mapIn = new HashMap<String, Object>();
+		Map<String, Object> mapIn = new HashMap<>();
 		for(Object key : inProps.keySet()) {
 			mapIn.put((String) key, inProps.getProperty((String) key));
 		}
@@ -46,7 +46,7 @@ public class MatchUtils {
 	}
 
 	public static String mapToString(Map<String,String> map) {
-		StringBuffer buf=new StringBuffer();
+		StringBuilder buf=new StringBuilder();
 		for (String key:map.keySet()) {
 			buf.append(key).append('=');
 			if (map.containsKey(key)) {
@@ -108,7 +108,7 @@ public class MatchUtils {
 		} catch (RuntimeException e) {
 			xmlActPretty = e.getMessage();
 		}
-		assertEquals(description,xmlExpPretty,xmlActPretty);
+		assertEquals(xmlExpPretty,xmlActPretty,description);
 	}
 
 	public static void assertXmlSimilar(String expected, String actual) {
@@ -137,16 +137,16 @@ public class MatchUtils {
 	}
 
 	public static void assertJsonEquals(String description, String jsonExp, String jsonAct) {
-		assertEquals(description, Misc.jsonPretty(jsonExp), Misc.jsonPretty(jsonAct));
+		assertEquals(Misc.jsonPretty(jsonExp), Misc.jsonPretty(jsonAct), description);
 	}
 
 	public static void assertTestFileEquals(String file1, URL url) throws IOException {
-		assertNotNull("url to compare to ["+file1+"] should not be null",url);
+		assertNotNull(url, "url to compare to ["+file1+"] should not be null");
 		assertTestFileEquals(file1,url.openStream());
 	}
 
 	public static void assertTestFileEquals(String file1, InputStream fileStream) throws IOException {
-		assertTestFileEquals(file1, Misc.streamToString(fileStream));
+		assertTestFileEquals(file1, StreamUtil.streamToString(fileStream));
 	}
 
 	public static void assertTestFileEquals(String file1, String file2) throws IOException {

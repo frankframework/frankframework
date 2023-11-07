@@ -29,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -38,7 +37,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.akamai.NetStorageCmsSigner.SignType;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
@@ -47,7 +45,6 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -66,7 +63,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since	7.0-B4
  */
 public class NetStorageSender extends HttpSenderBase {
-	private Logger log = LogUtil.getLogger(NetStorageSender.class);
 	private static final String URL_PARAM_KEY = "urlParameter";
 	public static final String DESTINATION_PARAM_KEY = "destination";
 	public static final String FILE_PARAM_KEY = "file";
@@ -322,7 +318,6 @@ public class NetStorageSender extends HttpSenderBase {
 	 * Login is done via a Nonce and AccessToken
 	 * @param nonce to use when logging in
 	 */
-	@IbisDoc({"the nonce or api username", ""})
 	public void setNonce(String nonce) {
 		this.nonce = nonce;
 	}
@@ -330,8 +325,8 @@ public class NetStorageSender extends HttpSenderBase {
 	/**
 	 * Version to validate queries made to NetStorage backend.
 	 * @param signVersion supports 3 types; 3:MD5, 4:SHA1, 5: SHA256
+	 * @ff.default 5
 	 */
-	@IbisDoc({"the version used to sign the authentication headers. possible values: 3 (md5), 4 (sha1), 5 (sha256)", "5"})
 	public void setSignVersion(int signVersion) {
 		this.signVersion = signVersion;
 	}
@@ -348,7 +343,6 @@ public class NetStorageSender extends HttpSenderBase {
 	 * Login is done via a Nonce and AccessToken
 	 * @param accessToken to use when logging in
 	 */
-	@IbisDoc({"the api accesstoken", ""})
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
 	}

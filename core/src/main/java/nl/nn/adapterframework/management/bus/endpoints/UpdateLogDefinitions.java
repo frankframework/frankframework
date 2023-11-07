@@ -17,6 +17,7 @@ package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,13 +33,19 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.spi.StandardLevel;
 import org.springframework.messaging.Message;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import lombok.Getter;
+import lombok.Setter;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.EmptyResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -81,26 +88,37 @@ public class UpdateLogDefinitions {
 		}
 		result.put("loggers", registeredLoggers);
 
-		return ResponseMessage.ok(result);
+		return new JsonResponseMessage(result);
 	}
 
-	public List<Object> getLogDefinitions(LoggerContext logContext) {
-		List<Object> defaultLoggers = new ArrayList<>();
+	public List<LogDefinitionDAO> getLogDefinitions(LoggerContext logContext) {
+		List<LogDefinitionDAO> defaultLoggers = new ArrayList<>();
 		Collection<LoggerConfig> loggerConfigs = logContext.getConfiguration().getLoggers().values();
 		for(LoggerConfig config : loggerConfigs) {
 			String name = config.getName();
 			if(StringUtils.isNotEmpty(name) && name.contains(".") && !name.startsWith(LogUtil.MESSAGE_LOGGER+".")) {
-				Map<String, Object> logger = new HashMap<>();
-				logger.put("name", name);
-				logger.put("level", config.getLevel().getStandardLevel());
+				LogDefinitionDAO def = new LogDefinitionDAO(name, config.getLevel());
 				Set<String> appenders = config.getAppenders().keySet();
 				if(!appenders.isEmpty()) {
-					logger.put("appenders", config.getAppenders().keySet());
+					def.setAppenders(config.getAppenders().keySet());
 				}
-				defaultLoggers.add(logger);
+				defaultLoggers.add(def);
 			}
 		}
+
+		Collections.sort(defaultLoggers, (a,b) -> a.getName().compareTo(b.getName()));
 		return defaultLoggers;
+	}
+
+	public class LogDefinitionDAO {
+		private final @Getter String name;
+		private final @Getter String level;
+		private @Getter @Setter @JsonInclude(Include.NON_NULL) Set<String> appenders;
+
+		public LogDefinitionDAO(String name, Level level) {
+			this.name = name;
+			this.level = level.getStandardLevel().name();
+		}
 	}
 
 	@ActionSelector(BusAction.MANAGE)
@@ -115,16 +133,16 @@ public class UpdateLogDefinitions {
 				LoggerContext logContext = LoggerContext.getContext(false);
 				logContext.reconfigure();
 				log2SecurityLog("reconfigured logdefinitions");
-				return ResponseMessage.accepted();
+				return EmptyResponseMessage.accepted();
 			}
 
-			return ResponseMessage.noContent();
+			return EmptyResponseMessage.noContent();
 		}
 
 		if(StringUtils.isNotEmpty(logPackage) && level != null) {
 			Configurator.setLevel(logPackage, level);
 			log2SecurityLog("changed logdefinition ["+logPackage+"] to level ["+level.getStandardLevel().name()+"]");
-			return ResponseMessage.accepted();
+			return EmptyResponseMessage.accepted();
 		}
 		throw new BusException("neither [reconfigure], [logPackage] or [level] provided");
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,39 +16,20 @@
 package nl.nn.adapterframework.stream;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.util.Map;
 
 public class FileMessage extends Message {
 
 	private static final long serialVersionUID = 5219660236736759665L;
 
-	private transient File file;
+	public FileMessage(File file) {
+		this(file, null);
+	}
 
-	public FileMessage(File file, Map<String,Object> context) {
-		super(() -> new FileInputStream(file), new MessageContext(context)
-				.withModificationTime(file.lastModified())
+	public FileMessage(File file, String charset) {
+		super(new SerializableFileReference(charset, file.toPath()), new MessageContext(charset).withModificationTime(file.lastModified())
 				.withSize(file.length())
 				.withName(file.getName())
 				.withLocation(file.getAbsolutePath())
 			, file.getClass());
-		this.file = file;
 	}
-
-	public FileMessage(File file, String charset) {
-		this(file, new MessageContext(charset));
-	}
-
-	public FileMessage(File file) {
-		this(file, new MessageContext());
-	}
-
-	@Override
-	public long size() {
-		if (file!=null) {
-			return file.length();
-		}
-		return super.size();
-	}
-
 }

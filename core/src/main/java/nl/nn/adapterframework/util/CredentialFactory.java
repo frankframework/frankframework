@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,10 +34,10 @@ import nl.nn.credentialprovider.ICredentials;
  */
 public class CredentialFactory  {
 
-	private ICredentials credentials=null;
+	private ICredentials credentials;
 
 	public CredentialFactory(String alias) {
-		this(alias, (Supplier<String>)null, (Supplier<String>)null);
+		this(alias, null, (Supplier<String>)null);
 	}
 
 	public CredentialFactory(String alias, String defaultUsername, String defaultPassword) {

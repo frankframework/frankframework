@@ -30,7 +30,6 @@ import java.util.Map;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
-//import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
@@ -279,7 +278,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 						qTimestamp.setCdataValue(DateUtils.format(msg.getJMSTimestamp(), DateUtils.fullIsoFormat));
 						qMessageXml.addSubElement(qTimestamp);
 
-						StringBuffer sb = new StringBuffer("");
+						StringBuilder sb = new StringBuilder("");
 						Enumeration<?> propertyNames = msg.getPropertyNames();
 						while (propertyNames.hasMoreElements()) {
 							String propertyName = (String) propertyNames .nextElement();
@@ -547,8 +546,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private String getLdapPrincipalDescription(String principal, LdapSender ldapSender) {
 		String principalDescription = null;
 		nl.nn.adapterframework.stream.Message ldapRequest = new nl.nn.adapterframework.stream.Message("<req>" + principal + "</req>");
-		try {
-			String ldapResult = ldapSender.sendMessageOrThrow(ldapRequest, null).asString();
+		try (Message message = ldapSender.sendMessageOrThrow(ldapRequest, null)) {
+			String ldapResult = message.asString();
 			if (ldapResult != null) {
 				Collection<String> c = XmlUtils.evaluateXPathNodeSet(ldapResult,"attributes/attribute[@name='description']/@value");
 				if (c != null && c.size() > 0) {

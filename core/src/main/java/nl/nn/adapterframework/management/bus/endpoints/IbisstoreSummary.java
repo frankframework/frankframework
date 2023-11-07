@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,27 +43,26 @@ import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.StringResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.webcontrol.api.ApiException;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 public class IbisstoreSummary extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.IBISSTORE_SUMMARY)
-	public Message<Object> showIbisStoreSummary(Message<?> message) {
-		String datasource = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+	public StringResponseMessage showIbisStoreSummary(Message<?> message) {
+		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String query = BusMessageUtils.getHeader(message, "query");
 
 		return execute(datasource, query);
 	}
 
-	private Message<Object> execute(String datasource, String query) {
+	private StringResponseMessage execute(String datasource, String query) {
 		String result = "";
 		try {
 			IbisstoreSummaryQuerySender qs;
@@ -77,18 +76,20 @@ public class IbisstoreSummary extends BusEndpointBase {
 				qs.setAvoidLocking(true);
 				qs.configure(true);
 				qs.open();
-				result = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query!=null?query:qs.getDbmsSupport().getIbisStoreSummaryQuery()), null).asString();
+				try (nl.nn.adapterframework.stream.Message message = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query != null ? query : qs.getDbmsSupport().getIbisStoreSummaryQuery()), null)) {
+					result = message.asString();
+				}
 			} catch (Throwable t) {
-				throw new ApiException("An error occured on executing jdbc query", t);
+				throw new BusException("An error occurred on executing jdbc query", t);
 			} finally {
 				qs.close();
 			}
 		} catch (Exception e) {
-			throw new ApiException("An error occured on creating or closing the connection", e);
+			throw new BusException("An error occurred on creating or closing the connection", e);
 		}
 
 		String resultObject = "{ \"result\":"+result+"}";
-		return ResponseMessage.Builder.create().withPayload(resultObject).withMimeType(MediaType.APPLICATION_JSON).raw();
+		return new StringResponseMessage(resultObject, MediaType.APPLICATION_JSON);
 	}
 
 	private Map<String, SlotIdRecord> getSlotmap() {

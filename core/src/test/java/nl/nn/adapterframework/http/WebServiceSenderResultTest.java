@@ -40,7 +40,7 @@ import org.mockito.Mockito;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class WebServiceSenderResultTest extends Mockito {
 
@@ -117,16 +117,18 @@ public class WebServiceSenderResultTest extends Mockito {
 
 		int multipartAttachmentCount = 0;
 		for (Map.Entry<String, Object> entry : pls.entrySet()) {
-			System.out.println("found multipart ["+entry.getKey()+"]");
-			multipartAttachmentCount++;
+			if (entry.getKey().startsWith("multipart")) {
+				System.out.println("found multipart [" + entry.getKey() + "]");
+				multipartAttachmentCount++;
+			}
 		}
 		assertEquals(2, multipartAttachmentCount);
 
 		InputStream multipart1 = pls.getMessage("multipart1").asInputStream();
-		assertEquals("Content of a txt file.", Misc.streamToString(multipart1).trim());
+		assertEquals("Content of a txt file.", StreamUtil.streamToString(multipart1).trim());
 
 		InputStream multipart2 = pls.getMessage("multipart2").asInputStream();
-		assertEquals("<!DOCTYPE html><title>Content of a html file.</title>", Misc.streamToString(multipart2).trim());
+		assertEquals("<!DOCTYPE html><title>Content of a html file.</title>", StreamUtil.streamToString(multipart2).trim());
 	}
 
 	@Test
@@ -185,12 +187,14 @@ public class WebServiceSenderResultTest extends Mockito {
 
 		int multipartAttachmentCount = 0;
 		for (Map.Entry<String, Object> entry : pls.entrySet()) {
-			System.out.println("found multipart key["+entry.getKey()+"] type["+(entry.getValue().getClass())+"]");
-			multipartAttachmentCount++;
+			if (entry.getKey().startsWith("multipart")) {
+				System.out.println("found multipart key["+entry.getKey()+"] type["+(entry.getValue().getClass())+"]");
+				multipartAttachmentCount++;
+			}
 		}
 		assertEquals(1, multipartAttachmentCount);
 
 		InputStream multipart1 = pls.getMessage("multipart1").asInputStream();
-		assertEquals("PDF-1.4 content", Misc.streamToString(multipart1).trim());
+		assertEquals("PDF-1.4 content", StreamUtil.streamToString(multipart1).trim());
 	}
 }

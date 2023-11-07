@@ -182,13 +182,16 @@
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/EsbJmsFFListener" />
 		</receiver>
-		<pipeline firstPipe="switchAction" transactionAttribute="Required">
+		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
 			<inputWrapper
 				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
 				mode="i2t" direction="unwrap" />
+			<pipe name="put something in log context" export="true" className="nl.nn.adapterframework.pipes.LogContextPipe">
+				<param name="testMdc" value="testMdc" />
+			</pipe>
 			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" />
 			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">

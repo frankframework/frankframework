@@ -63,7 +63,8 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 	private Contexts contexts;
 	private LabelExpression labelExpression = new LabelExpression();
 
-	private Resource getChangeLog() {
+	@Override
+	public Resource getChangeLog() {
 		AppConstants appConstants = AppConstants.getInstance(getConfigurationClassLoader());
 		String changeLogFile = appConstants.getString("liquibase.changeLogFile", "DatabaseChangelog.xml");
 
@@ -93,10 +94,13 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 			throw new LiquibaseException("no resource provided");
 		}
 
-		ResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(resource);
-		DatabaseConnection connection = getDatabaseConnection();
+		try (ResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(resource)) {
+			DatabaseConnection connection = getDatabaseConnection();
 
-		return new Liquibase(resource.getSystemId(), resourceAccessor, connection);
+			return new Liquibase(resource.getSystemId(), resourceAccessor, connection);
+		} catch (Exception e) {
+			throw new LiquibaseException("unable to close ResourceAccessor", e);
+		}
 	}
 
 	private DatabaseConnection getDatabaseConnection() throws SQLException {
@@ -202,15 +206,10 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 
 	@Override
 	public void update(Writer writer, Resource resource) throws JdbcException {
-		try (Liquibase migrator = createMigrator(resource)){
+		try (Liquibase migrator = createMigrator(resource)) {
 			migrator.update(contexts, labelExpression, writer);
 		} catch (Exception e) {
 			throw new JdbcException("unable to generate database migration script", e);
 		}
-	}
-
-	@Override
-	public boolean hasMigrationScript() {
-		return getChangeLog() != null;
 	}
 }

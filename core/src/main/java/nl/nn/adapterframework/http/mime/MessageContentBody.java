@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ public class MessageContentBody implements ContentBody {
 	@Override
 	public void writeTo(OutputStream out) throws IOException {
 		int length = Math.toIntExact(getContentLength());
-		try (InputStream inStream = message.asInputStream()) {
+		try (InputStream inStream = message.asInputStream(getCharset())) {
 			final byte[] buffer = new byte[OUTPUT_BUFFER_SIZE];
 			int readLen;
 			if(length < 0) {

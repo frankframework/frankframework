@@ -35,7 +35,7 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.Dir2Xml;
 
 /**
@@ -63,7 +63,7 @@ public class FileSender implements IConfigurable {
 	public void configure() throws ConfigurationException {
 		String scenarioDirectory = null;
 		try {
-			URL scenarioDirectoryURL = ClassUtils.getResourceURL(this, ".");
+			URL scenarioDirectoryURL = ClassLoaderUtils.getResourceURL(this, ".");
 			scenarioDirectory = new File(scenarioDirectoryURL.toURI()).getAbsolutePath();
 		} catch (URISyntaxException e) {
 			throw new ConfigurationException("Could not find scenario root directory", e);
@@ -144,7 +144,7 @@ public class FileSender implements IConfigurable {
 		Enumeration<String> enums = (Enumeration<String>) appConstants.propertyNames();
 		while (enums.hasMoreElements()) {
 			String key = enums.nextElement();
-			ant.setProperty(key, appConstants.getResolvedProperty(key));
+			ant.setProperty(key, appConstants.getProperty(key));
 		}
 
 		ant.init();

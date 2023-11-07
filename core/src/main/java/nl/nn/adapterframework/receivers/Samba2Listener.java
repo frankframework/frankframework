@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,56 +15,23 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
-import nl.nn.adapterframework.filesystem.Samba2FileSystem.Samba2AuthType;
+import nl.nn.adapterframework.filesystem.smb.SambaFileSystemDelegator;
+import nl.nn.adapterframework.filesystem.smb.SmbFileRef;
 
-public class Samba2Listener extends FileSystemListener<String, Samba2FileSystem> {
+public class Samba2Listener extends FileSystemListener<SmbFileRef, Samba2FileSystem> implements SambaFileSystemDelegator {
 
 	@Override
 	protected Samba2FileSystem createFileSystem() {
 		return new Samba2FileSystem();
 	}
 
-	@IbisDoc({"Shared folder name in the samba server", "" })
-	public void setShare(String share) {
-		getFileSystem().setShare(share);
-	}
-
-	@IbisDoc({"the smb share username", "" })
-	public void setUsername(String username) {
-		getFileSystem().setUsername(username);
-	}
-
-	@IbisDoc({"the smb share password", "" })
-	public void setPassword(String password) {
-		getFileSystem().setPassword(password);
-	}
-
-	@IbisDoc({"alias used to obtain credentials for the smb share", "" })
-	public void setAuthAlias(String authAlias) {
-		getFileSystem().setAuthAlias(authAlias);
-	}
-
-	@IbisDoc({"domain, in case the user account is bound to a domain", "" })
+	@Override
+	@Deprecated
+	@ConfigurationWarning("please use domainName instead")
 	public void setDomain(String domain) {
-		getFileSystem().setDomain(domain);
+		getFileSystem().setDomainName(domain);
 	}
-
-	@IbisDoc({"Type of the authentication either 'NTLM' or 'SPNEGO' ", "SPNEGO" })
-	public void setAuthType(Samba2AuthType authType) {
-		getFileSystem().setAuthType(authType);
-	}
-
-	@IbisDoc({"Kerberos Domain Controller, as set in java.security.krb5.kdc. If authentication type specified as SPNEGO and realm is specified then this field must be filled.", "" })
-	public void setKdc(String kdc) {
-		getFileSystem().setKdc(kdc);
-	}
-
-	@IbisDoc({"Kerberos Realm, as set in java.security.krb5.realm. If authentication type specified as SPNEGO this field must be filled. If not filled then default realm is used", "" })
-	public void setRealm(String realm) {
-		getFileSystem().setRealm(realm);
-	}
-
 }

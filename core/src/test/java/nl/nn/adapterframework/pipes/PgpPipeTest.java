@@ -2,7 +2,7 @@ package nl.nn.adapterframework.pipes;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -16,6 +16,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 @RunWith(Parameterized.class)
 public class PgpPipeTest {
@@ -147,17 +148,9 @@ public class PgpPipeTest {
 	private String addFolderPath(String param) {
 		if (param == null)
 			return null;
-		StringTokenizer keys = new StringTokenizer(param, ";");
-		StringBuilder stringBuilder = new StringBuilder();
-		while (keys.hasMoreTokens()) {
-			String key = keys.nextToken();
-			stringBuilder
-					.append(PGP_FOLDER)
-					.append(key)
-					.append(keys.hasMoreElements() ? ";" : "");
-		}
-
-		return stringBuilder.toString();
+		return StringUtil.splitToStream(param, ";")
+				.map(key -> PGP_FOLDER + key)
+				.collect(Collectors.joining(";"));
 	}
 
 	/**

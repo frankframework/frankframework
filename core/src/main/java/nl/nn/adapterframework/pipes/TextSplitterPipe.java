@@ -19,7 +19,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -89,12 +88,18 @@ public class TextSplitterPipe extends StreamingPipe {
 		}
 	}
 
-	@IbisDoc({"Set the maximum number of characters of a block", "160"})
+	/**
+	 * Set the maximum number of characters of a block
+	 * @ff.default 160
+	 */
 	public void setMaxBlockLength(int maxBlockLength) {
 		this.maxBlockLength = maxBlockLength;
 	}
 
-	@IbisDoc({"If true, try to break up the message at spaces, instead of in the middle of words", "false"})
+	/**
+	 * If true, try to break up the message at spaces, instead of in the middle of words
+	 * @ff.default false
+	 */
 	public void setSoftSplit(boolean softSplit) {
 		this.softSplit = softSplit;
 	}

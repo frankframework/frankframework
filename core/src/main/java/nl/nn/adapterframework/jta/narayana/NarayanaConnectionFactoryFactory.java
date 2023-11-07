@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,25 +20,75 @@ import javax.jms.XAConnectionFactory;
 
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.jboss.narayana.jta.jms.JmsXAResourceRecoveryHelper;
+import org.jboss.narayana.jta.jms.TransactionHelper;
+import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
+import org.messaginghub.pooled.jms.JmsPoolXAConnectionFactory;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
+import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
 
 public class NarayanaConnectionFactoryFactory extends JndiConnectionFactoryFactory {
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
+
+	private @Getter @Setter int maxIdleTime = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxIdleTime", 60);
+	private @Getter @Setter int maxPoolSize = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxPoolSize", 20);
+	private @Getter @Setter int connectionCheckInterval = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.checkInterval", -1);
+	private @Getter @Setter int maxSessions = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxSessions", 500);
 
 	@Override
 	protected ConnectionFactory augment(ConnectionFactory connectionFactory, String connectionFactoryName) {
 		if (connectionFactory instanceof XAConnectionFactory) {
 			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper((XAConnectionFactory) connectionFactory);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);
-			return new ConnectionFactoryProxy((XAConnectionFactory) connectionFactory, transactionManager.getTransactionHelper());
+
+			if(maxPoolSize > 1) {
+				return createConnectionFactoryPool(connectionFactory);
+			}
+
+			TransactionHelper transactionHelper = new NarayanaTransactionHelper(transactionManager.getTransactionManager());
+			log.info("add TransactionHelper [{}] to ConnectionFactory", transactionHelper);
+			return new ConnectionFactoryProxy((XAConnectionFactory) connectionFactory, transactionHelper);
 		}
-		log.warn("ConnectionFactory [{}] is not XA enabled", connectionFactoryName);
+
+		log.info("ConnectionFactory [{}] is not XA enabled, unable to register with an Transaction Manager", connectionFactoryName);
+		if(maxPoolSize > 1) {
+			return createConnectionFactoryPool(connectionFactory);
+		}
 		return connectionFactory;
 	}
 
+	private ConnectionFactory createConnectionFactoryPool(ConnectionFactory connectionFactory) {
+		if(connectionFactory instanceof XAConnectionFactory) {
+			JmsPoolXAConnectionFactory pooledConnectionFactory = new JmsPoolXAConnectionFactory();
+			pooledConnectionFactory.setTransactionManager(this.transactionManager.getTransactionManager());
+			pooledConnectionFactory.setConnectionFactory(connectionFactory);
+			return augmentPool(pooledConnectionFactory);
+		}
+
+		JmsPoolConnectionFactory pooledConnectionFactory = new JmsPoolConnectionFactory();
+		pooledConnectionFactory.setConnectionFactory(connectionFactory);
+		return augmentPool(pooledConnectionFactory);
+	}
+
+	private ConnectionFactory augmentPool(JmsPoolConnectionFactory pooledConnectionFactory) {
+		pooledConnectionFactory.setMaxConnections(maxPoolSize);
+		pooledConnectionFactory.setConnectionIdleTimeout(getMaxIdleTime() * 1000);
+		pooledConnectionFactory.setConnectionCheckInterval(connectionCheckInterval);
+		pooledConnectionFactory.setUseProviderJMSContext(false); // indicates whether the pool should include JMSContext in the pooling, when set to true, it disables connection pooling
+
+		pooledConnectionFactory.setMaxSessionsPerConnection(maxSessions);
+		pooledConnectionFactory.setBlockIfSessionPoolIsFull(true);
+		pooledConnectionFactory.setBlockIfSessionPoolIsFullTimeout(-1L);
+
+		pooledConnectionFactory.setUseAnonymousProducers(true);
+
+		log.info("created pooled {} [{}]", ClassUtils.classNameOf(pooledConnectionFactory), pooledConnectionFactory);
+		return pooledConnectionFactory;
+	}
 }

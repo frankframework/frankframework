@@ -6,15 +6,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.Test;
@@ -32,6 +30,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.MessageKeeper;
 
 public class MigratorTest extends TransactionManagerTestBase {
+
 	private LiquibaseMigrator migrator = null;
 	private String tableName="DUMMYTABLE";
 
@@ -102,19 +101,22 @@ public class MigratorTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testSQLWriterBytesResource() throws Exception {
-
+		// Arrange
 		Resource resource = Resource.getResource("/Migrator/DatabaseChangelog_plus_changes.xml");
+		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_"+getDataSourceName().toLowerCase()+".sql");
 		assertNotNull(resource);
 
 		resource = new BytesResource(resource.openStream(), "inputstreamresource.xml", new GlobalScopeProvider());
 		StringWriter writer = new StringWriter();
+
+		// Act
 		migrator.update(writer, resource);
 
-		String sqlChanges = TestFileUtils.getTestFile("/Migrator/sql_changes_"+getDataSourceName().toLowerCase()+".sql");
-
+		// Assert
 		String result = applyIgnores(writer.toString());
 		result = removeComments(result);
 		result = result.replaceAll("inputstreamresource.xml", "Migrator/DatabaseChangelog_plus_changes.xml");
+
 		TestAssertions.assertEqualsIgnoreCRLF(sqlChanges, result);
 	}
 
@@ -124,31 +126,22 @@ public class MigratorTest extends TransactionManagerTestBase {
 		StringBuilder string = new StringBuilder();
 		String line = buf.readLine();
 		while (line != null) {
-			if(line.startsWith("--")) {
+			if(line.startsWith("--") || "\n".equals(line)) {
 				line = buf.readLine();
 				continue;
 			}
 			string.append(line);
-			line = buf.readLine();
-			if (line != null) {
+			if (StringUtils.isNotEmpty(line)) {
 				string.append("\n");
 			}
+			line = buf.readLine();
 		}
 		return string.toString();
 	}
 
 	private String applyIgnores(String sqlScript) {
-		Pattern regex = Pattern.compile("(\\d+)\\'\\)");
-		Matcher match = regex.matcher(sqlScript);
-		if(match.find()) {
-			String deploymentId = match.group(1);
-			sqlScript = sqlScript.replace(deploymentId, "IGNORE");
-		}
-		else {
-			fail("no match found");
-			return null;
-		}
 		sqlScript = sqlScript.replaceAll("\\'[4-9]\\.\\d+\\.\\d{1,3}\\'", "'VERSION'"); //Replace the Liquibase Version
+		sqlScript = sqlScript.replaceAll("'\\d{1,2}:[a-f0-9]{32}'", "'CHANGESET-CHECKSUM'"); //Replace the Liquibase Changeset Checksum
 
 		sqlScript = sqlScript.replaceAll("SET SEARCH_PATH TO public, \"\\$user\",\"public\";", ""); //Remove search path setting
 		sqlScript = sqlScript.replaceAll("\r\n", "\n"); //change CRLF into LF

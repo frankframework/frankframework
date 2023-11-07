@@ -1,19 +1,17 @@
 package nl.nn.adapterframework.testutil;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.springframework.jdbc.datasource.DelegatingDataSource;
+import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
-import com.arjuna.ats.internal.jdbc.ConnectionManager;
-import com.arjuna.ats.jdbc.TransactionalDriver;
-
+import lombok.Setter;
+import nl.nn.adapterframework.jta.narayana.DataSourceXAResourceRecoveryHelper;
 import nl.nn.adapterframework.jta.narayana.NarayanaConfigurationBean;
-import nl.nn.adapterframework.jta.narayana.NarayanaDataSourceFactory;
+import nl.nn.adapterframework.jta.narayana.NarayanaDataSource;
+import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 
 public class NarayanaXADataSourceFactory extends URLXADataSourceFactory {
 
@@ -28,19 +26,12 @@ public class NarayanaXADataSourceFactory extends URLXADataSourceFactory {
 		narayana.afterPropertiesSet();
 	}
 
+	private @Setter NarayanaJtaTransactionManager txManagerReal;
+
 	@Override
 	protected DataSource augmentXADataSource(XADataSource xaDataSource, String product) {
-		DataSource result = new DelegatingDataSource() { //Cannot use NarayanaDatasource as the PGSQL driver does not implement the Datasource interface
-			@Override
-			public Connection getConnection() throws SQLException {
-				Properties properties = new Properties();
-				properties.put(TransactionalDriver.XADataSource, xaDataSource);
-				properties.setProperty(TransactionalDriver.poolConnections, "true");
-				properties.setProperty(TransactionalDriver.maxConnections, "100");
-				return ConnectionManager.create(null, properties);
-			}
-		};
-		NarayanaDataSourceFactory.checkModifiers(result);
-		return result;
+		XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper(xaDataSource);
+		this.txManagerReal.registerXAResourceRecoveryHelper(recoveryHelper);
+		return new NarayanaDataSource(xaDataSource, product);
 	}
 }

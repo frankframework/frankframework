@@ -22,19 +22,10 @@
 
 	<bean name="configurationMetrics" class="nl.nn.adapterframework.statistics.MetricsInitializer" />
 
-	<bean
-		name="adapterManager"
-		class="nl.nn.adapterframework.configuration.AdapterManager"
-		autowire="byType"
-		scope="singleton"
-	/>
+	<bean name="sharedWsdlDefinitions" class="nl.nn.adapterframework.core.SharedWsdlDefinitions" scope="singleton"/>
 
-	<bean
-		name="scheduleManager"
-		class="nl.nn.adapterframework.configuration.ScheduleManager"
-		autowire="byType"
-		scope="singleton"
-	/>
+	<bean name="adapterManager" class="nl.nn.adapterframework.configuration.AdapterManager" autowire="byType" scope="singleton" />
+	<bean name="scheduleManager" class="nl.nn.adapterframework.configuration.ScheduleManager" autowire="byType" scope="singleton" />
 
 	<bean name="jdbcMigrator" class="nl.nn.adapterframework.jdbc.migration.LiquibaseMigrator" scope="prototype" lazy-init="true" />
 

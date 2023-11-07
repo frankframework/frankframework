@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,26 +18,26 @@ package nl.nn.adapterframework.batch;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
-import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Encapsulates a record in XML, optionally translates it using XSLT or XPath.
  *
  *
  * @author  John Dekker / Gerrit van Brakel
+ * @deprecated Warning: non-maintained functionality.
  */
 public class RecordXmlTransformer extends AbstractRecordHandler {
 
@@ -51,10 +51,10 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 
 	private TransformerPool transformerPool;
 
-	private List<String> outputFields;
+	private final List<String> outputFields;
 
 	public RecordXmlTransformer() {
-		outputFields = new LinkedList<String>();
+		outputFields = new LinkedList<>();
 	}
 
 	@Override
@@ -116,47 +116,52 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 		return record.toXML();
 	}
 
-	@IbisDoc({"comma separated string with tagnames for the individual input fields (related using there positions). if you leave a tagname empty, the field is not xml-ized", ""})
+	/** comma separated string with tagnames for the individual input fields (related using there positions). if you leave a tagname empty, the field is not xml-ized */
 	public void setOutputFields(String fieldLengths) {
-		StringTokenizer st = new StringTokenizer(fieldLengths, ",");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken().trim();
-			outputFields.add(token);
-		}
+		outputFields.addAll(StringUtil.split(fieldLengths));
 	}
 
 
-	@IbisDoc({"Root tag for the generated xml document that will be send to the Sender", "record"})
+	/**
+	 * Root tag for the generated xml document that will be send to the Sender
+	 * @ff.default record
+	 */
 	public void setRootTag(String string) {
 		rootTag = string;
 	}
 
-	@IbisDoc({"Name of stylesheet to transform an individual record", ""})
+	/** Name of stylesheet to transform an individual record */
 	public void setStyleSheetName(String string) {
 		styleSheetName = string;
 	}
 
-	@IbisDoc({"Alternatively: xpath-expression to create stylesheet from", ""})
+	/** Alternatively: xpath-expression to create stylesheet from */
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
 
-	@IbisDoc({"Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace.", ""})
+	/** Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. One entry can be without a prefix, that will define the default namespace. */
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@IbisDoc({"Only valid for <code>xpathExpression</code>", "text"})
+	/**
+	 * Only valid for <code>xpathExpression</code>
+	 * @ff.default text
+	 */
 	public void setOutputType(OutputType outputType) {
 		this.outputType = outputType;
 	}
 
-	@IbisDoc({"Force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
+	/**
+	 * Force the transformer generated from the xpath-expression to omit the xml declaration
+	 * @ff.default true
+	 */
 	public void setOmitXmlDeclaration(boolean b) {
 		omitXmlDeclaration = b;
 	}
 
-	@IbisDoc({"String which ends the record and must be ignored", ""})
+	/** String which ends the record and must be ignored */
 	public void setEndOfRecord(String string) {
 		endOfRecord = string;
 	}

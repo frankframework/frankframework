@@ -1,8 +1,0 @@
-version: "3"
-services:
-  mariadbserver:
-    image: iaf-test-db-mariadb
-    command: --default-authentication-plugin=mysql_native_password
-    restart: unless-stopped
-    ports:
-      - 3306:3306

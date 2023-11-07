@@ -1,0 +1,86 @@
+<manageDatabaseRLY>
+	<completionInformation>
+		<returnCode>OK</returnCode>
+	</completionInformation>
+	<results>
+		<result item="1">
+			<result>
+				<fielddefinition>
+					<field name="MESSAGEKEY" type="BIGINT" columnDisplaySize="19" precision="19" scale="0" isCurrency="false" columnTypeName="BIGINT" columnClassName="java.lang.Long"/>
+					<field name="TYPE" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
+					<field name="SLOTID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+					<field name="HOST" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+					<field name="MESSAGEID" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+					<field name="CORRELATIONID" type="VARCHAR" columnDisplaySize="256" precision="256" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+					<field name="MESSAGEDATE" type="TIMESTAMP" columnDisplaySize="19" precision="19" scale="0" isCurrency="false" columnTypeName="DATETIME" columnClassName="java.time.LocalDateTime"/>
+					<field name="COMMENTS" type="VARCHAR" columnDisplaySize="1000" precision="1000" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+					<field name="MESSAGE" type="LONGVARBINARY" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="LONGBLOB" columnClassName="[B"/>
+					<field name="EXPIRYDATE" type="TIMESTAMP" columnDisplaySize="19" precision="19" scale="0" isCurrency="false" columnTypeName="DATETIME" columnClassName="java.time.LocalDateTime"/>
+					<field name="LABEL" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+				</fielddefinition>
+				<rowset>
+					<row number="0">
+						<field name="MESSAGEKEY">298</field>
+						<field name="TYPE">A</field>
+						<field name="SLOTID">IFSA://NLIBIS4TEST/AwsSqsJmsFFListener</field>
+						<field name="HOST">LPZWNL000040524</field>
+						<field name="MESSAGEID">ID:31191e1c-4ea7-4bdb-a1c9-f7678d7c78f6</field>
+						<field name="CORRELATIONID">Test Tool correlation id(4)</field>
+						<field name="MESSAGEDATE">2023-02-22 10:11:13</field>
+						<field name="COMMENTS">log</field>
+						<field name="MESSAGE">&lt;msg mid="0a7270bc--555b1cd1_186786297e1_-7fe1" action="listenerException" /&gt;</field>
+						<field name="EXPIRYDATE">2023-03-24 10:11:13</field>
+						<field name="LABEL" null="true"/>
+					</row>
+					<row number="1">
+						<field name="MESSAGEKEY">300</field>
+						<field name="TYPE">A</field>
+						<field name="SLOTID">IFSA://NLIBIS4TEST/AwsSqsJmsFFListener</field>
+						<field name="HOST">LPZWNL000040524</field>
+						<field name="MESSAGEID">ID:31191e1c-4ea7-4bdb-a1c9-f7678d7c78f6</field>
+						<field name="CORRELATIONID">Test Tool correlation id(4)</field>
+						<field name="MESSAGEDATE">2023-02-22 10:11:43</field>
+						<field name="COMMENTS">log</field>
+						<field name="MESSAGE">&lt;msg mid="0a7270bc--555b1cd1_186786297e1_-7fe1" action="listenerException" /&gt;</field>
+						<field name="EXPIRYDATE">2023-03-24 10:11:43</field>
+						<field name="LABEL" null="true"/>
+					</row>
+					<row number="2">
+						<field name="MESSAGEKEY">301</field>
+						<field name="TYPE">E</field>
+						<field name="SLOTID">IFSA://NLIBIS4TEST/AwsSqsJmsFFListener</field>
+						<field name="HOST">LPZWNL000040524</field>
+						<field name="MESSAGEID">ID:31191e1c-4ea7-4bdb-a1c9-f7678d7c78f6</field>
+						<field name="CORRELATIONID">Test Tool correlation id(4)</field>
+						<field name="MESSAGEDATE">2023-02-22 10:11:13</field>
+						<field name="COMMENTS">too many retries; exitState [ERROR], result [context:
+Metadata.Name: ID:31191e1c-4ea7-4bdb-a1c9-f7678d7c78f6
+Metadata.ModificationTime: 2023-02-22 10:11:13.818
+JMSXDeliveryCount: 2
+JMS_SQSCorrelationID: Test Tool correlation id(4)
+JMS_SQSMessageType: text
+SOURCE: LPZWNL000040524_FF
+value:
+String Message[334e6f73]: &lt;msg mid="0a7270bc--555b1cd1_186786297e1_-7fe1" action="listenerException" /&gt;]</field>
+						<field name="MESSAGE">&lt;msg mid="0a7270bc--555b1cd1_186786297e1_-7fe1" action="listenerException" /&gt;</field>
+						<field name="EXPIRYDATE" null="true"/>
+						<field name="LABEL" null="true"/>
+					</row>
+					<row number="3">
+						<field name="MESSAGEKEY">299</field>
+						<field name="TYPE">L</field>
+						<field name="SLOTID">IFSA://NLIBIS4TEST/AwsSqsJmsFFSender</field>
+						<field name="HOST">LPZWNL000040524</field>
+						<field name="MESSAGEID">ID:31191e1c-4ea7-4bdb-a1c9-f7678d7c78f6</field>
+						<field name="CORRELATIONID">Test Tool correlation id(4)</field>
+						<field name="MESSAGEDATE">2023-02-22 10:11:13</field>
+						<field name="COMMENTS">no audit trail</field>
+						<field name="MESSAGE">&lt;msg mid="0a7270bc--555b1cd1_186786297e1_-7fe1" action="listenerException" /&gt;</field>
+						<field name="EXPIRYDATE">2023-03-24 10:11:13</field>
+						<field name="LABEL" null="true"/>
+					</row>
+				</rowset>
+			</result>
+		</result>
+	</results>
+</manageDatabaseRLY>

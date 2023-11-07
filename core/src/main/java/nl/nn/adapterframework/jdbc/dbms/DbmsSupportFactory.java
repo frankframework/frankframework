@@ -24,12 +24,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 /**
  * @author  Gerrit van Brakel

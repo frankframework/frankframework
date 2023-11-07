@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2020 WeAreFrank!
+   Copyright 2017, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package nl.nn.adapterframework.extensions.mqtt;
 
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -27,6 +29,8 @@ import nl.nn.adapterframework.core.IPushingListener;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ReceiverAware;
 import nl.nn.adapterframework.stream.Message;
@@ -120,28 +124,30 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void deliveryComplete(IMqttDeliveryToken token) {
+		// No-op
 	}
 
 	@Override
-	public void messageArrived(String topic, MqttMessage message) throws Exception {
-		try {
-			messageHandler.processRawMessage(this, message);
-		} catch(Throwable t) {
-			log.error("Could not process raw message", t);
+	public void messageArrived(String topic, MqttMessage message) {
+		try (PipeLineSession session = new PipeLineSession()) {
+			messageHandler.processRawMessage(this, wrapRawMessage(message, session), session, false);
+		} catch(Exception e) {
+			log.error("Could not process raw message", e);
 		}
 	}
 
 	@Override
-	public String getIdFromRawMessage(MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
-		return "" + rawMessage.getId();
+	public RawMessageWrapper<MqttMessage> wrapRawMessage(MqttMessage message, PipeLineSession session) throws ListenerException {
+		return new RawMessageWrapper<>(message, String.valueOf(message.getId()), null);
 	}
 
 	@Override
-	public Message extractMessage(MqttMessage rawMessage, Map<String, Object> context) throws ListenerException {
-		return new Message(rawMessage.getPayload(),getCharset());
+	public Message extractMessage(@Nonnull RawMessageWrapper<MqttMessage> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		return new Message(rawMessage.getRawMessage().getPayload(), getCharset());
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String, Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<MqttMessage> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+		// No-op
 	}
 }

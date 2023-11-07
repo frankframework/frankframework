@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
+import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
+import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
+import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
 
+import bitronix.tm.resource.jms.PoolingConnectionFactory;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.core.IbisException;
@@ -54,17 +58,17 @@ public class MessagingSource  {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private int referenceCount;
-	private boolean connectionsArePooledStore = AppConstants.getInstance().getBoolean("jms.connectionsArePooled", false);
-	private boolean sessionsArePooledStore = AppConstants.getInstance().getBoolean("jms.sessionsArePooled", false);
-	private boolean useSingleDynamicReplyQueueStore = AppConstants.getInstance().getBoolean("jms.useSingleDynamicReplyQueue", true);
-	private boolean cleanUpOnClose = AppConstants.getInstance().getBoolean("jms.cleanUpOnClose", true);
-	private boolean createDestination;
-	private boolean useJms102;
+	private final boolean connectionsArePooledStore = AppConstants.getInstance().getBoolean("jms.connectionsArePooled", false);
+	private final boolean sessionsArePooledStore = AppConstants.getInstance().getBoolean("jms.sessionsArePooled", false);
+	private final boolean useSingleDynamicReplyQueueStore = AppConstants.getInstance().getBoolean("jms.useSingleDynamicReplyQueue", true);
+	private final boolean cleanUpOnClose = AppConstants.getInstance().getBoolean("jms.cleanUpOnClose", true);
+	private final boolean createDestination;
+	private final boolean useJms102;
 
 	private @Getter @Setter String authAlias;
 
-	private Counter openConnectionCount = new Counter(0);
-	private Counter openSessionCount = new Counter(0);
+	private final Counter openConnectionCount = new Counter(0);
+	private final Counter openSessionCount = new Counter(0);
 
 	private @Getter String id;
 
@@ -72,7 +76,7 @@ public class MessagingSource  {
 	private ConnectionFactory connectionFactory = null;
 	private Connection globalConnection=null; // only used when connections are not pooled
 
-	private Map<String,MessagingSource> siblingMap;
+	private final Map<String,MessagingSource> siblingMap;
 	private Hashtable<Session,Connection> connectionTable; // hashtable is synchronized and does not permit nulls
 
 	private Queue globalDynamicReplyQueue = null;
@@ -144,21 +148,29 @@ public class MessagingSource  {
 		return connectionFactory;
 	}
 
-	protected ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+	/** The QCF is wrapped in a Spring TransactionAwareConnectionFactoryProxy, this should always be the most outer wrapped QCF. */
+	private ConnectionFactory getConnectionFactoryDelegate() throws IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
+		if(getConnectionFactory() instanceof TransactionAwareConnectionFactoryProxy) {
+			return (ConnectionFactory)ClassUtils.getDeclaredFieldValue(getConnectionFactory(), "targetConnectionFactory");
+		}
 		return getConnectionFactory();
 	}
 
+	/** Retrieve the 'original' ConnectionFactory, used by the console (to get the Tibco QCF) in order to display queue message count. */
 	public Object getManagedConnectionFactory() {
 		ConnectionFactory qcf = null;
 		try {
 			qcf = getConnectionFactoryDelegate();
-			try {
-				return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
-			} catch (Exception e) {
-				log.debug("Could not get managedConnectionFactory: ("+e.getClass().getTypeName()+") "+e.getMessage());
-				// In case of BTM.
-				return ClassUtils.invokeGetter(qcf, "getResource", true);
+			if (qcf instanceof PoolingConnectionFactory) { //BTM
+				return ((PoolingConnectionFactory)qcf).getXaConnectionFactory();
 			}
+			if (qcf instanceof JmsPoolConnectionFactory) { //Narayana with pooling
+				return ((JmsPoolConnectionFactory)qcf).getConnectionFactory();
+			}
+			if (qcf instanceof ConnectionFactoryProxy) { // Narayana without pooling
+				return ClassUtils.getDeclaredFieldValue(qcf, ConnectionFactoryProxy.class, "xaConnectionFactory");
+			}
+			return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
 		} catch (Exception e) {
 			if (qcf != null) {
 				return qcf;
@@ -171,25 +183,50 @@ public class MessagingSource  {
 	public String getPhysicalName() {
 		String result="";
 
+		Object managedConnectionFactory=null;
 		try {
-			ConnectionFactory qcf = getConnectionFactoryDelegate();
-			result += "["+ToStringBuilder.reflectionToString(qcf, ToStringStyle.SHORT_PREFIX_STYLE)+"] ";
+			managedConnectionFactory = getManagedConnectionFactory();
+			if (managedConnectionFactory != null) {
+				result =ToStringBuilder.reflectionToString(managedConnectionFactory, ToStringStyle.SHORT_PREFIX_STYLE);
+			}
+		} catch (Exception | NoClassDefFoundError e) {
+			result+= " "+ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
+		}
+
+		try {
+			ConnectionFactory qcfd = getConnectionFactoryDelegate();
+			if (qcfd != managedConnectionFactory) {
+				result += getConnectionPoolInfo(qcfd);
+			}
 		} catch (Exception e) {
 			result+= ClassUtils.nameOf(connectionFactory)+".getConnectionFactoryDelegate() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
 		}
 
-		try {
-			Object managedConnectionFactory = getManagedConnectionFactory();
-			if (managedConnectionFactory!=null) {
-				result +=managedConnectionFactory.toString();
-				if (result.contains("activemq")) {
-					result += "[" + ClassUtils.invokeGetter(managedConnectionFactory, "getBrokerURL", true) + "]";
-				}
-			}
-		} catch (Exception | NoClassDefFoundError e) {
-			result+= ClassUtils.nameOf(connectionFactory)+".getManagedConnectionFactory() ("+ClassUtils.nameOf(e)+"): "+e.getMessage();
-		}
 		return result;
+	}
+
+	/** Return pooling info if present */
+	private String getConnectionPoolInfo(ConnectionFactory qcfd) {
+		StringBuilder result = new StringBuilder(" managed by [").append(ClassUtils.classNameOf(qcfd)).append("] ");
+		if (qcfd instanceof PoolingConnectionFactory) {
+			PoolingConnectionFactory poolcf = ((PoolingConnectionFactory)qcfd);
+			result.append("min poolsize [").append(poolcf.getMinPoolSize()).append("] ");
+			result.append("max poolsize ["+poolcf.getMaxPoolSize()).append("] ");
+			result.append("number of idle connections [").append(poolcf.getInPoolSize()).append("] ");
+			result.append("max idle time [").append(poolcf.getMaxIdleTime()).append("] ");
+			result.append("max life time [").append(poolcf.getMaxLifeTime()).append("] ");
+		}
+		if (qcfd instanceof JmsPoolConnectionFactory) {
+			JmsPoolConnectionFactory poolcf = ((JmsPoolConnectionFactory)qcfd);
+			result.append("idle connections [").append(poolcf.getNumConnections()).append("] ");
+			result.append("max connections [").append(poolcf.getMaxConnections()).append("] ");
+			result.append("max sessions per connection [").append(poolcf.getMaxSessionsPerConnection()).append("] ");
+			result.append("block if session pool is full [").append(poolcf.isBlockIfSessionPoolIsFull()).append("] ");
+			result.append("block if session pool is full timeout [").append(poolcf.getBlockIfSessionPoolIsFullTimeout()).append("] ");
+			result.append("connection check interval [").append(poolcf.getConnectionCheckInterval()).append("] ");
+			result.append("connection idle timeout [").append(poolcf.getConnectionIdleTimeout()).append("] ");
+		}
+		return result.toString();
 	}
 
 	protected Connection createConnection() throws JMSException {
@@ -227,11 +264,13 @@ public class MessagingSource  {
 		if (connectionsArePooled()) {
 			return createAndStartConnection();
 		}
+		log.trace("Get/create global connection - synchronize (lock) on {}", this);
 		synchronized (this) {
 			if (globalConnection == null) {
 				globalConnection = createAndStartConnection();
 			}
 		}
+		log.trace("Got global connection, lock released on {}", this);
 		return globalConnection;
 	}
 
@@ -348,12 +387,14 @@ public class MessagingSource  {
 	public Queue getDynamicReplyQueue(Session session) throws JMSException {
 		Queue result;
 		if (useSingleDynamicReplyQueue()) {
+			log.trace("Get/create global dynamic reply queue, synchronize (lock) on {}", this);
 			synchronized (this) {
 				if (globalDynamicReplyQueue==null) {
 					globalDynamicReplyQueue=session.createTemporaryQueue();
-					log.info(getLogPrefix()+"created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
+					log.info(getLogPrefix()+"{} created dynamic replyQueue ["+globalDynamicReplyQueue.getQueueName()+"]");
 				}
 			}
+			log.trace("Got global dynamic reply queue, lock released on {}", this);
 			result = globalDynamicReplyQueue;
 		} else {
 			result = session.createTemporaryQueue();

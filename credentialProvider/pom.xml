@@ -12,11 +12,15 @@
 	<description>Framework to provide credentials from various secret stores</description>
 
 	<properties>
-		<apache.tomcat.version>9.0.69</apache.tomcat.version>
+		<apache.tomcat.version>9.0.82</apache.tomcat.version>
 		<apache-directory-server.version>2.0.0.AM26</apache-directory-server.version>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-commons</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.tomcat</groupId>
 			<artifactId>tomcat-catalina</artifactId>
@@ -56,15 +60,9 @@
 		</dependency>
 		<dependency>
 			<groupId>org.wildfly.security</groupId>
-			<artifactId>wildfly-elytron</artifactId>
-			<version>2.0.0.Final</version>
+			<artifactId>wildfly-elytron-credential-store</artifactId>
+			<version>2.2.2.Final</version>
 			<scope>provided</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>com.fasterxml.jackson.core</groupId>
-					<artifactId>jackson-databind</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 
@@ -77,7 +75,6 @@
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest</artifactId>
-			<version>2.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -91,19 +88,45 @@
 			<artifactId>slf4j-api</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
-		<!-- commons-collections 3.2.2 included to override 3.2.1 version included in apacheds-test-framework -->
 		<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-			<version>3.2.2</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>com.unboundid</groupId>
 			<artifactId>unboundid-ldapsdk</artifactId>
-			<version>6.0.6</version>
+			<version>6.0.10</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.5.1</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<minimizeJar>true</minimizeJar>
+							<shadedArtifactAttached>true</shadedArtifactAttached>
+							<shadedClassifierName>fatjar</shadedClassifierName>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

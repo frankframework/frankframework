@@ -32,13 +32,12 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 @IbisInitializer
 public class LarvaServlet extends HttpServletBase {
 	private static final URL INDEX_TEMPLATE = getResource("/index.html.template");
-	private static final String SERVLET_PATH = "/larva/";
+	private static final String SERVLET_PATH = "/iaf/larva/";
 	private final transient Logger log = LogUtil.getLogger(this);
 
 	private enum Assets {
@@ -50,11 +49,12 @@ public class LarvaServlet extends HttpServletBase {
 		private final String resource;
 
 		private Assets(String resource, String contentType) {
-			this.url = getResource(resource);
-			if(url == null) {
+			URL resourceURL = getResource(resource);
+			if(resourceURL == null) {
 				throw new IllegalStateException("unable to find asset");
 			}
 
+			this.url = resourceURL;
 			this.resource = resource;
 			this.contentType = contentType;
 		}
@@ -138,8 +138,9 @@ public class LarvaServlet extends HttpServletBase {
 		resp.setContentType("text/html");
 		writer.append(getTemplate("Larva Test Tool"));
 
-		String cleanServletPath = getUrlMapping().replace("/*", "");
-		String realPath = getServletContext().getRealPath(cleanServletPath);
+		String servletPath = req.getServletPath();
+		int i = servletPath.lastIndexOf('/');
+		String realPath = getServletContext().getRealPath(servletPath.substring(0, i+1));
 
 		TestTool.runScenarios(getServletContext(), req, writer, realPath);
 		writer.append("</body></html>");
@@ -147,7 +148,7 @@ public class LarvaServlet extends HttpServletBase {
 	}
 
 	private String getTemplate(String title) throws IOException {
-		String content = Misc.resourceToString(INDEX_TEMPLATE);
+		String content = StreamUtil.resourceToString(INDEX_TEMPLATE);
 		return content.replace("{{title}}", title);
 	}
 
@@ -193,5 +194,10 @@ public class LarvaServlet extends HttpServletBase {
 	@Override
 	public String getUrlMapping() {
 		return SERVLET_PATH + "*";
+	}
+
+	@Override
+	public String[] getAccessGrantingRoles() {
+		return new String[] {"IbisTester"};
 	}
 }

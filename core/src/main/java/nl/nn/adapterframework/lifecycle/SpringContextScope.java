@@ -26,7 +26,7 @@ public enum SpringContextScope {
 	APPLICATION("SpringApplicationContext.xml"), //IbisContext
 	CONFIGURATION("SpringConfigurationContext.xml"); //Configurations
 
-	private @Getter String contextFile;
+	private final @Getter String contextFile;
 	private SpringContextScope(String contextFile) {
 		this.contextFile = ResourceUtils.CLASSPATH_URL_PREFIX + "/" + contextFile;
 	}

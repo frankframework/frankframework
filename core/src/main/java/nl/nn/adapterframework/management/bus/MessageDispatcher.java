@@ -95,8 +95,8 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 
 		BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
 		MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();
-		Object bean = SpringUtils.createBean(applicationContext, beanClass);
 		TopicSelector classTopicSelector = AnnotationUtils.findAnnotation(beanClass, TopicSelector.class);
+		Object bean = SpringUtils.createBean(applicationContext, beanClass);
 
 		for (MethodDescriptor methodDescriptor : methodDescriptors) {
 			Method method = methodDescriptor.getMethod();
@@ -124,9 +124,9 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		MessageSelectorChain selectors = new MessageSelectorChain();
 		ActionSelector action = AnnotationUtils.findAnnotation(method, ActionSelector.class);
 		if(action != null) {
-			selectors.add(actionSelector(action.value()));
+			selectors.add(headerSelector(action.value(), BusAction.ACTION_HEADER_NAME));
 		}
-		selectors.add(topicSelector(topic));
+		selectors.add(headerSelector(topic, BusTopic.TOPIC_HEADER_NAME));
 		selectors.add(activeSelector(applicationContext));
 
 		MessageFilter filter = new MessageFilter(selectors);
@@ -144,7 +144,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		if(channel.subscribe(chain)) {
 			log.info("registered new ServiceActivator [{}] on topic [{}] with action [{}] requires-reply [{}]", componentName, topic, (action != null?action.value():"*"), method.getReturnType() != void.class);
 		} else {
-			log.info("unable to register ServiceActivator [{}]", componentName);
+			log.error("unable to register ServiceActivator [{}]", componentName);
 		}
 	}
 
@@ -152,17 +152,10 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		return message -> ((AbstractApplicationContext) applicationContext).isActive();
 	}
 
-	public static MessageSelector topicSelector(BusTopic topic) {
+	public static <E extends Enum<E>> MessageSelector headerSelector(E enumType, String headerName) {
 		return message -> {
-			String topicHeader = (String) message.getHeaders().get(TopicSelector.TOPIC_HEADER_NAME);
-			return topic.name().equalsIgnoreCase(topicHeader);
-		};
-	}
-
-	public static MessageSelector actionSelector(BusAction action) {
-		return message -> {
-			String actionHeader = (String) message.getHeaders().get(ActionSelector.ACTION_HEADER_NAME);
-			return action.name().equalsIgnoreCase(actionHeader);
+			String headerValue = (String) message.getHeaders().get(headerName);
+			return enumType.name().equalsIgnoreCase(headerValue);
 		};
 	}
 
@@ -183,7 +176,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		return applicationContext.getBean(busName, SubscribableChannel.class);
 	}
 
-	private final void initializeBean(Object bean) {
+	private void initializeBean(Object bean) {
 		applicationContext.getAutowireCapableBeanFactory().initializeBean(bean, bean.getClass().getCanonicalName());
 	}
 }

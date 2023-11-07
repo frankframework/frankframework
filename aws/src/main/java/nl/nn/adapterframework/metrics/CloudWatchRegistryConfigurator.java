@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
 
 public class CloudWatchRegistryConfigurator extends MetricsRegistryConfiguratorBase<CloudWatchConfig> {
 
-	private class Config extends MeterRegistryConfigBase implements CloudWatchConfig {};
+	private class Config extends MeterRegistryConfigBase implements CloudWatchConfig {}
 
 	@Override
 	protected CloudWatchConfig createConfig() {

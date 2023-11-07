@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,34 +16,21 @@
 package nl.nn.adapterframework.extensions.ifsa.jms;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Map;
 
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
-import javax.jms.JMSException;
 import javax.jms.QueueSession;
-import javax.jms.TextMessage;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
-import com.ing.ifsa.IFSAHeader;
 import com.ing.ifsa.IFSAMessage;
-import com.ing.ifsa.IFSAPoisonMessage;
 import com.ing.ifsa.IFSAServiceName;
 import com.ing.ifsa.IFSAServicesProvided;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IKnowsDeliveryCount;
 import nl.nn.adapterframework.core.IListenerConnector;
 import nl.nn.adapterframework.core.IListenerConnector.CacheMode;
 import nl.nn.adapterframework.core.IMessageHandler;
-import nl.nn.adapterframework.core.IMessageWrapper;
 import nl.nn.adapterframework.core.IPortConnectedListener;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.ITransactionRequirements;
@@ -53,11 +40,8 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.extensions.ifsa.IfsaMessageProtocolEnum;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Implementation of {@link IPortConnectedListener} that acts as an IFSA-service.
@@ -101,10 +85,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  * @since   4.2
  */
-public class PushingIfsaProviderListener extends IfsaFacade implements IPortConnectedListener<IFSAMessage>, IThreadCountControllable, IKnowsDeliveryCount, ITransactionRequirements {
-
-	public static final String THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY = "originalRawMessage";
-	public static final String THREAD_CONTEXT_BIFNAME_KEY="IfsaBif";
+public class PushingIfsaProviderListener extends IfsaListener implements IPortConnectedListener<IFSAMessage>, IThreadCountControllable, ITransactionRequirements {
 
 
 	private @Getter String listenerPort;
@@ -116,7 +97,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	private @Getter @Setter IbisExceptionListener exceptionListener;
 
 	public PushingIfsaProviderListener() {
-		super(true); //instantiate as a provider
+		super(); //instantiate as a provider
 		setTimeOut(3000); // set default timeout, to be able to stop adapter!
 	}
 
@@ -127,7 +108,7 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 		if (jmsConnector==null) {
 			throw new ConfigurationException(getLogPrefix()+" has no jmsConnector. It should be configured via springContext.xml");
 		}
-		Destination destination=null;
+		Destination destination;
 		try {
 			destination=getServiceQueue();
 		} catch (Exception e) {
@@ -141,8 +122,6 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 			throw new ConfigurationException(e);
 		}
 	}
-
-
 
 	@Override
 	public void open() throws ListenerException {
@@ -185,22 +164,23 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String,Object> threadContext) throws ListenerException {
-		QueueSession session= (QueueSession) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<IFSAMessage> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
+		QueueSession queueSession= (QueueSession) pipeLineSession.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 
 		// on request-reply send the reply.
 		if (getMessageProtocolEnum() == IfsaMessageProtocolEnum.REQUEST_REPLY) {
+			IFSAMessage rawMessage = rawMessageWrapper.getRawMessage();
 			javax.jms.Message originalRawMessage;
-			if (rawMessageOrWrapper instanceof javax.jms.Message) {
-				originalRawMessage = (javax.jms.Message)rawMessageOrWrapper;
+			if (rawMessage != null) {
+				originalRawMessage = rawMessage;
 			} else {
-				originalRawMessage = (javax.jms.Message)threadContext.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
+				originalRawMessage = (javax.jms.Message) pipeLineSession.get(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY);
 			}
 			if (originalRawMessage==null) {
-				String cid = (String) threadContext.get(PipeLineSession.correlationIdKey);
+				String cid = (String) pipeLineSession.get(PipeLineSession.CORRELATION_ID_KEY);
 				log.warn(getLogPrefix()+"no original raw message found for correlationId ["+cid+"], cannot send result");
 			} else {
-				if (session==null) {
+				if (queueSession==null) {
 					throw new ListenerException(getLogPrefix()+"no session found in context, cannot send result");
 				}
 				try {
@@ -208,10 +188,10 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 					if (plr!=null && plr.getResult()!=null) {
 						result=plr.getResult().asString();
 					}
-					sendReply(session, originalRawMessage, result);
+					sendReply(queueSession, originalRawMessage, result);
 				} catch (IfsaException | IOException e) {
 					try {
-						sendReply(session, originalRawMessage, "<exception>"+e.getMessage()+"</exception>");
+						sendReply(queueSession, originalRawMessage, "<exception>"+e.getMessage()+"</exception>");
 					} catch (IfsaException e2) {
 						log.warn(getLogPrefix()+"exception sending errormessage as reply",e2);
 					}
@@ -222,279 +202,10 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	}
 
 
-	protected String getIdFromWrapper(IMessageWrapper wrapper, Map<String,Object> threadContext)  {
-		for (Iterator<String> it=wrapper.getContext().keySet().iterator(); it.hasNext();) {
-			String key = it.next();
-			Object value = wrapper.getContext().get(key);
-			log.debug(getLogPrefix()+"setting variable ["+key+"] to ["+value+"]");
-			threadContext.put(key, value);
-		}
-		return wrapper.getId();
-	}
-	protected Message getMessageFromWrapper(IMessageWrapper wrapper, Map<String,Object> threadContext)  {
-		return wrapper.getMessage();
-	}
-
-
-
-
-	/**
-	 * Extracts ID-string from message obtained from raw message}.
-	 * Puts also the following parameters  in the threadContext:
-	 * <ul>
-	 *   <li>id</li>
-	 *   <li>cid</li>
-	 *   <li>timestamp</li>
-	 *   <li>replyTo</li>
-	 *   <li>messageText</li>
-	 *   <li>fullIfsaServiceName</li>
-	 *   <li>ifsaServiceName</li>
-	 *   <li>ifsaGroup</li>
-	 *   <li>ifsaOccurrence</li>
-	 *   <li>ifsaVersion</li>
-	 *   <li>ifsaBifName</li>
-	 *   <li>ifsaBtcData</li>
-	 * </ul>
-	 * @return ID-string of message for adapter.
-	 */
-	@Override
-	public String getIdFromRawMessage(IFSAMessage rawMessage, Map<String,Object> threadContext) throws ListenerException {
-
-		IFSAMessage message = null;
-
-	 	if (rawMessage instanceof IMessageWrapper) {
-	 		return getIdFromWrapper((IMessageWrapper)rawMessage,threadContext);
-	 	}
-
-		try {
-			message = (IFSAMessage) rawMessage;
-		} catch (ClassCastException e) {
-			log.error(getLogPrefix()+
-				"message received was not of type IFSAMessage, but [" + rawMessage.getClass().getName() + "]", e);
-			return null;
-		}
-		String mode = "unknown";
-		String id = "unset";
-		String cid = "unset";
-		Date tsSent = null;
-		Destination replyTo = null;
-		String messageText = null;
-		String fullIfsaServiceName = null;
-		IFSAServiceName requestedService = null;
-		String ifsaServiceName=null, ifsaGroup=null, ifsaOccurrence=null, ifsaVersion=null;
-		try {
-			if (message.getJMSDeliveryMode() == DeliveryMode.NON_PERSISTENT) {
-				mode = "NON_PERSISTENT";
-			} else
-				if (message.getJMSDeliveryMode() == DeliveryMode.PERSISTENT) {
-					mode = "PERSISTENT";
-				}
-		} catch (JMSException ignore) {
-		}
-		// --------------------------
-		// retrieve MessageID
-		// --------------------------
-		try {
-			id = message.getJMSMessageID();
-		} catch (JMSException ignore) {
-		}
-		// --------------------------
-		// retrieve CorrelationID
-		// --------------------------
-		try {
-			cid = message.getJMSCorrelationID();
-		} catch (JMSException ignore) {
-		}
-		// --------------------------
-		// retrieve TimeStamp
-		// --------------------------
-		try {
-			long lTimeStamp = message.getJMSTimestamp();
-			tsSent = new Date(lTimeStamp);
-
-		} catch (JMSException ignore) {
-		}
-		// --------------------------
-		// retrieve ReplyTo address
-		// --------------------------
-		try {
-			replyTo = message.getJMSReplyTo();
-
-		} catch (JMSException ignore) {
-		}
-		// --------------------------
-		// retrieve message text
-		// --------------------------
-		try {
-			messageText = ((TextMessage)message).getText();
-		} catch (Throwable ignore) {
-		}
-		// --------------------------
-		// retrieve ifsaServiceDestination
-		// --------------------------
-		try {
-			fullIfsaServiceName = message.getServiceString();
-			requestedService = message.getService();
-
-			ifsaServiceName = requestedService.getServiceName();
-			ifsaGroup = requestedService.getServiceGroup();
-			ifsaOccurrence = requestedService.getServiceOccurance();
-			ifsaVersion = requestedService.getServiceVersion();
-
-		} catch (JMSException e) {
-			log.error(getLogPrefix() + "got error getting serviceparameter", e);
-		}
-
-		String BIFname=null;
-		try {
-			BIFname= message.getBifName();
-			if (StringUtils.isNotEmpty(BIFname)) {
-				threadContext.put(THREAD_CONTEXT_BIFNAME_KEY,BIFname);
-			}
-		} catch (JMSException e) {
-			log.error(getLogPrefix() + "got error getting BIFname", e);
-		}
-		byte btcData[]=null;
-		try {
-			btcData= message.getBtcData();
-		} catch (JMSException e) {
-			log.error(getLogPrefix() + "got error getting btcData", e);
-		}
-
-		if (log.isDebugEnabled()) {
-			log.debug(getLogPrefix()+ "got message for [" + fullIfsaServiceName
-					+ "] with JMSDeliveryMode=[" + mode
-					+ "] \n  JMSMessageID=[" + id
-					+ "] \n  JMSCorrelationID=["+ cid
-					+ "] \n  BIFname=["+ BIFname
-					+ "] \n  ifsaServiceName=["+ ifsaServiceName
-					+ "] \n  ifsaGroup=["+ ifsaGroup
-					+ "] \n  ifsaOccurrence=["+ ifsaOccurrence
-					+ "] \n  ifsaVersion=["+ ifsaVersion
-					+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent)
-					+ "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
-					+ "] \n  MessageHeaders=["+displayHeaders(message)+"\n"
-//					+ "] \n  btcData=["+ btcData
-					+ "] \n  Message=[" + message.toString()+"\n]");
-
-		}
-//		if (cid == null) {
-//			if (StringUtils.isNotEmpty(BIFname)) {
-//				cid = BIFname;
-//				if (log.isDebugEnabled()) log.debug("Setting correlation ID to BIFname ["+cid+"]");
-//			} else {
-//				cid = id;
-//				if (log.isDebugEnabled()) log.debug("Setting correlation ID to MessageId ["+cid+"]");
-//			}
-//		}
-
-		PipeLineSession.setListenerParameters(threadContext, id, BIFname, null, tsSent);
-		threadContext.put("timestamp", tsSent);
-		threadContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
-		threadContext.put("messageText", messageText);
-		threadContext.put("fullIfsaServiceName", fullIfsaServiceName);
-		threadContext.put("ifsaServiceName", ifsaServiceName);
-		threadContext.put("ifsaGroup", ifsaGroup);
-		threadContext.put("ifsaOccurrence", ifsaOccurrence);
-		threadContext.put("ifsaVersion", ifsaVersion);
-		threadContext.put("ifsaBifName", BIFname);
-		threadContext.put("ifsaBtcData", btcData);
-
-		Map udz = (Map)message.getIncomingUDZObject();
-		if (udz!=null) {
-			String contextDump = "ifsaUDZ:";
-			for (Iterator it = udz.keySet().iterator(); it.hasNext();) {
-				String key = (String)it.next();
-				String value = (String)udz.get(key);
-				contextDump = contextDump + "\n " + key + "=[" + value + "]";
-				threadContext.put(key, value);
-			}
-			if (log.isDebugEnabled()) {
-				log.debug(getLogPrefix()+ contextDump);
-			}
-		}
-
-		return BIFname;
-	}
-
-	private String displayHeaders(IFSAMessage message) {
-		StringBuffer result= new StringBuffer();
-		try {
-			for(Enumeration enumeration = message.getPropertyNames(); enumeration.hasMoreElements();) {
-				String tagName = (String)enumeration.nextElement();
-				Object value = message.getObjectProperty(tagName);
-				result.append("\n").append(tagName).append(": ");
-				if (value==null) {
-					result.append("null");
-				} else {
-					result.append("(").append(ClassUtils.nameOf(value)).append(") [").append(value).append("]");
-					if (tagName.startsWith("ifsa") &&
-						!tagName.equals("ifsa_unique_id") &&
-						!tagName.startsWith("ifsa_epz_") &&
-						!tagName.startsWith("ifsa_udz_")) {
-							result.append(" * copied when sending reply");
-							if (!(value instanceof String)) {
-								result.append(" THIS CAN CAUSE A PROBLEM AS "+ClassUtils.nameOf(value)+" IS NOT String!");
-							}
-						}
-				}
-			}
-		} catch(Throwable t) {
-			log.warn("exception parsing headers",t);
-		}
-		return result.toString();
-	}
-
-
-	/**
-	 * Extracts message string from raw message. May also extract
-	 * other parameters from the message and put those in the threadContext.
-	 * @return input message for adapter.
-	 */
-	@Override
-	public Message extractMessage(IFSAMessage rawMessage, Map<String,Object> threadContext) throws ListenerException {
-		if (rawMessage instanceof IMessageWrapper) {
-			return getMessageFromWrapper((IMessageWrapper)rawMessage,threadContext);
-		}
-		if (rawMessage instanceof IFSAPoisonMessage) {
-			IFSAPoisonMessage pm = (IFSAPoisonMessage)rawMessage;
-			IFSAHeader header = pm.getIFSAHeader();
-			String source;
-			try {
-				source = header.getIFSA_Source();
-			} catch (Exception e) {
-				source = "unknown due to exeption:"+e.getMessage();
-			}
-			return  new Message("<poisonmessage>"+
-					"  <source>"+source+"</source>"+
-					"  <contents>"+XmlUtils.encodeChars(ToStringBuilder.reflectionToString(pm))+"</contents>"+
-					"</poisonmessage>");
-		}
-
-		TextMessage message = null;
-		try {
-			message = (TextMessage) rawMessage;
-		} catch (ClassCastException e) {
-			log.warn(getLogPrefix()+ "message received was not of type TextMessage, but ["+rawMessage.getClass().getName()+"]", e);
-			return null;
-		}
-		try {
-			String result=message.getText();
-			threadContext.put(THREAD_CONTEXT_ORIGINAL_RAW_MESSAGE_KEY, message);
-			return new Message(result);
-		} catch (JMSException e) {
-			throw new ListenerException(getLogPrefix(),e);
-		}
-	}
-
-
 	@Override
 	public IListenerConnector getListenerPortConnector() {
 		return jmsConnector;
 	}
-
-
-
 
 	/**
 	 * Name of the WebSphere listener port that this JMS Listener binds to. Optional.
@@ -510,9 +221,6 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	public void setListenerPort(String listenerPort) {
 		this.listenerPort = listenerPort;
 	}
-
-
-
 
 	/**
 	 * Controls caching of JMS objects. Must be one of CACHE_NONE, CACHE_CONNECTION, CACHE_SESSION, CACHE_CONSUMER
@@ -580,16 +288,9 @@ public class PushingIfsaProviderListener extends IfsaFacade implements IPortConn
 	}
 
 	@Override
-	public int getDeliveryCount(Object rawMessage) {
-		try {
-			javax.jms.Message message=(javax.jms.Message)rawMessage;
-			int value = message.getIntProperty("JMSXDeliveryCount");
-			if (log.isDebugEnabled()) log.debug("determined delivery count ["+value+"]");
-			return value;
-		} catch (Exception e) {
-			log.error(getLogPrefix()+"exception in determination of DeliveryCount",e);
-			return -1;
-		}
+	public RawMessageWrapper<IFSAMessage> wrapRawMessage(IFSAMessage rawMessage, PipeLineSession session) {
+		Map<String, Object> messageContext = extractMessageProperties(rawMessage);
+		session.putAll(messageContext);
+		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
-
 }

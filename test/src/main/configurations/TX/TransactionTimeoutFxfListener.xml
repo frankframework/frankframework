@@ -1,19 +1,19 @@
 <module>
 	<adapter name="TransactionTimeoutFxfListener" active="${active.fxf}" >
-		<receiver 
-			name="TransactionTimeoutFxfListener" 
+		<receiver
+			name="TransactionTimeoutFxfListener"
 			maxRetries="0"
 			transactionAttribute="Required"
 			transactionTimeout="2">
-			<listener 
-				className="nl.nn.adapterframework.extensions.fxf.FxfListener" 
-				destinationName="jms/fxf_request" 
+			<listener
+				className="nl.nn.adapterframework.extensions.fxf.FxfListener"
+				destinationName="${jms.destination.fxf}"
 				script="${FXF_init}"
 				applicationId="TIMEOUTFXF"
-				jmsRealm="fxf" 
+				jmsRealm="fxf"
 				delete="true"
-				workDirectory="yyyy" 
-				fxfDestinationName="zzzz" 
+				workDirectory="yyyy"
+				fxfDestinationName="zzzz"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/TransactionTimeoutFxfListener" />

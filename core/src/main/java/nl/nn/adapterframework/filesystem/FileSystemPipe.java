@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@ package nl.nn.adapterframework.filesystem;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
@@ -28,10 +31,10 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
-import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.ReferTo;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -60,7 +63,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 @SupportsOutputStreaming
 public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends StreamingPipe implements HasPhysicalDestination {
 
-	private FileSystemActor<F, FS> actor = new FileSystemActor<F, FS>();
+	private final FileSystemActor<F, FS> actor = new FileSystemActor<>();
 	private FS fileSystem;
 	private final String FILESYSTEMACTOR = "nl.nn.adapterframework.filesystem.FileSystemActor";
 
@@ -107,7 +110,8 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	}
 
 	@Override
-	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
+	@Nullable
+	public PipeRunResult doPipe (@Nonnull Message message, @Nonnull PipeLineSession session) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterValueList pvl=null;
 		try {
@@ -118,7 +122,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 			throw new PipeRunException(this,"Pipe caught exception evaluating parameters", e);
 		}
 
-		Object result;
+		Message result;
 		try {
 			result = actor.doAction(message, pvl, session);
 		} catch (FileSystemException | TimeoutException e) {
@@ -128,7 +132,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
 		}
-		if (result!=null) {
+		if (!Message.isNull(result)) {
 			return new PipeRunResult(getSuccessForward(), result);
 		}
 		return new PipeRunResult(getSuccessForward(), message);
@@ -156,7 +160,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		actor.addActions(specificActions);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setAction(FileSystemAction action) {
 		actor.setAction(action);
 	}
@@ -164,47 +168,47 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		return actor.getAction();
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setFilename(String filename) {
 		actor.setFilename(filename);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setDestination(String destination) {
 		actor.setDestination(destination);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setCreateFolder(boolean createFolder) {
 		actor.setCreateFolder(createFolder);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setOverwrite(boolean overwrite) {
 		actor.setOverwrite(overwrite);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setRotateSize(int rotateSize) {
 		actor.setRotateSize(rotateSize);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	@Deprecated
 	public void setBase64(Base64Pipe.Direction base64) {
 		actor.setBase64(base64);
@@ -215,7 +219,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	public void setWildCard(String wildcard) {
 		setWildcard(wildcard);
 	}
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setWildcard(String wildcard) {
 		actor.setWildcard(wildcard);
 	}
@@ -225,32 +229,32 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 	public void setExcludeWildCard(String excludeWildcard) {
 		setExcludeWildcard(excludeWildcard);
 	}
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setExcludeWildcard(String excludeWildcard) {
 		actor.setExcludeWildcard(excludeWildcard);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
 		actor.setRemoveNonEmptyFolder(removeNonEmptyFolder);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setWriteLineSeparator(boolean writeLineSeparator) {
 		actor.setWriteLineSeparator(writeLineSeparator);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setCharset(String charset) {
 		actor.setCharset(charset);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		actor.setDeleteEmptyFolder(deleteEmptyFolder);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		actor.setOutputFormat(outputFormat);
 	}

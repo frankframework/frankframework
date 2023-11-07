@@ -1,0 +1,3 @@
+<request action="InsertOne">
+	<json>{ "student_id": "Adriaan", "average_grade": 7.68 }</json>
+</request>

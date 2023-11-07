@@ -31,6 +31,8 @@ import nl.nn.adapterframework.util.LogUtil;
 public class TransactionConnectorTest extends TransactionManagerTestBase {
 	protected static Logger log = LogUtil.getLogger(TransactionConnectorTest.class);
 
+	public static final TransactionDefinition TX_DEF = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 5);
+
 	@Override
 	@Before
 	public void setup() throws Exception {
@@ -42,7 +44,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 	@Test
 	public void testSimpleTransaction() throws Exception {
 
-		TransactionStatus txStatus = startTransaction();
+		TransactionStatus txStatus = startTransaction(TX_DEF);
 
 		try {
 			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
@@ -60,12 +62,12 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testNewTransactionMustLock() throws Exception {
-		TransactionStatus txStatus = startTransaction();
+		TransactionStatus txStatus = startTransaction(TX_DEF);
 
 		try {
 			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
 
-			TransactionStatus txStatus2 = startTransaction();
+			TransactionStatus txStatus2 = startTransaction(TX_DEF);
 			try {
 				runQuery("UPDATE "+TEST_TABLE+" SET TINT=3 WHERE TKEY=999 AND TINT=2");
 			} catch (Exception e) {
@@ -88,7 +90,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 	@Test
 	public void testBasicSameThread() throws Exception {
 		displayTransaction();
-		TransactionStatus txStatus = startTransaction();
+		TransactionStatus txStatus = startTransaction(TX_DEF);
 		displayTransaction();
 
 		try {
@@ -104,7 +106,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testBasic() throws Exception {
-		TransactionStatus txStatus = startTransaction();
+		TransactionStatus txStatus = startTransaction(TX_DEF);
 
 		// do some action in main thread
 		try {
@@ -139,7 +141,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 	@Test
 	public void testBasicRollbackInChildThread() throws Exception {
 
-		TransactionStatus txStatus = startTransaction();
+		TransactionStatus txStatus = startTransaction(TX_DEF);
 		// do some action in main thread
 		try {
 			runQuery("UPDATE "+TEST_TABLE+" SET TINT=2 WHERE TKEY=999");
@@ -154,12 +156,6 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 			txManager.commit(txStatus);
 		}
 		assertEquals(3,runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
-	}
-
-	private TransactionStatus startTransaction() {
-		int txTimeout=5;
-		TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,txTimeout);
-		return txManager.getTransaction(txDef);
 	}
 
 	private void runQuery(String query) throws SQLException {

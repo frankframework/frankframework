@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,8 +32,7 @@ import nl.nn.adapterframework.batch.ResultWriter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -56,8 +55,6 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	protected Map<String,Object>     openLobHandles  = Collections.synchronizedMap(new HashMap<String,Object>());
 
 	protected FixedQuerySender querySender;
-
-	protected final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -88,11 +85,11 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 
 	@Override
 	protected Writer createWriter(PipeLineSession session, String streamId) throws Exception {
-		querySender.sendMessageOrThrow(new Message(streamId), session); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it?
+		querySender.sendMessageOrThrow(new Message(streamId), session).close(); // TODO find out why this is here. It seems to me the query will be executed twice this way. Or is it to insert an empty LOB before updating it?
 		Connection connection=querySender.getConnection();
 		openConnections.put(streamId, connection);
 		Message message = new Message(streamId);
-		QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
+		QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message);
 		PreparedStatement statement=queryExecutionContext.getStatement();
 		IDbmsSupport dbmsSupport=querySender.getDbmsSupport();
 		JdbcUtil.applyParameters(dbmsSupport, statement, queryExecutionContext.getParameterList(), message, session);
@@ -119,22 +116,22 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	}
 
 
-	@IbisDoc({"The SQL query text", ""})
+	/** The SQL query text */
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
 
-	@IbisDocRef({"2", FIXEDQUERYSENDER})
+	@ReferTo(FixedQuerySender.class)
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
 
-	@IbisDocRef({"3", FIXEDQUERYSENDER})
+	@ReferTo(FixedQuerySender.class)
 	public String getPhysicalDestinationName() {
 		return querySender.getPhysicalDestinationName();
 	}
 
-	@IbisDocRef({"4", FIXEDQUERYSENDER})
+	@ReferTo(FixedQuerySender.class)
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}

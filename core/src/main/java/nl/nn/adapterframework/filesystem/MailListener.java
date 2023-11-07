@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!
+   Copyright 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,13 +18,15 @@ package nl.nn.adapterframework.filesystem;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.doc.IbisDoc;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
@@ -72,27 +74,27 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 
 
 	@Override
-	public Message extractMessage(M rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		if (MIME_MESSAGE_TYPE.equals(getMessageType())) {
 			try {
-				return getFileSystem().getMimeContent(rawMessage);
+				return getFileSystem().getMimeContent(rawMessage.getRawMessage());
 			} catch (FileSystemException e) {
 				throw new ListenerException("cannot get MimeContents",e);
 			}
 		}
 		if (!EMAIL_MESSAGE_TYPE.equals(getMessageType())) {
-			return super.extractMessage(rawMessage, threadContext);
+			return super.extractMessage(rawMessage, context);
 		}
 		XmlWriter writer = new XmlWriter();
 		try (SaxElementBuilder emailXml = new SaxElementBuilder("email",writer)) {
 			if (isSimple()) {
-				MailFileSystemUtils.addEmailInfoSimple(getFileSystem(), rawMessage, emailXml);
+				MailFileSystemUtils.addEmailInfoSimple(getFileSystem(), rawMessage.getRawMessage(), emailXml);
 			} else {
-				getFileSystem().extractEmail(rawMessage, emailXml);
+				getFileSystem().extractEmail(rawMessage.getRawMessage(), emailXml);
 			}
 			if (StringUtils.isNotEmpty(getStoreEmailAsStreamInSessionKey())) {
-				Message mimeContent = getFileSystem().getMimeContent(rawMessage);
-				threadContext.put(getStoreEmailAsStreamInSessionKey(), mimeContent.asInputStream());
+				Message mimeContent = getFileSystem().getMimeContent(rawMessage.getRawMessage());
+				context.put(getStoreEmailAsStreamInSessionKey(), mimeContent.asInputStream());
 			}
 		} catch (SAXException | IOException | FileSystemException e) {
 			throw new ListenerException(e);
@@ -100,7 +102,10 @@ public abstract class MailListener<M, A, S extends IMailFileSystem<M,A>> extends
 		return new Message(writer.toString());
 	}
 
-	@IbisDoc({"when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)", "false"})
+	/**
+	 * when set to <code>true</code>, the xml string passed to the pipeline only contains the subject of the mail (to save memory)
+	 * @ff.default false
+	 */
 	@Deprecated
 	@ConfigurationWarning("Please use <code>messageType</code> to control the message produced by the listener")
 	public void setSimple(boolean b) {

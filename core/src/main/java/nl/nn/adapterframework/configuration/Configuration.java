@@ -62,6 +62,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
+import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 
 /**
@@ -80,6 +81,7 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
 public class Configuration extends ClassPathXmlApplicationContext implements IConfigurable, ApplicationContextAware, ConfigurableLifecycle {
 	protected Logger log = LogUtil.getLogger(this);
 	private static final Logger secLog = LogUtil.getLogger("SEC");
+	private static final Logger applicationLog = LogUtil.getLogger("APPLICATION");
 
 	private Boolean autoStart = null;
 	private boolean enabledAutowiredPostProcessing = false;
@@ -87,7 +89,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
 	private @Getter ScheduleManager scheduleManager; //We have to manually inject the ScheduleManager bean! See refresh();
 
-	private @Getter BootState state = BootState.STOPPED;
+	private @Getter RunState state = RunState.STOPPED;
 
 	private @Getter String version;
 	private @Getter IbisManager ibisManager;
@@ -129,17 +131,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 				statisticsHandler =new StatisticsKeeperLogger();
 				statisticsHandler.configure();
 			}
-
-//			StatisticsKeeperIterationHandlerCollection skihc = new StatisticsKeeperIterationHandlerCollection();
-//
-//			StatisticsKeeperLogger skl =new StatisticsKeeperLogger();
-//			skl.configure();
-//			skihc.registerIterationHandler(skl);
-//
-//			StatisticsKeeperStore skih = new StatisticsKeeperStore();
-//			skih.setJmsRealm("lokaal");
-//			skih.configure();
-//			skihc.registerIterationHandler(skih);
 
 			forEachStatisticsKeeper(statisticsHandler, now, statisticsMarkDateMain, showDetails ?statisticsMarkDateDetails : null, action, AppConstants.getInstance().getString("instance.name",""), "instance");
 		} catch (Exception e) {
@@ -216,12 +207,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 		super.refresh();
 
-		if(adapterManager == null) { //Manually set the AdapterManager bean
-			setAdapterManager(getBean("adapterManager", AdapterManager.class));
-		}
-		if(scheduleManager == null) { //Manually set the ScheduleManager bean
-			setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
-		}
+		setAdapterManager(getBean("adapterManager", AdapterManager.class));
+		setScheduleManager(getBean("scheduleManager", ScheduleManager.class));
 	}
 
 	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
@@ -249,7 +236,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		}
 
 		super.start();
-		state = BootState.STARTED;
+		state = RunState.STARTED;
 	}
 
 	/**
@@ -261,7 +248,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		if(getName().contains("/")) {
 			throw new ConfigurationException("It is not allowed to have '/' in configuration name ["+getName()+"]");
 		}
-		state = BootState.STARTING;
+		state = RunState.STARTING;
 		long start = System.currentTimeMillis();
 
 		try {
@@ -278,7 +265,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 				((ConfigurableLifecycle) lifecycle).configure();
 			}
 		} catch (ConfigurationException e) {
-			state = BootState.STOPPED;
+			state = RunState.STOPPED;
 			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; "+ e.getMessage()));
 			throw e;
 		}
@@ -293,7 +280,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		else {
 			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
 		}
-		secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] " + msg);
+		secLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
+		applicationLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
 		publishEvent(new ConfigurationMessageEvent(this, msg));
 	}
 
@@ -328,11 +316,11 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void close() {
 		try {
-			state = BootState.STOPPING;
+			state = RunState.STOPPING;
 			super.close();
 		} finally {
 			configured = false;
-			state = BootState.STOPPED;
+			state = RunState.STOPPED;
 		}
 	}
 
@@ -340,7 +328,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void publishEvent(ApplicationEvent event) {
 		if(event instanceof ContextClosedEvent) {
-			secLog.info("Configuration [" + getName() + "] [" + getVersion()+"] closed");
+			applicationLog.info("Configuration [{}] [{}] closed", this::getName, this::getVersion);
 			publishEvent(new ConfigurationMessageEvent(this, "closed"));
 		}
 
@@ -369,12 +357,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public boolean isUnloadInProgressOrDone() {
-		return inState(BootState.STOPPING) || inState(BootState.STOPPED);
+		return inState(RunState.STOPPING) || inState(RunState.STOPPED);
 	}
 
 	@Override
 	public boolean isRunning() {
-		return inState(BootState.STARTED) && super.isRunning();
+		return inState(RunState.STARTED) && super.isRunning();
+	}
+
+	private boolean inState(RunState state) {
+		return getState() == state;
 	}
 
 	/** If the Configuration should automatically start all {@link Adapter Adapters} and {@link Job Scheduled Jobs}. */
@@ -491,7 +483,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Override
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
-			if(state == BootState.STARTING && !getName().equals(name)) {
+			if(state == RunState.STARTING && !getName().equals(name)) {
 				publishEvent(new ConfigurationMessageEvent(this, "name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
 			}
 			setBeanName(name);
@@ -507,7 +499,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Protected
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
-			if(state == BootState.STARTING && this.version != null && !this.version.equals(version)) {
+			if(state == RunState.STARTING && this.version != null && !this.version.equals(version)) {
 				publishEvent(new ConfigurationMessageEvent(this, "version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageKeeperLevel.WARN));
 			}
 
@@ -548,10 +540,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public IJob getScheduledJob(String name) {
+		if (scheduleManager == null || !isActive()) {
+			return null;
+		}
 		return scheduleManager.getSchedule(name);
 	}
 
 	public List<IJob> getScheduledJobs() {
+		if (scheduleManager == null || !isActive()) {
+			return Collections.emptyList();
+		}
 		return scheduleManager.getSchedulesList();
 	}
 
@@ -560,11 +558,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	}
 
 	public ConfigurationWarnings getConfigurationWarnings() {
-		if(isActive()) {
-			return getBean("configurationWarnings", ConfigurationWarnings.class);
+		if (!isActive()) {
+			return null;
 		}
-
-		return null;
+		return getBean("configurationWarnings", ConfigurationWarnings.class);
 	}
 
 	@Override
@@ -598,6 +595,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	// Dummy setter to allow Monitors being added to Configurations via Frank!Config XSD
 	@Deprecated
 	public void registerMonitoring(MonitorManager factory) {
+	}
+
+	public void setSharedResources(SharedResources resource) {
+		//Dummy Frank!Doc setter
 	}
 
 	/**

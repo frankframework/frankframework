@@ -19,16 +19,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.Assert;
 
 import lombok.Getter;
@@ -38,9 +35,9 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
-import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.RunState;
 
@@ -51,13 +48,12 @@ import nl.nn.adapterframework.util.RunState;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class DefaultIbisManager implements IbisManager, InitializingBean {
+public class DefaultIbisManager implements IbisManager {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
 	private IbisContext ibisContext;
 	private List<Configuration> configurations = new ArrayList<>();
-	private PlatformTransactionManager transactionManager;
 	private ApplicationEventPublisher applicationEventPublisher;
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -244,14 +240,19 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 		}
 	}
 
+	@Nonnull
 	private Adapter getAdapterByName(String configurationName, String adapterName) {
 		Assert.notNull(configurationName, "no configurationName provided");
 		Configuration configuration = getConfiguration(configurationName);
-		Assert.notNull(configuration, ()->"configuration ["+configuration+"] not found");
+		if(configuration == null) {
+			throw new IllegalArgumentException("configuration ["+configuration+"] not found");
+		}
 
 		Assert.notNull(adapterName, "no adapterName provided");
 		Adapter adapter = configuration.getRegisteredAdapter(adapterName);
-		Assert.notNull(adapter, ()->"adapter ["+adapterName+"] not found");
+		if(adapter == null) {
+			throw new IllegalArgumentException("adapter ["+adapterName+"] not found");
+		}
 
 		return adapter;
 	}
@@ -342,16 +343,6 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	}
 
 	@Override
-	public PlatformTransactionManager getTransactionManager() {
-		return transactionManager;
-	}
-
-	public void setTransactionManager(PlatformTransactionManager transactionManager) {
-		log.debug("setting transaction manager to [" + transactionManager + "]");
-		this.transactionManager = transactionManager;
-	}
-
-	@Override
 	public void dumpStatistics(Action action) {
 		for (Configuration configuration : configurations) {
 			configuration.dumpStatistics(action);
@@ -366,21 +357,5 @@ public class DefaultIbisManager implements IbisManager, InitializingBean {
 	@Override
 	public ApplicationEventPublisher getApplicationEventPublisher() {
 		return applicationEventPublisher;
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
-		if(requiresDatabase) {
-			if(transactionManager == null) {
-				throw new IllegalStateException("no TransactionManager found or configured");
-			}
-
-			//Try to create a new transaction to check if there is a connection to the database
-			TransactionStatus status = this.transactionManager.getTransaction(new DefaultTransactionDefinition());
-			if(status != null) { //If there is a transaction (read connection) close it!
-				this.transactionManager.commit(status);
-			}
-		}
 	}
 }

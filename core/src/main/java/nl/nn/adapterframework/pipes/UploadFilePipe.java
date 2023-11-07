@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,16 +19,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Uploads a zip file (inputstream in a sessionKey) and unzips it to a directory.
@@ -77,19 +76,22 @@ public class UploadFilePipe extends FixedForwardPipe {
 			dir = new File(getDirectory());
 		} else {
 			if (StringUtils.isNotEmpty(getDirectorySessionKey())) {
-				try {
-					dir = new File(session.getMessage(getDirectorySessionKey()).asString());
-				} catch (IOException e) {
-					throw new PipeRunException(this, "unable to resolve directory session key",e);
+				String pathname = session.getString(getDirectorySessionKey());
+				if (pathname == null) {
+					throw new PipeRunException(this, "unable to resolve directory session key");
 				}
+				dir = new File(pathname);
 			} else {
-				String filename;
+				String pathname;
 				try {
-					filename = message.asString();
+					pathname = message.asString();
 				} catch (IOException e) {
-					throw new PipeRunException(this, "cannot open stream", e);
+					throw new PipeRunException(this, "cannot open stream message to get path name", e);
 				}
-				dir = new File(filename);
+				if (pathname == null) {
+					throw new PipeRunException(this, "unable to resolve path name from input message");
+				}
+				dir = new File(pathname);
 			}
 		}
 
@@ -103,7 +105,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 
 		String fileName;
 		try {
-			fileName = session.getMessage("fileName").asString();
+			fileName = session.getString("fileName");
 			if (FileUtils.extensionEqualsIgnoreCase(fileName, "zip")) {
 				FileUtils.unzipStream(inputStream, dir);
 			} else {
@@ -116,7 +118,7 @@ public class UploadFilePipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), dir.getPath());
 	}
 
-	@IbisDoc({"base directory where files are unzipped to", ""})
+	/** base directory where files are unzipped to */
 	public void setDirectory(String string) {
 		directory = string;
 	}
@@ -125,7 +127,10 @@ public class UploadFilePipe extends FixedForwardPipe {
 		return directory;
 	}
 
-	@IbisDoc({"the session key that contains the base directory where files are unzipped to", "destination"})
+	/**
+	 * the session key that contains the base directory where files are unzipped to
+	 * @ff.default destination
+	 */
 	public void setDirectorySessionKey(String string) {
 		directorySessionKey = string;
 	}
@@ -138,7 +143,10 @@ public class UploadFilePipe extends FixedForwardPipe {
 		return sessionKey;
 	}
 
-	@IbisDoc({"name of the key in the <code>pipelinesession</code> which contains the inputstream", "file"})
+	/**
+	 * name of the key in the <code>pipelinesession</code> which contains the inputstream
+	 * @ff.default file
+	 */
 	public void setSessionKey(String string) {
 		sessionKey = string;
 	}

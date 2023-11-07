@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.scheduler;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -18,7 +18,7 @@ public class IbisJobDetailTest {
 	private SendMessageJob jobDef1;
 	private SendMessageJob jobDef2;
 
-	@Before
+	@BeforeEach
 	public void setup() throws ConfigurationException {
 		Configuration configuration = new TestConfiguration();
 

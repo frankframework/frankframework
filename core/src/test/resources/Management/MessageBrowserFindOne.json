@@ -1,0 +1,18 @@
+{
+    "totalMessages": 2,
+    "skipMessages": 0,
+    "messageCount": 2,
+    "recordsFiltered": 1,
+    "messages": [
+        {
+            "id": "2",
+            "originalId": "2",
+            "position": 1
+        }
+    ],
+    "targetStates": {
+        "AVAILABLE": {
+            "name": "Available"
+        }
+    }
+}

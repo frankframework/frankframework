@@ -44,9 +44,8 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.QUEUE)
@@ -64,12 +63,12 @@ public class BrowseQueue extends BusEndpointBase {
 		if (connectionFactories.isEmpty()) connectionFactories.add("no connection factories found");
 		returnMap.put("connectionFactories", connectionFactories);
 
-		return ResponseMessage.ok(returnMap);
+		return new JsonResponseMessage(returnMap);
 	}
 
 	@ActionSelector(BusAction.FIND)
 	public Message<String> findMessagesOnQueue(Message<?> message) {
-		String connectionFactory = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONNECTION_FACTORY_NAME_KEY);
+		String connectionFactory = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY);
 		if(StringUtils.isEmpty(connectionFactory)) {
 			throw new BusException("a connectionFactory must be provided");
 		}
@@ -110,7 +109,7 @@ public class BrowseQueue extends BusEndpointBase {
 				returnMap.put("messages", messages);
 			}
 
-			return ResponseMessage.ok(returnMap);
+			return new JsonResponseMessage(returnMap);
 		}
 		catch (Exception e) {
 			throw new BusException("Error occured browsing messages", e);

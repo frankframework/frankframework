@@ -26,8 +26,8 @@ import org.junit.jupiter.api.Test;
 import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.credentialprovider.RoleToGroupMappingJndiRealm;
-import nl.nn.credentialprovider.util.ClassUtils;
 
 public class RoleGroupMapperTest {
 

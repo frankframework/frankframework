@@ -23,7 +23,6 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -33,6 +32,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @ff.parameters any parameters defined on the recordHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
  *
  * @author  John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
 
@@ -62,11 +62,13 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	@Override
 	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
 		String xml = super.handleRecord(session,parsedRecord);
-		return getSender().sendMessageOrThrow(new Message(xml), session).asString();
+		try (Message message = getSender().sendMessageOrThrow(new Message(xml), session)) {
+			return message.asString();
+		}
 	}
 
 
-	@IbisDoc({"Sender that needs to handle the (XML) record"})
+	/** Sender that needs to handle the (XML) record */
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}

@@ -31,7 +31,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -107,7 +106,10 @@ public class JsonXsltSender extends XsltSender {
 		return new JsonXslt3XmlReader(handler);
 	}
 
-	@IbisDoc({"When <code>true</code>, the xml result of the transformation is converted back to json", "true"})
+	/**
+	 * When <code>true</code>, the xml result of the transformation is converted back to json
+	 * @ff.default true
+	 */
 	public void setJsonResult(boolean jsonResult) {
 		this.jsonResult = jsonResult;
 	}
@@ -116,7 +118,10 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	@IbisDoc({"Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions", "j=http://www.w3.org/2013/XSL/json"})
+	/**
+	 * Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions
+	 * @ff.default j=http://www.w3.org/2013/XSL/json
+	 */
 	public void setNamespaceDefs(String namespaceDefs) {
 		super.setNamespaceDefs(namespaceDefs);
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,9 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -41,7 +44,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * QuerySender that writes each row in a ResultSet to a file.
- * 
+ *
  * @author  Peter Leeuwenburgh
  */
 public class ResultSet2FileSender extends FixedQuerySender {
@@ -50,7 +53,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	private @Getter boolean append = false;
 	private @Getter String maxRecordsSessionKey;
 
-	protected byte[] eolArray=null;
+	protected byte[] eolArray = null;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -68,39 +71,34 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	@Override
-	protected PipeRunResult executeStatementSet(QueryExecutionContext queryExecutionContext, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		int counter = 0;
-		String fileName = null;
-		try {
-			fileName = session.getMessage(getFilenameSessionKey()).asString();
-		} catch(IOException e) {
-			throw new SenderException(getLogPrefix() + "unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
+	protected PipeRunResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session, @Nullable IForwardTarget next) throws SenderException, TimeoutException {
+		String fileName = session.getString(getFilenameSessionKey());
+		if (fileName == null) {
+			throw new SenderException(getLogPrefix() + "unable to get filename from session key ["+getFilenameSessionKey()+"]");
 		}
 		int maxRecords = -1;
 		if (StringUtils.isNotEmpty(getMaxRecordsSessionKey())) {
 			try {
-				maxRecords = Integer.parseInt(session.getMessage(getMaxRecordsSessionKey()).asString());
+				maxRecords = session.getInteger(getMaxRecordsSessionKey());
 			} catch (Exception e) {
 				throw new SenderException(getLogPrefix() + "unable to parse "+getMaxRecordsSessionKey()+" to integer", e);
 			}
 		}
 
+		int counter = 0;
 		try (FileOutputStream fos = new FileOutputStream(fileName, isAppend())) {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			try (ResultSet resultset = statement.executeQuery()) {
-				boolean eor = false;
-				if (maxRecords==0) {
-					eor = true;
-				}
-				while (resultset.next() && !eor) {
+				boolean eor = maxRecords == 0;
+				while (!eor && resultset.next()) {
 					counter++;
 					processResultSet(resultset, fos, counter);
 					if (maxRecords>=0 && counter>=maxRecords) {
 						ResultSetMetaData rsmd = resultset.getMetaData();
 						if (rsmd.getColumnCount() >= 3) {
 							String group = resultset.getString(3);
-							while (resultset.next() && !eor) {
+							while (!eor && resultset.next()) {
 								String groupNext = resultset.getString(3);
 								if (groupNext.equals(group)) {
 									counter++;
@@ -121,9 +119,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 			throw new SenderException(getLogPrefix() + "got Exception resolving parameter", e);
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix() + "got IOException", e);
-		} catch (SQLException sqle) {
-			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", sqle);
-		} catch (JdbcException e) {
+		} catch (SQLException | JdbcException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing a SQL command", e);
 		}
 		return new PipeRunResult(null, new Message("<result><rowsprocessed>" + counter + "</rowsprocessed></result>"));
@@ -156,7 +152,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		setFilenameSessionKey(filenameSessionKey);
 	}
 
-	/** 
+	/**
 	 * Key of session variable that contains the name of the file to use.
 	 * @ff.mandatory
 	 */
@@ -164,7 +160,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		this.filenameSessionKey = filenameSessionKey;
 	}
 
-	/** 
+	/**
 	 * If set <code>true</code> and the file already exists, the resultset rows are written to the end of the file.
 	 * @ff.default false
 	 */
@@ -173,8 +169,8 @@ public class ResultSet2FileSender extends FixedQuerySender {
 	}
 
 	/**
-	 * If set (and &gt;=0), this session key contains the maximum number of records which are processed. 
-	 * If <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed 
+	 * If set (and &gt;=0), this session key contains the maximum number of records which are processed.
+	 * If <code>query</code> contains a group field (3), then also following records with the same group field value as the last record are processed
 	 */
 	public void setMaxRecordsSessionKey(String maxRecordsSessionKey) {
 		this.maxRecordsSessionKey = maxRecordsSessionKey;

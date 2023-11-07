@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.testutil;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.soap.MessageFactory;
@@ -9,7 +9,7 @@ import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * This class only tests whether the required factory's are created directly with the iaf-core module.

@@ -23,28 +23,29 @@
 			<plugins>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-ear-plugin</artifactId>
-						<configuration>
-							<generateApplicationXml>true</generateApplicationXml>
-							<archive>
-								<manifest>
-									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-								</manifest>
-								<manifestEntries>
-									<DisableIBMJAXWSEngine>true</DisableIBMJAXWSEngine>
-								</manifestEntries>
-							</archive>
-							<applicationId>FrankFramework</applicationId>
-							<filtering>true</filtering>
-							<modules>
-								<webModule>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-webapp</artifactId>
-									<bundleFileName>adapterframework.war</bundleFileName>
-									<contextRoot>/iaf</contextRoot>
-								</webModule>
-							</modules>
-						</configuration>
+					<artifactId>maven-ear-plugin</artifactId>
+					<configuration>
+						<generateApplicationXml>true</generateApplicationXml>
+						<archive>
+							<manifest>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<DisableIBMJAXWSEngine>true</DisableIBMJAXWSEngine>
+								<Enable-CDI>false</Enable-CDI>
+							</manifestEntries>
+						</archive>
+						<applicationId>FrankFramework</applicationId>
+						<filtering>true</filtering>
+						<modules>
+							<webModule>
+								<groupId>org.ibissource</groupId>
+								<artifactId>ibis-adapterframework-webapp</artifactId>
+								<bundleFileName>adapterframework.war</bundleFileName>
+								<contextRoot>/iaf</contextRoot>
+							</webModule>
+						</modules>
+					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>

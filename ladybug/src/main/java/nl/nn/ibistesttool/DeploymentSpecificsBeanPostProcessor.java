@@ -23,8 +23,8 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
+import nl.nn.adapterframework.management.bus.DebuggerStatusChangedEvent;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.filter.View;
 import nl.nn.testtool.filter.Views;
@@ -83,7 +83,7 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 			}
 		}
 		if (bean instanceof Views) {
-			String defaultView = APP_CONSTANTS.getResolvedProperty("ibistesttool.defaultView");
+			String defaultView = APP_CONSTANTS.getProperty("ibistesttool.defaultView");
 			if (defaultView != null) {
 				Views views = (Views)bean;
 				View view = views.setDefaultView(defaultView);

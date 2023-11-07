@@ -42,19 +42,19 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.DB2XMLWriter;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 public class BrowseJdbcTable extends BusEndpointBase {
 
 	private static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
-	private static final String JDBC_PERMISSION_RULES = AppConstants.getInstance().getResolvedProperty("browseJdbcTable.permission.rules");
+	private static final String JDBC_PERMISSION_RULES = AppConstants.getInstance().getProperty("browseJdbcTable.permission.rules");
 	private static final String COLUMN_NAME = "COLUMN_NAME";
 	private static final String DATA_TYPE = "DATA_TYPE";
 	private static final String COLUMN_SIZE = "COLUMN_SIZE";
@@ -64,7 +64,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 	@TopicSelector(BusTopic.JDBC)
 	@ActionSelector(BusAction.FIND)
 	public Message<String> handleBrowseDatabase(Message<?> message) {
-		String datasource = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String tableName = BusMessageUtils.getHeader(message, "table");
 		String where = BusMessageUtils.getHeader(message, "where");
 		String order = BusMessageUtils.getHeader(message, "order"); // the form field named 'order' is only used for 'group by', when number of rows only is true.
@@ -123,14 +123,16 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			fielddefinition.append("</fielddefinition>");
 
 			String browseJdbcTableExecuteREQ = browseJdbcTableExecuteREQ(dbmsSupport.getDbms(), table, where, order, numberOfRowsOnly, minRow, maxRow, fielddefinition.toString());
-			URL url = ClassUtils.getResourceURL(DB2XML_XSLT);
+			URL url = ClassLoaderUtils.getResourceURL(DB2XML_XSLT);
 			if (url != null) {
 				Transformer t = XmlUtils.createTransformer(url);
 				query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
 			}
-			result = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query), null).asString();
+			try (nl.nn.adapterframework.stream.Message message = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query), null)) {
+				result = message.asString();
+			}
 		} catch (Exception t) {
-			throw new BusException("an error occured on executing jdbc query ["+query+"]", t);
+			throw new BusException("an error occurred on executing jdbc query ["+query+"]", t);
 		} finally {
 			qs.close();
 		}
@@ -149,11 +151,11 @@ public class BrowseJdbcTable extends BusEndpointBase {
 
 		Map<String, Object> resultObject = new HashMap<>();
 		resultObject.put("table", table);
-		resultObject.put("query", XmlUtils.encodeChars(query));
+		resultObject.put("query", XmlEncodingUtils.encodeChars(query));
 		resultObject.put("fielddefinition", fieldDef);
 		resultObject.put("result", resultMap);
 
-		return ResponseMessage.ok(resultObject);
+		return new JsonResponseMessage(resultObject);
 	}
 
 	private String browseJdbcTableExecuteREQ(Dbms dbms, String table, String where, String order, boolean numberOfRowsOnly, int minRow, int maxRow, String fieldDefinition) {
@@ -171,7 +173,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				+ table
 				+ "</tableName>"
 				+ "<where>"
-				+ (where==null?"":XmlUtils.encodeChars(where))
+				+ (where==null? "": XmlEncodingUtils.encodeChars(where))
 				+ "</where>"
 				+ "<numberOfRowsOnly>"
 				+ numberOfRowsOnly

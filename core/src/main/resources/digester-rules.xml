@@ -10,6 +10,10 @@
 	<rule pattern="configuration/jmsRealms" registerMethod="setJmsRealms" factory="nl.nn.adapterframework.configuration.digester.JmsRealmsFactory"/>
 	<rule pattern="*/jmsRealm" registerMethod="registerJmsRealm" beanClass="nl.nn.adapterframework.jms.JmsRealm"/>
 
+	<rule pattern="configuration/sharedResources" registerMethod="setSharedResources" beanClass="nl.nn.adapterframework.configuration.SharedResources" />
+	<rule pattern="*/sharedResources/sharedResource" registerMethod="registerSharedResource" factory="nl.nn.adapterframework.configuration.digester.SharedResourceFactory"/>
+	<rule pattern="*/sharedResources/httpSession" registerMethod="addHttpSession" factory="nl.nn.adapterframework.configuration.digester.SharedResourceFactory"/> <!-- Hack to make the frankdoc look nice -->
+
 	<rule pattern="configuration/sapSystems" registerMethod="setSapSystems" beanClass="nl.nn.adapterframework.configuration.extensions.SapSystems"/>
 	<rule pattern="*/sapSystem" registerMethod="registerSapSystem" beanClass="nl.nn.adapterframework.extensions.sap.SapSystem" selfRegisterMethod="registerItem"/>
 
@@ -24,7 +28,6 @@
 	<rule pattern="*/listener" factory="nl.nn.adapterframework.configuration.digester.ListenerFactory" registerMethod="setListener"/>
 	<rule pattern="*/errorSender" registerMethod="setErrorSender" beanClass="nl.nn.adapterframework.core.ISender"/>
 	<rule pattern="*/messageLog" registerMethod="setMessageLog"/>
-	<rule pattern="*/inProcessStorage" registerMethod="setInProcessStorage"/>
 	<rule pattern="*/errorStorage" registerMethod="setErrorStorage"/>
 	<rule pattern="*/inputValidator" registerMethod="setInputValidator"/>
 	<rule pattern="*/outputValidator" registerMethod="setOutputValidator"/>
@@ -34,7 +37,7 @@
 	<rule pattern="*/pipe" registerMethod="addPipe" paramtype="nl.nn.adapterframework.core.IPipe" beanClass="nl.nn.adapterframework.pipes.SenderPipe"/>
 
 	<!-- forward element is on the pipeline / global-forward as well as on the pipe element -->
-	<rule pattern="*/global-forwards" registerMethod="setGlobalForwards"/>
+	<rule pattern="*/globalForwards" registerMethod="setGlobalForwards"/>
 	<rule pattern="*/forward" registerMethod="registerForward" beanClass="nl.nn.adapterframework.core.PipeForward"/>
 	<rule pattern="*/child" registerMethod="registerChild"/>
 	<rule pattern="*/outputFields" registerMethod="registerOutputFields"/>
@@ -55,8 +58,6 @@
 	<rule pattern="*/recordHandler" registerMethod="registerRecordHandler"/>
 	<rule pattern="*/resultHandler" registerMethod="registerResultHandler"/>
 
-<!-- 	<rule pattern="*/statisticsHandler" registerMethod="registerStatisticsHandler" beanClass="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler"/> -->
-<!-- 	<rule pattern="*/statisticsHandlers" registerMethod="registerStatisticsHandler" paramtype="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler" beanClass="nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandlerCollection"/> -->
 	<rule pattern="*/cache" registerMethod="setCache" beanClass="nl.nn.adapterframework.cache.EhCache"/>
 
 	<!-- Digester rules for monitoring -->

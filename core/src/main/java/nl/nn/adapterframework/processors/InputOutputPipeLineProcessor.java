@@ -15,12 +15,12 @@
 */
 package nl.nn.adapterframework.processors;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 /**
  * @author Jaco de Groot
@@ -31,7 +31,7 @@ public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// reset the PipeLineSession and store the message and its id in the session
 		if (messageId==null) {
-				messageId=Misc.createSimpleUUID();
+				messageId= UUIDUtil.createSimpleUUID();
 				log.error("null value for messageId, setting to ["+messageId+"]");
 
 		}
@@ -39,8 +39,8 @@ public class InputOutputPipeLineProcessor extends PipeLineProcessorBase {
 			throw new PipeRunException(null, "Pipeline of adapter ["+ pipeLine.getOwner().getName()+"] received null message");
 		}
 		// store message and messageId in the pipeLineSession
-		pipeLineSession.put(PipeLineSession.originalMessageKey, message);
-		pipeLineSession.put(PipeLineSession.messageIdKey, messageId);
+		pipeLineSession.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
+		pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
 		return pipeLineProcessor.processPipeLine(pipeLine, messageId, message, pipeLineSession, firstPipe);
 	}
 

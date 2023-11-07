@@ -6,6 +6,7 @@ import javax.sql.XADataSource;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.mariadb.jdbc.MariaDbDataSource;
 
 import com.ibm.db2.jcc.DB2XADataSource;
 
@@ -17,11 +18,13 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 	protected DataSource createDataSource(String product, String url, String userId, String password, boolean testPeek, String implClassname) throws Exception {
 		XADataSource xaDataSource = (XADataSource)Class.forName(implClassname).newInstance();
 		if (xaDataSource instanceof DB2XADataSource) {
-			DB2XADataSource db2 = (DB2XADataSource)xaDataSource;
+			DB2XADataSource db2 = (DB2XADataSource) xaDataSource;
 			db2.setServerName("localhost");
 			db2.setPortNumber(50000);
 			db2.setDatabaseName("testiaf");
 			db2.setDriverType(4);
+		} else if (xaDataSource instanceof MariaDbDataSource) {
+			BeanUtils.setProperty(xaDataSource, "url", url);
 		} else {
 			BeanUtils.setProperty(xaDataSource, "URL", url);
 		}
@@ -39,13 +42,14 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 	protected abstract DataSource augmentXADataSource(XADataSource xaDataSource, String product);
 
 	@SuppressWarnings({ "unused", "null" }) //only used to verify that all datasources use the same setters
-	private void testClassMethods() {
+	private void testClassMethods() throws Exception {
 		org.h2.jdbcx.JdbcDataSource h2 = null;
 		DB2XADataSource db2 = null;
 		oracle.jdbc.xa.client.OracleXADataSource oracle = null;
 		com.microsoft.sqlserver.jdbc.SQLServerXADataSource mssql = null;
 		com.mysql.cj.jdbc.MysqlXADataSource mysql = null;
 		org.postgresql.xa.PGXADataSource postgres = null;
+		MariaDbDataSource mariadb = null;
 
 		h2.setUrl("x");
 		h2.setURL("x");
@@ -71,6 +75,10 @@ public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 		mysql.setURL("x");
 		mysql.setUser("x");
 		mysql.setPassword("x");
+
+		mariadb.setUrl("x");
+		mariadb.setUser("x");
+		mariadb.setPassword("x");
 
 		postgres.setUrl("x");
 		postgres.setURL("x");

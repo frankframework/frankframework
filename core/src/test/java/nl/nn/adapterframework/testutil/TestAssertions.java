@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,28 +27,28 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * This class is a 'comparison helper' for file assertions
- * 
+ *
  * @author Niels Meijer
  */
-public class TestAssertions extends org.junit.Assert {
+public class TestAssertions extends org.junit.jupiter.api.Assertions {
 	private static final Logger LOG = LogUtil.getLogger(TestAssertions.class);
 
 	public static void assertEqualsIgnoreWhitespaces(String expected, String actual) throws IOException {
-		assertEqualsIgnoreWhitespaces(null, trimMultilineString(expected), trimMultilineString(actual));
+		assertEqualsIgnoreWhitespaces(trimMultilineString(expected), trimMultilineString(actual), null);
 	}
 
-	public static void assertEqualsIgnoreWhitespaces(String message, String expected, String actual) throws IOException {
-		assertEquals(message, trimMultilineString(expected), trimMultilineString(actual));
+	public static void assertEqualsIgnoreWhitespaces(String expected, String actual, String message) throws IOException {
+		assertEquals(trimMultilineString(expected), trimMultilineString(actual), message);
 	}
 
 	public static void assertEqualsIgnoreRNTSpace(String a, String b) {
@@ -66,7 +66,7 @@ public class TestAssertions extends org.junit.Assert {
 		if(str == null || str.isEmpty())
 			return "";
 
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 
 		BufferedReader bufReader = new BufferedReader(new StringReader(str));
 		String line = null;
@@ -79,11 +79,13 @@ public class TestAssertions extends org.junit.Assert {
 	}
 
 	public static void assertEqualsIgnoreCRLF(String expected, String actual) {
-		assertEqualsIgnoreCRLF(null, expected, actual);
+		assertEqualsIgnoreCRLF(expected, actual, null);
 	}
 
-	public static void assertEqualsIgnoreCRLF(String message, String expected, String actual) {
-		assertEquals(message, expected.trim().replace("\r",""), actual.trim().replace("\r",""));
+	public static void assertEqualsIgnoreCRLF(String expected, String actual, String message) {
+		assertNotNull(expected);
+		assertNotNull(actual);
+		assertEquals(expected.trim().replace("\r",""), actual.trim().replace("\r",""), message);
 	}
 
 	public static void assertXpathValueEquals(String expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
@@ -92,7 +94,7 @@ public class TestAssertions extends org.junit.Assert {
 
 		String result=XmlUtils.transformXml(transformer, source);
 		LOG.debug("xpath [{}] result [{}]", xpathExpr, result);
-		assertEquals(xpathExpr,expected,result);
+		assertEquals(expected,result,xpathExpr);
 	}
 
 	public static void assertXpathValueEquals(int expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
@@ -101,7 +103,7 @@ public class TestAssertions extends org.junit.Assert {
 
 		String result=XmlUtils.transformXml(transformer, source);
 		LOG.debug("xpath [{}] result [{}]", xpathExpr, result);
-		assertEquals(xpathExpr,expected+"",result);
+		assertEquals(expected+"",result,xpathExpr);
 	}
 
 	@Test
@@ -132,8 +134,8 @@ public class TestAssertions extends org.junit.Assert {
 
 	@Test
 	public void testAssertEqualsIgnoreWhitespacesFile() throws IOException {
-		URL svg = ClassUtils.getResourceURL("test1.xml");
-		String str1 = Misc.streamToString(svg.openStream());
+		URL svg = ClassLoaderUtils.getResourceURL("test1.xml");
+		String str1 = StreamUtil.streamToString(svg.openStream());
 		String str2 = str1.replace("\r", "");
 
 		assertEqualsIgnoreWhitespaces(str1, str2);

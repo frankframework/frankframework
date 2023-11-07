@@ -34,10 +34,11 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 /**
  * JtaTransactionManager-wrapper that enables to recover transaction logs produced by another instance.
- *  
+ *
  * @author Gerrit van Brakel
  *
  */
@@ -87,7 +88,7 @@ public abstract class StatusRecordingTransactionManager extends ThreadConnectabl
 			setUid(recordedTmUid);
 		}
 		if (StringUtils.isEmpty(getUid())) {
-			String tmuid = Misc.getHostname()+"-"+Misc.createSimpleUUID();
+			String tmuid = Misc.getHostname()+"-"+ UUIDUtil.createSimpleUUID();
 			if (tmuid.length()>TMUID_MAX_LENGTH) {
 				tmuid = tmuid.substring(0, TMUID_MAX_LENGTH);
 			}

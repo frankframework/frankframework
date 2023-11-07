@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020, 2022 WeAreFrank!
+   Copyright 2019, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -39,13 +38,13 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -94,10 +93,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		credentialFactory = new CredentialFactory(getAuthAlias(), getUserId(), getPassword());
 
 		if (StringUtils.isNotEmpty(getDomainWhitelist())) {
-			StringTokenizer st = new StringTokenizer(getDomainWhitelist(), ",");
-			while (st.hasMoreTokens()) {
-				allowedDomains.add(st.nextToken());
-			}
+			allowedDomains.addAll(StringUtil.split(getDomainWhitelist()));
 		}
 
 		super.configure();
@@ -150,15 +146,16 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	}
 
 	private MailSessionBase readParameters(Message input, PipeLineSession session) throws SenderException {
-		EMail from = null;
-		String subject = null;
-		String threadTopic = null;
-		String messageType = null;
-		boolean messageBase64 = false;
-		String charset = null;
+		EMail from;
+		EMail replyTo;
+		String subject;
+		String threadTopic;
+		String messageType;
+		boolean messageBase64;
+		String charset;
 		List<EMail> recipients;
-		List<MailAttachmentStream> attachments = null;
-		ParameterValueList pvl=null;
+		List<MailAttachmentStream> attachments;
+		ParameterValueList pvl;
 		ParameterValue pv;
 
 		MailSessionBase mail = createMailSession();
@@ -169,6 +166,12 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 				from = new EMail(pv.asStringValue(null));
 				log.debug("MailSender [{}] retrieved from-parameter [{}]", getName(), from);
 				mail.setFrom(from);
+			}
+			pv = pvl.get("replyTo");
+			if (pv != null) {
+				replyTo = new EMail(pv.asStringValue(null));
+				log.debug("MailSender [{}] retrieved replyTo-parameter [{}]", getName(), replyTo);
+				mail.setReplyTo(replyTo);
 			}
 			pv = pvl.get("subject");
 			if (pv != null) {
@@ -324,7 +327,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		String charset;
 		Collection<Node> recipientList;
 		Collection<Node> attachments;
-		Element replyTo = null;
+		Element replyTo;
 
 		MailSessionBase mailSession = createMailSession();
 
@@ -359,7 +362,9 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		Collection<Node> headers = headersElement == null ? null : XmlUtils.getChildTags(headersElement, "header");
 
 		String bounceAddress = XmlUtils.getChildTagAsString(emailElement, "bounceAddress");
-		mailSession.setBounceAddress(bounceAddress);
+		if (StringUtils.isNotBlank(bounceAddress)) {
+			mailSession.setBounceAddress(bounceAddress);
+		}
 
 		mailSession.setFrom(getEmailAddress(from, "from"));
 		mailSession.setSubject(subject);
@@ -369,7 +374,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		mailSession.setMessageBase64(messageBase64);
 		mailSession.setCharSet(charset);
 		mailSession.setHeaders(headers);
-		mailSession.setReplyto(getEmailAddress(replyTo,"replyTo"));
+		mailSession.setReplyTo(getEmailAddress(replyTo,"replyTo"));
 
 		List<EMail> recipients = retrieveRecipients(recipientList);
 		mailSession.setRecipientList(recipients);
@@ -399,34 +404,34 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		return false;
 	}
 
-	@IbisDoc({ "authAlias used to obtain credentials for authentication", "" })
+	/** authAlias used to obtain credentials for authentication */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
-	@IbisDoc({ "userId on the smtphost", "" })
+	/** userId on the smtphost */
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
-	@IbisDoc({ "password of userid", "" })
+	/** password of userid */
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
-	@IbisDoc({ "alias used to obtain credentials for authentication to smtphost", "" })
+	/** alias used to obtain credentials for authentication to smtphost */
 	@Deprecated
 	public void setSmtpAuthAlias(String smtpAuthAlias) {
 		setAuthAlias(smtpAuthAlias);
 	}
 
-	@IbisDoc({ "userId on the smtphost", "" })
+	/** userId on the smtphost */
 	@Deprecated
 	public void setSmtpUserid(String smtpUserId) {
 		setUserId(smtpUserId);
 	}
 
-	@IbisDoc({ "password of userid on the smtphost", "" })
+	/** password of userid on the smtphost */
 	@Deprecated
 	public void setSmtpPassword(String smtpPassword) {
 		setPassword(smtpPassword);
@@ -437,7 +442,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	/**
 	 * Set the default for Subject>
 	 */
-	@IbisDoc({ "value of the subject: header if not specified in message itself", "" })
+	/** value of the subject: header if not specified in message itself */
 	public void setDefaultSubject(String defaultSubject) {
 		this.defaultSubject = defaultSubject;
 	}
@@ -445,33 +450,47 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	/**
 	 * Set the default for From
 	 */
-	@IbisDoc({ "value of the from: header if not specified in message itself", "" })
+	/** value of the from: header if not specified in message itself */
 	public void setDefaultFrom(String defaultFrom) {
 		this.defaultFrom = defaultFrom;
 	}
 
-	@IbisDoc({ "Timeout <i>in milliseconds</i> for socket connection timeout and socket i/o timeouts", "20000" })
+	/**
+	 * Timeout <i>in milliseconds</i> for socket connection timeout and socket i/o timeouts
+	 * @ff.default 20000
+	 */
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
 
-	@IbisDoc({ "when this name is used, it will be followed by a number which is equal to the node's position",
-			"attachment" })
+	/**
+	 * When this name is used, it will be followed by a number which is equal to the node's position
+	 * @ff.default attachment
+	 */
 	public void setDefaultAttachmentName(String defaultAttachmentName) {
 		this.defaultAttachmentName = defaultAttachmentName;
 	}
 
-	@IbisDoc({ "when messageType is not specified defaultMessageType will be used", "text/plain" })
+	/**
+	 * when messageType is not specified defaultMessageType will be used
+	 * @ff.default text/plain
+	 */
 	public void setDefaultMessageType(String defaultMessageType) {
 		this.defaultMessageType = defaultMessageType;
 	}
 
-	@IbisDoc({ "when messageBase64 is not specified defaultMessageBase64 will be used", "false" })
+	/**
+	 * when messageBase64 is not specified defaultMessageBase64 will be used
+	 * @ff.default false
+	 */
 	public void setDefaultMessageBase64(boolean defaultMessageBase64) {
 		this.defaultMessageBase64 = defaultMessageBase64;
 	}
 
-	@IbisDoc({ "NDR return address when mail cannot be delivered. This adds a Return-Path header", "MAIL FROM attribute" })
+	/**
+	 * NDR return address when mail cannot be delivered. This adds a Return-Path header
+	 * @ff.default MAIL FROM attribute
+	 */
 	public void setBounceAddress(String string) {
 		bounceAddress = string;
 	}
@@ -485,8 +504,8 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	 * Generic email class
 	 */
 	public abstract class MailSessionBase {
-		private EMail from = null;
-		private EMail replyto = null;
+		private EMail from;
+		private EMail replyTo = null;
 		private List<EMail> recipients = new ArrayList<>();
 		private List<MailAttachmentStream> attachmentList = new ArrayList<>();
 		private String subject = getDefaultSubject();
@@ -496,13 +515,13 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		private String threadTopic = null;
 		private Collection<Node> headers;
-		private String bounceAddress = getBounceAddress();
+		private String bounceAddress = MailSenderBase.this.getBounceAddress();
 
 		public MailSessionBase() throws SenderException {
 			from = new EMail(getDefaultFrom(),"from");
 		}
 
-		public void setRecipientsOnMessage(StringBuffer logBuffer) throws SenderException {
+		public void setRecipientsOnMessage(StringBuilder logBuffer) throws SenderException {
 			boolean recipientsFound = false;
 			List<EMail> emailList = getRecipientList();
 			for (EMail recipient : emailList) {
@@ -538,12 +557,12 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 			this.from = from;
 		}
 
-		public EMail getReplyto() {
-			return replyto;
+		public EMail getReplyTo() {
+			return replyTo;
 		}
 
-		public void setReplyto(EMail replyto) {
-			this.replyto = replyto;
+		public void setReplyTo(EMail replyTo) {
+			this.replyTo = replyTo;
 		}
 
 		public List<EMail> getRecipientList() throws SenderException {

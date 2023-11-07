@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020, 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ package nl.nn.adapterframework.core;
 import java.util.Map;
 import java.util.Set;
 
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
+
 /**
- * Interface that can be implemented by Listeners that provide their own management of messages processed and in error. 
+ * Interface that can be implemented by Listeners that provide their own management of messages processed and in error.
  * If the status 'inProcess' is specified, it will be used when messages are processed. In case of a rollback
  * of the executing transaction, the status of the message will be reverted to 'available', so that it can be retried.
  */
@@ -28,19 +30,19 @@ public interface IHasProcessState<M> {
 	/**
 	 * Provides the set of ProcessStates used by this listener.
 	 */
-	public Set<ProcessState> knownProcessStates();
+	Set<ProcessState> knownProcessStates();
 
 	/**
 	 * Provides the set of ProcessStates that a message in the specified state can be moved to, e.g. from a MessageBrowser for that state.
 	 */
-	public Map<ProcessState, Set<ProcessState>> targetProcessStates();
+	Map<ProcessState, Set<ProcessState>> targetProcessStates();
 
 	/**
 	 * Change the processState of the message to the specified state, if that state
 	 * is supported. If it is not supported, nothing changes, and <code>false</code>
 	 * is returned.
-	 * @return the moved message, or null if no message was moved. 
+	 *
+	 * @return the moved message, or null if no message was moved.
 	 */
-	public M changeProcessState(M message, ProcessState toState, String reason) throws ListenerException;
-
+	RawMessageWrapper<M> changeProcessState(RawMessageWrapper<M> message, ProcessState toState, String reason) throws ListenerException;
 }

@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.configuration;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,8 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
+import org.springframework.context.support.AbstractApplicationContext;
 
 import nl.nn.adapterframework.configuration.classloaders.DummyClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
@@ -54,6 +55,11 @@ public class IbisContextTest {
 			ibisManager.setIbisContext(this);
 			getApplicationContext().getBeanFactory().registerSingleton("ibisManager", ibisManager);
 		}
+
+		@Override
+		public AbstractApplicationContext getApplicationContext() {
+			return super.getApplicationContext();
+		}
 	}
 
 	@Test
@@ -85,15 +91,15 @@ public class IbisContextTest {
 
 			assertEquals(1, context.getIbisManager().getConfigurations().size());
 			Configuration config = context.getIbisManager().getConfiguration(configurationName);
-			assertNotNull("test configuration ["+configurationName+"] not found", config);
+			assertNotNull(config, "test configuration ["+configurationName+"] not found");
 			assertEquals(configurationName, config.getName());
 
 			ConfigurationException ex = config.getConfigurationException();
-			assertNotNull("configuration should have an exception", ex);
+			assertNotNull(ex, "configuration should have an exception");
 			assertThat(ex.getMessage(), Matchers.startsWith("error instantiating ClassLoader"));
 			assertEquals(ClassLoaderException.class.getCanonicalName(), ex.getCause().getClass().getCanonicalName());
 			Throwable[] suppressed = ex.getCause().getSuppressed();
-			assertEquals("ClassLoaderException should have a supressed throwable with more information", 1, suppressed.length);
+			assertEquals(1, suppressed.length, "ClassLoaderException should have a supressed throwable with more information");
 		}
 	}
 
@@ -107,9 +113,9 @@ public class IbisContextTest {
 			assertEquals("TestConfiguration", context.getApplicationName());
 
 			assertEquals(0, context.getIbisManager().getConfigurations().size());
-			MessageEventListener events = context.getBean("MessageEventListener", MessageEventListener.class);
+			MessageEventListener events = context.getApplicationContext().getBean("MessageEventListener", MessageEventListener.class);
 			MessageKeeperMessage message = events.getMessageKeeper().getMessage(events.getMessageKeeper().size()-2);
-			assertNotNull("unable to find MessageKeeperMessage", message);
+			assertNotNull(message, "unable to find MessageKeeperMessage");
 			assertThat(message.getMessageText(), Matchers.endsWith("error configuring ClassLoader for configuration [ConfigWithNullClassLoader]: (ClassLoaderException) test-exception"));
 		}
 	}
@@ -125,14 +131,14 @@ public class IbisContextTest {
 
 			assertEquals(1, context.getIbisManager().getConfigurations().size());
 			Configuration config = context.getIbisManager().getConfiguration(configurationName);
-			assertNotNull("test configuration ["+configurationName+"] not found. Found ["+context.getIbisManager().getConfigurations().get(0).getId()+"] instead", config);
+			assertNotNull(config, "test configuration ["+configurationName+"] not found. Found ["+context.getIbisManager().getConfigurations().get(0).getId()+"] instead");
 			assertEquals(configurationName, config.getName());
 
 			ConfigurationException ex = config.getConfigurationException();
-			assertNotNull("configuration should have an exception", ex);
+			assertNotNull(ex, "configuration should have an exception");
 			assertThat(ex.getMessage(), Matchers.startsWith("error instantiating configuration"));
 			Throwable[] suppressed = ex.getCause().getSuppressed();
-			assertEquals("no further information", 0, suppressed.length);
+			assertEquals(0, suppressed.length, "no further information");
 		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,11 +46,11 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.RequestReplyExecutor;
 import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.management.bus.DebuggerStatusChangedEvent;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.AbstractPipe;
-import nl.nn.adapterframework.pipes.IsolatedServiceExecutor;
 import nl.nn.adapterframework.processors.CacheSenderWrapperProcessor;
 import nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor;
 import nl.nn.adapterframework.processors.CorePipeLineProcessor;
@@ -66,8 +66,7 @@ import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
+import nl.nn.adapterframework.util.StreamCaptureUtils;
 import nl.nn.adapterframework.xml.IXmlDebugger;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -125,7 +124,20 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		} catch(Throwable throwable) {
 			throw ibisDebugger.pipeLineAbort(pipeLine, correlationId, throwable);
 		}
-		pipeLineResult.setResult(ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult()));
+		ibisDebugger.showValue(correlationId, "exitState", pipeLineResult.getState().name());
+		if (pipeLineResult.getExitCode()!=0) {
+			ibisDebugger.showValue(correlationId, "exitCode", Integer.toString(pipeLineResult.getExitCode()));
+		}
+		if (!pipeLineResult.isSuccessful()) {
+			ibisDebugger.showValue(correlationId, "result", pipeLineResult.getResult());
+			ibisDebugger.pipeLineAbort(pipeLine, correlationId, null);
+		} else {
+			Message result = ibisDebugger.pipeLineOutput(pipeLine, correlationId, pipeLineResult.getResult());
+			if(Message.isNull(result)) {
+				log.error("debugger returned NULL, pipeline result was: [{}]", pipeLineResult.getResult());
+			}
+			pipeLineResult.setResult(result);
+		}
 		return pipeLineResult;
 	}
 
@@ -347,7 +359,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
 			closeOnCloseRegister.accept(writer, "debugger for inspectXml labeled ["+label+"]");
-			XmlWriter xmlWriter = new XmlWriter(StreamUtil.limitSize(writer, writerPlaceHolder.getSizeLimit()), true);
+			XmlWriter xmlWriter = new XmlWriter(StreamCaptureUtils.limitSize(writer, writerPlaceHolder.getSizeLimit()), true);
 			contentHandler = new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
 		}
 		return contentHandler;
@@ -379,7 +391,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return (M)proceedingJoinPoint.proceed();
 		}
 		correlationId = ibisDebugger.replyListenerInput(listener, pipeLineSession.getMessageId(), correlationId);
-		M result = null;
+		M result;
 		if (ibisDebugger.stubReplyListener(listener, correlationId)) {
 			return null;
 		}
@@ -397,8 +409,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (!isEnabled()) {
 			return proceedingJoinPoint.proceed();
 		}
-		if (runnable instanceof ParallelSenderExecutor || runnable instanceof IsolatedServiceExecutor) {
-			Executor executor = new Executor((RequestReplyExecutor)runnable, this);
+		if (runnable instanceof ParallelSenderExecutor) {
+			ParallelSenderExecutorWrapper executor = new ParallelSenderExecutorWrapper((ParallelSenderExecutor) runnable, this);
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[0] = executor;
 			return proceedingJoinPoint.proceed(args);
@@ -499,14 +511,13 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		return input;
 	}
 
-
-	public class Executor implements Runnable {
+public static class ParallelSenderExecutorWrapper implements Runnable {
 		private RequestReplyExecutor requestReplyExecutor;
 		private ThreadConnector<ThreadDebugInfo> threadConnector;
 
-		public Executor(RequestReplyExecutor requestReplyExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
-			this.requestReplyExecutor=requestReplyExecutor;
-			this.threadConnector = new ThreadConnector<ThreadDebugInfo>(requestReplyExecutor, "Debugger", threadLifeCycleEventListener, null, requestReplyExecutor.getCorrelationID());
+		public ParallelSenderExecutorWrapper(ParallelSenderExecutor parallelSenderExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
+			this.requestReplyExecutor=parallelSenderExecutor;
+			this.threadConnector = new ThreadConnector<>(parallelSenderExecutor, "Debugger", threadLifeCycleEventListener, null, parallelSenderExecutor.getSession());
 		}
 
 		@Override
@@ -526,7 +537,6 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 				}
 			}
 		}
-
 	}
 
 	public String getCorrelationId(PipeLineSession session) {
@@ -535,7 +545,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 	public void setEnabled(boolean enable) {
 		enabled = enable;
-		AppConstants.getInstance().put("testtool.enabled", ""+enable);
+		AppConstants.getInstance().put("testtool.enabled", String.valueOf(enable));
 	}
 	public boolean isEnabled() {
 		return ibisDebugger != null && enabled;
@@ -545,5 +555,4 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
 		setEnabled(event.isEnabled());
 	}
-
 }

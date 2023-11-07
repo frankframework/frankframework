@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,13 +22,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import lombok.Getter;
-import lombok.Setter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.webcontrol.api.ApiException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 public class MessageBrowsingFilter {
 	private String type = null;
@@ -42,15 +41,15 @@ public class MessageBrowsingFilter {
 	private @Getter Date startDate = null;
 	private @Getter Date endDate = null;
 
-	private @Getter int maxMessages = 0;
+	private @Getter int maxMessages = 100;
 	private @Getter int skipMessages = 0;
 
-	private @Getter @Setter SortOrder sortOrder = SortOrder.NONE;
+	private @Getter SortOrder sortOrder = SortOrder.NONE;
 	private IMessageBrowser<?> storage = null;
 	private IListener listener = null;
 
 	public MessageBrowsingFilter() {
-		this(AppConstants.getInstance().getInt("browse.messages.max", 0), 0);
+		this(AppConstants.getInstance().getInt("browse.messages.max", 100), 0);
 	}
 
 	public MessageBrowsingFilter(int maxMessages, int skipMessages) {
@@ -152,7 +151,7 @@ public class MessageBrowsingFilter {
 	}
 
 	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws ListenerException, IOException {
-		Object rawmsg = messageBrowser.browseMessage(messageId);
+		RawMessageWrapper<?> rawmsg = messageBrowser.browseMessage(messageId);
 		return MessageBrowsingUtil.getMessageText(rawmsg, listener);
 	}
 
@@ -177,11 +176,9 @@ public class MessageBrowsingFilter {
 		if(!StringUtils.isEmpty(startDateMask)) {
 			try {
 				startDate = DateUtils.parseAnyDate(startDateMask);
-				if(startDate == null)
-					throw new ApiException("could not to parse date from ["+startDateMask+"]");
 			}
 			catch(CalendarParserException ex) {
-				throw new ApiException("could not parse date from ["+startDateMask+"] msg["+ex.getMessage()+"]");
+				throw new IllegalStateException("could not parse date from ["+startDateMask+"]", ex);
 			}
 		}
 	}
@@ -190,12 +187,16 @@ public class MessageBrowsingFilter {
 		if(!StringUtils.isEmpty(endDateMask)) {
 			try {
 				endDate = DateUtils.parseAnyDate(endDateMask);
-				if(endDate == null)
-					throw new ApiException("could not to parse date from ["+endDateMask+"]");
 			}
 			catch(CalendarParserException ex) {
-				throw new ApiException("could not parse date from ["+endDateMask+"] msg["+ex.getMessage()+"]");
+				throw new IllegalStateException("could not parse date from ["+endDateMask+"]", ex);
 			}
+		}
+	}
+
+	public void setSortOrder(SortOrder sortOrder) {
+		if(sortOrder != null) {
+			this.sortOrder = sortOrder;
 		}
 	}
 

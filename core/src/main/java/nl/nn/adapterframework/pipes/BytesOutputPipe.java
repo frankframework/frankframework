@@ -33,40 +33,39 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 
 /**
- * Output bytes as specified by the input XML. 
- * 
+ * Output bytes as specified by the input XML.
+ *
  * Actions are taken on every field
  * tag found in the input XML. Every field tag should have a type attribute
  * that specifies the type of conversion that needs to be done on the string
  * specified by the value attribute. A value attribute also needs to be present
  * for every field tag. Currently two types of conversion are supported:
- * 
+ *
  * <ul>
  *   <li><code>GetBytesFromString</code>, a conversion from string to bytes as specified by java.lang.String.getBytes(String charsetName)</li>
  *   <li><code>PackedDecimal</code>, a conversion from string to Packed-decimal</li>
  * </ul>
- *  
+ *
  * An additional charset attribute is needed for a GetBytesFromString
  * conversion. An input XML that would encode the string &quot; TEST 1234 &quot;
  * into EBCDIC format would look like:
- * 
+ *
  * <pre>
  * &lt;fields&gt;
  *   &lt;field type=&quot;GetBytesFromString&quot; value=&quot; TEST 1234 &quot; charset=&quot;Cp037&quot;/&gt;
  * &lt;/fields&gt;
  * </pre>
- * 
+ *
  * The Packed-decimal conversion has been implemented according to information
  * found in the following resources:
- * 
+ *
  * <ul>
  *   <li>A description as found at <a href="http://www.simotime.com/datapk01.htm">http://www.simotime.com/datapk01.htm</a></li>
  *   <li>AS400PackedDecimal.java from jtopen_6_1_source.zip downloaded at <a href="http://jt400.sourceforge.net/">http://jt400.sourceforge.net/</a></li>
- *   <li>The WebSphere Studio COBOL for Windows Programming Guide from <a href="http://www-1.ibm.com/support/docview.wss?uid=swg27005151">http://www-1.ibm.com/support/docview.wss?uid=swg27005151</a></li>
  * </ul>
- * 
+ *
  * Some examples:
- * 
+ *
  * <ul>
  *   <li>The string +12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5C</li>
  *   <li>The string -12345 will be translated to three bytes with the following hexadecimal representation: 12 34 5D</li>
@@ -79,7 +78,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * is smaller than the number of decimals.
  *
  * An input XML that would generate a number of Packed-decimals could look like:
- * 
+ *
  * <pre>
  * &lt;fields&gt;
  *   &lt;field type=&quot;PackedDecimal&quot; value=&quot;+12345&quot; size=&quot;16&quot;/&gt;
@@ -109,7 +108,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *   &lt;field type=&quot;PackedDecimal&quot; value=&quot;-12345678&quot; size=&quot;16&quot;/&gt;
  * &lt;/fields&gt;
  * </pre>
- * 
+ *
  * @author  Jaco de Groot (***@dynasol.nl)
  * @since   4.9
  */
@@ -132,7 +131,7 @@ public class BytesOutputPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	private class FieldsContentHandler extends DefaultHandler {
+	private static class FieldsContentHandler extends DefaultHandler {
 		private byte[] result = new byte[0];
 
 		@Override

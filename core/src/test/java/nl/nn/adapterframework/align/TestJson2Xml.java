@@ -1,21 +1,24 @@
 package nl.nn.adapterframework.align;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.StringReader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
+
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonStructure;
-
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
-
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class TestJson2Xml extends AlignTestBase {
@@ -37,10 +40,10 @@ public class TestJson2Xml extends AlignTestBase {
 			if (xmlAct==null) {
 				fail("could not convert to xml: "+description);
 			}
-			assertTrue("converted XML is not aligned: "+description,  Utils.validate(schemaUrl, xmlAct));
+			assertTrue(Utils.validate(schemaUrl, xmlAct), "converted XML is not aligned: "+description);
 			if (resultJsonExpected!=null) {
 				String roundTrippedJson=Xml2Json.translate(xmlAct, schemaUrl, compactConversion, rootElement!=null).toString(true);
-				assertEquals("roundTrippedJson",resultJsonExpected,roundTrippedJson);
+				assertEquals(resultJsonExpected, roundTrippedJson, "roundTrippedJson");
 			}
 		} catch (Exception e) {
 			if (expectedFailureReason==null) {
@@ -61,7 +64,7 @@ public class TestJson2Xml extends AlignTestBase {
 
 	public void testStrings(String xmlIn, String jsonIn, URL schemaUrl, String targetNamespace, String rootElement, boolean compactInput, boolean potentialCompactionProblems, boolean checkRoundTrip, String expectedFailureReason) throws Exception {
 		LOG.debug("schemaUrl [{}]", schemaUrl);
-		if (StringUtils.isNotEmpty(xmlIn)) assertTrue("Expected XML is not valid to XSD",Utils.validate(schemaUrl, xmlIn));
+		if (StringUtils.isNotEmpty(xmlIn)) assertTrue(Utils.validate(schemaUrl, xmlIn), "Expected XML is not valid to XSD");
 
 		JsonStructure json = Utils.string2Json(jsonIn);
 		LOG.debug("jsonIn [{}]", json);
@@ -175,4 +178,16 @@ public class TestJson2Xml extends AlignTestBase {
 		testFiles("Abc/abc.xsd","urn:test","a","Abc/abc-err", "Abc/abc", false, "Cannot find the declaration of element [d]", false);
 	}
 
+	// Test skipping attributes on ROOT level, and throwing an exception when unable to determine rootElement
+	@Test
+	public void testTooManyRootElements() throws Exception {
+		URL schemaUrl = TestFileUtils.getTestFileURL("/Align/TextAndAttributes/schema.xsd");
+		String jsonIn = TestFileUtils.getTestFile("/Align/TextAndAttributes/input-compact.json");
+		XmlWriter xmlWriter = new XmlWriter();
+
+		JsonStructure jsonStructure = Json.createReader(new StringReader(jsonIn)).read();
+		Json2Xml j2x = Json2Xml.create(schemaUrl, false, null, false, false, "urn:test", null);
+		SAXException e = assertThrows(SAXException.class, ()-> j2x.translate(jsonStructure, xmlWriter));
+		assertEquals("Cannot determine XML root element, too many names [MetaData,intLabel,location] in JSON", e.getMessage());
+	}
 }

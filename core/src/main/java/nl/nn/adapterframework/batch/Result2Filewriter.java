@@ -26,15 +26,15 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.FileUtils;
 
 
 /**
  * Resulthandler that writes the transformed record to a file.
- * 
- * 
+ *
+ *
  * @author  John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class Result2Filewriter extends ResultWriter {
 
@@ -94,17 +94,17 @@ public class Result2Filewriter extends ResultWriter {
 	}
 
 
-	@IbisDoc({"Directory in which the resultfile must be stored", ""})
+	/** Directory in which the resultfile must be stored */
 	public void setOutputDirectory(String string) {
 		outputDirectory = string;
 	}
 
-	@IbisDoc({"Directory to which the created file must be moved after finalization (is optional)", ""})
+	/** Directory to which the created file must be moved after finalization (is optional) */
 	public void setMove2dirAfterFinalize(String string) {
 		move2dirAfterFinalize = string;
 	}
 
-	@IbisDoc({"Name of the file is created using the messageformat. Params: 1=inputfilename, 2=extension of file, 3=current date", ""})
+	/** Name of the file is created using the messageformat. Params: 1=inputfilename, 2=extension of file, 3=current date */
 	public void setFilenamePattern(String string) {
 		filenamePattern = string;
 	}

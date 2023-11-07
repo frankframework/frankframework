@@ -23,7 +23,5 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ActionSelector {
 
-	public static final String ACTION_HEADER_NAME = "action";
-
 	BusAction value();
 }

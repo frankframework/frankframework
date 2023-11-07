@@ -40,6 +40,16 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public boolean hasSkipLockedFunctionality() {
+		return true;
+	}
+
+	@Override
+	public String getFromForTablelessSelect() {
+		return "FROM SYSIBM.SYSDUMMY1";
+	}
+
+	@Override
 	public String emptyBlobValue() {
 		return "EMPTY_BLOB";
 	}
@@ -100,4 +110,13 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 				"syscat.indexes", "syscat.indexcoluse", null, "tabname", "indname", "colname", "colseq");
 	}
 
+	@Override
+	public boolean isStoredProcedureOutParametersSupported() {
+		return true;
+	}
+
+	@Override
+	public boolean isStoredProcedureResultSetSupported() {
+		return true;
+	}
 }

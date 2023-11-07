@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -30,15 +31,14 @@ import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
 
-import nl.nn.credentialprovider.util.AppConstants;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.credentialprovider.util.CredentialConstants;
 
 public class WildFlyCredentialFactory implements ICredentialFactory {
 	protected Logger log = Logger.getLogger(this.getClass().getName());
 
 	private static final ServiceName SERVICE_NAME_CRED_STORE = ServiceName.of("org", "wildfly", "security", "credential-store");
 
-	public final String WILDFLY_CREDENTIALSTORE_PROPERTY="credentialFactory.wildfly.credentialStore";
+	public static final String WILDFLY_CREDENTIALSTORE_PROPERTY="credentialFactory.wildfly.credentialStore";
 
 	private String credentialStore = "CS";
 
@@ -47,9 +47,9 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 	@Override
 	public void initialize() {
 		log.info("Initializing WildFlyCredentialFactory");
-		AppConstants appConstants = AppConstants.getInstance();
+		CredentialConstants appConstants = CredentialConstants.getInstance();
 		credentialStore = appConstants.getProperty(WILDFLY_CREDENTIALSTORE_PROPERTY, credentialStore);
-		if (Misc.isEmpty(credentialStore)) {
+		if (StringUtils.isEmpty(credentialStore)) {
 			throw new IllegalStateException("No valid property ["+WILDFLY_CREDENTIALSTORE_PROPERTY+"] found");
 		}
 	}

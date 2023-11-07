@@ -1,7 +1,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
 	<xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
 	<xsl:strip-space elements="*"/>
-	
+
 	<xsl:template match="/Report">
 		<xsl:copy>
 			<!-- Select all report attributes -->
@@ -28,13 +28,21 @@
 			<!-- <xsl:apply-templates select="Checkpoint[@Name='Pipe Example']"/> -->
 		</xsl:copy>
 	</xsl:template>
-	
-	<xsl:template match="node()|@*">
-		<xsl:copy>
-			<xsl:apply-templates select="node()|@*"/>
-		</xsl:copy>
+
+	<!-- Ignore id in value of MessageClassName attribute -->
+	<xsl:template match="@MessageClassName">
+		<xsl:attribute name="MessageClassName">
+			<xsl:choose>
+				<xsl:when test="starts-with(., 'Message[')">
+					<xsl:value-of select="concat('Message[IGNORE:', substring-after(., ':'))"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:value-of select="."/>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:attribute>
 	</xsl:template>
-	
+
 	<!-- Ignore content of timestamp element -->
 	<!-- <xsl:template match="timestamp"><TIMESTAMP-IGNORED/></xsl:template> -->
 
@@ -43,5 +51,12 @@
 
 	<!-- Ignore content of elements which content is ID:something -->
 	<!-- <xsl:template match="*[matches(text(), 'ID:.*')]">ID:IGNORED</xsl:template> -->
+
+	<!--  Copy all other nodes and attributes -->
+	<xsl:template match="node()|@*">
+		<xsl:copy>
+			<xsl:apply-templates select="node()|@*"/>
+		</xsl:copy>
+	</xsl:template>
 
 </xsl:stylesheet>

@@ -16,6 +16,8 @@ import lombok.Setter;
 
 public class StatusRecordingTransactionManagerTest extends StatusRecordingTransactionManagerTestBase<StatusRecordingTransactionManagerTest.TestableStatusRecordingTransactionManager>{
 
+	private TestableStatusRecordingTransactionManager tm;
+
 	@Override
 	protected TestableStatusRecordingTransactionManager createTransactionManager() {
 		return new TestableStatusRecordingTransactionManager();
@@ -57,9 +59,17 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 		delete(tmUidFile);
 	}
 
+	@Override
+	public void tearDown() {
+		if (tm != null) {
+			tm.destroy();
+		}
+		super.tearDown();
+	}
+
 	@Test
 	public void testCleanSetup() {
-		TestableStatusRecordingTransactionManager tm = setupTransactionManager();
+		tm = setupTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
 		String status = read(statusFile);
 		assertEquals("ACTIVE", status);
@@ -68,7 +78,7 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 	@Test
 	public void testPresetTmUid() {
 		write(tmUidFile,"fakeTmUid");
-		TestableStatusRecordingTransactionManager tm = setupTransactionManager();
+		tm = setupTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
 		String tmUid = tm.getUid();
 		assertEquals("fakeTmUid", tmUid);
@@ -78,7 +88,7 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 
 	@Test
 	public void testCleanShutdown() {
-		TestableStatusRecordingTransactionManager tm = setupTransactionManager();
+		tm = setupTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
 		String tmUid = tm.getUid();
 		assertNotNull(tmUid);
@@ -86,21 +96,23 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 		assertStatus("ACTIVE", tmUid);
 
 		tm.destroy();
+		tm = null;
 
 		assertStatus("COMPLETED", tmUid);
 	}
 
 	@Test
 	public void testNoStatusFiles() {
-		TestableStatusRecordingTransactionManager tm = new TestableStatusRecordingTransactionManager();
+		tm = new TestableStatusRecordingTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
 		assertNotNull(tm.getUid());
 		tm.destroy(); // should throw no exception
+		tm = null;
 	}
 
 	@Test
 	public void testShutdownWithPendingTransactions() {
-		TestableStatusRecordingTransactionManager tm = setupTransactionManager();
+		tm = setupTransactionManager();
 		tm.initUserTransactionAndTransactionManager();
 		String tmUid = tm.getUid();
 		assertNotNull(tmUid);
@@ -109,13 +121,14 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 
 		tm.setPendingTransactionsAfterShutdown(false);
 		tm.destroy();
+		tm = null;
 
 		assertStatus("PENDING", tmUid);
 	}
 
 	@Test
 	public void testCreateFolders() {
-		TestableStatusRecordingTransactionManager tm = setupTransactionManager();
+		tm = setupTransactionManager();
 		tm.setUidFile(folder+"/a/b/c/"+TMUID_FILE);
 		tm.initUserTransactionAndTransactionManager();
 		String tmUid = tm.getUid();
@@ -126,11 +139,10 @@ public class StatusRecordingTransactionManagerTest extends StatusRecordingTransa
 
 	@Test
 	public void testTestReadWithWhitespace() {
-		TestableStatusRecordingTransactionManager tm = setupTransactionManager();
+		tm = setupTransactionManager();
 		String value = "fake tm uid";
 		String fullPathTmFile = folder+"/"+TMUID_FILE;
 		tm.write(fullPathTmFile, "\n "+value+" \n\n");
 		assertEquals(value, tm.read(fullPathTmFile));
 	}
-
 }

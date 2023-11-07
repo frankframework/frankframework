@@ -30,27 +30,25 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IAdapter;
-import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle.BootState;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.RunState;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 public class HealthCheck extends BusEndpointBase {
 
 	@TopicSelector(BusTopic.HEALTH)
 	public Message<String> getHealth(Message<?> message) {
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
 		if(StringUtils.isNotEmpty(configurationName)) {
 			Configuration configuration = getConfigurationByName(configurationName);
 
-			String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+			String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 			if(StringUtils.isNotEmpty(adapterName)) {
 				Adapter adapter = configuration.getRegisteredAdapter(adapterName);
 
@@ -94,7 +92,9 @@ public class HealthCheck extends BusEndpointBase {
 			response.put("errors", errors);
 		response.put("status", status);
 
-		return ResponseMessage.Builder.create().withPayload(response).withStatus(status.getStatusCode()).toJson();
+		JsonResponseMessage responseMessage = new JsonResponseMessage(response);
+		responseMessage.setStatus(status.getStatusCode());
+		return responseMessage;
 	}
 
 	private Message<String> getIbisHealth() {
@@ -104,8 +104,8 @@ public class HealthCheck extends BusEndpointBase {
 		List<String> errors = new ArrayList<>();
 
 		for(Configuration config : getIbisManager().getConfigurations()) {
-			BootState state = config.getState();
-			if(state != BootState.STARTED) {
+			RunState state = config.getState();
+			if(state != RunState.STARTED) {
 				if(config.getConfigurationException() != null) {
 					errors.add("configuration["+config.getName()+"] is in state[ERROR]");
 				} else {
@@ -151,22 +151,13 @@ public class HealthCheck extends BusEndpointBase {
 		}
 		response.put("status", status);
 
-		return ResponseMessage.Builder.create().withPayload(response).withStatus(status.getStatusCode()).toJson();
-	}
-
-	private Configuration getConfigurationByName(String configurationName) {
-		if(StringUtils.isEmpty(configurationName)) {
-			throw new BusException("no configuration name specified");
-		}
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-		if(configuration == null) {
-			throw new BusException("configuration ["+configurationName+"] does not exists");
-		}
-		return configuration;
+		JsonResponseMessage responseMessage = new JsonResponseMessage(response);
+		responseMessage.setStatus(status.getStatusCode());
+		return responseMessage;
 	}
 
 	/**
-	 * @return The status of a configuration. If an Adapter is not in state STARTED it is flagged as NOT-OK.
+*Returns the status of a configuration. If an Adapter is not in state STARTED it is flagged as NOT-OK.
 	 * header configuration The name of the Configuration to delete
 	 */
 	public Message<String> getConfigurationHealth(Configuration configuration) {
@@ -213,6 +204,8 @@ public class HealthCheck extends BusEndpointBase {
 			response.put("errors", errors);
 		response.put("status", status);
 
-		return ResponseMessage.Builder.create().withPayload(response).withStatus(status.getStatusCode()).toJson();
+		JsonResponseMessage responseMessage = new JsonResponseMessage(response);
+		responseMessage.setStatus(status.getStatusCode());
+		return responseMessage;
 	}
 }

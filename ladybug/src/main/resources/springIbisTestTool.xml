@@ -2,12 +2,14 @@
 <beans
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:task="http://www.springframework.org/schema/task"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd
+		http://www.springframework.org/schema/util    http://www.springframework.org/schema/util/spring-util.xsd
 	"
 	>
 
@@ -67,23 +69,10 @@
 		<task:scheduled ref="closeReportsTask" method="closeReports" fixed-delay="10000" />
 	</task:scheduled-tasks>
 
-	<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName" init-method="init">
+	<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
 		<property name="name" value="Logging"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
-		<property name="persistentMetadata">
-			<list>
-				<value>storageId</value>
-				<value>storageSize</value>
-				<value>endTime</value>
-				<value>duration</value>
-				<value>name</value>
-				<value>correlationId</value>
-				<value>status</value>
-				<value>numberOfCheckpoints</value>
-				<value>estimatedMemoryUsage</value>
-			</list>
-		</property>
 	</bean>
 
 	<bean name="testStorageActive" class="java.lang.String">
@@ -102,67 +91,32 @@
 			<ref bean="#{testStorageActive}"/>
 		</property>
 	</bean>
-	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName" init-method="init">
+	<bean name="testStorageXml" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
 		<property name="name" value="Test"/>
 		<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/>
 		<property name="reportsFolder" value="${ibistesttool.directory}"/>
 	</bean>
-	<bean name="testStorageFile" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName" init-method="init">
+	<bean name="testStorageFile" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
 		<property name="name" value="Test"/>
 		<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 		<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
-		<property name="persistentMetadata">
-			<list>
-				<value>storageId</value>
-				<value>storageSize</value>
-				<value>path</value>
-				<value>name</value>
-			</list>
-		</property>
 	</bean>
 
-	<bean name="whiteBoxViewMetadataNames" class="java.util.ArrayList">
-		<constructor-arg>
-			<list>
-				<value>storageId</value>
-				<value>endTime</value>
-				<value>duration</value>
-				<value>name</value>
-				<value>correlationId</value>
-				<value>status</value>
-				<value>numberOfCheckpoints</value>
-				<value>estimatedMemoryUsage</value>
-				<value>storageSize</value>
-			</list>
-		</constructor-arg>
-	</bean>
-	
-	<bean name="whiteBoxView" class="nl.nn.testtool.filter.View" scope="prototype">
+	<bean name="whiteBoxView" class="nl.nn.testtool.filter.View" autowire="byName">
 		<property name="name" value="White box"/>
-		<property name="debugStorage">
-			<ref bean="debugStorage"/>
-		</property>
-		<property name="metadataNames">
-			<ref bean="whiteBoxViewMetadataNames"/>
-		</property>
 	</bean>
 
-	<bean name="grayBoxView" class="nl.nn.testtool.filter.View" parent="whiteBoxView">
+	<bean name="grayBoxView" parent="whiteBoxView" autowire="byName">
 		<property name="name" value="Gray box"/>
 		<property name="checkpointMatchers">
 			<list>
-				<bean class="nl.nn.testtool.filter.CheckpointSearcher">
-					<property name="nameSearch" value="Pipeline *"/>
-				</bean>
-				<bean class="nl.nn.testtool.filter.CheckpointSearcher">
-					<property name="nameSearch" value="Sender *"/>
-				</bean>
+				<bean class="nl.nn.ibistesttool.filter.GrayBox"/>
 				<bean class="nl.nn.ibistesttool.filter.FtpFileRetrieverPipe"/>
 			</list>
 		</property>
 	</bean>
 
-	<bean name="blackBoxView" class="nl.nn.testtool.filter.View" parent="whiteBoxView">
+	<bean name="blackBoxView" parent="whiteBoxView" autowire="byName">
 		<property name="name" value="Black box"/>
 		<property name="checkpointMatchers">
 			<list>
@@ -182,40 +136,28 @@
 		</property>
 	</bean>
 
-	<bean name="xsltResource" class="java.lang.String" primary="true">
+	<bean name="xsltResource" class="java.lang.String">
 		<constructor-arg value="${ibistesttool.reportTransformation}"/>
 	</bean>
 
 	<bean name="pipeDescriptionProvider" class="nl.nn.ibistesttool.PipeDescriptionProvider" autowire="byName"/>
 
-	<bean name="observerRoles" class="java.util.ArrayList">
-		<constructor-arg>
-			<list>
-				<value>IbisObserver</value>
-				<value>IbisDataAdmin</value>
-				<value>IbisAdmin</value>
-				<value>IbisTester</value>
-			</list>
-		</constructor-arg>
-	</bean>
+	<util:list id="observerRoles">
+		<value>IbisObserver</value>
+		<value>IbisDataAdmin</value>
+		<value>IbisAdmin</value>
+		<value>IbisTester</value>
+	</util:list>
 
-	<bean name="dataAdminRoles" class="java.util.ArrayList">
-		<constructor-arg>
-			<list>
-				<value>IbisDataAdmin</value>
-				<value>IbisAdmin</value>
-				<value>IbisTester</value>
-			</list>
-		</constructor-arg>
-	</bean>
+	<util:list id="dataAdminRoles">
+		<value>IbisDataAdmin</value>
+		<value>IbisAdmin</value>
+		<value>IbisTester</value>
+	</util:list>
 
-	<bean name="testerRoles" class="java.util.ArrayList">
-		<constructor-arg>
-			<list>
-				<value>IbisTester</value>
-			</list>
-		</constructor-arg>
-	</bean>
+	<util:list id="testerRoles">
+		<value>IbisTester</value>
+	</util:list>
 
 	<bean name="debugger,ibisDebugger" class="nl.nn.ibistesttool.Debugger" autowire="byName"/>
 

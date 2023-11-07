@@ -42,7 +42,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class HttpSenderResultTest extends Mockito {
 
@@ -87,7 +87,7 @@ public class HttpSenderResultTest extends Mockito {
 
 	public HttpSender createHttpSenderFromFile(String testFile) throws IOException {
 		InputStream file = getFile(testFile);
-		byte[] fileArray = Misc.streamToBytes(file);
+		byte[] fileArray = StreamUtil.streamToBytes(file);
 		String contentType = null;
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileArray)));
@@ -243,7 +243,7 @@ public class HttpSenderResultTest extends Mockito {
 		assertEquals(null, result);
 
 		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
-		assertEquals("<dummy result/>", Misc.streamToString(stream));
+		assertEquals("<dummy result/>", StreamUtil.streamToString(stream));
 	}
 
 	@Test
@@ -264,11 +264,11 @@ public class HttpSenderResultTest extends Mockito {
 		assertEquals(null, result);
 
 		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
-		assertEquals("<dummy result/>", Misc.streamToString(stream));
+		assertEquals("<dummy result/>", StreamUtil.streamToString(stream));
 	}
 
 	@Test
-	public void simpleMultiPartResponseMockedHttpGet() throws Exception {
+	public void simpleMultiPartResponse() throws Exception {
 		HttpSender sender = createHttpSenderFromFile("multipart1.txt");
 
 		PipeLineSession pls = new PipeLineSession();
@@ -289,22 +289,17 @@ public class HttpSenderResultTest extends Mockito {
 		}
 		assertEquals(2, multipartAttachmentCount);
 
-		InputStream multipart1 = pls.getMessage("multipart1").asInputStream();
-		assertEquals("Content of a txt file.", Misc.streamToString(multipart1).trim());
-
-		InputStream multipart2 = pls.getMessage("multipart2").asInputStream();
-		assertEquals("<!DOCTYPE html><title>Content of a html file.</title>", Misc.streamToString(multipart2).trim());
+		assertEquals("Content of a txt file.", pls.getMessage("multipart1").asString().trim());
+		assertEquals("<!DOCTYPE html><title>Content of a html file.</title>",  pls.getMessage("multipart2").asString().trim());
 	}
 
 	@Test
-	public void simpleMtomResponseMockedHttpGet() throws Exception {
+	public void simpleMtomResponse() throws Exception {
 		HttpSender sender = createHttpSenderFromFile("mtom-multipart.txt");
 
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.setMethodType(HttpMethod.GET);
-		sender.setMultipartResponse(true);
-
 		sender.configure();
 		sender.open();
 
@@ -318,7 +313,6 @@ public class HttpSenderResultTest extends Mockito {
 		}
 		assertEquals(1, multipartAttachmentCount);
 
-		InputStream multipart1 = pls.getMessage("multipart1").asInputStream();
-		assertEquals("PDF-1.4 content", Misc.streamToString(multipart1).trim());
+		assertEquals("PDF-1.4 content", pls.getMessage("multipart1").asString().trim());
 	}
 }

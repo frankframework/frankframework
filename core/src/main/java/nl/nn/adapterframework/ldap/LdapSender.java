@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,14 +51,13 @@ import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Sender to obtain information from and write to an LDAP Directory.
@@ -386,7 +385,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		List<String> list = new ArrayList<>();
 		String[] strArr = new String[1]; //just do determine the type of the array in list.toArray(Object[] o)
 
-		StringBuffer sb = new StringBuffer(toSeparate);
+		StringBuilder sb = new StringBuilder(toSeparate);
 		for (int i = 0; i < sb.length(); i++) {
 			if(sb.charAt(i) == ' ')
 				sb.deleteCharAt(i);
@@ -1129,13 +1128,13 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			XmlBuilder attributeElem = new XmlBuilder("attribute");
 			attributeElem.addAttribute("name", attribute.getID());
 			if (attribute.size() == 1 && attribute.get() != null) {
-				attributeElem.addAttribute("value", XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(attribute.get().toString()));
+				attributeElem.addAttribute("value", XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(attribute.get().toString()));
 			} else {
 				NamingEnumeration<?> values = attribute.getAll();
 				while (values.hasMore()) {
 					Object value = values.next();
 					XmlBuilder itemElem = new XmlBuilder("item");
-					itemElem.addAttribute("value", XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(value.toString()));
+					itemElem.addAttribute("value", XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(value.toString()));
 					attributeElem.addSubElement(itemElem);
 				}
 			}
@@ -1190,53 +1189,80 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		return paramList;
 	}
 
-	@IbisDoc({"Specifies LDAP operation to perform", "read"})
+	/**
+	 * Specifies LDAP operation to perform
+	 * @ff.default read
+	 */
 	public void setOperation(Operation value) {
 		operation = value;
 	}
 
-	@IbisDoc({"URL to context to search in, e.g. 'ldap://edsnlm01.group.intranet/ou=people, o=ing' to search in te people group of ing cds. Used to overwrite the providerURL specified in jmsRealm.", ""})
+	/** URL to context to search in, e.g. 'ldap://edsnlm01.group.intranet/ou=people, o=ing' to search in te people group of ing cds. Used to overwrite the providerURL specified in jmsRealm. */
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
 	}
 
-	@IbisDoc({"Specifies subject to perform operation on.", "attribute"})
+	/**
+	 * Specifies subject to perform operation on.
+	 * @ff.default attribute
+	 */
 	public void setManipulationSubject(Manipulation value) {
 		manipulationSubject = value;
 	}
 
-	@IbisDoc({"Comma separated list of attributes to return. When no are attributes specified, all the attributes from the object read are returned.", "<i>all attributes</i>"})
+	/**
+	 * Comma separated list of attributes to return. When no are attributes specified, all the attributes from the object read are returned.
+	 * @ff.default <i>all attributes</i>
+	 */
 	public void setAttributesToReturn(String string) {
 		attributesToReturn = string;
 	}
 
-	@IbisDoc({"Specifies whether connection pooling is used or not", "true when principal not set as parameter, false otherwise"})
+	/**
+	 * Specifies whether connection pooling is used or not
+	 * @ff.default true when principal not set as parameter, false otherwise
+	 */
 	public void setUsePooling(boolean b) {
 		usePooling = b;
 	}
 
-	@IbisDoc({"Specifies the time (in ms) that is spent searching for results for operation search", "20000"})
+	/**
+	 * Specifies the time (in ms) that is spent searching for results for operation search
+	 * @ff.default 20000
+	 */
 	public void setSearchTimeout(int i) {
 		searchTimeout = i;
 	}
 
 
-	@IbisDoc({"Key of session variable used to store cause of errors", "errorReason"})
+	/**
+	 * Key of session variable used to store cause of errors
+	 * @ff.default errorReason
+	 */
 	public void setErrorSessionKey(String string) {
 		errorSessionKey = string;
 	}
 
-	@IbisDoc({"The maximum number of entries to be returned by a search query, or <code>0</code> for unlimited", "0"})
+	/**
+	 * The maximum number of entries to be returned by a search query, or <code>0</code> for unlimited
+	 * @ff.default 0
+	 */
 	public void setMaxEntriesReturned(int i) {
 		maxEntriesReturned = i;
 	}
 
-	@IbisDoc({"When <code>true</code> the attributes passed by the input xml are scanned for an attribute with id unicodepwd, when found the value of this attribute will be encoded as required by active directory (a UTF-16 encoded unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server", "false"})
+	/**
+	 * When <code>true</code> the attributes passed by the input xml are scanned for an attribute with id unicodepwd, when found the value of this attribute will be encoded as required by active directory (a UTF-16 encoded unicode string containing the password surrounded by quotation marks) before sending it to the LDAP server
+	 * @ff.default false
+	 */
 	public void setUnicodePwd(boolean b) {
 		unicodePwd = b;
 	}
 
-	@IbisDoc({"(Only used when <code>operation=search/deepsearch</code>) when <code>true</code> the xml '&lt;ldapresult&gt;object not found&lt;/ldapresult&gt;' is returned instead of the PartialResultException 'unprocessed continuation reference(s)'", "false"})
+	/**
+	 * (Only used when <code>operation=search/deepsearch</code>) when <code>true</code> the xml '&lt;ldapresult&gt;object not found&lt;/ldapresult&gt;' is returned instead of the PartialResultException 'unprocessed continuation reference(s)'
+	 * @ff.default false
+	 */
 	public void setReplyNotFound(boolean b) {
 		replyNotFound = b;
 	}

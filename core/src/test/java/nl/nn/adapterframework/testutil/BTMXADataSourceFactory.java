@@ -17,6 +17,7 @@ public class BTMXADataSourceFactory extends URLXADataSourceFactory {
 		result.setAllowLocalTransactions(true);
 		result.setXaDataSource(xaDataSource);
 		result.setIgnoreRecoveryFailures(true);
+		result.setEnableJdbc4ConnectionTest(true);
 		result.init();
 		return result;
 	}

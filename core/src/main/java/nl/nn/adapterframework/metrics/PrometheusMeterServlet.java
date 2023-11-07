@@ -34,7 +34,6 @@ import io.prometheus.client.exporter.common.TextFormat;
 import lombok.Setter;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
-import nl.nn.adapterframework.lifecycle.ServletManager;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -81,12 +80,9 @@ public class PrometheusMeterServlet extends HttpServletBase {
 		}
 	}
 
-	@Autowired
 	@Override
-	public void setServletManager(ServletManager servletManager) {
-		if(ACTIVE) {
-			super.setServletManager(servletManager);
-		}
+	public boolean isEnabled() {
+		return ACTIVE;
 	}
 
 	@Override

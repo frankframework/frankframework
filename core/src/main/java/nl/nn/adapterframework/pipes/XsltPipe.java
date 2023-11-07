@@ -28,12 +28,11 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
-import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.ReferTo;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.senders.XsltSender;
@@ -60,8 +59,6 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	private String sessionKey=null;
 
 	private @Getter XsltSender sender = createXsltSender();
-
-	private final String XSLTSENDER = "nl.nn.adapterframework.senders.XsltSender";
 
 	{
 		setSizeStatistics(true);
@@ -178,24 +175,22 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		sender.addParameter(rhs);
 	}
 
-
-
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setStyleSheetName(String stylesheetName) {
 		sender.setStyleSheetName(stylesheetName);
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setStyleSheetNameSessionKey(String newSessionKey) {
 		sender.setStyleSheetNameSessionKey(newSessionKey);
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setStyleSheetCacheSize(int size) {
 		sender.setStyleSheetCacheSize(size);
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setXpathExpression(String string) {
 		sender.setXpathExpression(string);
 	}
@@ -203,17 +198,17 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		return sender.getXpathExpression();
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setOmitXmlDeclaration(boolean b) {
 		sender.setOmitXmlDeclaration(b);
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setDisableOutputEscaping(boolean b) {
 		sender.setDisableOutputEscaping(b);
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setNamespaceDefs(String namespaceDefs) {
 		sender.setNamespaceDefs(namespaceDefs);
 	}
@@ -221,36 +216,36 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		return sender.getNamespaceDefs();
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setOutputType(OutputType outputType) {
 		sender.setOutputType(outputType);
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setIndentXml(boolean b) {
 		sender.setIndentXml(b);
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setRemoveNamespaces(boolean b) {
 		sender.setRemoveNamespaces(b);
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setHandleLexicalEvents(boolean b) {
 		sender.setHandleLexicalEvents(b);
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setSkipEmptyTags(boolean b) {
 		sender.setSkipEmptyTags(b);
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	public void setXsltVersion(int xsltVersion) {
 		sender.setXsltVersion(xsltVersion);
 	}
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
@@ -260,7 +255,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		sender.setXslt2(b);
 	}
 
-	@IbisDocRef({XSLTSENDER})
+	@ReferTo(XsltSender.class)
 	@Deprecated
 	@ConfigurationWarning("please use attribute 'removeNamespaces' instead")
 	public void setNamespaceAware(boolean b) {
@@ -269,7 +264,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 
 	@Deprecated
 	@ConfigurationWarning("Please use 'storeResultInSessionKey' with preserveInput=true")
-	@IbisDoc({"If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result"})
+	/** If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}

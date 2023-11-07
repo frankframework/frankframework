@@ -15,26 +15,34 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.http.rest.ApiListener.AuthenticationMethods;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
-
-import org.junit.Before;
-import org.junit.Test;
+import nl.nn.adapterframework.lifecycle.DynamicRegistration.Servlet;
+import nl.nn.adapterframework.lifecycle.ServletManager;
+import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 
 public class ApiListenerTest {
 
 	private ApiListener listener;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		listener = new ApiListener();
 		listener.setName("my-api-listener");
@@ -66,7 +74,7 @@ public class ApiListenerTest {
 	public void testContentTypes() throws ConfigurationException {
 		for(MediaTypes type : MediaTypes.values()) {
 			listener.setProduces(type);
-			listener.configure(); //Check if the mediatype passes the configure checks
+			listener.configure(); //Check if the media-type passes the 'configure' checks
 
 			assertTrue(listener.getContentType().includes(type.getMimeType()));
 		}
@@ -88,10 +96,10 @@ public class ApiListenerTest {
 		String contentType = "application/xml;charset=UTF8;level=2";
 
 		listener.setConsumes(MediaTypes.XML);
-		assertTrue("can parse [XML]", listener.isConsumable(contentType));
+		assertTrue(listener.isConsumable(contentType), "can parse [XML]");
 
 		listener.setConsumes(MediaTypes.JSON);
-		assertFalse("can parse [JSON]", listener.isConsumable(contentType));
+		assertFalse(listener.isConsumable(contentType), "can parse [JSON]");
 	}
 
 	@Test
@@ -99,10 +107,10 @@ public class ApiListenerTest {
 		String contentType = "application/json;charset=UTF8;level=2";
 
 		listener.setConsumes(MediaTypes.XML);
-		assertFalse("can parse [XML]", listener.isConsumable(contentType));
+		assertFalse(listener.isConsumable(contentType), "can parse [XML]");
 
 		listener.setConsumes(MediaTypes.JSON);
-		assertTrue("can parse [JSON]", listener.isConsumable(contentType));
+		assertTrue(listener.isConsumable(contentType), "can parse [JSON]");
 	}
 
 	@Test
@@ -110,7 +118,31 @@ public class ApiListenerTest {
 		String acceptHeader = "application/octet-stream";
 
 		listener.setConsumes(MediaTypes.ANY);
-		assertTrue("can parse anything", listener.isConsumable(acceptHeader));
+		assertTrue(listener.isConsumable(acceptHeader), "can parse anything");
+	}
+
+	@Test
+	public void isConsumableEmptyContentTypeHeader() {
+		// Arrange
+		listener.setConsumes(MediaTypes.ANY);
+
+		// Act / Assert
+		assertTrue(listener.isConsumable(null), "listener should be able to parse anything");
+		assertTrue(listener.isConsumable(""), "listener should be able to parse anything");
+
+		// Arrange
+		listener.setConsumes(MediaTypes.XML);
+
+		// Act / Assert
+		assertFalse(listener.isConsumable(null), "listener should be able to parse XML");
+		assertFalse(listener.isConsumable(""), "listener should be able to parse XML");
+
+		// Arrange
+		listener.setConsumes(MediaTypes.JSON);
+
+		// Act / Assert
+		assertFalse(listener.isConsumable(null), "listener should be able to parse JSON");
+		assertFalse(listener.isConsumable(""), "listener should be able to parse JSON");
 	}
 
 	@Test
@@ -124,9 +156,9 @@ public class ApiListenerTest {
 
 		listener.setConsumes(MediaTypes.MULTIPART);
 		for(String header : acceptHeaders) {
-			String acceptHeader = header + "; type=text; q=0.7, "+header+"; level=2; q=0.4; boundary=--my-top-notch-boundary-";
+			String acceptHeader = header + "; type=text; "+header+"; level=2; boundary=--my-top-notch-boundary-";
 
-			assertTrue("can parse ["+header+"]", listener.isConsumable(acceptHeader));
+			assertTrue(listener.isConsumable(acceptHeader), "can parse ["+header+"]");
 		}
 	}
 
@@ -136,25 +168,24 @@ public class ApiListenerTest {
 		String acceptHeader = contentType + "; type=text/html; q=0.7, "+contentType+"; level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.ANY);
-		assertTrue("accepts anything", listener.accepts(acceptHeader));
+		assertTrue(listener.accepts(acceptHeader), "accepts anything");
 	}
 
 	@Test
 	public void clientAcceptsAll() {
-		String contentType = "application/xhtml+xml, application/xml";
-		String acceptHeader = contentType + "; type=text; q=0.7, */*; level=2; q=0.4";
+		String acceptHeader = "application/xhtml+xml, application/xml; type=text; q=0.7, */*; level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.JSON);
-		assertTrue("accepts anything", listener.accepts(acceptHeader));
+		assertTrue(listener.accepts(acceptHeader), "accepts anything");
 	}
 
 	@Test
 	public void clientInvalidAcceptHeader() {
 		String contentType = "application/xhtml+xml, application/xml";
-		String acceptHeader = contentType + "; type=text/html; q=0.7, */*; level=2; q=0.4";
+		String acceptHeader = contentType + "; type=text/html; q=0.7, level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.JSON);
-		assertTrue("accepts anything", listener.accepts(acceptHeader));
+		assertFalse(listener.accepts(acceptHeader), "does not accept invalid Accept header");
 	}
 
 	@Test
@@ -163,7 +194,7 @@ public class ApiListenerTest {
 		String acceptHeader = contentType + "; type=text; q=0.7, "+contentType+"; level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.JSON);
-		assertFalse("does not accept an octet-stream when set to JSON", listener.accepts(acceptHeader));
+		assertFalse(listener.accepts(acceptHeader), "does not accept an octet-stream when set to JSON");
 	}
 
 	@Test
@@ -172,12 +203,62 @@ public class ApiListenerTest {
 		String acceptHeader = contentType + "; type=text; q=0.7, "+contentType+"; level=2; q=0.4";
 
 		listener.setProduces(MediaTypes.JSON);
-		assertTrue("accepts JSON", listener.accepts(acceptHeader));
+		assertTrue(listener.accepts(acceptHeader), "listener should be able to accept JSON");
 	}
 
 	@Test
 	public void testAuthRoleMethod() {
 		listener.setAuthenticationMethod(AuthenticationMethods.AUTHROLE);
-		assertEquals("Authentication method [AUTHROLE] should be set", AuthenticationMethods.AUTHROLE, listener.getAuthenticationMethod());
+		assertEquals(AuthenticationMethods.AUTHROLE, listener.getAuthenticationMethod(), "Authentication method [AUTHROLE] should be set");
+	}
+
+	@Test
+	public void testGetPhysicalDestinationName() throws Exception {
+		listener.configure();
+		assertEquals("uriPattern: /dummy; method: PUT", listener.getPhysicalDestinationName());
+	}
+
+	@Test
+	public void testGetPhysicalDestinationNameConsumesProduces() throws Exception {
+		listener.setConsumes(MediaTypes.JSON);
+		listener.setProduces(MediaTypes.XML);
+		listener.configure();
+		assertEquals("uriPattern: /dummy; method: PUT; consumes: JSON; produces: XML", listener.getPhysicalDestinationName());
+	}
+
+	@Test
+	public void testGetPhysicalDestinationNameWith1Endpoint() throws Exception {
+		ServletManager manager = spy(new ServletManager(null));
+		Servlet servlet = mock(Servlet.class);
+		when(servlet.getName()).thenReturn(ApiListenerServlet.class.getSimpleName());
+		when(servlet.getUrlMapping()).thenReturn("aapje");
+		ServletConfiguration servletConfig = spy(new ServletConfiguration());
+		doNothing().when(servletConfig).loadProperties();
+		servletConfig.fromServlet(servlet);
+		when(manager.getServlet(anyString())).thenReturn(servletConfig);
+		listener.setServletManager(manager);
+
+		listener.setConsumes(MediaTypes.JSON);
+		listener.setProduces(MediaTypes.XML);
+		listener.configure();
+		assertEquals("uriPattern: /aapje/dummy; method: PUT; consumes: JSON; produces: XML", listener.getPhysicalDestinationName());
+	}
+
+	@Test
+	public void testGetPhysicalDestinationNameWith2Endpoints() throws Exception {
+		ServletManager manager = spy(new ServletManager(null));
+		Servlet servlet = mock(Servlet.class);
+		when(servlet.getName()).thenReturn(ApiListenerServlet.class.getSimpleName());
+		when(servlet.getUrlMapping()).thenReturn("aap,noot");
+		ServletConfiguration servletConfig = spy(new ServletConfiguration());
+		doNothing().when(servletConfig).loadProperties();
+		servletConfig.fromServlet(servlet);
+		when(manager.getServlet(anyString())).thenReturn(servletConfig);
+		listener.setServletManager(manager);
+
+		listener.setConsumes(MediaTypes.JSON);
+		listener.setProduces(MediaTypes.XML);
+		listener.configure();
+		assertEquals("uriPattern: [/aap, /noot]/dummy; method: PUT; consumes: JSON; produces: XML", listener.getPhysicalDestinationName());
 	}
 }

@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Utility class to support run-state management.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class RunStateManager implements RunStateEnquirer {
@@ -40,5 +40,10 @@ public class RunStateManager implements RunStateEnquirer {
 			runState = newRunState;
 			notifyAll();
 		}
+	}
+
+	@Override
+	public String toString() {
+		return super.toString() + " [" + runState + "]";
 	}
 }

@@ -20,8 +20,7 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.batch.IResultHandler;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -60,17 +59,20 @@ public class Result2BlobWriter extends Result2LobWriterBase {
 		}
 	}
 
-	@IbisDoc({"Column that contains the BLOB to be updated", "1"})
+	/**
+	 * Column that contains the BLOB to be updated
+	 * @ff.default 1
+	 */
 	public void setBlobColumn(int column) {
 		querySender.setBlobColumn(column);
 	}
 
-	@IbisDocRef({"2", FIXEDQUERYSENDER})
+	@ReferTo(FixedQuerySender.class)
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}
 
-	@IbisDocRef({"3", FIXEDQUERYSENDER})
+	@ReferTo(FixedQuerySender.class)
 	public void setBlobCharset(String charset) {
 		querySender.setBlobCharset(charset);
 	}

@@ -26,10 +26,10 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
-import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.ReferTo;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.Base64Pipe;
@@ -58,8 +58,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase implements HasPhysicalDestination {
 
 	private FS fileSystem;
-	private FileSystemActor<F,FS> actor=new FileSystemActor<F,FS>();
-	private final String FILESYSTEMACTOR = "nl.nn.adapterframework.filesystem.FileSystemActor";
+	private FileSystemActor<F,FS> actor = new FileSystemActor<>();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -105,7 +104,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 
 		try {
 			if (paramList !=null) {
-				pvl=paramList.getValues(message, session);
+				pvl = paramList.getValues(message, session);
 			}
 		} catch (ParameterException e) {
 			throw new SenderException(
@@ -113,10 +112,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		}
 
 		try {
-			Object result=actor.doAction(message, pvl, session);
-			if (result instanceof PipeRunResult) {
-				return (PipeRunResult)result;
-			}
+			Message result = actor.doAction(message, pvl, session);
 			return new PipeRunResult(null, result);
 		} catch (FileSystemException e) {
 			throw new SenderException(e);
@@ -144,9 +140,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		actor.addActions(specificActions);
 	}
 
-
-
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setAction(FileSystemAction action) {
 		actor.setAction(action);
 	}
@@ -154,47 +148,47 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		return actor.getAction();
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setFilename(String filename) {
 		actor.setFilename(filename);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setDestination(String destination) {
 		actor.setDestination(destination);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setInputFolder(String inputFolder) {
 		actor.setInputFolder(inputFolder);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setCreateFolder(boolean createFolder) {
 		actor.setCreateFolder(createFolder);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setOverwrite(boolean overwrite) {
 		actor.setOverwrite(overwrite);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setRotateDays(int rotateDays) {
 		actor.setRotateDays(rotateDays);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setRotateSize(int rotateSize) {
 		actor.setRotateSize(rotateSize);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	@Deprecated
 	public void setBase64(Base64Pipe.Direction base64) {
 		actor.setBase64(base64);
@@ -205,7 +199,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	public void setWildCard(String wildcard) {
 		setWildcard(wildcard);
 	}
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setWildcard(String wildcard) {
 		actor.setWildcard(wildcard);
 	}
@@ -215,32 +209,32 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	public void setExcludeWildCard(String excludeWildcard) {
 		setExcludeWildcard(excludeWildcard);
 	}
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setExcludeWildcard(String excludeWildcard) {
 		actor.setExcludeWildcard(excludeWildcard);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setRemoveNonEmptyFolder(boolean removeNonEmptyFolder) {
 		actor.setRemoveNonEmptyFolder(removeNonEmptyFolder);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setWriteLineSeparator(boolean writeLineSeparator) {
 		actor.setWriteLineSeparator(writeLineSeparator);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setCharset(String charset) {
 		actor.setCharset(charset);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setDeleteEmptyFolder(boolean deleteEmptyFolder) {
 		actor.setDeleteEmptyFolder(deleteEmptyFolder);
 	}
 
-	@IbisDocRef({FILESYSTEMACTOR})
+	@ReferTo(FileSystemActor.class)
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		actor.setOutputFormat(outputFormat);
 	}

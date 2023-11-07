@@ -21,7 +21,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.FrankDocGroup;
-import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
  * Interface for handling a transformed record.
@@ -38,10 +37,7 @@ public interface IRecordHandlerManager extends INamedObject {
 
 	public void configure(Map<String, IRecordHandlerManager> registeredManagers, Map<String, IRecordHandler> registeredRecordHandlers, Map<String, IResultHandler> registeredResultHandlers, IResultHandler defaultHandler) throws ConfigurationException;
 
-	/**
-	 * @param flow New flow to be added to the managed flow elements
-	 */
-	@IbisDoc({"Flow to be added to the managed flow elements"})
+	/** Flow to be added to the managed flow elements */
 	void addHandler(RecordHandlingFlow flow);
 
 	/**
@@ -54,10 +50,7 @@ public interface IRecordHandlerManager extends INamedObject {
 	 */
 	IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String filename);
 
-	/**
-	 * @param initialFactory indicates if this manager is the initial manager
-	 */
-	@IbisDoc("indicates if this manager is the initial manager")
+	/** indicates if this manager is the initial manager */
 	void setInitial(boolean initialFactory);
 	boolean isInitial();
 }

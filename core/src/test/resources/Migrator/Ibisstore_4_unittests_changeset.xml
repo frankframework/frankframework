@@ -3,8 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
 		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
-	<changeSet id="IAF_Util:1" author="Niels Meijer">
-		<validCheckSum>7:4a9c70190e4678c16c7d392b8ecff571</validCheckSum> <!-- #1481, BLOB->LONGBLOB -->
+	<changeSet id="IAF_Util:1:${tableName}" author="Niels Meijer">
 		<comment>Add ${tableName} Table</comment>
 		<createTable tableName="${tableName}">
 			<column name="MESSAGEKEY" type="BIGINT" autoIncrement="true">
@@ -30,8 +29,7 @@
 			<column name="EXPIRYDATE"/>
 		</createIndex>
 	</changeSet>
-	<changeSet id="IAF_Util:2" author="Niels Meijer" onValidationFail="MARK_RAN">
-		<validCheckSum>7:f2e6c27a19d68a25b1944853432979c4</validCheckSum>
+	<changeSet id="IAF_Util:2:${tableName}" author="Niels Meijer" onValidationFail="MARK_RAN">
 		<comment>Set sequence for ${tableName} Table</comment>
 		<createSequence sequenceName="SEQ_${tableName}" startValue="161332"/>
 	</changeSet>

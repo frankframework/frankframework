@@ -21,11 +21,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.monitoring.EventThrowing;
 
+/**
+ * A Monitoring Event with a map of potential Adapters that can throw events of this type.
+ */
 public class Event {
 	private List<EventThrowing> throwers = new ArrayList<>();
 
@@ -39,31 +40,17 @@ public class Event {
 		throwers.add(thrower);
 	}
 
-	private List<EventThrowing> getThrowers() {
-		return Collections.unmodifiableList(throwers);
-	}
-
-	public List<String> getAdapters() {
-		List<String> adapters = new ArrayList<>();
-		for(EventThrowing eventThrower : getThrowers()) {
-			Adapter adapter = eventThrower.getAdapter();
-			if(adapter != null && !adapters.contains(adapter.getName())) {
-				adapters.add(adapter.getName());
-			}
-		}
-		return adapters;
-	}
-
+	/**
+	 * Entities that can throw an Event
+	 */
 	public Map<String, List<String>> getSources() {
 		Map<String, List<String>> sources = new HashMap<>();
-		for(EventThrowing eventThrower : getThrowers()) {
+		for(EventThrowing eventThrower : throwers) {
 			Adapter adapter = eventThrower.getAdapter();
-			if(adapter != null && StringUtils.isNotEmpty(adapter.getName())) {
-				List<String> sourceNames = sources.getOrDefault(adapter.getName(), new ArrayList<>());
-				sourceNames.add(eventThrower.getEventSourceName());
-				sources.put(adapter.getName(), sourceNames);
-			}
+			List<String> sourceNames = sources.getOrDefault(adapter.getName(), new ArrayList<>());
+			sourceNames.add(eventThrower.getEventSourceName());
+			sources.put(adapter.getName(), sourceNames);
 		}
-		return sources;
+		return Collections.unmodifiableMap(sources);
 	}
 }

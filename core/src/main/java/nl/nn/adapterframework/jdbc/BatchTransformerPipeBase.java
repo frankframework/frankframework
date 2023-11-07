@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,11 +24,12 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.batch.StreamTransformerPipe;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDocRef;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -36,15 +37,15 @@ import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * abstract base class for JDBC batch transforming pipes.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@Deprecated
+@ConfigurationWarning("Not tested and maintained, please look for alternatives if you use this class")
 public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 
 	protected FixedQuerySender querySender;
-
-	private final String FIXEDQUERYSENDER = "nl.nn.adapterframework.jdbc.FixedQuerySender";
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -70,7 +71,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		querySender.close();
 	}
 
-	public class ResultSetReader extends BufferedReader {
+	public static class ResultSetReader extends BufferedReader {
 		Connection conn;
 		ResultSet rs;
 
@@ -97,7 +98,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		Connection connection = null;
 		try {
 			connection = querySender.getConnection();
-			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message, session);
+			QueryExecutionContext queryExecutionContext = querySender.getQueryExecutionContext(connection, message);
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(querySender.getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			ResultSet rs = statement.executeQuery();
@@ -120,7 +121,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 	}
 
 
-	@IbisDocRef({"1", FIXEDQUERYSENDER})
+	@ReferTo(FixedQuerySender.class)
 	public void setQuery(String query) {
 		querySender.setQuery(query);
 	}
@@ -128,7 +129,7 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		return querySender.getQuery();
 	}
 
-	@IbisDocRef({"2", FIXEDQUERYSENDER})
+	@ReferTo(FixedQuerySender.class)
 	public void setDatasourceName(String datasourceName) {
 		querySender.setDatasourceName(datasourceName);
 	}
@@ -136,9 +137,10 @@ public abstract class BatchTransformerPipeBase extends StreamTransformerPipe {
 		return querySender.getDatasourceName();
 	}
 
-	@IbisDocRef({"3", FIXEDQUERYSENDER})
+	@ReferTo(FixedQuerySender.class)
+	@ConfigurationWarning("We discourage the use of jmsRealms for datasources. To specify a datasource other then the default, use the datasourceName attribute directly, instead of referring to a realm")
+	@Deprecated
 	public void setJmsRealm(String jmsRealmName) {
 		querySender.setJmsRealm(jmsRealmName);
 	}
-
 }

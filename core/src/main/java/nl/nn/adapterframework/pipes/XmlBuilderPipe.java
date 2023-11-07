@@ -20,8 +20,8 @@ import java.io.IOException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -67,7 +67,7 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 	}
 
 	private String buildXml(String xml) {
-		String result = XmlUtils.decodeChars(xml);
+		String result = XmlEncodingUtils.decodeChars(xml);
 		if (XmlUtils.isWellFormed(result)) {
 			result = XmlUtils.removeNamespaces(result);
 		} else {
@@ -80,7 +80,7 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 		return substringStart;
 	}
 
-	@IbisDoc({"substring to start translation", ""})
+	/** substring to start translation */
 	public void setSubstringStart(String substringStart) {
 		this.substringStart = substringStart;
 	}
@@ -89,7 +89,7 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 		return substringEnd;
 	}
 
-	@IbisDoc({"substring to end translation", ""})
+	/** substring to end translation */
 	public void setSubstringEnd(String substringEnd) {
 		this.substringEnd = substringEnd;
 	}

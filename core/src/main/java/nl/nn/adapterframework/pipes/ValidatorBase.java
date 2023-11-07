@@ -98,7 +98,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 	protected abstract PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException, XmlValidatorException, ConfigurationException;
 
 
-	protected PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode, Supplier<String> errorMessageProvider) throws PipeRunException {
+	protected final PipeForward determineForward(ValidationResult validationResult, PipeLineSession session, boolean responseMode, Supplier<String> errorMessageProvider) throws PipeRunException {
 		throwEvent(validationResult.getEvent());
 		PipeForward forward = null;
 		switch(validationResult) {
@@ -158,7 +158,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 		return null;
 	}
 
-	public class ResponseValidatorWrapper implements IValidator {
+	public static class ResponseValidatorWrapper implements IValidator {
 
 		private @Getter @Setter String name;
 
@@ -249,15 +249,4 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 	public void setForwardFailureToSuccess(boolean b) {
 		this.forwardFailureToSuccess = b;
 	}
-
-
-//
-//	@IbisDocRef({ABSTRACTXMLVALIDATOR})
-//	public void setCharset(String string) {
-//		validator.setCharset(string);
-//	}
-//	public String getCharset() {
-//		return  validator.getCharset();
-//	}
-
 }

@@ -31,7 +31,6 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -148,7 +147,10 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 		return cache;
 	}
 
-	@IbisDoc({"when <code>true</code>, the memberOf attribute is also searched in all the found members", "true"})
+	/**
+	 * when <code>true</code>, the memberOf attribute is also searched in all the found members
+	 * @ff.default true
+	 */
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}

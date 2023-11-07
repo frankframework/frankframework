@@ -1,14 +1,17 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import nl.nn.adapterframework.filesystem.mock.MockFileSystem;
 
 public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
@@ -17,7 +20,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 	protected abstract FS createFileSystem();
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		fileSystem = createFileSystem();
@@ -144,10 +147,8 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(dstFolder, filename);
 		}
 
-		if (dstFolder!=null) {
-			if (!_folderExists(dstFolder)) {
-				_createFolder(dstFolder);
-			}
+		if (!_folderExists(dstFolder)) {
+			_createFolder(dstFolder);
 		}
 		for (int i=1;i<=numOfFilesPresentAtStart;i++) {
 			createFile(dstFolder, filename+"."+i,contents+i);
@@ -188,10 +189,8 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 			_deleteFile(dstFolder, filename);
 		}
 
-		if (dstFolder!=null) {
-			if  (!_folderExists(dstFolder)) {
-				_createFolder(dstFolder);
-			}
+		if (!_folderExists(dstFolder)) {
+			_createFolder(dstFolder);
 		}
 		for (int i=1;i<=numOfFilesPresentAtStart;i++) {
 			createFile(dstFolder, filename+"."+i,contents+i);
@@ -228,7 +227,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		if(!_folderExists(srcFolder)) {
 			_createFolder(srcFolder);
 		}
-		if (dstFolder!=null && !_folderExists(dstFolder)) {
+		if (!_folderExists(dstFolder)) {
 			_createFolder(dstFolder);
 		}
 
@@ -273,7 +272,7 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 
 					@Override
 					public Iterator iterator() {
-						return null;
+						return Collections.emptyIterator();
 					}
 
 				};
@@ -281,6 +280,6 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 		};
 
 		Stream<?> stream = FileSystemUtils.getFilteredStream(fs, null, null, null);
-		assertTrue(stream==null || stream.count()==0);
+		assertFalse(stream.findAny().isPresent());
 	}
 }

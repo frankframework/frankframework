@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package nl.nn.adapterframework.http;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import javax.xml.soap.SOAPConstants;
 import javax.xml.ws.soap.SOAPBinding;
@@ -36,13 +35,13 @@ import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.cxf.MessageProvider;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
@@ -96,10 +95,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			throw new ConfigurationException("address cannot contain colon ( : ) character");
 
 		if (StringUtils.isNotEmpty(getAttachmentSessionKeys())) {
-			StringTokenizer stringTokenizer = new StringTokenizer(getAttachmentSessionKeys(), " ,;");
-			while (stringTokenizer.hasMoreTokens()) {
-				attachmentSessionKeysList.add(stringTokenizer.nextToken());
-			}
+			attachmentSessionKeysList.addAll(StringUtil.split(getAttachmentSessionKeys(), " ,;"));
 		}
 
 		if (isSoap()) {
@@ -193,7 +189,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		if (isSoap()) {
 			try {
 				if (log.isDebugEnabled()) log.debug(getLogPrefix()+"received SOAPMSG [" + message + "]");
-				Message request = soapWrapper.getBody(message);
+				Message request = soapWrapper.getBody(message, false, session, null);
 				Message result = super.processRequest(request, session);
 
 				String soapNamespace = SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE;
@@ -227,12 +223,15 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		return "name ["+getName()+"]";
 	}
 
-	@IbisDoc({"If <code>true</code> the SOAP envelope is removed from received messages and a SOAP envelope is added to returned messages (SOAP envelope will not be visible to the pipeline)", "true"})
+	/**
+	 * If <code>true</code> the SOAP envelope is removed from received messages and a SOAP envelope is added to returned messages (SOAP envelope will not be visible to the pipeline)
+	 * @ff.default true
+	 */
 	public void setSoap(boolean b) {
 		soap = b;
 	}
 
-	/** 
+	/**
 	 * Namespace of the service that is provided by the adapter of this listener.
 	 * If specified, requests posted to https://mydomain.com/ibis4something/servlet/rpcrouter that have this namespace in their body  will be handled by this listener,
 	 * where mydomain.com and ibis4something refer to 'your ibis'.
@@ -258,17 +257,20 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 	}
 
-	@IbisDoc({ "If set, MTOM is enabled on the SOAP binding" })
+	/** If set, MTOM is enabled on the SOAP binding */
 	public void setMtomEnabled(boolean mtomEnabled) {
 		this.mtomEnabled = mtomEnabled;
 	}
 
-	@IbisDoc({ "Comma separated list of session keys to hold contents of attachments of the request" })
+	/** Comma separated list of session keys to hold contents of attachments of the request */
 	public void setAttachmentSessionKeys(String attachmentSessionKeys) {
 		this.attachmentSessionKeys = attachmentSessionKeys;
 	}
 
-	@IbisDoc({ "Key of session variable that holds the description (name, sessionKey, mimeType) of the parts present in the request. Only used if attachmentSessionKeys are specified", "multipartXml" })
+	/**
+	 * Key of session variable that holds the description (name, sessionKey, mimeType) of the parts present in the request. Only used if attachmentSessionKeys are specified
+	 * @ff.default multipartXml
+	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}

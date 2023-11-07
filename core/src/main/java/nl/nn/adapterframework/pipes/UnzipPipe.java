@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -39,12 +40,10 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Assumes input to be the file name of a ZIP archive, and unzips it to a
@@ -99,7 +98,7 @@ public class UnzipPipe extends FixedForwardPipe {
 
 	private @Getter String directory;
 	private @Getter String directorySessionKey;
-	private @Getter boolean deleteOnExit=true;
+	private @Getter @Deprecated boolean deleteOnExit=true;
 	private @Getter boolean collectResults=true;
 	private @Getter boolean collectFileContents=false;
 	private @Getter String collectFileContentsBase64Encoded;
@@ -147,6 +146,8 @@ public class UnzipPipe extends FixedForwardPipe {
 				} catch (FileNotFoundException e) {
 					throw new PipeRunException(this, "could not find file ["+filename+"]",e);
 				}
+			} else if (!message.isBinary()) {
+				log.warn("expected binary message, encountered character data. Do you need to set processFile=\"true\"?");
 			}
 			return message.asInputStream();
 		} catch (IOException e) {
@@ -159,12 +160,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		try (InputStream in = getInputStream(message, session)) {
 			File targetDirectory = this.dir;
 			if (StringUtils.isEmpty(getDirectory())) {
-				String directory;
-				try {
-					directory = session.getMessage(getDirectorySessionKey()).asString();
-				} catch (IOException e) {
-					throw new PipeRunException(this, "cannot resolve ["+getDirectorySessionKey()+"] session key", e);
-				}
+				String directory = session.getString(getDirectorySessionKey());
 				if (StringUtils.isEmpty(directory)) {
 					if (!isCollectFileContents()) {
 						throw new PipeRunException(this, "directorySessionKey is empty");
@@ -181,7 +177,7 @@ public class UnzipPipe extends FixedForwardPipe {
 				}
 			}
 
-			String entryResults = "";
+			StringBuilder entryResults = new StringBuilder();
 			int count = 0;
 			try (ZipInputStream zis = new ZipInputStream(new BufferedInputStream(in))) {
 				ZipEntry ze;
@@ -216,7 +212,7 @@ public class UnzipPipe extends FixedForwardPipe {
 						InputStream inputStream = StreamUtil.dontClose(zis);
 						byte[] fileContentBytes = null;
 						if (isCollectFileContents()) {
-							fileContentBytes = Misc.streamToBytes(inputStream);
+							fileContentBytes = StreamUtil.streamToBytes(inputStream);
 							inputStream = new ByteArrayInputStream(fileContentBytes);
 						}
 
@@ -239,31 +235,29 @@ public class UnzipPipe extends FixedForwardPipe {
 									tmpFile = File.createTempFile(entryNameWithoutExtension, extension, targetDirectory);
 								}
 							}
-							if (isDeleteOnExit()) {
-								tmpFile.deleteOnExit();
-							}
 							try (FileOutputStream fileOutputStream = new FileOutputStream(tmpFile)) {
 								log.debug("writing ZipEntry [{}] to file [{}]", entryname, tmpFile.getPath());
 								count++;
-								Misc.streamToStream(inputStream, fileOutputStream);
+								StreamUtil.streamToStream(inputStream, fileOutputStream);
 							}
 						}
 						if (isCollectResults()) {
-							entryResults += "<result item=\"" + count + "\"><zipEntry>" + XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(entryname) + "</zipEntry>";
+							entryResults.append("<result item=\"").append(count).append("\"><zipEntry>").append(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(entryname)).append("</zipEntry>");
 							if (targetDirectory != null) {
-								entryResults += "<fileName>" + XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath()) + "</fileName>";
+								entryResults.append("<fileName>").append(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(tmpFile.getPath())).append("</fileName>");
 							}
 							if (isCollectFileContents()) {
+								Objects.requireNonNull(fileContentBytes);
 								String fileContent;
 								if (base64Extensions.contains(extension)) {
-									fileContent = new String(Base64.encodeBase64Chunked(fileContentBytes));
+									fileContent = new String(Base64.encodeBase64Chunked(fileContentBytes), StreamUtil.DEFAULT_CHARSET);
 								} else {
-									fileContent = new String(fileContentBytes, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-									fileContent = XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(fileContent);
+									fileContent = new String((fileContentBytes), StreamUtil.DEFAULT_CHARSET);
+									fileContent = XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(fileContent);
 								}
-								entryResults += "<fileContent>" + fileContent + "</fileContent>";
+								entryResults.append("<fileContent>").append(fileContent).append("</fileContent>");
 							}
-							entryResults += "</result>";
+							entryResults.append("</result>");
 						}
 
 					}
@@ -276,37 +270,55 @@ public class UnzipPipe extends FixedForwardPipe {
 		}
 	}
 
-	@IbisDoc({"Directory to extract the archive to", ""})
+	/** Directory to extract the archive to */
 	public void setDirectory(String string) {
 		directory = string;
 	}
 
-	@IbisDoc({"Sessionkey with a directory value to extract the archive to", ""})
+	/** Sessionkey with a directory value to extract the archive to */
 	public void setDirectorySessionKey(String directorySessionKey) {
 		this.directorySessionKey = directorySessionKey;
 	}
 
-	@IbisDoc({"If true, file is automatically deleted upon normal JVM termination", "true"})
+	/**
+	 * If true, file is automatically deleted upon normal JVM termination
+	 * @ff.default true
+	 * @deprecated
+	 */
+	@Deprecated
+	@ConfigurationWarning("This flag is no longer supported as it leaks server memory. Temporary files should be removed by other means.")
 	public void setDeleteOnExit(boolean b) {
 		deleteOnExit = b;
 	}
 
-	@IbisDoc({"If set <code>false</code>, only a small summary (count of items in zip) is returned", "true"})
+	/**
+	 * If set <code>false</code>, only a small summary (count of items in zip) is returned
+	 * @ff.default true
+	 */
 	public void setCollectResults(boolean b) {
 		collectResults = b;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the contents of the files in the zip are returned in the result xml message of this pipe. Please note this can consume a lot of memory for large files or a large number of files", "false"})
+	/**
+	 * If set <code>true</code>, the contents of the files in the zip are returned in the result xml message of this pipe. Please note this can consume a lot of memory for large files or a large number of files
+	 * @ff.default false
+	 */
 	public void setCollectFileContents(boolean b) {
 		collectFileContents = b;
 	}
 
-	@IbisDoc({"Comma separated list of file extensions. Files with an extension which is part of this list will be base64 encoded. All other files are assumed to have UTF-8 when reading it from the zip and are added as escaped xml with non-unicode-characters being replaced by inverted question mark appended with #, the character number and ;", "false"})
+	/**
+	 * Comma separated list of file extensions. Files with an extension which is part of this list will be base64 encoded. All other files are assumed to have UTF-8 when reading it from the zip and are added as escaped xml with non-unicode-characters being replaced by inverted question mark appended with #, the character number and ;
+	 * @ff.default false
+	 */
 	public void setCollectFileContentsBase64Encoded(String string) {
 		collectFileContentsBase64Encoded = string;
 	}
 
-	@IbisDoc({"If set <code>false</code>, a suffix is added to the original filename to be sure it is unique", "false"})
+	/**
+	 * If set <code>false</code>, a suffix is added to the original filename to be sure it is unique
+	 * @ff.default false
+	 */
 	public void setKeepOriginalFileName(boolean b) {
 		keepOriginalFileName = b;
 	}
@@ -317,12 +329,18 @@ public class UnzipPipe extends FixedForwardPipe {
 		setKeepOriginalFilePath(b);
 	}
 
-	@IbisDoc({"If set <code>true</code>, the path of the zip entry will be preserved. Otherwise, the zip entries will be extracted to the root folder", "false"})
+	/**
+	 * If set <code>true</code>, the path of the zip entry will be preserved. Otherwise, the zip entries will be extracted to the root folder
+	 * @ff.default false
+	 */
 	public void setKeepOriginalFilePath(boolean b) {
 		keepOriginalFilePath = b;
 	}
 
-	@IbisDoc({"If set <code>true</code>, validation of directory is ignored", "false"})
+	/**
+	 * If set <code>true</code>, validation of directory is ignored
+	 * @ff.default false
+	 */
 	public void setAssumeDirectoryExists(boolean assumeDirectoryExists) {
 		this.assumeDirectoryExists = assumeDirectoryExists;
 	}
@@ -333,7 +351,10 @@ public class UnzipPipe extends FixedForwardPipe {
 		this.assumeDirectoryExists = checkDirectory;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is used.", "false"})
+	/**
+	 * If set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is used.
+	 * @ff.default false
+	 */
 	@Deprecated
 	@ConfigurationWarning("Please add a LocalFileSystemPipe with action=read in front of this pipe instead")
 	public void setProcessFile(boolean b) {

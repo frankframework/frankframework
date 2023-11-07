@@ -1,6 +1,12 @@
 package nl.nn.adapterframework.extensions.cmis;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,25 +23,20 @@ import org.apache.http.HttpHost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.http.HttpResponseMock;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
-public class CmisHttpInvokerTest extends Mockito {
+public class CmisHttpInvokerTest {
 
-	@Mock
-	private BindingSession session;
+	private BindingSession session = mock(BindingSession.class);
 
-	@Before
+	@BeforeEach
 	public void setup() {
-		MockitoAnnotations.initMocks(this);
 		when(session.get(eq(SessionParameter.USER_AGENT), anyString())).thenReturn("Mockito mock-agent");
 	}
 
@@ -45,13 +46,13 @@ public class CmisHttpInvokerTest extends Mockito {
 			protected CmisHttpSender createSender() {
 				try {
 					CmisHttpSender sender = spy(super.createSender());
-	
+
 					CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
-	
+
 					//Mock all requests
 					when(httpClient.execute(any(HttpHost.class), any(HttpRequestBase.class), any(HttpContext.class))).thenAnswer(new HttpResponseMock());
 					when(sender.getHttpClient()).thenReturn(httpClient);
-	
+
 					return sender;
 				} catch (Throwable t) {
 					t.printStackTrace();
@@ -64,18 +65,18 @@ public class CmisHttpInvokerTest extends Mockito {
 
 	private Output createOutputFromFile(String file) throws IOException {
 		URL url = TestFileUtils.getTestFileURL(file);
-		assertNotNull("unable to find test file", url);
+		assertNotNull(url, "unable to find test file");
 
 		return new Output() {
 			@Override
 			public void write(OutputStream out) throws Exception {
-				Misc.streamToStream(url.openStream(), out);
+				StreamUtil.streamToStream(url.openStream(), out);
 			}
 		};
 	}
 
 	private void assertResponse(String string, Response response) throws IOException {
-		String result = Misc.streamToString(response.getStream());
+		String result = StreamUtil.streamToString(response.getStream());
 		String expected = TestFileUtils.getTestFile(string);
 		assertNotNull("cannot find test file", expected);
 

@@ -4,8 +4,11 @@
 name: Java CI with Maven
 
 env:
-  PROFILES: ibissource,codecoverage,cmis,attachFrankDoc
+  PROFILES: ibissource,codecoverage,extra-modules
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource') && github.actor != 'dependabot[bot]' }}
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+  MAVEN_GOALS: verify
+
 on:
   push:
     branches:
@@ -41,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ '8', '11' ]
+        java: [ '11', '17' ]
 
     steps:
     - name: Checkout repository
@@ -53,45 +56,63 @@ jobs:
 
     - name: Cache local Maven repository
       uses: actions/cache@v3
-      env:
-        cache-name: cache-maven-dependencies
       with:
         path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        key: maven-dependencies
         restore-keys: |
           ${{ runner.os }}-maven-
 
+    - name: Cache SonarCloud packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.sonar/cache
+        key: ${{ runner.os }}-sonar
+        restore-keys: ${{ runner.os }}-sonar
+
     - name: Set up JDK ${{ matrix.java }}
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: 'zulu'
         java-version: ${{ matrix.java }}
 
     - name: Create Maven settings.xml file
       if: ${{ env.USE_PROPRIETARY == 'true' }}
-      uses: s4u/maven-settings-action@v2.3.0
+      uses: s4u/maven-settings-action@v2.8.0
       with:
         servers: '[{"id": "proprietary", "username": "${{ secrets.CI_USER }}", "password": "${{ secrets.CI_PASS }}"}]'
 
-    - name: Update maven profiles
+    - name: Update Maven profiles
       if: ${{ env.USE_PROPRIETARY == 'true' }}
       run: |
         echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
 
+    - name: FrankDoc only on Java 11
+      if: ${{ matrix.java == '11' }}
+      run: |
+        echo "PROFILES=${{ env.PROFILES }},attachFrankDoc" >> $GITHUB_ENV
+
+      # Secrets are not available when commits are made by Dependabot or from GH forks
+    - name: Update environment to run on SonarSource when JDK 17
+      if: ${{ matrix.java == '17' && env.USE_PROPRIETARY == 'true' }}
+      run: |
+        echo "MAVEN_GOALS=${{ env.MAVEN_GOALS }} org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_ENV
+
+      # Use Maven Wrapper, so we can build with an older version of Maven, see PR #4579.
     - name: Build with Maven
       env:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
-        jdk11: true # allows the use of the JDK11 profile, when running JDK11
-      run: mvn -B -V -T1 package -P${{env.PROFILES}}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       continue-on-error: true #ignore failure when unable to upload the artifacts
 
-    - name: Upload coverage to Codacy
-      if: ${{ env.USE_PROPRIETARY == 'true' }}
+    - name: Upload coverage to Codacy when Java == 17
+      if: ${{ matrix.java == '17' && env.USE_PROPRIETARY == 'true' }}
       uses: codacy/codacy-coverage-reporter-action@v1
       continue-on-error: true #ignore failure when unable to upload the artifacts
       with:
@@ -99,13 +120,13 @@ jobs:
 
     - name: Store Test Results
       if: failure()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Surefire
         path: ${{ github.workspace }}/*/target/surefire-reports/*
 
     - name: Store FrankDoc XSD
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd

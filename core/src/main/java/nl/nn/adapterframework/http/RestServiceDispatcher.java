@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013-2018, 2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.http;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,29 +24,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.http.mime.MultipartUtils;
 import nl.nn.adapterframework.http.rest.ApiCacheManager;
 import nl.nn.adapterframework.http.rest.IApiCache;
 import nl.nn.adapterframework.receivers.ServiceClient;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.HttpUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
+
 /**
  * Singleton class that knows about the RestListeners that are active.
  * <br/>
@@ -60,15 +59,15 @@ public class RestServiceDispatcher {
 	protected Logger log = LogUtil.getLogger(this);
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
-	private final String WILDCARD="*";
-	private final String KEY_LISTENER="listener";
-	private final String KEY_ETAG_KEY="etagKey";
-	private final String KEY_CONTENT_TYPE_KEY="contentTypekey";
+	private static final String WILDCARD="*";
+	private static final String KEY_LISTENER="listener";
+	private static final String KEY_ETAG_KEY="etagKey";
+	private static final String KEY_CONTENT_TYPE_KEY="contentTypekey";
 
-	private Map<String,Map<String,Map<String,Object>>> patternClients=new ConcurrentHashMap<>();
+	private final Map<String,Map<String,Map<String,Object>>> patternClients=new ConcurrentHashMap<>();
 
 	private static RestServiceDispatcher self = null;
-	private static IApiCache cache = ApiCacheManager.getInstance();
+	private static final IApiCache cache = ApiCacheManager.getInstance();
 
 	public static synchronized RestServiceDispatcher getInstance() {
 		if( self == null ) {
@@ -90,16 +89,7 @@ public class RestServiceDispatcher {
 			lookupUriPattern = uri;
 		}
 
-		String matchingPattern=null;
-		for (Iterator<String> it=patternClients.keySet().iterator();it.hasNext();) {
-			String uriPattern=it.next();
-			if (log.isTraceEnabled()) log.trace("comparing uri to pattern ["+uriPattern+"] ");
-			if (lookupUriPattern.equals(uriPattern)) {
-				matchingPattern=uriPattern;
-				break;
-			}
-		}
-		return matchingPattern;
+		return patternClients.containsKey(lookupUriPattern) ? lookupUriPattern : null;
 	}
 
 	public Map<String,Object> getMethodConfig(String matchingPattern, String method) {
@@ -130,9 +120,9 @@ public class RestServiceDispatcher {
 	 * @param request the <code>String</code> with the request/input
 	 * @return String with the result of processing the <code>request</code> through the <code>serviceName</code>
 	 */
-	public String dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
+	public Message dispatchRequest(String restPath, String uri, HttpServletRequest httpServletRequest, String contentType, String request, PipeLineSession context, HttpServletResponse httpServletResponse, ServletContext servletContext) throws ListenerException {
 		String method = httpServletRequest.getMethod();
-		if (log.isTraceEnabled()) log.trace("searching listener for uri ["+uri+"] method ["+method+"]");
+		log.trace("searching listener for uri [{}] method [{}]", uri, method);
 
 		String matchingPattern = findMatchingPattern(uri);
 		if (matchingPattern==null) {
@@ -166,12 +156,9 @@ public class RestServiceDispatcher {
 		String etagKey=(String)methodConfig.get(KEY_ETAG_KEY);
 		String contentTypeKey=(String)methodConfig.get(KEY_CONTENT_TYPE_KEY);
 
-		Principal principal = null;
-		if (httpServletRequest != null) {
-			principal = httpServletRequest.getUserPrincipal();
-			if (principal != null) {
-				context.put("principal", principal.getName());
-			}
+		final Principal principal = httpServletRequest.getUserPrincipal();
+		if (principal != null) {
+			context.put("principal", principal.getName());
 		}
 
 		String ctName = Thread.currentThread().getName();
@@ -179,62 +166,41 @@ public class RestServiceDispatcher {
 			boolean writeToSecLog = false;
 			if (listener instanceof RestListener) {
 				RestListener restListener = (RestListener) listener;
-				if (restListener.isRetrieveMultipart()) {
-					if (ServletFileUpload.isMultipartContent(httpServletRequest)) {
-						try {
-							DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-							ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-							List<FileItem> items = servletFileUpload.parseRequest(httpServletRequest);
-							for(FileItem item : items) {
-								if(item.isFormField()) {
-									// Process regular form field (input type="text|radio|checkbox|etc", select,
-									// etc).
-									String fieldName = item.getFieldName();
-									String fieldValue = item.getString();
-									log.trace("setting parameter [" + fieldName + "] to [" + fieldValue + "]");
-									context.put(fieldName, fieldValue);
-								} else {
-									// Process form file field (input type="file").
-									String fieldName = item.getFieldName();
-									String fieldNameName = fieldName + "Name";
-									String fileName = FilenameUtils.getName(item.getName());
-									if(log.isTraceEnabled()) log.trace("setting parameter [" + fieldNameName + "] to [" + fileName + "]");
-									context.put(fieldNameName, fileName);
-									InputStream inputStream = item.getInputStream();
-									if(inputStream.available() > 0) {
-										log.trace("setting parameter [" + fieldName + "] to input stream of file [" + fileName + "]");
-										context.put(fieldName, inputStream);
-									} else {
-										log.trace("setting parameter [" + fieldName + "] to [" + null + "]");
-										context.put(fieldName, null);
-									}
-								}
+				if (restListener.isRetrieveMultipart() && MultipartUtils.isMultipart(httpServletRequest)) {
+					try {
+						InputStreamDataSource dataSource = new InputStreamDataSource(httpServletRequest.getContentType(), httpServletRequest.getInputStream()); //the entire InputStream will be read here!
+						MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
+
+						for (int i = 0; i < mimeMultipart.getCount(); i++) {
+							BodyPart bodyPart = mimeMultipart.getBodyPart(i);
+							String fieldName = MultipartUtils.getFieldName(bodyPart);
+							PartMessage bodyPartMessage = new PartMessage(bodyPart);
+
+							log.trace("setting parameter [{}] to [{}]", fieldName, bodyPartMessage);
+							context.put(fieldName, bodyPartMessage);
+
+							if (MultipartUtils.isBinary(bodyPart)) { // Process form file field (input type="file").
+								String fieldNameName = fieldName + "Name";
+								String fileName = MultipartUtils.getFileName(bodyPart);
+								log.trace("setting parameter [{}] to [{}]", fieldNameName, fileName);
+								context.put(fieldNameName, fileName);
 							}
-						} catch (FileUploadException e) {
-							throw new ListenerException(e);
-						} catch (IOException e) {
-							throw new ListenerException(e);
 						}
+					} catch (MessagingException | IOException e) {
+						throw new ListenerException(e);
 					}
 				}
 				writeToSecLog = restListener.isWriteToSecLog();
 				if (writeToSecLog) {
 					context.put("writeSecLogMessage", restListener.isWriteSecLogMessage());
 				}
-				boolean authorized = false;
+				boolean authorized;
 				if (principal == null) {
 					authorized = true;
 				} else {
 					String authRoles = restListener.getAuthRoles();
-					if (StringUtils.isNotEmpty(authRoles)) {
-						StringTokenizer st = new StringTokenizer(authRoles, ",;");
-						while (st.hasMoreTokens()) {
-							String authRole = st.nextToken();
-							if (httpServletRequest.isUserInRole(authRole)) {
-								authorized = true;
-							}
-						}
-					}
+					authorized = StringUtil.splitToStream(authRoles, ",;")
+							.anyMatch(httpServletRequest::isUserInRole);
 				}
 				if (!authorized) {
 					throw new ListenerException("Not allowed for uri [" + uri + "]");
@@ -244,8 +210,8 @@ public class RestServiceDispatcher {
 
 			if (etagKey!=null) context.put(etagKey,etag);
 			if (contentTypeKey!=null) context.put(contentTypeKey,contentType);
-			if (log.isTraceEnabled()) log.trace("dispatching request, uri ["+uri+"] listener pattern ["+matchingPattern+"] method ["+method+"] etag ["+etag+"] contentType ["+contentType+"]");
-			if (httpServletRequest!=null) context.put(PipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
+			log.trace("dispatching request, uri [{}] listener pattern [{}] method [{}] etag [{}] contentType [{}]", uri, matchingPattern, method, etag, contentType);
+			context.put(PipeLineSession.HTTP_REQUEST_KEY, httpServletRequest);
 			if (httpServletResponse!=null) context.put(PipeLineSession.HTTP_RESPONSE_KEY, httpServletResponse);
 			if (servletContext!=null) context.put(PipeLineSession.SERVLET_CONTEXT_KEY, servletContext);
 
@@ -255,7 +221,7 @@ public class RestServiceDispatcher {
 
 			//Caching: check for etags
 			if(uri.startsWith("/")) uri = uri.substring(1);
-			if(uri.indexOf("?") > -1) {
+			if(uri.contains("?")) {
 				uri = uri.split("\\?")[0];
 			}
 			String etagCacheKey = restPath+"_"+uri;
@@ -266,29 +232,24 @@ public class RestServiceDispatcher {
 				if(ifNoneMatch != null && ifNoneMatch.equalsIgnoreCase(cachedEtag) && method.equalsIgnoreCase("GET")) {
 					//Exit with 304
 					context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 304);
-					if(log.isDebugEnabled()) log.trace("aborting request with status 304, matched if-none-match ["+ifNoneMatch+"]");
+					if(log.isDebugEnabled()) log.trace("aborting request with status 304, matched if-none-match [{}]", ifNoneMatch);
 					return null;
 				}
 				if(ifMatch != null && !ifMatch.equalsIgnoreCase(cachedEtag) && !method.equalsIgnoreCase("GET")) {
 					//Exit with 412
 					context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 412);
-					if(log.isDebugEnabled()) log.trace("aborting request with status 412, matched if-match ["+ifMatch+"] method ["+method+"]");
+					if(log.isDebugEnabled()) log.trace("aborting request with status 412, matched if-match [{}] method [{}]", ifMatch, method);
 					return null;
 				}
 			}
 
-			String result;
-			try {
-				result=listener.processRequest(new Message(request), context).asString();
-			} catch (IOException e) {
-				throw new ListenerException(e);
-			}
+			Message result=listener.processRequest(new Message(request), context);
 			//Caching: pipeline has been processed, save etag
-			if(result != null && cache != null && context.containsKey("etag")) { //In case the eTag has manually been set and the pipeline exited in error state...
+			if(!Message.isNull(result) && cache != null && context.containsKey("etag")) { //In case the eTag has manually been set and the pipeline exited in error state...
 				cache.put(etagCacheKey, context.get("etag"));
 			}
 
-			if (result == null && !context.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY)) {
+			if (Message.isNull(result) && !context.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY)) {
 				log.warn("result is null!");
 			}
 			return result;
@@ -300,23 +261,21 @@ public class RestServiceDispatcher {
 	}
 
 	public void registerServiceClient(ServiceClient listener, String uriPattern,
-			String method, String etagSessionKey, String contentTypeSessionKey, boolean validateEtag) throws ConfigurationException {
+			String method, String etagSessionKey, String contentTypeSessionKey, boolean validateEtag) {
 		uriPattern = unifyUriPattern(uriPattern);
 		if (StringUtils.isEmpty(method)) {
 			method=WILDCARD;
 		}
-		patternClients.computeIfAbsent(uriPattern, p -> new ConcurrentHashMap<>());
-		Map<String,Map<String,Object>> patternEntry = patternClients.get(uriPattern);
-		if (patternEntry.computeIfAbsent(method, m -> {
-			Map<String,Object> listenerConfig = new HashMap<>();
+
+		Map<String,Map<String,Object>> patternEntry = patternClients.computeIfAbsent(uriPattern, p -> new ConcurrentHashMap<>());
+		patternEntry.computeIfAbsent(method, m -> {
+			Map<String, Object> listenerConfig = new HashMap<>();
 			listenerConfig.put(KEY_LISTENER, listener);
 			listenerConfig.put("validateEtag", validateEtag);
 			if (StringUtils.isNotEmpty(etagSessionKey)) listenerConfig.put(KEY_ETAG_KEY, etagSessionKey);
 			if (StringUtils.isNotEmpty(contentTypeSessionKey)) listenerConfig.put(KEY_CONTENT_TYPE_KEY, contentTypeSessionKey);
 			return listenerConfig;
-		})==null) {
-			throw new ConfigurationException("RestListener for uriPattern ["+uriPattern+"] method ["+method+"] already configured");
-		}
+		});
 	}
 
 	public void unregisterServiceClient(String uriPattern, String method) {

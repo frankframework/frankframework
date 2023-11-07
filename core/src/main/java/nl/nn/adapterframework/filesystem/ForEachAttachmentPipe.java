@@ -22,12 +22,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.pipes.IteratingPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.Misc;
@@ -151,8 +149,8 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	}
 
 	public String getPhysicalDestinationName() {
-		if (getFileSystem() instanceof HasPhysicalDestination) {
-			return ((HasPhysicalDestination)getFileSystem()).getPhysicalDestinationName();
+		if (getFileSystem() != null) {
+			return getFileSystem().getPhysicalDestinationName();
 		}
 		return null;
 	}
@@ -165,7 +163,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 		this.fileSystem = fileSystem;
 	}
 
-	@IbisDoc({"comma separated list of attachment properties to list", ""})
+	/** comma separated list of attachment properties to list */
 	public void setOnlyProperties(String onlyPropertiesList) {
 		if (onlyProperties==null) {
 			onlyProperties=new LinkedHashSet<String>();
@@ -176,7 +174,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 		return onlyProperties;
 	}
 
-	@IbisDoc({"comma separated list of attachment properties not to list. When specified, 'onlyProperties' is ignored", ""})
+	/** comma separated list of attachment properties not to list. When specified, 'onlyProperties' is ignored */
 	public void setExcludeProperties(String excludePropertiesList) {
 		if (excludeProperties==null) {
 			excludeProperties=new LinkedHashSet<String>();

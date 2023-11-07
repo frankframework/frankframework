@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@ package nl.nn.adapterframework.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -390,7 +388,7 @@ class ParserState {
 	/**
 	 * Set the year value.
 	 */
-	void setYear(int val) throws CalendarParserException {
+	void setYear(int val) {
 		if(val < 0) {
 //            throw new CalendarParserException("Bad year " + val);
 			val = new Date().getYear() - 100;
@@ -482,7 +480,7 @@ public class CalendarParser {
 	 * @param needSpace <tt>true</tt> if a space character should be inserted before
 	 *                  any data
 	 */
-	private static void appendTimeString(StringBuffer buf, Calendar cal, boolean needSpace) {
+	private static void appendTimeString(StringBuilder buf, Calendar cal, boolean needSpace) {
 		final int hour = cal.get(Calendar.HOUR_OF_DAY);
 		final int minute = cal.get(Calendar.MINUTE);
 		final int second = cal.get(Calendar.SECOND);
@@ -557,7 +555,7 @@ public class CalendarParser {
 	/**
 	 * Return a string representation of the order value.
 	 */
-	public static final String getOrderString(int order) {
+	public static String getOrderString(int order) {
 		switch (order) {
 		case DD_MM_YY:
 			return "DD_MM_YY";
@@ -710,7 +708,7 @@ public class CalendarParser {
 						if(finalList == null) {
 							numSaved++;
 						} else {
-							StringBuffer dst = new StringBuffer();
+							StringBuilder dst = new StringBuilder();
 							dst.append(tmpList[j].charAt(0));
 							dst.append("DT");
 							finalList[numSaved++] = dst.toString();
@@ -756,7 +754,7 @@ public class CalendarParser {
 	 *
 	 * @throws CalendarParserException if there was a problem parsing the string.
 	 */
-	public static final Calendar parse(String dateStr) throws CalendarParserException {
+	public static Calendar parse(String dateStr) throws CalendarParserException {
 		return parse(dateStr, YY_MM_DD);
 	}
 
@@ -771,7 +769,7 @@ public class CalendarParser {
 	 *
 	 * @throws CalendarParserException if there was a problem parsing the string.
 	 */
-	public static final Calendar parse(String dateStr, int order) throws CalendarParserException {
+	public static Calendar parse(String dateStr, int order) throws CalendarParserException {
 		return parse(dateStr, order, true);
 	}
 
@@ -789,7 +787,7 @@ public class CalendarParser {
 	 *
 	 * @throws CalendarParserException if there was a problem parsing the string.
 	 */
-	public static final Calendar parse(String dateStr, int order, boolean ignoreChanges) throws CalendarParserException {
+	public static Calendar parse(String dateStr, int order, boolean ignoreChanges) throws CalendarParserException {
 		if(dateStr == null) {
 			return null;
 		}
@@ -1595,7 +1593,7 @@ public class CalendarParser {
 	 *
 	 * @return a printable string.
 	 */
-	public static final String prettyString(Calendar cal) {
+	public static String prettyString(Calendar cal) {
 		if(cal == null) {
 			return null;
 		}
@@ -1605,7 +1603,7 @@ public class CalendarParser {
 		final int calDay = cal.get(Calendar.DATE);
 
 		boolean needSpace = false;
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 
 		if(calMonth >= 0 && calMonth < MONTHS.length) {
 			if(needSpace) {
@@ -1643,7 +1641,7 @@ public class CalendarParser {
 	 *
 	 * @return the basic string.
 	 */
-	public static final String toString(Calendar cal) {
+	public static String toString(Calendar cal) {
 		if(cal == null) {
 			return null;
 		}
@@ -1653,7 +1651,7 @@ public class CalendarParser {
 		final int calDay = cal.get(Calendar.DATE);
 
 		boolean needSpace = false;
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 
 		if(calDay > 0) {
 			if(needSpace) {
@@ -1689,7 +1687,7 @@ public class CalendarParser {
 	 *
 	 * @return the SQL-friendly string.
 	 */
-	public static final String toSQLString(Calendar cal) {
+	public static String toSQLString(Calendar cal) {
 		if(cal == null) {
 			return null;
 		}
@@ -1698,7 +1696,7 @@ public class CalendarParser {
 		final int calMonth = cal.get(Calendar.MONTH);
 		final int calDay = cal.get(Calendar.DATE);
 
-		StringBuffer buf = new StringBuffer();
+		StringBuilder buf = new StringBuilder();
 
 		buf.append(calYear);
 		buf.append('-');

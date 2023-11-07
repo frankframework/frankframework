@@ -1,0 +1,16 @@
+{
+    "severity": "CRITICAL",
+    "filter": "NONE",
+    "period": 3600,
+    "sources": [],
+    "threshold": 1,
+    "type": "ALARM",
+    "events": [
+        "Pipe Exception",
+        "Sender Timeout"
+    ],
+    "adapters": [
+        "TransactionTimeoutHandlingNonTransacted",
+        "TransactionTimeoutHandlingTransacted"
+    ]
+}

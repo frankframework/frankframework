@@ -25,25 +25,27 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.MimeType;
 
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.http.HttpSender;
+import nl.nn.adapterframework.http.InputStreamDataSource;
+import nl.nn.adapterframework.http.PartMessage;
+import nl.nn.adapterframework.http.mime.MultipartUtils;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.stream.MessageContext;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Stream an input stream to an output stream.
@@ -147,24 +149,25 @@ public class StreamPipe extends FixedForwardPipe {
 			} else if (httpRequest != null) {
 				StringBuilder partsString = new StringBuilder("<parts>");
 				String firstStringPart = null;
-				List<AntiVirusObject> antiVirusObjects = new ArrayList<AntiVirusObject>();
-				if (ServletFileUpload.isMultipartContent(httpRequest)) {
+				List<AntiVirusObject> antiVirusObjects = new ArrayList<>();
+				if(MultipartUtils.isMultipart(httpRequest)) {
 					log.debug("request with content type [{}] and length [{}] contains multipart content", httpRequest.getContentType(), httpRequest.getContentLength());
-					DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-					ServletFileUpload servletFileUpload = new ServletFileUpload(diskFileItemFactory);
-					List<FileItem> items = servletFileUpload.parseRequest(httpRequest);
+					InputStreamDataSource dataSource = new InputStreamDataSource(httpRequest.getContentType(), httpRequest.getInputStream()); //the entire InputStream will be read here!
+					MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
+
+					log.debug("multipart request items size [{}]", mimeMultipart.getCount());
 					int fileCounter = 0;
 					int stringCounter = 0;
-					log.debug("multipart request items size [{}]", items.size());
 					String lastFoundFileName = null;
 					String lastFoundAVStatus = null;
 					String lastFoundAVMessage = null;
-					for (FileItem item : items) {
-						if (item.isFormField()) {
-							// Process regular form field (input
-							// type="text|radio|checkbox|etc", select, etc).
-							String fieldValue = item.getString();
-							String fieldName = item.getFieldName();
+					for (int i = 0; i < mimeMultipart.getCount(); i++) {
+						BodyPart bodyPart = mimeMultipart.getBodyPart(i);
+						String fieldName = MultipartUtils.getFieldName(bodyPart);
+						PartMessage bodyPartMessage = new PartMessage(bodyPart);
+						if (!MultipartUtils.isBinary(bodyPart)) {
+							// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
+							String fieldValue = bodyPartMessage.asString();
 							if (isCheckAntiVirus() && fieldName.equalsIgnoreCase(getAntiVirusPartName())) {
 								log.debug("found antivirus status part [{}] with value [{}]", fieldName, fieldValue);
 								lastFoundAVStatus = fieldValue;
@@ -183,26 +186,23 @@ public class StreamPipe extends FixedForwardPipe {
 							}
 						} else {
 							// Process form file field (input type="file").
-							if (lastFoundFileName != null
-									&& lastFoundAVStatus != null) {
-								antiVirusObjects.add(new AntiVirusObject(
-										lastFoundFileName, lastFoundAVStatus,
-										lastFoundAVMessage));
+							if (lastFoundFileName != null && lastFoundAVStatus != null) {
+								antiVirusObjects.add(new AntiVirusObject(lastFoundFileName, lastFoundAVStatus, lastFoundAVMessage));
 								lastFoundFileName = null;
 								lastFoundAVStatus = null;
 								lastFoundAVMessage = null;
 							}
-							log.debug("found file part [{}]", item.getName());
+
+							String fileName = MultipartUtils.getFileName(bodyPart);
+							log.debug("found file part [{}]", fileName);
 							String sessionKeyName = "part_file" + (++fileCounter > 1 ? fileCounter : "");
-							String fileName = FilenameUtils.getName(item.getName());
-							InputStream is = item.getInputStream();
-							int size = is.available();
-							String mimeType = item.getContentType();
+							long size = bodyPartMessage.size();
 							if (size > 0) {
-								addSessionKey(session, sessionKeyName, is, fileName);
+								addSessionKey(session, sessionKeyName, bodyPartMessage);
 							} else {
 								addSessionKey(session, sessionKeyName, null);
 							}
+							MimeType mimeType = (MimeType) bodyPartMessage.getContext().get(MessageContext.METADATA_MIMETYPE);
 							partsString.append("<part type=\"file\" name=\"" + fileName + "\" sessionKey=\"" + sessionKeyName + "\" size=\"" + size + "\" mimeType=\"" + mimeType + "\"/>");
 							lastFoundFileName = fileName;
 						}
@@ -240,12 +240,12 @@ public class StreamPipe extends FixedForwardPipe {
 					}
 				}
 			} else {
-				Misc.streamToStream(inputStream, outputStream);
+				StreamUtil.streamToStream(inputStream, outputStream);
 			}
 		} catch (IOException e) {
 			throw new PipeRunException(this, "IOException streaming input to output", e);
-		} catch (FileUploadException e) {
-			throw new PipeRunException(this, "FileUploadException getting multiparts from httpServletRequest", e);
+		} catch (MessagingException e) {
+			throw new PipeRunException(this, "MessagingException getting multiparts from httpServletRequest", e);
 		}
 		return new PipeRunResult(getSuccessForward(), result);
 	}
@@ -267,13 +267,10 @@ public class StreamPipe extends FixedForwardPipe {
 	}
 
 	private void addSessionKey(PipeLineSession session, String key, Object value) {
-		addSessionKey(session, key, value, null);
-	}
-
-	private void addSessionKey(PipeLineSession session, String key, Object value, String name) {
 		if (log.isDebugEnabled()) {
 			String message = "setting sessionKey [" + key + "] to ";
-			if (value instanceof InputStream) {
+			if (value instanceof PartMessage) {
+				String name = (String) ((PartMessage) value).getContext().get(MessageContext.METADATA_NAME);
 				message = message + "input stream of file [" + name + "]";
 			} else {
 				message = message + "[" + value + "]";
@@ -283,7 +280,10 @@ public class StreamPipe extends FixedForwardPipe {
 		session.put(key, value);
 	}
 
-	@IbisDoc({"(only used for parameter <code>httprequest</code>) when true the first part is not put in a session key but returned to the pipeline (as the result of this pipe)", "false"})
+	/**
+	 * (only used for parameter <code>httprequest</code>) when true the first part is not put in a session key but returned to the pipeline (as the result of this pipe)
+	 * @ff.default false
+	 */
 	public void setExtractFirstStringPart(boolean b) {
 		extractFirstStringPart = b;
 	}
@@ -296,12 +296,18 @@ public class StreamPipe extends FixedForwardPipe {
 		return multipartXmlSessionKey;
 	}
 
-	@IbisDoc({"(only used when <code>extractfirststringpart=true</code>) the session key to put the xml in with info about the stored parts", "<code>multipartxml</code>"})
+	/**
+	 * (only used when <code>extractfirststringpart=true</code>) the session key to put the xml in with info about the stored parts
+	 * @ff.default <code>multipartxml</code>
+	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}
 
-	@IbisDoc({"(only used for parameter <code>httprequest</code>) when true parts are checked for antivirus scan returncode. these antivirus scan parts have been added by another application (so the antivirus scan is not performed in this pipe). for each file part an antivirus scan part have been added by this other application (directly after this file part)", "false"})
+	/**
+	 * (only used for parameter <code>httprequest</code>) when true parts are checked for antivirus scan returncode. these antivirus scan parts have been added by another application (so the antivirus scan is not performed in this pipe). for each file part an antivirus scan part have been added by this other application (directly after this file part)
+	 * @ff.default false
+	 */
 	public void setCheckAntiVirus(boolean b) {
 		checkAntiVirus = b;
 	}
@@ -314,7 +320,10 @@ public class StreamPipe extends FixedForwardPipe {
 		return antiVirusPartName;
 	}
 
-	@IbisDoc({"(only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) name of antivirus scan status parts", "<code>antivirus_rc</code>"})
+	/**
+	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) name of antivirus scan status parts
+	 * @ff.default <code>antivirus_rc</code>
+	 */
 	public void setAntiVirusPartName(String antiVirusPartName) {
 		this.antiVirusPartName = antiVirusPartName;
 	}
@@ -323,7 +332,10 @@ public class StreamPipe extends FixedForwardPipe {
 		return antiVirusMessagePartName;
 	}
 
-	@IbisDoc({"(only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) name of antivirus scan message parts", "<code>antivirus_msg</code>"})
+	/**
+	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) name of antivirus scan message parts
+	 * @ff.default <code>antivirus_msg</code>
+	 */
 	public void setAntiVirusMessagePartName(String antiVirusMessagePartName) {
 		this.antiVirusMessagePartName = antiVirusMessagePartName;
 	}
@@ -332,12 +344,18 @@ public class StreamPipe extends FixedForwardPipe {
 		return antiVirusPassedMessage;
 	}
 
-	@IbisDoc({"(only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) message of antivirus scan parts which indicates the antivirus scan passed", "<code>pass</code>"})
+	/**
+	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) message of antivirus scan parts which indicates the antivirus scan passed
+	 * @ff.default <code>pass</code>
+	 */
 	public void setAntiVirusPassedMessage(String antiVirusPassedMessage) {
 		this.antiVirusPassedMessage = antiVirusPassedMessage;
 	}
 
-	@IbisDoc({"(only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) when true and the antivirusfailed forward is specified and the antivirus scan did not pass, a soap fault is returned instead of only a plain error message", "false"})
+	/**
+	 * (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) when true and the antivirusfailed forward is specified and the antivirus scan did not pass, a soap fault is returned instead of only a plain error message
+	 * @ff.default false
+	 */
 	public void setAntiVirusFailureAsSoapFault(boolean b) {
 		antiVirusFailureAsSoapFault = b;
 	}
@@ -346,7 +364,7 @@ public class StreamPipe extends FixedForwardPipe {
 		return antiVirusFailureAsSoapFault;
 	}
 
-	@IbisDoc({"(only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) if not empty and the antivirusfailed forward is specified and the antivirus scan did not pass, the error message (or soap fault) is stored in this session key and the first string part is returned to the pipeline", ""})
+	/** (only used for parameter <code>httprequest</code> and when <code>checkantivirus=true</code>) if not empty and the antivirusfailed forward is specified and the antivirus scan did not pass, the error message (or soap fault) is stored in this session key and the first string part is returned to the pipeline */
 	public void setAntiVirusFailureReasonSessionKey(String antiVirusFailureReasonSessionKey) {
 		this.antiVirusFailureReasonSessionKey = antiVirusFailureReasonSessionKey;
 	}

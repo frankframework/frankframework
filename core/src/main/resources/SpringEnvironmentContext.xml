@@ -17,10 +17,6 @@
 		</integration:interceptors>
 	</integration:publish-subscribe-channel>
 
-	<bean name="gateway" class="nl.nn.adapterframework.lifecycle.Gateway" scope="singleton">
-		<property name="requestChannel" ref="frank-management-bus" />
-	</bean>
-
 	<context:property-placeholder />
 
 	<context:component-scan base-package="nl.nn.adapterframework,nl.nn.ibistesttool">
@@ -31,9 +27,15 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 	</context:component-scan>
 
-	<bean id="cxf" class="org.apache.cxf.bus.spring.SpringBus" destroy-method="shutdown">
+	<bean id="cxf" class="nl.nn.adapterframework.http.cxf.SpringSoapBus">
 		<property name="id" value="ff-soap-bus"/>
 	</bean>
+
+	<bean id="inboundGatewayFactory" class="nl.nn.adapterframework.management.bus.InboundGatewayFactory">
+		<property name="gatewayClassnames" value="${management.gateway.inbound.class}" />
+	</bean>
+	<!-- The LocalGateway is required for internal traffic as well as the Frank!Console -->
+	<alias name="nl.nn.adapterframework.management.bus.LocalGateway" alias="outboundGateway"/>
 
 	<bean id="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor" class="org.apache.cxf.bus.spring.BusWiringBeanFactoryPostProcessor"/>
 	<bean id="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor" class="org.apache.cxf.bus.spring.Jsr250BeanPostProcessor"/>
@@ -41,6 +43,7 @@
 
 	<!-- Beans that should be loaded before the IbisContext starts -->
 	<bean id="servletManager" scope="singleton" class="nl.nn.adapterframework.lifecycle.ServletManager" autowire="byName" />
+	<bean id="ServletRegisteringPostProcessor" class="nl.nn.adapterframework.lifecycle.ServletRegisteringPostProcessor"/>
 
 	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
 	<bean name="meterRegistry" class="nl.nn.adapterframework.metrics.MetricsRegistryFactoryBean" autowire="byName" lazy-init="true" />

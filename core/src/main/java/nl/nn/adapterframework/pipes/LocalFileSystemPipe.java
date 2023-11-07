@@ -17,7 +17,6 @@ package nl.nn.adapterframework.pipes;
 
 import java.nio.file.Path;
 
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.LocalFileSystem;
 
@@ -27,7 +26,7 @@ public class LocalFileSystemPipe extends FileSystemPipe<Path, LocalFileSystem>{
 		setFileSystem(new LocalFileSystem());
 	}
 
-	@IbisDoc({"the folder that serves as the root of this virtual filesystem", "" })
+	/** the folder that serves as the root of this virtual filesystem */
 	public void setRoot(String root) {
 		getFileSystem().setRoot(root);
 	}

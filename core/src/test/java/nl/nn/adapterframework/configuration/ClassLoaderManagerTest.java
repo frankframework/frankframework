@@ -1,22 +1,21 @@
 package nl.nn.adapterframework.configuration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -28,9 +27,8 @@ import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
-@RunWith(Parameterized.class)
 public class ClassLoaderManagerTest extends Mockito {
 
 	private static IbisContext ibisContext = spy(new IbisContext());
@@ -52,33 +50,29 @@ public class ClassLoaderManagerTest extends Mockito {
 	private String configurationName;
 	private AppConstants appConstants;
 
-	@Parameters(name = "{0} - {1}")
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
-				{ "", CONFIG_0_NAME },
-				{ "WebAppClassLoader", CONFIG_1_NAME },
-				{ "DirectoryClassLoader", CONFIG_2_NAME },
-				{ "JarFileClassLoader", CONFIG_3_NAME },
-				{ "DatabaseClassLoader", CONFIG_5_NAME },
-				{ "DummyClassLoader", CONFIG_6_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.WebAppClassLoader", CONFIG_1_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader", CONFIG_2_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader", CONFIG_3_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader", CONFIG_5_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.DummyClassLoader", CONFIG_6_NAME },
-				{ "nl.nn.adapterframework.configuration.classloaders.DefaultClassLoader", "tralla"}
+	public static List<Arguments> data() {
+		return Arrays.asList(new Arguments[] {
+				Arguments.of("", CONFIG_0_NAME),
+				Arguments.of("WebAppClassLoader", CONFIG_1_NAME),
+				Arguments.of("DirectoryClassLoader", CONFIG_2_NAME),
+				Arguments.of("JarFileClassLoader", CONFIG_3_NAME),
+				Arguments.of("DatabaseClassLoader", CONFIG_5_NAME),
+				Arguments.of("DummyClassLoader", CONFIG_6_NAME),
+				Arguments.of("nl.nn.adapterframework.configuration.classloaders.WebAppClassLoader", CONFIG_1_NAME),
+				Arguments.of("nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader", CONFIG_2_NAME),
+				Arguments.of("nl.nn.adapterframework.configuration.classloaders.JarFileClassLoader", CONFIG_3_NAME),
+				Arguments.of("nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader", CONFIG_5_NAME),
+				Arguments.of("nl.nn.adapterframework.configuration.classloaders.DummyClassLoader", CONFIG_6_NAME),
+				Arguments.of("nl.nn.adapterframework.configuration.classloaders.DefaultClassLoader", "tralla")
 		});
 	}
 
-	@BeforeClass
+	@BeforeAll
 	public static void before() throws Exception {
 		mockDatabase();
 	}
 
-	public ClassLoaderManagerTest(String type, String configurationName) throws Exception {
-		AppConstants.removeInstance();
-		appConstants = AppConstants.getInstance();
-
+	public void configureClassloader(String type, String configurationName) throws Exception {
 		if(type == null || type.equals("DummyClassLoader"))
 			skip = true;
 		else if(type.isEmpty()) //If empty string, it's a WebAppClassLoader
@@ -110,13 +104,16 @@ public class ClassLoaderManagerTest extends Mockito {
 		return testPath;
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() throws ConfigurationException, Exception {
+		AppConstants.removeInstance();
+		appConstants = AppConstants.getInstance();
 		String configurationsNames = "";
-		for(Object[] o: data()) {
+		for(Arguments a: data()) {
+			Object[] o = a.get();
 			configurationsNames += o[1]+",";
 			if(o[0] != null) {
-				String value = (String) o[0];
+				String value = "" + (String) o[0];
 				setLocalProperty("configurations."+o[1]+".classLoaderType", value);
 			}
 		}
@@ -142,7 +139,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		doReturn(true).when(rs).next();
 		doReturn("dummy").when(rs).getString(anyInt());
 		URL file = ClassLoaderManager.class.getResource(JAR_FILE);
-		doReturn(Misc.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
+		doReturn(StreamUtil.streamToBytes(file.openStream())).when(rs).getBytes(anyInt());
 		doReturn(rs).when(stmt).executeQuery();
 
 		// Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
@@ -167,8 +164,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		return config;
 	}
 
-	@Test
-	public void properClassLoaderType() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void properClassLoaderType(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config = getClassLoader();
 
@@ -179,8 +178,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		assertEquals(name, config.getClass().getSimpleName());
 	}
 
-	@Test
-	public void retrieveTestFileNotInClassLoader() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void retrieveTestFileNotInClassLoader(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config = getClassLoader();
 		URL resource = config.getResource("test1.xml");
@@ -188,8 +189,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		MatchUtils.assertTestFileEquals("/test1.xml", resource);
 	}
 
-	@Test
-	public void retrieveTestFileInClassLoaderRoot() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void retrieveTestFileInClassLoaderRoot(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
@@ -199,8 +202,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		MatchUtils.assertTestFileEquals("/ClassLoaderTestFile.xml", resource);
 	}
 
-	@Test
-	public void retrieveTestFileInSubFolder() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void retrieveTestFileInSubFolder(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
@@ -210,8 +215,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		MatchUtils.assertTestFileEquals(BASE_DIR+"/ClassLoaderTestFile.xml", resource);
 	}
 
-	@Test
-	public void retrieveNonExistingTestFile() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void retrieveNonExistingTestFile(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config = getClassLoader();
 		URL resource = config.getResource("dummy-test-file.xml");
@@ -219,8 +226,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		assertNull(resource);
 	}
 
-	@Test
-	public void testInheritanceMakeSureFileIsFoundInBothParentAndChild() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void testInheritanceMakeSureFileIsFoundInBothParentAndChild(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		if(skip) return; //This ClassLoader can't actually retrieve files...
 
 		String testConfiguration = "myNewClassLoader";
@@ -245,8 +254,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		appConstants.remove("configurations."+configurationName+".parentConfig");
 	}
 
-	@Test
-	public void reloadString() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void reloadString(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config1 = manager.get(configurationName);
 
@@ -257,8 +268,10 @@ public class ClassLoaderManagerTest extends Mockito {
 		assertEquals(config1.toString(), config2.toString());
 	}
 
-	@Test
-	public void reloadClassLoader() throws Exception {
+	@ParameterizedTest
+	@MethodSource("data")
+	public void reloadClassLoader(String classLoader, String configurationName) throws Exception {
+		configureClassloader(classLoader, configurationName);
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config1 = manager.get(configurationName);
 

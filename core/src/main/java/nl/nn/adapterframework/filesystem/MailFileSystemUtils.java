@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!
+   Copyright 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,13 +24,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.mail.internet.AddressException;
-import jakarta.mail.internet.InternetAddress;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
@@ -174,7 +173,7 @@ public class MailFileSystemUtils {
 			if (addresses.length==0) {
 				return null;
 			}
-			StringBuffer result = new StringBuffer();
+			StringBuilder result = new StringBuilder();
 			for (InternetAddress iaddress: addresses) {
 				String personal = iaddress.getPersonal();
 				if (personal!=null) {

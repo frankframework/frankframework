@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2022 WeAreFrank!
+   Copyright 2019-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,10 +17,15 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +34,7 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -40,8 +46,8 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
@@ -64,9 +70,18 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	public final String ORIGINAL_FILENAME_KEY = "originalFilename";
-	public final String FILENAME_KEY = "filename";
-	public final String FILEPATH_KEY = "filepath";
+	public static final String ORIGINAL_FILENAME_KEY = "originalFilename";
+	public static final String FILENAME_KEY = "filename";
+	public static final String FILEPATH_KEY = "filepath";
+
+	private static final Set<String> KEYS_COPIED_TO_MESSAGE_CONTEXT;
+	static {
+		KEYS_COPIED_TO_MESSAGE_CONTEXT = new HashSet<>();
+		KEYS_COPIED_TO_MESSAGE_CONTEXT.add(PipeLineSession.MESSAGE_ID_KEY);
+		KEYS_COPIED_TO_MESSAGE_CONTEXT.add(PipeLineSession.CORRELATION_ID_KEY);
+		KEYS_COPIED_TO_MESSAGE_CONTEXT.add(FILENAME_KEY);
+		KEYS_COPIED_TO_MESSAGE_CONTEXT.add(FILEPATH_KEY);
+	}
 
 	private @Getter String name;
 	private @Getter String inputFolder;
@@ -106,6 +121,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public void configure() throws ConfigurationException {
+		log.debug("Configuring FileSystemListener");
 		FS fileSystem = getFileSystem();
 		SpringUtils.autowireByName(getApplicationContext(), fileSystem);
 		fileSystem.configure();
@@ -134,6 +150,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public void open() throws ListenerException {
+		log.debug("Opening FileSystemListener");
 		try {
 			getFileSystem().open();
 			// folders can only be checked at 'open()', because the checks need an opened file system.
@@ -180,6 +197,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	@Override
 	public void close() throws ListenerException {
+		log.debug("Closing the FS");
 		try {
 			getFileSystem().close();
 		} catch (FileSystemException e) {
@@ -187,25 +205,27 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		}
 	}
 
+	@Nonnull
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
-		return null;
+		return new HashMap<>();
 	}
 
 	@Override
-	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		// nothing special here
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
 		StringBuilder destination = new StringBuilder(getFileSystem().getPhysicalDestinationName());
-		if(getInputFolder() != null) destination.append(" inputFolder ["+getInputFolder()+"]");
-		if(getInProcessFolder() != null) destination.append(" inProcessFolder ["+getInProcessFolder()+"]");
-		if(getProcessedFolder() != null) destination.append(" processedFolder ["+getProcessedFolder()+"]");
-		if(getErrorFolder() != null) destination.append(" errorFolder ["+getErrorFolder()+"]");
-		if(getLogFolder() != null) destination.append(" logFolder ["+getLogFolder()+"]");
+		if(getInputFolder() != null) destination.append(" inputFolder [").append(getInputFolder()).append("]");
+		if(getInProcessFolder() != null) destination.append(" inProcessFolder [").append(getInProcessFolder()).append("]");
+		if(getProcessedFolder() != null) destination.append(" processedFolder [").append(getProcessedFolder()).append("]");
+		if(getErrorFolder() != null) destination.append(" errorFolder [").append(getErrorFolder()).append("]");
+		if(getLogFolder() != null) destination.append(" logFolder [").append(getLogFolder()).append("]");
 
+		log.trace("Physical destination name: [{}]", destination);
 		return destination.toString();
 	}
 
@@ -215,107 +235,114 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	public synchronized F getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+	public synchronized RawMessageWrapper<F> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+		log.trace("Get Raw Message");
 		FS fileSystem=getFileSystem();
+		log.trace("Getting raw message from FS {}", fileSystem.getClass().getSimpleName());
 		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildcard(), getExcludeWildcard())) {
-			if (ds==null) {
+			Optional<F> fo = findFirstStableFile(ds);
+			if (!fo.isPresent()) {
 				return null;
 			}
-			Iterator<F> it = ds.iterator();
-			if (it==null || !it.hasNext()) {
-				return null;
+			F file = fo.get();
+			String originalFilename;
+			if (StringUtils.isNotEmpty(getInProcessFolder())) {
+				originalFilename = fileSystem.getName(file);
+				threadContext.put(ORIGINAL_FILENAME_KEY, originalFilename);
+			} else {
+				originalFilename = null;
 			}
-
-			long stabilityLimit = getMinStableTime();
-			if (stabilityLimit>0) {
-				stabilityLimit=System.currentTimeMillis()-stabilityLimit;
+			if (StringUtils.isNotEmpty(getLogFolder())) {
+				FileSystemUtils.copyFile(fileSystem, file, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
 			}
-			while (it.hasNext()) {
-				F file = it.next();
-				if (stabilityLimit>0) {
-					long filemodtime=fileSystem.getModificationTime(file).getTime();
-					if (filemodtime>stabilityLimit) {
-						continue;
-					}
-				}
-				if (threadContext!=null && StringUtils.isNotEmpty(getInProcessFolder())) {
-					threadContext.put(ORIGINAL_FILENAME_KEY, fileSystem.getName(file));
-				}
-				if (StringUtils.isNotEmpty(getLogFolder())) {
-					FileSystemUtils.copyFile(fileSystem, file, getLogFolder(), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
-				}
-				return file;
-			}
+			return wrapRawMessage(file, originalFilename, threadContext);
 		} catch (IOException | FileSystemException e) {
 			throw new ListenerException(e);
 		}
+	}
 
-		return null;
+	private Optional<F> findFirstStableFile(Stream<F> ds) {
+		long stabilityLimit = getMinStableTime();
+		if (stabilityLimit <= 0L) {
+			return ds.findFirst();
+		}
+		long latestAcceptableFileModTime = System.currentTimeMillis() - stabilityLimit;
+
+		return ds.filter(file -> isFileOlderThan(file, latestAcceptableFileModTime))
+				.findFirst();
+	}
+
+	@SneakyThrows
+	private boolean isFileOlderThan(F file, long timeInMillis) {
+		long filemodtime=fileSystem.getModificationTime(file).getTime();
+		return filemodtime <= timeInMillis;
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, Object rawMessageOrWrapper, Map<String,Object> context) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<F> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+		log.debug("After Message Processed - begin");
 		FS fileSystem=getFileSystem();
-		if ((rawMessageOrWrapper instanceof MessageWrapper)) {
+		if ((rawMessage instanceof MessageWrapper)) {
 			// if it is a MessageWrapper, it comes from an errorStorage, and then the state cannot be managed using folders by the listener itself.
-			MessageWrapper<?> wrapper = (MessageWrapper<?>)rawMessageOrWrapper;
+			MessageWrapper<?> wrapper = (MessageWrapper<?>) rawMessage;
 			if (StringUtils.isNotEmpty(getLogFolder()) || StringUtils.isNotEmpty(getErrorFolder()) || StringUtils.isNotEmpty(getProcessedFolder())) {
-				log.warn("cannot write ["+wrapper.getId()+"] to logFolder, errorFolder or processedFolder after manual retry from errorStorage");
+				log.warn("cannot write [{}] to logFolder, errorFolder or processedFolder after manual retry from errorStorage", wrapper.getId());
 			}
 		} else {
-			@SuppressWarnings("unchecked")
-			F rawMessage = (F)rawMessageOrWrapper; // if it is not a wrapper, than it must be an F
+			F file = rawMessage.getRawMessage();
 			try {
 				if (isDelete() && (processResult.isSuccessful() || StringUtils.isEmpty(getErrorFolder()))) {
-					fileSystem.deleteFile(rawMessage);
-					return;
+					fileSystem.deleteFile(file);
 				}
 			} catch (FileSystemException e) {
-				throw new ListenerException("Could not copy or delete file ["+fileSystem.getName(rawMessage)+"]",e);
+				throw new ListenerException("Could not copy or delete file ["+fileSystem.getName(file)+"]",e);
 			}
 		}
+		log.debug("After Message Processed - end");
 	}
 
 	/**
-	 * Returns returns the filename, or the contents
+	 * Returns the filename, or the contents
 	 */
 	@Override
-	public Message extractMessage(F rawMessage, Map<String,Object> threadContext) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<F> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+		log.debug("Extract message from raw message");
 		try {
+			F file = rawMessage.getRawMessage();
 			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("name")) {
-				return new Message(getFileSystem().getName(rawMessage));
+				return new Message(getFileSystem().getName(file));
 			}
 			if (StringUtils.isEmpty(getMessageType()) || getMessageType().equalsIgnoreCase("path")) {
-				return new Message(getFileSystem().getCanonicalName(rawMessage));
+				return new Message(getFileSystem().getCanonicalName(file));
 			}
 			if (getMessageType().equalsIgnoreCase("contents")) {
-				return getFileSystem().readFile(rawMessage, getCharset());
+				return getFileSystem().readFile(file, getCharset());
 			}
 			if (getMessageType().equalsIgnoreCase("info")) {
-				return new Message(FileSystemUtils.getFileInfo(getFileSystem(), rawMessage, getOutputFormat()));
+				return new Message(FileSystemUtils.getFileInfo(getFileSystem(), file, getOutputFormat()));
 			}
 
-			Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(rawMessage);
-			if (attributes!=null) {
-				Object result=attributes.get(getMessageType());
-				if (result!=null) {
+			Map<String,Object> attributes = getFileSystem().getAdditionalFileProperties(file);
+			if (attributes != null) {
+				Object result = attributes.get(getMessageType());
+				if (result != null) {
 					return Message.asMessage(result);
 				}
 			}
-			log.warn("no attribute ["+getMessageType()+"] found for file ["+getFileSystem().getName(rawMessage)+"]");
+			log.warn("no attribute [" + getMessageType() + "] found for file [" + getFileSystem().getName(file) + "]");
 			return null;
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		}
 	}
 
-	@Override
-	public String getIdFromRawMessage(F rawMessage, Map<String, Object> threadContext) throws ListenerException {
+	public @Nonnull Map<String, Object> extractMessageProperties(@Nonnull F rawMessage, @Nullable String originalFilename) throws ListenerException {
+		Map<String, Object> messageProperties = new HashMap<>();
 		String filename=null;
 		try {
 			FS fileSystem = getFileSystem();
 			F file = rawMessage;
-			filename=fileSystem.getName(rawMessage);
+			filename = fileSystem.getName(rawMessage);
 			Map <String,Object> attributes = fileSystem.getAdditionalFileProperties(rawMessage);
 			String messageId = null;
 			if (StringUtils.isNotEmpty(getMessageIdPropertyKey())) {
@@ -326,34 +353,32 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					log.warn("no attribute ["+getMessageIdPropertyKey()+"] found, will use filename as messageId");
 				}
 			}
-			if (StringUtils.isEmpty(messageId) && threadContext!=null) {
-				messageId = (String)threadContext.get(ORIGINAL_FILENAME_KEY);
+			if (StringUtils.isEmpty(messageId)) {
+				messageId = originalFilename;
 			}
 			if (StringUtils.isEmpty(messageId)) {
 				messageId = fileSystem.getName(rawMessage);
 			}
 			if (isFileTimeSensitive()) {
-				messageId+="-"+DateUtils.format(fileSystem.getModificationTime(file));
+				messageId += "-" + DateUtils.format(fileSystem.getModificationTime(file));
 			}
-			if (threadContext!=null) {
-				PipeLineSession.setListenerParameters(threadContext, messageId, messageId, null, null);
-				if (attributes!=null) {
-					threadContext.putAll(attributes);
-				}
-				if (!"path".equals(getMessageType())) {
-					threadContext.put(FILEPATH_KEY, fileSystem.getCanonicalName(rawMessage));
-				}
-				if (!"name".equals(getMessageType())) {
-					threadContext.put(FILENAME_KEY, fileSystem.getName(rawMessage));
-				}
+			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId, null, null);
+			if (attributes!=null) {
+				messageProperties.putAll(attributes);
+			}
+			if (!"path".equals(getMessageType())) {
+				messageProperties.put(FILEPATH_KEY, fileSystem.getCanonicalName(rawMessage));
+			}
+			if (!"name".equals(getMessageType())) {
+				messageProperties.put(FILENAME_KEY, fileSystem.getName(rawMessage));
 			}
 			if (StringUtils.isNotEmpty(getStoreMetadataInSessionKey())) {
 				ObjectBuilder metadataBuilder = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, "metadata");
 
-				if (attributes!=null) {
+				if (attributes != null) {
 					attributes.forEach((k,v) -> {
 						try {
-							metadataBuilder.add(k, v==null?null:v.toString());
+							metadataBuilder.add(k, v == null ? null : v.toString());
 						} catch (SAXException e) {
 							log.warn("cannot add property [{}] value [{}]", k, v, e);
 						}
@@ -361,9 +386,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				}
 
 				metadataBuilder.close();
-				threadContext.put(getStoreMetadataInSessionKey(), metadataBuilder.toString());
+				messageProperties.put(getStoreMetadataInSessionKey(), metadataBuilder.toString());
 			}
-			return messageId;
+			return messageProperties;
 		} catch (Exception e) {
 			throw new ListenerException("Could not get filetime for filename ["+filename+"]",e);
 		}
@@ -371,16 +396,17 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 
 	// result is guaranteed if toState==ProcessState.INPROCESS
 	@Override
-	public F changeProcessState(F message, ProcessState toState, String reason) throws ListenerException {
+	public RawMessageWrapper<F> changeProcessState(RawMessageWrapper<F> message, ProcessState toState, String reason) throws ListenerException {
+		log.debug("Change message process state to [{}] for message [{}]", toState, message);
 		try {
-			if (!getFileSystem().exists(message) || !knownProcessStates().contains(toState)) {
+			if (!getFileSystem().exists(message.getRawMessage()) || !knownProcessStates().contains(toState)) {
 				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.
 			}
 			if (toState==ProcessState.DONE || toState==ProcessState.ERROR) {
-				return FileSystemUtils.moveFile(getFileSystem(), message, getStateFolder(toState), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
+				return wrap(FileSystemUtils.moveFile(getFileSystem(), message.getRawMessage(), getStateFolder(toState), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false), message);
 			}
 			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
-				F movedFile = getFileSystem().moveFile(message, getStateFolder(toState), false, true);
+				F movedFile = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false, true);
 				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateUtils.format(getFileSystem().getModificationTime(movedFile)).replace(":", "_"));
 				F renamedFile = getFileSystem().toFile(newName);
 				int i=1;
@@ -388,16 +414,32 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 					renamedFile=getFileSystem().toFile(newName+"-"+i);
 					if(i>5) {
 						log.warn("Cannot rename file ["+message+"] with the timestamp suffix. File moved to ["+getStateFolder(toState)+"] folder with the original name");
-						return movedFile;
+						return wrap(movedFile, message);
 					}
 					i++;
 				}
-				return FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0);
+				//noinspection unchecked
+				return wrap(FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0), message);
 			}
-			return getFileSystem().moveFile(message, getStateFolder(toState), false, toState==ProcessState.INPROCESS);
+			return wrap(getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false, toState==ProcessState.INPROCESS), message);
 		} catch (FileSystemException e) {
-			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message)+"]", e);
+			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message.getRawMessage())+"]", e);
 		}
+	}
+
+	private RawMessageWrapper<F> wrap(F file, RawMessageWrapper<F> originalMessage) throws ListenerException {
+		// Do not modify original message context. We do not have threadContext so pass copy of message context as substitute.
+		String originalFilename = (String) originalMessage.getContext().get(ORIGINAL_FILENAME_KEY);
+		return wrapRawMessage(file, originalFilename, new HashMap<>(originalMessage.getContext()));
+	}
+
+	private RawMessageWrapper<F> wrapRawMessage(F file, String originalFilename, Map<String, Object> threadContext) throws ListenerException {
+		Map<String, Object> messageProperties = extractMessageProperties(file, originalFilename);
+		threadContext.putAll(messageProperties);
+		Map<String, Object> messageContext = threadContext.entrySet().stream()
+				.filter(entry -> KEYS_COPIED_TO_MESSAGE_CONTEXT.contains(entry.getKey()))
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		return new RawMessageWrapper<>(file, messageContext);
 	}
 
 	public String getStateFolder(ProcessState state) {
@@ -426,7 +468,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	}
 
 	@Override
-	@IbisDoc({"Name of the listener", ""})
+	/** Name of the listener */
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -437,7 +479,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		setInputFolder(inputDirectory);
 	}
 
-	@IbisDoc({"Folder that is scanned for files. If not set, the root is scanned", ""})
+	/** Folder that is scanned for files. If not set, the root is scanned */
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}
@@ -448,7 +490,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		setInProcessFolder(outputDirectory);
 	}
 
-	@IbisDoc({"Folder where files are stored <i>while</i> being processed", ""})
+	/** Folder where files are stored <i>while</i> being processed */
 	public void setInProcessFolder(String inProcessFolder) {
 		this.inProcessFolder = inProcessFolder;
 	}
@@ -459,27 +501,30 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		setProcessedFolder(processedDirectory);
 	}
 
-	@IbisDoc({"Folder where files are stored <i>after</i> being processed", ""})
+	/** Folder where files are stored <i>after</i> being processed */
 	public void setProcessedFolder(String processedFolder) {
 		this.processedFolder = processedFolder;
 	}
 
-	@IbisDoc({"Folder where files are stored <i>after</i> being processed, in case the exit-state was not equal to <code>success</code>", ""})
+	/** Folder where files are stored <i>after</i> being processed, in case the exit-state was not equal to <code>success</code> */
 	public void setErrorFolder(String errorFolder) {
 		this.errorFolder = errorFolder;
 	}
 
-	@IbisDoc({"Folder where messages from the error folder can be put on Hold, temporarily", ""})
+	/** Folder where messages from the error folder can be put on Hold, temporarily */
 	public void setHoldFolder(String holdFolder) {
 		this.holdFolder = holdFolder;
 	}
 
-	@IbisDoc({"Folder where a copy of every file that is received is stored", ""})
+	/** Folder where a copy of every file that is received is stored */
 	public void setLogFolder(String logFolder) {
 		this.logFolder = logFolder;
 	}
 
-	@IbisDoc({"If set to <code>true</code>, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist", "false"})
+	/**
+	 * If set to <code>true</code>, the folders to look for files and to move files to when being processed and after being processed are created if they are specified and do not exist
+	 * @ff.default false
+	 */
 	public void setCreateFolders(boolean createFolders) {
 		this.createFolders = createFolders;
 	}
@@ -490,60 +535,66 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		setCreateFolders(createInputDirectory);
 	}
 
-	@IbisDoc({"If set <code>true</code>, the file processed will be deleted after being processed, and not stored", "false"})
+	/**
+	 * If set <code>true</code>, the file processed will be deleted after being processed, and not stored
+	 * @ff.default false
+	 */
 	public void setDelete(boolean b) {
 		delete = b;
 	}
 
-//	@IbisDoc({"pattern for the name using the messageformat.format method. params: 0=inputfilename, 1=inputfile extension, 2=unique uuid, 3=current date", ""})
-//	public void setOutputFilenamePattern(String string) {
-//		outputFilenamePattern = string;
-//	}
-//	public String getOutputFilenamePattern() {
-//		return outputFilenamePattern;
-//	}
-
-//	@IbisDoc({"pass the filename without the <code>outputdirectory</code> to the pipeline", "false"})
-//	public void setPassWithoutDirectory(boolean b) {
-//		passWithoutDirectory = b;
-//	}
-//
-//	public boolean isPassWithoutDirectory() {
-//		return passWithoutDirectory;
-//	}
-
-
-	@IbisDoc({"Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.", "0"})
+	/**
+	 * Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.
+	 * @ff.default 0
+	 */
 	public void setNumberOfBackups(int i) {
 		numberOfBackups = i;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the destination file will be deleted if it already exists", "false"})
+	/**
+	 * If set <code>true</code>, the destination file will be deleted if it already exists
+	 * @ff.default false
+	 */
 	public void setOverwrite(boolean overwrite) {
 		this.overwrite = overwrite;
 	}
 
-	@IbisDoc({"Determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file, 'info' for file information. For any other value, the attributes of the file are searched and used", "path"})
+	/**
+	 * Determines the contents of the message that is sent to the pipeline. Can be 'name', for the filename, 'path', for the full file path, 'contents' for the contents of the file, 'info' for file information. For any other value, the attributes of the file are searched and used
+	 * @ff.default path
+	 */
 	public void setMessageType(String messageType) {
 		this.messageType = messageType;
 	}
 
-	@IbisDoc({"If <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before", "false"})
+	/**
+	 * If <code>true</code>, the file modification time is used in addition to the filename to determine if a file has been seen before
+	 * @ff.default false
+	 */
 	public void setFileTimeSensitive(boolean b) {
 		fileTimeSensitive = b;
 	}
 
-	@IbisDoc({"Minimal age of file <i>in milliseconds</i>, to avoid receiving a file while it is still being written", "1000"})
+	/**
+	 * Minimal age of file <i>in milliseconds</i>, to avoid receiving a file while it is still being written
+	 * @ff.default 1000
+	 */
 	public void setMinStableTime(long minStableTime) {
 		this.minStableTime = minStableTime;
 	}
 
-	@IbisDoc({"Key of Property to use as messageId. If not set, the filename of the file as it was received in the inputFolder is used as the messageId", "for MailFileSystems: Message-ID"})
+	/**
+	 * Key of Property to use as messageId. If not set, the filename of the file as it was received in the inputFolder is used as the messageId
+	 * @ff.default for MailFileSystems: Message-ID
+	 */
 	public void setMessageIdPropertyKey(String messageIdPropertyKey) {
 		this.messageIdPropertyKey = messageIdPropertyKey;
 	}
 
-	@IbisDoc({"If set <code>true</code>, no browsers for process folders are generated", "false"})
+	/**
+	 * If set <code>true</code>, no browsers for process folders are generated
+	 * @ff.default false
+	 */
 	public void setDisableMessageBrowsers(boolean disableMessageBrowsers) {
 		this.disableMessageBrowsers = disableMessageBrowsers;
 	}
@@ -553,7 +604,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void setWildCard(String wildcard) {
 		setWildcard(wildcard);
 	}
-	@IbisDoc({"Filter of files to look for in inputFolder e.g. '*.inp'.", ""})
+	/** Filter of files to look for in inputFolder e.g. '*.inp'. */
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
@@ -563,22 +614,25 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	public void setExcludeWildCard(String excludeWildcard) {
 		setExcludeWildcard(excludeWildcard);
 	}
-	@IbisDoc({"Filter of files to be excluded when looking in inputFolder.", ""})
+	/** Filter of files to be excluded when looking in inputFolder. */
 	public void setExcludeWildcard(String excludeWildcard) {
 		this.excludeWildcard = excludeWildcard;
 	}
 
-	@IbisDoc({"If set, an XML with all message properties is provided under this key", ""})
+	/** If set, an XML with all message properties is provided under this key */
 	public void setStoreMetadataInSessionKey(String storeMetadataInSessionKey) {
 		this.storeMetadataInSessionKey = storeMetadataInSessionKey;
 	}
 
-	@IbisDoc({"Charset to be used for extracting the contents"})
+	/** Charset to be used for extracting the contents */
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
 
-	@IbisDoc({"OutputFormat of message for messageType=info", "XML"})
+	/**
+	 * OutputFormat of message for messageType=info
+	 * @ff.default XML
+	 */
 	public void setOutputFormat(DocumentFormat outputFormat) {
 		this.outputFormat = outputFormat;
 	}

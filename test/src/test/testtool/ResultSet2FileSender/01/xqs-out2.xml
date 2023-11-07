@@ -5,7 +5,7 @@
         <field name="TKEY" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
         <field name="TINT" type="INTEGER" columnDisplaySize="11" precision="10" scale="0" isCurrency="false" columnTypeName="INTEGER" columnClassName="java.lang.Integer"/>
         <field name="TCHAR" type="CHAR" columnDisplaySize="1" precision="1" scale="0" isCurrency="false" columnTypeName="CHAR" columnClassName="java.lang.String"/>
-        <field name="TVARCHAR" type="VARCHAR" columnDisplaySize="100" precision="100" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
+        <field name="TVARCHAR" type="VARCHAR" columnDisplaySize="200" precision="200" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/>
         <field name="TNUMBER" type="DECIMAL" columnDisplaySize="19" precision="17" scale="5" isCurrency="false" columnTypeName="DECIMAL" columnClassName="java.math.BigDecimal"/>
         <field name="TDATETIME" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>
         <field name="TTIMESTAMP" type="TIMESTAMP" columnDisplaySize="26" precision="26" scale="6" isCurrency="false" columnTypeName="TIMESTAMP" columnClassName="java.sql.Timestamp"/>

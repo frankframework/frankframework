@@ -1,6 +1,6 @@
 /*
 
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,16 +15,17 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.processors;
+
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.AdapterManager;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
@@ -43,15 +44,14 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * @author Jaco de Groot
  */
+@Log4j2
 public class CorePipeLineProcessor implements PipeLineProcessor {
-	private Logger log = LogUtil.getLogger(this);
 	private @Setter PipeProcessor pipeProcessor;
 	private @Setter AdapterManager adapterManager;
 
@@ -102,7 +102,10 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			if (inputWrapper!=null) {
 				log.debug("wrapping input");
 				PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, inputWrapper, message, pipeLineSession);
-				if (wrapResult!=null && !wrapResult.isSuccessful()) {
+				if (wrapResult == null) {
+					throw new PipeRunException(inputWrapper, "Input Wrapper produced NULL result");
+				}
+				if (!wrapResult.isSuccessful()) {
 					forwardTarget = pipeLine.resolveForward(inputWrapper, wrapResult.getPipeForward());
 					log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
 				} else {
@@ -145,8 +148,8 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 			}
 		}
 
-		PipeLineResult pipeLineResult=new PipeLineResult();
-		boolean outputValidationFailed=false;
+		PipeLineResult pipeLineResult = new PipeLineResult();
+		boolean outputValidationFailed = false;
 		try {
 			while (!ready){
 
@@ -159,7 +162,10 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 							if (outputWrapper !=null) {
 								log.debug("wrapping PipeLineResult");
 								PipeRunResult wrapResult = pipeProcessor.processPipe(pipeLine, outputWrapper, message, pipeLineSession);
-								if (wrapResult!=null && !wrapResult.isSuccessful()) {
+								if (wrapResult == null) {
+									throw new PipeRunException(outputWrapper, "OutputWrapper produced NULL result");
+								}
+								if (!wrapResult.isSuccessful()) {
 									forwardTarget = pipeLine.resolveForward(outputWrapper, wrapResult.getPipeForward());
 									log.warn("forwarding execution flow to ["+forwardTarget.getName()+"] due to wrap fault");
 									outputWrapError = true;
@@ -209,18 +215,17 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 						ExitState state=plExit.getState();
 						pipeLineResult.setState(state);
 						pipeLineResult.setExitCode(plExit.getExitCode());
-						if (!message.isNull() && !plExit.isEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
+						if (!Message.isNull(message) && !plExit.isEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
 							pipeLineResult.setResult(message);
 						} else {
 							pipeLineResult.setResult(Message.nullMessage());
 						}
-						ready=true;
 						if (log.isDebugEnabled()){  // for performance reasons
-							String skString = "";
-							for (Iterator<String> it = pipeLineSession.keySet().iterator(); it.hasNext();) {
-								String key = it.next();
-								Object value = pipeLineSession.get(key);
-								skString = skString + "\n " + key + "=[" + value + "]";
+							StringBuilder skString = new StringBuilder();
+							for (Map.Entry<String, Object> entry: pipeLineSession.entrySet()) {
+								String key = entry.getKey();
+								Object value = entry.getValue();
+								skString.append("\n ").append(key).append("=[").append(value).append("]");
 							}
 							log.debug("Available session keys at finishing pipeline of adapter [" + pipeLine.getOwner().getName() + "]:" + skString);
 							log.debug("Pipeline of adapter ["+ pipeLine.getOwner().getName()+ "] finished processing messageId ["+messageId+"] result: " + (message==null?"<null>":"("+message.getClass().getSimpleName()+") ["+message +"]" ) + " with exit-state ["+state+"]");
@@ -229,7 +234,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 				} else {
 					IPipe pipeToRun=(IPipe)forwardTarget;
 					PipeRunResult pipeRunResult = pipeProcessor.processPipe(pipeLine, pipeToRun, message, pipeLineSession);
-					message=pipeRunResult.getResult();
+					message = pipeRunResult.getResult();
 
 					// TODO: this should be moved to a StatisticsPipeProcessor
 					if (!(pipeToRun instanceof AbstractPipe) && !message.isEmpty()) {

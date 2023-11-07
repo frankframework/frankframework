@@ -55,7 +55,7 @@
 		>
 			<listener 
 				className="nl.nn.adapterframework.extensions.fxf.FxfListener" 
-				destinationName="jms/fxf_request" 
+				destinationName="${jms.destination.fxf}" 
 				script="${FXF_init}"
 				applicationId="CHECKSUM"
 				jmsRealm="fxf" 

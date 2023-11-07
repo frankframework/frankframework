@@ -35,7 +35,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 
@@ -72,16 +72,16 @@ public class InlineStorage extends BusEndpointBase {
 			}
 		}
 
-		return ResponseMessage.ok(storeItemsGroupedByProcessState);
+		return new JsonResponseMessage(storeItemsGroupedByProcessState);
 	}
 
-	private class InlineStoreStateItem {
+	private static class InlineStoreStateItem {
 		private @Getter List<InlineStoreItem> items = new LinkedList<>();
 		private @Getter @Setter int totalMessageCount;
 	}
 
 	@AllArgsConstructor
-	private class InlineStoreItem {
+	private static class InlineStoreItem {
 		private @Getter @Setter String adapterName;
 		private @Getter @Setter String receiverName;
 		private @Getter @Setter int messageCount;

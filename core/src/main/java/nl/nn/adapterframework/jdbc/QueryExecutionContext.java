@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,70 +18,28 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
+import lombok.Getter;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
-import nl.nn.adapterframework.jdbc.dbms.JdbcSession;
 import nl.nn.adapterframework.parameters.ParameterList;
 
 public class QueryExecutionContext {
 
-	private String query;
-	private QueryType queryType;
-	private ParameterList parameterList;
-	private Connection connection;
-	private PreparedStatement statement;
-	private PreparedStatement resultQueryStatement;
-	private JdbcSession jdbcSession;
+	@Getter private final String query;
+	@Getter private final String resultQuery;
+	@Getter private final QueryType queryType;
+	@Getter private final ParameterList parameterList;
+	@Getter private final Connection connection;
+	@Getter private final PreparedStatement statement;
+	@Getter private final PreparedStatement resultQueryStatement;
 	protected int iteration;
 
-	public QueryExecutionContext(String query, QueryType queryType, ParameterList parameterList) {
+	public QueryExecutionContext(String query, String resultQuery, QueryType queryType, ParameterList parameterList, Connection connection, PreparedStatement statement, PreparedStatement resultQueryStatement) {
 		this.query = query;
+		this.resultQuery = resultQuery;
 		this.queryType = queryType;
 		this.parameterList = parameterList;
-	}
-
-	public String getQuery() {
-		return query;
-	}
-	public void setQuery(String query) {
-		this.query = query;
-	}
-
-	public QueryType getQueryType() {
-		return queryType;
-	}
-	public void setQueryType(QueryType queryType) {
-		this.queryType = queryType;
-	}
-
-	public ParameterList getParameterList() {
-		return parameterList;
-	}
-
-	public Connection getConnection() {
-		return connection;
-	}
-	public void setConnection(Connection connection) {
 		this.connection = connection;
-	}
-
-	public PreparedStatement getStatement() {
-		return statement;
-	}
-	public void setStatement(PreparedStatement statement) {
 		this.statement = statement;
-	}
-
-	public PreparedStatement getResultQueryStatement() {
-		return resultQueryStatement;
-	}
-	public void setResultQueryStatement(PreparedStatement resultQueryStatement) {
 		this.resultQueryStatement = resultQueryStatement;
-	}
-
-	public void setJdbcSession(JdbcSession jdbcSession) {
-		this.jdbcSession = jdbcSession;
-	}
-	public JdbcSession getJdbcSession() {
-		return jdbcSession;
 	}
 }

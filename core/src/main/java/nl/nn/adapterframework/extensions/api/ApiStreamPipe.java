@@ -49,7 +49,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * </p>
  * @author Peter Leeuwenburgh
  */
-
+@Deprecated
 public class ApiStreamPipe extends StreamPipe {
 	private String jmsRealm;
 
@@ -62,8 +62,7 @@ public class ApiStreamPipe extends StreamPipe {
 	}
 
 	@Override
-	protected String adjustFirstStringPart(String firstStringPart,
-			PipeLineSession session) throws PipeRunException {
+	protected String adjustFirstStringPart(String firstStringPart, PipeLineSession session) throws PipeRunException {
 		if (firstStringPart == null) {
 			return "";
 		}
@@ -94,7 +93,7 @@ public class ApiStreamPipe extends StreamPipe {
 				throw new PipeRunException(this, "Exception configuring dummy query sender", e);
 			}
 
-			String slotId = AppConstants.getInstance().getResolvedProperty("instance.name") + "/" + session.get("operation");
+			String slotId = AppConstants.getInstance().getProperty("instance.name") + "/" + session.get("operation");
 			String selectMessageKeyResult = null;
 			try {
 				selectMessageKeyResult = selectMessageKey(slotId, messageId);

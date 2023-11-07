@@ -27,6 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+import org.xml.sax.SAXException;
+
+import com.sun.mail.imap.AppendUID;
+import com.sun.mail.imap.IMAPFolder;
+import com.sun.mail.imap.IMAPMessage;
+
 import jakarta.mail.BodyPart;
 import jakarta.mail.Flags;
 import jakarta.mail.Folder;
@@ -45,19 +52,11 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
-
-import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.SAXException;
-
-import com.sun.mail.imap.AppendUID;
-import com.sun.mail.imap.IMAPFolder;
-import com.sun.mail.imap.IMAPMessage;
-
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.http.PartMessage;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IMAPFolder> {
@@ -591,7 +590,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 			}
 		}
 		String name = urlName == null ? "<no url>" : urlName.toString();
-		return Misc.concatStrings(name," ", super.getPhysicalDestinationName());
+		return StringUtil.concatStrings(name," ", super.getPhysicalDestinationName());
 	}
 
 	@Override
@@ -611,7 +610,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	private class MimeContentMessage extends nl.nn.adapterframework.stream.Message {
 
 		public MimeContentMessage(IMAPMessage imapMessage) {
-			super(() -> imapMessage.getMimeStream(), null, imapMessage.getClass());
+			super(imapMessage::getMimeStream, null, imapMessage.getClass());
 		}
 	}
 

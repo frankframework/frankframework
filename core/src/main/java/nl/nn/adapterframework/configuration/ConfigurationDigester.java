@@ -17,12 +17,12 @@ package nl.nn.adapterframework.configuration;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
@@ -51,7 +51,7 @@ import nl.nn.adapterframework.configuration.filters.SkipContainersFilter;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StringResolver;
@@ -158,7 +158,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			digester.setValidating(true);
 			digester.setNamespaceAware(true);
 			digester.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", "http://www.w3.org/2001/XMLSchema");
-			URL xsdUrl = ClassUtils.getResourceURL(CONFIGURATION_VALIDATION_SCHEMA);
+			URL xsdUrl = ClassLoaderUtils.getResourceURL(CONFIGURATION_VALIDATION_SCHEMA);
 			if (xsdUrl==null) {
 				throw new ConfigurationException("cannot get URL from ["+CONFIGURATION_VALIDATION_SCHEMA+"]");
 			}
@@ -244,8 +244,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		configuration.setLoadedConfiguration(loadedHiddenWriter.toString());
 	}
 
-	private List<String> getPropsToHide(Properties appConstants) {
-		List<String> propsToHide = new ArrayList<>();
+	private Set<String> getPropsToHide(Properties appConstants) {
+		Set<String> propsToHide = new HashSet<>();
 		String propertiesHideString = appConstants.getProperty("properties.hide");
 		if (propertiesHideString != null) {
 			propsToHide.addAll(Arrays.asList(propertiesHideString.split("[,\\s]+")));
@@ -261,7 +261,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	public ContentHandler getConfigurationCanonicalizer(ContentHandler handler, String frankConfigXSD, ErrorHandler errorHandler) throws IOException {
 		try {
 			ElementRoleFilter elementRoleFilter = new ElementRoleFilter(handler);
-			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(ClassUtils.getResourceURL(frankConfigXSD));
+			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(ClassLoaderUtils.getResourceURL(frankConfigXSD));
 			validatorHandler.setContentHandler(elementRoleFilter);
 			if (errorHandler != null) {
 				validatorHandler.setErrorHandler(errorHandler);

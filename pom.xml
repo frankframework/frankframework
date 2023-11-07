@@ -7,32 +7,51 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>7.9-SNAPSHOT</revision>
+		<revision>8.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<log4j2.version>2.19.0</log4j2.version>
-		<cxf.version>3.5.4</cxf.version>
+		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.source>11</maven.compiler.source>
+		<log4j2.version>2.21.1</log4j2.version>
+
+		<sonar.organization>frank-framework</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+
+		<jackson.version>2.15.3</jackson.version>
+		<cxf.version>3.6.2</cxf.version>
+		<spring.version>5.3.30</spring.version>
+		<spring-security.version>5.8.8</spring-security.version>
+		<spring-integration.version>5.5.19</spring-integration.version>
+
 		<btm.version>3.0.0-mk1</btm.version>
-		<narayana.version>5.12.7.Final</narayana.version>
-		<jboss-logging.version>3.4.2.Final</jboss-logging.version>
-		<micrometer.version>1.10.2</micrometer.version>
+		<narayana.version>5.13.1.Final</narayana.version>
+		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
+		<micrometer.version>1.11.5</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
+		<javadoc-plugin.version>3.6.2</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
-		<h2.driver.version>2.1.214</h2.driver.version>
+		<h2.driver.version>2.2.224</h2.driver.version>
 		<db2.driver.version>11.5.8.0</db2.driver.version>
-		<oracle.driver.version>18.3.0.0</oracle.driver.version>
-		<oracle.driver.jdkversion>8</oracle.driver.jdkversion>
-		<mssql.driver.version>7.4.1.jre8</mssql.driver.version>
-		<mysql.driver.version>8.0.31</mysql.driver.version>
-		<mariadb.driver.version>2.7.7</mariadb.driver.version>
-		<postgresql.driver.version>42.5.1</postgresql.driver.version>
-		<mongodb.driver.version>4.8.0</mongodb.driver.version>
+		<oracle.driver.version>23.3.0.23.09</oracle.driver.version>
+		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
+		<mssql.driver.version>12.4.2.jre11</mssql.driver.version>
+		<mysql.driver.version>8.2.0</mysql.driver.version>
+		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
+		<mariadb.driver.version>3.2.0</mariadb.driver.version>
+		<postgresql.driver.version>42.6.0</postgresql.driver.version>
+		<mongodb.driver.version>4.11.0</mongodb.driver.version>
+
+		<!-- Other versions for building Docker images and running IAF-Test -->
+		<activemq.driver.version>5.17.6</activemq.driver.version> <!-- this minor version is the last using the javax api -->
+		<artemis.driver.version>2.31.2</artemis.driver.version>
+		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
+		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
-	<description>The Ibis Adapter Framework is an easy to use, stateless integration framework which allows (transactional) messages to be modified and exchanged between different systems.</description>
+	<description>The Ibis Adapter Framework is an easy-to-use, stateless integration framework which allows (transactional) messages to be modified and exchanged between different systems.</description>
 	<url>https://frankframework.org</url>
 
 	<organization>
@@ -44,26 +63,32 @@
 		<license>
 			<name>Apache License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>manual</distribution>
+			<distribution>repo</distribution>
 		</license>
 	</licenses>
 
 	<developers>
 		<developer>
-			<name>Jaco de Groot</name>
-			<email>jaco@ibissource.org</email>
+			<name>Niels Meijer</name>
+			<email>niels@frankframework.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
-			<name>Niels Meijer</name>
-			<email>niels@ibissource.org</email>
+			<name>Tim van der Leeuw</name>
+			<email>tim@frankframework.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
 		<developer>
 			<name>Ali Sihab Akcan</name>
 			<email>ali@ibissource.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+		<developer>
+			<name>Jaco de Groot</name>
+			<email>jaco@ibissource.org</email>
 			<organization>Frank!Framework</organization>
 			<organizationUrl>https://frankframework.org</organizationUrl>
 		</developer>
@@ -77,6 +102,59 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- Lock transient dependency versions to fix CVE's -->
+			<dependency>
+				<groupId>commons-beanutils</groupId>
+				<artifactId>commons-beanutils</artifactId>
+				<version>1.9.4</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>1.5</version>
+			</dependency>
+			<dependency>
+				<groupId>net.minidev</groupId>
+				<artifactId>json-smart</artifactId>
+				<version>2.5.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jdom</groupId>
+				<artifactId>jdom2</artifactId>
+				<version>2.0.6.1</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.protobuf</groupId>
+				<artifactId>protobuf-java</artifactId>
+				<version>3.25.0</version>
+			</dependency>
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-transport-native-epoll</artifactId>
+				<version>4.1.100.Final</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>32.1.3-jre</version>
+			</dependency>
+			<!-- End Lock transient deps -->
+
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-commons</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-security</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>iaf-management-gateway</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-core</artifactId>
@@ -125,6 +203,27 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-cmis</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-console</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-console-frontend</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-console-backend</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-console-webapp</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -224,6 +323,121 @@
 				<version>1.7.36</version>
 			</dependency>
 
+			<!-- SPRING to force versions -->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-beans</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context-support</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-jdbc</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-jms</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-test</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-tx</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-web</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-webmvc</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-aop</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-expression</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.integration</groupId>
+				<artifactId>spring-integration-core</artifactId>
+				<version>${spring-integration.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.integration</groupId>
+				<artifactId>spring-integration-security</artifactId>
+				<version>${spring-integration.version}</version>
+			</dependency>
+
+			<!-- explicitly define Spring dependencies, to avoid version conflicts with Spring Security (https://www.baeldung.com/spring-security-with-maven) -->
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-bom</artifactId>
+				<version>${spring-security.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!-- Jackson dependencies -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.jaxrs</groupId>
+				<artifactId>jackson-jaxrs-json-provider</artifactId>
+				<version>${jackson.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>jakarta.activation</groupId>
+						<artifactId>jakarta.activation-api</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.dataformat</groupId>
+				<artifactId>jackson-dataformat-cbor</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-annotations</artifactId>
+				<version>${jackson.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
@@ -250,27 +464,32 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-pool2</artifactId>
-				<version>2.11.1</version>
+				<version>2.12.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
-				<version>3.12.0</version>
+				<version>3.13.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-text</artifactId>
+				<version>1.11.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
-				<version>1.15</version>
+				<version>1.16.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-net</groupId>
 				<artifactId>commons-net</artifactId>
-				<version>3.8.0</version>
+				<version>3.10.0</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.11.0</version>
+				<version>2.15.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.mail</groupId>
@@ -280,7 +499,7 @@
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.24</version>
+				<version>1.18.30</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
@@ -296,14 +515,28 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-params</artifactId>
+				<version>[5.9.1,)</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>4.9.0</version>
+				<version>5.7.0</version>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.hamcrest</groupId>
-				<artifactId>hamcrest-all</artifactId>
-				<version>1.3</version>
+				<artifactId>hamcrest</artifactId>
+				<version>2.2</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.awaitility</groupId>
+				<artifactId>awaitility</artifactId>
+				<version>4.2.0</version>
+				<scope>test</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -336,6 +569,10 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
 			</plugin>
 			<plugin>
@@ -350,7 +587,7 @@
 					<excludes>
 						<exclude>it.**</exclude>
 					</excludes>
-					<argLine>@{argLine} -Dfile.encoding=CP-1252</argLine>
+					<argLine>@{argLine} -Dfile.encoding=CP-1252 --illegal-access=permit</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -383,10 +620,11 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.10.1</version>
+					<version>3.11.0</version>
 					<configuration>
-						<source>1.8</source>
-						<target>1.8</target>
+						<release>${maven.compiler.target}</release>
+						<source>${maven.compiler.source}</source>
+						<target>${maven.compiler.target}</target>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -406,15 +644,24 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>3.3.2</version>
+					<version>3.4.0</version>
 					<configuration>
 						<packagingExcludes>.gitignore</packagingExcludes>
+						<archive>
+							<manifest>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<DisableIBMJAXWSEngine>true</DisableIBMJAXWSEngine>
+								<Enable-CDI>false</Enable-CDI>
+							</manifestEntries>
+						</archive>
 					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.2.1</version>
+					<version>3.3.0</version>
 					<executions>
 						<execution>
 							<id>attach-sources</id>
@@ -488,11 +735,34 @@
 					</executions>
 				</plugin>
 				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>0.8.11</version>
+					<executions>
+						<execution>
+							<id>prepare-jacoco</id>
+							<phase>initialize</phase>
+							<goals>
+								<goal>prepare-agent</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>generate-jacoco-report</id>
+							<phase>test</phase>
+							<goals>
+								<goal>report</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>3.4.1</version>
+					<version>${javadoc-plugin.version}</version>
 					<configuration>
+						<source>${maven.compiler.source}</source>
 						<doclint>none</doclint>
+						<quiet>true</quiet>
 						<tags>
 							<tag>
 								<name>ff.parameters</name>
@@ -500,10 +770,10 @@
 								<head>Parameters</head>
 							</tag>
 							<!-- The ff.parameter tag can occur multiple times in the same JavaDoc comment.
-							     The standard doclet does not properly format JavaDoc tags in this case. This
-							     can be solved with a taglet, but WeAreFrank! does not want that complexity.
-							     We therefore accept that all occurrences of ff.parameter are formatted on the
-							     same line.
+								 The standard doclet does not properly format JavaDoc tags in this case. This
+								 can be solved with a taglet, but we do not want that complexity.
+								 We therefore accept that all occurrences of ff.parameter are formatted on the
+								 same line.
 
 								 The ff.parameter tag was introduced for the Frank!Doc. The Frank!Doc formats
 								 it properly.
@@ -533,11 +803,12 @@
 							</tag>
 						</tags>
 						<useStandardDocletOptions>true</useStandardDocletOptions>
-						<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
+						<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp,ibis-adapterframework-console-frontend</skippedModules>
 					</configuration>
 					<executions>
 						<execution>
-							<id>attach-javadocs</id>
+							<id>attach-javadoc</id>
+							<phase>generate-sources</phase>
 							<goals>
 								<goal>jar</goal>
 							</goals>
@@ -555,7 +826,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>3.2.0</version>
+					<version>3.3.1</version>
 					<configuration>
 						<configLocation>${iaf.rootdir}/checkstyle.xml</configLocation>
 						<propertyExpansion>config_loc=${iaf.rootdir}</propertyExpansion>
@@ -581,17 +852,16 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>flatten-maven-plugin</artifactId>
-					<version>1.3.0</version>
+					<version>1.5.0</version>
 					<configuration>
 						<updatePomFile>true</updatePomFile>
 						<flattenMode>resolveCiFriendliesOnly</flattenMode>
 					</configuration>
 					<executions>
 						<execution>
-							<id>clean-and-flatten</id>
-							<phase>process-resources</phase>
+							<id>flatten</id>
+							<phase>initialize</phase>
 							<goals>
-								<goal>clean</goal>
 								<goal>flatten</goal>
 							</goals>
 						</execution>
@@ -653,6 +923,19 @@
 										<ignore />
 									</action>
 								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-enforcer-plugin</artifactId>
+										<versionRange>[3.2.1,)</versionRange>
+										<goals>
+											<goal>enforce</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
@@ -660,7 +943,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.1.0</version>
+					<version>3.4.1</version>
 					<executions>
 						<execution>
 							<id>enforce-lib-ban</id>
@@ -695,7 +978,7 @@
 										<message>Prevent the use of STAX1, use STAX 2 (org.codehaus.woodstox:stax2-api) instead!</message>
 									</bannedDependencies>
 									<bannedDependencies>
-										<!-- the activation framework was renamed to the jarkata activation framework -->
+										<!-- the activation framework was renamed to the jakarta activation framework -->
 										<excludes>
 											<exclude>javax.activation:javax.activation-api</exclude>
 											<exclude>com.sun.activation:javax.activation</exclude>
@@ -708,6 +991,41 @@
 											<exclude>jakarta.activation:jakarta.activation-api</exclude>
 										</excludes>
 										<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
+									</bannedDependencies>
+									<bannedDependencies>
+										<excludes>
+											<exclude>org.bouncycastle:*-jdk12</exclude>
+											<exclude>org.bouncycastle:*-jdk14</exclude>
+											<exclude>org.bouncycastle:*-jdk15</exclude>
+											<exclude>org.bouncycastle:*-jdk16</exclude>
+											<exclude>org.bouncycastle:*-jdk15to18</exclude>
+											<exclude>org.bouncycastle:*-ext-jdk15on</exclude>
+											<exclude>org.bouncycastle:*-jdk15on</exclude>
+											<exclude>bouncycastle:*</exclude>
+										</excludes>
+										<message>use the newer 'org.bouncycastle:*-jdk18on' version of org.bouncycastle</message>
+									</bannedDependencies>
+								</rules>
+							</configuration>
+						</execution>
+						<execution>
+							<id>enforce-classpath-lib-ban</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<configuration>
+								<rules>
+									<bannedDependencies>
+										<excludes>
+											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec:*:jar:compile</exclude>
+											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec:*:jar:compile</exclude>
+											<exclude>org.apache.geronimo.javamail:geronimo-javamail_1.4_mail:*:jar:compile</exclude>
+											<exclude>org.apache.geronimo.specs:geronimo-jta_1.1_spec:*:jar:compile</exclude>
+											<exclude>javax.servlet:javax.servlet-api:*:jar:compile</exclude>
+											<exclude>jakarta.servlet:jakarta.servlet-api:*:jar:compile</exclude>
+											<exclude>jakarta.transaction:jakarta.transaction-api:*:jar:compile</exclude>
+										</excludes>
+										<message>These dependencies should be provided by the Application Server!</message>
 									</bannedDependencies>
 								</rules>
 							</configuration>
@@ -723,7 +1041,14 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>3.4.1</version>
+				<version>3.4.5</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>modules</report>
+						</reports>
+					</reportSet>
+				</reportSets>
 			</plugin>
 			<!--
 				http://maven.apache.org/plugins/maven-javadoc-plugin/usage.html
@@ -732,11 +1057,17 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.4.1</version>
-				<inherited>false</inherited>
+				<version>${javadoc-plugin.version}</version>
 				<reportSets>
 					<reportSet>
+						<id>default</id>
+						<reports>
+							<report>javadoc</report>
+						</reports>
+					</reportSet>
+					<reportSet>
 						<id>javadoc</id>
+						<inherited>false</inherited>
 						<reports>
 							<report>aggregate</report>
 						</reports>
@@ -752,6 +1083,21 @@
 		<developerConnection>scm:git:https://github.com/ibissource/iaf.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
+
+	<repositories>
+		<repository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>ibissource</id>
+			<url>https://nexus.frankframework.org/content/groups/public</url>
+		</repository>
+	</repositories>
 
 	<profiles>
 		<profile>
@@ -826,12 +1172,6 @@
 					<url>file:target/site-deploy</url>
 				</site>
 			</distributionManagement>
-			<repositories>
-				<repository>
-					<id>ibissource</id>
-					<url>https://nexus.frankframework.org/content/groups/public</url>
-				</repository>
-			</repositories>
 		</profile>
 		<profile>
 			<id>default-modules</id><!-- Profile defaults to ON, when the property is set it will turn off -->
@@ -841,15 +1181,31 @@
 				</property>
 			</activation>
 			<modules>
+				<module>iaf-commons</module>
+				<module>security</module>
+				<module>credentialProvider</module>
+				<module>management-gateway</module>
 				<module>core</module>
+				<module>console</module>
 				<module>webapp</module>
-				<module>ear</module>
 				<module>larva</module>
 				<module>ladybug</module>
 				<module>test</module>
-				<module>akamai</module>
 				<module>example</module>
-				<module>credentialProvider</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>extra-modules</id>
+			<activation>
+				<property>
+					<name>extra-modules</name>
+				</property>
+			</activation>
+			<modules>
+				<module>akamai</module>
+				<module>aws</module>
+				<module>cmis</module>
+				<module>aspose</module>
 			</modules>
 		</profile>
 		<profile>
@@ -861,39 +1217,6 @@
 			</activation>
 			<modules>
 				<module>docker</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>cmis</id>
-			<activation>
-				<property>
-					<name>!no-cmis</name>
-				</property>
-			</activation>
-			<modules>
-				<module>cmis</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>aspose</id>
-			<activation>
-				<property>
-					<name>!no-aspose</name>
-				</property>
-			</activation>
-			<modules>
-				<module>aspose</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>aws</id>
-			<activation>
-				<property>
-					<name>!no-aws</name>
-				</property>
-			</activation>
-			<modules>
-				<module>aws</module>
 			</modules>
 		</profile>
 		<profile>
@@ -912,6 +1235,14 @@
 				<module>idin</module>
 			</modules>
 			<repositories>
+				<repository>
+					<id>central</id>
+					<name>Central Repository</name>
+					<url>https://repo.maven.apache.org/maven2/</url>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+				</repository>
 				<repository>
 					<id>proprietary</id>
 					<url>https://nexus.frankframework.org/content/repositories/private/</url>
@@ -947,21 +1278,9 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.4.1</version>
 						<configuration>
 							<sourcepath>${project.build.directory}/generated-sources/delombok</sourcepath>
 						</configuration>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-								<configuration>
-									<failOnError>false</failOnError>
-								</configuration>
-							</execution>
-						</executions>
 					</plugin>
 				</plugins>
 			</build>
@@ -990,10 +1309,11 @@
 					<plugin>
 						<groupId>org.ibissource</groupId>
 						<artifactId>frank-doc-plugin</artifactId>
-						<version>0.2-SNAPSHOT</version>
+						<version>0.2</version>
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>
+							<quiet>true</quiet>
 							<doclet>org.frankframework.frankdoc.doclet.DocletBuilder</doclet>
 							<docletArtifact>
 								<groupId>org.ibissource</groupId>
@@ -1015,12 +1335,13 @@
 								<additionalOption>-frankFrameworkVersion</additionalOption>
 								<additionalOption>${project.version}</additionalOption>
 							</additionalOptions>
+							<show>private</show>
 							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
-							<source>1.8</source>
+							<source>${maven.compiler.source}</source>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
 							<appendTo>ibis-adapterframework-core</appendTo>
-							<finalName>ibis-adapterframework-frankdoc-${project.version}</finalName>
-							<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp</skippedModules>
+							<finalName>ibis-adapterframework-parent-${project.version}</finalName>
+							<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp,ibis-adapterframework-console-backend,ibis-adapterframework-console-frontend</skippedModules>
 						</configuration>
 						<executions>
 							<execution>
@@ -1045,23 +1366,6 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.8</version>
-						<executions>
-							<execution>
-								<id>prepare-jacoco</id>
-								<phase>initialize</phase>
-								<goals>
-									<goal>prepare-agent</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>generate-jacoco-report</id>
-								<phase>test</phase>
-								<goals>
-									<goal>report</goal>
-								</goals>
-							</execution>
-						</executions>
 					</plugin>
 				</plugins>
 			</build>
@@ -1070,7 +1374,6 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.8</version>
 						<reportSets>
 							<reportSet>
 								<reports>
@@ -1082,42 +1385,15 @@
 				</plugins>
 			</reporting>
 		</profile>
-		<profile><!-- This profile should only activate when explicitly specified, and running on JDK11 -->
-			<id>jdk11</id>
+		<profile><!-- https://stackoverflow.com/a/12598554/17193564 -->
+			<id>alternateBuildDir</id>
 			<activation>
-				<jdk>11</jdk>
 				<property>
-					<name>jdk11</name>
+					<name>build.dir</name>
 				</property>
 			</activation>
 			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<artifactId>maven-compiler-plugin</artifactId>
-							<configuration>
-								<release>11</release>
-							</configuration>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-				<plugins>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<version>2.22.2</version>
-						<configuration>
-							<redirectTestOutputToFile>true</redirectTestOutputToFile>
-							<reuseForks>true</reuseForks>
-							<includes>
-								<include>**/*.java</include>
-							</includes>
-							<excludes>
-								<exclude>it.**</exclude>
-							</excludes>
-							<argLine>@{argLine} -Dfile.encoding=CP-1252 --illegal-access=permit</argLine>
-						</configuration>
-					</plugin>
-				</plugins>
+				<directory>${build.dir}</directory>
 			</build>
 		</profile>
 	</profiles>

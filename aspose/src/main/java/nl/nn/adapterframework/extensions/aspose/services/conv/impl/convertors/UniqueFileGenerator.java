@@ -27,15 +27,15 @@ import org.apache.commons.lang3.StringUtils;
  */
 class UniqueFileGenerator {
 
-	private static AtomicInteger atomicCount = new AtomicInteger(1);
+	private static final AtomicInteger atomicCount = new AtomicInteger(1);
 
 	private UniqueFileGenerator() {
-		
+
 	}
-	
+
 	/**
 	 * Create a unique file in the pdfOutputLocation with the given extension
-	 * 
+	 *
 	 * @param extension  is allowed to be null.
 	 */
 	public static File getUniqueFile(String directory, String prefix, String extension) {

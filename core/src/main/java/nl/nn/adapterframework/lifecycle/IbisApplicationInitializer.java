@@ -38,22 +38,23 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Starts a Spring Context before all Servlets are initialized. This allows the use of dynamically creating 
+ * Starts a Spring Context before all Servlets are initialized. This allows the use of dynamically creating
  * Spring wired Servlets (using the {@link ServletManager}). These beans can be retrieved later on from within
  * the IbisContext, and are unaffected by the {@link IbisContext#fullReload()}.
- * 
+ *
  * @author Niels Meijer
  *
  */
 public class IbisApplicationInitializer extends ContextLoaderListener {
-	private Logger log = LogUtil.getLogger(this);
+	private static final Logger LOG = LogUtil.getLogger(IbisApplicationInitializer.class);
+	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	@Override
 	protected WebApplicationContext createWebApplicationContext(ServletContext servletContext) {
 		System.setProperty(EndpointImpl.CHECK_PUBLISH_ENDPOINT_PERMISSON_PROPERTY_WITH_SECURITY_MANAGER, "false");
-		servletContext.log("Starting IBIS WebApplicationInitializer");
+		APPLICATION_LOG.debug("Starting IBIS WebApplicationInitializer");
 
-		checkAndCorrectLegacyServerTypes(servletContext);
+		checkAndCorrectLegacyServerTypes();
 		determineApplicationServerType(servletContext);
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
@@ -76,13 +77,13 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		URL fileURL = classLoader.getResource(file);
 		if(fileURL == null) {
-			log.warn("unable to locate TestTool configuration [{}] using classloader [{}]", file, classLoader);
+			LOG.warn("unable to locate TestTool configuration [{}] using classloader [{}]", file, classLoader);
 		} else {
 			if(file.indexOf(":") == -1) {
 				file = ResourceUtils.CLASSPATH_URL_PREFIX+file;
 			}
 
-			log.info("loading TestTool configuration [{}]", file);
+			LOG.info("loading TestTool configuration [{}]", file);
 			springConfigurationFiles.add(file);
 		}
 
@@ -91,7 +92,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 
 	@Override
 	public void closeWebApplicationContext(ServletContext servletContext) {
-		servletContext.log("Stopping IBIS WebApplicationInitializer");
+		APPLICATION_LOG.info("Stopping IBIS WebApplicationInitializer");
 		super.closeWebApplicationContext(servletContext);
 	}
 
@@ -103,23 +104,26 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		try {
 			WebApplicationContext wac = super.initWebApplicationContext(servletContext);
 			SpringBus bus = (SpringBus) wac.getBean("cxf");
-			servletContext.log("Successfully started IBIS WebApplicationInitializer with SpringBus ["+bus.getId()+"]");
+			LOG.info("Successfully started IBIS WebApplicationInitializer with SpringBus [{}]", bus::getId);
+			APPLICATION_LOG.info("Successfully started IBIS WebApplicationInitializer");
 			return wac;
 		} catch (Exception e) {
-			log.fatal("IBIS ApplicationInitializer failed to initialize", e);
+			LOG.fatal("IBIS ApplicationInitializer failed to initialize", e);
+			APPLICATION_LOG.fatal("IBIS ApplicationInitializer failed to initialize", e);
 			throw e;
 		}
 	}
 
-	private void checkAndCorrectLegacyServerTypes(ServletContext servletContext) {
+	//TODO: remove this in 8.0
+	private void checkAndCorrectLegacyServerTypes() {
 		//In case the property is explicitly set with an unsupported value, E.g. 'applName + number'
 		String applicationServerType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 		if (StringUtils.isNotEmpty(applicationServerType)) {
 			if (applicationServerType.equalsIgnoreCase("WAS5") || applicationServerType.equalsIgnoreCase("WAS6")) {
-				servletContext.log("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [WAS]");
+				LOG.warn("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [WAS]");
 				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "WAS");
 			} else if (applicationServerType.equalsIgnoreCase("TOMCAT6")) {
-				servletContext.log("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [TOMCAT]");
+				LOG.warn("interpeting value ["+applicationServerType+"] of property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] as [TOMCAT]");
 				System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "TOMCAT");
 			}
 		}
@@ -128,11 +132,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 	private void determineApplicationServerType(ServletContext servletContext) {
 		String serverInfo = servletContext.getServerInfo();
 		String autoDeterminedApplicationServerType = null;
-		if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere Liberty")) {
-			autoDeterminedApplicationServerType = "WLP";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "WebSphere")) {
-			autoDeterminedApplicationServerType = "WAS";
-		} else if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
+		if (StringUtils.containsIgnoreCase(serverInfo, "Tomcat")) {
 			autoDeterminedApplicationServerType = "TOMCAT";
 		} else if (StringUtils.containsIgnoreCase(serverInfo, "JBoss")) {
 			autoDeterminedApplicationServerType = "JBOSS";
@@ -147,17 +147,17 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 			}
 		} else {
 			autoDeterminedApplicationServerType = "TOMCAT";
-			servletContext.log("unknown server info ["+serverInfo+"] default application server type could not be determined, TOMCAT will be used as default value");
+			APPLICATION_LOG.warn("Unknown server info [{}] default application server type could not be determined, TOMCAT will be used as default value", serverInfo);
 		}
 
 		//has it explicitly been set? if not, set the property
 		String serverType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 		String serverCustomization = System.getProperty(AppConstants.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY,"");
 		if (autoDeterminedApplicationServerType.equals(serverType)) { //and is it the same as the automatically detected version?
-			servletContext.log("property ["+AppConstants.APPLICATION_SERVER_TYPE_PROPERTY+"] already has a default value ["+autoDeterminedApplicationServerType+"]");
+			LOG.info("property [{}] already has a default value [{}]", AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, autoDeterminedApplicationServerType);
 		}
 		else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
-			servletContext.log("determined ApplicationServer ["+autoDeterminedApplicationServerType+"]"+(StringUtils.isNotEmpty(serverCustomization)? " customization ["+serverCustomization+"]":""));
+			APPLICATION_LOG.info("Determined ApplicationServer [{}]{}", autoDeterminedApplicationServerType, (StringUtils.isNotEmpty(serverCustomization) ? " customization ["+serverCustomization+"]":""));
 			System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, autoDeterminedApplicationServerType);
 		}
 	}

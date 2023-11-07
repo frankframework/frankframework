@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,11 +19,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,11 +36,11 @@ import nl.nn.adapterframework.core.IPostboxListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLine.ExitState;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.RunState;
 import nl.nn.adapterframework.util.RunStateEnquirer;
 import nl.nn.adapterframework.util.RunStateEnquiring;
@@ -86,7 +87,7 @@ import nl.nn.adapterframework.util.RunStateEnquiring;
  * @author Gerrit van Brakel
  * @since 4.0.1
  */
-public class PullingJmsListener extends JmsListenerBase implements IPostboxListener<javax.jms.Message>, ICorrelatedPullingListener<javax.jms.Message>, HasSender, RunStateEnquiring {
+public class PullingJmsListener extends JmsListenerBase implements IPostboxListener<Message>, ICorrelatedPullingListener<Message>, HasSender, RunStateEnquiring {
 
 	private static final String THREAD_CONTEXT_MESSAGECONSUMER_KEY="messageConsumer";
 	private RunStateEnquirer runStateEnquirer=null;
@@ -137,9 +138,10 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		}
 	}
 
+	@Nonnull
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
-		Map<String,Object> threadContext = new HashMap<String,Object>();
+		Map<String,Object> threadContext = new HashMap<>();
 
 		try {
 			if (!isSessionsArePooled()) {
@@ -157,7 +159,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	@Override
-	public void closeThread(Map<String,Object> threadContext) throws ListenerException {
+	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		try {
 			if (!isSessionsArePooled()) {
 				MessageConsumer mc = (MessageConsumer) threadContext.remove(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
@@ -173,51 +175,24 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
-		try {
-
-			// TODO Do we still need this? Should we rollback too? See
-			// PushingJmsListener.afterMessageProcessed() too (which does a
-			// rollback, but no commit).
-			if (!isTransacted()) {
-				if (isJmsTransacted()) {
-					// the following if transacted using transacted sessions, instead of XA-enabled sessions.
-					Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
-					if (session == null) {
-						log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.messageIdKey) +"] has no session to commit or rollback");
-					} else {
-						if (plr.getState()==ExitState.SUCCESS) {
-							session.commit();
-						} else {
-							log.warn("Listener ["+getName()+"] message ["+ (String)threadContext.get(PipeLineSession.messageIdKey) +"] not committed nor rolled back either");
-							//TODO: enable rollback, or remove support for JmsTransacted altogether (XA-transactions should do it all)
-							// session.rollback();
-						}
-						if (isSessionsArePooled()) {
-							threadContext.remove(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
-							releaseSession(session);
-						}
-					}
-				} else {
-					// TODO: dit weghalen. Het hoort hier niet, en zit ook al in getIdFromRawMessage. Daar hoort het ook niet, overigens...
-					if (getAcknowledgeModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE) {
-						log.debug("["+getName()+"] acknowledges message with id ["+threadContext.get(PipeLineSession.messageIdKey)+"]");
-						((TextMessage)rawMessageOrWrapper).acknowledge();
-					}
-				}
+	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
+		super.afterMessageProcessed(plr, rawMessageWrapper, pipeLineSession);
+		if (!isTransacted() && isJmsTransacted() && isSessionsArePooled()) {
+			Session queueSession = (Session) pipeLineSession.remove(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
+			if (queueSession!=null) {
+				releaseSession(queueSession);
 			}
-		} catch (JMSException e) {
-			throw new ListenerException(e);
 		}
 	}
 
-	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, Map<String, Object> threadContext, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {
-		Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
+
+	@Override
+	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {
+		Session session = (Session) pipeLineSession.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 		if (session==null) {
 			try {
-				session=getSession(threadContext);
-				send(session, replyTo, replyCid, prepareReply(plr.getResult(),threadContext), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
+				session=getSession(pipeLineSession);
+				send(session, replyTo, replyCid, prepareReply(plr.getResult(), pipeLineSession), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 			} finally {
 				releaseSession(session);
 			}
@@ -229,16 +204,16 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	/**
-	 * Retrieves messages from queue or other channel, but does no processing on it.
-	 */
+     * Retrieves messages from queue or other channel, but does no processing on it.
+     */
 	@Override
-	public javax.jms.Message getRawMessage(Map<String,Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<Message> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		return getRawMessageFromDestination(null, threadContext);
 	}
 
 	@Override
-	public javax.jms.Message getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeoutException {
-		javax.jms.Message msg = getRawMessageFromDestination(correlationId, threadContext);
+	public RawMessageWrapper<Message> getRawMessage(String correlationId, Map<String,Object> threadContext) throws ListenerException, TimeoutException {
+		RawMessageWrapper<Message> msg = getRawMessageFromDestination(correlationId, threadContext);
 		if (msg==null) {
 			throw new TimeoutException(getLogPrefix()+" timed out waiting for message with correlationId ["+correlationId+"]");
 		}
@@ -259,9 +234,10 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 	/**
 	 * Retrieves messages from queue or other channel under transaction control, but does no processing on it.
 	 */
-	private javax.jms.Message getRawMessageFromDestination(String correlationId, Map<String,Object> threadContext) throws ListenerException {
+	private RawMessageWrapper<Message> getRawMessageFromDestination(String correlationId, Map<String,Object> threadContext) throws ListenerException {
 		Session session=null;
-		javax.jms.Message msg = null;
+		Message msg = null;
+		String messageId = null;
 		checkTransactionManagerValidity();
 		try {
 			session = getSession(threadContext);
@@ -272,6 +248,11 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				while (msg==null && correlationId==null && canGoOn() && !isTransacted()) {
 					msg = mc.receive(getTimeOut());
 				}
+				if (msg == null) {
+					return null;
+				}
+				messageId = msg.getJMSMessageID();
+				return new RawMessageWrapper<>(msg, messageId, correlationId == null ? msg.getJMSCorrelationID() : correlationId);
 			} catch (JMSException e) {
 				throw new ListenerException(getLogPrefix()+"exception retrieving message",e);
 			} finally {
@@ -284,22 +265,21 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 				releaseSession(session);
 			}
 		}
-		return msg;
 	}
 
 	/**
 	 * @see IPostboxListener#retrieveRawMessage(String, Map)
 	 */
 	@Override
-	public javax.jms.Message retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException {
+	public RawMessageWrapper<Message> retrieveRawMessage(String messageSelector, Map<String,Object> threadContext) throws ListenerException {
 		Session session=null;
 		try {
 			session = getSession(threadContext);
 			MessageConsumer mc=null;
 			try {
 				mc = getMessageConsumer(session, getDestination(), messageSelector);
-				javax.jms.Message result = (getTimeOut()<0) ? mc.receiveNoWait() : mc.receive(getTimeOut());
-				return result;
+				Message result = (getTimeOut()<0) ? mc.receiveNoWait() : mc.receive(getTimeOut());
+				return new RawMessageWrapper<>(result, result.getJMSMessageID(), messageSelector);
 			} finally {
 				if (mc != null) {
 					try {

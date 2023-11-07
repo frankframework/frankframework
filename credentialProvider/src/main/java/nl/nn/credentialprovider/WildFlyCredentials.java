@@ -22,7 +22,6 @@ import java.util.function.Supplier;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
-import org.wildfly.security.credential.store.UnsupportedCredentialTypeException;
 import org.wildfly.security.password.Password;
 import org.wildfly.security.password.interfaces.ClearPassword;
 
@@ -53,13 +52,13 @@ public class WildFlyCredentials extends Credentials {
 		}
 	}
 
-	private boolean aliasExists(String suffix) throws UnsupportedCredentialTypeException, CredentialStoreException {
+	private boolean aliasExists(String suffix) throws CredentialStoreException {
 		String key=getAlias()+suffix;
 		return (cs.exists(key, PasswordCredential.class));
 	}
 
 
-	private void retrieveAndSet(String suffix, Consumer<String> setter) throws UnsupportedCredentialTypeException, CredentialStoreException, IllegalStateException {
+	private void retrieveAndSet(String suffix, Consumer<String> setter) throws CredentialStoreException, IllegalStateException {
 		String key=getAlias()+suffix;
 		if (cs.exists(key, PasswordCredential.class)) {
 			Password credential = cs.retrieve(key, PasswordCredential.class).getPassword();

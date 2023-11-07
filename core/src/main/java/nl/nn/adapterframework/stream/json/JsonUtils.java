@@ -19,14 +19,13 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 
+import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
+
 import jakarta.json.Json;
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParser.Event;
 import jakarta.json.stream.JsonParserFactory;
-
-import org.apache.logging.log4j.Logger;
-import org.xml.sax.SAXException;
-
 import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.util.LogUtil;
 

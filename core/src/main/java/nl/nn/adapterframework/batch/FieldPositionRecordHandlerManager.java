@@ -17,15 +17,15 @@ package nl.nn.adapterframework.batch;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
 
 /**
- * Manager that decides the handlers based on the content of a field in the specified 
+ * Manager that decides the handlers based on the content of a field in the specified
  * position in a record. The fields in the record are separated by a separator.
  * The value of the specified field is taken as key in the flow-table.
- * 
- * 
+ *
+ *
  * @author John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
@@ -51,12 +51,12 @@ public class FieldPositionRecordHandlerManager extends RecordHandlerManager {
 
 
 
-	@IbisDoc({"position of field that identifies the recordtype (position of first field is 1)"})
+	/** position of field that identifies the recordtype (position of first field is 1) */
 	public void setFieldNr(int i) {
 		fieldNr = i;
 	}
 
-	@IbisDoc({"separator that separates the fields in the record", ""})
+	/** separator that separates the fields in the record */
 	public void setSeparator(String string) {
 		separator = string;
 	}

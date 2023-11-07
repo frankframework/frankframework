@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package nl.nn.adapterframework.jms;
 import java.util.Map;
 
 import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Session;
+import javax.jms.Message;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,11 +35,12 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IThreadCountControllable;
 import nl.nn.adapterframework.core.IbisExceptionListener;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.core.PipeLine.ExitState;
-import nl.nn.adapterframework.core.PipeLineResult;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Mandatory;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.CredentialFactory;
+
 /**
  * JMSListener re-implemented as a pushing listener rather than a pulling listener.
  * The JMS messages have to come in from an external source: an MDB or a Spring
@@ -79,20 +79,20 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * whatever it is configured to.</p>
  *
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
- * <code>javax.jms.TextMessage</code>s <br/><br/>
+ * {@link javax.jms.TextMessage}s and {@link javax.jms.BytesMessage}<br/><br/>
  * </p>
  *
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<javax.jms.Message>, IThreadCountControllable, IKnowsDeliveryCount<javax.jms.Message> {
+public class PushingJmsListener extends JmsListenerBase implements IPortConnectedListener<Message>, IThreadCountControllable, IKnowsDeliveryCount<Message> {
 
 	private @Getter CacheMode cacheMode;
 	private @Getter long pollGuardInterval = Long.MIN_VALUE;
 
-	private @Getter @Setter IListenerConnector<javax.jms.Message> jmsConnector;
-	private @Getter @Setter IMessageHandler<javax.jms.Message> handler;
-	private @Getter @Setter Receiver<javax.jms.Message> receiver;
+	private @Getter @Setter IListenerConnector<Message> jmsConnector;
+	private @Getter @Setter IMessageHandler<Message> handler;
+	private @Getter @Setter Receiver<Message> receiver;
 	private @Getter @Setter IbisExceptionListener exceptionListener;
 
 
@@ -146,33 +146,16 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult plr, Object rawMessageOrWrapper, Map<String, Object> threadContext) throws ListenerException {
-		super.afterMessageProcessed(plr, rawMessageOrWrapper, threadContext);
-		try {
-			// TODO Do we still need this? Should we commit too? See
-			// PullingJmsListener.afterMessageProcessed() too (which does a
-			// commit, but no rollback).
-			if (plr!=null && !isTransacted() && isJmsTransacted() && plr.getState()==ExitState.SUCCESS) {
-				Session session = (Session)threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in threadcontext by JmsConnector
-				if (session==null) {
-					log.error(getLogPrefix()+"session is null, cannot roll back session");
-				} else {
-					log.warn(getLogPrefix()+"got exit state ["+plr.getState()+"], rolling back session");
-					session.rollback();
-				}
-			}
-		} catch (JMSException e) {
-			throw new ListenerException(e);
-		}
-	}
-
-	@Override
-	public IListenerConnector<javax.jms.Message> getListenerPortConnector() {
+	public IListenerConnector<Message> getListenerPortConnector() {
 		return jmsConnector;
 	}
 
-
-
+	@Override
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) throws ListenerException {
+		Map<String, Object> messageProperties = extractMessageProperties(rawMessage);
+		session.putAll(messageProperties);
+		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
+	}
 
 	@Override
 	public boolean isThreadCountReadable() {
@@ -233,9 +216,9 @@ public class PushingJmsListener extends JmsListenerBase implements IPortConnecte
 	}
 
 	@Override
-	public int getDeliveryCount(javax.jms.Message rawMessage) {
+	public int getDeliveryCount(RawMessageWrapper<Message> rawMessage) {
 		try {
-			javax.jms.Message message=rawMessage;
+			Message message=rawMessage.getRawMessage();
 			// Note: Tibco doesn't set the JMSXDeliveryCount for messages
 			// delivered for the first time (when JMSRedelivered is set to
 			// false). Hence when set is has a value of 2 or higher. When not

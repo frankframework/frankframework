@@ -1,11 +1,6 @@
-HTTP/1.1 200 OK
-Message-Id: testmessageac13ecb1--30fe9225_16caa708707_-7fb1
-Date: Fri, 05 Oct 2018 15:56:44 GMT
-Keep-Alive: timeout=15, max=100
-Connection: Keep-Alive
+Response-Code: 200
+Encoding: UTF-8
 Content-Type: multipart/related; type="application/xop+xml"; boundary="uuid:a1a5f51a-3c87-4751-a892-50a3f04a7a9d"; start="<root.message@cxf.apache.org>"; start-info="text/xml"
-Content-Language: nl-NL
-Content-Length: 104652
 
 --uuid:a1a5f51a-3c87-4751-a892-50a3f04a7a9d
 Content-Type: application/xop+xml; charset=UTF-8; type="text/xml";

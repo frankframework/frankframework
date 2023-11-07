@@ -3,6 +3,7 @@ package nl.nn.adapterframework.jdbc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,10 +11,8 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -22,6 +21,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -37,6 +39,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
+import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
@@ -45,20 +48,31 @@ import nl.nn.adapterframework.util.LogUtil;
 
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {
+
+	private boolean failed = false;
+	@Rule
+	public TestWatcher watchman = new TestWatcher() {
+		@Override
+		protected void failed(Throwable e, Description description) {
+			failed = true;
+		}
+	};
+
 	protected static final String TEST_CHANGESET_PATH = "Migrator/Ibisstore_4_unittests_changeset.xml";
 	protected static final String DEFAULT_CHANGESET_PATH = "IAF_Util/IAF_DatabaseChangelog.xml";
 	protected static Logger log = LogUtil.getLogger(JdbcTestBase.class);
 	private @Getter TestConfiguration configuration;
 
-	public static final String TEST_TABLE="Temp"; // use mixed case tablename for testing
+	public static final String TEST_TABLE = "Temp"; // use mixed case tablename for testing
 
 	protected static String singleDatasource = null;  //null; // "MariaDB";  // set to a specific datasource name, to speed up testing
 
+	private boolean dropAllAfterEachTest = true;
 	protected Liquibase liquibase;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
 	protected Properties dataSourceInfo;
 
-	/** NON-Transactional Connection. Only to be used for set-up and tear-down like actions! */
+	/** NON-Transactional global Connection. Only to be used for set-up and tear-down like actions! */
 	protected Connection connection;
 
 	@Parameterized.Parameter(0)
@@ -69,9 +83,6 @@ public abstract class JdbcTestBase {
 
 	private @Getter IDbmsSupportFactory dbmsSupportFactory;
 	protected @Getter IDbmsSupport dbmsSupport;
-
-	private boolean runMigratorOnlyOncePerDatabaseAndChangelog = true;
-	private Set<String> migratedDatabaseChangelogFiles = new HashSet<>();
 
 	@Parameters(name= "{0}: {1}")
 	public static Collection data() throws NamingException {
@@ -96,18 +107,22 @@ public abstract class JdbcTestBase {
 	public void setup() throws Exception {
 		dataSource = transactionManagerType.getDataSource(productKey);
 
-		String dsInfo = dataSource.toString(); //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
+		String dsInfo; //We can assume a connection has already been made by the URLDataSourceFactory to validate the DataSource/connectivity
+		if(dataSource instanceof TransactionalDbmsSupportAwareDataSourceProxy) {
+			dsInfo = ((TransactionalDbmsSupportAwareDataSourceProxy) dataSource).getTargetDataSource().toString();
+		} else {
+			dsInfo = dataSource.toString();
+		}
 		dataSourceInfo = parseDataSourceInfo(dsInfo);
 
 		//The datasourceName must be equal to the ProductKey to ensure we're testing the correct datasource
-		assertEquals("DataSourceName does not match ProductKey", productKey,dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY));
+		assertEquals("DataSourceName does not match ProductKey", productKey, dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY));
 
 		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceInfo.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
 		configuration = transactionManagerType.getConfigurationContext(productKey);
 		dbmsSupportFactory = configuration.getBean(IDbmsSupportFactory.class, "dbmsSupportFactory");
 
-		connection = new DelegatingDataSource(dataSource).getConnection();
-		connection.setAutoCommit(true); //Ensure this connection is NOT transactional!
+		connection = createNonTransactionalConnection();
 
 		prepareDatabase();
 	}
@@ -129,11 +144,13 @@ public abstract class JdbcTestBase {
 	@After
 	public void teardown() throws Exception {
 		if(liquibase != null) {
-			try {
-				liquibase.dropAll();
-			} catch(Exception e) {
-				log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets");
-				liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
+			if (dropAllAfterEachTest) {
+				try {
+					liquibase.dropAll();
+				} catch(Exception e) {
+					log.warn("Liquibase failed to drop all objects. Trying to rollback the changesets", e);
+					liquibase.rollback(liquibase.getChangeSetStatuses(null).size(), null);
+				}
 			}
 			liquibase.close();
 			liquibase = null;
@@ -143,23 +160,46 @@ public abstract class JdbcTestBase {
 			try {
 				dropTableIfPresent(connection, TEST_TABLE);
 			} finally {
-				connection.rollback();
+				try {
+					connection.rollback();
+				} catch (Exception e) {
+					log.debug("Could not rollback: "+e.getMessage());
+				}
 				connection.close();
+				connection = null;
 			}
 		}
+
+		if (failed) {
+			transactionManagerType.closeConfigurationContext();
+			configuration = null;
+		}
+	}
+
+	protected final Connection createNonTransactionalConnection() throws SQLException {
+		Connection connection = getTargetDataSource(dataSource).getConnection();
+		connection.setAutoCommit(true); //Ensure this connection is NOT transactional!
+		return connection;
+	}
+
+	private DataSource getTargetDataSource(DataSource dataSource) {
+		if(dataSource instanceof DelegatingDataSource) {
+			return getTargetDataSource(((DelegatingDataSource) dataSource).getTargetDataSource());
+		}
+		return dataSource;
 	}
 
 	//IBISSTORE_CHANGESET_PATH
 	protected void runMigrator(String changeLogFile) throws Exception {
-		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
-		if (runMigratorOnlyOncePerDatabaseAndChangelog) {
-			String key = getDataSourceName() +"/" + changeLogFile;
-			if (migratedDatabaseChangelogFiles.contains(key)) {
-				return;
-			}
-			migratedDatabaseChangelogFiles.add(key);
-		}
+		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(createNonTransactionalConnection()));
 		liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
+		liquibase.forceReleaseLocks();
+		StringWriter out = new StringWriter(2048);
+		liquibase.reportStatus(true, new Contexts(), out);
+		log.info("Liquibase Database: {}, {}", liquibase.getDatabase().getDatabaseProductName(), liquibase.getDatabase().getDatabaseProductVersion());
+		log.info("Liquibase Database connection: {}", liquibase.getDatabase());
+		log.info("Liquibase changeset status:");
+		log.info(out.toString());
 		liquibase.update(new Contexts());
 	}
 
@@ -236,16 +276,16 @@ public abstract class JdbcTestBase {
 	}
 
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {
-		QueryExecutionContext context = new QueryExecutionContext(query, queryType, null);
-		dbmsSupport.convertQuery(context, "Oracle");
-		log.debug("executing translated query ["+context.getQuery()+"]");
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+
+		log.debug("executing translated query [{}]", translatedQuery);
 		if (queryType==QueryType.SELECT) {
 			if(!selectForUpdate) {
-				return  connection.prepareStatement(context.getQuery());
+				return  connection.prepareStatement(translatedQuery);
 			}
-			return connection.prepareStatement(context.getQuery(), ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+			return connection.prepareStatement(translatedQuery, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
 		}
-		JdbcUtil.executeStatement(connection, context.getQuery());
+		JdbcUtil.executeStatement(connection, translatedQuery);
 		return null;
 	}
 

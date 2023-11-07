@@ -1,9 +1,17 @@
 package nl.nn.adapterframework.configuration.digester;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -12,19 +20,22 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.beanutils.PropertyUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.util.AppConstants;
 
 public class ValidateAttributeRuleTest extends Mockito {
 	private TestConfiguration configuration;
@@ -87,6 +98,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 		attr.put("testString", "testStringValue");
 		attr.put("deprecatedString", "deprecatedValue");
 		attr.put("testInteger", "3");
+		attr.put("testLong", "3");
 		attr.put("testBoolean", "true");
 		attr.put("testEnum", "two");
 
@@ -96,8 +108,40 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals("testStringValue", bean.getTestString());
 		assertEquals("deprecatedValue", bean.getDeprecatedString());
 		assertEquals(3, bean.getTestInteger());
+		assertEquals(3L, bean.getTestLong());
 		assertEquals(true, bean.isTestBoolean());
 		assertEquals(TestEnum.TWO, bean.getTestEnum());
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(0, configWarnings.size());
+	}
+
+	@Test
+	public void testAttributeFromInterfaceDefaultMethod() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("naam", "Pietje Puk");
+
+		ClassWithEnum bean = runRule(ClassWithEnum.class, attr);
+
+		assertEquals("Pietje Puk", bean.getName());
+		assertEquals("Pietje Puk", bean.getNaam());
+	}
+
+	@Test
+	public void testEmptyAttribute() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("testString", "");
+		attr.put("testInteger", "");
+		attr.put("testBoolean", "");
+
+		ClassWithEnum bean = runRule(ClassWithEnum.class, attr);
+
+		assertEquals("", bean.getTestString(), "empty string value should be empty string");
+		assertEquals(1234, bean.getTestInteger(), "empty int value should be ingored"); //may trigger cannot be converted to int exception
+		assertEquals(false, bean.isTestBoolean(), "empty bool value should be ingored"); //may trigger a default warning exception
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(0, configWarnings.size(), "there should not be any configuration warnings but got: "+configWarnings.getWarnings());
 	}
 
 	@Test
@@ -161,20 +205,52 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 	@Test
 	public void testAttributeValueEqualToDefaultValue() throws Exception {
+		// Arrange
+		Map<String, String> attr = new LinkedHashMap<>();
+		attr.put("testString", "test");
+		attr.put("testInteger", "1234");
+		attr.put("testLong", "0");
+		attr.put("testBoolean", "false");
+		attr.put("testEnum", "one");
+
+		// Act
+		runRule(ClassWithEnum.class, attr);
+
+		// Assert
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(5, configWarnings.size());
+		assertEquals("ClassWithEnum attribute [testString] already has a default value [test]", configWarnings.get(0));
+		assertEquals("ClassWithEnum attribute [testInteger] already has a default value [1234]", configWarnings.get(1));
+		assertEquals("ClassWithEnum attribute [testLong] already has a default value [0]", configWarnings.get(2));
+		assertEquals("ClassWithEnum attribute [testBoolean] already has a default value [false]", configWarnings.get(3));
+		assertEquals("ClassWithEnum attribute [testEnum] already has a default value [one]", configWarnings.get(4));
+	}
+
+	@Test
+	public void testAttributeValueEqualToDefaultValueWarningsSuppressed() throws Exception {
+		// Arrange
+		configuration = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
+		AppConstants appConstants = loadAppConstants(configuration);
+		appConstants.setProperty(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey(), true);
+
 		Map<String, String> attr = new LinkedHashMap<>();
 		attr.put("testString", "test");
 		attr.put("testInteger", "0");
+		attr.put("testLong", "0");
 		attr.put("testBoolean", "false");
+		attr.put("testEnum", "one");
 
+		// Act
 		runRule(ClassWithEnum.class, attr);
 
-		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
-		assertEquals(3, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [testString] already has a default value [test]", configWarnings.get(0));
-		assertEquals("ClassWithEnum attribute [testInteger] already has a default value [0]", configWarnings.get(1));
-		assertEquals("ClassWithEnum attribute [testBoolean] already has a default value [false]", configWarnings.get(2));
-	}
+		// After
+		appConstants.remove(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey());
 
+
+		// Assert
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertTrue(configWarnings.isEmpty());
+	}
 
 	@Test
 	public void testAttributeWithNumberFormatException() throws Exception {
@@ -185,7 +261,7 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [testInteger] with value [a String] cannot be converted to a number: For input string: \"a String\"", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testInteger]: value [a String] cannot be converted to a number [int]", configWarnings.get(0));
 	}
 
 	@Test
@@ -199,19 +275,31 @@ public class ValidateAttributeRuleTest extends Mockito {
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum attribute [testIntegerWithoutGetter] with value [a String] cannot be converted to a number", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testIntegerWithoutGetter]: value [a String] cannot be converted to a number [int]", configWarnings.get(0));
 	}
 
 	@Test
 	public void testUnparsableEnum() throws Exception {
 		Map<String, String> attr = new HashMap<>();
-		attr.put("testEnum", "unparsable");
+		attr.put("testEnum", "notEnumValue");
 
 		runRule(ClassWithEnum.class, attr);
 
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 		assertEquals(1, configWarnings.size());
-		assertEquals("ClassWithEnum cannot set field [testEnum] to unparsable value [unparsable]. Must be one of [ONE, TWO]", configWarnings.get(0));
+		assertEquals("ClassWithEnum cannot set field [testEnum]: unparsable value [notEnumValue]. Must be one of [ONE, TWO]", configWarnings.get(0));
+	}
+
+	@Test
+	public void testUnparsableEnumWithDifferentFieldName() throws Exception {
+		Map<String, String> attr = new HashMap<>();
+		attr.put("enumWithDifferentName", "notEnumValue");
+
+		runRule(ClassWithEnum.class, attr);
+
+		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
+		assertEquals(1, configWarnings.size());
+		assertEquals("ClassWithEnum cannot set field [enumWithDifferentName]: unparsable value [notEnumValue]. Must be one of [ONE, TWO]", configWarnings.get(0));
 	}
 
 	@Test
@@ -265,11 +353,110 @@ public class ValidateAttributeRuleTest extends Mockito {
 		assertEquals("ClassWithEnum attribute [testSuppressAttribute] is protected, cannot be set from configuration", configWarnings.get(0));
 	}
 
-	public enum TestEnum {
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testSuppressDeprecationWarningsForSomeAdapters() throws IOException {
+		// Arrange
+		configuration = new TestConfiguration("testConfigurationWithDigester.xml");
+		configuration.setId("TestSuppressDeprecationWarningsConfiguration");
+		loadAppConstants(configuration);
+
+		// Act
+		// Refreshing the configuration will trigger the loading via digester
+		configuration.refresh();
+
+		// Assert
+		ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
+		assertEquals(4, configurationWarnings.getWarnings().size());
+		assertThat(configurationWarnings.getWarnings(), not(anyOf(
+			hasItem(containsString("DeprecatedPipe1InAdapter1")),
+			hasItem(containsString("DeprecatedPipe2InAdapter1")),
+			hasItem(containsString("DeprecatedPipe1InAdapter3")),
+			hasItem(containsString("DeprecatedPipe2InAdapter3"))
+		)));
+		assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
+			containsString("DeprecatedPipe1InAdapter2"),
+			containsString("DeprecatedPipe2InAdapter2"),
+			containsString("DeprecatedPipe1InAdapter4"),
+			containsString("DeprecatedPipe2InAdapter4")
+		));
+	}
+
+	@SuppressWarnings("unchecked")
+	@Test
+	public void testSuppressDeprecationWarningsWithLocationInfo() throws IOException {
+		// Arrange
+		configuration = new TestConfiguration("testConfigurationWithDigester.xml");
+		configuration.setId("TestSuppressDeprecationWarningsConfiguration");
+		AppConstants appConstants = loadAppConstants(configuration);
+		appConstants.setProperty("configuration.warnings.linenumbers", true);
+
+		// Act
+		// Refreshing the configuration will trigger the loading via digester
+		configuration.refresh();
+
+		// Assert
+		ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
+		assertEquals(4, configurationWarnings.getWarnings().size());
+		assertThat(configurationWarnings.getWarnings(), not(anyOf(
+			hasItem(containsString("[DeprecatedPipe1InAdapter1]")),
+			hasItem(containsString("[DeprecatedPipe2InAdapter1]")),
+			hasItem(containsString("[DeprecatedPipe1InAdapter3]")),
+			hasItem(containsString("[DeprecatedPipe2InAdapter3]"))
+		)));
+		assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
+			containsString("[DeprecatedPipe1InAdapter2] on line [35] column [91]"),
+			containsString("[DeprecatedPipe2InAdapter2] on line [42] column [6]"),
+			containsString("[DeprecatedPipe1InAdapter4] on line [79] column [24]"),
+			containsString("[DeprecatedPipe2InAdapter4] on line [84] column [6]")
+		));
+
+		// Cleanup so we don't crash other tests
+		appConstants.setProperty("configuration.warnings.linenumbers", false);
+	}
+
+	@Test
+	public void testSuppressDeprecationWarningsForAllAdapters() throws IOException {
+		// Arrange
+		configuration = new TestConfiguration("testConfigurationWithDigester.xml");
+		configuration.setId("TestSuppressDeprecationWarningsConfiguration");
+		AppConstants appConstants = loadAppConstants(configuration);
+		appConstants.setProperty(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), true);
+
+		// Act
+		// Refreshing the configuration will trigger the loading via digester
+		configuration.refresh();
+
+		// Assert
+		ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
+		assertTrue(configurationWarnings.getWarnings().isEmpty());
+
+		// Cleanup so we don't crash other tests
+		appConstants.setProperty(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), false);
+	}
+
+	private AppConstants loadAppConstants(ApplicationContext applicationContext) throws IOException {
+		AppConstants appConstants = AppConstants.getInstance(applicationContext != null ? applicationContext.getClassLoader() : this.getClass().getClassLoader());
+		appConstants.load(getClass().getClassLoader().getResourceAsStream("AppConstants/AppConstants_ValidateAttributeRuleTest.properties"));
+		return appConstants;
+	}
+
+	public static enum TestEnum {
 		ONE, TWO;
 	}
 
-	public static class ClassWithEnum implements INamedObject {
+	public static interface InterfaceWithDefaultMethod extends INamedObject {
+
+		default void setNaam(String naam) {
+			setName(naam);
+		}
+
+		default String getNaam() {
+			return getName();
+		}
+	}
+
+	public static class ClassWithEnum implements INamedObject, InterfaceWithDefaultMethod {
 
 		private @Getter @Setter String name;
 		private @Getter @Setter TestEnum testEnum = TestEnum.ONE;
@@ -277,11 +464,16 @@ public class ValidateAttributeRuleTest extends Mockito {
 		private @Deprecated @Getter @Setter String deprecatedString;
 		private @Getter String configWarningString;
 		private @Getter String deprecatedConfigWarningString;
-		private @Getter @Setter int testInteger = 0;
+		private @Getter @Setter int testInteger = 1234;
+		private @Getter @Setter long testLong = 0L;
 		private @Getter @Setter boolean testBoolean = false;
 		private @Setter String testStringWithoutGetter = "string";
 		private @Setter int testIntegerWithoutGetter = 0;
 		private @Setter boolean testBooleanWithoutGetter = false;
+
+		public void setEnumWithDifferentName(TestEnum testEnum) {
+			this.testEnum = testEnum;
+		}
 
 		@ConfigurationWarning("my test warning")
 		public void setConfigWarningString(String str) {

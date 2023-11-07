@@ -27,7 +27,6 @@ import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -38,6 +37,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  *
  * @author  Gerrit van Brakel
  * @since   4.7
+ * @deprecated Warning: non-maintained functionality.
  */
 public class ResultBlock2Sender extends Result2StringWriter {
 
@@ -154,17 +154,12 @@ public class ResultBlock2Sender extends Result2StringWriter {
 				Message message=new Message(writer.getBuffer().toString());
 				log.debug("sending block ["+message+"] to sender ["+sender.getName()+"]");
 				writer.getBuffer().setLength(0);
-				/*
-				 * This used to be:
-				 * getSender().sendMessage(streamId+"-"+incCounter(streamId),message, session);
-				 * Be aware that 'correlationId' no longer reflects streamId and counter
-				 */
-				getSender().sendMessageOrThrow(message,session);
+				getSender().sendMessageOrThrow(message, session).close();
 			}
 		}
 	}
 
-	@IbisDoc({"Sender to which each block of results is sent"})
+	/** Sender to which each block of results is sent */
 	public void setSender(ISender sender) {
 		this.sender = sender;
 	}

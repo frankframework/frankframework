@@ -1,19 +1,21 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.runners.MethodSorters;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -26,7 +28,7 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 	protected abstract FS createFileSystem();
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		fileSystem = createFileSystem();
@@ -107,7 +109,10 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 			while(iterator.hasNext()) {
 				IMessageBrowsingIteratorItem item = iterator.next();
 				String storageKey = item.getId();
-				F file = browser.browseMessage(storageKey);
+				RawMessageWrapper<F> rawMessageWrapper = browser.browseMessage(storageKey);
+				assertEquals(item.getId(), rawMessageWrapper.getId());
+				assertEquals(item.getId(), rawMessageWrapper.getContext().get(PipeLineSession.STORAGE_ID_KEY));
+				F file = rawMessageWrapper.getRawMessage();
 				items.put(item.getOriginalId(), fileSystem.getName(file));
 			}
 		}

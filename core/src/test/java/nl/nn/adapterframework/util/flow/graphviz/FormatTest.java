@@ -15,16 +15,16 @@
  */
 package nl.nn.adapterframework.util.flow.graphviz;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class FormatTest {
+class FormatTest {
 
-	public String dummy = "font-size=\""+10+"\"";
+	String dummy = "font-size=\""+10+"\"";
 
 	@Test
-	public void svgTest() {
+	void svgTest() {
 		Format format = Format.SVG;
 		assertEquals("svg", format.fileExtension);
 		assertEquals(false, format.image);
@@ -33,43 +33,43 @@ public class FormatTest {
 	}
 
 	@Test
-	public void randomInputHalfTheSize() {
+	void randomInputHalfTheSize() {
 		Format format = Format.SVG;
 		assertEquals("test123", format.postProcess("test123", 0.5));
 	}
 
 	@Test
-	public void halfTheSizeAsSvg() {
+	void halfTheSizeAsSvg() {
 		Format format = Format.SVG;
 		assertEquals("font-size=\"5.0\"", format.postProcess(dummy, 0.5));
 	}
 
 	@Test
-	public void equalSizeAsSvg() {
+	void equalSizeAsSvg() {
 		Format format = Format.SVG;
 		assertEquals("font-size=\"10\"", format.postProcess(dummy, 1.0));
 	}
 
 	@Test
-	public void doubleTheSizeAsSvg() {
+	void doubleTheSizeAsSvg() {
 		Format format = Format.SVG;
 		assertEquals("font-size=\"20.0\"", format.postProcess(dummy, 2.0));
 	}
 
 	@Test
-	public void halfTheSizeAsSvgStandalone() {
+	void halfTheSizeAsSvgStandalone() {
 		Format format = Format.SVG_STANDALONE;
 		assertEquals("font-size=\"5.0\"", format.postProcess(dummy, 0.5));
 	}
 
 	@Test
-	public void equalSizeAsSvgStandalone() {
+	void equalSizeAsSvgStandalone() {
 		Format format = Format.SVG_STANDALONE;
 		assertEquals("font-size=\"10\"", format.postProcess(dummy, 1.0));
 	}
 
 	@Test
-	public void doubleTheSizeAsSvgStandalone() {
+	void doubleTheSizeAsSvgStandalone() {
 		Format format = Format.SVG_STANDALONE;
 		assertEquals("font-size=\"20.0\"", format.postProcess(dummy, 2.0));
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019, 2020 Nationale-Nederlanden
+   Copyright 2013, 2019, 2020 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,18 +16,19 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Removes a key specified by <code>{@link #setSessionKey(String) sessionKey}</code>
@@ -60,7 +61,7 @@ public class RemoveFromSession extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String result = null;
+		String result;
 
 		String sessionKeys = getSessionKey();
 		if (StringUtils.isEmpty(sessionKeys)) {
@@ -72,35 +73,35 @@ public class RemoveFromSession extends FixedForwardPipe {
 		}
 		if (StringUtils.isEmpty(sessionKeys)) {
 			log.warn("no key specified");
-			result="[null]";
+			result = "[null]";
 		} else {
-			StringTokenizer st = new StringTokenizer(sessionKeys, ",");
-			while (st.hasMoreElements()) {
-				String sk = st.nextToken();
-				Object skResult = session.remove(sk);
-				if (skResult==null) {
-					log.warn("key ["+sk+"] not found");
-					skResult="[null]";
-				} else {
-					try {
-						skResult = Message.asString(skResult);
-					} catch (IOException e) {
-						throw new PipeRunException(this, "cannot open stream", e);
-					}
-					log.debug("key [{}] removed", sk);
-				}
-				if (result == null) {
-					result = (String)skResult;
-				} else {
-					result = result + "," + skResult;
-				}
-			}
+			result = StringUtil.splitToStream(sessionKeys)
+					.map(sk -> {
+						Object skResult = session.remove(sk);
+						if (skResult==null) {
+							log.warn("key [{}] not found", sk);
+							return "[null]";
+						} else {
+							log.debug("key [{}] removed", sk);
+							return objectToString(skResult);
+						}
+					})
+					.collect(Collectors.joining(","));
 		}
 
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	@IbisDoc({"name of the key of the entry in the <code>pipelinesession</code> to remove. if this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter", ""})
+	@SneakyThrows
+	private String objectToString(final Object skResult) {
+		try {
+			return Message.asString(skResult);
+		} catch (IOException e) {
+			throw new PipeRunException(this, "cannot open stream", e);
+		}
+	}
+
+	/** name of the key of the entry in the <code>pipelinesession</code> to remove. if this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter */
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}

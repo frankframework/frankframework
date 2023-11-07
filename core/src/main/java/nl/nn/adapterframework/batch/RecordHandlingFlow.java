@@ -23,15 +23,15 @@ import org.apache.logging.log4j.Logger;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.doc.FrankDocGroup;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * The flow contains the handlers to handle records of a specific type. 
+ * The flow contains the handlers to handle records of a specific type.
  * Each flow is registered to a manager using the recordHandlerManagerRef.
- *  
- * 
+ *
+ *
  * @author  John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 @FrankDocGroup(name = "Batch")
 public final class RecordHandlingFlow {
@@ -63,7 +63,7 @@ public final class RecordHandlingFlow {
 			!getRecordHandlerManagerRef().equals(manager.getName())) {
 				throw new ConfigurationException("recordHandlerManagerRef ["+getRecordHandlerManagerRef()+"] should be either equal to name of manager ["+manager.getName()+"], or left unspecified");
 		}
-		// obtain the named manager that is to be used after a specified record  
+		// obtain the named manager that is to be used after a specified record
 		IRecordHandlerManager nextManager = null;
 		if (StringUtils.isEmpty(getNextRecordHandlerManagerRef())) {
 			nextManager = manager;
@@ -75,7 +75,7 @@ public final class RecordHandlingFlow {
 		}
 		setNextRecordHandlerManager(nextManager);
 
-		// obtain the recordHandler 
+		// obtain the recordHandler
 		if (StringUtils.isNotEmpty(getRecordHandlerRef())) {
 			IRecordHandler recordHandler = registeredRecordHandlers.get(getRecordHandlerRef());
 			if (recordHandler!=null) {
@@ -111,61 +111,67 @@ public final class RecordHandlingFlow {
 		nextRecordHandlerManager = manager;
 	}
 
-	@IbisDoc({"Key under which this flow is registered in the manager", ""})
+	/** Key under which this flow is registered in the manager */
 	public void setRecordKey(String recordKey) {
 		this.recordKey = recordKey;
 	}
 
-	@IbisDoc({"Name of the manager to be used after handling this record", ""})
+	/** Name of the manager to be used after handling this record */
 	public void setNextRecordHandlerManagerRef(String nextRecordHandlerManagerName) {
 		nextRecordHandlerManagerRef = nextRecordHandlerManagerName;
 	}
 
-	@IbisDoc({"Name of the recordHandler to be used to transform records of the type specified in the key (optional)", ""})
+	/** Name of the recordHandler to be used to transform records of the type specified in the key (optional) */
 	public void setRecordHandlerRef(String recordHandlerName) {
 		recordHandlerRef = recordHandlerName;
 	}
 
-	@IbisDoc({"Name of the manager to which this flow must be added", ""})
+	/** Name of the manager to which this flow must be added */
 	public void setRecordHandlerManagerRef(String recordHandlerManagerName) {
 		recordHandlerManagerRef = recordHandlerManagerName;
 	}
 
-	@IbisDoc({"Name of the resultHandler to be used to handle the transformed result", ""})
+	/** Name of the resultHandler to be used to handle the transformed result */
 	public void setResultHandlerRef(String resultHandlerName) {
 		resultHandlerRef = resultHandlerName;
 	}
 
 
-	@IbisDoc({"Instructs the resultHandler to start a new block before the parsed line is processed", ""})
+	/** Instructs the resultHandler to start a new block before the parsed line is processed */
 	public void setOpenBlockBeforeLine(String blockName) {
 		openBlockBeforeLine = blockName;
 	}
 
-	@IbisDoc({"Instructs the resultHandler to end the specified block before the parsed line is processed", ""})
+	/** Instructs the resultHandler to end the specified block before the parsed line is processed */
 	public void setCloseBlockBeforeLine(String blockName) {
 		closeBlockBeforeLine = blockName;
 	}
 
 
-	@IbisDoc({"Instructs the resultHandler to start a new block after the parsed line is processed", ""})
+	/** Instructs the resultHandler to start a new block after the parsed line is processed */
 	public void setOpenBlockAfterLine(String blockName) {
 		openBlockAfterLine = blockName;
 	}
 
-	@IbisDoc({"Instructs the resultHandler to end the specified block after the parsed line is processed", ""})
+	/** Instructs the resultHandler to end the specified block after the parsed line is processed */
 	public void setCloseBlockAfterLine(String blockName) {
 		closeBlockAfterLine = blockName;
 	}
 
 
-	@IbisDoc({"If <code>true</code>, any open block of this type (and other nested open 'autoClose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)", "true"})
+	/**
+	 * If <code>true</code>, any open block of this type (and other nested open 'autoClose' block) is closed before a new one of the same type is opened. At a forced close, nested blocks are closed too (since 4.9)
+	 * @ff.default true
+	 */
 	public void setAutoCloseBlock(boolean b) {
 		autoCloseBlock = b;
 	}
 
 
-	@IbisDoc({"If &gt;0 the <code>openBlockBeforeLine</code> instruction is only performed when the current line number is a multiple of this value", "0"})
+	/**
+	 * If &gt;0 the <code>openBlockBeforeLine</code> instruction is only performed when the current line number is a multiple of this value
+	 * @ff.default 0
+	 */
 	public void setOpenBlockBeforeLineNumber(int i) {
 		openBlockBeforeLineNumber = i;
 	}

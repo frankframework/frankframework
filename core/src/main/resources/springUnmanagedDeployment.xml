@@ -29,7 +29,6 @@
 		class="nl.nn.adapterframework.unmanaged.DefaultIbisManager"
 		autowire="byName"
 		>
-		<property name="transactionManager" ref="txManager"/>
 	</bean>
 
 	<bean
@@ -48,11 +47,6 @@
 	Please note that this definition is intentionally incomplete and can not be
 	instantiated as-is: Runtime-magic will take care of proper & complete
 	instantiation.
-
-	DefaultMessageListenerContainer is supported configuration by IBM; provided
-	however that supported transaction-manager and thread-pooling are used.
-	See:
-	http://www.ibm.com/developerworks/websphere/techjournal/0609_alcott/0609_alcott.html
 	-->
 	<bean
 		name="proto-jmsContainer"

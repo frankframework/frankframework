@@ -16,6 +16,7 @@ import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.pipes.IteratingPipe.StopReason;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIteratorPipe> {
@@ -27,8 +28,6 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		return result;
 	}
 
-
-
 	public void testBasicWithLinePrefixAndSuffix(boolean blockEnabled, boolean combinedBlocks, String expectedLogFile) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
 		pipe.setLinePrefix("{");
@@ -37,7 +36,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		configurePipe();
 		pipe.start();
 
-		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultWithLineFixes.xml");
 		String expectedLog = TestFileUtils.getTestFile(expectedLogFile);
 
@@ -77,7 +76,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		configurePipe();
 		pipe.start();
 
-		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile(expectedFile);
 		String expectedLog = TestFileUtils.getTestFile(expectedLogFile);
 
@@ -133,7 +132,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		configurePipe();
 		pipe.start();
 
-		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultInBlocksOfFour.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -153,7 +152,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		configurePipe();
 		pipe.start();
 
-		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -174,7 +173,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		configurePipe();
 		pipe.start();
 
-		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -195,7 +194,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		configurePipe();
 		pipe.start();
 
-		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResultInBlocksOfFour.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -216,7 +215,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		configurePipe();
 		pipe.start();
 
-		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultInKeyBlocks.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -236,7 +235,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		configurePipe();
 		pipe.start();
 
-		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLines.txt");
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultStopConditionXpath.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -252,7 +251,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		configurePipe();
 		pipe.start();
 
-		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLinesWithXmlChars.txt");
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithXmlChars.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultWithoutXmlCharsEscaped.txt");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -268,7 +267,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		configurePipe();
 		pipe.start();
 
-		Message input = TestFileUtils.getTestFileMessage("/IteratingPipe/TenLinesWithXmlChars.txt");
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithXmlChars.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResultWithXmlCharsEscaped.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -308,7 +307,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		String actual = Message.asString(prr.getResult());
 
 		assertXmlEquals(expected, actual);
-		assertEquals("3", session.getMessage("itemNo").asString());
+		assertEquals("3", session.getString("itemNo"));
 	}
 
 	@Test
@@ -325,11 +324,11 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIter
 		String actual = Message.asString(prr.getResult());
 
 		assertXmlEquals(expected, actual);
-		assertEquals("0", session.getMessage("itemNo").asString());
+		assertEquals("0", session.getString("itemNo"));
 	}
 
 	private ISender getElementRenderer() {
-		resultLog = new StringBuffer();
+		resultLog = new StringBuilder();
 		// returns the renderer that does not surround the input with brackets
 		return new BlockEnabledRenderer() {
 			@Override

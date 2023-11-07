@@ -23,6 +23,11 @@ import java.util.List;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang3.StringUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -35,14 +40,10 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.TransformerPool.OutputType;
-
-import org.apache.commons.lang3.StringUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 /**
  * Pipe to wrap or unwrap a message conformable to the BIS (Business Integration Services) standard.
@@ -140,16 +141,16 @@ import org.xml.sax.SAXException;
  * <tr><td>{@link #setInputNamespaceDefs(String) inputNamespaceDefs}</td><td>(only used when direction=unwrap) namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBisMessageHeaderInSoapBody(boolean) bisMessageHeaderInSoapBody}</td><td>when <code>true</code>, the bis message header is put in the SOAP body instead of in the SOAP header (first one is the old bis standard)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setBisMessageHeaderSessionKey(String) bisMessageHeaderSessionKey}</td><td>
- * <table> 
+ * <table>
  * <tr><td><code>direction=unwrap</code></td><td>name of the session key to store the bis message header from the request in</td></tr>
  * <tr><td><code>direction=wrap</code></td><td>name of the session key the original bis message header from the request is stored in; used to create the bis message header for the response</td></tr>
- * </table> 
+ * </table>
  * </td><td>bisMessageHeader</td></tr>
  * <tr><td>{@link #setBisResultInPayload(boolean) bisResultInPayload}</td><td>when <code>true</code>, the bis result is put in the payload (as last child in root tag) instead of in the SOAP body as sibling of the payload (last one is the old bis standard)</td><td><code>true</code></td></tr>
  * <tr><td>{@link #setBisConversationIdSessionKey(String) bisConversationIdSessionKey}</td><td>(only used when direction=wrap and the original bis message header from the request doesn't exist) key of session variable to retrieve ConversationId for the bis message header from</td><td>bisConversationId</td></tr>
  * <tr><td>{@link #setBisExternalRefToMessageIdSessionKey(String) bisExternalRefToMessageIdSessionKey}</td><td>(only used when direction=wrap and the original bis message header from the request doesn't exist) key of session variable to retrieve ExternalRefToMessageId for the bis message header from</td><td>bisExternalRefToMessageId</td></tr>
  * <tr><td>{@link #setBisErrorCodeSessionKey(String) bisErrorCodeSessionKey}</td><td>(only used when direction=wrap) key of session variable to store bis error code in (if an error occurs)</td><td>bisErrorCode</td></tr>
- * <tr><td>{@link #setBisErrorTextSessionKey(String) bisErrorTextSessionKey}</td><td>(only used when direction=wrap) key of session variable to store bis error text in (if an error occurs). If not specified or no value retrieved, the following error text is derived from the error code: 
+ * <tr><td>{@link #setBisErrorTextSessionKey(String) bisErrorTextSessionKey}</td><td>(only used when direction=wrap) key of session variable to store bis error text in (if an error occurs). If not specified or no value retrieved, the following error text is derived from the error code:
  *   <table border="1">
  *   <tr><th>errorCode</th><th>errorText</th></tr>
  *   <tr><td>ERR6002</td><td>Service Interface Request Time Out</td></tr>
@@ -379,7 +380,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		}
 		headerFieldsElement.addSubElement(conversationIdElement);
 		XmlBuilder messageIdElement = new XmlBuilder("MessageId");
-		messageIdElement.setValue(Misc.getHostname() + "_" + Misc.createSimpleUUID());
+		messageIdElement.setValue(Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());
 		headerFieldsElement.addSubElement(messageIdElement);
 		XmlBuilder externalRefToMessageIdElement = new XmlBuilder("ExternalRefToMessageId");
 		if (originalMessageHeader == null) {

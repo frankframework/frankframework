@@ -13,13 +13,26 @@ Upcoming (7.9)
 - IbisLocalSender no longer throws exceptions if exit.state="ERROR" situations, but provides forwardName 'exception'. The sessionKey 'originalResult' is no longer used.
 - For sending replies from the JmsListener to a fixed destination the attribute 'replyDestinationName' should be used instead of a nested JmsSender, to avoid clutter in the debugger reports
 - Session variable 'id' has been renamed 'mid', session variables 'messageId' and 'tcid' have been removed.
+ - Session variable 'exitcode' has been renamed to 'exitCode'.
 - Duplicate detection might fail for messages received after an upgrade if the earlier version of the message was received before the upgrade. 
   This is in cases where a received (JMS) correlationId is used to send a response.
-- The ZipWriterPipe with action=WRITE does no longer have its input as its response, but rather a null message. If necessary, the previous behaviour can be obtained by setting preserveInput=true.
-- The ZipWriterSender with action=WRITE (the default) and no content parameter does no longer have its input as its response, but rather a null message.
-- Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained by setting
-  defaultValueMethod="input".
+- The ZipWriterPipe and ZipWriterSender have undergone major changes. In order to help the upgrading processes they both have a backwardsCompatibility attribute to revert to the old behavior. Please migrate away from this as soon as possible.
+    - The ZipWriterPipe with action=WRITE does no longer has its input as its response, but rather a null message. If necessary, the previous behavior can be obtained by setting preserveInput=true.
+    - The ZipWriterSender with no content parameter does no longer has its input as its response, but rather a null message.
+    - The ZipWriterPipe CLOSE action will now return the ZIP archive! It is no longer required to create a file first (with action OPEN) nor is it required to specify a filename on the OPEN action.
 
+- Parameter with an attribute value set to an empty string will have the empty string as result. Previously the input message would be used. This behaviour can be reobtained by settin: defaultValueMethod="input".
+- Larva context has changed from '<rootcontext>/larva' to '<rootcontext>/iaf/larva'. 
+- Larva default timeout has been decreased to 10s, and to 2s for local tests
+- The CMIS, Aspose and AWS modules have been added to our webapp artifact. The servlet endpoints are disabled by default.
+    - In order to enable the CMIS endpoints either of the following properties must be set:
+    `servlet.AtomPub10.enabled=true`,
+    `servlet.AtomPub11.enabled=true`,
+    `servlet.WebServices10.enabled=true`,
+    `servlet.WebServices11.enabled=true` or 
+    `servlet.BrowserBinding.enabled=true`
+- Some API endpoints have been deprecated. Users are encouraged to change over to the new API, however in order to restore the deprecated functionality the property 'iaf-api.allowDeprecated' can be set to true.
+- ApiListener eTag generation has been disabled by default, set api.etag.enabled=true to enable default etag generation.
 
 
 7.8-RC1

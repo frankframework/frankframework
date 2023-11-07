@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -11,30 +11,24 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.file.Path;
 
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 
-	public TemporaryFolder folder;
-
+	@TempDir
+	public Path folder;
 
 	@Override
 	protected LocalFileSystem createFileSystem() {
 		LocalFileSystem result=new LocalFileSystem();
-		result.setRoot(folder.getRoot().getAbsolutePath());
+		result.setRoot(folder.toAbsolutePath().toString());
 		return result;
-	}
-
-	@Override
-	public void setUp() throws Exception {
-		folder = new TemporaryFolder();
-		folder.create();
-		super.setUp();
 	}
 
 	@Override
@@ -65,13 +59,13 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 
 		String actual = readFile(null, filename);
 		// test
-		equalsCheck(contents.trim(), actual.trim());
+		assertEquals(contents.trim(), actual.trim());
 
 	}
 
 	@Test
 	public void localFileSystemTestToFileAbsoluteLongFilenameInRoot() throws Exception {
-		assumeTrue("Test is for long and short filename compatibility, which is a Windows only thing", System.getProperty("os.name").startsWith("Windows"));
+		assumeTrue(TestAssertions.isTestRunningOnWindows(), "Test is for long and short filename compatibility, which is a Windows only thing");
 		String filename = "FileInLongRoot.txt";
 		String contents = "regeltje tekst";
 
@@ -81,12 +75,12 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 		createFile(rootFolderLongName, filename, contents);
 
 		LocalFileSystem fsLong = new LocalFileSystem();
-		fsLong.setRoot(folder.getRoot().getAbsolutePath()+"\\"+rootFolderLongName);
+		fsLong.setRoot(folder.toAbsolutePath()+"\\"+rootFolderLongName);
 		fsLong.configure();
 		fsLong.open();
 
 		LocalFileSystem fsShort = new LocalFileSystem();
-		fsShort.setRoot(folder.getRoot().getAbsolutePath()+"\\"+rootFolderShortName);
+		fsShort.setRoot(folder.toAbsolutePath()+"\\"+rootFolderShortName);
 		fsShort.configure();
 		fsShort.open();
 
@@ -102,8 +96,8 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 		assertTrue(fsLong.exists(fsLong.toFile(fLong.toAbsolutePath().toString())));
 		assertTrue(fsShort.exists(fsShort.toFile(fShort.toAbsolutePath().toString())));
 
-		assertTrue("LocalFileSystem with short path root must accept absolute filename with long path root", fsShort.exists(fsShort.toFile(fLong.toAbsolutePath().toString())));
-		assertTrue("LocalFileSystem with long path root must accept absolute filename with short path root", fsLong.exists(fsLong.toFile(fShort.toAbsolutePath().toString())));
+		assertTrue(fsShort.exists(fsShort.toFile(fLong.toAbsolutePath().toString())), "LocalFileSystem with short path root must accept absolute filename with long path root");
+		assertTrue(fsLong.exists(fsLong.toFile(fShort.toAbsolutePath().toString())), "LocalFileSystem with long path root must accept absolute filename with short path root");
 	}
 
 	@Test
@@ -115,7 +109,7 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 		assertNotNull(testFile);
 
 		Message result = fileSystem.readFile(new File(testFile.toURI()).toPath(), "auto");
-		assertEquals(Misc.streamToString(testFile.openStream(), "iso-8859-1"), result.asString());
+		assertEquals(StreamUtil.streamToString(testFile.openStream(), "iso-8859-1"), result.asString());
 	}
 
 }

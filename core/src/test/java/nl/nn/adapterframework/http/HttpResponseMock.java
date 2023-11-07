@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -112,6 +112,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	private InputStream doGet(HttpHost host, HttpGet request, HttpContext context) {
 		assertEquals("GET", request.getMethod());
 		StringBuilder response = new StringBuilder();
+		response.append("HOST " + host.toHostString() + lineSeparator);
 		response.append(request.toString() + lineSeparator);
 
 		appendHeaders(request, response);

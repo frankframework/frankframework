@@ -20,7 +20,7 @@ public enum ConversionOption {
 
 	private final int value;
 
-	private ConversionOption(int value) {
+	ConversionOption(int value) {
 		this.value = value;
 	}
 

@@ -175,7 +175,7 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.processors.CacheSenderWrapperProcessor.sendMessageAndProvideForwardName(
+						nl.nn.adapterframework.processors.CacheSenderWrapperProcessor.sendMessage(
 							nl.nn.adapterframework.senders.SenderWrapperBase,
 							nl.nn.adapterframework.stream.Message,
 							nl.nn.adapterframework.core.PipeLineSession

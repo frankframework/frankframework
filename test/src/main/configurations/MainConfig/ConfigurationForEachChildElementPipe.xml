@@ -10,7 +10,7 @@
 			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe_Record" elementXPathExpression="requests/request">
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ForEachChildElementPipe_Record" />
 			</pipe>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe" />
+			<pipe name="echo" className="nl.nn.adapterframework.pipes.RetrieveContextPipe" />
 		</pipeline>
 	</adapter>
 	<adapter name="ForEachChildElementPipe_Record">
@@ -35,12 +35,12 @@
 			<pipe name="exception" className="nl.nn.adapterframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="mdc local" className="nl.nn.adapterframework.pipes.MdcPipe">
+			<pipe name="mdc local" className="nl.nn.adapterframework.pipes.LogContextPipe">
 				<param name="mdc1" value="mdc1_value_local" />
 				<param name="mdc_local" value="mdc_local_value" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="mdc export" className="nl.nn.adapterframework.pipes.MdcPipe" export="true">
+			<pipe name="mdc export" className="nl.nn.adapterframework.pipes.LogContextPipe" export="true">
 				<param name="mdc1" value="mdc1_value_export" />
 				<param name="mdc_export" value="mdc_export_value" />
 				<forward name="success" path="EXIT" />

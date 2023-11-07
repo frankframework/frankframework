@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2022 WeAreFrank!
+   Copyright 2017-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,15 +16,18 @@
 package nl.nn.adapterframework.http.rest;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
+import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +35,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
 
 import com.nimbusds.jose.util.JSONObjectUtils;
@@ -41,6 +46,9 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
 import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSecurityHandler;
 import nl.nn.adapterframework.http.HttpServletBase;
@@ -53,9 +61,12 @@ import nl.nn.adapterframework.jwt.AuthorizationException;
 import nl.nn.adapterframework.jwt.JwtSecurityHandler;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.HttpUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -68,16 +79,16 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 @IbisInitializer
 public class ApiListenerServlet extends HttpServletBase {
-	protected Logger log = LogUtil.getLogger(this);
+	private static final Logger LOG = LogUtil.getLogger(ApiListenerServlet.class);
 	private static final long serialVersionUID = 1L;
 
 	public static final String AUTHENTICATION_COOKIE_NAME = "authenticationToken";
 
 	private static final List<String> IGNORE_HEADERS = Arrays.asList("connection", "transfer-encoding", "content-type", "authorization");
 
-	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
-	private String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
-	private String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
+	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
+	private final String CorsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
+	private final String CorsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 	private static final String UPDATE_ETAG_CONTEXT_KEY = "updateEtag";
 
 	private ApiServiceDispatcher dispatcher = null;
@@ -91,6 +102,7 @@ public class ApiListenerServlet extends HttpServletBase {
 		if (cache == null) {
 			cache = ApiCacheManager.getInstance();
 		}
+
 		super.init();
 	}
 
@@ -108,85 +120,96 @@ public class ApiListenerServlet extends HttpServletBase {
 		Map<String, Boolean> config = new HashMap<>();
 		config.put(JsonGenerator.PRETTY_PRINTING, true);
 		JsonWriterFactory factory = Json.createWriterFactory(config);
+		response.setHeader("Content-Type", "application/json");
 		try (JsonWriter jsonWriter = factory.createWriter(response.getOutputStream(), StreamUtil.DEFAULT_CHARSET)) {
 			jsonWriter.write(json);
 		}
 	}
 
+	private static String createEndpointUrlFromRequest(HttpServletRequest request) {
+		String requestUrl = request.getRequestURL().toString(); // raw request -> schema+hostname+port/context-path/servlet-path/+request-uri
+		requestUrl = HttpUtils.urlDecode(requestUrl);
+		String requestPath = request.getPathInfo(); // -> the remaining path, starts with a /. Is automatically decoded by the web container!
+		return requestUrl.substring(0, requestUrl.indexOf(requestPath));
+	}
+
 	@Override
 	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-		String uri = request.getPathInfo();
-		String remoteUser = request.getRemoteUser();
+		final String remoteUser = request.getRemoteUser();
 
-		HttpMethod method;
+		final HttpMethod method;
 		try {
 			method = EnumUtils.parse(HttpMethod.class, request.getMethod());
 		} catch (IllegalArgumentException e) {
 			response.setStatus(405);
-			log.warn(createAbortMessage(remoteUser, 405) + "method ["+request.getMethod()+"] not allowed");
+			LOG.warn("{} method [{}] not allowed", () -> createAbortMessage(remoteUser, 405), request::getMethod);
 			return;
 		}
 
-		if(log.isInfoEnabled()) {
-			String infoMessage = "ApiListenerServlet dispatching uri ["+uri+"] and method ["+method+"]" + (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : "");
-			log.info(infoMessage);
-		}
+		String uri = request.getPathInfo();
+		LOG.info("ApiListenerServlet dispatching uri [{}] and method [{}]{}", uri, method, (StringUtils.isNotEmpty(remoteUser) ? " issued by ["+remoteUser+"]" : ""));
 
 		if (uri==null) {
 			response.setStatus(400);
-			log.warn(createAbortMessage(remoteUser, 400) + "empty uri");
+			LOG.warn("{} empty uri", () -> createAbortMessage(remoteUser, 400));
 			return;
 		}
 		if(uri.endsWith("/")) {
 			uri = uri.substring(0, uri.length()-1);
 		}
 
-		/**
-		 * Generate OpenApi specification
-		 */
-		if(uri.equalsIgnoreCase("/openapi.json")) {
-			String specUri = request.getParameter("uri");
-			JsonObject jsonSchema = null;
-			if(specUri != null) {
-				ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
-				if(apiConfig != null) {
-					jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
+		try {
+			/*
+			 * Generate OpenApi specification
+			 */
+			if(uri.equalsIgnoreCase("/openapi.json")) {
+				String endpoint = createEndpointUrlFromRequest(request);
+				String specUri = request.getParameter("uri");
+				JsonObject jsonSchema = null;
+				if(specUri != null) {
+					ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(specUri);
+					if(apiConfig != null) {
+						jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
+					}
+				} else {
+					jsonSchema = dispatcher.generateOpenApiJsonSchema(endpoint);
 				}
-			} else {
-				jsonSchema = dispatcher.generateOpenApiJsonSchema(request);
-			}
-			if(jsonSchema != null) {
-				returnJson(response, 200, jsonSchema);
+				if(jsonSchema != null) {
+					returnJson(response, 200, jsonSchema);
+					return;
+				}
+				response.sendError(404, "OpenApi specification not found");
 				return;
 			}
-			response.sendError(404, "OpenApi specification not found");
-			return;
-		}
 
-		/**
-		 * Generate an OpenApi json file for a set of ApiDispatchConfigs
-		 * @Deprecated This is here to support old url's
-		 */
-		if(uri.endsWith("openapi.json")) {
-			uri = uri.substring(0, uri.lastIndexOf("/"));
-			ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
-			if(apiConfig != null) {
-				JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, request);
-				returnJson(response, 200, jsonSchema);
+			/*
+			 * Generate an OpenApi json file for a set of ApiDispatchConfigs
+			 * @Deprecated This is here to support old url's
+			 */
+			if(uri.endsWith("openapi.json")) {
+				String endpoint = createEndpointUrlFromRequest(request);
+				uri = uri.substring(0, uri.lastIndexOf("/"));
+				ApiDispatchConfig apiConfig = dispatcher.findConfigForUri(uri);
+				if(apiConfig != null) {
+					JsonObject jsonSchema = dispatcher.generateOpenApiJsonSchema(apiConfig, endpoint);
+					returnJson(response, 200, jsonSchema);
+					return;
+				}
+				response.sendError(404, "OpenApi specification not found");
 				return;
 			}
-			response.sendError(404, "OpenApi specification not found");
-			return;
-		}
 
-		handleRequest(request, response, method, uri);
+			handleRequest(request, response, method, uri);
+		} finally {
+			ThreadContext.clearAll();
+		}
 	}
 
 	private void handleRequest(HttpServletRequest request, HttpServletResponse response, HttpMethod method, String uri) {
 		String remoteUser = request.getRemoteUser();
 
-		/**
+		/*
 		 * Initiate and populate messageContext
 		 */
 		try (PipeLineSession messageContext = new PipeLineSession()) {
@@ -199,11 +222,11 @@ public class ApiListenerServlet extends HttpServletBase {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
 				if(config == null) {
 					response.setStatus(404);
-					log.warn(createAbortMessage(remoteUser, 404) + "no ApiListener configured for ["+uri+"]");
+					LOG.warn("{} no ApiListener configured for [{}]", ()-> createAbortMessage(remoteUser, 404), ()-> uri);
 					return;
 				}
 
-				/**
+				/*
 				 * Handle Cross-Origin Resource Sharing
 				 * TODO make this work behind loadbalancers/reverse proxies
 				 * TODO check if request ip/origin header matches allowOrigin property
@@ -225,24 +248,24 @@ public class ApiListenerServlet extends HttpServletBase {
 					//Only cut off OPTIONS (aka preflight) requests
 					if(method == HttpMethod.OPTIONS) {
 						response.setStatus(200);
-						if(log.isTraceEnabled()) log.trace("Aborting preflight request with status [200], method ["+method+"]");
+						if(LOG.isTraceEnabled()) LOG.trace("Aborting preflight request with status [200], method [{}]", method);
 						return;
 					}
 				}
 
-				/**
+				/*
 				 * Get serviceClient
 				 */
 				ApiListener listener = config.getApiListener(method);
 				if(listener == null) {
 					response.setStatus(405);
-					log.warn(createAbortMessage(remoteUser, 405) + "method ["+method+"] not allowed");
+					LOG.warn("{} method [{}] not allowed", ()-> createAbortMessage(remoteUser, 405), ()-> method);
 					return;
 				}
 
-				if(log.isTraceEnabled()) log.trace("ApiListenerServlet calling service ["+listener.getName()+"]");
+				if(LOG.isTraceEnabled()) LOG.trace("ApiListenerServlet calling service [{}]", listener.getName());
 
-				/**
+				/*
 				 * Check authentication
 				 */
 				ApiPrincipal userPrincipal = null;
@@ -274,14 +297,14 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 						break;
 					case JWT:
-						String authorizationHeader = request.getHeader("Authorization");
+						String authorizationHeader = request.getHeader(listener.getJwtHeader());
 						if(StringUtils.isNotEmpty(authorizationHeader) && authorizationHeader.contains("Bearer")) {
 							try {
 								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(authorizationHeader.substring(7));
-								messageContext.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim()));
+								messageContext.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
 								messageContext.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
 							} catch(Exception e) {
-								log.warn("unable to validate jwt",e);
+								LOG.warn("unable to validate jwt",e);
 								response.sendError(401, e.getMessage());
 								return;
 							}
@@ -329,7 +352,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 
 						response.setStatus(401);
-						log.warn(createAbortMessage(remoteUser, 401) + "no (valid) credentials supplied");
+						LOG.warn("{} no (valid) credentials supplied", ()->createAbortMessage(remoteUser, 401));
 						return;
 					}
 
@@ -344,42 +367,39 @@ public class ApiListenerServlet extends HttpServletBase {
 						messageContext.put("authorizationToken", authorizationToken);
 					}
 				}
-				//Remove this? it's now available as header value
+				// Remove this? it's now available as header value
 				messageContext.put("remoteAddr", request.getRemoteAddr());
 				if(userPrincipal != null)
 					messageContext.put(PipeLineSession.API_PRINCIPAL_KEY, userPrincipal);
 				messageContext.put("uri", uri);
 
-				/**
+				/*
 				 * Evaluate preconditions
 				 */
-				String acceptHeader = request.getHeader("Accept");
-				if(StringUtils.isNotEmpty(acceptHeader)) { //If an Accept header is present, make sure we comply to it!
-					if(!listener.accepts(acceptHeader)) {
-						response.setStatus(406);
-						response.getWriter().print("It appears you expected the MediaType ["+acceptHeader+"] but I only support the MediaType ["+listener.getContentType()+"] :)");
-						log.warn(createAbortMessage(remoteUser, 406) + "client expects ["+acceptHeader+"] got ["+listener.getContentType()+"] instead");
-						return;
-					}
+				final String acceptHeader = request.getHeader("Accept");
+				if(!listener.accepts(acceptHeader)) { // If an Accept header is present, make sure we comply to it!
+					LOG.warn("{} client expects Accept [{}] but listener can only provide [{}]", ()->createAbortMessage(request.getRemoteUser(), 406), ()-> acceptHeader, listener::getContentType);
+					response.sendError(406, "endpoint cannot provide the supplied MimeType");
+					return;
 				}
 
-				if(request.getContentType() != null && !listener.isConsumable(request.getContentType())) {
+				if(!listener.isConsumable(request.getContentType())) {
 					response.setStatus(415);
-					log.warn(createAbortMessage(remoteUser, 415) + "did not match consumes ["+listener.getConsumes()+"] got ["+request.getContentType()+"] instead");
+					LOG.warn("{} did not match consumes [{}] got [{}] instead", ()-> createAbortMessage(remoteUser, 415), listener::getConsumes, request::getContentType);
 					return;
 				}
 
 				String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
-				log.debug("Evaluating preconditions for listener["+listener.getName()+"] etagKey["+etagCacheKey+"]");
+				LOG.debug("Evaluating preconditions for listener[{}] etagKey[{}]", listener.getName(), etagCacheKey);
 				if(cache.containsKey(etagCacheKey)) {
 					String cachedEtag = (String) cache.get(etagCacheKey);
-					log.debug("found etag value["+cachedEtag+"] for key["+etagCacheKey+"]");
+					LOG.debug("found etag value[{}] for key[{}]", cachedEtag, etagCacheKey);
 
 					if(method == HttpMethod.GET) {
 						String ifNoneMatch = request.getHeader("If-None-Match");
 						if(ifNoneMatch != null && ifNoneMatch.equals(cachedEtag)) {
 							response.setStatus(304);
-							if (log.isDebugEnabled()) log.debug(createAbortMessage(remoteUser, 304) + "matched if-none-match ["+ifNoneMatch+"]");
+							if (LOG.isDebugEnabled()) LOG.debug("{} matched if-none-match [{}]", ()->createAbortMessage(remoteUser, 304), ()->ifNoneMatch);
 							return;
 						}
 					}
@@ -387,27 +407,27 @@ public class ApiListenerServlet extends HttpServletBase {
 						String ifMatch = request.getHeader("If-Match");
 						if(ifMatch != null && !ifMatch.equals(cachedEtag)) {
 							response.setStatus(412);
-							log.warn(createAbortMessage(remoteUser, 412) + "matched if-match ["+ifMatch+"] method ["+method+"]");
+							LOG.warn("{} matched if-match [{}] method [{}]", ()->createAbortMessage(remoteUser, 412), ()->ifMatch, ()->method);
 							return;
 						}
 					}
 				}
-				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.getUpdateEtag());
+				messageContext.put(UPDATE_ETAG_CONTEXT_KEY, listener.isUpdateEtag());
 
-				/**
+				/*
 				 * Check authorization
 				 */
 				//TODO: authentication implementation
 
-				/**
+				/*
 				 * Map uriIdentifiers into messageContext
 				 */
 				String[] patternSegments = listener.getUriPattern().split("/");
 				String[] uriSegments = uri.split("/");
 				int uriIdentifier = 0;
 				for (int i = 0; i < patternSegments.length; i++) {
-					String segment = patternSegments[i];
-					String name = null;
+					final String segment = patternSegments[i];
+					final String name;
 
 					if("*".equals(segment)) {
 						name = "uriIdentifier_"+uriIdentifier;
@@ -415,249 +435,329 @@ public class ApiListenerServlet extends HttpServletBase {
 					else if(segment.startsWith("{") && segment.endsWith("}")) {
 						name = segment.substring(1, segment.length()-1);
 					}
+					else {
+						name = null;
+					}
 
 					if(name != null) {
 						uriIdentifier++;
-						if(log.isTraceEnabled()) log.trace("setting uriSegment ["+name+"] to ["+uriSegments[i]+"]");
+						if(LOG.isTraceEnabled()) LOG.trace("setting uriSegment [{}] to [{}]", name, uriSegments[i]);
 						messageContext.put(name, uriSegments[i]);
 					}
 				}
 
-				/**
+				/*
 				 * Map queryParameters into messageContext
 				 */
-				Enumeration<String> paramnames = request.getParameterNames();
-				while (paramnames.hasMoreElements()) {
-					String paramname = paramnames.nextElement();
-					String[] paramList = request.getParameterValues(paramname);
-					if(paramList.length > 1) { // contains multiple items
-						List<String> valueList = Arrays.asList(paramList);
-						if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to "+valueList);
-						messageContext.put(paramname, valueList);
-					}
-					else {
-						String paramvalue = request.getParameter(paramname);
-						if(log.isTraceEnabled()) log.trace("setting queryParameter ["+paramname+"] to ["+paramvalue+"]");
-						messageContext.put(paramname, paramvalue);
-					}
-				}
+				messageContext.putAll(extractRequestParams(request));
 
-				/**
+				/*
 				 * Map headers into messageContext
 				 */
 				if(StringUtils.isNotEmpty(listener.getHeaderParams())) {
-					XmlBuilder headersXml = new XmlBuilder("headers");
-					String[] params = listener.getHeaderParams().split(",");
-					for (String headerParam : params) {
-						if(IGNORE_HEADERS.contains(headerParam)) {
-							continue;
-						}
-						String headerValue = request.getHeader(headerParam);
-						try {
-							XmlBuilder headerXml = new XmlBuilder("header");
-							headerXml.addAttribute("name", headerParam);
-							headerXml.setValue(headerValue);
-							headersXml.addSubElement(headerXml);
-						}
-						catch (Throwable t) {
-							log.info("unable to convert header to xml name["+headerParam+"] value["+headerValue+"]");
-						}
-					}
-					messageContext.put("headers", headersXml.toXML());
+					messageContext.put("headers", extractHeaderParamsAsXml(request, listener));
 				}
 
-				/**
+				/*
 				 * Process the request through the pipeline.
 				 * If applicable, map multipart parts into messageContext
 				 */
 				Message body = null;
 				//TODO fix HttpSender#handleMultipartResponse(..)
 				if(MultipartUtils.isMultipart(request)) {
-					String multipartBodyName = listener.getMultipartBodyName();
+					final String multipartBodyName = listener.getMultipartBodyName();
 					try {
-						InputStreamDataSource dataSource = new InputStreamDataSource(request.getContentType(), request.getInputStream()); //the entire InputStream will be read here!
-						MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
-						XmlBuilder attachments = new XmlBuilder("parts");
+						final InputStreamDataSource dataSource = new InputStreamDataSource(request.getContentType(), request.getInputStream()); //the entire InputStream will be read here!
+						final MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
+						final XmlBuilder attachments = new XmlBuilder("parts");
 
 						for (int i = 0; i < mimeMultipart.getCount(); i++) {
-							BodyPart bodyPart = mimeMultipart.getBodyPart(i);
-							String fieldName = MultipartUtils.getFieldName(bodyPart);
+							final BodyPart bodyPart = mimeMultipart.getBodyPart(i);
+							final String fieldName = MultipartUtils.getFieldName(bodyPart);
 							if((i == 0 && multipartBodyName == null) || (fieldName != null && fieldName.equalsIgnoreCase(multipartBodyName))) {
 								body = new PartMessage(bodyPart, MessageUtils.getContext(request));
 							}
 
-							XmlBuilder attachment = new XmlBuilder("part");
+							final XmlBuilder attachment = new XmlBuilder("part");
 							attachment.addAttribute("name", fieldName);
 							PartMessage message = new PartMessage(bodyPart);
 							if (!MultipartUtils.isBinary(bodyPart)) {
 								// Process regular form field (input type="text|radio|checkbox|etc", select, etc).
-								if(log.isTraceEnabled()) log.trace("setting multipart formField ["+fieldName+"] to ["+message+"]");
+								LOG.trace("setting multipart formField [{}] to [{}]", fieldName, message);
 								messageContext.put(fieldName, message.asString());
 								attachment.addAttribute("type", "text");
 								attachment.addAttribute("value", message.asString());
 							} else {
 								// Process form file field (input type="file").
-								String fieldNameName = fieldName + "Name";
-								String fileName = MultipartUtils.getFileName(bodyPart);
-								if(log.isTraceEnabled()) log.trace("setting multipart formFile ["+fieldNameName+"] to ["+fileName+"]");
+								final String fieldNameName = fieldName + "Name";
+								final String fileName = MultipartUtils.getFileName(bodyPart);
+								LOG.trace("setting multipart formFile [{}] to [{}]", fieldNameName, fileName);
 								messageContext.put(fieldNameName, fileName);
-								if(log.isTraceEnabled()) log.trace("setting parameter ["+fieldName+"] to input stream of file ["+fileName+"]");
+								LOG.trace("setting parameter [{}] to input stream of file [{}]", fieldName, fileName);
 								messageContext.put(fieldName, message);
 
 								attachment.addAttribute("type", "file");
 								attachment.addAttribute("filename", fileName);
 								attachment.addAttribute("size", message.size());
 								attachment.addAttribute("sessionKey", fieldName);
-								String contentType = bodyPart.getContentType();
-								String mimeType = contentType;
-								int semicolon = contentType.indexOf(";");
-								if(semicolon >= 0) {
-									mimeType = contentType.substring(0, semicolon);
-								}
-
-								attachment.addAttribute("mimeType", mimeType);
+								attachment.addAttribute("mimeType", extractMimeType(bodyPart.getContentType()));
 							}
 							attachments.addSubElement(attachment);
 						}
 						messageContext.put("multipartAttachments", attachments.toXML());
 					} catch(MessagingException e) {
-						throw new IOException("Could not read mime multipart response", e);
+						response.sendError(400, "Could not read mime multipart request");
+						LOG.warn("{} Could not read mime multipart request", () -> createAbortMessage(remoteUser, 400));
+						return;
 					}
 				} else {
 					body = MessageUtils.parseContentAsMessage(request);
 				}
 
-				/**
+				/*
 				 * Compile Allow header
 				 */
-				StringBuilder methods = new StringBuilder();
-				methods.append("OPTIONS, ");
-				for (HttpMethod mtd : config.getMethods()) {
-					methods.append(mtd + ", ");
-				}
-				messageContext.put("allowedMethods", methods.substring(0, methods.length()-2));
+				messageContext.put("allowedMethods", buildAllowedMethodsHeader(config.getMethods()));
 
-				String messageId = null;
-				if(StringUtils.isNotEmpty(listener.getMessageIdHeader())) {
-					String messageIdHeader = request.getHeader(listener.getMessageIdHeader());
-					if(StringUtils.isNotEmpty(messageIdHeader)) {
-						messageId = messageIdHeader;
-					}
-				}
-				String correlationId = null;
-				if(StringUtils.isNotEmpty(listener.getCorrelationIdHeader())) {
-					String correlationIdHeaderValue = request.getHeader(listener.getCorrelationIdHeader());
-					if(StringUtils.isNotEmpty(correlationIdHeaderValue)) {
-						messageId = correlationIdHeaderValue;
-					}
-				}
-				if (StringUtils.isEmpty(correlationId) && StringUtils.isNotEmpty(messageId)) {
-					correlationId = messageId;
-				}
-				PipeLineSession.setListenerParameters(messageContext, messageId, correlationId, null, null); //We're only using this method to keep setting mid/cid uniform
+				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), null);
+				final String correlationId = getHeaderOrDefault(request, listener.getCorrelationIdHeader(), messageId);
+				PipeLineSession.updateListenerParameters(messageContext, messageId, correlationId, null, null); //We're only using this method to keep setting mid/cid uniform
+
+				/*
+				 * Do the actual request processing by the ApiListener
+				 */
 				Message result = listener.processRequest(body, messageContext);
 
-				/**
+				/*
 				 * Calculate an eTag over the processed result and store in cache
 				 */
-				Boolean updateEtag = messageContext.getBoolean(UPDATE_ETAG_CONTEXT_KEY);
-				if (updateEtag==null) {
-					updateEtag=listener.getUpdateEtag();
-				}
-				if (updateEtag==null) {
-					updateEtag=result==null || result.isRepeatable();
-				}
-				if(updateEtag) {
-					log.debug("calculating etags over processed result");
+				if (Boolean.TRUE.equals(messageContext.getBoolean(UPDATE_ETAG_CONTEXT_KEY))) {
+					LOG.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
 					if(!Message.isEmpty(result) && method == HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag
 						String eTag = MessageUtils.generateMD5Hash(result);
 						if(eTag != null) {
-							log.debug("adding/overwriting etag with key[{}] value[{}]", etagCacheKey, eTag);
+							LOG.debug("adding/overwriting etag with key[{}] value[{}]", etagCacheKey, eTag);
 							cache.put(etagCacheKey, eTag);
 							response.addHeader("etag", eTag);
 						} else {
-							log.debug("skipping etag with key[{}] computed value is null", etagCacheKey);
+							LOG.debug("skipping etag with key[{}] computed value is null", etagCacheKey);
 						}
 					}
 					else {
-						log.debug("removing etag with key[{}]", etagCacheKey);
+						LOG.debug("removing etag with key[{}]", etagCacheKey);
 						cache.remove(etagCacheKey);
 
 						// Not only remove the eTag for the selected resources but also the collection
 						String key = ApiCacheManager.getParentCacheKey(listener, uri);
 						if(key != null) {
-							log.debug("removing parent etag with key[{}]", key);
+							LOG.debug("removing parent etag with key[{}]", key);
 							cache.remove(key);
 						}
 					}
 				}
 
-				/**
+				/*
+				 * If a Last Modified value is present, set the 'Last-Modified' header.
+				 */
+				long lastModDate = Instant.now().toEpochMilli();
+				if(!Message.isEmpty(result)) {
+					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
+					if(StringUtils.isNotEmpty(lastModified)) {
+						Date date = DateUtils.parseToDate(lastModified, DateUtils.FORMAT_FULL_GENERIC);
+						if(date != null) {
+							lastModDate = date.getTime();
+						}
+					}
+				}
+				response.setDateHeader("Last-Modified", lastModDate);
+				// If no eTag header is present, disable browser caching. Else force browser to revalidate the request.
+				StringBuilder cacheControl = new StringBuilder();
+				if(!response.containsHeader("etag")) {
+					cacheControl.append("no-store, no-cache, ");
+					response.setHeader("Pragma", "no-cache");
+					LOG.trace("disabling cache for uri [{}]", request::getRequestURI);
+				}
+				cacheControl.append("must-revalidate, max-age=0, post-check=0, pre-check=0");
+				response.setHeader("Cache-Control", cacheControl.toString());
+
+				/*
 				 * Add headers
 				 */
 				response.addHeader("Allow", (String) messageContext.get("allowedMethods"));
 
-				MimeType contentType = listener.getContentType();
-				if(listener.getProduces() == MediaTypes.ANY) {
-					Message parsedContentType = messageContext.getMessage("contentType");
-					if(!Message.isEmpty(parsedContentType)) {
-						contentType = MimeType.valueOf(parsedContentType.asString());
-					} else {
-						MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
-						if(providedContentType != null) {
-							contentType = providedContentType;
-						}
-					}
-				} else if(listener.getProduces() == MediaTypes.DETECT) {
-					MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
-					if(computedContentType != null) {
-						contentType = computedContentType;
-					}
+				if (!Message.isEmpty(result)) {
+					MimeType contentType = determineContentType(messageContext, listener, result);
+					response.setContentType(contentType.toString());
 				}
-				response.setHeader("Content-Type", contentType.toString());
 
 				if(StringUtils.isNotEmpty(listener.getContentDispositionHeaderSessionKey())) {
-					String contentDisposition = messageContext.getMessage(listener.getContentDispositionHeaderSessionKey()).asString();
+					String contentDisposition = messageContext.getString(listener.getContentDispositionHeaderSessionKey());
 					if(StringUtils.isNotEmpty(contentDisposition)) {
-						log.debug("Setting Content-Disposition header to ["+contentDisposition+"]");
+						LOG.debug("Setting Content-Disposition header to [{}]", contentDisposition);
 						response.setHeader("Content-Disposition", contentDisposition);
 					}
 				}
 
-				/**
-				 * Check if an exitcode has been defined or if a statuscode has been added to the messageContext.
+				/*
+				 * Check if an exitcode has been defined or if a status-code has been added to the messageContext.
 				 */
 				int statusCode = messageContext.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 0);
 				if(statusCode > 0) {
 					response.setStatus(statusCode);
 				}
 
-				/**
+				/*
 				 * Finalize the pipeline and write the result to the response
 				 */
-				if(!Message.isEmpty(result)) {
-					if(result.isBinary()) {
-						StreamUtil.copyStream(result.asInputStream(), response.getOutputStream(), 4096);
-					} else {
-						StreamUtil.copyReaderToWriter(result.asReader(), response.getWriter(), 4096, false, false);
-					}
+				final boolean outputWritten = writeToResponseStream(response, result);
+				if (!outputWritten) {
+					LOG.debug("No output written, set content-type header to null");
+					response.resetBuffer();
+					response.setContentType(null);
 				}
-				if(log.isTraceEnabled()) log.trace("ApiListenerServlet finished with statusCode ["+statusCode+"] result ["+result+"]");
+
+				LOG.trace("ApiListenerServlet finished with statusCode [{}] result [{}]", statusCode, result);
 			}
 			catch (Exception e) {
-				log.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
+				LOG.warn("ApiListenerServlet caught exception, will rethrow as ServletException", e);
 				try {
 					response.reset();
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 				}
 				catch (IOException | IllegalStateException ex) {
-					log.warn("an error occured while tyring to handle exception ["+e.getMessage()+"]", ex);
+					LOG.warn("an error occurred while trying to handle exception [{}]", e.getMessage(), ex);
 					//We're only informing the end user(s), no need to catch this error...
 					response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				}
 			}
 		}
+	}
+
+	@Nonnull
+	private Map<String, Object> extractRequestParams(HttpServletRequest request) {
+		Map<String, Object> params = new HashMap<>();
+		Enumeration<String> paramNames = request.getParameterNames();
+		while (paramNames.hasMoreElements()) {
+			String paramName = paramNames.nextElement();
+			String[] paramList = request.getParameterValues(paramName);
+			if(paramList.length > 1) { // contains multiple items
+				List<String> valueList = Arrays.asList(paramList);
+				if(LOG.isTraceEnabled()) LOG.trace("setting queryParameter [{}] to {}", paramName, valueList);
+				params.put(paramName, valueList);
+			}
+			else {
+				String paramValue = request.getParameter(paramName);
+				if(LOG.isTraceEnabled()) LOG.trace("setting queryParameter [{}] to [{}]", paramName, paramValue);
+				params.put(paramName, paramValue);
+			}
+		}
+		return params;
+	}
+
+	private String extractHeaderParamsAsXml(HttpServletRequest request, ApiListener listener) {
+		XmlBuilder headersXml = new XmlBuilder("headers");
+		String[] params = listener.getHeaderParams().split(",");
+		for (String headerParam : params) {
+			if(IGNORE_HEADERS.contains(headerParam)) {
+				continue;
+			}
+			String headerValue = request.getHeader(headerParam);
+			try {
+				XmlBuilder headerXml = new XmlBuilder("header");
+				headerXml.addAttribute("name", headerParam);
+				headerXml.setValue(headerValue);
+				headersXml.addSubElement(headerXml);
+			}
+			catch (Exception e) {
+				LOG.info("unable to convert header to xml name[{}] value[{}], exception message: {}", headerParam, headerValue, e.getMessage());
+			}
+		}
+		return headersXml.toXML();
+	}
+
+	private static @Nonnull MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) throws IOException {
+		if(listener.getProduces() == MediaTypes.ANY) {
+			Message parsedContentType = messageContext.getMessage("contentType");
+			if(!Message.isEmpty(parsedContentType)) {
+				try {
+					return MimeType.valueOf(parsedContentType.asString());
+				} catch (InvalidMimeTypeException imte) {
+					LOG.warn("unable to parse mimetype from SessionKey [contentType] value [{}]", parsedContentType, imte);
+				}
+			}
+			MimeType providedContentType = MessageUtils.getMimeType(result); // MimeType might be known
+			if(providedContentType != null) {
+				return providedContentType;
+			}
+		} else if(listener.getProduces() == MediaTypes.DETECT) {
+			MimeType computedContentType = MessageUtils.computeMimeType(result); // Calculate MimeType
+			if(computedContentType != null) {
+				return computedContentType;
+			}
+		}
+		return listener.getContentType();
+	}
+
+	/**
+	 * Write the result to the response, if any data is available. If no data is
+	 * available, then the output-stream or output-writer of the response will not
+	 * be accessed and the method returns false. If data is available, the method
+	 * returns true and the data will be
+	 * written to the output-stream if the message is binary or to the output-writer
+	 * otherwise.
+	 *
+	 * @param response {@link HttpServletResponse} to which data should be written. If
+	 *                                            no data is available, the output-stream or
+	 *                                            output-writer will not be accessed.
+	 * @param result {@link Message} whose data will be written to the response, if any is available.
+	 * @return {@code true} if data was written, {@code false} if not.
+	 * @throws IOException Thrown if reading or writing to / from any of the streams throws  an IOException.
+	 */
+	private static boolean writeToResponseStream(HttpServletResponse response, Message result) throws IOException {
+		if (!Message.hasDataAvailable(result)) {
+			return false;
+		}
+		if (result.isBinary()) {
+			try (InputStream in = result.asInputStream()) {
+				StreamUtil.copyStream(in, response.getOutputStream(), 4096);
+			}
+		} else {
+			try (Reader reader = result.asReader()) {
+				StreamUtil.copyReaderToWriter(reader, response.getWriter(), 4096);
+			}
+		}
+		return true;
+	}
+
+	private String getHeaderOrDefault(HttpServletRequest request, String headerName, String defaultValue) {
+		if (StringUtils.isBlank(headerName)) {
+			return defaultValue;
+		}
+		final String headerValue = request.getHeader(headerName);
+		return StringUtils.isNotBlank(headerValue) ? headerValue : defaultValue;
+	}
+
+	private String extractMimeType(String contentType) {
+		final int semicolon = contentType.indexOf(";");
+		if(semicolon >= 0) {
+			return contentType.substring(0, semicolon);
+		} else {
+			return contentType;
+		}
+	}
+
+	private String buildAllowedMethodsHeader(Set<HttpMethod> methods) {
+		StringBuilder methodsBuilder = new StringBuilder();
+		methodsBuilder.append("OPTIONS");
+		for (HttpMethod mtd : methods) {
+			if (mtd != HttpMethod.OPTIONS) {
+				methodsBuilder
+					.append(", ")
+					.append(mtd);
+			}
+		}
+		return methodsBuilder.toString();
 	}
 
 	@Override
@@ -666,12 +766,17 @@ public class ApiListenerServlet extends HttpServletBase {
 	}
 
 	private String createAbortMessage(String remoteUser, int statusCode) {
-		StringBuilder message = new StringBuilder("");
-		message.append("Aborting request ");
+		StringBuilder message = new StringBuilder("Aborting request ");
 		if(StringUtils.isNotEmpty(remoteUser)) {
-			message.append("issued by ["+remoteUser+"] ");
+			message
+				.append("issued by [")
+				.append(remoteUser)
+				.append("] ");
 		}
-		message.append("with status code ["+statusCode+"], ");
+		message
+			.append("with status code [")
+			.append(statusCode)
+			.append("], ");
 		return message.toString();
 	}
 }

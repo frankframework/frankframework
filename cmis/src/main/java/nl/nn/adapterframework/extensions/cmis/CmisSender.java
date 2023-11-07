@@ -1,5 +1,5 @@
 /*
-   Copyright 2016-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2016-2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -67,7 +67,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
@@ -84,7 +83,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EnumUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -435,7 +434,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				response.setHeader("Content-Disposition", contentDisposition);
 				OutputStream outputStream;
 				outputStream = response.getOutputStream();
-				Misc.streamToStream(inputStream, outputStream);
+				StreamUtil.streamToStream(inputStream, outputStream);
 				log.debug(getLogPrefix() + "copied document content input stream [" + inputStream + "] to output stream [" + outputStream + "]");
 
 				return new SenderResult(Message.nullMessage());
@@ -491,12 +490,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	private SenderResult sendMessageForActionCreate(Session cmisSession, Message message, PipeLineSession session, ParameterValueList pvl) throws SenderException {
-		String fileName = null;
-		try {
-			fileName = session.getMessage( getParameterOverriddenAttributeValue(pvl, "filenameSessionKey", getFilenameSessionKey()) ).asString();
-		} catch (IOException e) {
-			throw new SenderException("Unable to get filename from session key ["+getFilenameSessionKey()+"]", e);
-		}
+		String fileName = session.getString(getParameterOverriddenAttributeValue(pvl, "filenameSessionKey", getFilenameSessionKey()));
 
 		String mediaType;
 		Map<String, Object> props = new HashMap<String, Object>();
@@ -756,11 +750,11 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		CmisEvent event = CmisEvent.GET_OBJECT;
 		try {
-			String cmisEvent = session.getMessage(CmisEventDispatcher.CMIS_EVENT_KEY).asString();
+			String cmisEvent = session.getString(CmisEventDispatcher.CMIS_EVENT_KEY);
 			if(StringUtils.isNotEmpty(cmisEvent)) {
 				event = EnumUtils.parse(CmisEvent.class, cmisEvent, true);
 			}
-		} catch (IOException | IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			throw new SenderException("unable to parse CmisEvent", e);
 		}
 
@@ -974,39 +968,45 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 
-	@IbisDoc({"Specifies action to perform", ""})
+	/** Specifies action to perform */
 	@Mandatory
 	public void setAction(CmisAction action) {
 		this.action = action;
 	}
 
-	@IbisDoc({"The maximum number of concurrent connections", "10"})
+	/**
+	 * The maximum number of concurrent connections
+	 * @ff.default 10
+	 */
 	public void setMaxConnections(int i) {
 		sessionBuilder.setMaxConnections(i);
 	}
 
-	@IbisDoc({"The connection timeout in seconds", "10"})
+	/**
+	 * The connection timeout in seconds
+	 * @ff.default 10
+	 */
 	public void setTimeout(int i) {
 		sessionBuilder.setTimeout(i);
 	}
 
-	@IbisDoc({"URL to connect to", ""})
+	/** URL to connect to */
 	public void setUrl(String url) {
 		sessionBuilder.setUrl(url);
 	}
 
-	@IbisDoc({"Repository ID", ""})
+	/** Repository ID */
 	public void setRepository(String repository) {
 		sessionBuilder.setRepository(repository);
 	}
 
-	@IbisDoc({"Alias used to obtain credentials for authentication to host", ""})
+	/** Alias used to obtain credentials for authentication to host */
 	public void setAuthAlias(String authAlias) {
 		sessionBuilder.setAuthAlias(authAlias);
 		this.authAlias = authAlias;
 	}
 
-	@IbisDoc({"Username used in authentication to host", ""})
+	/** Username used in authentication to host */
 	public void setUsername(String userName) {
 		sessionBuilder.setUsername(userName);
 		this.username = userName;
@@ -1017,23 +1017,26 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		setUsername(userName);
 	}
 
-	@IbisDoc({"", ""})
+	/** Password used in authentication to host */
 	public void setPassword(String password) {
 		sessionBuilder.setPassword(password);
 		this.password = password;
 	}
 
-	@IbisDoc({"BindingType", "atompub"})
+	/**
+	 * BindingType CMIS protocol to use
+	 */
+	@Mandatory
 	public void setBindingType(BindingTypes bindingType) {
 		sessionBuilder.setBindingType(bindingType);
 	}
 
-	@IbisDoc({"If <code>action</code>=<code>create</code> the sessionKey that contains the file to use. If <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code> the sessionKey to store the result in", ""})
+	/** If <code>action</code>=<code>create</code> the sessionKey that contains the file to use. If <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code> the sessionKey to store the result in */
 	public void setFileSessionKey(String string) {
 		fileSessionKey = string;
 	}
 
-	@IbisDoc({"If <code>action</code>=<code>create</code> the session key that contains the name of the file to use. If not set, the value of the property <code>filename</code> from the input message is used", ""})
+	/** If <code>action</code>=<code>create</code> the session key that contains the name of the file to use. If not set, the value of the property <code>filename</code> from the input message is used */
 	public void setFilenameSessionKey(String string) {
 		filenameSessionKey = string;
 	}
@@ -1046,12 +1049,12 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	@Deprecated
 	@ConfigurationWarning("attribute 'fileInputStreamSessionKey' is replaced with 'fileSessionKey'")
-	@IbisDoc({"If <code>action</code>=<code>create</code> the session key that contains the input stream of the file to use. When <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code>: the session key in which the input stream of the document is stored", ""})
+	/** If <code>action</code>=<code>create</code> the session key that contains the input stream of the file to use. When <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code>: the session key in which the input stream of the document is stored */
 	public void setFileInputStreamSessionKey(String string) {
 		setFileSessionKey(string);
 	}
 
-	@IbisDoc({"If <code>action</code>=<code>create</code> the session key that contains the base64 encoded content of the file to use. When <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code>: the session key in which the base64 encoded content of the document is stored", ""})
+	/** If <code>action</code>=<code>create</code> the session key that contains the base64 encoded content of the file to use. When <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code>: the session key in which the base64 encoded content of the document is stored */
 	@ConfigurationWarning("attribute 'fileContentSessionKey' is replaced with 'fileSessionKey', please note that the 'fileSessionKey' result will not BASE64 encode the content")
 	@Deprecated
 	public void setFileContentSessionKey(String string) {
@@ -1059,47 +1062,65 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		convert2Base64 = AppConstants.getInstance().getBoolean("CmisSender.Base64FileContent", true);
 	}
 
-	@IbisDoc({"If <code>action</code>=<code>create</code> the mime type used to store the document when it's not set in the input message by a property", "'application/octet-stream'"})
+	/**
+	 * If <code>action</code>=<code>create</code> the mime type used to store the document when it's not set in the input message by a property
+	 * @ff.default 'application/octet-stream'
+	 */
 	public void setDefaultMediaType(String string) {
 		defaultMediaType = string;
 	}
 
 	@Deprecated
 	@ConfigurationWarning("Please return document content (as sender output) to the listener, ensure the pipeline exit is able to return data")
-	@IbisDoc({"(Only used when <code>action</code>=<code>get</code>). If true, the content of the document is streamed to the HttpServletResponse object of the restservicedispatcher", "false"})
+	/**
+	 * (Only used when <code>action</code>=<code>get</code>). If true, the content of the document is streamed to the HttpServletResponse object of the restservicedispatcher
+	 * @ff.default false
+	 */
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
 
-	@IbisDoc({"(Only used when <code>action</code>=<code>get</code>). If true, the content of the document is streamed to <code>fileInputStreamSessionKey</code> and all document properties are put in the result as a xml string", "false"})
+	/**
+	 * (Only used when <code>action</code>=<code>get</code>). If true, the content of the document is streamed to <code>fileInputStreamSessionKey</code> and all document properties are put in the result as a xml string
+	 * @ff.default false
+	 */
 	public void setGetProperties(boolean b) {
 		getProperties = b;
 	}
 
 
-	@IbisDoc({"(Only used when <code>action</code>=<code>get</code>). If true, the attachment for the document is the sender result or, if set, stored in <code>fileInputStreamSessionKey</code>. If false, only the properties are returned", "true"})
+	/**
+	 * (Only used when <code>action</code>=<code>get</code>). If true, the attachment for the document is the sender result or, if set, stored in <code>fileInputStreamSessionKey</code>. If false, only the properties are returned
+	 * @ff.default true
+	 */
 	public void setGetDocumentContent(boolean getDocumentContent) {
 		this.getDocumentContent = getDocumentContent;
 	}
 
-	@IbisDoc({"(Only used when <code>action</code>=<code>create</code>). If true, the document is created in the root folder of the repository. Otherwise the document is created in the repository", "true"})
+	/**
+	 * (Only used when <code>action</code>=<code>create</code>). If true, the document is created in the root folder of the repository. Otherwise the document is created in the repository
+	 * @ff.default true
+	 */
 	public void setUseRootFolder(boolean b) {
 		useRootFolder = b;
 	}
 
-	@IbisDoc({"(Only used when <code>action</code>=<code>get</code>) result returned when no document was found for the given id (e.g. '[not_found]'). If empty then 'notFound' is returned as forward name", ""})
+	/** (Only used when <code>action</code>=<code>get</code>) result returned when no document was found for the given id (e.g. '[not_found]'). If empty then 'notFound' is returned as forward name */
 	@Deprecated
 	@ConfigurationWarning("configure forward 'notFound' instead")
 	public void setResultOnNotFound(String string) {
 		resultOnNotFound = string;
 	}
 
-	@IbisDoc({"If true, the session is not closed at the end and it will be used in the next call", "true"})
+	/**
+	 * If true, the session is not closed at the end and it will be used in the next call
+	 * @ff.default true
+	 */
 	public void setKeepSession(boolean keepSession) {
 		this.keepSession = keepSession;
 	}
 
-	@IbisDoc({"Override entrypoint WSDL by reading it from the classpath, overrides url attribute", ""})
+	/** Override entrypoint WSDL by reading it from the classpath, overrides url attribute */
 	public void setOverrideEntryPointWSDL(String overrideEntryPointWSDL) {
 		sessionBuilder.setOverrideEntryPointWSDL(overrideEntryPointWSDL);
 	}
@@ -1268,22 +1289,25 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		return sessionBuilder.isIgnoreCertificateExpiredException();
 	}
 
-	@IbisDoc({"Proxy host url", ""})
+	/** Proxy host url */
 	public void setProxyHost(String proxyHost) {
 		sessionBuilder.setProxyHost(proxyHost);
 	}
 
-	@IbisDoc({"Proxy host port", "80"})
+	/**
+	 * Proxy host port
+	 * @ff.default 80
+	 */
 	public void setProxyPort(int proxyPort) {
 		sessionBuilder.setProxyPort(proxyPort);
 	}
 
-	@IbisDoc({"Alias used to obtain credentials for authentication to proxy", ""})
+	/** Alias used to obtain credentials for authentication to proxy */
 	public void setProxyAuthAlias(String proxyAuthAlias) {
 		sessionBuilder.setProxyAuthAlias(proxyAuthAlias);
 	}
 
-	@IbisDoc({"Proxy Username", ""})
+	/** Proxy Username */
 	public void setProxyUsername(String proxyUsername) {
 		sessionBuilder.setProxyUsername(proxyUsername);
 	}
@@ -1292,7 +1316,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	public void setProxyUserName(String proxyUsername) {
 		setProxyUsername(proxyUsername);
 	}
-	@IbisDoc({"Proxy Password", ""})
+	/** Proxy Password */
 	public void setProxyPassword(String proxyPassword) {
 		sessionBuilder.setProxyPassword(proxyPassword);
 	}

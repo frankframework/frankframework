@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,27 +19,28 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.management.bus.ActionSelector;
+import nl.nn.adapterframework.management.bus.BinaryResponseMessage;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.StringResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.QUEUE)
 public class SendJmsMessage extends BusEndpointBase {
 
 	@ActionSelector(BusAction.UPLOAD)
-	public Message<Object> putMessageOnQueue(Message<?> message) {
-		String connectionFactory = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONNECTION_FACTORY_NAME_KEY);
+	public Message<?> putMessageOnQueue(Message<?> message) {
+		String connectionFactory = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONNECTION_FACTORY_NAME_KEY);
 		if(StringUtils.isEmpty(connectionFactory)) {
 			throw new BusException("a connectionFactory must be provided");
 		}
@@ -50,6 +51,7 @@ public class SendJmsMessage extends BusEndpointBase {
 		boolean lookupDestination = BusMessageUtils.getBooleanHeader(message, "lookupDestination", false);
 		boolean expectsReply = message.getHeaders().containsKey("replyChannel");
 		boolean persistent = message.getHeaders().containsKey("persistent");
+		JMSFacade.MessageClass messageClass = BusMessageUtils.getEnumHeader(message, "messageClass", JMSFacade.MessageClass.class, JMSFacade.MessageClass.AUTO);
 		String replyTo = BusMessageUtils.getHeader(message, "replyTo", null);
 		String messageProperty = BusMessageUtils.getHeader(message, "messageProperty", null);
 		DestinationType type = BusMessageUtils.getEnumHeader(message, "type", DestinationType.class);
@@ -57,7 +59,7 @@ public class SendJmsMessage extends BusEndpointBase {
 			throw new BusException("a DestinationType must be provided");
 		}
 
-		JmsSender qms = createJmsSender(connectionFactory, destination, persistent, type, replyTo, expectsReply, lookupDestination);
+		JmsSender qms = createJmsSender(connectionFactory, destination, persistent, type, replyTo, expectsReply, lookupDestination, messageClass);
 		if(StringUtils.isNotEmpty(messageProperty)) {
 			qms.addParameter(getMessagePropertyParameter(messageProperty));
 		}
@@ -77,7 +79,7 @@ public class SendJmsMessage extends BusEndpointBase {
 		return p;
 	}
 
-	private JmsSender createJmsSender(String connectionFactory, String destination, boolean persistent, DestinationType type, String replyTo, boolean synchronous, boolean lookupDestination) {
+	private JmsSender createJmsSender(String connectionFactory, String destination, boolean persistent, DestinationType type, String replyTo, boolean synchronous, boolean lookupDestination, JMSFacade.MessageClass messageClass) {
 		JmsSender qms = createBean(JmsSender.class);
 		qms.setName("SendJmsMessageAction");
 		if(type == DestinationType.QUEUE) {
@@ -93,14 +95,22 @@ public class SendJmsMessage extends BusEndpointBase {
 		}
 		qms.setSynchronous(synchronous);
 		qms.setLookupDestination(lookupDestination);
+		qms.setMessageClass(messageClass);
 		return qms;
 	}
 
-	private Message<Object> processMessage(JmsSender qms, Object requestMessage, boolean expectsReply) {
+	private Message<?> processMessage(JmsSender qms, Object requestMessage, boolean expectsReply) {
 		try {
 			qms.open();
 			nl.nn.adapterframework.stream.Message responseMessage = qms.sendMessageOrThrow(nl.nn.adapterframework.stream.Message.asMessage(requestMessage), null);
-			return expectsReply ? ResponseMessage.Builder.create().withPayload(responseMessage).raw() : null;
+			if(!expectsReply) {
+				return null;
+			}
+
+			if(responseMessage.isBinary()) {
+				return new BinaryResponseMessage(responseMessage.asInputStream());
+			}
+			return new StringResponseMessage(responseMessage.asString());
 		} catch (Exception e) {
 			throw new BusException("error occured sending message", e);
 		} finally {

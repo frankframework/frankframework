@@ -16,8 +16,11 @@
 package nl.nn.adapterframework.http;
 
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.spy;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -34,15 +37,13 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 
 	@Test
 	public void relativeUrl() throws Throwable {
-		exception.expect(ConfigurationException.class);
-		exception.expectMessage("must use an absolute url starting with http(s)://");
-
 		RestSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 
 		sender.setMethodType(HttpMethod.GET);
 		sender.setUrl("relative/path");
 
-		sender.configure();
+		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
+		assertThat(e.getMessage(), Matchers.endsWith("must use an absolute url starting with http(s)://"));
 	}
 
 	@Test

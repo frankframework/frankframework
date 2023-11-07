@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021 WeAreFrank!
+   Copyright 2019, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,18 +17,19 @@ package nl.nn.adapterframework.stream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -40,16 +41,18 @@ import java.net.URL;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.testutil.TestAppender;
@@ -58,7 +61,6 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
-import nl.nn.credentialprovider.util.Misc;
 
 public class MessageTest {
 	protected Logger log = LogUtil.getLogger(this);
@@ -70,13 +72,13 @@ public class MessageTest {
 	public static String testString = "<root><sub>abc&amp;&lt;&gt;</sub><sub>" + CDATA_START + "<a>a&amp;b</a>" + CDATA_END + "</sub><data attr=\"één €\">één €</data></root>";
 	public static String testStringFile = "/Message/testString.txt";
 
-	private String characterWire76 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e00027870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078";
-	private String binaryWire76 =    "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e000278707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078";
+	private final String characterWire76 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e00027870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078";
+	private final String binaryWire76 =    "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e000278707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078";
 
-	private String characterWire77 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e767200106a6176612e6c616e672e537472696e67a0f0a4387a3bb34202000078707078";
-	private String binaryWire77 =    "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7671007e00077078";
+	private final String characterWire77 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e767200106a6176612e6c616e672e537472696e67a0f0a4387a3bb34202000078707078";
+	private final String binaryWire77 =    "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7671007e00077078";
 
-	private String[][] characterWires = {
+	private final String[][] characterWires = {
 		{ "7.6", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e00027870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078" },
 		{ "7.7", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e767200106a6176612e6c616e672e537472696e67a0f0a4387a3bb34202000078707078" },
 		// between 2021-12-07 and 2022-04-06 the serialVersionUID of Message was removed, causing unsolvable deserialization problems.
@@ -85,7 +87,7 @@ public class MessageTest {
 		{ "7.7 2021-02-02", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300024c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e78" },
 		{ "7.8 2021-04-20", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300055a00186661696c6564546f44657465726d696e65436861727365744c0007636f6e7465787474000f4c6a6176612f7574696c2f4d61703b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400124c6a6176612f6c616e672f537472696e673b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7400106a6176612e6c616e672e537472696e6778" },
 	};
-	private String[][] binaryWires = {
+	private final String[][] binaryWires = {
 			{ "7.6", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e000278707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078" },
 			{ "7.7", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7671007e00077078" },
 			// between 2021-12-07 and 2022-04-06 the serialVersionUID of Message was removed, causing unsolvable deserialization problems.
@@ -95,7 +97,7 @@ public class MessageTest {
 			{ "7.8 2021-04-20", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300055a00186661696c6564546f44657465726d696e65436861727365744c0007636f6e7465787474000f4c6a6176612f7574696c2f4d61703b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400124c6a6176612f6c616e672f537472696e673b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e740006627974655b5d78" },
 		};
 
-	private SerializationTester<Message> serializationTester=new SerializationTester<Message>();
+	private final SerializationTester<Message> serializationTester=new SerializationTester<Message>();
 
 	protected void testAsInputStream(Message message) throws IOException {
 		byte[] header = message.getMagic(6);
@@ -135,9 +137,9 @@ public class MessageTest {
 
 		byte[] actual = message.asByteArray();
 		byte[] expected = testString.getBytes("UTF-8");
-		assertEquals("lengths differ", expected.length, actual.length);
+		assertEquals(expected.length, actual.length, "lengths differ");
 		for (int i = 0; i < expected.length; i++) {
-			assertEquals("byte arrays differ at position [" + i + "]", expected[i], actual[i]);
+			assertEquals(expected[i], actual[i], "byte arrays differ at position [" + i + "]");
 		}
 	}
 
@@ -147,11 +149,10 @@ public class MessageTest {
 
 	protected void testToString(Message adapter, Class<?> clazz, Class<?> wrapperClass) {
 		String actual = adapter.toString();
-		System.out.println("toString [" + actual + "] class typename [" + clazz.getSimpleName() + "]");
 		// remove the toStringPrefix(), if it is present
 		String valuePart = actual.contains("value:\n") ? actual.split("value:\n")[1] : actual;
-		valuePart = valuePart.replaceAll("\\sMessage\\[[a-fA-F0-9]+\\]", "");
-		assertEquals(clazz.getSimpleName(), valuePart.substring(0, valuePart.indexOf(": ")));
+		valuePart = valuePart.replaceAll("Message\\[[a-fA-F0-9]+:", ""); //Strip 'Message[abcd1234:'
+		assertEquals(clazz.getSimpleName(), valuePart.substring(0, valuePart.indexOf("]: ")));
 		if (wrapperClass == null) {
 			assertEquals(clazz.getSimpleName(), adapter.getRequestClass());
 		} else {
@@ -479,6 +480,18 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testEmptyStringAsString() throws Exception {
+		String source = "";
+		Message message = new Message(source);
+
+		byte[] header = message.getMagic(6);
+		assertEquals("", new String(header));
+
+		String actual = message.asString();
+		assertEquals("", actual);
+	}
+
+	@Test
 	public void testStringToString() throws Exception {
 		String source = testString;
 		Message adapter = new Message(source);
@@ -590,7 +603,7 @@ public class MessageTest {
 		String unkownfilename = new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath() + "-bestaatniet";
 		File source = new File(unkownfilename);
 		Message adapter = new FileMessage(source);
-		Exception exception = assertThrows(FileNotFoundException.class, () -> { adapter.asInputStream(); });
+		Exception exception = assertThrows(NoSuchFileException.class, () -> { adapter.asInputStream(); });
 		assertThat(exception.getMessage(), containsString(unkownfilename));
 	}
 
@@ -730,6 +743,17 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testFileInputStreamAsInputStream() throws Exception {
+		URL url = TestFileUtils.getTestFileURL("/Message/testString.txt");
+		assertNotNull(url, "cannot find testfile");
+
+		File file = new File(url.toURI());
+		FileInputStream fis = new FileInputStream(file);
+		Message message = Message.asMessage(fis);
+		testAsInputStream(message);
+	}
+
+	@Test
 	public void testNodeAsReader() throws Exception {
 		Node source = XmlUtils.buildDomDocument(new StringReader(testString)).getFirstChild();
 		Message adapter = new Message(source);
@@ -821,10 +845,8 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testSerializeWithFile() throws Exception {
-		TemporaryFolder folder = new TemporaryFolder();
-		folder.create();
-		File source = folder.newFile();
+	public void testSerializeWithFile(@TempDir Path folder) throws Exception {
+		File source = folder.resolve("testSerializeWithFile").toFile();
 		writeContentsToFile(source, testString);
 
 		Message in = new FileMessage(source);
@@ -837,10 +859,8 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testSerializeWithURL() throws Exception {
-		TemporaryFolder folder = new TemporaryFolder();
-		folder.create();
-		File file = folder.newFile();
+	public void testSerializeWithURL(@TempDir Path folder) throws Exception {
+		File file = folder.resolve("testSerializeWithURL").toFile();
 		writeContentsToFile(file, testString);
 		URL source = file.toURI().toURL();
 
@@ -926,8 +946,8 @@ public class MessageTest {
 			byte[] wire = Hex.decodeHex(characterWires[i][1]);
 			Message out = serializationTester.deserialize(wire);
 
-			assertFalse(label, out.isBinary());
-			assertEquals(label, testString,out.asString());
+			assertFalse(out.isBinary(), label);
+			assertEquals(testString, out.asString(), label);
 		}
 	}
 
@@ -940,9 +960,9 @@ public class MessageTest {
 			byte[] wire = Hex.decodeHex(binaryWires[i][1]);
 			Message out = serializationTester.deserialize(wire);
 
-			assertTrue(label, out.isBinary());
-			assertEquals(label, "UTF-8", out.getCharset());
-			assertEquals(label, testString,out.asString());
+			assertTrue(out.isBinary(), label);
+			assertEquals("UTF-8", out.getCharset(), label);
+			assertEquals(testString, out.asString(), label);
 		}
 	}
 
@@ -950,43 +970,43 @@ public class MessageTest {
 	@Test
 	public void testMessageSizeString() {
 		Message message = Message.asMessage("string");
-		assertEquals("size differs or could not be determined", 6, message.size());
+		assertEquals( 6, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
 	public void testMessageSizeByteArray() {
 		Message message = Message.asMessage("string".getBytes());
-		assertEquals("size differs or could not be determined", 6, message.size());
+		assertEquals(6, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
 	public void testMessageSizeFileInputStream() throws Exception {
 		URL url = this.getClass().getResource("/file.xml");
-		assertNotNull("cannot find testfile", url);
+		assertNotNull(url, "cannot find testfile");
 
 		File file = new File(url.toURI());
 		FileInputStream fis = new FileInputStream(file);
 		Message message = Message.asMessage(fis);
-		assertEquals("size differs or could not be determined", 33, message.size());
+		assertEquals(33, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
 	public void testMessageSizeFile() throws Exception {
 		URL url = this.getClass().getResource("/file.xml");
-		assertNotNull("cannot find testfile", url);
+		assertNotNull(url, "cannot find testfile");
 
 		File file = new File(url.toURI());
 		Message message = Message.asMessage(file);
-		assertEquals("size differs or could not be determined", 33, message.size());
+		assertEquals(33, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
 	public void testMessageSizeURL() {
 		URL url = this.getClass().getResource("/file.xml");
-		assertNotNull("cannot find testfile", url);
+		assertNotNull(url, "cannot find testfile");
 
 		Message message = Message.asMessage(url);
-		assertEquals("size differs or could not be determined", -1, message.size());
+		assertEquals(-1, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
@@ -998,7 +1018,7 @@ public class MessageTest {
 	@Test
 	public void testMessageSizeExternalURL() throws Exception {
 		URL url = new URL("http://www.file.xml");
-		assertNotNull("cannot find testfile", url);
+		assertNotNull(url, "cannot find testfile");
 
 		Message message = Message.asMessage(url);
 		assertEquals(-1, message.size());
@@ -1007,7 +1027,7 @@ public class MessageTest {
 	@Test
 	public void testMessageSizeReader() throws Exception {
 		Message message = new Message(new StringReader("string"));
-		assertEquals("size differs or could not be determined", -1, message.size());
+		assertEquals(-1, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
@@ -1049,12 +1069,12 @@ public class MessageTest {
 	@Test
 	public void testMessageDetectCharsetISO8859() throws Exception {
 		URL isoInputFile = TestFileUtils.getTestFileURL("/Util/MessageUtils/iso-8859-1.txt");
-		assertNotNull("unable to find isoInputFile", isoInputFile);
+		assertNotNull(isoInputFile, "unable to find isoInputFile");
 
 		Message message = new UrlMessage(isoInputFile); //repeatable stream, detect charset
 
 		String stringResult = message.asString("auto"); //detect when reading
-		assertEquals(Misc.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
+		assertEquals(StreamUtil.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
 	}
 
 	@Test
@@ -1113,10 +1133,82 @@ public class MessageTest {
 					i++;
 				}
 			}
-			assertEquals("charset should be determined only once", 1, i);
+			assertEquals(1, i, "charset should be determined only once");
 		} finally {
 			TestAppender.removeAppender(appender);
 		}
 	}
 
+	@Test
+	public void testMagicCharactersCounted() throws Exception {
+		Reader reader = new StringReader(testString);
+		AtomicInteger charsRead = new AtomicInteger();
+		FilterReader filterReader = new FilterReader(reader) {
+			private int readCounted(ThrowingSupplier<Integer, IOException> reader) throws IOException {
+				int len = reader.get();
+				if (len>0) {
+					charsRead.addAndGet(len);
+				}
+				return len;
+			}
+
+			@Override
+			public int read(char[] chr, int st, int end) throws IOException {
+				return readCounted(() -> super.read(chr, st, end));
+			}
+		};
+		Message message = new Message(filterReader);
+		int charsToRead = 6;
+		message.getMagic(charsToRead);
+
+		assertEquals(charsToRead, charsRead.get());
+	}
+
+	@Test
+	public void testCopyMessage1() throws IOException {
+		// Arrange
+		Message msg1 = Message.asMessage("a");
+
+		// Act
+		Message msg2 = msg1.copyMessage();
+
+		msg1.close();
+
+		// Assert
+		assertNull(msg1.asObject());
+		assertNotNull(msg2.asObject());
+		assertEquals("a", msg2.asString());
+	}
+
+	@Test
+	public void testCopyMessage2() throws IOException {
+		// Arrange
+		Message msg1 = Message.asMessage(new StringReader("á"));
+
+		// Act
+		Message msg2 = msg1.copyMessage();
+
+		msg1.close();
+
+		// Assert
+		assertNull(msg1.asObject());
+		assertNotNull(msg2.asObject());
+		assertEquals("á", msg2.asString());
+	}
+
+	@Test
+	public void testCopyMessage3() throws IOException {
+		// Arrange
+		Message msg1 = Message.asMessage(new ByteArrayInputStream("á".getBytes()));
+
+		// Act
+		Message msg2 = msg1.copyMessage();
+
+		msg1.close();
+
+		// Assert
+		assertNull(msg1.asObject());
+		assertNotNull(msg2.asObject());
+		assertEquals("á", msg2.asString());
+	}
 }

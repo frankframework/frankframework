@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,19 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-//import jakarta.activation.CommandMap;
-import jakarta.activation.DataHandler;
-import jakarta.mail.BodyPart;
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.Multipart;
-import jakarta.mail.Session;
-import jakarta.mail.Transport;
-import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.internet.MimeMultipart;
-import jakarta.mail.util.ByteArrayDataSource;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
@@ -42,13 +29,24 @@ import org.w3c.dom.Node;
 
 import com.sun.mail.smtp.SMTPMessage;
 
+import jakarta.activation.DataHandler;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.util.ByteArrayDataSource;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -131,9 +129,6 @@ public class MailSender extends MailSenderBase {
 		}
 		//Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if(StringUtils.isNotEmpty(getBounceAddress())) {
-			if(properties.contains("mail.smtp.from")){
-				properties.remove("mail.smtp.from"); //Make sure it's not set twice?
-			}
 			properties.put("mail.smtp.from", getBounceAddress());
 		}
 	}
@@ -215,7 +210,7 @@ public class MailSender extends MailSenderBase {
 	}
 
 	private String sendEmail(Session session, MailSession mailSession) throws SenderException {
-		StringBuffer logBuffer = new StringBuffer();
+		StringBuilder logBuffer = new StringBuilder();
 
 		if (log.isDebugEnabled()) {
 			logBuffer.append("MailSender [" + getName() + "] sending message ");
@@ -250,7 +245,7 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	private MimeMessage createMessage(Session session, MailSession mailSession, StringBuffer logBuffer) throws SenderException {
+	private MimeMessage createMessage(Session session, MailSession mailSession, StringBuilder logBuffer) throws SenderException {
 		SMTPMessage msg = new SMTPMessage(session);
 		mailSession.setSmtpMessage(msg);
 
@@ -258,6 +253,14 @@ public class MailSender extends MailSenderBase {
 			msg.setFrom(mailSession.getFrom().getInternetAddress());
 		} catch (Exception e) {
 			throw new SenderException("Error occurred while setting sender email", e);
+		}
+
+		if (mailSession.getReplyTo() != null) {
+			try {
+				msg.setReplyTo(new InternetAddress[]{mailSession.getReplyTo().getInternetAddress()});
+			} catch (Exception e) {
+				throw new SenderException("Error occurred while setting replyTo email", e);
+			}
 		}
 
 		try {
@@ -289,6 +292,9 @@ public class MailSender extends MailSenderBase {
 		String messageTypeWithCharset = setCharSet(charSet, messageType);
 
 		if (mailSession.isMessageBase64() && StringUtils.isNotEmpty(mailSession.getMessage())) {
+			if(!Base64.isBase64(mailSession.getMessage())) {
+				throw new SenderException("Input message contains invalid Base64 characters");
+			}
 			byte[] message = Base64.decodeBase64(mailSession.getMessage());
 			mailSession.setMessage(new String(message));
 		}
@@ -306,7 +312,9 @@ public class MailSender extends MailSenderBase {
 			throw new SenderException("Error occurred while setting header", e);
 		}
 
-		log.debug(logBuffer.toString());
+		if (log.isDebugEnabled()) {
+			log.debug(logBuffer.toString());
+		}
 		try {
 			msg.setSentDate(new Date());
 		} catch (MessagingException e) {
@@ -371,18 +379,17 @@ public class MailSender extends MailSenderBase {
 		}
 	}
 
-	@IbisDoc({ "Name of the SMTP-host by which the messages are to be send", "" })
+	/** Name of the SMTP-host by which the messages are to be send */
 	public void setSmtpHost(String newSmtpHost) {
 		smtpHost = newSmtpHost;
 	}
 
-	@IbisDoc({ "Port of the SMTP-host by which the messages are to be send", "25" })
+	/**
+	 * Port of the SMTP-host by which the messages are to be send
+	 * @ff.default 25
+	 */
 	public void setSmtpPort(int newSmtpPort) {
 		smtpPort = newSmtpPort;
-	}
-
-	public void setProperties(Properties properties) {
-		this.properties = properties;
 	}
 
 	public class MailSession extends MailSessionBase {

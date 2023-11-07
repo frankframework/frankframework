@@ -17,30 +17,27 @@ package nl.nn.adapterframework.extensions.aspose.services.conv.impl;
 
 import java.io.IOException;
 
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionException;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.Convertor;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.ConvertorFactory;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageUtils;
 /**
  * @author Gerard van der Hoorn
  */
+@Log4j2
 public class CisConversionServiceImpl implements CisConversionService {
-
-	private static final Logger LOGGER = LogUtil.getLogger(CisConversionServiceImpl.class);
-
-	private CisConfiguration configuration;
-	private ConvertorFactory convertorFactory;
-	private MediaTypeValidator mediaTypeValidator = new MediaTypeValidator();
+	private final CisConfiguration configuration;
+	private final ConvertorFactory convertorFactory;
+	private final MediaTypeValidator mediaTypeValidator = new MediaTypeValidator();
 
 	public CisConversionServiceImpl(CisConfiguration configuration){
 		this.configuration = configuration;
@@ -58,7 +55,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 			mimeType = getMediaType(message, filename);
 		}
 
-		MediaType mediaType = MediaType.asMediaType(mimeType);
+		MediaType mediaType = new MediaType(mimeType.getType(), mimeType.getSubtype()); //Strip all parameters
 		if (isPasswordProtected(mediaType)) {
 			result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
 		} else {
@@ -72,7 +69,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 				long startTime = System.currentTimeMillis();
 				// Convertor found, convert the file
 				result = convertor.convertToPdf(mediaType, filename, message, conversionOption, configuration.getCharset());
-				if(LOGGER.isDebugEnabled()) LOGGER.debug(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s", System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
+				if(log.isDebugEnabled()) log.debug(String.format("Convert (in %d msec): mediatype: %s, filename: %s, attachmentoptions: %s", System.currentTimeMillis() - startTime, mediaType, filename, conversionOption));
 			}
 		}
 		return result;
@@ -84,9 +81,9 @@ public class CisConversionServiceImpl implements CisConversionService {
 		if (filename != null) {
 			msg.append(filename);
 		}
-		msg.append(" " + message);
+		msg.append(" ").append(message);
 
-		LOGGER.warn("Conversion not supported: " + msg.toString());
+		log.warn("Conversion not supported: {}", msg);
 
 		result = CisConversionResult.createFailureResult(conversionOption, mediaType, filename, msg.toString());
 		return result;
@@ -103,7 +100,7 @@ public class CisConversionServiceImpl implements CisConversionService {
 		MediaType mediaType = null;
 		try {
 			mediaType = mediaTypeValidator.getMediaType(message, filename);
-			LOGGER.debug("Mediatype received: " + mediaType);
+			log.debug("detected mediatype [{}]",mediaType);
 		} catch (IOException e) {
 			throw new CisConversionException("Het omzetten naar pdf is mislukt. Neem contact op met de functioneel beheerder", e);
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,51 +16,46 @@
 package nl.nn.adapterframework.util;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.receivers.MessageWrapper;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.webcontrol.api.ApiException;
 
 public class MessageBrowsingUtil {
-	private static Logger log = LogUtil.getLogger(MessageBrowsingUtil.class);
+	private static final Logger log = LogUtil.getLogger(MessageBrowsingUtil.class);
 
-	public static String getMessageText(Object rawmsg, IListener listener) throws IOException {
-		String msg = null;
-		if (rawmsg != null) {
-			if(rawmsg instanceof MessageWrapper) {
-				try {
-					MessageWrapper<?> msgsgs = (MessageWrapper<?>) rawmsg;
-					msg = msgsgs.getMessage().asString();
-				} catch (IOException e) {
-					throw new ApiException(e);
-				}
-			} else if(rawmsg instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
-				try {
-					msg = ((Message)rawmsg).asString();
-				} catch (IOException e) {
-					throw new ApiException(e);
-				}
-			} else if(rawmsg instanceof String) { // For backwards compatibility: earlier MessageLog messages were stored as String.
-				msg = (String)rawmsg;
-			} else {
-				if (listener!=null) {
-					try {
-						msg = listener.extractMessage(rawmsg, null).asString();
-					} catch (Exception e) {
-						log.warn(ClassUtils.nameOf(listener)+" cannot extract raw message ["+rawmsg+"] ("+ClassUtils.nameOf(e)+"): "+e.getMessage());
-					}
-				}
-				if (StringUtils.isEmpty(msg)) {
-					msg = Message.asString(rawmsg);
-				}
-			}
+	public static String getMessageText(RawMessageWrapper<?> rawMessageWrapper, IListener listener) throws IOException {
+		if (rawMessageWrapper == null || rawMessageWrapper.getRawMessage() == null) {
+			return null;
 		}
 
-		return msg;
+		if(rawMessageWrapper instanceof MessageWrapper) {
+			MessageWrapper<?> messageWrapper = (MessageWrapper<?>) rawMessageWrapper;
+			return messageWrapper.getMessage().asString();
+		}
+		Object rawMessage = rawMessageWrapper.getRawMessage();
+		if(rawMessage instanceof Message) { // For backwards compatibility: earlier MessageLog messages were stored as Message.
+			return ((Message)rawMessage).asString();
+		} else if(rawMessage instanceof String) { // For backwards compatibility: earlier MessageLog messages were stored as String.
+			return (String)rawMessage;
+		} else if (listener != null) {
+			String msg = null;
+			try {
+				msg = listener.extractMessage(rawMessageWrapper, new HashMap<>()).asString();
+			} catch (Exception e) {
+				log.warn(ClassUtils.nameOf(listener) + " cannot extract raw message [" + rawMessageWrapper + "] (" + ClassUtils.nameOf(e) + "): " + e.getMessage(), e);
+			}
+			if (StringUtils.isEmpty(msg)) {
+				msg = Message.asString(rawMessage);
+			}
+			return msg;
+		} else {
+			return Message.asString(rawMessage);
+		}
 	}
-
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,14 +36,14 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.SaxException;
 
 /**
  * Sends a message to a Sender for each element in the XML file that the input message refers to.
- * 
+ *
  * @author  Peter Leeuwenburgh
  */
 @Deprecated
@@ -70,8 +70,8 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 	private class ItemCallbackCallingHandler extends DefaultHandler {
 
 		private ItemCallback callback;
-		private StringBuffer elementBuffer = new StringBuffer();
-		private List<String> elements = new ArrayList<String>();
+		private StringBuilder elementBuffer = new StringBuilder();
+		private List<String> elements = new ArrayList<>();
 		private boolean sElem = false;
 		private Exception rootException = null;
 		private int startLength;
@@ -161,7 +161,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
 			if (sElem) {
-				elementBuffer.append(XmlUtils.encodeChars(ch, start, length));
+				elementBuffer.append(XmlEncodingUtils.encodeChars(ch, start, length));
 			}
 		}
 
@@ -223,7 +223,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		return handler.stopReason;
 	}
 
-	@IbisDoc({"the name of the element to iterate over (alternatively: <code>elementchain</code>)", ""})
+	/** the name of the element to iterate over (alternatively: <code>elementchain</code>) */
 	public void setElementName(String string) {
 		elementName = string;
 	}
@@ -232,7 +232,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		return elementName;
 	}
 
-	@IbisDoc({"the name of the element to iterate over, preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe)", ""})
+	/** the name of the element to iterate over, preceded with all ancestor elements and separated by semicolons (e.g. adapter;pipeline;pipe) */
 	public void setElementChain(String string) {
 		elementChain = string;
 	}

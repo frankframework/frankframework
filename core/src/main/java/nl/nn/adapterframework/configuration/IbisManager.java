@@ -21,9 +21,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 
 /**
@@ -50,17 +50,8 @@ public interface IbisManager extends ApplicationEventPublisherAware, Application
 
 	Configuration getConfiguration(String configurationName);
 
-	public enum IbisAction {
-		STOPADAPTER, STARTADAPTER, STOPRECEIVER, STARTRECEIVER, RELOAD, FULLRELOAD, INCTHREADS, DECTHREADS
-	}
-
 	/**
 	 * Utility function to give commands to Adapters and Receivers
-	 * 
-	 * @param action
-	 * @param adapterName
-	 * @param receiverName
-	 * @param commandIssuedBy
 	 */
 	void handleAction(IbisAction action, String configurationName, String adapterName, String receiverName, String commandIssuedBy, boolean isAdmin);
 
@@ -80,13 +71,6 @@ public interface IbisManager extends ApplicationEventPublisherAware, Application
 
 	@Deprecated
 	public List<Adapter> getRegisteredAdapters();
-
-	/**
-	 * Get the Spring Platform Transaction Manager, for use by the Web Front End.
-	 * 
-	 * @return Instance of the Platform Transaction Manager.
-	 */
-	PlatformTransactionManager getTransactionManager();
 
 	public void dumpStatistics(Action action);
 

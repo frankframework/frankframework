@@ -1,11 +1,12 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -14,11 +15,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.commons.io.FilenameUtils;
+import org.hamcrest.core.StringEndsWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.StreamUtil;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
 
@@ -28,13 +32,13 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	 */
 	protected abstract FS createFileSystem();
 
-	@Before
+	@BeforeEach
 	@Override
 	public void setUp() throws Exception {
 		fileSystem = createFileSystem();
 	}
 
-	@After
+	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
 		if (fileSystem!=null) fileSystem.close();
@@ -63,7 +67,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		// test
 		F f = fileSystem.toFile(filename);
-		assertTrue("Expected file[" + filename + "] to be present", fileSystem.exists(f));
+		assertTrue(fileSystem.exists(f), "Expected file[" + filename + "] to be present");
 	}
 
 	@Test
@@ -78,19 +82,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		// test
 		F f = fileSystem.toFile(filename);
-		assertFalse("Expected file[" + filename + "] not to be present", fileSystem.exists(f));
+		assertFalse(fileSystem.exists(f), "Expected file[" + filename + "] not to be present");
 	}
-
-
-	@Override
-	protected void equalsCheck(String content, String actual) {
-		assertEquals(content, actual);
-	}
-
 
 	@Override
 	protected void existsCheck(String filename) throws Exception {
-		assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
+		assertTrue(_fileExists(filename), "Expected file [" + filename + "] to be present");
 	}
 
 
@@ -111,14 +108,14 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();
 
-		assertFalse("Expected file [" + filename + "] not to be present", _fileExists(filename));
+		assertFalse(_fileExists(filename), "Expected file [" + filename + "] not to be present");
 	}
 
 	public void testReadFile(F file, String expectedContents, String charset) throws IOException, FileSystemException {
 		Message in = fileSystem.readFile(file, charset);
 		String actual = in.asString();
 		// test
-		equalsCheck(expectedContents.trim(), actual.trim());
+		assertEquals(expectedContents.trim(), actual.trim());
 	}
 
 	@Test
@@ -137,6 +134,34 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		F file = fileSystem.toFile(filename);
 		// test
 		testReadFile(file, contents, null);
+	}
+
+	@Test
+	public void basicFileSystemTestReadAndPreserve() throws Exception {
+		String filename = "read" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		createFile(null, filename, contents);
+		waitForActionToFinish();
+		// test
+		existsCheck(filename);
+
+		F file = fileSystem.toFile(filename);
+		// test
+		Message in = fileSystem.readFile(file, null);
+
+		// preserve() converts non repeatable messages to byte array
+		in.preserve();
+
+		// test if message can actually be read multiple times, without turning it explicitly into a String or byte array.
+		// This will fail if a message declared that it was repeatable, but actually was not repeatable.
+		String actual1 = StreamUtil.readerToString(in.asReader(), null);
+		assertEquals(contents, actual1.trim());
+		String actual2 = StreamUtil.readerToString(in.asReader(), null);
+		assertEquals(contents, actual2.trim());
 	}
 
 	@Test
@@ -243,17 +268,17 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		assertEquals(filename,fileSystem.getName(movedFile));
 
-		assertTrue("Destination folder must exist",_folderExists(dstFolder));
+		assertTrue(_folderExists(dstFolder), "Destination folder must exist");
 		assertFileExistsWithContents(dstFolder, fileSystem.getName(movedFile), contents);
 		//TODO: test that contents of file has remained the same
 		//TODO: test that file timestamp has not changed
 		assertFileDoesNotExist(srcFolder, filename);
 
-		assertFalse("original file should not exist anymore after move", fileSystem.exists(f2));
+		assertFalse(fileSystem.exists(f2), "original file should not exist anymore after move");
 
 		try {
 			F movedFile2 =fileSystem.moveFile(f2, dstFolder, false, true);
-			assertNull("File should not be moveable again", movedFile2);
+			assertNull(movedFile2, "File should not be moveable again");
 		} catch (Exception e) {
 			// an exception will do too, to signal that the file cannot be moved again.
 			log.debug("exception caught after trying to move file: "+e.getMessage());
@@ -282,9 +307,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		F f = fileSystem.toFile(srcFolder, filename);
 
-		assertThrows(FileSystemException.class, ()->{
-			fileSystem.moveFile(f, dstFolder, false, true);
-		});
+		assertThrows(FileSystemException.class, ()-> fileSystem.moveFile(f, dstFolder, false, true) );
 	}
 
 	@Test
@@ -310,12 +333,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		assertFileDoesNotExist(dstFolder, filename);
 
 		F f = fileSystem.toFile(srcFolder, filename);
-		F copiedFile =fileSystem.copyFile(f, dstFolder, false, true);
+		F copiedFile = fileSystem.copyFile(f, dstFolder, false, true);
 		waitForActionToFinish();
 
-		assertEquals(filename,fileSystem.getName(copiedFile));
+		assertEquals(filename, fileSystem.getName(copiedFile));
 
-		assertTrue("Destination folder must exist",_folderExists(dstFolder));
+		assertTrue(_folderExists(dstFolder), "Destination folder must exist");
 		assertFileExistsWithContents(dstFolder, fileSystem.getName(copiedFile), contents);
 		//TODO: test that contents of file has remained the same
 		//TODO: test that file timestamp has not changed
@@ -370,14 +393,14 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 			}
 		}
 
-		assertEquals("Size of set of files", numOfFilesInFolder, files.size());
-		assertEquals("Size of set of filenames", numOfFilesInFolder, filenames.size());
+		assertEquals(numOfFilesInFolder, files.size(), "Size of set of files");
+		assertEquals(numOfFilesInFolder, filenames.size(), "Size of set of filenames");
 
 		if (folder==null) {
 			for (String filename:filenames) {
 				F f=fileSystem.toFile(filename);
-				assertNotNull("file must be found by filename ["+filename+"]",f);
-				assertTrue("file must exist when referred to by filename ["+filename+"]",fileSystem.exists(f));
+				assertNotNull(f, "file must be found by filename ["+filename+"]");
+				assertTrue(fileSystem.exists(f), "file must exist when referred to by filename ["+filename+"]");
 			}
 		}
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
@@ -396,7 +419,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 			waitForActionToFinish();
 
-			assertFalse("file should not exist anymore physically after deletion", _fileExists(folder, "file_0.txt"));
+			assertFalse(_fileExists(folder, "file_0.txt"), "file should not exist anymore physically after deletion");
 
 			try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 				Iterator<F> it = ds.iterator();
@@ -404,13 +427,13 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 					assertTrue(it.hasNext());
 					F f=it.next();
 					log.debug("found file ["+fileSystem.getName(f)+"]");
-					assertTrue("file found should exist", _fileExists(folder, fileSystem.getName(f)));
+					assertTrue(_fileExists(folder, fileSystem.getName(f)), "file found should exist");
 					long modTime=fileSystem.getModificationTime(f).getTime();
-					if (doTimingTests) assertTrue("modtime ["+modTime+"] not after t0 ["+beforeFilesCreated+"]", modTime>=beforeFilesCreated);
-					if (doTimingTests) assertTrue("modtime ["+modTime+"] not before t1 ["+afterFilesCreated+"]", modTime<=afterFilesCreated);
+					if (doTimingTests) assertTrue(modTime>=beforeFilesCreated, "modtime ["+modTime+"] not after t0 ["+beforeFilesCreated+"]");
+					if (doTimingTests) assertTrue(modTime<=afterFilesCreated, "modtime ["+modTime+"] not before t1 ["+afterFilesCreated+"]");
 				}
 				// test
-				assertFalse("after a delete the number of files should be one less",it.hasNext());
+				assertFalse(it.hasNext(), "after a delete the number of files should be one less");
 			}
 
 			if (numOfFilesInFolder>1) {
@@ -432,22 +455,26 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void basicFileSystemTestListFileFromRoot() throws Exception {
+		_deleteFolder(null); //Clean root folder
 		basicFileSystemTestListFile(null, 2);
 	}
 	@Test
 	public void basicFileSystemTestListFileFromFolder() throws Exception {
+		_deleteFolder(null); //Clean root folder
 		_createFolder("folder");
 		basicFileSystemTestListFile("folder", 2);
 	}
 
 	@Test
 	public void basicFileSystemTestListFileFromEmptyFolder() throws Exception {
+		_deleteFolder(null); //Clean root folder
 		_createFolder("folder2");
 		basicFileSystemTestListFile("folder2", 0);
 	}
 
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFromOtherFoldersWhenReadingFromRoot() throws Exception {
+		_deleteFolder(null); //Clean root folder
 		_createFolder("folder");
 		_createFolder("Otherfolder");
 		createFile("Otherfolder", "otherfile", "maakt niet uit");
@@ -456,6 +483,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFromOtherFoldersWhenReadingFromFolder() throws Exception {
+		_deleteFolder(null); //Clean root folder
 		_createFolder("folder");
 		_createFolder("Otherfolder");
 		createFile("Otherfolder", "otherfile", "maakt niet uit");
@@ -464,12 +492,15 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFromRootWhenReadingFromFolder() throws Exception {
+		_deleteFolder(null); //Clean root folder
 		_createFolder("folder");
 		createFile(null, "otherfile", "maakt niet uit");
 		basicFileSystemTestListFile("folder", 2);
 	}
+
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFolders() throws Exception {
+		_deleteFolder(null);
 		String contents1 = "maakt niet uit";
 		String contents2 = "maakt ook niet uit";
 		String folderName = "subfolder";
@@ -494,13 +525,48 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 			}
 		}
 
-		assertEquals("Size of set of files, should not contain folders", 2, files.size());
-		assertEquals("Size of set of filenames, should not contain folders", 2, filenames.size());
+		assertEquals(2, files.size(), "Size of set of files, should not contain folders");
+		assertEquals( 2, filenames.size(), "Size of set of filenames, should not contain folders");
 
 	}
 
 	@Test
-	public void getParentOfTheDeletedFile() throws Exception {
+	public void basicFileSytemTestGetNumberOfFilesInFolder() throws Exception {
+		// arrange
+		String contents1 = "maakt niet uit";
+		String contents2 = "maakt ook niet uit";
+		String folderName = "folder_for_counting";
+
+		if (_folderExists(folderName)) {
+			_deleteFolder(folderName);
+		}
+		_createFolder(folderName);
+
+		fileSystem.configure();
+		fileSystem.open();
+
+
+		// act
+		int fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
+
+		// assert
+		assertEquals(0, fileCount);
+
+
+		// arrange 2
+		createFile(folderName, FILE1, contents1);
+		createFile(folderName, FILE2, contents2);
+
+		// act 2
+		fileCount = fileSystem.getNumberOfFilesInFolder(folderName);
+
+		// assert 2
+		assertEquals(2, fileCount);
+	}
+
+	@Test
+	// getParentFolder() is used when attribute deleteEmptyFolder=true, and in action RENAME
+	public void basicFileSystemTestGetParentOfTheDeletedFile() throws Exception {
 		String folderName = "parentFolder";
 
 		fileSystem.configure();
@@ -514,8 +580,9 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.deleteFile(f);
 
 		String parentFolder = fileSystem.getParentFolder(f);
+		parentFolder = FilenameUtils.normalizeNoEndSeparator(parentFolder);
 
-		assertTrue(parentFolder.endsWith(folderName));
+		assertThat(parentFolder, StringEndsWith.endsWith(folderName));
 	}
 
 }

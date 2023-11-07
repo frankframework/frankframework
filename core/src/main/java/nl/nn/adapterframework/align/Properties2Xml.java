@@ -17,6 +17,7 @@ package nl.nn.adapterframework.align;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,7 +44,7 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 
 	private Map<String,String> data;
 
-	protected class PropertyNode {
+	protected static class PropertyNode {
 		String value;
 		Map<String,String> attributes;
 	}
@@ -123,6 +124,25 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 	@Override
 	public String getText(XSElementDeclaration elementDeclaration, PropertyNode node) {
 		return node.value;
+	}
+
+	@Override
+	public PropertyNode getRootNode(Map<String, String> container) {
+		if(getRootElement() == null) {
+			return super.getRootNode(container);
+		}
+
+		Map<String, String> rootAttributes = new HashMap<>();
+		int offset = getRootElement().length()+1;
+		for(Map.Entry<String, String> entry : container.entrySet()) {
+			String key = entry.getKey();
+			if(key.startsWith(getRootElement()+attributeSeparator)) {
+				rootAttributes.put(key.substring(offset), entry.getValue());
+			}
+		}
+		PropertyNode rootNode = new PropertyNode();
+		rootNode.attributes = rootAttributes;
+		return rootNode;
 	}
 
 	public static String translate(Map<String,String> data, URL schemaURL, String rootElement, String targetNamespace) throws SAXException, IOException {

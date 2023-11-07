@@ -1,0 +1,19 @@
+<document
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://frankframework.org/manual/exercise/mundo"
+    id="abcdefgh" >
+    <header>
+        <to>
+            <accountId>12345</accountId>
+            <displayName>Frank</displayName>
+            <email>info@frankframework.org</email>
+			<street>Example Street</street>
+			<houseNumber>1</houseNumber>
+			<city>Example City</city>
+			<zip>1234AB</zip>
+			<country>Example country</country>
+        </to>
+    </header>
+    <!-- Base64 encoded "The document contents" -->
+    <body>VGhlIGRvY3VtZW50IGNvbnRlbnRz</body>
+</document>

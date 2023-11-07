@@ -31,13 +31,13 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.FixedResultPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
 
@@ -67,7 +67,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 
 		if (StringUtils.isNotEmpty(getFilename())) {
 			try {
-				returnString = Misc.resourceToString(ClassUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR);
+				returnString = StreamUtil.resourceToString(ClassLoaderUtils.getResourceURL(this, getFilename()), Misc.LINE_SEPARATOR);
 			} catch (Throwable e) {
 				throw new ConfigurationException("Pipe [" + getName() + "] got exception loading ["+getFilename()+"]", e);
 			}
@@ -79,7 +79,7 @@ public class FixedResultSender extends SenderWithParametersBase {
 			transformerPool = TransformerPool.configureStyleSheetTransformer(this, getStyleSheetName(), 0);
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {
-			returnString = replace(returnString, replaceFrom, replaceTo );
+			returnString = returnString.replace(replaceFrom, replaceTo);
 		}
 	}
 
@@ -95,7 +95,9 @@ public class FixedResultSender extends SenderWithParametersBase {
 			}
 			if (pvl!=null) {
 				for(ParameterValue pv : pvl) {
-					result=replace(result,"${"+pv.getDefinition().getName()+"}",pv.asStringValue(""));
+					String from = "${"+pv.getDefinition().getName()+"}";
+					String to = pv.asStringValue("");
+					result= result.replace(from, to);
 				}
 			}
 		}
@@ -117,32 +119,15 @@ public class FixedResultSender extends SenderWithParametersBase {
 		return new SenderResult(result);
 	}
 
-	public static String replace (String target, String from, String to) {
-		// target is the original string
-		// from   is the string to be replaced
-		// to     is the string which will used to replace
-		int start = target.indexOf (from);
-		if (start==-1) return target;
-		int lf = from.length();
-		char [] targetChars = target.toCharArray();
-		StringBuilder builder = new StringBuilder();
-		int copyFrom=0;
-		while (start != -1) {
-			builder.append (targetChars, copyFrom, start-copyFrom);
-			builder.append (to);
-			copyFrom=start+lf;
-			start = target.indexOf (from, copyFrom);
-		}
-		builder.append (targetChars, copyFrom, targetChars.length-copyFrom);
-		return builder.toString();
-	}
-
 	@Override
 	public boolean isSynchronous() {
 		return true;
 	}
 
-	@IbisDoc({"should values between ${ and } be resolved from the pipelinesession", "false"})
+	/**
+	 * should values between ${ and } be resolved from the pipelinesession
+	 * @ff.default false
+	 */
 	public void setSubstituteVars(boolean substitute){
 		this.substituteVars=substitute;
 	}
@@ -153,18 +138,12 @@ public class FixedResultSender extends SenderWithParametersBase {
 		setFilename(fileName);
 	}
 
-	/**
-	 * Sets the name of the filename. The fileName should not be specified
-	 * as an absolute path, but as a resource in the classpath.
-	 *
-	 * @param filename the name of the file to return the contents from
-	 */
-	@IbisDoc({"name of the file containing the resultmessage", ""})
+	/** Name of the file containing the result message */
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
 
-	@IbisDoc({"returned message", ""})
+	/** returned message */
 	public void setReturnString(String returnString) {
 		this.returnString = returnString;
 	}

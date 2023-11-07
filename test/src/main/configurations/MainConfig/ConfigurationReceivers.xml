@@ -9,7 +9,7 @@
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
 						commentField="TVARCHAR"
-						maxCommentLength="100"
+						maxCommentLength="200"
 						selectCondition="TNUMBER=${jdbc.receivertest.key}0"
 						statusValueAvailable="A"
 						statusValueProcessed="D"
@@ -25,7 +25,7 @@
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
 						commentField="TVARCHAR"
-						maxCommentLength="100"
+						maxCommentLength="200"
 						selectCondition="TNUMBER=${jdbc.receivertest.key}1"
 						statusValueAvailable="A"
 						statusValueInProcess="I"
@@ -43,7 +43,7 @@
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
 						commentField="TVARCHAR"
-						maxCommentLength="100"
+						maxCommentLength="200"
 						selectCondition="TNUMBER=${jdbc.receivertest.key}2"
 						statusValueAvailable="A"
 						statusValueProcessed="D"
@@ -60,7 +60,7 @@
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
 						commentField="TVARCHAR"
-						maxCommentLength="100"
+						maxCommentLength="200"
 						selectCondition="TNUMBER=${jdbc.receivertest.key}3"
 						statusValueAvailable="A"
 						statusValueInProcess="I"
@@ -93,7 +93,7 @@
 				<forward name="ready" path="READY"/>
 				<forward name="error" path="ERROR"/>
 			</pipe>
-			
+
 
 		</pipeline>
 	</adapter>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,15 +22,16 @@ import java.sql.ResultSet;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * Pipe that batch-transforms the lines in a BLOB.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@Deprecated
+@ConfigurationWarning("BatchBlobTransformerPipe: Not tested and maintained, please look for alternatives if you use BatchBlobTransformerPipe inform WeAreFrank! that there are no suitable alternatives for your use-case")
 public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 
 	@Override
@@ -49,7 +50,10 @@ public class BatchBlobTransformerPipe extends BatchTransformerPipeBase {
 		setCharset(charset);
 	}
 
-	@IbisDoc({"controls whether blobdata is stored compressed in the database", "true"})
+	/**
+	 * controls whether blobdata is stored compressed in the database
+	 * @ff.default true
+	 */
 	public void setBlobsCompressed(boolean compressed) {
 		querySender.setBlobsCompressed(compressed);
 	}

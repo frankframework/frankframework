@@ -36,13 +36,14 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 /**
- * Some utilities for working with BIS. 
- * 
+ * Some utilities for working with BIS.
+ *
  * @author Peter Leeuwenburgh
  * @deprecated Please use BisWrapperPipe
  */
@@ -127,7 +128,7 @@ public class BisUtils {
 		}
 		headerFieldsElement.addSubElement(conversationIdElement);
 		XmlBuilder messageIdElement = new XmlBuilder("MessageId");
-		messageIdElement.setValue(Misc.getHostname() + "_" + Misc.createSimpleUUID());
+		messageIdElement.setValue(Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());
 		headerFieldsElement.addSubElement(messageIdElement);
 		XmlBuilder externalRefToMessageIdElement = new XmlBuilder("ExternalRefToMessageId");
 		if (originalMessageText == null) {

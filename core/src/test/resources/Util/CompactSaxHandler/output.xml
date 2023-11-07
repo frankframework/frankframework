@@ -1,0 +1,24 @@
+<Envelope>
+	<Header/>
+	<Body>
+		<edcLk01>
+			<stuurgegevens>
+				<berichtcode>Lk01</berichtcode>
+				<tijdstipBericht>20230825095316895</tijdstipBericht>
+				<entiteittype>EDC</entiteittype>
+			</stuurgegevens>
+			<parameters>
+				<mutatiesoort>T</mutatiesoort>
+				<indicatorOvername><![CDATA[&<V]]></indicatorOvername>
+			</parameters>
+			<object entiteittype="EDC" verwerkingssoort="T">
+				<identificatie><![CDATA[DC2023-00020]]></identificatie>
+				<dct.omschrijving>Brief</dct.omschrijving>
+			</object>
+			<object entiteittype="EDC" verwerkingssoort="E">
+				<identificatie>DC2022-012345</identificatie>
+				<dct.omschrijving>&amp;&lt;Email</dct.omschrijving>
+			</object>
+		</edcLk01>
+	</Body>
+</Envelope>

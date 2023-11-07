@@ -16,7 +16,8 @@
 			<pipe name="InitSessionKeyDefaults" 
 				className="nl.nn.adapterframework.pipes.PutInSession">
 				<param name="expectedNumberOfResults" sessionKey="expectedNumberOfResults" defaultValue="-1"/>
-				<param name="numberOfAttempts" sessionKey="numberOfAttempts" defaultValue="1"/>
+				<param name="numberOfAttempts" sessionKey="numberOfAttempts" defaultValue="10"/>
+				<param name="timeout" sessionKey="timeout" defaultValue="1000"/>
 				<forward name="success" path="SendToManageDatabase"/>
 			</pipe>
 			
@@ -63,8 +64,14 @@
 				<forward name="equals" path="EXIT" />
 			</pipe>
 			
-			<pipe name="Wait" 
-				className="nl.nn.adapterframework.pipes.DelayPipe">
+			<pipe name="Wait" className="nl.nn.adapterframework.pipes.XmlIf" getInputFromSessionKey="timeout" regex="5000" >
+				<forward name="then" path="Wait5000"/>
+				<forward name="else" path="Wait1000"/>
+			</pipe>
+			<pipe name="Wait1000" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="1000">
+				<forward name="success" path="SendToManageDatabase" />
+			</pipe>
+			<pipe name="Wait5000" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="5000">
 				<forward name="success" path="SendToManageDatabase" />
 			</pipe>
 		</pipeline>

@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.filesystem;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,10 +16,10 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 
 	protected boolean doTimingTests=false;
 
-	public String FILE1 = "file1.txt";
-	public String FILE2 = "file2.txt";
-	public String DIR1 = "testDirectory";
-	public String DIR2 = "testDirectory2";
+	public static final String FILE1 = "file1.txt";
+	public static final String FILE2 = "file2.txt";
+	public static final String DIR1 = "testDirectory";
+	public static final String DIR2 = "testDirectory2";
 
 	private long waitMillis = 0;
 
@@ -100,29 +100,24 @@ public abstract class FileSystemTestBase extends ConfiguredTestBase {
 		}
 	}
 
-	protected void equalsCheck(String content, String actual) {
-		assertEquals(content, actual);
-	}
-
-
 	protected void existsCheck(String filename) throws Exception {
-		assertTrue("Expected file [" + filename + "] to be present", _fileExists(filename));
+		assertTrue(_fileExists(filename), "Expected file [" + filename + "] to be present");
 	}
 
 	protected void assertFileExistsWithContents(String folder, String filename, String contents) throws Exception {
-		assertTrue("file ["+filename+"] does not exist in folder ["+folder+"]",_fileExists(folder, filename));
+		assertTrue(_fileExists(folder, filename),"file ["+filename+"] does not exist in folder ["+folder+"]");
 		String actualContents = readFile(folder, filename);
-		assertEquals(filename, contents, actualContents==null?null:actualContents.trim());
+		assertEquals(contents, actualContents==null?null:actualContents.trim(), filename);
 	}
 
 	protected void assertFileDoesNotExist(String folder, String filename) throws Exception {
-		assertFalse(filename+" should not exist", _fileExists(folder, filename));
+		assertFalse(_fileExists(folder, filename), filename+" should not exist");
 	}
 
 	protected void assertFileCountEquals(Object result, int expectedFileCount) throws Exception {
 		TransformerPool tp = TransformerPool.getXPathTransformerPool(null, "count(*/file)", OutputType.TEXT, false, null);
 		int resultCount = Integer.parseInt(tp.transform(Message.asMessage(result), null, false));
-		assertEquals("file count mismatch", expectedFileCount, resultCount);
+		assertEquals(expectedFileCount, resultCount, "file count mismatch");
 	}
 
 	public void setWaitMillis(long waitMillis) {

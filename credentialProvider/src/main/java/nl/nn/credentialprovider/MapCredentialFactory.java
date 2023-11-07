@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,20 +15,21 @@
 */
 package nl.nn.credentialprovider;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import nl.nn.credentialprovider.util.AppConstants;
-import nl.nn.credentialprovider.util.ClassUtils;
-import nl.nn.credentialprovider.util.Misc;
+import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.credentialprovider.util.CredentialConstants;
 
 public abstract class MapCredentialFactory implements ICredentialFactory {
 
@@ -45,7 +46,7 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 
 	@Override
 	public void initialize() throws IOException {
-		AppConstants appConstants = AppConstants.getInstance();
+		CredentialConstants appConstants = CredentialConstants.getInstance();
 
 		aliases = getCredentialMap(appConstants);
 		if (aliases == null) {
@@ -58,15 +59,15 @@ public abstract class MapCredentialFactory implements ICredentialFactory {
 
 	protected abstract String getPropertyBase();
 
-	protected abstract Map<String,String> getCredentialMap(AppConstants appConstants) throws MalformedURLException, IOException;
+	protected abstract Map<String,String> getCredentialMap(CredentialConstants appConstants) throws IOException;
 
-	protected InputStream getInputStream(AppConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
+	protected InputStream getInputStream(CredentialConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
 		String filename = appConstants.getProperty(key, defaultValue);
-		if (Misc.isEmpty(filename)) {
+		if (StringUtils.isEmpty(filename)) {
 			throw new IllegalStateException("No property ["+key+"] found for "+purpose);
 		}
 		try {
-			return new FileInputStream(filename);
+			return Files.newInputStream(Paths.get(filename));
 		} catch (Exception e) {
 			URL url = ClassUtils.getResourceURL(filename);
 			if (url == null) {

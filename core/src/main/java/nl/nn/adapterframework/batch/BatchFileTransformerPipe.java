@@ -25,7 +25,6 @@ import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.FileUtils;
 
@@ -41,6 +40,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * Each line will be handled by this recordHandler and resultHandler.
  *
  * @author  John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
 
@@ -114,27 +114,36 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 		}
 	}
 
-	@IbisDoc({"Directory in which the transformed file(s) is stored", ""})
+	/** Directory in which the transformed file(s) is stored */
 	public void setMove2dirAfterTransform(String readyDir) {
 		move2dirAfterTransform = readyDir;
 	}
 
-	@IbisDoc({"Directory to which the inputfile is moved in case an error occurs", ""})
+	/** Directory to which the inputfile is moved in case an error occurs */
 	public void setMove2dirAfterError(String errorDir) {
 		move2dirAfterError = errorDir;
 	}
 
-	@IbisDoc({"Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.", "5"})
+	/**
+	 * Number of copies held of a file with the same name. Backup files have a dot and a number suffixed to their name. If set to 0, no backups will be kept.
+	 * @ff.default 5
+	 */
 	public void setNumberOfBackups(int i) {
 		numberOfBackups = i;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the destination file will be deleted if it already exists", "false"})
+	/**
+	 * If set <code>true</code>, the destination file will be deleted if it already exists
+	 * @ff.default false
+	 */
 	public void setOverwrite(boolean b) {
 		overwrite = b;
 	}
 
-	@IbisDoc({"If set <code>true</code>, the file processed will deleted after being processed, and not stored", "false"})
+	/**
+	 * If set <code>true</code>, the file processed will deleted after being processed, and not stored
+	 * @ff.default false
+	 */
 	public void setDelete(boolean b) {
 		delete = b;
 	}

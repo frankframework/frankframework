@@ -1,0 +1,11 @@
+{
+  "errors": [
+    {
+      "type": "aaa",
+      "title": "bbb",
+      "status": "ccc",
+      "detail": "ddd",
+      "instance": "eee"
+    }
+  ]
+}

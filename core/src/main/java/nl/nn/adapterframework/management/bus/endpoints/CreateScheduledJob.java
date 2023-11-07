@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.sql.SQLException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -39,7 +38,7 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.EmptyResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
@@ -104,7 +103,6 @@ public class CreateScheduledJob extends BusEndpointBase {
 
 		Configuration applicationContext = adapter.getConfiguration();
 
-		boolean persistent = BusMessageUtils.getBooleanHeader(message, "persistent", false);
 		boolean hasLocker = BusMessageUtils.getBooleanHeader(message, "locker", false);
 		String lockKey = BusMessageUtils.getHeader(message, "lockkey", "lock4["+name+"]");
 		String jobMessage = BusMessageUtils.getHeader(message, "message");
@@ -139,7 +137,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 		}
 
 		//Save the job in the database
-		if(persistent && AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
+		if(AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
 			boolean success = false;
 			FixedQuerySender qs = createBean(FixedQuerySender.class);
 			qs.setDatasourceName(JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
@@ -176,7 +174,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 						stmt.setString(8, description);
 						stmt.setBoolean(9, hasLocker);
 						stmt.setString(10, lockKey);
-						stmt.setString(11, getUserPrincipalName());
+						stmt.setString(11, BusMessageUtils.getUserPrincipalName());
 
 						success = stmt.executeUpdate() > 0;
 					}
@@ -191,7 +189,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 				throw new BusException("An error occurred while storing the job in the database");
 		}
 
-		return ResponseMessage.created();
+		return EmptyResponseMessage.created();
 	}
 
 	private IAdapter getAdapter(String configurationName, String adapterName) {
@@ -216,14 +214,6 @@ public class CreateScheduledJob extends BusEndpointBase {
 					return adapter;
 				}
 			}
-		}
-		return null;
-	}
-
-	private String getUserPrincipalName() {
-		UserDetails user = BusMessageUtils.getUserDetails();
-		if(user != null) {
-			return user.getUsername();
 		}
 		return null;
 	}

@@ -1,32 +1,35 @@
 package nl.nn.adapterframework.management.bus;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.spy;
 
 import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.integration.support.DefaultMessageBuilderFactory;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.support.GenericMessage;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.lifecycle.Gateway;
 import nl.nn.adapterframework.testutil.QuerySenderPostProcessor;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class BusTestBase {
 
 	private Configuration configuration;
 	private ApplicationContext parentContext;
-	private QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
+	protected MockRunnerConnectionFactoryFactory mockConnectionFactoryFactory;
+	private final QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 
-	private final ApplicationContext getParentContext() {
+	private ApplicationContext getParentContext() {
 		if(parentContext == null) {
 			ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext();
 			applicationContext.setConfigLocation("testBusApplicationContext.xml");
@@ -57,7 +60,8 @@ public class BusTestBase {
 			try {
 				configuration.configure();
 			} catch (ConfigurationException e) {
-				fail("unable to create "+TestConfiguration.TEST_CONFIGURATION_NAME);
+				LogUtil.getLogger(this).error("unable to configure "+TestConfiguration.TEST_CONFIGURATION_NAME, e);
+				fail("unable to configure "+TestConfiguration.TEST_CONFIGURATION_NAME);
 			}
 
 			configuration.setLoadedConfiguration("<loaded authAlias=\"test\" />"); //AuthAlias is used in BusTopic.SECURITY_ITEMS
@@ -66,18 +70,19 @@ public class BusTestBase {
 		return configuration;
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() throws Exception {
 		getConfiguration(); //Create configuration
+		mockConnectionFactoryFactory = getParentContext().getBean(MockRunnerConnectionFactoryFactory.class);
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		getConfiguration().close();
 	}
 
 	/**
-	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked 
+	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked
 	 * ResultSet using a {@link nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
 	 */
 	public void mockFixedQuerySenderResult(String query, ResultSet resultSet) {
@@ -93,8 +98,7 @@ public class BusTestBase {
 	}
 
 	public final Message<?> callSyncGateway(MessageBuilder<?> input) {
-		Gateway gateway = getParentContext().getBean("gateway", Gateway.class);
-		gateway.setErrorChannel(null); //Somehow Spring is setting an ErrorChannel we do not want!
+		OutboundGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
 		Message<?> response = gateway.sendSyncMessage(input.build());
 		if(response != null) {
 			return response;
@@ -105,8 +109,7 @@ public class BusTestBase {
 	}
 
 	public final void callAsyncGateway(MessageBuilder<?> input) {
-		Gateway gateway = getParentContext().getBean("gateway", Gateway.class);
-		gateway.setErrorChannel(null); //Somehow Spring is setting an ErrorChannel we do not want!
+		OutboundGateway gateway = getParentContext().getBean("gateway", LocalGateway.class);
 		gateway.sendAsyncMessage(input.build());
 	}
 
@@ -115,12 +118,35 @@ public class BusTestBase {
 	}
 
 	protected final <T> MessageBuilder<T> createRequestMessage(T payload, BusTopic topic, BusAction action) {
-		DefaultMessageBuilderFactory factory = getParentContext().getBean("messageBuilderFactory", DefaultMessageBuilderFactory.class);
-		MessageBuilder<T> builder = factory.withPayload(payload);
-		builder.setHeader(TopicSelector.TOPIC_HEADER_NAME, topic.name());
+		MessageBuilder<T> builder = spy(new MessageBuilder<>(payload));
+		builder.setHeader(BusTopic.TOPIC_HEADER_NAME, topic.name());
 		if(action != null) {
-			builder.setHeader(ActionSelector.ACTION_HEADER_NAME, action.name());
+			builder.setHeader(BusAction.ACTION_HEADER_NAME, action.name());
 		}
+
 		return builder;
+	}
+
+	public static class MessageBuilder<T> {
+		private final T payload;
+		private Map<String, Object> headers = new HashMap<>();
+		public MessageBuilder(T payload) {
+			this.payload = payload;
+		}
+
+		public <T> T getHeader(String key, Class<T> clazz) {
+			return (T) headers.get(key);
+		}
+
+		public void setHeader(String headerName, Object headerValue) {
+			if(!"topic".equals(headerName) && !"action".equals(headerName)) {
+				headerName = "meta-"+headerName;
+			}
+			headers.put(headerName, headerValue);
+		}
+
+		public Message<T> build() {
+			return new GenericMessage<>(payload, headers);
+		}
 	}
 }

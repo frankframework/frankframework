@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,12 +30,12 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -65,7 +65,7 @@ public class XmlIf extends AbstractPipe {
 	protected String makeStylesheet(String xpathExpression, String resultVal) {
 		String namespaceClause = XmlUtils.getNamespaceClause(getNamespaceDefs());
 		return XmlUtils.createXPathEvaluatorSource(x -> "<xsl:choose>" +
-															"<xsl:when "+namespaceClause+" test=\"" + XmlUtils.encodeChars(x) + "\">" +getThenForwardName()+"</xsl:when>"+
+															"<xsl:when "+namespaceClause+" test=\"" + XmlEncodingUtils.encodeChars(x) + "\">" +getThenForwardName()+"</xsl:when>"+
 															"<xsl:otherwise>" +getElseForwardName()+"</xsl:otherwise>" +
 														"</xsl:choose>",
 													xpathExpression + (StringUtils.isEmpty(resultVal)?"":"='"+resultVal+"'"),
@@ -86,10 +86,10 @@ public class XmlIf extends AbstractPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String forward = "";
-		PipeForward pipeForward = null;
+		String forward;
+		PipeForward pipeForward;
 
-		String sInput = null;
+		String sInput;
 		if (StringUtils.isEmpty(getSessionKey())) {
 			if (Message.isEmpty(message)) {
 				sInput="";
@@ -99,17 +99,19 @@ public class XmlIf extends AbstractPipe {
 				} catch (IOException e) {
 					throw new PipeRunException(this, "cannot open stream", e);
 				}
+				if (sInput == null) {
+					throw new PipeRunException(this, "Input message is empty");
+				}
 			}
 		} else {
 			log.debug("taking input from sessionKey [{}]", getSessionKey());
-			try {
-				sInput=session.getMessage(getSessionKey()).asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "unable to resolve session key ["+getSessionKey()+"]", e);
+			sInput=session.getString(getSessionKey());
+			if (sInput == null) {
+				throw new PipeRunException(this, "unable to resolve session key ["+getSessionKey()+"]");
 			}
 		}
 
-		if (tp!=null) {
+		if (tp != null) {
 			try {
 				Map<String,Object> parametervalues = null;
 				ParameterList parameterList = getParameterList();
@@ -148,48 +150,60 @@ public class XmlIf extends AbstractPipe {
 
 	@Deprecated
 	@ConfigurationWarning("Please use getInputFromSessionKey instead.")
-	@IbisDoc({"name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code>", ""})
+	/** name of the key in the <code>pipelinesession</code> to retrieve the input-message from. if not set, the current input message of the pipe is taken. n.b. same as <code>getinputfromsessionkey</code> */
 	public void setSessionKey(String sessionKey){
 		this.sessionKey = sessionKey;
 	}
 
-	@IbisDoc({"a string to compare the result of the xpathexpression (or the input-message itself) to. if not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward", ""})
+	/** a string to compare the result of the xpathexpression (or the input-message itself) to. if not specified, a non-empty result leads to the 'then'-forward, an empty result to 'else'-forward */
 	public void setExpressionValue(String expressionValue){
 		this.expressionValue = expressionValue;
 	}
 
-	@IbisDoc({"forward returned when <code>'true'</code>", "then"})
+	/**
+	 * forward returned when <code>'true'</code>
+	 * @ff.default then
+	 */
 	public void setThenForwardName(String thenForwardName){
 		this.thenForwardName = thenForwardName;
 	}
 
-	@IbisDoc({"forward returned when 'false'", "else"})
+	/**
+	 * forward returned when 'false'
+	 * @ff.default else
+	 */
 	public void setElseForwardName(String elseForwardName){
 		this.elseForwardName = elseForwardName;
 	}
 
-	@IbisDoc({"xpath expression to be applied to the input-message. if not set, no transformation is done", ""})
+	/** xpath expression to be applied to the input-message. if not set, no transformation is done */
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
 
-	@IbisDoc({"regular expression to be applied to the input-message (ignored if xpathexpression is specified). the input-message matching the given regular expression leads to the 'then'-forward", ""})
+	/** regular expression to be applied to the input-message (ignored if xpathexpression is specified). the input-message matching the given regular expression leads to the 'then'-forward */
 	public void setRegex(String regex){
 		this.regex = regex;
 	}
 
-	@IbisDoc({"specifies the version of xslt to use", "2"})
+	/**
+	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan)
+	 * @ff.default 2
+	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion = xsltVersion;
 	}
 
-	@IbisDoc({"namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions.", ""})
+	/** namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. */
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
 
 
-	@IbisDoc({"controls namespace-awareness of XSLT transformation", "true"})
+	/**
+	 * controls namespace-awareness of XSLT transformation
+	 * @ff.default true
+	 */
 	public void setNamespaceAware(boolean b) {
 		namespaceAware = b;
 	}

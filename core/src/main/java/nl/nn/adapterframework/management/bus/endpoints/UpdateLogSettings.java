@@ -33,11 +33,11 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.DebuggerStatusChangedEvent;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.webcontrol.api.DebuggerStatusChangedEvent;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.LOG_CONFIGURATION)
@@ -53,7 +53,7 @@ public class UpdateLogSettings extends BusEndpointBase {
 
 		logSettings.put("maxMessageLength", IbisMaskingLayout.getMaxLength());
 
-		List<String> errorLevels = new ArrayList<>(Arrays.asList("DEBUG", "INFO", "WARN", "ERROR"));
+		List<String> errorLevels = new ArrayList<>(Arrays.asList("TRACE", "DEBUG", "INFO", "WARN", "ERROR"));
 		logSettings.put("errorLevels", errorLevels);
 		logSettings.put("loglevel", rootLogger.getLevel().toString());
 
@@ -61,7 +61,7 @@ public class UpdateLogSettings extends BusEndpointBase {
 
 		logSettings.put("enableDebugger", AppConstants.getInstance().getBoolean(TESTTOOL_ENABLED_PROPERTY, true));
 
-		return ResponseMessage.ok(logSettings);
+		return new JsonResponseMessage(logSettings);
 	}
 
 	@ActionSelector(BusAction.MANAGE)

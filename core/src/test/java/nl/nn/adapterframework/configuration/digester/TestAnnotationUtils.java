@@ -1,10 +1,9 @@
 package nl.nn.adapterframework.configuration.digester;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -14,8 +13,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.lang3.ClassUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -25,9 +26,6 @@ import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.annotation.AnnotationFilter;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.ClassMetadata;
-import org.springframework.core.type.classreading.MetadataReader;
-import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 
 import nl.nn.adapterframework.configuration.IbisManager;
@@ -35,7 +33,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
 /**
  * We're using AnnotationUtils.findAnnotation(method, Deprecated.class);
  * This class has been rewritten in Spring 5 breaking inherited-native java-annotation lookups on interfaces.
- * 
+ *
  * Explicitly test all classes for occurrences of inherited-native java-annotations on interfaces.
  *
  */
@@ -43,74 +41,74 @@ public class TestAnnotationUtils {
 
 	@Test
 	public void isClassDeprecated_DirectlyOnclass() {
-		assertTrue("should mark as deprecated", isClassMyDeprecated(DeprecatedClass.class));
-		assertTrue("should mark as deprecated", isClassDeprecated(DeprecatedClass.class));
+		assertTrue(isClassMyDeprecated(DeprecatedClass.class), "should mark as deprecated");
+		assertTrue(isClassDeprecated(DeprecatedClass.class), "should mark as deprecated");
 	}
 
 	@Test
 	public void isClassDeprecated_OnAbstractclass() {
-		assertTrue("should mark as deprecated", isClassMyDeprecated(DeprecatedAbstractClass.class));
-		assertTrue("should mark as deprecated", isClassDeprecated(DeprecatedAbstractClass.class));
+		assertTrue(isClassMyDeprecated(DeprecatedAbstractClass.class), "should mark as deprecated");
+		assertTrue(isClassDeprecated(DeprecatedAbstractClass.class), "should mark as deprecated");
 	}
 
 	@Test
 	public void isClassDeprecated_OnInterface() {
-		assertTrue("should mark as deprecated", isClassMyDeprecated(DeprecatedInterface.class));
-		assertTrue("should mark as deprecated", isClassDeprecated(DeprecatedInterface.class));
+		assertTrue(isClassMyDeprecated(DeprecatedInterface.class), "should mark as deprecated");
+		assertTrue(isClassDeprecated(DeprecatedInterface.class), "should mark as deprecated");
 	}
 
 	@Test
 	public void isClassDeprecated_OnSuperclass() {
-		assertTrue("should mark as deprecated", isClassMyDeprecated(SubClass.class));
-		assertTrue("should mark as deprecated", isClassDeprecated(SubClass.class));
+		assertTrue(isClassMyDeprecated(SubClass.class), "should mark as deprecated");
+		assertTrue(isClassDeprecated(SubClass.class), "should mark as deprecated");
 	}
 
 	@Test
 	public void isClassDeprecated_OnSubSubclass() {
-		assertTrue("should mark as deprecated", isClassMyDeprecated(SubSubClass.class));
-		assertTrue("should mark as deprecated", isClassDeprecated(SubSubClass.class));
+		assertTrue(isClassMyDeprecated(SubSubClass.class), "should mark as deprecated");
+		assertTrue(isClassDeprecated(SubSubClass.class), "should mark as deprecated");
 	}
 
 	@Test
 	public void isClassDeprecated_OnClassWithInterface() {
-		assertTrue("should mark as deprecated", isClassMyDeprecated(ClassWithInterface.class));
-		assertFalse("is not backwards compatible", isClassDeprecated(ClassWithInterface.class));
+		assertTrue(isClassMyDeprecated(ClassWithInterface.class), "should mark as deprecated");
+		assertFalse(isClassDeprecated(ClassWithInterface.class), "is not backwards compatible");
 	}
 
 	@Test
 	public void isMethodDeprecated_DirectlyOnclass() throws Exception {
-		assertTrue("should mark as deprecated", isMethodMyDeprecated(DeprecatedClass.class));
-		assertTrue("should mark as deprecated", isMethodDeprecated(DeprecatedClass.class));
+		assertTrue(isMethodMyDeprecated(DeprecatedClass.class), "should mark as deprecated");
+		assertTrue(isMethodDeprecated(DeprecatedClass.class), "should mark as deprecated");
 	}
 
 	@Test
 	public void isMethodDeprecated_OnAbstractclass() throws Exception {
-		assertTrue("should mark as deprecated", isMethodMyDeprecated(DeprecatedAbstractClass.class));
-		assertTrue("should mark as deprecated", isMethodDeprecated(DeprecatedAbstractClass.class));
+		assertTrue(isMethodMyDeprecated(DeprecatedAbstractClass.class), "should mark as deprecated");
+		assertTrue(isMethodDeprecated(DeprecatedAbstractClass.class), "should mark as deprecated");
 	}
 
 	@Test
 	public void isMethodDeprecated_OnInterface() throws Exception {
-		assertTrue("should mark as deprecated", isMethodMyDeprecated(DeprecatedInterface.class));
-		assertTrue("should mark as deprecated", isMethodDeprecated(DeprecatedInterface.class));
+		assertTrue(isMethodMyDeprecated(DeprecatedInterface.class), "should mark as deprecated");
+		assertTrue(isMethodDeprecated(DeprecatedInterface.class), "should mark as deprecated");
 	}
 
 	@Test
 	public void isMethodDeprecated_OnSuperclass() throws Exception {
-		assertTrue("should mark as deprecated", isMethodMyDeprecated(SubClass.class));
-		assertTrue("should mark as deprecated", isMethodDeprecated(SubClass.class));
+		assertTrue(isMethodMyDeprecated(SubClass.class), "should mark as deprecated");
+		assertTrue(isMethodDeprecated(SubClass.class), "should mark as deprecated");
 	}
 
 	@Test
 	public void isMethodDeprecated_OnSubSubclass() throws Exception {
-		assertTrue("should mark as deprecated", isMethodMyDeprecated(SubSubClass.class));
-		assertTrue("should mark as deprecated", isMethodDeprecated(SubSubClass.class));
+		assertTrue(isMethodMyDeprecated(SubSubClass.class), "should mark as deprecated");
+		assertTrue(isMethodDeprecated(SubSubClass.class), "should mark as deprecated");
 	}
 
 	@Test
 	public void isMethodDeprecated_OnClassWithInterface() throws Exception {
-		assertTrue("should mark as deprecated", isMethodMyDeprecated(ClassWithInterface.class));
-		assertFalse("is not backwards compatible", isMethodDeprecated(ClassWithInterface.class));
+		assertTrue(isMethodMyDeprecated(ClassWithInterface.class), "should mark as deprecated");
+		assertFalse(isMethodDeprecated(ClassWithInterface.class), "is not backwards compatible");
 	}
 
 	private static boolean isClassMyDeprecated(Class<?> clazz) {
@@ -199,17 +197,15 @@ public class TestAnnotationUtils {
 		BeanDefinitionRegistry beanDefinitionRegistry = new SimpleBeanDefinitionRegistry();
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
 		scanner.setIncludeAnnotationConfig(false);
-		scanner.addIncludeFilter(new TypeFilter() {
-			@Override //Find everything that has an interface
-			public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) throws IOException {
-				ClassMetadata metadata = metadataReader.getClassMetadata();
-				return metadata.getInterfaceNames().length > 0;
-			}
+		//Find everything that has an interface
+		scanner.addIncludeFilter((metadataReader, metadataReaderFactory) -> {
+			ClassMetadata metadata = metadataReader.getClassMetadata();
+			return metadata.getInterfaceNames().length > 0;
 		});
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
 			@Override
-			protected String buildDefaultBeanName(BeanDefinition definition) {
+			protected String buildDefaultBeanName(@Nonnull BeanDefinition definition) {
 				String beanClassName = definition.getBeanClassName();
 				Assert.state(beanClassName != null, "No bean class name set");
 				return beanClassName;
@@ -230,11 +226,14 @@ public class TestAnnotationUtils {
 			interfazes.addAll(interfaces);
 		}
 
+		Set<String> interfacesToSkip = new HashSet<>();
+		interfacesToSkip.add(IbisManager.class.getCanonicalName());
+
 		for (Class<?> interfaze : interfazes) {
-			if(interfaze.getCanonicalName().startsWith(frankFrameworkPackage)) {
+			if(interfaze.getCanonicalName().startsWith(frankFrameworkPackage)
+					&& !interfacesToSkip.contains(interfaze.getCanonicalName())) {
 				for(Method method : interfaze.getDeclaredMethods()) {
 					for(Annotation annotation : method.getAnnotations()) {
-						if(IbisManager.class.getCanonicalName().equals(interfaze.getCanonicalName())) continue;
 						if(AnnotationFilter.PLAIN.matches(annotation) || AnnotationUtils.isInJavaLangAnnotationPackage(annotation)) {
 							fail("Found java annotation ["+annotation+"] on interface ["+interfaze.getTypeName()+"], is not seen by digester because it uses Spring AnnotationUtils");
 						}

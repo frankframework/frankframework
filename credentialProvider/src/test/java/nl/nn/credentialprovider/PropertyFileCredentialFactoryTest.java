@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,8 +51,8 @@ public class PropertyFileCredentialFactoryTest {
 		String alias = "straight";
 		String defaultUsername = "fakeDefaultUsername";
 		String defaultPassword = "fakeDefaultPassword";
-		String expectedUsername = "username from alias";
-		String expectedPassword = "password from alias";
+		String expectedUsername = "\\username from alias";
+		String expectedPassword = "passw\\urd from alias";
 
 		ICredentials mc = credentialFactory.getCredentials(alias, ()->defaultUsername, ()->defaultPassword);
 
@@ -104,9 +106,22 @@ public class PropertyFileCredentialFactoryTest {
 	}
 
 	@Test
-	public void testGetAliases() throws Exception {
-		Collection<String> aliases = credentialFactory.getConfiguredAliases();
-		assertEquals("[straight, noUsername, singleValue]", aliases.toString());
+	public void testPasswordWithSlashes() {
+		// Act
+		ICredentials mc = credentialFactory.getCredentials("slash", null, null);
+
+		// Assert
+		assertEquals("username from alias", mc.getUsername());
+		assertEquals("password/with/slash", mc.getPassword());
 	}
 
+	@Test
+	public void testGetAliases() throws Exception {
+		// Act
+		Collection<String> aliases = credentialFactory.getConfiguredAliases();
+
+		// Arrange
+		List<String> sortedAliases = aliases.stream().sorted().collect(Collectors.toList());
+		assertEquals("[noUsername, singleValue, slash, straight]", sortedAliases.toString());
+	}
 }

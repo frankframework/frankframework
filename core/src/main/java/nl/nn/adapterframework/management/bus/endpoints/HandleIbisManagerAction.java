@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package nl.nn.adapterframework.management.bus.endpoints;
 import javax.annotation.security.RolesAllowed;
 
 import org.springframework.messaging.Message;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.configuration.IbisManager.IbisAction;
+import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.management.bus.BusAware;
+import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.management.bus.TopicSelector;
@@ -37,14 +37,12 @@ public class HandleIbisManagerAction extends BusEndpointBase {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration", IbisManager.ALL_CONFIGS_KEY);
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 		String receiverName = BusMessageUtils.getHeader(message, "receiver");
-		String userPrincipalName = null;
-		UserDetails user = BusMessageUtils.getUserDetails();
-		boolean isAdmin = false;
-		if(user != null) {
-			userPrincipalName = user.getUsername();
-			isAdmin = BusMessageUtils.hasAnyRole("IbisAdmin", "IbisTester"); //limits the use of a FULL_RELOAD
-		}
+		String userPrincipalName = BusMessageUtils.getUserPrincipalName();
+		boolean isAdmin = BusMessageUtils.hasAnyRole("IbisAdmin", "IbisTester"); //limits the use of a FULL_RELOAD
 
+		if(action == null) {
+			throw new BusException("no (valid) action specified");
+		}
 		getIbisManager().handleAction(action, configurationName, adapterName, receiverName, userPrincipalName, isAdmin);
 	}
 }

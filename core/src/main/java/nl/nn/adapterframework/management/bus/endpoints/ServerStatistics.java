@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import javax.servlet.ServletContext;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.Message;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.context.WebApplicationContext;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
@@ -40,7 +39,7 @@ import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
@@ -76,9 +75,9 @@ public class ServerStatistics extends BusEndpointBase {
 		String dtapSide = appConstants.getProperty("dtap.side");
 		returnMap.put("dtap.side", dtapSide);
 
-		UserDetails user = BusMessageUtils.getUserDetails();
-		if(user != null) {
-			returnMap.put("userName", user.getUsername());
+		String upn = BusMessageUtils.getUserPrincipalName();
+		if(upn != null && !"anonymousUser".equals(upn)) {
+			returnMap.put("userName", upn);
 		}
 
 		returnMap.put("applicationServer", getApplicationServer());
@@ -97,7 +96,7 @@ public class ServerStatistics extends BusEndpointBase {
 			LogUtil.getLogger(this).info("unable to determine application uptime", e);
 		}
 
-		return ResponseMessage.ok(returnMap);
+		return new JsonResponseMessage(returnMap);
 	}
 
 	@ActionSelector(BusAction.WARNINGS)
@@ -178,7 +177,7 @@ public class ServerStatistics extends BusEndpointBase {
 			returnMap.put("messages", messages);
 		}
 
-		return ResponseMessage.ok(returnMap);
+		return new JsonResponseMessage(returnMap);
 	}
 
 	private List<Object> mapMessageKeeperMessages(MessageKeeper messageKeeper) {

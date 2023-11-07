@@ -43,7 +43,6 @@ import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -55,6 +54,7 @@ import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -129,7 +129,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		MAX_ITEMS_REACHED(MAX_ITEMS_REACHED_FORWARD),
 		STOP_CONDITION_MET(STOP_CONDITION_MET_FORWARD);
 
-		private @Getter String forwardName;
+		private final @Getter String forwardName;
 
 		private StopReason(String forwardName) {
 			this.forwardName=forwardName;
@@ -349,15 +349,15 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					}
 				} catch (SenderException e) {
 					if (isIgnoreExceptions()) {
-						log.info("ignoring SenderException after excution of sender for item ["+item+"]",e);
-						itemResult="<exception>"+XmlUtils.encodeChars(e.getMessage())+"</exception>";
+						log.info("ignoring SenderException after execution of sender for item [{}]", item, e);
+						itemResult="<exception>"+ XmlEncodingUtils.encodeChars(e.getMessage())+"</exception>";
 					} else {
 						throw e;
 					}
 				} catch (TimeoutException e) {
 					if (isIgnoreExceptions()) {
-						log.info("ignoring TimeOutException after excution of sender for item ["+item+"]",e);
-						itemResult="<timeout>"+XmlUtils.encodeChars(e.getMessage())+"</timeout>";
+						log.info("ignoring TimeOutException after execution of sender item [{}]", item, e);
+						itemResult="<timeout>"+ XmlEncodingUtils.encodeChars(e.getMessage())+"</timeout>";
 					} else {
 						throw e;
 					}
@@ -406,7 +406,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(message.asString()):message.asString())+"</input>";
 			}
 			itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
-			results.append(itemResult+"\n");
+			results.append(itemResult).append("\n");
 		}
 
 		public void waitForResults() throws SenderException, IOException {
@@ -422,15 +422,15 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 							if (senderResult.isSuccess()) {
 								itemResult = senderResult.getResult().asString();
 							} else {
-								itemResult = "<exception>"+XmlUtils.encodeChars(senderResult.getResult().asString())+"</exception>";
+								itemResult = "<exception>"+ XmlEncodingUtils.encodeChars(senderResult.getResult().asString())+"</exception>";
 							}
 						} else {
-							itemResult = "<exception>"+XmlUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
+							itemResult = "<exception>"+ XmlEncodingUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
 						}
 						addResult(count, pse.getRequest(), itemResult);
 					}
 				} catch (InterruptedException e) {
-					throw new SenderException("was interupted",e);
+					throw new SenderException("was interrupted",e);
 				}
 			}
 		}
@@ -506,71 +506,97 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return stopConditionTp;
 	}
 
-	@IbisDoc({"Stylesheet to apply to each message, before sending it", ""})
-	public void setStyleSheetName(String stylesheetName){
-		this.styleSheetName=stylesheetName;
+	/** Stylesheet to apply to each message, before sending it */
+	public void setStyleSheetName(String styleSheetName){
+		this.styleSheetName=styleSheetName;
 	}
 
-	@IbisDoc({"Alternatively: xpath-expression to create stylesheet from", ""})
+	/** Alternatively: xpath-expression to create stylesheet from */
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
 	}
 
-	@IbisDoc({"Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.", ""})
+	/** Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace. */
 	public void setNamespaceDefs(String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
 
-	@IbisDoc({"Only valid for xpathexpression", "text"})
+	/**
+	 * Only valid for xpathexpression
+	 * @ff.default text
+	 */
 	public void setOutputType(OutputType outputType) {
 		this.outputType = outputType;
 	}
 
-	@IbisDoc({"Force the transformer generated from the xpath-expression to omit the xml declaration", "true"})
+	/**
+	 * Force the transformer generated from the xpath-expression to omit the xml declaration
+	 * @ff.default true
+	 */
 	public void setOmitXmlDeclaration(boolean b) {
 		omitXmlDeclaration = b;
 	}
 
-	@IbisDoc({"Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed.", ""})
+	/** Key of session variable to store number of items processed, i.e. the position or index in the set of items to be processed. When handling the first item, the value will be 1. */
 	public void setItemNoSessionKey(String string) {
 		itemNoSessionKey = string;
 	}
 
-	@IbisDoc({"The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward "+IteratingPipe.MAX_ITEMS_REACHED_FORWARD+" can be configured to follow","0"})
+	/**
+	 * The maximum number of items returned. The (default) value of 0 means unlimited, all available items will be returned. Special forward {@value #MAX_ITEMS_REACHED_FORWARD} can be configured to follow
+	 * @ff.default 0
+	 */
 	public void setMaxItems(int maxItems) {
 		this.maxItems = maxItems;
 	}
 
-	@IbisDoc({"Expression evaluated on each result and forwards to ["+IteratingPipe.STOP_CONDITION_MET_FORWARD+"] forward if configured. "
-	+ "Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression <code>*[@finished='yes']</code> can be used. "
-	+ "This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use <code>maxItems</code>."
-	+ "Previous versions documented that <code>position()=2</code> could be used. This is not working as expected; Use maxItems instead", ""})
+	/**
+	 * Expression evaluated on each result and forwards to [{@value #STOP_CONDITION_MET_FORWARD}] forward if configured.
+	 * Iteration stops if condition returns anything other than an empty result. To test for the root element to have an attribute 'finished' with the value 'yes', the expression <code>*[@finished='yes']</code> can be used.
+	 * This can be used if the condition to stop can be derived from the item result. To stop after a maximum number of items has been processed, use <code>maxItems</code>.
+	 * Previous versions documented that <code>position()=2</code> could be used. This is not working as expected; Use maxItems instead
+	 */
 	public void setStopConditionXPathExpression(String string) {
 		stopConditionXPathExpression = string;
 	}
 
-	@IbisDoc({"When <code>true</code> ignore any exception thrown by executing sender", "false"})
+	/**
+	 * When <code>true</code> ignore any exception thrown by executing sender
+	 * @ff.default false
+	 */
 	public void setIgnoreExceptions(boolean b) {
 		ignoreExceptions = b;
 	}
 
-	@IbisDoc({"Controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned. "
-		+ "Setting this attributes to <code>false</code> is often required to enable processing of very large files. N.B. Remember in such a case that setting transactionAttribute to NotSupported might be necessary too", "true"})
+	/**
+	 * Controls whether all the results of each iteration will be collected in one result message. If set <code>false</code>, only a small summary is returned.
+	 * Setting this attributes to <code>false</code> is often required to enable processing of very large files. N.B. Remember in such a case that setting transactionAttribute to NotSupported might be necessary too
+	 * @ff.default true
+	 */
 	public void setCollectResults(boolean b) {
 		collectResults = b;
 	}
 
-	@IbisDoc({"Postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document", "false"})
+	/**
+	 * Postprocess each partial result, to remove the xml-declaration, as this is not allowed inside an xml-document
+	 * @ff.default false
+	 */
 	public void setRemoveXmlDeclarationInResults(boolean b) {
 		removeXmlDeclarationInResults = b;
 	}
 
-	@IbisDoc({"When <code>true</code> the input is added to the result in an input element", "false"})
+	/**
+	 * When <code>true</code> the input is added to the result in an input element
+	 * @ff.default false
+	 */
 	public void setAddInputToResult(boolean b) {
 		addInputToResult = b;
 	}
 
-	@IbisDoc({"When <code>true</code> duplicate input elements are removed, i.e. they are handled only once", "false"})
+	/**
+	 * When <code>true</code> duplicate input elements are removed, i.e. they are handled only once
+	 * @ff.default false
+	 */
 	public void setRemoveDuplicates(boolean b) {
 		removeDuplicates = b;
 	}
@@ -579,17 +605,26 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		closeIteratorOnExit = b;
 	}
 
-	@IbisDoc({"When set <code>true</code>, the calls for all items are done in parallel (a new thread is started for each call). when collectresults set <code>true</code>, this pipe will wait for all calls to finish before results are collected and pipe result is returned", "false"})
+	/**
+	 * When set <code>true</code>, the calls for all items are done in parallel (a new thread is started for each call). when collectresults set <code>true</code>, this pipe will wait for all calls to finish before results are collected and pipe result is returned
+	 * @ff.default false
+	 */
 	public void setParallel(boolean parallel) {
 		this.parallel = parallel;
 	}
 
-	@IbisDoc({"Maximum number of child threads that may run in parallel simultaneously (combined total of all threads calling this pipe). Use <code>0</code> for unlimited threads", "0"})
+	/**
+	 * Maximum number of child threads that may run in parallel simultaneously (combined total of all threads calling this pipe). Use <code>0</code> for unlimited threads
+	 * @ff.default 0
+	 */
 	public void setMaxChildThreads(int maxChildThreads) {
 		this.maxChildThreads = maxChildThreads;
 	}
 
-	@IbisDoc({"Controls multiline behaviour. When set to a value greater than 0, it specifies the number of rows send, in a one block, to the sender.", "0"})
+	/**
+	 * Controls multiline behaviour. When set to a value greater than 0, it specifies the number of rows send, in a one block, to the sender.
+	 * @ff.default 0
+	 */
 	public void setBlockSize(int i) {
 		blockSize = i;
 	}

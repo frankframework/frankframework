@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.configuration.digester;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.StringWriter;
 import java.net.URL;
@@ -11,7 +11,7 @@ import java.util.Properties;
 
 import javax.xml.validation.ValidatorHandler;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -117,27 +117,27 @@ public class ConfigurationDigesterTest {
 	@Test
 	public void stub4testtoolTest() throws Exception {
 		String baseDirectory = "/ConfigurationUtils/stub4testtool/FullAdapter";
-		
+
 		StringWriter target = new StringWriter();
 		XmlWriter xmlWriter = new XmlWriter(target);
-		
+
 		Properties properties = new Properties();
 		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 		properties.setProperty(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(false));
-		
+
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
-		
+
 		ConfigurationDigester digester = new ConfigurationDigester();
 		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, properties);
-		
+
 		XmlUtils.parseXml(originalConfiguration, filter);
-		
+
 		String actual = new String(target.toString());
 
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
 		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
 	}
-	
+
 	@Test
 	public void stub4testtoolEsbJmsListenerTest() throws Exception {
 		String baseDirectory = "/ConfigurationUtils/stub4testtool/EsbJmsListener";
@@ -145,7 +145,7 @@ public class ConfigurationDigesterTest {
 		StringWriter target = new StringWriter();
 
 		XmlWriter xmlWriter = new XmlWriter(target) {
-			
+
 			@Override
 			public void startElement(String uri, String localName, String qName, Attributes attributes)throws SAXException {
 				if(attributes != null && attributes.getValue("className") != null) {
@@ -153,7 +153,7 @@ public class ConfigurationDigesterTest {
 				}
 				super.startElement(uri, localName, qName, attributes);
 			}
-			
+
 			@Override
 			public void comment(char[] ch, int start, int length) throws SAXException {
 				if(!new String(ch).startsWith("<receiver name='receiver' transactionAttribute='Required' transactionTimeout=")) {

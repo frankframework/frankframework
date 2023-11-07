@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,14 +33,14 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -100,7 +100,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 	}
 
 	class Xml2AdiosHandler extends DefaultHandler {
-		private StringBuffer result = new StringBuffer(10000);
+		private StringBuilder result = new StringBuilder(10000);
 
 		public String getResult() {
 			return result.toString();
@@ -248,7 +248,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 			}
 
 			try {
-				URL url = ClassUtils.getResourceURL(this, getAdiosDefinities());
+				URL url = ClassLoaderUtils.getResourceURL(this, getAdiosDefinities());
 				if(url == null) {
 					throw new ConfigurationException("cannot find adios definitions from resource [" + getAdiosDefinities() + "]");
 				}
@@ -315,11 +315,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 
 	public String findRekenbox(PipeLineSession session) throws PipeRunException {
 		if(getRekenboxSessionKey() != null) {
-			try {
-				return session.getMessage(getRekenboxSessionKey()).asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "unable to get rekenbox from session key ["+getRekenboxSessionKey()+"]", e);
-			}
+			return session.getString(getRekenboxSessionKey());
 		}
 		return getRekenbox();
 	}

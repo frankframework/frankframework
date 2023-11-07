@@ -51,6 +51,7 @@ import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
+import nl.nn.adapterframework.extensions.esb.EsbJmsListener.MessageProtocol;
 import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
@@ -59,19 +60,19 @@ import nl.nn.adapterframework.jms.JmsListenerBase;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusAware;
-import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
+import nl.nn.adapterframework.management.bus.dto.ProcessStateDTO;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 import nl.nn.adapterframework.util.RunState;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)
@@ -100,7 +101,7 @@ public class AdapterStatus extends BusEndpointBase {
 			}
 		}
 
-		return ResponseMessage.ok(adapterList);
+		return new JsonResponseMessage(adapterList);
 	}
 
 	@ActionSelector(BusAction.FIND)
@@ -108,34 +109,12 @@ public class AdapterStatus extends BusEndpointBase {
 	public Message<String> getAdapter(Message<?> message) {
 		Expanded expanded = BusMessageUtils.getEnumHeader(message, "expanded", Expanded.class, Expanded.NONE);
 		boolean showPendingMsgCount = BusMessageUtils.getBooleanHeader(message, "showPendingMsgCount", false);
-		String configurationName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_CONFIGURATION_NAME_KEY);
-		String adapterName = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_ADAPTER_NAME_KEY);
+		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
+		String adapterName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_ADAPTER_NAME_KEY);
 
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
 		Map<String, Object> adapterInfo = getAdapterInformation(adapter, expanded, showPendingMsgCount);
-		return ResponseMessage.ok(adapterInfo);
-	}
-
-	private Adapter getAdapterByName(String configurationName, String adapterName) {
-		Configuration config = getConfigurationByName(configurationName);
-		Adapter adapter = config.getRegisteredAdapter(adapterName);
-
-		if(adapter == null){
-			throw new BusException("adapter ["+adapterName+"] does not exist");
-		}
-
-		return adapter;
-	}
-
-	private Configuration getConfigurationByName(String configurationName) {
-		if(StringUtils.isEmpty(configurationName)) {
-			throw new BusException("no configuration name specified");
-		}
-		Configuration configuration = getIbisManager().getConfiguration(configurationName);
-		if(configuration == null) {
-			throw new BusException("configuration ["+configurationName+"] does not exists");
-		}
-		return configuration;
+		return new JsonResponseMessage(adapterInfo);
 	}
 
 	private Map<String, Object> getAdapterInformation(Adapter adapter, Expanded expandedFilter, boolean showPendingMsgCount) {
@@ -173,7 +152,7 @@ public class AdapterStatus extends BusEndpointBase {
 		certElem.put("name", certificate);
 		String certificateAuthAlias = s.getKeystoreAuthAlias();
 		certElem.put("authAlias", certificateAuthAlias);
-		URL certificateUrl = ClassUtils.getResourceURL(s, s.getKeystore());
+		URL certificateUrl = ClassLoaderUtils.getResourceURL(s, s.getKeystore());
 		if (certificateUrl == null) {
 			certElem.put("url", "");
 			certElem.put("info", "*** ERROR ***");
@@ -340,10 +319,9 @@ public class AdapterStatus extends BusEndpointBase {
 			for (ProcessState state : knownStates) {
 				IMessageBrowser<?> ts = receiver.getMessageBrowser(state);
 				if(ts != null) {
-					Map<String, Object> info = new HashMap<>();
-					info.put("numberOfMessages", getMessageCount(receiverRunState, ts));
-					info.put("name", state.getName());
-					tsInfo.put(state, info);
+					ProcessStateDTO psDto = new ProcessStateDTO(state);
+					psDto.setMessageCount(getMessageCount(receiverRunState, ts));
+					tsInfo.put(state, psDto);
 				}
 			}
 			receiverInfo.put("transactionalStores", tsInfo);
@@ -391,7 +369,7 @@ public class AdapterStatus extends BusEndpointBase {
 			if (listener instanceof EsbJmsListener) {
 				EsbJmsListener ejl = (EsbJmsListener) listener;
 				if(ejl.getMessageProtocol() != null) {
-					if (ejl.getMessageProtocol().equalsIgnoreCase("FF")) {
+					if (ejl.getMessageProtocol()== MessageProtocol.FF) {
 						isEsbJmsFFListener = true;
 					}
 					if(showPendingMsgCount) {
@@ -420,9 +398,10 @@ public class AdapterStatus extends BusEndpointBase {
 			if (receiver.isThreadCountReadable()) {
 				receiverInfo.put("threadCount", receiver.getCurrentThreadCount());
 				receiverInfo.put("maxThreadCount", receiver.getMaxThreadCount());
-			}
-			if (receiver.isThreadCountControllable()) {
-				receiverInfo.put("threadCountControllable", "true");
+
+				if (receiver.isThreadCountControllable()) {
+					receiverInfo.put("threadCountControllable", true);
+				}
 			}
 			receivers.add(receiverInfo);
 		}
@@ -484,7 +463,9 @@ public class AdapterStatus extends BusEndpointBase {
 					try {
 						errorStoreMessageCount += esmb.getMessageCount();
 					} catch (ListenerException e) {
-						log.warn("Cannot determine number of messages in errorstore of ["+rcv.getName()+"]", e);
+						// Only log the stacktrace when loglevel == INFO. Otherwise it will pollute the log too much.
+						if(log.isInfoEnabled()) log.warn("Cannot determine number of messages in errorstore of [{}]", rcv.getName(), e);
+						else log.warn("Cannot determine number of messages in errorstore of [{}]: {}", rcv::getName, e::getMessage);
 					}
 				}
 				IMessageBrowser<?> mlmb = rcv.getMessageBrowser(ProcessState.DONE);
@@ -492,7 +473,9 @@ public class AdapterStatus extends BusEndpointBase {
 					try {
 						messageLogMessageCount += mlmb.getMessageCount();
 					} catch (ListenerException e) {
-						log.warn("Cannot determine number of messages in messagelog of ["+rcv.getName()+"]", e);
+						// Only log the stacktrace when loglevel == INFO. Otherwise it will pollute the log too much.
+						if(log.isInfoEnabled()) log.warn("Cannot determine number of messages in errorstore of [{}]", rcv.getName(), e);
+						else log.warn("Cannot determine number of messages in errorstore of [{}]: {}", rcv::getName, e::getMessage);
 					}
 				}
 			}

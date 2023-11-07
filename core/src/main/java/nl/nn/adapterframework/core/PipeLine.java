@@ -17,10 +17,15 @@ package nl.nn.adapterframework.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
@@ -31,9 +36,9 @@ import lombok.Setter;
 import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.AbstractPipe;
@@ -91,7 +96,7 @@ import nl.nn.adapterframework.util.Misc;
 @Category("Basic")
 public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, HasStatistics, IConfigurationAware {
 	private @Getter @Setter ApplicationContext applicationContext;
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter final ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public static final String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
 	public static final String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
@@ -102,8 +107,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public static final String PIPELINE_WAIT_STATS  = "wait";
 	public static final String PIPELINE_SIZE_STATS  = "msgsize";
 
-	// If you edit this default exit, please update the JavaDoc of class PipeLineExits as well.
-	private static final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
+	public static final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
 
 	private @Getter String firstPipe;
 	private @Getter int maxThreads = 0;
@@ -116,25 +120,25 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private @Getter IValidator outputValidator = null;
 	private @Getter IWrapperPipe inputWrapper    = null;
 	private @Getter IWrapperPipe outputWrapper   = null;
-	private @Getter Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<String, PipeLineExit>();
-	private @Getter Map<String, PipeForward> globalForwards = new Hashtable<String, PipeForward>();
+	private @Getter final Map<String, PipeLineExit> pipeLineExits = new LinkedHashMap<>();
+	private @Getter final Map<String, PipeForward> globalForwards = new HashMap<>();
 	private @Getter Locker locker;
 	private @Getter ICache<String,String> cache;
 
-	private Map<String, IPipe> pipesByName = new LinkedHashMap<String, IPipe>();
-	private @Getter List<IPipe> pipes	  = new ArrayList<IPipe>();
+	private final Map<String, IPipe> pipesByName = new LinkedHashMap<>();
+	private @Getter final List<IPipe> pipes	  = new ArrayList<>();
 
 	private @Getter Adapter adapter;    // for transaction managing
 	private @Getter INamedObject owner; // for logging purposes
 	private @Setter PipeLineProcessor pipeLineProcessor;
 
-	private Map<String, StatisticsKeeper> pipeStatistics = new Hashtable<String, StatisticsKeeper>();
-	private Map<String, StatisticsKeeper> pipeWaitingStatistics = new Hashtable<String, StatisticsKeeper>();
+	private final Map<String, StatisticsKeeper> pipeStatistics = new Hashtable<>();
+	private final Map<String, StatisticsKeeper> pipeWaitingStatistics = new Hashtable<>();
 	private @Getter StatisticsKeeper requestSizeStats;
-	private Map<String, StatisticsKeeper> pipeSizeStats = new Hashtable<String, StatisticsKeeper>();
+	private final Map<String, StatisticsKeeper> pipeSizeStats = new Hashtable<>();
 
 
-	private @Getter List<IPipeLineExitHandler> exitHandlers = new ArrayList<IPipeLineExitHandler>();
+	private @Getter final List<IPipeLineExitHandler> exitHandlers = new ArrayList<>();
 	//private CongestionSensorList congestionSensors = new CongestionSensorList();
 
 	private boolean configurationSucceeded = false;
@@ -144,6 +148,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		SUCCESS,
 		ERROR,
 		REJECTED;
+
+		public static final String SUCCESS_EXIT_STATE = "SUCCESS";
 	}
 
 	public IPipe getPipe(String pipeName) {
@@ -165,15 +171,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		INamedObject owner = getOwner();
-		Adapter adapter = null;
-		if (owner instanceof Adapter) {
-			adapter = (Adapter)owner;
-		}
+		ConfigurationException configurationException = null;
 		if (cache != null) {
 			cache.configure(owner.getName() + "-Pipeline");
 		}
-		if (pipeLineExits.size() < 1) {
+		if (pipeLineExits.isEmpty()) {
 			// if no Exits are configured, then insert a default one, named 'READY', with state 'SUCCESS'
 			PipeLineExit defaultExit = new PipeLineExit();
 			defaultExit.setName(DEFAULT_SUCCESS_EXIT_NAME);
@@ -186,32 +188,36 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 			log.debug("configuring Pipe [{}]", pipe::getName);
 			if (pipe instanceof FixedForwardPipe) {
-				FixedForwardPipe ffpipe = (FixedForwardPipe)pipe;
+				FixedForwardPipe ffPipe = (FixedForwardPipe)pipe;
 				// getSuccessForward will return null if it has not been set. See below configure(pipe)
-				if (ffpipe.findForward(PipeForward.SUCCESS_FORWARD_NAME) == null) {
+				if (ffPipe.findForward(PipeForward.SUCCESS_FORWARD_NAME) == null) {
 					int i2 = i + 1;
 					if (i2 < pipes.size()) {
+						// Forward to Next Pipe
 						String nextPipeName = getPipe(i2).getName();
 						PipeForward pf = new PipeForward();
 						pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 						pf.setPath(nextPipeName);
 						pipe.registerForward(pf);
 					} else {
-						PipeLineExit plexit = findExitByState(ExitState.SUCCESS);
-						if (plexit != null) {
-							// if there is no success exit, then appearantly only error exits are configured; Just get the first configured one
-							plexit = pipeLineExits.values().iterator().next();
-						}
-						if (plexit != null) {
-							PipeForward pf = new PipeForward();
-							pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-							pf.setPath(plexit.getName());
-							pipe.registerForward(pf);
-						}
+						// This is the last pipe, so forwards to a PipeLineExit
+						PipeLineExit plExit = findExitByState(ExitState.SUCCESS)
+								// if there is no success exit, then apparently only error exits are configured; Just get the first configured one
+								.orElseGet( ()-> pipeLineExits.values().iterator().next());
+
+						// By this point there is always at least 1 PipeLineExit, so plExit cannot be NULL.
+						PipeForward pf = new PipeForward();
+						pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
+						pf.setPath(plExit.getName());
+						pipe.registerForward(pf);
 					}
 				}
 			}
-			configure(pipe);
+			try {
+				configure(pipe);
+			} catch (ConfigurationException e) {
+				configurationException = suppressException(configurationException, e);
+			}
 		}
 		if (pipes.isEmpty()) {
 			throw new ConfigurationException("no Pipes in PipeLine");
@@ -225,74 +231,91 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 		IValidator inputValidator = getInputValidator();
 		IValidator outputValidator = getOutputValidator();
-		if (inputValidator!=null && outputValidator==null && inputValidator instanceof IDualModeValidator) {
-			outputValidator=((IDualModeValidator)inputValidator).getResponseValidator();
+		if (outputValidator == null && inputValidator instanceof IDualModeValidator) {
+			outputValidator = ((IDualModeValidator) inputValidator).getResponseValidator();
 			setOutputValidator(outputValidator);
 		}
 		if (inputValidator != null) {
 			log.debug("configuring InputValidator");
-			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-			inputValidator.registerForward(pf);
-			inputValidator.setName(INPUT_VALIDATOR_NAME);
-			configure(inputValidator);
+			configurationException = configureSpecialPipe(inputValidator, INPUT_VALIDATOR_NAME, configurationException);
 		}
-		if (outputValidator!=null) {
+		if (outputValidator != null) {
 			log.debug("configuring OutputValidator");
-			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-			outputValidator.registerForward(pf);
-			outputValidator.setName(OUTPUT_VALIDATOR_NAME);
-			configure(outputValidator);
+			configurationException = configureSpecialPipe(outputValidator, OUTPUT_VALIDATOR_NAME, configurationException);
 		}
 
-		if (getInputWrapper()!=null) {
+		IWrapperPipe inputWrapper = getInputWrapper();
+		if (inputWrapper != null) {
 			log.debug("configuring InputWrapper");
-			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-			getInputWrapper().registerForward(pf);
-			getInputWrapper().setName(INPUT_WRAPPER_NAME);
-			configure(getInputWrapper());
+			configurationException = configureSpecialPipe(inputWrapper, INPUT_WRAPPER_NAME, configurationException);
 		}
-		if (getOutputWrapper()!=null) {
+		IWrapperPipe outputWrapper = getOutputWrapper();
+		if (outputWrapper != null) {
 			log.debug("configuring OutputWrapper");
-			PipeForward pf = new PipeForward();
-			pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
-
-			getOutputWrapper().registerForward(pf);
-			getOutputWrapper().setName(OUTPUT_WRAPPER_NAME);
-			if (getOutputWrapper() instanceof EsbSoapWrapperPipe) {
-				EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe)getOutputWrapper();
-				for (Receiver<?> receiver: adapter.getReceivers()) {
-					IListener<?> listener = receiver.getListener();
-					try {
-						if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
-							break;
-						}
-					} catch (JmsException e) {
-						throw new ConfigurationException(e);
-					}
-				}
+			if (outputWrapper instanceof EsbSoapWrapperPipe) {
+				validatePhysicalDestination((EsbSoapWrapperPipe) outputWrapper);
 			}
-			configure(getOutputWrapper());
+			configurationException = configureSpecialPipe(outputWrapper, OUTPUT_WRAPPER_NAME, configurationException);
 		}
-		if (getLocker()!=null) {
+		if (getLocker() != null) {
 			log.debug("configuring Locker");
 			getLocker().configure();
 		}
 
 		requestSizeStats = new SizeStatisticsKeeper("- pipeline in");
 
-		for(IPipe p:pipes) {
-			if (p.consumesSessionVariable("originalMessage")) {
-				inputMessageConsumedMultipleTimes = true;
-				break;
-			}
-		}
+		inputMessageConsumedMultipleTimes |= pipes.stream()
+				.anyMatch(p -> p.consumesSessionVariable("originalMessage"));
 
 		super.configure();
 		log.debug("successfully configured");
 		configurationSucceeded = true;
+		if (configurationException != null) {
+			throw configurationException;
+		}
+	}
+
+	@Nullable
+	private ConfigurationException configureSpecialPipe(@Nonnull final IPipe pipe, @Nonnull final String name, @Nullable final ConfigurationException configurationException) throws ConfigurationException {
+		PipeForward pf = new PipeForward();
+		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
+		pipe.registerForward(pf);
+		pipe.setName(name);
+
+		try {
+			configure(pipe);
+		} catch (ConfigurationException e) {
+			return suppressException(configurationException, e);
+		}
+		return configurationException;
+	}
+
+	private void validatePhysicalDestination(final EsbSoapWrapperPipe eswPipe) throws ConfigurationException {
+		INamedObject owner = getOwner();
+		if (owner instanceof Adapter) {
+			Adapter owningAdapter = (Adapter) owner;
+
+			for (Receiver<?> receiver : owningAdapter.getReceivers()) {
+				IListener<?> listener = receiver.getListener();
+				try {
+					if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
+						break;
+					}
+				} catch (JmsException e) {
+					throw new ConfigurationException(e);
+				}
+			}
+		}
+	}
+
+	@Nonnull
+	private static ConfigurationException suppressException(@Nullable final ConfigurationException configurationException, @Nonnull final ConfigurationException e) {
+		if (configurationException == null) {
+			return e;
+		} else {
+			configurationException.addSuppressed(e);
+			return configurationException;
+		}
 	}
 
 	public void configure(IPipe pipe) throws ConfigurationException {
@@ -344,7 +367,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			pipeStatistics.put(pipe.getName(), new StatisticsKeeper(pipe.getName()));
 			//congestionSensors.addSensor(pipe);
 		} catch (Throwable t) {
-			throw new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
+			ConfigurationException e = new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
+			getAdapter().getMessageKeeper().error("Error initializing adapter ["+ getAdapter().getName()+"]: " +e.getMessage());
+			throw e;
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("Pipe successfully configured");
@@ -355,14 +380,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		return configurationSucceeded;
 	}
 
-	public PipeLineExit findExitByState(ExitState state) {
-		for (String exitPath : pipeLineExits.keySet()) {
-			PipeLineExit pe = pipeLineExits.get(exitPath);
-			if (pe.getState()==state) {
-				return pe;
-			}
-		}
-		return null;
+	public Optional<PipeLineExit> findExitByState(ExitState state) {
+		return pipeLineExits.values()
+				.stream()
+				.filter(pe -> pe.getState() == state)
+				.findFirst();
 	}
 
 	/**
@@ -598,21 +620,20 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 */
 	@Override
 	public String toString(){
-		// TODO: Should use StringBuilder
-		String result = "";
-		result+="[ownerName="+(owner==null ? "-none-" : owner.getName())+"]";
-		result+="[adapterName="+(adapter==null ? "-none-" : adapter.getName())+"]";
-		result+="[startPipe="+firstPipe+"]";
+		StringBuilder result = new StringBuilder();
+		result.append("[ownerName=").append(owner == null ? "-none-" : owner.getName()).append("]");
+		result.append("[adapterName=").append(adapter == null ? "-none-" : adapter.getName()).append("]");
+		result.append("[startPipe=").append(firstPipe).append("]");
 //		result+="[transacted="+transacted+"]";
-		result+="[transactionAttribute="+getTransactionAttribute()+"]";
+		result.append("[transactionAttribute=").append(getTransactionAttribute()).append("]");
 		for (int i=0; i<pipes.size(); i++) {
-			result+="pipe"+i+"=["+getPipe(i).getName()+"]";
+			result.append("pipe").append(i).append("=[").append(getPipe(i).getName()).append("]");
 		}
 		for (String exitName : pipeLineExits.keySet()) {
 			PipeLineExit pe = pipeLineExits.get(exitName);
-			result += "[name:" + pe.getName() + " state:" + pe.getState() + "]";
+			result.append("[name:").append(pe.getName()).append(" state:").append(pe.getState()).append("]");
 		}
-		return result;
+		return result.toString();
 	}
 
 
@@ -636,7 +657,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		this.outputWrapper = outputWrapper;
 	}
 
-	@IbisDoc({ "PipeLine exits. If no exits are specified, a default one is created with name=\""+DEFAULT_SUCCESS_EXIT_NAME+"\" and state=\"SUCCESS\""})
+	/** PipeLine exits. If no exits are specified, a default one is created with name={@value #DEFAULT_SUCCESS_EXIT_NAME} and state={@value nl.nn.adapterframework.core.PipeLine.ExitState#SUCCESS_EXIT_STATE} */
 	public void setPipeLineExits(PipeLineExits exits) {
 		for(PipeLineExit exit:exits.getExits()) {
 			registerPipeLineExit(exit);
@@ -662,9 +683,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		pipeLineExits.put(exit.getName(), exit);
 	}
 
-	/** Global forwards */
+	/**
+	 * Optional global forwards that will be added to every pipe, when the forward name has not been explicitly set.
+	 * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the <code>'exception'</code> forward to every pipe in the pipeline.
+	 */
 	public void setGlobalForwards(PipeForwards forwards){
-		for(PipeForward forward:forwards.getForwards()) {
+		for(PipeForward forward: forwards.getForwards()) {
 			registerForward(forward);
 		}
 	}
@@ -747,7 +771,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/**
 	 * If messageSizeWarn>=0 and the size of the input or result pipe message exceeds the value specified a warning message is logged. You can specify the value with the suffixes <code>KB</code>, <code>MB</code> or <code>GB</code>
-	 * @ff.default application default (3MB)
+	 * @ff.default application default (30MB)
 	 */
 	public void setMessageSizeWarn(String s) {
 		messageSizeWarn = Misc.toFileSize(s, messageSizeWarn + 1);
@@ -762,6 +786,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	/** when specified and an empty message is received the specified adapter is run before passing the message (response from specified adapter) to the pipeline */
+	@Deprecated
+	@ConfigurationWarning("Please use an XmlIf-pipe and call a sub-adapter to retrieve a new/different response")
 	public void setAdapterToRunBeforeOnEmptyInput(String s) {
 		adapterToRunBeforeOnEmptyInput = s;
 	}

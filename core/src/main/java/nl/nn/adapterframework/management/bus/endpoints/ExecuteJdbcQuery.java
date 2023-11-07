@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,10 +38,10 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.JsonResponseMessage;
+import nl.nn.adapterframework.management.bus.StringResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.webcontrol.api.FrankApiBase;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.JDBC)
@@ -73,12 +73,12 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 		queryTypes.add(QueryType.OTHER.toString());
 		result.put("queryTypes", queryTypes);
 
-		return ResponseMessage.ok(result);
+		return new JsonResponseMessage(result);
 	}
 
 	@ActionSelector(BusAction.MANAGE)
-	public Message<Object> executeJdbcQuery(Message<?> message) {
-		String datasource = BusMessageUtils.getHeader(message, FrankApiBase.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
+	public StringResponseMessage executeJdbcQuery(Message<?> message) {
+		String datasource = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 		String queryType = BusMessageUtils.getHeader(message, "queryType", "select");
 		String query = BusMessageUtils.getHeader(message, "query");
 		boolean trimSpaces = BusMessageUtils.getBooleanHeader(message, "trimSpaces", false);
@@ -88,11 +88,11 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 		return doExecute(datasource, queryType, query, trimSpaces, avoidLocking, resultType);
 	}
 
-	private Message<Object> doExecute(String datasource, String queryType, String query, boolean trimSpaces, boolean avoidLocking, ResultType resultType) {
+	private StringResponseMessage doExecute(String datasource, String queryType, String query, boolean trimSpaces, boolean avoidLocking, ResultType resultType) {
 		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
 
 		DirectQuerySender qs = createBean(DirectQuerySender.class);
-		String result = null;
+		String result;
 		MimeType mimetype;
 
 		try {
@@ -123,12 +123,13 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 				mimetype = MediaType.APPLICATION_XML;
 				break;
 			}
+			message.close();
 		} catch (Exception e) {
 			throw new BusException("error executing query", e);
 		} finally {
 			qs.close();
 		}
 
-		return ResponseMessage.Builder.create().withPayload(result).withMimeType(mimetype).raw();
+		return new StringResponseMessage(result, mimetype);
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ import lombok.Setter;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.ConfigurableLifecyleBase;
 import nl.nn.adapterframework.lifecycle.ConfiguringLifecycleProcessor;
+import nl.nn.adapterframework.util.RunState;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * configure/start/stop lifecycles are managed by Spring. See {@link ConfiguringLifecycleProcessor}
@@ -41,17 +43,18 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	private @Getter @Setter ApplicationContext applicationContext;
 	private List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers;
 
-	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
-	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<Runnable>());
+	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<>());
+	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<>());
 
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
 
 	public void registerAdapter(Adapter adapter) {
-		if(!inState(BootState.STOPPED)) {
+		if(!inState(RunState.STOPPED)) {
 			log.warn("cannot add adapter, manager in state [{}]", this::getState);
 		}
 
-		log.debug("registering adapter [{}] with AdapterManager [{}]", adapter, this);
+		// Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
+		if (log.isDebugEnabled()) log.debug("registering adapter [{}] with AdapterManager [{}]", adapter.toString(), this.toString());
 		if(adapter.getName() == null) {
 			throw new IllegalStateException("adapter has no name");
 		}
@@ -119,11 +122,11 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 
 	@Override
 	public void configure() {
-		if(!inState(BootState.STOPPED)) {
+		if(!inState(RunState.STOPPED)) {
 			log.warn("unable to configure [{}] while in state [{}]", ()->this, this::getState);
 			return;
 		}
-		updateState(BootState.STARTING);
+		updateState(RunState.STARTING);
 
 		log.info("configuring all adapters in AdapterManager [{}]", this);
 
@@ -145,12 +148,12 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	 * Inherited from the Spring {@link Lifecycle} interface.
 	 * Upon registering all Beans in the ApplicationContext (Configuration)
 	 * the {@link LifecycleProcessor} will trigger this method.
-	 * 
+	 *
 	 * Starts all Adapters registered in this manager.
 	 */
 	@Override
 	public void start() {
-		if(!inState(BootState.STARTING)) {
+		if(!inState(RunState.STARTING)) {
 			log.warn("unable to start [{}] while in state [{}]", ()->this, this::getState);
 			return;
 		}
@@ -163,7 +166,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 			}
 		}
 
-		updateState(BootState.STARTED);
+		updateState(RunState.STARTED);
 	}
 
 	/**
@@ -171,10 +174,10 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	 */
 	@Override
 	public void stop() {
-		if(!inState(BootState.STARTED)) {
+		if(!inState(RunState.STARTED)) {
 			log.warn("forcing [{}] to stop while in state [{}]", ()->this, this::getState);
 		}
-		updateState(BootState.STOPPING);
+		updateState(RunState.STOPPING);
 
 		log.info("stopping all adapters in AdapterManager [{}]", this);
 		List<Adapter> adapters = getAdapterList();
@@ -184,7 +187,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 			adapter.stopRunning();
 		}
 
-		updateState(BootState.STOPPED);
+		updateState(RunState.STOPPED);
 	}
 
 	@Override
@@ -209,7 +212,7 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	 */
 	private void doClose() {
 		while (!getStartAdapterThreads().isEmpty()) {
-			log.debug("waiting for start threads to end: {}", this::getStartAdapterThreads);
+			log.debug("waiting for start threads to end: {}", ()-> StringUtil.safeCollectionToString(getStartAdapterThreads()));
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -217,12 +220,12 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 			}
 		}
 
-		if(!inState(BootState.STOPPED)) {
+		if(!inState(RunState.STOPPED)) {
 			stop(); //Call this just in case...
 		}
 
 		while (!getStopAdapterThreads().isEmpty()) {
-			log.debug("waiting for stop threads to end: {}", this::getStopAdapterThreads);
+			log.debug("waiting for stop threads to end: {}", () -> StringUtil.safeCollectionToString(getStopAdapterThreads()));
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -239,11 +242,11 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append(getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()));
-		builder.append(" state ["+getState()+"]");
-		builder.append(" adapters ["+adapters.size()+"]");
+		builder.append(getClass().getSimpleName()).append("@").append(Integer.toHexString(hashCode()));
+		builder.append(" state [").append(getState()).append("]");
+		builder.append(" adapters [").append(adapters.size()).append("]");
 		if(applicationContext != null) {
-			builder.append(" applicationContext ["+applicationContext.getDisplayName()+"]");
+			builder.append(" applicationContext [").append(applicationContext.getDisplayName()).append("]");
 		}
 		return builder.toString();
 	}

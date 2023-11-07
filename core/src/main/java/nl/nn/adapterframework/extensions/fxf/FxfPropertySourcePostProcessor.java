@@ -37,7 +37,7 @@ public class FxfPropertySourcePostProcessor extends CustomPropertySourcePostProc
 	@Override
 	protected void convertProperties(Properties props) {
 		AppConstants appConstants = AppConstants.getInstance();
-		String fxfDir = appConstants.getResolvedProperty("fxf.dir");
+		String fxfDir = appConstants.getProperty("fxf.dir");
 		if (fxfDir == null) {
 			// Use default location, see was.policy too
 			fxfDir = System.getProperty("APPSERVER_ROOT_DIR");

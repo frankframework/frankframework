@@ -15,12 +15,11 @@
  */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
@@ -108,7 +107,10 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 		//kill other threads
 	}
 
-	@IbisDoc({"when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)", "true"})
+	/**
+	 * when <code>true</code>, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags)
+	 * @ff.default true
+	 */
 	public void setThrowException(boolean b) {
 		throwException = b;
 	}
@@ -121,7 +123,10 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 		return timeout;
 	}
 
-	@IbisDoc({"timeout in seconds of obtaining a result", "30"})
+	/**
+	 * timeout in seconds of obtaining a result
+	 * @ff.default 30
+	 */
 	public void setTimeout(int i) {
 		timeout = i;
 	}

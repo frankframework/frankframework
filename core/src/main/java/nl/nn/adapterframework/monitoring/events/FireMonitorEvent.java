@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,11 +16,15 @@
 package nl.nn.adapterframework.monitoring.events;
 
 import nl.nn.adapterframework.monitoring.EventThrowing;
+import nl.nn.adapterframework.stream.Message;
 
 public class FireMonitorEvent extends MonitorEvent {
 
 	public FireMonitorEvent(EventThrowing source, String eventCode) {
-		super(source, eventCode);
+		this(source, eventCode, null);
 	}
 
+	public FireMonitorEvent(EventThrowing source, String eventCode, Message eventMessage) {
+		super(source, eventCode, eventMessage);
+	}
 }

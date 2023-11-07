@@ -41,12 +41,11 @@ import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
-import nl.nn.adapterframework.management.bus.ResponseMessage;
+import nl.nn.adapterframework.management.bus.EmptyResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.scheduler.IbisJobDetail;
 import nl.nn.adapterframework.scheduler.IbisJobDetail.JobType;
 import nl.nn.adapterframework.scheduler.SchedulerHelper;
-import nl.nn.adapterframework.webcontrol.api.ApiException;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.SCHEDULER)
@@ -69,7 +68,7 @@ public class ManageScheduler extends BusEndpointBase {
 	private JobKey getJobKey(String jobName, String groupName) {
 		JobKey jobKey = JobKey.jobKey(jobName, groupName);
 		if(jobKey == null) {
-			throw new ApiException("JobKey not found, unable to remove schedule");
+			throw new BusException("JobKey not found, unable to remove schedule");
 		}
 		return jobKey;
 	}
@@ -129,7 +128,7 @@ public class ManageScheduler extends BusEndpointBase {
 			throw new BusException("unable to run action ["+action+"]", e);
 		}
 
-		return ResponseMessage.accepted();
+		return EmptyResponseMessage.accepted();
 	}
 
 	public Message<String> handleJob(JobAction action, JobKey jobKey, String issuedBy) {
@@ -168,7 +167,7 @@ public class ManageScheduler extends BusEndpointBase {
 			throw new BusException("unable to run action ["+action+"]", e);
 		}
 
-		return ResponseMessage.accepted();
+		return EmptyResponseMessage.accepted();
 	}
 
 	private IbisJobDetail getJobDetail(Scheduler scheduler, JobKey jobKey) {
@@ -234,6 +233,6 @@ public class ManageScheduler extends BusEndpointBase {
 			throw new BusException("failed to delete job", e);
 		}
 
-		return ResponseMessage.accepted();
+		return EmptyResponseMessage.accepted();
 	}
 }

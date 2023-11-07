@@ -26,7 +26,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -95,15 +94,15 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		super.configure();
 		AppConstants rootAppConstants = AppConstants.getInstance();
 		if (getDirection()==Direction.WRAP) {
-			instanceName = rootAppConstants.getResolvedProperty("instance.name");
+			instanceName = rootAppConstants.getProperty("instance.name");
 			if (StringUtils.isEmpty(instanceName)) {
 				throw new ConfigurationException("instance.name not available");
 			}
-			instanceNameLowerCase = rootAppConstants.getResolvedProperty("instance.name.lc");
+			instanceNameLowerCase = rootAppConstants.getProperty("instance.name.lc");
 			if (StringUtils.isEmpty(instanceNameLowerCase)) {
 				throw new ConfigurationException("instance.name.lc not available");
 			}
-			environment = rootAppConstants.getResolvedProperty("dtap.stage");
+			environment = rootAppConstants.getProperty("dtap.stage");
 			if (StringUtils.isEmpty(environment) || environment.length() < 1) {
 				throw new ConfigurationException("dtap.stage not available");
 			}
@@ -117,7 +116,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 			if (!StringUtils.isEmpty(getFlowId())) {
 				throw new ConfigurationException("attribute flowId must not be specified");
 			}
-			fxfDir = AppConstants.getInstance(getConfigurationClassLoader()).getResolvedProperty("fxf.dir");
+			fxfDir = AppConstants.getInstance(getConfigurationClassLoader()).getProperty("fxf.dir");
 			if (fxfDir == null) {
 				throw new ConfigurationException("property fxf.dir has not been initialised");
 			}
@@ -244,17 +243,20 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		return 0;
 	}
 
-	@IbisDoc({"The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline.", ""})
+	/** The flowId of the file transfer when direction=wrap. When direction=unwrap the flowId will be extracted from the incoming message and added as a sessionKey to the pipeline. */
 	public void setFlowId(String flowId) {
 		this.flowId = flowId;
 	}
 
-	@IbisDoc({"specifies the output folder if transformFilename=<code>false</code> and direction=wrap", ""})
+	/** specifies the output folder if transformFilename=<code>false</code> and direction=wrap */
 	public void setFlowOutFolder(String flowOutFolder) {
 		this.flowOutFolder = flowOutFolder;
 	}
 
-	@IbisDoc({"when <code>true</code> and direction=wrap, the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.", "true"})
+	/**
+	 * when <code>true</code> and direction=wrap, the input which is expected to be a local filename will be transformed to the filename as known on the IUF State machine.
+	 * @ff.default true
+	 */
 	public void setTransformFilename(boolean transformFilename) {
 		this.transformFilename = transformFilename;
 	}
@@ -283,17 +285,26 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		this.fxfFileSessionKey = fxfFileSessionKey;
 	}
 
-	@IbisDoc({"either 3.1 or 3.2", "3.1"})
+	/**
+	 * either 3.1 or 3.2
+	 * @ff.default 3.1
+	 */
 	public void setFxfVersion(String fxfVersion) {
 		this.fxfVersion = fxfVersion;
 	}
 
-	@IbisDoc({"when set to <code>true</code>, the folder corresponding fxf.dir property will be created in case it does not exist", "false"})
+	/**
+	 * when set to <code>true</code>, the folder corresponding fxf.dir property will be created in case it does not exist
+	 * @ff.default false
+	 */
 	public void setCreateFolder(boolean createFolder) {
 		this.createFolder = createFolder;
 	}
 
-	@IbisDoc({"when set to <code>true</code>, ServerFileName from the input will be used as the filename", "false"})
+	/**
+	 * when set to <code>true</code>, ServerFileName from the input will be used as the filename
+	 * @ff.default false
+	 */
 	public void setUseServerFilename(boolean useServerFilename) {
 		this.useServerFilename = useServerFilename;
 	}

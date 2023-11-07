@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2022 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,15 +15,14 @@
 */
 package nl.nn.adapterframework.core;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.util.EnumUtils;
 
 public enum ProcessState {
 
@@ -47,7 +46,7 @@ public enum ProcessState {
 	}
 
 	public static Map<ProcessState, Set<ProcessState>> getTargetProcessStates(Set<ProcessState> knownProcessStates) {
-		Map<ProcessState, Set<ProcessState>> targetProcessStates = new HashMap<>();
+		Map<ProcessState, Set<ProcessState>> targetProcessStates = new EnumMap<>(ProcessState.class);
 		for (ProcessState state : ProcessState.values()) {
 			targetProcessStates.put(state, new LinkedHashSet<>());
 		}
@@ -64,13 +63,7 @@ public enum ProcessState {
 	}
 
 	public static ProcessState getProcessStateFromName(String name) {
-		ProcessState[] processStates = ProcessState.values();
-		for (ProcessState processState : processStates) {
-			if(StringUtils.equalsIgnoreCase(processState.getName(), name)) {
-				return processState;
-			}
-		}
-		return null;
+		return EnumUtils.parseFromField(ProcessState.class, "state", name, e -> e.getName());
 	}
 
 }

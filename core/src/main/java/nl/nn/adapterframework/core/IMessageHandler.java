@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -28,30 +29,23 @@ import nl.nn.adapterframework.stream.Message;
 public interface IMessageHandler<M> {
 
 	/**
-	 * Will use listener to perform getIdFromRawMessage(), getStringFromRawMessage and afterMessageProcessed
+	 * Will use listener to perform {@link IListener#extractMessage} and {@link IListener#afterMessageProcessed}
 	 */
-	public void processRawMessage(IListener<M> origin, M message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
+	void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
-	 * Same as {@link #processRawMessage(IListener,Object,PipeLineSession, boolean)}, but now updates IdleStatistics too
+	 * Same as {@link #processRawMessage(IListener,RawMessageWrapper,PipeLineSession, boolean)}, but now updates IdleStatistics too
 	 */
-	public void processRawMessage(IListener<M> origin, M message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException;
+	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
-	 * Same as {@link #processRawMessage(IListener,Object,PipeLineSession, boolean)}, but now without context, for convenience
+	 * Alternative to functions above, will NOT use {@link IListener#extractMessage}. Used by PushingListeners.
 	 */
-	public void processRawMessage(IListener<M> origin, M message) throws ListenerException;
-
-
-	/**
-	 * Alternative to functions above, will NOT use getIdFromRawMessage() and getStringFromRawMessage(). Used by PushingListeners.
-	 */
-	public Message processRequest(IListener<M> origin, M rawMessage, Message message, PipeLineSession session) throws ListenerException;
+	Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException;
 
 	/**
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.
 	 *  Can be used if the calling system has no other way of returning the exception to the caller.
 	 */
-	public Message formatException(String extrainfo, String correlationId, Message message, Throwable t);
-
+	Message formatException(String extraInfo, String correlationId, Message message, Throwable t);
 }

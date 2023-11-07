@@ -43,6 +43,7 @@ import nl.nn.adapterframework.stream.json.JsonWriter;
 import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StreamCaptureUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.ThreadConnectingFilter;
@@ -334,19 +335,19 @@ public class MessageOutputStream implements AutoCloseable {
 		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
 		closeOnClose(writer);
 		if (requestStream instanceof Writer) {
-			requestStream = StreamUtil.captureWriter((Writer)requestStream, writer, maxSize);
+			requestStream = StreamCaptureUtils.captureWriter((Writer)requestStream, writer, maxSize);
 			return;
 		}
 		if (requestStream instanceof ContentHandler) {
-			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamUtil.limitSize(writer, maxSize))));
+			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamCaptureUtils.limitSize(writer, maxSize))));
 			return;
 		}
 		if (requestStream instanceof JsonEventHandler) {
-			requestStream = new JsonTee((JsonEventHandler)requestStream, new JsonWriter(StreamUtil.limitSize(writer, maxSize)));
+			requestStream = new JsonTee((JsonEventHandler)requestStream, new JsonWriter(StreamCaptureUtils.limitSize(writer, maxSize)));
 			return;
 		}
 		if (requestStream instanceof OutputStream) {
-			requestStream = StreamUtil.captureOutputStream((OutputStream)requestStream, new WriterOutputStream(writer,StreamUtil.DEFAULT_CHARSET), maxSize);
+			requestStream = StreamCaptureUtils.captureOutputStream((OutputStream)requestStream, new WriterOutputStream(writer,StreamUtil.DEFAULT_CHARSET), maxSize);
 			return;
 		}
 		log.warn("captureCharacterStream() called before stream is installed.");
@@ -365,19 +366,19 @@ public class MessageOutputStream implements AutoCloseable {
 		log.debug("creating capture of "+ClassUtils.nameOf(requestStream));
 		closeOnClose(outputStream);
 		if (requestStream instanceof OutputStream) {
-			requestStream = StreamUtil.captureOutputStream((OutputStream)requestStream, outputStream, maxSize);
+			requestStream = StreamCaptureUtils.captureOutputStream((OutputStream)requestStream, outputStream, maxSize);
 			return;
 		}
 		if (requestStream instanceof ContentHandler) {
-			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamUtil.limitSize(outputStream, maxSize))));
+			requestStream = new XmlTee((ContentHandler)requestStream, new PrettyPrintFilter(new XmlWriter(StreamCaptureUtils.limitSize(outputStream, maxSize))));
 			return;
 		}
 		if (requestStream instanceof JsonEventHandler) {
-			requestStream = new JsonTee((JsonEventHandler)requestStream, new JsonWriter(StreamUtil.limitSize(outputStream, maxSize)));
+			requestStream = new JsonTee((JsonEventHandler)requestStream, new JsonWriter(StreamCaptureUtils.limitSize(outputStream, maxSize)));
 			return;
 		}
 		if (requestStream instanceof Writer) {
-			requestStream = StreamUtil.captureWriter((Writer)requestStream, new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize);
+			requestStream = StreamCaptureUtils.captureWriter((Writer)requestStream, new OutputStreamWriter(outputStream,StreamUtil.DEFAULT_CHARSET), maxSize);
 			return;
 		}
 		log.warn("captureBinaryStream() called before stream is installed.");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ public abstract class ArrayBuilder extends StructureBuilder implements IArrayBui
 		addElement().setValue(value);
 	}
 
-	public void addElement(long value) throws SAXException {
+	public void addElement(Number value) throws SAXException {
 		addElement().setValue(value);
 	}
 

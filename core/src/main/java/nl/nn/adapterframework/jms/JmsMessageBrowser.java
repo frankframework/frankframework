@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,15 +35,14 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.Misc;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Basic browser of JMS Messages.
  * @param <M> the payload message type as used by IMessageBrowser.
  * @param <J> the physical JMS message to carry the payload.
- * 
+ *
  * @author  Johan Verrips
  */
 public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends JMSFacade implements IMessageBrowser<M> {
@@ -77,10 +76,10 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException {
 		String selector=getSelector();
 		if (startTime!=null) {
-			selector=Misc.concatStrings(selector, " AND ", "JMSTimestamp >= "+DateUtils.format(startTime));
+			selector= StringUtil.concatStrings(selector, " AND ", "JMSTimestamp >= "+DateUtils.format(startTime));
 		}
 		if (endTime!=null) {
-			selector=Misc.concatStrings(selector, " AND ", "JMSTimestamp < "+DateUtils.format(endTime));
+			selector= StringUtil.concatStrings(selector, " AND ", "JMSTimestamp < "+DateUtils.format(endTime));
 		}
 		try {
 			return new JmsQueueBrowserIterator(this,(Queue)getDestination(),selector);
@@ -134,7 +133,7 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 
 	public J getJmsMessage(String messageId) throws ListenerException {
 		Session session=null;
-		J msg = null;
+		J msg;
 		MessageConsumer mc = null;
 		try {
 			session = createSession();
@@ -242,10 +241,12 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	}
 
 
-	@IbisDoc({"Timeout <i>in milliseconds</i> for receiving a message from the queue", "3000"})
+	/**
+	 * Timeout <i>in milliseconds</i> for receiving a message from the queue
+	 * @ff.default 3000
+	 */
 	public void setTimeOut(long newTimeOut) {
 		timeOut = newTimeOut;
 	}
 
 }
-

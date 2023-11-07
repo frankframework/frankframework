@@ -1,16 +1,16 @@
 package nl.nn.adapterframework.lifecycle;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -24,25 +24,29 @@ import javax.servlet.http.HttpServlet;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.lifecycle.servlets.IAuthenticator;
+import nl.nn.adapterframework.lifecycle.servlets.SecuritySettings;
 import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
-import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.credentialprovider.util.Misc;
+import nl.nn.adapterframework.util.UUIDUtil;
 
 
 public class ServletManagerTest {
 	private static ServletManager manager;
+	private MockEnvironment properties;
 
-	@BeforeClass
+	@BeforeAll
 	public static void prepare() throws Exception {
 		ServletContext context = new MockServletContext() {
 			private Map<String, Dynamic> dynamic = new HashMap<>();
@@ -58,6 +62,8 @@ public class ServletManagerTest {
 		manager = new ServletManager(context);
 
 		ApplicationContext applicationContext = mock(ApplicationContext.class);
+		MockEnvironment environment = new MockEnvironment();
+		doReturn(environment).when(applicationContext).getEnvironment();
 		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
 		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
 		doReturn(new DummyAuthenticator()).when(beanFactory).createBean(isA(IAuthenticator.class.getClass()), eq(AutowireCapableBeanFactory.AUTOWIRE_BY_NAME), eq(false));
@@ -77,16 +83,22 @@ public class ServletManagerTest {
 		public void build() {
 			// NOOP
 		}
+
+		@Override
+		public SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
+			// NOOP
+			return null;
+		}
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() {
-		Properties properties = new Properties();
+		properties = new MockEnvironment();
 		properties.setProperty("dtap.stage", "ACC");
-		properties.setProperty(ServletManager.HTTPS_ENABLED_KEY, "confidential");
-		properties.setProperty(ServletManager.AUTH_ENABLED_KEY, "false");
+		properties.setProperty(SecuritySettings.HTTPS_ENABLED_KEY, "confidential");
+		properties.setProperty(SecuritySettings.AUTH_ENABLED_KEY, "false");
 
-		ServletManager.setupDefaultSecuritySettings(properties);
+		SecuritySettings.setupDefaultSecuritySettings(properties);
 	}
 
 	@Test
@@ -109,8 +121,8 @@ public class ServletManagerTest {
 
 	@Test
 	public void testUrlMappingOverride() {
-		String name = Misc.createNumericUUID();
-		AppConstants.getInstance().setProperty("servlet."+name+".urlMapping", " test2 ");
+		String name = UUIDUtil.createNumericUUID();
+		properties.setProperty("servlet."+name+".urlMapping", " test2 ");
 
 		DummyServletImpl servlet = new DummyServletImpl();
 		servlet.setUrlMapping("not-used");
@@ -132,8 +144,8 @@ public class ServletManagerTest {
 
 	@Test
 	public void testUrlMultipleMappingsOverride() {
-		String name = Misc.createNumericUUID();
-		AppConstants.getInstance().setProperty("servlet."+name+".urlMapping", "  test2 , /test3"); //contains spaces ;)
+		String name = UUIDUtil.createNumericUUID();
+		properties.setProperty("servlet."+name+".urlMapping", "  test2 , /test3"); //contains spaces ;)
 
 		DummyServletImpl servlet = new DummyServletImpl();
 		servlet.setUrlMapping(new String[] {"mapping1", "mapping2"});
@@ -156,8 +168,8 @@ public class ServletManagerTest {
 
 	@Test
 	public void testTransportGuaranteeOverride() {
-		String name = Misc.createNumericUUID();
-		AppConstants.getInstance().setProperty("servlet."+name+".transportGuarantee", "none");
+		String name = UUIDUtil.createNumericUUID();
+		properties.setProperty("servlet."+name+".transportGuarantee", "none");
 
 		DummyServletImpl servlet = new DummyServletImpl();
 		servlet.setUrlMapping("/test5");
@@ -170,11 +182,11 @@ public class ServletManagerTest {
 
 	@Test
 	public void testTransportGuaranteeGlobal1() {
-		Properties properties = new Properties();
-		properties.setProperty(ServletManager.HTTPS_ENABLED_KEY, "none");
-		ServletManager.setupDefaultSecuritySettings(properties);
+		MockEnvironment properties = new MockEnvironment();
+		properties.setProperty(SecuritySettings.HTTPS_ENABLED_KEY, "none");
+		SecuritySettings.setupDefaultSecuritySettings(properties);
 
-		String name = Misc.createNumericUUID();
+		String name = UUIDUtil.createNumericUUID();
 
 		DummyServletImpl servlet = new DummyServletImpl();
 		servlet.setUrlMapping(name);
@@ -186,9 +198,9 @@ public class ServletManagerTest {
 
 	@Test
 	public void testTransportGuaranteeGlobal2() {
-		Properties properties = new Properties();
-		properties.setProperty(ServletManager.HTTPS_ENABLED_KEY, "confidential");
-		ServletManager.setupDefaultSecuritySettings(properties);
+		MockEnvironment properties = new MockEnvironment();
+		properties.setProperty(SecuritySettings.HTTPS_ENABLED_KEY, "confidential");
+		SecuritySettings.setupDefaultSecuritySettings(properties);
 
 		DummyServletImpl servlet = new DummyServletImpl();
 		DynamicServletRegistration sdr = createAndRegister(servlet);
@@ -198,9 +210,9 @@ public class ServletManagerTest {
 
 	@Test
 	public void testTransportGuaranteeGlobalLOC1() {
-		Properties properties = new Properties();
+		MockEnvironment properties = new MockEnvironment();
 		properties.setProperty("dtap.stage", "LOC");
-		ServletManager.setupDefaultSecuritySettings(properties);
+		SecuritySettings.setupDefaultSecuritySettings(properties);
 
 		DummyServletImpl servlet = new DummyServletImpl();
 		DynamicServletRegistration sdr = createAndRegister(servlet);
@@ -210,10 +222,10 @@ public class ServletManagerTest {
 
 	@Test
 	public void testTransportGuaranteeGlobalLOC2() {
-		Properties properties = new Properties();
+		MockEnvironment properties = new MockEnvironment();
 		properties.setProperty("dtap.stage", "LOC");
-		properties.setProperty(ServletManager.HTTPS_ENABLED_KEY, "confidential");
-		ServletManager.setupDefaultSecuritySettings(properties);
+		properties.setProperty(SecuritySettings.HTTPS_ENABLED_KEY, "confidential");
+		SecuritySettings.setupDefaultSecuritySettings(properties);
 
 		DummyServletImpl servlet = new DummyServletImpl();
 		DynamicServletRegistration sdr = createAndRegister(servlet);
@@ -224,12 +236,16 @@ public class ServletManagerTest {
 
 
 	private DynamicServletRegistration createAndRegister(DummyServletImpl servlet) {
-		return createAndRegister(Misc.createNumericUUID(), servlet);
+		return createAndRegister(UUIDUtil.createNumericUUID(), servlet);
 	}
 
 	private DynamicServletRegistration createAndRegister(String name, DummyServletImpl servlet) {
 		servlet.setName(name);
-		manager.register(servlet);
+		ServletConfiguration config = new ServletConfiguration();
+		config.setEnvironment(properties);
+		config.afterPropertiesSet();
+		config.fromServlet(servlet);
+		manager.register(config);
 		return (DynamicServletRegistration) manager.getServletContext().getServletRegistration(name);
 	}
 
@@ -269,9 +285,7 @@ public class ServletManagerTest {
 
 		@Override
 		public Set<String> addMapping(String... urlPatterns) {
-			for(String pattern : urlPatterns) {
-				mappings.add(pattern);
-			}
+			mappings.addAll(Arrays.asList(urlPatterns));
 			return null;
 		}
 

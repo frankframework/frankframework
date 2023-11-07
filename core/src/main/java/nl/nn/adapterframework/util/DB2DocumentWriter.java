@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,40 +43,11 @@ public class DB2DocumentWriter {
 	private boolean trimSpaces=true;
 	private boolean decompressBlobs=false;
 	private boolean getBlobSmart=false;
-	private String blobCharset = Misc.DEFAULT_INPUT_STREAM_ENCODING;
+	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private static boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
 
 	public static String getFieldType (int type) {
 		return JDBCType.valueOf(type).getName();
-	}
-
-	/**
-	 * Retrieve the Resultset as a well-formed XML string
-	 */
-	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs) {
-		return getXML(dbmsSupport, rs, Integer.MAX_VALUE);
-	}
-
-	/**
-	 * Retrieve the Resultset as a well-formed XML string
-	 */
-	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength) {
-		return getXML(dbmsSupport, rs, maxlength, true);
-	}
-
-	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition) {
-		try {
-			ObjectBuilder documentBuilder = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, docname);
-			try {
-				writeDocument(dbmsSupport, rs, maxlength, includeFieldDefinition, documentBuilder);
-			} finally {
-				documentBuilder.close();
-			}
-			return documentBuilder.toString();
-		} catch (SAXException e) {
-			log.warn("cannot convert ResultSet to XML", e);
-			return "<error>"+XmlUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage())+"</error>";
-		}
 	}
 
 	public void writeDocument(DocumentFormat format, IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, MessageOutputStream target, boolean prettyPrint) throws StreamingException, SAXException {
@@ -124,17 +95,6 @@ public class DB2DocumentWriter {
 		}
 	}
 
-//	public static String getFieldDefinitions(ResultSet rs) throws SAXException, SQLException {
-//		XmlWriter writer = new XmlWriter();
-//		addFieldDefinitions(rs, writer);
-//		return writer.toString();
-//	}
-//	public static void addFieldDefinitions(ResultSet rs, ContentHandler handler) throws SAXException, SQLException {
-//		ResultSetMetaData rsmeta = rs.getMetaData();
-//		try (SaxElementBuilder fields = new SaxElementBuilder("fielddefinition", handler)) {
-//			addFieldDefinitionsToContainer(fields, rsmeta);
-//		}
-//	}
 	public static void addFieldDefinitions(ObjectBuilder documentBuilder, ResultSetMetaData rsmeta) throws SAXException, SQLException {
 		try (ArrayBuilder fields = documentBuilder.addArrayField("fielddefinition","field")) {
 			addFieldDefinitionsToContainer(fields, rsmeta);
@@ -200,13 +160,6 @@ public class DB2DocumentWriter {
 		}
 	}
 
-
-//	public static String getRowXml(IDbmsSupport dbmsSupport, ResultSet rs, int rowNumber, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
-//		SaxElementBuilder parent = new SaxElementBuilder();
-//		getRowXml(parent, dbmsSupport, rs, rowNumber, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart);
-//		return parent.toString();
-//	}
-
 	public static void writeRow(ArrayBuilder rows, IDbmsSupport dbmsSupport, ResultSet rs, ResultSetMetaData rsmeta, String blobCharset, boolean decompressBlobs, String nullValue, boolean trimSpaces, boolean getBlobSmart) throws SenderException, SQLException, SAXException {
 		try (INodeBuilder nodeBuilder = rows.addElement()) {
 			try (ObjectBuilder row=nodeBuilder.startObject()) {
@@ -218,7 +171,7 @@ public class DB2DocumentWriter {
 					try {
 						String value = JdbcUtil.getValue(dbmsSupport, rs, i, rsmeta, blobCharset, decompressBlobs, nullValue, trimSpaces, getBlobSmart, false);
 						if (rs.wasNull()) {
-							row.add(columnName, null);
+							row.add(columnName, (String)null);
 						} else {
 							if (JdbcUtil.isNumeric(rsmeta.getColumnType(i))) {
 								row.addNumber(columnName, value);

@@ -23,16 +23,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.Logger;
+
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
-import nl.nn.adapterframework.statistics.percentiles.MicroMeterPercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimator;
 import nl.nn.adapterframework.statistics.percentiles.PercentileEstimatorRanked;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 /**
  * Keeps statistics (min, max, count etc).
@@ -40,6 +43,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Johan Verrips / Gerrit van Brakel
  */
 public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
+	protected static Logger log = LogUtil.getLogger(StatisticsKeeper.class);
 
 	private String name = null;
 	private long first = Long.MIN_VALUE;
@@ -48,6 +52,8 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 	private S mark;
 	private long[] classBoundaries;
 	private long[] classCounts;
+
+	public static final String BASICS_KEY="Statistics.basics.class";
 
 	public static final int NUM_STATIC_ITEMS=8;
 	public static final int NUM_INTERVAL_ITEMS=6;
@@ -87,7 +93,7 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 	 * @see AppConstants
 	 */
 	public StatisticsKeeper(String name) {
-		this(name, (B)new MicroMeterBasics(), statConfigKey, DEFAULT_BOUNDARY_LIST);
+		this(name, null, statConfigKey, DEFAULT_BOUNDARY_LIST);
 	}
 
 	protected StatisticsKeeper(String name, B basics) {
@@ -124,9 +130,6 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 			}
 		}
 		DistributionSummary distributionSummary = builder.register(registry);
-		if (percentiles!=null) {
-			pest = new MicroMeterPercentileEstimator(distributionSummary, percentiles);
-		}
 
 		if (cumulative instanceof MicroMeterBasics) {
 			((MicroMeterBasics)cumulative).setDistributionSummary(distributionSummary);
@@ -139,6 +142,17 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 	protected StatisticsKeeper(String name, B basics, String boundaryConfigKey, String defaultBoundaryList) {
 		super();
 		AppConstants appConstants = AppConstants.getInstance();
+
+		if (basics==null) {
+			String basicsClass = appConstants.getString(BASICS_KEY, Basics.class.getName());
+			try {
+				basics = (B)ClassUtils.newInstance(basicsClass);
+			} catch (Exception e) {
+				log.warn("Could not instantiate Basics class ["+basicsClass+"]", e);
+				basics = (B)new Basics();
+			}
+		}
+
 		StringTokenizer boundariesTokenizer = appConstants.getTokenizedProperty(boundaryConfigKey, defaultBoundaryList);
 
 		publishPercentiles = appConstants.getBoolean(PERCENTILE_PUBLISH_KEY, false);
@@ -183,7 +197,6 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 //			pest = new PercentileEstimatorBase(percentileConfigKey,DEFAULT_P_LIST,1000);
 			pest = new PercentileEstimatorRanked(percentileConfigKey,DEFAULT_P_LIST,100);
 		}
-
 	}
 
 	public String getUnits() {
@@ -353,7 +366,7 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 			XmlBuilder item = new XmlBuilder("item");
 			items.addSubElement(item);
 			item.addAttribute("index",""+i);
-			item.addAttribute("name",XmlUtils.encodeChars(getItemName(i)));
+			item.addAttribute("name", XmlEncodingUtils.encodeChars(getItemName(i)));
 			item.addAttribute("type", getItemType(i).name());
 			item.addAttribute("value",ItemUtil.getItemValueFormated(this,i));
 		}

@@ -3,9 +3,13 @@ package nl.nn.adapterframework.pipes;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.InputStream;
 import java.net.URL;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ConfiguredTestBase;
@@ -17,7 +21,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
-import nl.nn.adapterframework.util.FilenameUtils;
+import nl.nn.adapterframework.testutil.ThrowingAfterCloseInputStream;
 
 public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 
@@ -26,6 +30,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	public abstract P createPipe() throws ConfigurationException;
 
 	@Override
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		pipe = createPipe();
@@ -36,6 +41,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	}
 
 	@Override
+	@AfterEach
 	public void tearDown() throws Exception {
 		getConfigurationWarnings().destroy();
 		getConfigurationWarnings().afterPropertiesSet();
@@ -69,12 +75,31 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	protected PipeRunResult doPipe(Message input) throws PipeRunException {
 		return doPipe(pipe, input, session);
 	}
-	protected PipeRunResult doPipe(P pipe, Message input, PipeLineSession session) throws PipeRunException {
-		return pipe.doPipe(input, session);
-	}
 
 	protected PipeRunResult doPipe(P pipe, Object input, PipeLineSession session) throws PipeRunException {
 		return doPipe(pipe, Message.asMessage(input), session);
+	}
+
+	@SuppressWarnings("deprecation")
+	protected PipeRunResult doPipe(final P pipe, final Message input, final PipeLineSession session) throws PipeRunException {
+		if (input != null && input.asObject() instanceof InputStream) {
+			// Wrap input-stream in a stream that forces IOExceptions after it is closed; close the session
+			// (and thus any messages attached) after running the pipe so that reading the result message
+			// will verify the original input-stream of the input-message is not used beyond due-date.
+			// Do not close session when input message did not have a stream, due to some tests depending on
+			// an open session after running the pipe.
+			try (PipeLineSession ignored = session) {
+				input.unscheduleFromCloseOnExitOf(session);
+				Message wrappedInput = new Message(new ThrowingAfterCloseInputStream((InputStream) input.asObject()));
+				wrappedInput.closeOnCloseOf(session, pipe);
+				session.computeIfAbsent(PipeLineSession.ORIGINAL_MESSAGE_KEY, k -> wrappedInput);
+				PipeRunResult result = pipe.doPipe(wrappedInput, session);
+				session.unscheduleCloseOnSessionExit(result.getResult());
+				return result;
+			}
+		}
+		session.computeIfAbsent(PipeLineSession.ORIGINAL_MESSAGE_KEY, k -> input);
+		return pipe.doPipe(input, session);
 	}
 
 	/**

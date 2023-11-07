@@ -4,6 +4,8 @@ src/test/
 src\test\
 webapp/
 webapp\
+overlays/
+overlays\
 docker/
 docker\
 .metadata/
@@ -59,7 +61,7 @@ LICENSE
 .xquery
 .ldif
 .iml
-overview.html
+.html
 .editorconfig
 .checkstyle
 checkstyle.xml
@@ -67,5 +69,14 @@ checkstyle.xml
 TransformerHandlerImpl.java
 secrets/
 secrets\
+node_modules/
+node_modules\
+node/
+node\
+fonts/
+fonts\
 .lift.toml
 setup.sh
+.mvn/
+mvnw
+mvnw.cmd

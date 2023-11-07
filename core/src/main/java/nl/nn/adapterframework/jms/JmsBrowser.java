@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.jms;
 
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 /**
  * Basic browser of JMS Messages.
@@ -32,9 +33,8 @@ public class JmsBrowser<M extends javax.jms.Message> extends JmsMessageBrowser<M
 	}
 
 	@Override
-	public M browseMessage(String messageId) throws ListenerException {
-		return browseJmsMessage(messageId);
+	public RawMessageWrapper<M> browseMessage(String messageId) throws ListenerException {
+		return new RawMessageWrapper<>(browseJmsMessage(messageId), messageId, null);
 	}
 
 }
-

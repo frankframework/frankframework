@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,16 +15,17 @@
 */
 package nl.nn.adapterframework.compression;
 
-import lombok.Getter;
-import nl.nn.adapterframework.collection.CollectionException;
-import nl.nn.adapterframework.collection.CollectorSender;
+import java.io.IOException;
+
+import nl.nn.adapterframework.collection.CollectorPipeBase.Action;
+import nl.nn.adapterframework.collection.CollectorSenderBase;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.doc.IbisDoc;
-import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Sender that writes an entry to a ZipStream, similar to ZipWriterPipe with action='write'.
@@ -37,63 +38,50 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @author  Gerrit van Brakel
  * @since   4.9.10
  */
-public class ZipWriterSender extends CollectorSender<IZipWritingElement, ZipWriter> implements IZipWritingElement {
+public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEntry> {
 
-	private @Getter boolean closeInputstreamOnExit=true;
-	private @Getter boolean closeOutputstreamOnExit=true;
-	private @Getter String charset=StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private @Getter boolean completeFileHeader=false;
+	private boolean backwardsCompatibility = false;
 
 	public ZipWriterSender() {
-		super();
-		setCollection("zipwriterhandle");
+		setCollectionName("zipwriterhandle");
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		ZipWriter.configure(getAction(), getParameterList());
+		ZipWriter.validateParametersForAction(Action.WRITE, getParameterList());
 	}
 
 	@Override
-	public ZipWriter openCollection(Message input, PipeLineSession session, ParameterValueList pvl) throws CollectionException {
-		return ZipWriter.openCollection(input, session, pvl, this);
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		if(backwardsCompatibility) {
+			try {
+				message.preserve();
+				super.sendMessage(message, session);
+				return new SenderResult(message);
+			} catch (IOException e) {
+				throw new SenderException("unable to preserve input", e);
+			}
+		}
+
+		return super.sendMessage(message, session);
 	}
 
-
-
-	@IbisDoc({"Only for action='write': If set to <code>false</code>, the inputstream is not closed after the zip entry is written", "true"})
-	public void setCloseInputstreamOnExit(boolean b) {
-		closeInputstreamOnExit = b;
-	}
-
-	@IbisDoc({"Only for action='open': If set to <code>false</code>, the outputstream is not closed after the zip creation is finished", "true"})
-	public void setCloseOutputstreamOnExit(boolean b) {
-		closeOutputstreamOnExit = b;
-	}
-	@Deprecated
-	@ConfigurationWarning("attribute 'closeStreamOnExit' has been renamed to 'closeOutputstreamOnExit'")
-	public void setCloseStreamOnExit(boolean b) {
-		setCloseOutputstreamOnExit(b);
-	}
-
-	@IbisDoc({"Only for action='write': Charset used to write strings to zip entries", "utf-8"})
-	public void setCharset(String string) {
-		charset = string;
-	}
-
-	@IbisDoc({"Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested", "zipwriterhandle"})
+	/**
+	 * Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested
+	 * @ff.default zipwriterhandle
+	 */
 	@Deprecated
 	@ConfigurationWarning("Replaced with attribute collection")
 	public void setZipWriterHandle(String string) {
-		setCollection(string);
+		setCollectionName(string);
 	}
 
-	@IbisDoc({"Only for action='write': If set to <code>true</code>, the fields 'crc-32', 'compressed size' and 'uncompressed size' in the zip entry file header are set explicitly (note: compression ratio is zero)", "false"})
-	public void setCompleteFileHeader(boolean b) {
-		completeFileHeader = b;
+	/**
+	 * Input will be 'piped' to the output, and the message will be preserved. Avoid using this if possible.
+	 */
+	@Deprecated
+	public void setBackwardsCompatibility(boolean backwardsCompatibility) {
+		this.backwardsCompatibility = backwardsCompatibility;
 	}
-
-
-
 }

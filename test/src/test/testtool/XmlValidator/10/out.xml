@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GetDocument_Error>
+  <errors>
+    <error>
+      <type>aaa</type>
+      <title>bbb</title>
+      <status>ccc</status>
+      <detail>ddd</detail>
+      <instance>eee</instance>
+    </error>
+  </errors>
+</GetDocument_Error>

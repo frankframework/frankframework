@@ -20,11 +20,10 @@ import java.io.IOException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.IbisDoc;
 import nl.nn.adapterframework.stream.Message;
 
 
@@ -95,7 +94,7 @@ public class FilenameSwitch extends AbstractPipe {
 		return new PipeRunResult(pipeForward, message);
 	}
 
-	@IbisDoc({"forward returned when the forward or pipename derived from the filename that was the input could not be found.", ""})
+	/** forward returned when the forward or pipename derived from the filename that was the input could not be found. */
 	public void setNotFoundForwardName(String notFound){
 		notFoundForwardName=notFound;
 	}
@@ -103,7 +102,10 @@ public class FilenameSwitch extends AbstractPipe {
 		return notFoundForwardName;
 	}
 
-	@IbisDoc({"convert the result to lowercase, before searching for a corresponding forward", "true"})
+	/**
+	 * convert the result to lowercase, before searching for a corresponding forward
+	 * @ff.default true
+	 */
 	public void setToLowercase(boolean b) {
 		toLowercase = b;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@ package nl.nn.adapterframework.parameters;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -86,9 +87,8 @@ public class ParameterList extends ArrayList<Parameter> {
 	}
 
 	public Parameter findParameter(String name) {
-		for (Iterator<Parameter> it=iterator();it.hasNext();) {
-			Parameter p = it.next();
-			if (p!=null && p.getName().equals(name)) {
+		for (Parameter p : this) {
+			if (p != null && p.getName().equals(name)) {
 				return p;
 			}
 		}
@@ -113,13 +113,13 @@ public class ParameterList extends ArrayList<Parameter> {
 		return false;
 	}
 
-	public ParameterValueList getValues(Message message, PipeLineSession session) throws ParameterException {
+	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session) throws ParameterException {
 		return getValues(message, session, true);
 	}
 	/**
 	 * Returns a List of <link>ParameterValue<link> objects
 	 */
-	public ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		if(inputValueRequiredForResolution && message!=null) {
 			try {
 				message.preserve();

@@ -20,12 +20,17 @@ import java.util.List;
 
 import lombok.Getter;
 
+/**
+ * Optional element in a pipeline. Global forwards that will be added to every pipe, when the forward name has not been explicitly set.
+ * For example the <code>&lt;forward name="exception" path="error_exception" /&gt;</code>, which will add the '<code>exception</code>' forward to every pipe in the pipeline.
+ */
 public class PipeForwards {
 
 	private @Getter List<PipeForward> forwards = new LinkedList<>();
 
-	/** 
-	 * Global forwards.
+	/**
+	 * Defines what pipe or exit to execute next. When the execution of a pipe is done, the pipe looks up the next pipe or exit to execute.
+	 * See {@link PipeForward Forward} for more information.
 	 */
 	public void registerForward(PipeForward forward) {
 		forwards.add(forward);
