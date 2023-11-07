@@ -50,7 +50,7 @@ class CellsConvertor extends AbstractConvertor {
 
 	protected CellsConvertor(CisConfiguration configuration) {
 		super(configuration, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
-		defaultLoadOptions = new FontSetter(configuration.getFontsDirectory()).getCellsLoadOptions();
+		defaultLoadOptions = new FontManager(configuration.getFontsDirectory()).getCellsLoadOptions();
 	}
 
 	@Override
