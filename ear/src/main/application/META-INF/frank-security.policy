@@ -1,30 +1,13 @@
 /*
-* Java Policy File for ibis-projects.
-*/
-
-/*
-* Standard WebSphere variables for use in dynamic policy files:
-* (These variables can be used without defining them as custom properties)
-* Symbol                              Definition
-* ${app.installed.path}      Path where the application is installed
-* ${was.module.path}            Path where the module is installed
-* ${current.cell.name}            Current cell name
-* ${current.node.name}            Current node name
-* ${current.server.name}      Current server name
-* ${was.install.root}
-*
-* Standard SDI custom properties that can also be used in dynamic policy files:
-* Name                                    Example Value
-* APPSERVER_ROOT_DIR            /data/WAS/6.1/wasap0x
+* Java Policy File for Frank-projects.
 */
 
 grant codeBase "file:${application}" {
 
-//permission java.io.FilePermission "${app.installed.path}${/}-", "read";
-permission java.io.FilePermission "${APPSERVER_ROOT_DIR}${/}", "read";
-permission java.io.FilePermission "${APPSERVER_ROOT_DIR}${/}-", "read";
+# Temp directory
+permission java.io.FilePermission "${java.io.tmpdir}${/}", "read,write,delete";
+permission java.io.FilePermission "${java.io.tmpdir}${/}-", "read,write,delete";
 
-permission java.io.FilePermission "${was.install.root}${/}java${/}jre${/}lib${/}-", "read";
 permission java.io.FilePermission "${java.home}${/}lib${/}-", "read";
 
 permission java.lang.RuntimePermission "modifyThreadGroup";
@@ -32,34 +15,15 @@ permission java.lang.RuntimePermission "modifyThread";
 permission java.lang.RuntimePermission "setContextClassLoader";
 permission java.lang.RuntimePermission "getClassLoader";
 permission java.lang.RuntimePermission "getFileSystemAttributes";
-
-// required to read the ibm-application-bnd.xmi from within the Ibis Console
-permission java.io.FilePermission "${was.install.root}${/}profiles${/}${current.node.name}${/}config${/}cells${/}${current.cell.name}${/}applications${/}-", "read";
-//permission java.io.FilePermission "${was.install.root}${/}profiles${/}${current.node.name}${/}config${/}cells${/}${current.cell.name}${/}applications${/}${APPLICATION_NAME}.ear${/}deployments${/}${APPLICATION_NAME}${/}META-INF${/}ibm-application-bnd.xmi", "read";
-// required to read the resources.xml from within the Ibis Console
-permission java.io.FilePermission "${was.install.root}${/}profiles${/}${current.node.name}${/}config${/}cells${/}${current.cell.name}${/}nodes${/}${current.node.name}${/}servers${/}${current.server.name}${/}resources.xml", "read";
-// required to read the maximum Transaction Timeout
-permission java.io.FilePermission "${was.install.root}${/}profiles${/}${current.node.name}${/}config${/}cells${/}${current.cell.name}${/}nodes${/}${current.node.name}${/}servers${/}${current.server.name}${/}server.xml", "read";
-
 permission java.util.logging.LoggingPermission "control";
 
 permission java.lang.RuntimePermission "getenv.*";
-
-permission com.ibm.websphere.security.WebSphereRuntimePermission "accessRuntimeClasses";
-
-// required for WebSphere Application Server administrative application programming interfaces (APIs):
-permission com.ibm.websphere.security.WebSphereRuntimePermission "AdminPermission";
-
-// the following was required for 'test a pipeline' on IUF
-// It should not be necessary anymore, now upload.dir can be used to control where uploaded files are stored
-// permission java.io.FilePermission "${user.install.root}${/}temp${/}-", "read,write,delete";
 
 // required for LDAP Sender
 permission java.net.SocketPermission "*", "connect,resolve";
 
 // Needed for MAIL
 permission java.io.FilePermission "${user.home}${/}.mailcap", "read";
-permission java.io.FilePermission "${was.install.root}${/}java${/}jre${/}lib${/}mailcap", "read";
 permission java.io.FilePermission "${java.home}${/}conf", "read";
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.activation.registries";
 
@@ -70,8 +34,6 @@ permission java.util.PropertyPermission "*", "read,write";
 
 // required to for CredentialFactory to obtain credentials from JAAS Authentication Entries:
 permission javax.security.auth.AuthPermission "createLoginContext.DefaultPrincipalMapping";
-permission javax.security.auth.PrivateCredentialPermission "javax.resource.spi.security.PasswordCredential nl.nn.credentialprovider.WebSphereCredentials$FrankPrincipal "Frank"", "read";
-permission javax.security.auth.PrivateCredentialPermission "javax.resource.spi.security.PasswordCredential nl.nn.adapterframework.util.CredentialFactory$IbisPrincipal "Ibis"", "read"; // for 7.6 compatiblity
 
 // required for Spring AbstractAutowireCapableBeanFactory:
 permission java.lang.RuntimePermission "getProtectionDomain";
@@ -107,10 +69,7 @@ permission java.lang.RuntimePermission "accessClassInPackage.sun.reflect.annotat
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.org.apache.xerces.*";
 permission java.lang.RuntimePermission "accessClassInPackage.com.sun.xml.*";
 // required to find SAAJ factory
-permission java.io.FilePermission "${was.install.root}${/}java${/}jre${/}conf${/}-", "read";
 permission java.io.FilePermission "${java.home}${/}conf${/}-", "read";
-
-permission java.lang.RuntimePermission "accessClassInPackage.com.ibm.oti.shared";
 
 // required for Apache XML libraries
 permission java.lang.RuntimePermission "accessClassInPackage.org.apache.xml.*";
@@ -132,18 +91,6 @@ permission java.lang.RuntimePermission "accessClassInPackage.sun.net.www.protoco
 
 // required for signing SOAP messages:
 permission java.lang.RuntimePermission "createClassLoader";
-
-// the following permissions are required for FXF
-// the application must be able to create, write and delete files in/from the fxf-work directory
-permission java.io.FilePermission "${APPSERVER_ROOT_DIR}${/}fxf-work${/}", "read,write,delete";
-permission java.io.FilePermission "${APPSERVER_ROOT_DIR}${/}fxf-work${/}-", "read,write,delete";
-
-// the following permissions are required for XFB
-permission java.io.FilePermission "${was.install.root}/../ingscripts/iuf_xfb_wrapper.sh", "execute";
-
-// Necessary for com.ibm.crypto.provider
-permission java.security.SecurityPermission "insertProvider.IBMJCE";
-permission java.security.SecurityPermission "insertProvider.JSSE";
 
 // required for JMX
 permission javax.management.MBeanServerPermission "findMBeanServer";
@@ -175,9 +122,6 @@ permission java.net.NetPermission "getProxySelector";
 // required for registering webservicelisteners
 permission javax.xml.ws.WebServicePermission "publishEndpoint";
 permission javax.security.auth.AuthPermission "getPolicy";
-
-// allowing read access to /opt/WAS/properties/jndi.properties
-permission java.io.FilePermission "${was.install.root}${/}properties${/}-", "read";
 
 // required for http(s) connections (since Java 8)
 permission java.net.URLPermission "http:*", "*";
