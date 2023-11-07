@@ -136,7 +136,13 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 
 	@Override
 	public void close() {
-		consumer.close();
+		lock.lock();
+		try {
+			consumer.close();
+		} finally {
+			lock.unlock();
+		}
+
 	}
 
 	@Override
