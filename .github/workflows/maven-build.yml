@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ '11' ]
+        java: [ '11', '17' ]
 
     steps:
     - name: Checkout repository
@@ -92,8 +92,8 @@ jobs:
         echo "PROFILES=${{ env.PROFILES }},attachFrankDoc" >> $GITHUB_ENV
 
       # Secrets are not available when commits are made by Dependabot or from GH forks
-    - name: Update environment when JDK == 11
-      if: ${{ matrix.java == '11' && env.USE_PROPRIETARY == 'true' }}
+    - name: Update environment to run on SonarSource when JDK 17
+      if: ${{ matrix.java == '17' && env.USE_PROPRIETARY == 'true' }}
       run: |
         echo "MAVEN_GOALS=${{ env.MAVEN_GOALS }} org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_ENV
 
@@ -111,8 +111,8 @@ jobs:
       uses: codecov/codecov-action@v3
       continue-on-error: true #ignore failure when unable to upload the artifacts
 
-    - name: Upload coverage to Codacy
-      if: ${{ env.USE_PROPRIETARY == 'true' }}
+    - name: Upload coverage to Codacy when Java == 17
+      if: ${{ matrix.java == '17' && env.USE_PROPRIETARY == 'true' }}
       uses: codacy/codacy-coverage-reporter-action@v1
       continue-on-error: true #ignore failure when unable to upload the artifacts
       with:
