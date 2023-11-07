@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public class LocalDistributionSummary extends AbstractDistributionSummary {
 		super(id, clock, distributionStatisticConfig, scale, supportsAggregablePercentiles);
 
 		histogram = new TimeWindowFixedBoundaryHistogram(clock, DistributionStatisticConfig.builder()
-				.expiry(Duration.ofDays(1825)) // effectively never roll over
+				.expiry(Duration.ofDays(31)) // a month should be enough?
 				.bufferLength(1)
 				.build()
 				.merge(distributionStatisticConfig), true);
