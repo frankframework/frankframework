@@ -1,6 +1,7 @@
-ARG JBOSS_VERSION=eap74-openjdk11-openshift-rhel8:7.4.0
+ARG JBOSS_VARIANT=eap74-openjdk11-openshift-rhel8
+ARG JBOSS_VERSION=7.4.0
 ARG REGISTRY=private.docker.nexus.frankframework.org
-FROM ${REGISTRY}/jboss-eap-7/${JBOSS_VERSION} AS jboss-base
+FROM ${REGISTRY}/jboss-eap-7/${JBOSS_VARIANT}:${JBOSS_VERSION} AS jboss-base
 
 USER root
 RUN mkdir $JBOSS_HOME/standalone/data
