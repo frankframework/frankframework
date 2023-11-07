@@ -92,8 +92,8 @@ jobs:
         echo "PROFILES=${{ env.PROFILES }},attachFrankDoc" >> $GITHUB_ENV
 
       # Secrets are not available when commits are made by Dependabot or from GH forks
-    - name: Update environment when JDK == 11 or 17
-      if: ${{ (matrix.java == '11' || matrix.java == '17') && env.USE_PROPRIETARY == 'true' }}
+    - name: Update environment to run on SonarSource when JDK 17
+      if: ${{ matrix.java == '17' && env.USE_PROPRIETARY == 'true' }}
       run: |
         echo "MAVEN_GOALS=${{ env.MAVEN_GOALS }} org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_ENV
 
