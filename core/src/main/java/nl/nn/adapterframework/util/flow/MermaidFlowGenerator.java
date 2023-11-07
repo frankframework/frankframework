@@ -47,6 +47,10 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.Protected;
+import nl.nn.adapterframework.filesystem.FileSystemListener;
+import nl.nn.adapterframework.filesystem.FileSystemSender;
+import nl.nn.adapterframework.senders.IbisJavaSender;
+import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -104,6 +108,9 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 						try (SaxElementBuilder typeElement = classElement.startElement("type")) {
 							typeElement.addValue(type.value().name().toLowerCase());
 						}
+						try (SaxElementBuilder modifierElement = classElement.startElement("modifier")) {
+							modifierElement.addValue(""+deduceModifier(clazz));
+						}
 						addResourceMethods(classElement, clazz.getMethods());
 					}
 				}
@@ -114,6 +121,27 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 			builder.endElement();
 			return builder.toString();
 		}
+	}
+
+	/**
+	 * Returns a classifier use by the Mermaid XSLT, which in turn is used to change the style in the diagram.
+	 */
+	private int deduceModifier(Class<?> clazz) {
+		String className = clazz.getCanonicalName();
+		if(className.contains("http")) {
+			return 0;
+		} else if(className.contains("jms") || className.contains("esb")) {
+			return 1;
+		} else if(className.contains("jdbc")) {
+			return 2;
+		} else if(FileSystemListener.class.isAssignableFrom(clazz) || FileSystemSender.class.isAssignableFrom(clazz)) {
+			return 3;
+		} else if(IbisJavaSender.class.isAssignableFrom(clazz) || IbisLocalSender.class.isAssignableFrom(clazz)) {
+			return 4;
+		} else if(className.contains("sap")) {
+			return 5;
+		}
+		return 7;
 	}
 
 	private void addResourceMethods(SaxElementBuilder element, Method[] methods) throws SAXException {
