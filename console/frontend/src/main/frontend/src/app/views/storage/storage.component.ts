@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { StorageService } from './storage.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { merge } from 'rxjs';
+import { ActivatedRoute, ActivationEnd, Router } from '@angular/router';
+import { filter, merge } from 'rxjs';
 
 @Component({
   selector: 'app-storage',
@@ -27,7 +27,7 @@ export class StorageComponent implements OnInit {
         processState = params.get('processState'),
         messageId = params.get('messageId');
 
-      if(!configuration){
+      if (!configuration) {
         this.router.navigate(['status']);
         return;
       }
@@ -59,10 +59,13 @@ export class StorageComponent implements OnInit {
       });
     });
 
-    // this.$state.current.data.pageTitle = this.$state.params["processState"] + " List";
-    // this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List";
 
-
+    this.router.events.pipe(
+      filter((e) => e instanceof ActivationEnd && e.snapshot.paramMap.has('processState'))
+    ).subscribe(() => {
+      const messageId = this.route.firstChild?.snapshot.paramMap.get('messageId');
+      this.storageService.updateStorageParams({ messageId });
+    });
   }
 
 }

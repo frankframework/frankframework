@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { ParamMap, Params } from '@angular/router';
 import { Subject, catchError, of } from 'rxjs';
 import { DebugService } from './services/debug.service';
+import { Title } from '@angular/platform-browser';
 
 export type RunState = 'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED';
 export type RunStateRuntime = RunState | 'loading'
@@ -193,6 +194,7 @@ export type AppConstants = Record<string, string | any>;
 export class AppService {
 
   private loadingSubject = new Subject<boolean>();
+  private customBreadcrumbsSubject = new Subject<string>();
   private appConstantsSubject = new Subject<void>();
   private adaptersSubject = new Subject<Record<string, Adapter>>();
   private alertsSubject = new Subject<Alert[]>();
@@ -206,6 +208,7 @@ export class AppService {
   private GDPRSubject = new Subject<void>();
 
   loading$ = this.loadingSubject.asObservable();
+  customBreadscrumb$ = this.customBreadcrumbsSubject.asObservable();
   appConstants$ = this.appConstantsSubject.asObservable();
   adapters$ = this.adaptersSubject.asObservable();
   alerts$ = this.alertsSubject.asObservable();
@@ -285,12 +288,17 @@ export class AppService {
   private timeout?: number;
 
   constructor(
+    private title: Title,
     private http: HttpClient,
     private debugService: DebugService,
   ) { }
 
   updateLoading(loading: boolean) {
     this.loadingSubject.next(loading);
+  }
+
+  customBreadcrumbs(breadcrumbs: string){
+    this.customBreadcrumbsSubject.next(breadcrumbs);
   }
 
   triggerAppConstants() {
@@ -353,6 +361,10 @@ export class AppService {
   updateDatabaseSchedulesEnabled(databaseSchedulesEnabled: boolean) {
     this.databaseSchedulesEnabled = databaseSchedulesEnabled;
     this.databaseSchedulesEnabledSubject.next(databaseSchedulesEnabled);
+  }
+
+  updateTitle(title: string){
+    this.title.setTitle(`${this.dtapStage}-${this.instanceName} | ${title}`)
   }
 
   addAlert(type: string, configuration: string, message: string) {

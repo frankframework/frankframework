@@ -82,6 +82,9 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   ngOnInit() {
     this.storageService.closeNotes();
 
+    this.appService.customBreadcrumbs("Adapter > " + (this.storageParams["storageSource"] == 'pipes' ? "Pipes > " + this.storageParams["storageSourceName"] + " > " : "") + this.storageParams["processState"] + " List")
+    // this.$state.current.data.breadcrumbs = "Adapter > " + (this.$state.params["storageSource"] == 'pipes' ? "Pipes > " + this.$state.params["storageSourceName"] + " > " : "") + this.$state.params["processState"] + " List";
+
     this.dtOptions = {
       searching: false,
       scrollX: true,

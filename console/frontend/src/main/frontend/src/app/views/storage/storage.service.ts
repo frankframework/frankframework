@@ -66,10 +66,14 @@ export class StorageService {
   ) { }
 
   updateStorageParams(params: Partial<StorageParams>) {
-    this.storageParams = { ...this.storageParams, ...params };
+    this.storageParams = Object.assign(this.storageParams, params); // dont make this a new object
     this.baseUrl = this.appService.absoluteApiPath + "configurations/" + this.Misc.escapeURL(this.storageParams.configuration) +
       "/adapters/" + this.Misc.escapeURL(this.storageParams.adapterName) + "/" + this.storageParams.storageSource +
       "/" + this.Misc.escapeURL(this.storageParams.storageSourceName) + "/stores/" + this.storageParams.processState;
+
+    setTimeout(() => {
+      this.appService.updateTitle(this.storageParams.processState + " List");
+    }, 0);
   }
 
   addNote(type: string, message: string) {
@@ -86,7 +90,7 @@ export class StorageService {
 
   deleteMessage(message: PartialMessage, callback?: (messageId: string) => void) {
     message.deleting = true;
-    let messageId = message.id;
+    const messageId = message.id;
     this.http.delete(this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId))).subscribe({ next: () => {
       if (callback != undefined && typeof callback == 'function')
         callback(messageId);
@@ -105,7 +109,7 @@ export class StorageService {
 
   resendMessage(message: PartialMessage, callback?: (messageId: string) => void) {
     message.resending = true;
-    let messageId = message.id;
+    const messageId = message.id;
     this.http.put(this.baseUrl + "/messages/" + encodeURIComponent(encodeURIComponent(messageId)), false).subscribe({ next: () => {
       if (callback != undefined)
         callback(message.id);
@@ -128,6 +132,10 @@ export class StorageService {
 
   getStorageList(queryParams: string){
     return this.http.get<MessageStore>(this.baseUrl + queryParams);
+  }
+
+  getMessage(messageId: string){
+    return this.http.get<Message>(this.baseUrl + "/messages/" + messageId);
   }
 
   postResendMessages(data: FormData){

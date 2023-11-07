@@ -67,9 +67,7 @@ export class StatusComponent implements OnInit, OnDestroy {
   private _subscriptions = new Subscription();
 
   constructor(
-    // private Api: ApiService,
     private Poller: PollerService,
-    private Misc: MiscService,
     private viewportScroller: ViewportScroller,
     private route: ActivatedRoute,
     private router: Router,

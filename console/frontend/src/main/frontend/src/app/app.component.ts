@@ -1,9 +1,9 @@
 import { Component, Inject, LOCALE_ID, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { Idle } from '@ng-idle/core';
-import { Observable, Subscription, combineLatest, filter } from 'rxjs';
+import { Observable, Subscription, combineLatest, filter, first } from 'rxjs';
 import { Adapter, AppConstants, AppService, ServerInfo } from './app.service';
 import { ActivatedRoute, Data, NavigationEnd, ParamMap, Router, RouterEvent } from '@angular/router';
-import { formatDate } from '@angular/common';
+import { ViewportScroller, formatDate } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 // @ts-ignore pace-js does not have types
 import * as Pace from 'pace-js';
@@ -14,6 +14,7 @@ import { PollerService } from './services/poller.service';
 import { AuthService } from './services/auth.service';
 import { SessionService } from './services/session.service';
 import { SweetalertService } from './services/sweetalert.service';
+import { Title } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -42,6 +43,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private renderer: Renderer2,
+    private title: Title,
+    private viewportScroller: ViewportScroller,
     private authService: AuthService,
     private pollerService: PollerService,
     private notificationService: NotificationService,
@@ -182,6 +185,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
           this.appService.updateInstanceName(data.instance.name);
           $(".iaf-info").html(data.framework.name + " " + data.framework.version + ": " + data.instance.name + " " + data.instance.version);
+          this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
           if (this.appService.dtapStage == "LOC") {
             this.debugService.setLevel(3);
@@ -357,7 +361,6 @@ export class AppComponent implements OnInit, OnDestroy {
           this.appService.adapters[adapter.name] = adapter;
 
           this.appService.updateAdapterSummary(this.routeQueryParams);
-          this.scrollToAdapter();
           this.updateAdapterNotifications(adapter);
         }
       }
@@ -365,21 +368,23 @@ export class AppComponent implements OnInit, OnDestroy {
     };
 
     //Get base information first, then update it with more details
-    this.appService.getAdapters().subscribe((data: Record<string, Adapter>) => pollerCallback(data));
+    this.appService.getAdapters().pipe(first()).subscribe((data: Record<string, Adapter>) => pollerCallback(data));
     window.setTimeout(() => {
       this.pollerService.add("adapters?expanded=all", (data: Record<string, Adapter>) => { pollerCallback(data) }, true);
       this.appService.updateLoading(false);
       this.loading = false;
+      this.scrollToAdapter();
     }, 3000);
   }
 
   scrollToAdapter() {
     this.urlHash$.subscribe((hash) => {
-      if (this.router.url == "/status" && hash && hash !== "") {
-        let el = $("#" + hash);
+      if (this.router.url.startsWith("/status") && hash && hash !== "") {
+        /* let el = $("#" + hash);
         if (el && el[0]) {
           el[0].scrollIntoView();
-        }
+        } */
+        this.viewportScroller.scrollToAnchor(hash);
       }
     });
   }

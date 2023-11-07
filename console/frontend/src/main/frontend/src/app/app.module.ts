@@ -66,6 +66,8 @@ import { FitHeightDirective } from './views/iframe/fit-height.directive';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 // import { WebservicesComponent } from './views/webservices/webservices.component';
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
+import { TitleStrategy } from '@angular/router';
+import { PagesTitleStrategy } from './pages-title-strategy';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -139,7 +141,8 @@ const windowProvider: ValueProvider = {
     DataTablesModule
   ],
   providers: [
-    windowProvider
+    windowProvider,
+    { provide: TitleStrategy, useClass: PagesTitleStrategy }
   ],
   bootstrap: [AppComponent]
 })
