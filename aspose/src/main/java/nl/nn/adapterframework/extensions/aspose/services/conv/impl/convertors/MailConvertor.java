@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -51,6 +50,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResul
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionService;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 class MailConvertor extends AbstractConvertor {
@@ -109,7 +109,7 @@ class MailConvertor extends AbstractConvertor {
 		result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
 
 		File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), null);
-		String date = new SimpleDateFormat(MAIL_HEADER_DATEFORMAT).format(eml.getDate());
+		String date = DateUtils.format(eml.getDate(), MAIL_HEADER_DATEFORMAT);
 		eml.getHeaders().set_Item("Date", date);
 		eml.save(tempMHtmlFile.getAbsolutePath(), options);
 

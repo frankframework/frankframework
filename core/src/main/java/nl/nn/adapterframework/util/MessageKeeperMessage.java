@@ -15,9 +15,10 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
+
+import lombok.Getter;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,8 +33,8 @@ import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
  */
 public class MessageKeeperMessage {
 
-	private Date messageDate=new Date();
-	private String messageText;
+	private @Getter Date messageDate = new Date();
+	private @Getter String messageText;
 	private MessageKeeperLevel messageLevel;
 
 	/**
@@ -65,19 +66,13 @@ public class MessageKeeperMessage {
 		return message;
 	}
 
-	public Date getMessageDate() {
-		return messageDate;
-	}
-	public String getMessageText() {
-		return messageText;
-	}
 	public String getMessageLevel() {
 		return messageLevel!=null ? messageLevel.name() : null;
 	}
 
 	@Override
 	public String toString() {
-		String date = new SimpleDateFormat("MMM dd, yyyy hh:mm:ss a").format(messageDate);
+		String date = DateUtils.format(messageDate, "MMM dd, yyyy hh:mm:ss a");
 		return String.format("%S: %s - %s", messageLevel, date, messageText);
 	}
 }

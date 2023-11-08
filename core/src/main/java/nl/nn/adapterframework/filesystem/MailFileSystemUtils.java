@@ -17,7 +17,6 @@ package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -30,6 +29,7 @@ import org.xml.sax.SAXException;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
@@ -68,7 +68,7 @@ public class MailFileSystemUtils {
 		}
 		String value;
 		if (property instanceof Date) {
-			value = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format((Date)property);
+			value = DateUtils.format((Date) property, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		} else {
 			value = property.toString();
 		}

@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.hamcrest.Matchers;
@@ -15,7 +14,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.util.DateUtils;
 
-public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSession>{
+public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSession> {
 
 	@Override
 	public PutSystemDateInSession createPipe() {
@@ -46,7 +45,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		pipe.setSessionKey("first");
 		session.put("stub4testtool.fixeddate", "22331");
 
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "dummy", session));
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "dummy", session));
 		assertThat(e.getMessage(), Matchers.containsString("cannot parse fixed date"));
 	}
 
@@ -65,20 +64,17 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String result = (String) session.get("first");
 
-		SimpleDateFormat parser = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
-		SimpleDateFormat formatter = new SimpleDateFormat(DateUtils.fullIsoFormat);
-
-		Date date = parser.parse(fixedDate);
-		assertEquals(formatter.format(date), result);
+		Date date = DateUtils.parseToDate(fixedDate, PutSystemDateInSession.FORMAT_FIXEDDATETIME);
+		assertEquals(DateUtils.format(date, DateUtils.fullIsoFormat), result);
 
 		pipe.setSessionKey("second");
 		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
-		Date first = formatter.parse(result);
-		Date second = formatter.parse(secondResult);
+		Date first = DateUtils.parseToDate(result, DateUtils.fullIsoFormat);
+		Date second = DateUtils.parseToDate(secondResult, DateUtils.fullIsoFormat);
 
-		long timeDifference = second.getTime()-first.getTime();
+		long timeDifference = second.getTime() - first.getTime();
 		assertEquals(0, timeDifference);
 	}
 
@@ -99,11 +95,10 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
-		SimpleDateFormat formatter = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
-		Date first = formatter.parse(result);
-		Date second = formatter.parse(secondResult);
+		Date first = DateUtils.parseToDate(result, PutSystemDateInSession.FORMAT_FIXEDDATETIME);
+		Date second = DateUtils.parseToDate(secondResult, PutSystemDateInSession.FORMAT_FIXEDDATETIME);
 
-		long timeDifference = second.getTime()-first.getTime();
+		long timeDifference = second.getTime() - first.getTime();
 		assertEquals(PutSystemDateInSession.FIXEDDATETIME, result);
 		assertEquals(0, timeDifference);
 	}
@@ -126,7 +121,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		long timeStampInMillis = new Date().getTime();
 		String timeStampInMillisFromSessionKey = (String) session.get("dummy");
 		//Compare timestamp put in session key with the actual timestamp fail if it is bigger than 1 sec.
-		assertFalse("Time stamp difference cannot be bigger than 1 s", timeStampInMillis - new Long(timeStampInMillisFromSessionKey)>1000);
+		assertFalse("Time stamp difference cannot be bigger than 1 s", timeStampInMillis - new Long(timeStampInMillisFromSessionKey) > 1000);
 	}
 
 	@Test
@@ -152,11 +147,10 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
-		SimpleDateFormat format = new SimpleDateFormat(DateUtils.fullIsoFormat);
-		Date first = format.parse(result);
-		Date second = format.parse(secondResult);
+		Date first = DateUtils.parseToDate(result, DateUtils.fullIsoFormat);
+		Date second = DateUtils.parseToDate(secondResult, DateUtils.fullIsoFormat);
 
-		long timeDifference = second.getTime()-first.getTime();
+		long timeDifference = second.getTime() - first.getTime();
 
 		assertEquals("Timestamps should be different", 1000L, timeDifference);
 	}

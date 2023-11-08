@@ -19,10 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.DateTimeException;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -81,6 +78,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -591,12 +589,10 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 					if(AppConstants.getInstance().getBoolean("cmissender.processproperties.legacydateformat", false)) {
 						formatStringAttr = "yyyy-MM-dd HH:mm:ss";
 					}
-					DateFormat df = new SimpleDateFormat(formatStringAttr);
 					GregorianCalendar calendar = new GregorianCalendar();
 					try {
-						Date date = df.parse(property);
-						calendar.setTime(date);
-					} catch (ParseException e) {
+						calendar.setTimeInMillis(DateUtils.parseToInstant(property, formatStringAttr).toEpochMilli());
+					} catch (DateTimeException e) {
 						throw new SenderException(getLogPrefix() + "exception parsing date [" + property + "] using formatString [" + formatStringAttr + "]", e);
 					}
 					props.put(nameAttr, calendar);

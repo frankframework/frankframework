@@ -21,8 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -53,6 +52,7 @@ import nl.nn.testtool.TestTool;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.testtool.util.SearchUtil;
 
 /**
@@ -234,9 +234,8 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 			query.append(rowNumber);
 		}
 		query.append(" from " + table);
-		// According to SimpleDateFormat javadoc it needs to be synchronized when accessed by multiple threads, hence
+		// According to fastDateFormat javadoc it needs to be synchronized when accessed by multiple threads, hence
 		// instantiate it here instead of instantiating it at class level and synchronizing it.
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(TIMESTAMP_PATTERN);
 		for (int i = 0; i < rangeSearchValues.size(); i++) {
 			String searchValue = rangeSearchValues.get(i);
 			if (searchValue != null) {
@@ -251,7 +250,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 							addNumberExpression(query, args, argTypes, column, ">=", searchValueLeft);
 						} else if (timestampColumns.contains(column)) {
 							addTimestampExpression(query, args, argTypes, column, ">=",
-									searchValueLeft, simpleDateFormat);
+									searchValueLeft, TIMESTAMP_PATTERN);
 						}
 					}
 					if (StringUtils.isNotEmpty(searchValueRight)) {
@@ -259,7 +258,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 							addNumberExpression(query, args, argTypes, column, "<=", searchValueRight);
 						} else if (timestampColumns.contains(column)) {
 							addTimestampExpression(query, args, argTypes, column, "<=",
-									searchValueRight, simpleDateFormat);
+									searchValueRight, TIMESTAMP_PATTERN);
 						}
 					}
 				} else {
@@ -274,7 +273,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 				if (integerColumns.contains(column)) {
 					addNumberExpression(query, args, argTypes, column, "<=", searchValue);
 				} else if (timestampColumns.contains(column)) {
-					addTimestampExpression(query, args, argTypes, column, "<=", searchValue, simpleDateFormat);
+					addTimestampExpression(query, args, argTypes, column, "<=", searchValue, TIMESTAMP_PATTERN);
 				} else if (fixedStringColumns != null && fixedStringColumns.contains(column)) {
 					addFixedStringExpression(query, args, argTypes, column, searchValue);
 				} else {
@@ -301,7 +300,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 								if (integerColumns.contains(metadataNames.get(i))) {
 									row.add(rs.getInt(i + 1));
 								} else if (timestampColumns.contains(metadataNames.get(i))) {
-									row.add(simpleDateFormat.format(rs.getTimestamp(i + 1)));
+									row.add(DateUtils.format(rs.getTimestamp(i + 1), TIMESTAMP_PATTERN));
 								} else {
 									row.add(getValue(rs, i + 1));
 								}
@@ -418,7 +417,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 
 	private void addTimestampExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
 			String column, String operator, String searchValue,
-			SimpleDateFormat simpleDateFormat) throws StorageException {
+			String dateFormat) throws StorageException {
 		String searchValueToParse;
 		if (searchValue.length() < 23) {
 			if (">=".equals(operator)) {
@@ -460,10 +459,10 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 			searchValueToParse = searchValue;
 		}
 		try {
-			args.add(new Timestamp(simpleDateFormat.parse(searchValueToParse).getTime()));
+			args.add(new Timestamp(DateUtils.parseToInstant(searchValueToParse, dateFormat).toEpochMilli()));
 			argTypes.add(Types.TIMESTAMP);
 			addExpression(query, column + " " + operator + " ?");
-		} catch (ParseException e) {
+		} catch (DateTimeException e) {
 			throwExceptionOnInvalidTimestamp(searchValue);
 		}
 	}

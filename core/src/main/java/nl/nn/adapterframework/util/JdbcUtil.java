@@ -39,7 +39,7 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -228,10 +228,10 @@ public class JdbcUtil {
 			case Types.TIMESTAMP :
 			case Types.DATE : {
 				try {
-					if(columnType == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty())
-						return new SimpleDateFormat(TIMESTAMPFORMAT).format(rs.getTimestamp(colNum));
-					else if(columnType == Types.DATE && !DATEFORMAT.isEmpty())
-						return new SimpleDateFormat(DATEFORMAT).format(rs.getDate(colNum));
+					if (columnType == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty())
+						return DateUtils.format(rs.getTimestamp(colNum), TIMESTAMPFORMAT);
+					else if (columnType == Types.DATE && !DATEFORMAT.isEmpty())
+						return DateUtils.format(rs.getDate(colNum), DATEFORMAT);
 				}
 				catch (Exception e) {
 					//Do nothing, the default: will handle it

@@ -19,19 +19,18 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
 import com.aspose.pdf.Document;
 
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
@@ -128,7 +127,7 @@ abstract class AbstractConvertor implements Convertor {
 
 	protected int getNumberOfPages(File file) throws IOException {
 		int result = 0;
-		if(file != null) {
+		if (file != null) {
 			try (InputStream inStream = new FileInputStream(file)) {
 				Document doc = new Document(inStream);
 				result = doc.getPages().size();
@@ -139,7 +138,7 @@ abstract class AbstractConvertor implements Convertor {
 	}
 
 	protected String createTechnishefoutMsg(Exception e) {
-		String tijdstip = DateUtils.format(new Date(), "dd-MM-yyyy HH:mm:ss");
+		String tijdstip = DateUtils.format(Instant.now(), "dd-MM-yyyy HH:mm:ss");
 		LOGGER.warn("Conversion in " + this.getClass().getSimpleName() + " failed! (Tijdstip: " + tijdstip + ")", e);
 		StringBuilder msg = new StringBuilder();
 		msg.append("Het omzetten naar pdf is mislukt door een technische fout. Neem contact op met de functioneel beheerder.");
@@ -157,12 +156,10 @@ abstract class AbstractConvertor implements Convertor {
 	 * Create a unique file in the pdfOutputLocation with the given extension
 	 */
 	protected File getUniqueFile() {
-
-		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
 		int count = atomicCount.addAndGet(1);
 
 		String fileNamePdf = String.format("conv_%s_%s_%05d%s", this.getClass().getSimpleName(),
-				format.format(new Date()), count, ".bin");
+				DateUtils.format(Instant.now(), "yyyyMMddHHmmss"), count, ".bin");
 		return new File(configuration.getPdfOutputLocation(), fileNamePdf);
 	}
 

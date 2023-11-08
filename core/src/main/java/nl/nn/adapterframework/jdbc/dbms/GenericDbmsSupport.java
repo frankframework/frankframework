@@ -27,7 +27,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,6 +41,7 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringUtil;
@@ -137,10 +137,10 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	// method is used in JobDef.cleanupDatabase
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String formattedDate = formatter.format(date);
+		String formattedDate = DateUtils.format(date, "yyyy-MM-dd HH:mm:ss");
 		return "TO_TIMESTAMP('" + formattedDate + "', 'YYYY-MM-DD HH24:MI:SS')";
 	}
+
 	@Override
 	public String getTimestampAsDate(String columnName) {
 		return "TO_CHAR("+columnName+",'YYYY-MM-DD')";

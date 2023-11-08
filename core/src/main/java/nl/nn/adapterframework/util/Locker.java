@@ -21,7 +21,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
+
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.UnsupportedTemporalTypeException;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -81,7 +84,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private @Getter LockType type = LockType.T;
 	private @Getter String dateFormatSuffix;
 	private @Getter int retention = -1;
-	private SimpleDateFormat formatter;
+	private DateTimeFormatter formatter;
 	private @Getter int numRetries = 0;
 	private @Getter int firstDelay = 0;
 	private @Getter int retryDelay = 10000;
@@ -110,8 +113,11 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 		}
 		if (StringUtils.isNotEmpty(getDateFormatSuffix())) {
 			try {
-				formatter = new SimpleDateFormat(getDateFormatSuffix());
-			} catch (IllegalArgumentException ex){
+				formatter = DateTimeFormatter.ofPattern(getDateFormatSuffix());
+				//If format string contains letters that can be used in the pattern (for example: 'yyyy-MM-dd XXXXXX'), then it won't throw error,
+				//line below ensures that it does throw error if format contains illegal value
+				formatter.format(Instant.now());
+			} catch (IllegalArgumentException | UnsupportedTemporalTypeException ex){
 				throw new ConfigurationException(getLogPrefix()+"has an illegal value for dateFormat", ex);
 			}
 		}
@@ -162,7 +168,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 				Date date = new Date();
 				objectIdWithSuffix = getObjectId();
 				if (StringUtils.isNotEmpty(getDateFormatSuffix())) {
-					String formattedDate = formatter.format(date);
+					String formattedDate = formatter.format(date.toInstant());
 					objectIdWithSuffix = objectIdWithSuffix.concat(formattedDate);
 				}
 

@@ -29,12 +29,12 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Files;
-import java.text.ParseException;
 import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,6 +57,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
+import nl.nn.adapterframework.util.DateUtils;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
@@ -2254,17 +2256,17 @@ public class TestTool {
 			if (j != -1) {
 				debugMessage("Key 2 found", writers);
 				String dateString = result.substring(i + key1.length(), j);
-				Date date;
+				Instant instant;
 				boolean remainingString = false;
 				try {
-					SimpleDateFormat simpleDateFormat = null;
+					DateTimeFormatter dateTimeFormatter = null;
 					if (pattern == null) {
 						// Expect time in milliseconds
-						date = new Date(Long.parseLong(dateString));
+						instant = Instant.ofEpochMilli(Long.parseLong(dateString));
 					} else {
-						simpleDateFormat = new SimpleDateFormat(pattern);
+						dateTimeFormatter = DateTimeFormatter.ofPattern(pattern);
 						ParsePosition parsePosition = new ParsePosition(0);
-						date = simpleDateFormat.parse(dateString, parsePosition);
+						instant = Instant.from(dateTimeFormatter.parse(dateString, parsePosition));
 						if (parsePosition.getIndex() != dateString.length()) {
 							remainingString = true;
 							i = result.indexOf(key1, j + key2.length());
@@ -2285,13 +2287,13 @@ public class TestTool {
 							String currentTime;
 							long currentTimeMillis;
 							if (pattern == null) {
-								currentTime = "" + System.currentTimeMillis();
-								currentTimeMillis = Long.parseLong(currentTime);
+								currentTime = String.valueOf(System.currentTimeMillis());
+								currentTimeMillis = System.currentTimeMillis();
 							} else {
-								currentTime = simpleDateFormat.format(new Date(System.currentTimeMillis()));
-								currentTimeMillis = simpleDateFormat.parse(currentTime).getTime();
+								currentTime = DateUtils.format(Instant.now(), pattern);
+								currentTimeMillis = DateUtils.parseToInstant(currentTime, dateTimeFormatter).toEpochMilli();
 							}
-							if (date.getTime() >= currentTimeMillis - Long.parseLong(margin) && date.getTime() <= currentTimeMillis + Long.parseLong(margin)) {
+							if (instant.toEpochMilli() >= currentTimeMillis - Long.parseLong(margin) && instant.toEpochMilli() <= currentTimeMillis + Long.parseLong(margin)) {
 								result = result.substring(0, i) + key1 + ignoreText + result.substring(j);
 								i = result.indexOf(key1, i + key1.length() + ignoreText.length() + key2.length());
 							} else {
@@ -2300,7 +2302,7 @@ public class TestTool {
 							}
 						}
 					}
-				} catch(ParseException e) {
+				} catch(DateTimeException e) {
 					i = -1;
 					errorMessage("Could not parse margin or date: " + e.getMessage(), e, writers);
 				} catch(NumberFormatException e) {

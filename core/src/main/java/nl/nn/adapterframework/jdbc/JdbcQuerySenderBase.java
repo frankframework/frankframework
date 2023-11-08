@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -29,8 +30,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Collectors;
@@ -66,6 +67,7 @@ import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DB2DocumentWriter;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -848,7 +850,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		String element=null;
 		try {
 			if (packageInput.lastIndexOf(',') > 0) {
-				while ((packageInput.charAt(packageInput.length() - ix) != ',')	&& (ix < packageInput.length())) {
+				while ((packageInput.charAt(packageInput.length() - ix) != ',') && (ix < packageInput.length())) {
 					ix++;
 				}
 				int endInputs = beginOutput - ix;
@@ -862,21 +864,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 							int y = element.lastIndexOf('\'');
 							paramArray[idx] = element.substring(x + 1, y);
 						} else {
-							if (element.contains("-")){
+							if (element.contains("-")) {
 								if (element.length() > 10) {
 									String pattern = "yyyy-MM-dd HH:mm:ss";
-									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-									java.util.Date nDate = (java.util.Date)sdf.parseObject(element);
-									Timestamp sqlTimestamp = new Timestamp(nDate.getTime());
+									Instant instant = DateUtils.parseToInstant(element, pattern);
+									Timestamp sqlTimestamp = Timestamp.from(instant);
 									paramArray[idx] = sqlTimestamp;
-
 								} else {
 									String pattern = "yyyy-MM-dd";
-									SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-									java.util.Date nDate;
-									nDate = sdf.parse(element);
-									java.sql.Date sDate = new java.sql.Date(nDate.getTime());
-									paramArray[idx] = sDate;
+									Instant instant = DateUtils.parseToInstant(element, pattern);
+									paramArray[idx] = Date.from(instant);
 								}
 							} else {
 								if (element.contains(".")) {
@@ -903,7 +900,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				newMessage.append(message, closingBracePosition, lengthMessage);
 			}
 			return newMessage.toString();
-		} catch (ParseException e) {
+		} catch (DateTimeException e) {
 			throw new SenderException(getLogPrefix() + "got exception parsing a date string from element ["+element+"]", e);
 		}
 	}

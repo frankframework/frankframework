@@ -18,12 +18,13 @@ package nl.nn.adapterframework.jdbc.dbms;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
+
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
@@ -45,8 +46,7 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String formattedDate = formatter.format(date);
+		String formattedDate = DateUtils.format(date, "yyyy-MM-dd HH:mm:ss");
 		return "parsedatetime('" + formattedDate + "', 'yyyy-MM-dd HH:mm:ss')";
 	}
 

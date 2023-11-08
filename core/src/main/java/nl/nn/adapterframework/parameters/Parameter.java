@@ -19,12 +19,11 @@ import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
 import static nl.nn.adapterframework.util.StringUtil.hide;
 
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -686,10 +685,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 					}
 					Message finalRequestMessage = requestMessage;
 					LOG.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> finalRequestMessage, this::getFormatString);
-					DateFormat df = new SimpleDateFormat(getFormatString());
 					try {
-						result = df.parseObject(requestMessage.asString());
-					} catch (ParseException e) {
+						result = DateUtils.parseToDate(requestMessage.asString(), getFormatString());
+					} catch (DateTimeException e) {
 						throw new ParameterException("Parameter [" + getName() + "] could not parse result [" + requestMessage + "] to Date using formatString [" + getFormatString() + "]", e);
 					}
 					break;
@@ -795,16 +793,14 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if (rawValue instanceof Date) {
 				return rawValue;
 			}
-			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateUtils.FORMAT_GENERICDATETIME);
 			try {
-				return df.parse(Message.asString(rawValue));
-			} catch (ParseException | IOException e) {
+				return DateUtils.parseToDate(Message.asString(rawValue), StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateUtils.FORMAT_GENERICDATETIME);
+			} catch (DateTimeException | IOException e) {
 				throw new ParameterException("Cannot parse ["+rawValue+"] as date", e);
 			}
 		}
 		if (rawValue instanceof Date) {
-			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateUtils.FORMAT_GENERICDATETIME);
-			return df.format(rawValue);
+			return DateUtils.format((Date) rawValue, StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateUtils.FORMAT_GENERICDATETIME);
 		}
 		try {
 			return Message.asString(rawValue);
@@ -858,10 +854,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 					}
 					Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
 					if (fixedDateTime == null) {
-						DateFormat df = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
 						try {
-							fixedDateTime = df.parse(PutSystemDateInSession.FIXEDDATETIME);
-						} catch (ParseException e) {
+							fixedDateTime = DateUtils.parseToDate(PutSystemDateInSession.FIXEDDATETIME, DateUtils.FORMAT_GENERICDATETIME);
+						} catch (DateTimeException e) {
 							throw new ParameterException("Could not parse FIXEDDATETIME [" + PutSystemDateInSession.FIXEDDATETIME + "]", e);
 						}
 					}

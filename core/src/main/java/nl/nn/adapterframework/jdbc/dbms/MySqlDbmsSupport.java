@@ -16,7 +16,6 @@ limitations under the License.
 package nl.nn.adapterframework.jdbc.dbms;
 
 import java.sql.Connection;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -50,8 +49,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
-		String formattedDate = formatter.format(date);
+		String formattedDate = DateUtils.format(date, DateUtils.FORMAT_GENERICDATETIME);
 		return "TIMESTAMP('" + formattedDate + "')";
 	}
 

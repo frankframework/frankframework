@@ -17,7 +17,6 @@ package nl.nn.adapterframework.batch;
 
 import java.lang.reflect.Constructor;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.StringUtil;
 
@@ -473,28 +473,29 @@ public class RecordTransformer extends AbstractRecordHandler {
 	 */
 	static class FixedDateOutput implements IOutputField {
 		private int inputFieldIndex = -1;
-		private final SimpleDateFormat outFormatter;
-		private final SimpleDateFormat inFormatter;
+		private final String outFormatterPattern;
+		private final String inFormatterPattern;
 
 		FixedDateOutput(String outFormatPattern, String inFormatPattern, int inputFieldIndex) {
+			String defaultPattern = "dd-MM-yyyy HH:mm";
 			this.inputFieldIndex = inputFieldIndex;
 			if (StringUtils.isEmpty(outFormatPattern)) {
-				this.outFormatter = new SimpleDateFormat();
+				this.outFormatterPattern = defaultPattern;
 			}
 			else {
-				this.outFormatter = new SimpleDateFormat(outFormatPattern);
+				this.outFormatterPattern = outFormatPattern;
 			}
 			if (StringUtils.isEmpty(inFormatPattern)) {
-				this.inFormatter = new SimpleDateFormat();
+				this.inFormatterPattern = defaultPattern;
 			}
 			else {
-				this.inFormatter = new SimpleDateFormat(inFormatPattern);
+				this.inFormatterPattern = inFormatPattern;
 			}
 		}
 
 		@Override
 		public IOutputField appendValue(IOutputField curFunction, StringBuilder result, List<String> inputFields) throws ParseException, ConfigurationException {
-			Date date ;
+			Date date;
 
 			if (inputFieldIndex < 0) {
 				date = new Date();
@@ -502,9 +503,9 @@ public class RecordTransformer extends AbstractRecordHandler {
 				if (inputFieldIndex >= inputFields.size()) {
 					throw new ConfigurationException("Function refers to a non-existing inputfield [" + inputFieldIndex + "]");
 				}
-				date = inFormatter.parse(inputFields.get(inputFieldIndex));
+				date = DateUtils.parseToDate(inputFields.get(inputFieldIndex), inFormatterPattern);
 			}
-			result.append(outFormatter.format(date));
+			result.append(DateUtils.format(date, outFormatterPattern));
 			return null;
 		}
 	}

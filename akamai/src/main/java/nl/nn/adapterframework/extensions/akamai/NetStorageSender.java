@@ -19,10 +19,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -45,6 +42,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -242,12 +240,10 @@ public class NetStorageSender extends HttpSenderBase {
 				String dateString = responseHandler.getHeader("Date");
 				if(!StringUtils.isEmpty(dateString)) {
 					Date currentDate = new Date();
-					DateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
 					long responseDate = 0;
 
 					try {
-						Date date = format.parse(dateString);
-						responseDate = date.getTime();
+						responseDate = DateUtils.parseToInstant(dateString, "EEE, dd MMM yyyy HH:mm:ss zzz").toEpochMilli();
 					}
 					catch (Exception e) {}
 

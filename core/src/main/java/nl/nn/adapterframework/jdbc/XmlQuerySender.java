@@ -22,11 +22,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -159,14 +159,8 @@ public class XmlQuerySender extends DirectQuerySender {
 					parameter = n.intValue();
 				}
 			} else if (type.equalsIgnoreCase(TYPE_DATETIME)) {
-				DateFormat df = new SimpleDateFormat(formatString);
-				java.util.Date nDate;
-				try {
-					nDate = df.parse(value);
-				} catch (ParseException e) {
-					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] to Date using formatString [" + formatString + "]", e);
-				}
-				parameter = new Timestamp(nDate.getTime());
+				DateTimeFormatter df = DateTimeFormatter.ofPattern(formatString);
+				parameter = new Timestamp(df.parse(value, Instant::from).toEpochMilli());
 			} else if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
 				java.util.Date nDate;
 				try {
