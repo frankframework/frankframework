@@ -86,7 +86,7 @@ export type Adapter = {
 export type Job = {
   name: string,
   description: string,
-  state: Lowercase<RunState>,
+  state: RunState,
   type?: string,
   jobGroupName?: string,
   stateful?: boolean,

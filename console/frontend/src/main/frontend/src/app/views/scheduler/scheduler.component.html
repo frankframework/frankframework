@@ -112,8 +112,8 @@
               <div class="pull-right">
                 <button *ngIf="job.type == 'DATABASE'" title="Edit Job {{job.name}}" class="btn btn-info btn-xs" type="button" (click)="edit(item.key, job.name)"><i class="fa fa-pencil"></i> Edit</button>
                 <button *ngIf="job.type == 'DATABASE'" title="Delete Job {{job.name}}" class="btn btn-danger btn-xs" type="button" (click)="remove(item.key, job.name)"><i class="fa fa-times"></i> Delete</button>
-                <button *ngIf="job.state == 'paused'" title="Resume Job {{job.name}}" class="btn btn-warning btn-xs" type="button" (click)="resume(item.key, job.name)"><i class="fa fa-play"></i> Resume</button>
-                <button *ngIf="job.state != 'paused'" title="Pause Job {{job.name}}" class="btn btn-gray btn-xs" type="button" (click)="pause(item.key, job.name)"><i class="fa fa-pause"></i> Pause</button>
+                <button *ngIf="job.state == 'PAUSED'" title="Resume Job {{job.name}}" class="btn btn-warning btn-xs" type="button" (click)="resume(item.key, job.name)"><i class="fa fa-play"></i> Resume</button>
+                <button *ngIf="job.state != 'PAUSED'" title="Pause Job {{job.name}}" class="btn btn-gray btn-xs" type="button" (click)="pause(item.key, job.name)"><i class="fa fa-pause"></i> Pause</button>
                 <button title="Trigger Job {{job.name}}" class="btn btn-info btn-xs" type="button" (click)="trigger(item.key, job.name)"><i class="fa fa-arrow-circle-o-right"></i> Trigger</button>
               </div>
               <h4>Job: {{job.name}} <small *ngIf="job.description != '-'">{{job.description}}</small></h4>
