@@ -10,9 +10,9 @@ export class SweetAlertService {
     //			confirmButtonColor: "#449d44"
   };
 
-  constructor(private Debug: DebugService) {}
+  constructor(private Debug: DebugService) { }
 
-  defaults(title: string | SweetAlertOptions, text?: string | (() => void)) {
+  defaults(title: string | SweetAlertOptions, text?: string | ((imSure: boolean) => void)) {
     // var args = arguments || [];
     var options = angular.copy(this.defaultSettings);
 
@@ -40,7 +40,7 @@ export class SweetAlertService {
     return Swal.fire(options)
   }
 
-  Confirm(title: string | SweetAlertOptions, text?: string | (() => void)) { //(JsonObject, Callback)-> returns boolean
+  Confirm(title: string | SweetAlertOptions, text?: string | ((imSure: boolean) => void)) { //(JsonObject, Callback)-> returns boolean
     var options: SweetAlertSettings = {
       title: "Are you sure?",
       showCancelButton: true,
@@ -60,7 +60,7 @@ export class SweetAlertService {
   }
 
   Warning(title: string | SweetAlertOptions, text?: string | (() => void)) {
-    var options: SweetAlertSettings  = {};
+    var options: SweetAlertSettings = {};
     angular.merge(options, { type: "warning" }, this.defaults(title, text));
     if (!options.callback)
       return Swal.fire(options);

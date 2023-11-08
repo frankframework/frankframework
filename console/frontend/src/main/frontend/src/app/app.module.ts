@@ -85,8 +85,10 @@ import { DataTablesModule } from 'angular-datatables';
 import { SecurityItemsComponent } from './views/security-items/security-items.component';
 import { WebservicesComponent } from './views/webservices/webservices.component';
 import { StorageListDtComponent } from './views/storage/storage-list/storage-list-dt/storage-list-dt.component';
+import { SchedulerComponent } from './views/scheduler/scheduler.component';
+import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
+import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
-
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -125,11 +127,13 @@ appModule
   .directive('securityItems', downgradeComponent({ component: SecurityItemsComponent }) as angular.IDirectiveFactory)
   .directive('status', downgradeComponent({ component: StatusComponent }) as angular.IDirectiveFactory)
   .directive('adapterstatistics', downgradeComponent({ component: AdapterstatisticsComponent }) as angular.IDirectiveFactory)
+  .directive('scheduler', downgradeComponent({ component: SchedulerComponent }) as angular.IDirectiveFactory)
+  .directive('schedulerAdd', downgradeComponent({ component: SchedulerAddComponent }) as angular.IDirectiveFactory)
+  .directive('schedulerEdit', downgradeComponent({ component: SchedulerEditComponent }) as angular.IDirectiveFactory)
   .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
   .directive('storageList', downgradeComponent({ component: StorageListComponent }) as angular.IDirectiveFactory)
   .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory)
   .directive('webservices', downgradeComponent({ component: WebservicesComponent }) as angular.IDirectiveFactory);
-
 
 @NgModule({
   declarations: [
@@ -156,6 +160,9 @@ appModule
     PagesNavigationComponent,
     PagesTopinfobarComponent,
     PagesTopnavbarComponent,
+    SchedulerComponent,
+    SchedulerEditComponent,
+    SchedulerAddComponent,
     ScrollToTopComponent,
     StatusComponent,
     StorageComponent,

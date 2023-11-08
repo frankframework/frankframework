@@ -1,4 +1,4 @@
-import { Directive, ElementRef, Inject, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Directive, ElementRef, Inject, Input, LOCALE_ID, OnChanges, SimpleChanges } from '@angular/core';
 import { APPCONSTANTS } from '../app.module';
 import { AppConstants } from 'src/angularjs/app/app.module';
 import { AppService } from 'src/angularjs/app/app.service';
@@ -14,6 +14,7 @@ export class ToDateDirective implements OnChanges {
     private element: ElementRef,
     private appService: AppService,
     @Inject(APPCONSTANTS) private appConstants: AppConstants,
+    @Inject(LOCALE_ID) private locale: string
   ) { }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -21,7 +22,6 @@ export class ToDateDirective implements OnChanges {
       this.time = new Date(this.time).getTime();
 
     const toDate = new Date((this.time as number) - this.appConstants['timeOffset']);
-    this.element.nativeElement.textContent = formatDate(toDate, this.appConstants["console.dateFormat"], this.appService.getUserLocale());
+    this.element.nativeElement.textContent = formatDate(toDate, this.appConstants["console.dateFormat"], this.locale);
   }
-
 }
