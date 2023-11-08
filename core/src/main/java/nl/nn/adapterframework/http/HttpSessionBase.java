@@ -18,11 +18,18 @@ package nl.nn.adapterframework.http;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
@@ -193,7 +200,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	private @Getter boolean followRedirects=true;
 	private @Getter boolean ignoreRedirects=false;
 
-	private String protocol = null;
+	private String protocol;
 	private String supportedCipherSuites = null;
 	private SSLConnectionSocketFactory sslSocketFactory;
 
@@ -234,6 +241,8 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		if (getMaxConnections() <= 0) {
 			throw new ConfigurationException("maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}
+
+		validateProtocolsAndCiphers();
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
@@ -282,6 +291,34 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		sslSocketFactory = getSSLConnectionSocketFactory(); //Configure it here, so we can handle exceptions
 
 		configureRedirectStrategy();
+	}
+
+	private void validateProtocolsAndCiphers() throws ConfigurationException {
+		SSLParameters sslParams = null;
+		try {
+			sslParams = SSLContext.getDefault().getSupportedSSLParameters();
+		} catch (NoSuchAlgorithmException e) {
+			log.warn("no default SSLContext available", e);
+		}
+
+		if(StringUtils.isNotEmpty(protocol)) {
+			try {
+				SSLContext.getInstance(protocol);
+			} catch (NoSuchAlgorithmException e) {
+				String errorMessage = "unknown protocol ["+protocol+"]";
+				if(sslParams != null) {
+					errorMessage += ", must be one of ["+Stream.of(sslParams.getProtocols()).collect(Collectors.joining(", "))+"]";
+				}
+				throw new ConfigurationException(errorMessage, e);
+			}
+		}
+
+		if(sslParams != null && StringUtils.isNotEmpty(supportedCipherSuites)) {
+			List<String> allowedCipherSuites = Arrays.asList(sslParams.getCipherSuites());
+			if(Collections.indexOfSubList(allowedCipherSuites, StringUtil.split(supportedCipherSuites)) == -1) {
+				throw new ConfigurationException("Unsupported CipherSuite(s), must be one (or more) of "+allowedCipherSuites);
+			}
+		}
 	}
 
 	/** The redirect strategy used to only redirect GET, DELETE and HEAD. */
@@ -742,8 +779,9 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	/**
-	 * Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated.
-	 * @ff.default TLS
+	 * Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated.
+	 * @see <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html">Supported Protocols</a>.
+	 * @ff.default TLSv1.2
 	 */
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;

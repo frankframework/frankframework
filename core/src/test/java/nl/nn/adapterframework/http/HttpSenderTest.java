@@ -18,15 +18,15 @@ package nl.nn.adapterframework.http;
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -100,6 +100,48 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		String result = sender.sendMessageOrThrow(Message.asMessage("dummy"), session).asString();
 		assertEqualsIgnoreCRLF(getFile("testWithRandomPort.txt"), result.trim());
+	}
+
+	@Test
+	public void testKnownProtocol() throws Exception {
+		sender = getSender();
+		sender.setProtocol("TLSv1.2");
+		sender.configure();
+		assertTrue(true);
+	}
+
+	@Test
+	public void testUnknownProtocol() throws Exception {
+		sender = getSender();
+		sender.setProtocol("pietje-puk");
+		ConfigurationException ex = assertThrows(ConfigurationException.class, sender::configure);
+		assertTrue(ex.getMessage().contains("unknown protocol [pietje-puk], must be one of ["));
+		assertTrue(ex.getMessage().contains("TLSv1.2"));
+	}
+
+	@Test
+	public void testSupportedCipherSuite() throws Exception {
+		sender = getSender();
+		sender.setSupportedCipherSuites("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384");
+		sender.configure();
+		assertTrue(true);
+	}
+
+	@Test
+	public void testUnsupportedCipherSuite() throws Exception { //Also validates if the protocol may be empty (JDK default)
+		sender = getSender();
+		sender.setSupportedCipherSuites("TLS_Tralala");
+		ConfigurationException ex = assertThrows(ConfigurationException.class, sender::configure);
+		assertTrue(ex.getMessage().contains("Unsupported CipherSuite(s), must be one (or more) of ["));
+		assertTrue(ex.getMessage().contains("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384"));
+	}
+
+	@Test
+	public void testEmptyCipherSuite() throws Exception {
+		sender = getSender();
+		sender.setSupportedCipherSuites("");
+		sender.configure();
+		assertTrue(true);
 	}
 
 	@Test
@@ -526,7 +568,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	public void binaryHttpPostJSON() throws Throwable {
 		sender = getSender();
 		Message input = new Message(new ByteArrayInputStream("{\"key1\": \"value2\"}".getBytes())); //Let's pretend this is a big JSON stream!
-		assertTrue("input message has to be of type binary", input.isBinary());
+		assertTrue(input.isBinary(), "input message has to be of type binary");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
@@ -546,7 +588,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender = getSender();
 		URL url = TestFileUtils.getTestFileURL("/Documents/doc001.pdf");
 		Message input = new UrlMessage(url);
-		assertTrue("input message has to be a binary file", input.isBinary());
+		assertTrue(input.isBinary(), "input message has to be of type binary");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
@@ -582,7 +624,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	public void binaryHttpPutJSON() throws Throwable {
 		sender = getSender();
 		Message input = new Message(new ByteArrayInputStream("{\"key1\": \"value2\"}".getBytes())); //Let's pretend this is a big JSON stream!
-		assertTrue("input message has to be of type binary", input.isBinary());
+		assertTrue(input.isBinary(), "input message has to be of type binary");
 
 		PipeLineSession pls = new PipeLineSession(session);
 
@@ -1020,7 +1062,6 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		assertEqualsIgnoreCRLF(getFile("specialCharactersDoubleEscaped.txt"), result.trim());
 	}
 
-	@Test(expected = SenderException.class)
 	public void unsupportedScheme() throws Throwable {
 		sender = getSender();
 		Message input = new Message("hallo");
@@ -1034,10 +1075,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 		sender.open();
 
-		sender.sendMessageOrThrow(input, pls).asString();
-
-		// We expect sendMessage to throw expection
-		assertTrue(false);
+		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(input, pls));
 	}
 
 	@Test
