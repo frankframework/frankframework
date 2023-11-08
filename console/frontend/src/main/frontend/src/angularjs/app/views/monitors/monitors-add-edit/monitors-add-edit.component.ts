@@ -143,3 +143,8 @@ class MonitorsAddEditController {
     }
   };
 };
+
+appModule.component('monitorsAddEdit', {
+	controller: ['$scope', 'Api', '$state', MonitorsAddEditController],
+	templateUrl: 'angularjs/app/views/monitors/monitors-add-edit/monitors-add-edit.component.html',
+});

@@ -58,13 +58,13 @@
               <div class="form-group">
                 <label class="col-sm-3 control-label">Name</label>
                 <div class="col-sm-9">
-                  <input class="form-control m-b" name="name" type="text" [ngModel]="monitor.displayName" />
+                  <input class="form-control m-b" name="name" type="text" [(ngModel)]="monitor.displayName" />
                 </div>
               </div>
               <div class="form-group">
                 <label class="col-sm-3 control-label">Type</label>
                 <div class="col-sm-9">
-                  <select class="form-control m-b" name="type" [ngModel]="monitor.type">
+                  <select class="form-control m-b" name="type" [(ngModel)]="monitor.type">
                     <option *ngFor="let type of eventTypes" [ngValue]="type">{{type}}</option>
                   </select>
                 </div>
@@ -72,7 +72,7 @@
               <div class="form-group">
                 <label class="col-sm-3 control-label">Destinations</label>
                 <div class="col-sm-2" *ngFor="let destination of destinations; index as index">
-                  <span class="form-control m-b" style="border: none;"><input icheck type="checkbox" [ngModel]="monitor.activeDestinations[index]" /> {{destination}}</span>
+                  <span class="form-control m-b" style="border: none;"><input icheck type="checkbox" name="destination" [(ngModel)]="monitor.activeDestinations[index]" /> {{destination}}</span>
                 </div>
               </div>
             </form>
@@ -106,14 +106,14 @@
                     <td *ngIf="trigger.type == 'CLEARING'"><i class="fa fa-eraser m-r-xs"></i> Clearing</td>
                     <td>
                       <ul class="unstyled no-margins">
-                        <li *ngFor="let event of trigger.events | keyvalue">{{event}}</li>
+                        <li *ngFor="let event of trigger.events">{{event}}</li>
                       </ul>
                     </td>
                     <td *ngIf="trigger.filter != 'none'">
                       <ul class="unstyled no-margins">
-                        <ng-template ngFor let-adapter let-sources [ngForOf]="trigger.sources | keyvalue">
-                          <li *ngIf="sources">{{adapter}}<ul>
-                              <li *ngFor="let source of sources | keyvalue">{{source}}</li>
+                        <ng-template ngFor let-sources [ngForOf]="trigger.sources | keyvalue">
+                          <li *ngIf="sources">{{sources.key}}<ul>
+                              <li *ngFor="let source of sources.value">{{source}}</li>
                             </ul>
                           </li>
                         </ng-template>
@@ -124,12 +124,12 @@
                     <td>{{trigger.threshold}}</td>
                     <td>{{trigger.period}}</td>
                     <td *ngIf="monitor.edit" class="pull-right">
-                      <!-- TODO: <button title="Edit trigger {{trigger.name}}" class="btn btn-info btn-xs" type="button" ui-sref="pages.monitors_editTrigger({monitor:monitor.name, trigger:trigger.id, configuration:$ctrl.selectedConfiguration})">Edit</button> -->
+                      <button title="Edit trigger {{trigger.name}}" class="btn btn-info btn-xs" type="button" uiSref="pages.monitors_editTrigger" [uiParams]="{monitor:monitor.name, trigger:trigger.id, configuration:selectedConfiguration}">Edit</button>
                       <button title="Delete trigger {{trigger.name}}" class="btn btn-danger btn-xs" type="button" (click)="deleteTrigger(monitor, trigger)">Delete</button>
                     </td>
                   </tr>
                   <tr *ngIf="monitor.edit">
-                    <!-- TODO: <td colspan="7" class="text-center"><button class="btn btn-primary btn-outline btn-xs" ui-sref="pages.monitors_addTrigger({monitor:monitor.name, configuration:$ctrl.selectedConfiguration})"><i class="fa fa-plus"></i> <i>Add Trigger</i></button></td> -->
+                    <td colspan="7" class="text-center"><button class="btn btn-primary btn-outline btn-xs" uiSref="pages.monitors_addTrigger" [uiParams]="{monitor:monitor.name, configuration:selectedConfiguration}"><i class="fa fa-plus"></i> <i>Add Trigger</i></button></td>
                   </tr>
                 </tbody>
               </table>

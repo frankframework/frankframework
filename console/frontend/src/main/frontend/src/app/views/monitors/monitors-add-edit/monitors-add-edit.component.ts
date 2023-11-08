@@ -3,11 +3,16 @@ import { ApiService } from "src/angularjs/app/services/api.service";
 import { Adapter, AppService } from "src/app/app.service";
 import { StateParams } from '@uirouter/angularjs';
 import { StateService } from "@uirouter/angularjs";
-import { Event, Trigger } from 'src/angularjs/app/app.service';
+import { Trigger } from '../monitors.component';
+import { state } from '@angular/animations';
 
-interface RetVal {
+interface EventSource {
   adapter: string,
   source: string
+}
+
+interface Event {
+  sources: Record<string, string[]>;
 }
 
 @Component({
@@ -30,26 +35,28 @@ export class MonitorsAddEditComponent implements OnInit {
     sources: {},
     threshold: 0,
     id: 0,
-    type: "",
-    events: {},
+    type: "ALARM",
+    events: [],
     adapters: []
   }
-  eventSources: RetVal[] = [];
+  eventSources: Record<string, EventSource[]> = {};
   url: string = "";
   disabled: boolean = false;
+  pageTitle = "";
 
   constructor(
     private appService: AppService,
     private apiService: ApiService,
-    private stateService: StateService,
+    private $state: StateService,
     private stateParams: StateParams,
   ) { };
 
   ngOnInit(): void {
     this.appService.loading$.subscribe(_ => this.loading = false);
+    this.pageTitle = this.$state.current.data.pageTitle;
 
     if (this.stateParams['configuration'] == "" || this.stateParams['monitor'] == "") {
-      this.stateService.go('pages.monitors');
+      this.$state.go('pages.monitors');
     } else {
       this.selectedConfiguration = this.stateParams['configuration'];
       this.monitor = this.stateParams['monitor'];
@@ -57,15 +64,18 @@ export class MonitorsAddEditComponent implements OnInit {
       this.url = "configurations/" + this.selectedConfiguration + "/monitors/" + this.monitor + "/triggers/" + this.triggerId;
 
       this.apiService.Get(this.url, (data) => {
-        Object.assign(this, data);
+        // Object.assign(this, data);
+        this.events = data.events;
+        this.severities = data.severities;
+        this.trigger = data.trigger;
         this.calculateEventSources();
 
         if (data.trigger && data.trigger.sources) {
-          var sources = data.trigger.sources;
+          let sources = data.trigger.sources;
           this.trigger.sources = {};
           this.trigger.adapters = [];
 
-          for (const adapter of sources) {
+          for (const adapter in sources) {
             if (data.trigger.filter == "SOURCE") {
               for (const i in sources[adapter]) {
                 this.trigger.sources[adapter] = [adapter + "$$" + sources[adapter][i]];
@@ -76,19 +86,19 @@ export class MonitorsAddEditComponent implements OnInit {
           }
         }
       }, () => {
-        this.stateService.go('pages.monitors', this.stateParams);
+        this.$state.go('pages.monitors', this.stateParams);
       });
     }
   };
 
-  getAdaptersForEvents(events: Record<string, Event>) {
+  getAdaptersForEvents(events: string[]) {
     if (!events) return [];
-    var adapters: string[] = [];
+    let adapters: string[] = [];
 
     for (const item in this.events) {
-      if (events[item]) {
-        let sourceList = events[item].sources;
-        adapters = adapters.concat(sourceList);
+      if (events.indexOf(item) > -1) {
+        let sourceList = this.events[item].sources;
+        adapters = adapters.concat(Object.keys(sourceList));
       }
     };
 
@@ -96,26 +106,26 @@ export class MonitorsAddEditComponent implements OnInit {
   };
 
   calculateEventSources() {
-    // for (const eventCode in this.events) {
-    //   var retVal: RetVal[] = [];
-    //   var eventSources = this.events[eventCode].sources;
+    for (const eventCode in this.events) {
+      let retVal: EventSource[] = [];
+      let eventSources = this.events[eventCode].sources;
 
-    //   for (const adapter in eventSources) {
-    //     for (const i of eventSources[adapter]) {
-    //       retVal.push({ adapter: adapter, source: eventSources[adapter] });
-    //     }
-    //   }
+      for (const adapter in eventSources) {
+        for (const i in eventSources[adapter]) {
+          retVal.push({ adapter: adapter, source: eventSources[adapter][i] });
+        }
+      }
 
-    //   this.eventSources[eventCode] = retVal;
-    // };
+      this.eventSources[eventCode] = retVal;
+    };
   };
 
-  getSourceForEvents(events: Record<string, Event>) {
-    var retval: RetVal[] = [];
+  getSourceForEvents(events: string[]) {
+    let retval: EventSource[] = [];
 
-    // for (const eventCode in events) {
-    //   retval = retval.concat(this.eventSources[eventCode]);
-    // };
+    for (const eventCode of events) {
+      retval = retval.concat(this.eventSources[eventCode]);
+    };
 
     return retval;
   };
@@ -125,13 +135,13 @@ export class MonitorsAddEditComponent implements OnInit {
       delete trigger.sources;
     } else if (trigger.filter == "SOURCE") {
       delete trigger.adapters;
-      var sources = trigger.sources;
+      let sources = trigger.sources;
       trigger.sources = {};
 
       for (const item in sources) {
-        var s = item.split("$$");
-        var adapter = s[0];
-        var source = s[1];
+        let s = item.split("$$");
+        let adapter = s[0];
+        let source = s[1];
         if (!trigger.sources[item]) trigger.sources[item] = [];
         trigger.sources[item] = [source];
       };
@@ -139,11 +149,11 @@ export class MonitorsAddEditComponent implements OnInit {
 
     if (this.triggerId && this.triggerId > -1) {
       this.apiService.Put(this.url, trigger, (returnData) => {
-        this.stateService.go('pages.monitors', this.stateParams);
+        this.$state.go('pages.monitors', this.stateParams);
       });
     } else {
       this.apiService.Post(this.url, JSON.stringify(trigger), (returnData) => {
-        this.stateService.go('pages.monitors', this.stateParams);
+        this.$state.go('pages.monitors', this.stateParams);
       });
     }
   };

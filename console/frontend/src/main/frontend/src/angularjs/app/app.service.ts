@@ -111,23 +111,6 @@ export type MessageSummary = {
   error: number
 }
 
-export type Trigger = {
-  name: string,
-  severity: string,
-  filter: string,
-  period: number,
-  sources?: Record<string, string[]>,
-  threshold: number,
-  id: number,
-  type: string,
-  events: Record<string, Event>,
-  adapters?: string[]
-}
-
-export type Event = {
-  sources: string[]
-}
-
 export class AppService {
   constructor(
     private $state: StateService
@@ -219,7 +202,6 @@ export class AppService {
 
   configurations: Configuration[] = [];
   updateConfigurations(configurations: Configuration[]) {
-    console.log("Here 1", configurations)
     const updatedConfigurations: Configuration[] = [];
     for (var i in configurations) {
       var config = configurations[i];
@@ -231,8 +213,6 @@ export class AppService {
 
     this.configurations = updatedConfigurations;
     this.configurationsSubject.next(updatedConfigurations);
-
-    console.log("Here 2", configurations)
   }
 
   messageLog: Record<string, MessageLog> = {};
