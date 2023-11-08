@@ -29,6 +29,8 @@
 
 	<bean id="txManager" class="nl.nn.adapterframework.testutil.mock.TransactionManagerMock" />
 
+	<bean id="servletManager" class="nl.nn.adapterframework.testutil.mock.ServletManagerMock" />
+
 	<bean id="MessageEventListener" class="nl.nn.adapterframework.lifecycle.MessageEventListener" scope="singleton" />
 
 	<!-- We're not importing the unmanagedDeployment because we don't want to use JMS/JDBC endpoints -->
@@ -38,7 +40,7 @@
 	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings"/>
 
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.testutil.mock.DataSourceFactoryMock" />
-	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.testutil.mock.ConnectionFactoryFactoryMock" />
+	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.testutil.mock.MockRunnerConnectionFactoryFactory" />
 
 	<bean name="isolatedServiceCaller" class="nl.nn.adapterframework.senders.IsolatedServiceCaller" autowire="byName" scope="singleton" />
 

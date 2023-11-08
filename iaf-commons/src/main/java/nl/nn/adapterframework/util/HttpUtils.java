@@ -23,16 +23,16 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Some utilities for working with HTTP.
  * 
  * @author Peter Leeuwenburgh
  */
+@Log4j2
 public class HttpUtils {
-	private static Logger LOG = LogManager.getLogger(HttpUtils.class);
 
 	public static String getCommandIssuedBy(HttpServletRequest request) {
 		String commandIssuedBy = " remoteHost [" + request.getRemoteHost() + "]";
@@ -85,7 +85,7 @@ public class HttpUtils {
 		try {
 			return URLDecoder.decode(input, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		} catch (UnsupportedEncodingException e) {
-			LOG.warn("unable to decode input using charset ["+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING+"]", e);
+			log.warn("unable to decode input using charset [{}]", StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, e);
 			throw new IllegalArgumentException(e);
 		}
 	}

@@ -1,10 +1,11 @@
 Date: DATE
 From: myself@address.org
+Reply-To: to@address.com
 To: dummy <me@address.org>, two <me2@address.org>
 Message-ID: MESSAGE-ID
 Subject: My Subject
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
+Content-Type: multipart/mixed;
 	boundary="BOUNDARY"
 
 --BOUNDARY

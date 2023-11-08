@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.web;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.InitializingBean;
@@ -25,25 +26,25 @@ import org.springframework.context.ApplicationContextAware;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import nl.nn.adapterframework.lifecycle.DynamicRegistration.ServletWithParameters;
+import nl.nn.adapterframework.lifecycle.DynamicRegistration.Servlet;
 import nl.nn.adapterframework.lifecycle.servlets.SecuritySettings;
 import nl.nn.adapterframework.lifecycle.servlets.ServletConfiguration;
 import nl.nn.adapterframework.util.SpringUtils;
 
 @Log4j2
-public class ServletRegistration extends ServletRegistrationBean<ServletWithParameters> implements ApplicationContextAware, InitializingBean {
+public class ServletRegistration extends ServletRegistrationBean<Servlet> implements ApplicationContextAware, InitializingBean {
 	private @Setter ApplicationContext applicationContext;
 	private @Getter ServletConfiguration servletConfiguration;
 	private final Class<?> servletClass;
 
-	public <T extends ServletWithParameters> ServletRegistration(Class<T> servletClass) {
+	public <T extends Servlet> ServletRegistration(Class<T> servletClass) {
 		this.servletClass = servletClass;
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
-		ServletWithParameters servlet = (ServletWithParameters) SpringUtils.createBean(applicationContext, servletClass);
+		Servlet servlet = (Servlet) SpringUtils.createBean(applicationContext, servletClass);
 		servletConfiguration = SpringUtils.createBean(applicationContext, ServletConfiguration.class);
 		log.info("registering servlet [{}]", servlet::getName);
 		servletConfiguration.fromServlet(servlet);
@@ -55,9 +56,16 @@ public class ServletRegistration extends ServletRegistrationBean<ServletWithPara
 			addInitParameter(key, val);
 		}
 		setName(servletConfiguration.getName());
-		setUrlMappings(servletConfiguration.getUrlMapping());
+		addUrlMappings(servletConfiguration.getUrlMapping());
 		super.setServlet(servlet);
 
 		log.info("created servlet {} endpoint {}", this::getServletName, this::getUrlMappings);
+	}
+
+	private void addUrlMappings(List<String> urlMapping) {
+		String[] mapping = urlMapping.stream()
+			.filter(e -> !e.startsWith("!"))
+			.toArray(String[]::new);
+		addUrlMappings(mapping);
 	}
 }

@@ -31,6 +31,10 @@ import javax.ws.rs.core.Response;
 
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
 
+import nl.nn.adapterframework.management.bus.BusAction;
+import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.util.RequestUtils;
+
 /**
  * This class exists to provide backwards compatibility for endpoints from before #4069.
  * 
@@ -38,7 +42,7 @@ import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
  * @author	Niels Meijer
  */
 @Path("/")
-public final class CompatibilityShowScheduler extends ShowScheduler {
+public final class CompatibilityShowScheduler extends FrankApiBase {
 
 	@GET
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -47,7 +51,10 @@ public final class CompatibilityShowScheduler extends ShowScheduler {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response getScheduleOld(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName) {
-		return getSchedule(jobName, groupName);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.FIND);
+		builder.addHeader("job", jobName);
+		builder.addHeader("group", groupName);
+		return callSyncGateway(builder);
 	}
 
 	@PUT
@@ -58,7 +65,11 @@ public final class CompatibilityShowScheduler extends ShowScheduler {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response triggerOld(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName, Map<String, Object> json) {
-		return trigger(jobName, groupName, json);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.MANAGE);
+		builder.addHeader("operation", RequestUtils.getValue(json, "action"));
+		builder.addHeader("job", jobName);
+		builder.addHeader("group", groupName);
+		return callSyncGateway(builder);
 	}
 
 
@@ -71,7 +82,7 @@ public final class CompatibilityShowScheduler extends ShowScheduler {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response updateScheduleOld(@PathParam("groupName") String groupName, @PathParam("jobName") String jobName, MultipartBody input) {
-		return updateSchedule(groupName, jobName, input);
+		return ShowScheduler.createSchedule(this, groupName, jobName, input, true);
 	}
 
 	@POST
@@ -81,7 +92,8 @@ public final class CompatibilityShowScheduler extends ShowScheduler {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response createScheduleInJobGroupOld(@PathParam("groupName") String groupName, MultipartBody input) {
-		return createScheduleInJobGroup(groupName, input);
+		String jobName = RequestUtils.resolveStringFromMap(input, "name");
+		return ShowScheduler.createSchedule(this, groupName, jobName, input, false);
 	}
 
 	@DELETE
@@ -91,6 +103,9 @@ public final class CompatibilityShowScheduler extends ShowScheduler {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Deprecated
 	public Response deleteSchedulesOld(@PathParam("jobName") String jobName, @PathParam("groupName") String groupName) {
-		return deleteSchedules(jobName, groupName);
+		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.SCHEDULER, BusAction.DELETE);
+		builder.addHeader("job", jobName);
+		builder.addHeader("group", groupName);
+		return callSyncGateway(builder);
 	}
 }

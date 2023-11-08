@@ -26,7 +26,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.6.1</version>
 				</plugin>
 				<plugin>
 					<artifactId>maven-resources-plugin</artifactId>
@@ -108,13 +108,6 @@
 			</modules>
 		</profile>
 		<profile>
-			<id>WebSphere</id>
-			<modules>
-				<module>../ear</module>
-				<module>WebSphere</module>
-			</modules>
-		</profile>
-		<profile>
 			<id>WildFly</id>
 			<modules>
 				<module>WildFly</module>
@@ -130,7 +123,6 @@
 			<id>all-as</id>
 			<modules>
 				<module>Tomcat</module>
-				<module>WebSphere</module>
 				<module>WildFly</module>
 				<module>JBoss</module>
 			</modules>

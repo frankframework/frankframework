@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
 import com.aspose.slides.InvalidPasswordException;
@@ -30,30 +28,31 @@ import com.aspose.slides.LoadOptions;
 import com.aspose.slides.Presentation;
 import com.aspose.slides.SaveFormat;
 
+import lombok.extern.log4j.Log4j2;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Converts the files which are required and supported by the aspose slides
  * library.
  *
  */
+@Log4j2
 public class SlidesConvertor extends AbstractConvertor {
 
-	private static final Logger LOGGER = LogUtil.getLogger(SlidesConvertor.class);
-	private static final Map<MediaType, LoadOptions> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
+	private static final Map<MediaType, Class<? extends LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
 	static {
-		Map<MediaType, LoadOptions> map = new HashMap<>();
+		Map<MediaType, Class<? extends LoadOptions>> map = new HashMap<>();
 
-		map.put(new MediaType("application", "vnd.ms-powerpoint"), new LoadOptions());
-		map.put(new MediaType("application", "vnd.openxmlformats-officedocument.presentationml.presentation"), new LoadOptions());
+		map.put(new MediaType("application", "vnd.ms-powerpoint"), LoadOptions.class);
+		map.put(new MediaType("application", "vnd.openxmlformats-officedocument.presentationml.presentation"), LoadOptions.class);
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
 	protected SlidesConvertor(CisConfiguration configuration) {
-		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
 	}
 
 	@Override
@@ -62,14 +61,22 @@ public class SlidesConvertor extends AbstractConvertor {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			Presentation presentation = new Presentation(inputStream, MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
+			LoadOptions loadOptions = getLoadOptions(mediaType);
+			if(!configuration.isLoadExternalResources()){
+				loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
+			}
+			Presentation presentation = new Presentation(inputStream, loadOptions);
 			long startTime = new Date().getTime();
 			presentation.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
 			long endTime = new Date().getTime();
-			LOGGER.info("Conversion(save operation in convert method) takes  :::  " + (endTime - startTime) + " ms");
+			log.debug("conversion (save operation in convert method) took [{}ms]", (endTime - startTime));
 			presentation.dispose();
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 		}
+	}
+
+	private static LoadOptions getLoadOptions(final MediaType mediaType) throws Exception {
+		return MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType).newInstance();
 	}
 
 	@Override

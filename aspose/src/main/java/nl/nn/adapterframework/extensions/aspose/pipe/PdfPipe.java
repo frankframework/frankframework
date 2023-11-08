@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableInt;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -39,6 +41,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionServi
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.CisConversionServiceImpl;
 import nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors.PdfAttachmentUtil;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.stream.FileMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.EnumUtils;
@@ -62,6 +65,8 @@ public class PdfPipe extends FixedForwardPipe {
 	private @Getter DocumentAction action = null;
 	private @Getter String mainDocumentSessionKey = "defaultMainDocumentSessionKey";
 	private @Getter String filenameToAttachSessionKey = "defaultFileNameToAttachSessionKey";
+	private @Getter String conversionResultDocumentSessionKey = "documents";
+	private @Getter String conversionResultFilesSessionKey = "pdfConversionResultFiles";
 	private @Getter String charset = null;
 	private AsposeFontManager fontManager;
 	private @Getter boolean unpackDefaultFonts = false;
@@ -69,7 +74,7 @@ public class PdfPipe extends FixedForwardPipe {
 
 	private CisConversionService cisConversionService;
 
-	protected enum DocumentAction {
+	public enum DocumentAction {
 		CONVERT,
 		COMBINE;
 	}
@@ -78,7 +83,7 @@ public class PdfPipe extends FixedForwardPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if(getAction() == null) {
-			throw new ConfigurationException("please specify an action for pdf pipe ["+getName()+"]. possible values: "+EnumUtils.getEnumList(DocumentAction.class));
+			throw new ConfigurationException("please specify an action for pdf pipe ["+getName()+"]. possible values: "+ EnumUtils.getEnumList(DocumentAction.class));
 		}
 		if(StringUtils.isNotEmpty(getPdfOutputLocation())) {
 			File outputLocation = new File(getPdfOutputLocation());
@@ -97,7 +102,7 @@ public class PdfPipe extends FixedForwardPipe {
 				} else {
 					setPdfOutputLocation(Files.createTempDirectory("Pdf").toString());
 				}
-				log.info("Temporary directory path : " + getPdfOutputLocation());
+				log.info("Temporary directory path : [{}]", getPdfOutputLocation());
 			} catch (IOException e) {
 				throw new ConfigurationException(e);
 			}
@@ -113,7 +118,7 @@ public class PdfPipe extends FixedForwardPipe {
 			try {
 				AsposeLicenseLoader.loadLicenses(licenseUrl);
 			} catch (Exception e) {
-				throw new ConfigurationException("an error occured while loading Aspose license(s)");
+				throw new ConfigurationException("an error occurred while loading Aspose license(s)");
 			}
 		}
 
@@ -121,7 +126,7 @@ public class PdfPipe extends FixedForwardPipe {
 		try {
 			fontManager.load(isUnpackDefaultFonts());
 		} catch (IOException e) {
-			throw new ConfigurationException("an error occured while loading fonts", e);
+			throw new ConfigurationException("an error occurred while loading fonts", e);
 		}
 
 		CisConfiguration configuration = new CisConfiguration(loadExternalResources, getPdfOutputLocation(), getCharset(), fontManager.getFontsPath());
@@ -150,16 +155,37 @@ public class PdfPipe extends FixedForwardPipe {
 				case CONVERT:
 					String filename = session.getString(FILENAME_SESSION_KEY);
 					CisConversionResult cisConversionResult = cisConversionService.convertToPdf(input, filename, isSaveSeparate() ? ConversionOption.SEPARATEPDF : ConversionOption.SINGLEPDF);
+
+					// Populate Session before creating main-xml as it will update session keys.
+					populateSession(cisConversionResult, session, new MutableInt(0));
+
 					XmlBuilder main = new XmlBuilder("main");
 					cisConversionResult.buildXmlFromResult(main, true);
+					Message message = new Message(main.toXML());
+					session.put(getConversionResultDocumentSessionKey(), message);
 
-					session.put("documents", main.toXML());
-					return new PipeRunResult(getSuccessForward(), main.toXML());
+					return new PipeRunResult(getSuccessForward(), message);
 				default:
 					throw new PipeRunException(this, "action attribute must be one of the followings: "+EnumUtils.getEnumList(DocumentAction.class));
 			}
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot convert to stream",e);
+		}
+	}
+
+	private void populateSession(CisConversionResult result, PipeLineSession session, MutableInt index) {
+		if (StringUtils.isNotEmpty(result.getResultFilePath())) {
+			// TODO: Use a PathMessage.asTemporaryMessage() here in future so that all these files
+			//       are automatically cleaned up on close of the PipeLineSession.
+			FileMessage document = new FileMessage(new File(result.getResultFilePath()));
+			String sessionKey = getConversionResultFilesSessionKey() + index.incrementAndGet();
+			result.setResultSessionKey(sessionKey);
+			session.put(sessionKey, document);
+		}
+
+		List<CisConversionResult> attachmentList = result.getAttachments();
+		for (CisConversionResult cisConversionResult : attachmentList) {
+			populateSession(cisConversionResult, session, index);
 		}
 	}
 
@@ -173,6 +199,46 @@ public class PdfPipe extends FixedForwardPipe {
 	 */
 	public void setMainDocumentSessionKey(String mainDocumentSessionKey) {
 		this.mainDocumentSessionKey = mainDocumentSessionKey;
+	}
+
+	/**
+	 * The session key used to store the main conversion result document. Only to be
+	 * used when action is set to 'convert'.
+	 *
+	 * ff.default documents
+	 *
+	 * @param conversionResultDocumentSessionKey Name of the session key.
+	 */
+	public void setConversionResultDocumentSessionKey(String conversionResultDocumentSessionKey) {
+		this.conversionResultDocumentSessionKey = conversionResultDocumentSessionKey;
+	}
+
+	/**
+	 * The session-key in which result files are stored when documents are converted to PDF.
+	 *
+	 * <p>
+	 * Conversion result files are stored as messages in the session, under keys numbered based
+	 * on the value set here. If {@link #isSaveSeparate()} is {@code false} then only the main
+	 * document is stored in the session, if it is {@code true} then each attachment is stored
+	 * separately.
+	 * </p>
+	 * <p>
+	 *     For example, if a file is converted that has 2 attachments and {@link #setSaveSeparate(boolean)}
+	 *     is set to {@code true} then there will be the following 3 session keys (assuming the default value
+	 *     is unchanged):
+	 *     <ol>
+	 *         <li>{@code pdfConversionResultFiles1}</li>
+	 *         <li>{@code pdfConversionResultFiles2}</li>
+	 *         <li>{@code pdfConversionResultFiles3}</li>
+	 *     </ol>
+	 *     Each session key will contain a {@link FileMessage} referencing the contents of that PDF.
+	 * </p>
+	 * @ff.default pdfConversionResultFiles
+	 *
+	 * @param conversionResultFilesSessionKey The name of the session key under which PDF documents are stored.
+	 */
+	public void setConversionResultFilesSessionKey(String conversionResultFilesSessionKey) {
+		this.conversionResultFilesSessionKey = conversionResultFilesSessionKey;
 	}
 
 	@Deprecated

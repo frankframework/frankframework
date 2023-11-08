@@ -15,20 +15,19 @@
 */
 package nl.nn.adapterframework.validation;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLErrorHandler;
 import org.apache.xerces.xni.parser.XMLParseException;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.IConfigurationAware;
-import nl.nn.adapterframework.util.LogUtil;
 
+@Log4j2
 class XercesValidationErrorHandler implements XMLErrorHandler {
-	protected Logger log = LogUtil.getLogger(this);
-	protected boolean allowConsoleWarnings = true;
-	private IConfigurationAware source;
+	private final boolean allowConsoleWarnings;
+	private final IConfigurationAware source;
 
 	public XercesValidationErrorHandler(IConfigurationAware source, boolean allowConsoleWarnings) {
 		this.source = source;

@@ -362,7 +362,7 @@ appModule.config(['$httpProvider', function ($httpProvider) {
 					breadcrumbs: 'Monitors'
 				},
 				params: {
-					configuration: { value: null, squash: true },
+					configuration: { value: "", squash: true },
 				},
 			})
 			.state('pages.monitors_editTrigger', {

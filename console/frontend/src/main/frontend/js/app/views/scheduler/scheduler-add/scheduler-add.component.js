@@ -17,14 +17,20 @@ const SchedulerAddController = function ($scope, Api, $rootScope, appService) {
         locker: false,
         lockkey: "",
     };
+	ctrl.unregister$on = [];
 
     ctrl.$onInit = function () {
         ctrl.configurations = appService.configurations;
-        $rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
+		ctrl.unregister$on.push($rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; }));
 
         ctrl.adapters = appService.adapters;
-        $rootScope.$on('adapters', function () { ctrl.adapters = appService.adapters; });
+		ctrl.unregister$on.push($rootScope.$on('adapters', function () { ctrl.adapters = appService.adapters; }));
     };
+
+	ctrl.$onDestroy = function(){
+		for (const unregister of ctrl.unregister$on)
+			unregister();
+	}
 
     ctrl.submit = function () {
         var fd = new FormData();

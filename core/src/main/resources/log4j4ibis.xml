@@ -15,7 +15,7 @@
 		</Appender>
 		<Appender name="file" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
 			<Filters>
-				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex}" />
+				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex:-}" />
 			</Filters>
 			<Layout type="IbisPatternLayout">
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid,adapter,pipe} %c{2} - %m%n%xEx{filters(${ctx:log.stacktrace.filters})}</Pattern>
@@ -27,7 +27,7 @@
 		</Appender>
 		<Appender name="XML" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log.%i">
 			<Filters>
-				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex}" />
+				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex:-}" />
 			</Filters>
 			<Layout type="IbisXmlLayout" />
 			<Policies>
@@ -116,7 +116,7 @@
 			<AppenderRef ref="msg-text"/>
 			<AppenderRef ref="msg-json"/>
 		</Logger>
-		<Logger name="SEC" additivity="false" level="INFO">
+		<Logger name="SEC" additivity="false" level="${ctx:security.log.level}">
 			<AppenderRef ref="security"/>
 		</Logger>
 		<Logger name="HEARTBEAT" additivity="false" level="INFO">

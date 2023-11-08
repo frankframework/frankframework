@@ -273,6 +273,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					log.debug("{} calling {} in same Thread", this::getLogPrefix, () -> serviceIndication);
 					result = new SenderResult(serviceClient.processRequest(message, subAdapterSession));
 				}
+
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
 					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
@@ -282,6 +283,10 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 				}
+
+				// The original message will be set by the InputOutputPipeLineProcessor, which add it to the autocloseables list.
+				// The input message should not be managed by this sub-PipelineSession but rather the original pipeline
+				subAdapterSession.unscheduleCloseOnSessionExit(message);
 				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
 

@@ -16,12 +16,13 @@
 package nl.nn.adapterframework.extensions.akamai;
 
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -36,6 +37,7 @@ import nl.nn.adapterframework.util.AppConstants;
 public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 
 	@Override
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		AppConstants.getInstance().setProperty("http.headers.messageid", false);
@@ -65,7 +67,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		NetStorageSender sender = getSender();
 		sender.setAction(Action.DU);
 		sender.configure();
-		assertNull("no content-type should be present", sender.getFullContentType());
+		assertNull(sender.getFullContentType(), "no content-type should be present");
 	}
 
 	@Test

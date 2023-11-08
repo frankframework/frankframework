@@ -15,7 +15,7 @@
 					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
 						jsFunctionName="f2"
-						engineName="Rhino">
+						engineName="J2V8">
 						<param name="x" type="integer" sessionKey="originalMessage"/>
 						<param name="y" type="integer" value="2"/>
 					</sender>

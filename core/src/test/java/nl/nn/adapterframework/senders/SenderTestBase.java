@@ -20,9 +20,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.ISender;
@@ -32,7 +34,6 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.UrlMessage;
-import nl.nn.adapterframework.util.FilenameUtils;
 
 public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBase {
 
@@ -88,5 +89,10 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 		URL url = PipeTestBase.class.getResource(relativeUrl);
 		assertNotNull(url, "unable to find resource ["+resource+"] in path ["+relativeUrl+"]");
 		return new UrlMessage(url);
+	}
+
+	@Test
+	public void testIfToStringWorks() {
+		assertNotNull(sender.toString()); //And no NPE
 	}
 }

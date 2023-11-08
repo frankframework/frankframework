@@ -225,12 +225,12 @@ public abstract class ClassUtils {
 
 	private static Object parseValueToSet(Method m, String value) throws IllegalArgumentException {
 		Class<?> setterArgumentClass = m.getParameters()[0].getType();
-		String fieldName = StringUtil.lcFirst(m.getName().substring(3));
 
 		//Try to parse as primitive
 		try {
 			return convertToType(setterArgumentClass, value);
 		} catch (IllegalArgumentException e) {
+			String fieldName = StringUtil.lcFirst(m.getName().substring(3));
 			throw new IllegalArgumentException("cannot set field ["+fieldName+"]: " + e.getMessage(), e);
 		}
 	}
@@ -398,16 +398,6 @@ public abstract class ClassUtils {
 		}
 		result.append("toString=["+o.toString()+"]\n");
 		return result.toString();
-	}
-
-	/**
-	 * clean up file path, to replace websphere specific classpath references with generic ones.
-	 */
-	public static String getCleanedFilePath(String path) {
-		if(path.contains("wsjar:")) {
-			return path.replace("wsjar:", "jar:");
-		}
-		return path;
 	}
 
 	public static List<Object> getClassInfoList(Class<?> clazz) throws IOException {

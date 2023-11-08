@@ -9,9 +9,13 @@ const ConfigurationsShowController = function ($scope, Api, $state, $location, $
 
 	ctrl.$onInit = function () {
 		ctrl.configurations = appService.configurations;
-		$rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
+		ctrl.unregister$on = $rootScope.$on('configurations', function () { ctrl.configurations = appService.configurations; });
 		ctrl.getConfiguration();
 	};
+
+	ctrl.$onDestroy = function(){
+		ctrl.unregister$on();
+	}
 
 	ctrl.update = function () {
 		ctrl.getConfiguration();

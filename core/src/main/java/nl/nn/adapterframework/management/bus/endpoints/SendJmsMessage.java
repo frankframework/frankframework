@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.management.bus.ActionSelector;
@@ -50,6 +51,7 @@ public class SendJmsMessage extends BusEndpointBase {
 		boolean lookupDestination = BusMessageUtils.getBooleanHeader(message, "lookupDestination", false);
 		boolean expectsReply = message.getHeaders().containsKey("replyChannel");
 		boolean persistent = message.getHeaders().containsKey("persistent");
+		JMSFacade.MessageClass messageClass = BusMessageUtils.getEnumHeader(message, "messageClass", JMSFacade.MessageClass.class, JMSFacade.MessageClass.AUTO);
 		String replyTo = BusMessageUtils.getHeader(message, "replyTo", null);
 		String messageProperty = BusMessageUtils.getHeader(message, "messageProperty", null);
 		DestinationType type = BusMessageUtils.getEnumHeader(message, "type", DestinationType.class);
@@ -57,7 +59,7 @@ public class SendJmsMessage extends BusEndpointBase {
 			throw new BusException("a DestinationType must be provided");
 		}
 
-		JmsSender qms = createJmsSender(connectionFactory, destination, persistent, type, replyTo, expectsReply, lookupDestination);
+		JmsSender qms = createJmsSender(connectionFactory, destination, persistent, type, replyTo, expectsReply, lookupDestination, messageClass);
 		if(StringUtils.isNotEmpty(messageProperty)) {
 			qms.addParameter(getMessagePropertyParameter(messageProperty));
 		}
@@ -77,7 +79,7 @@ public class SendJmsMessage extends BusEndpointBase {
 		return p;
 	}
 
-	private JmsSender createJmsSender(String connectionFactory, String destination, boolean persistent, DestinationType type, String replyTo, boolean synchronous, boolean lookupDestination) {
+	private JmsSender createJmsSender(String connectionFactory, String destination, boolean persistent, DestinationType type, String replyTo, boolean synchronous, boolean lookupDestination, JMSFacade.MessageClass messageClass) {
 		JmsSender qms = createBean(JmsSender.class);
 		qms.setName("SendJmsMessageAction");
 		if(type == DestinationType.QUEUE) {
@@ -93,6 +95,7 @@ public class SendJmsMessage extends BusEndpointBase {
 		}
 		qms.setSynchronous(synchronous);
 		qms.setLookupDestination(lookupDestination);
+		qms.setMessageClass(messageClass);
 		return qms;
 	}
 

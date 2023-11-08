@@ -18,9 +18,9 @@ package nl.nn.credentialprovider;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -70,9 +70,10 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 
 	@Override
 	public List<String> getConfiguredAliases() throws Exception{
-		List<String> aliases = new LinkedList<>();
+		List<String> aliases;
 		try(Stream<Path> stream = Files.list(Paths.get(root.toString()))) {
-			stream.forEach(p->aliases.add(p.getFileName().toString()));
+			aliases = stream.map(p->p.getFileName().toString())
+					.collect(Collectors.toList());
 		}
 		return aliases;
 	}

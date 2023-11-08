@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 import com.aspose.cells.FontConfigs;
 import com.aspose.slides.FontsLoader;
@@ -41,18 +41,16 @@ import com.aspose.words.FolderFontSource;
 import com.aspose.words.FontSettings;
 import com.aspose.words.FontSourceBase;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.FileUtils;
-import nl.nn.adapterframework.util.FilenameUtils;
-import nl.nn.adapterframework.util.LogUtil;
 
+@Log4j2
 public class AsposeFontManager {
 
 	private static final String FONTS_RESOURCE_NAME = "/fonts.zip"; //lots of commonly used fonts
 	private static final String FONTS_RESOURCE_DIR = "/fonts/";
 	private static final String TRUETYPE_FONT_EXT = ".ttf";
-
-	private Logger log = LogUtil.getLogger(this);
 
 	private File fontDirectory = null;
 	private final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -79,7 +77,7 @@ public class AsposeFontManager {
 			fontDirectory = new File(tmpdir, FONTS_RESOURCE_DIR);
 		}
 
-		// If this fonts (sub-)directory does not exist, try to create it 
+		// If this font (sub-)directory does not exist, try to create it
 		if(!fontDirectory.exists()) {
 			fontDirectory.mkdirs();
 		}
@@ -190,7 +188,7 @@ public class AsposeFontManager {
 	/**
 	 * Get the font. When retrieving the font fails it is logged and
 	 * <code>null</code> is returned.
-	 * 
+	 *
 	 * @param fontFile File location of the font to be loaded
 	 * @return the font or <code>null</code>.
 	 */

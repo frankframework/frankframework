@@ -44,8 +44,48 @@ public class FunctionalUtil {
 		return () -> value;
 	}
 
+	/**
+	 * Helper function to create a Log4J {@link org.apache.logging.log4j.util.Supplier} to supply a single constant argument value.
+	 * <p>
+	 *     This function is useful when you need to pass a variable as constant which is not effectively final, or to disambiguate method-overloads
+	 *     when an array of mixed arguments should be passed all as type {@link org.apache.logging.log4j.util.Supplier}
+	 *     to a logger method (in particular the methods where an exception is passed as last argument).
+	 *     For example:
+	 *     <code>
+	 *         String messageId = null;
+	 *         if (true) messageId = "msg id";
+	 *         log.error("{} Error with message id [{}]", supplier(this::getLogPrefix), logValue(messageId), e);
+	 *     </code>
+	 * </p>
+	 *
+	 * @param value Value to be supplied. NB: This should be a constant, otherwise its value is instantly
+	 *              computed instead of being delayed on-demand!
+	 * @return {@link org.apache.logging.log4j.util.Supplier} that will return the {@code value} parameter.
+	 * @param <T> Type of the value to be supplied.
+	 */
 	public static <T> org.apache.logging.log4j.util.Supplier<T> logValue(T value) {
 		return () -> value;
+	}
+
+	/**
+	 * Helper function to create a Log4J {@link org.apache.logging.log4j.util.Supplier} to be able to use a method
+	 * as supplier in a row of mixed arguments.
+	 * <p>
+	 *     This function is useful when you need to pass a variable as constant which is not effectively final, or to disambiguate method-overloads
+	 *     when an array of mixed arguments should be passed all as type {@link org.apache.logging.log4j.util.Supplier}
+	 *     to a logger method (in particular the methods where an exception is passed as last argument).
+	 *     For example:
+	 *     <code>
+	 *         log.error("Error with message id [{}]", logMethod(this::getLogPrefix), logValue(v), e);
+	 *     </code>
+	 * </p>
+	 *
+	 * @param method Single-argument Method to be invoked.
+	 * @return {@link org.apache.logging.log4j.util.Supplier} that will return the {@code method} parameter.
+	 * @param <T> Type of the value of the method argument.
+	 */
+	public static <T> org.apache.logging.log4j.util.Supplier<T> logMethod(Supplier<T> method) {
+		return method::get;
 	}
 
 	/**
@@ -59,7 +99,7 @@ public class FunctionalUtil {
 	 * <p>
 	 *     For example:
 	 *     <code>
-	 *         log.error("{} Error with message id [{}]", supplier(this::getLogPrefix), supply(messageId), e);
+	 *         log.error("{} Error with message id [{}]", supplier(this::getLogPrefix), e);
 	 *     </code>
 	 *     This can also be useful when for instance a no-arguments function should be passed to a JUnit arguments
 	 *     supplier for a parameterized unit test:

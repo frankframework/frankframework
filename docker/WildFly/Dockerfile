@@ -1,4 +1,4 @@
-ARG WILDFLY_VERSION=26.1.1.Final
+ARG WILDFLY_VERSION=26.1.3.Final-jdk11
 FROM quay.io/wildfly/wildfly:${WILDFLY_VERSION} AS wildfly-iaf-test-base
 
 USER root

@@ -108,7 +108,6 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 				.userAuthoritiesMapper(new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties())).and()
 			.loginProcessingUrl(oauthBaseUrl + "/oauth2/code/*");
 
-		http.authorizeHttpRequests().anyRequest().authenticated();
 		return http.build();
 	}
 
@@ -179,7 +178,7 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 	}
 
 	private String computeBaseUrl() {
-		String baseUrl = getEndpoints().stream().findFirst().orElse("");
+		String baseUrl = getPrivateEndpoints().stream().findFirst().orElse("");
 		if(baseUrl.endsWith("*")) { //Strip the '*' if the url ends with it
 			baseUrl = baseUrl.substring(0, baseUrl.length()-1);
 		}

@@ -36,10 +36,6 @@
 			<type>war</type>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-aws</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
@@ -48,23 +44,6 @@
 	<build>
 		<defaultGoal>package</defaultGoal>
 		<plugins>
-<!--
-			<plugin>
-				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-war-plugin</artifactId>
-				<version>0.2</version>
-				<extensions>true</extensions>
-				<configuration>
-					<enableSecurityConstraints>false</enableSecurityConstraints>
-					<webResources>
-						<resource>
-							<directory>src/main/configurations</directory>
-							<targetPath>WEB-INF/classes/configurations</targetPath>
-						</resource>
-					</webResources>
-				</configuration>
-			</plugin>
--->
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.3.1</version>
@@ -225,7 +204,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.6.0</version>
+				<version>${javadoc-plugin.version}</version>
 				<configuration>
 					<skip>true</skip>
 				</configuration>
