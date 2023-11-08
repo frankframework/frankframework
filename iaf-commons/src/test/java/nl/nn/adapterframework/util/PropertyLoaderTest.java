@@ -1,13 +1,14 @@
 package nl.nn.adapterframework.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isIn;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.StringReader;
 import java.util.List;
@@ -137,44 +138,40 @@ public class PropertyLoaderTest {
 
 	@Test
 	public void testYAML() {
-		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/YamlProperties2.yaml");
+		PropertyLoader properties = new PropertyLoader("ParserTestFiles/Types.yaml");
 
-		assertEquals("100", yamlConstants.get("Dit.Is.YamlTest1"));
-		assertEquals("LRU", yamlConstants.get("Dit.Is.YamlTest2"));
-		assertEquals("false", yamlConstants.get("Dit.Is.YamlTest3"));
+		assertAll(
+			() -> assertEquals("value", properties.get("single")),
+			() -> assertEquals("this is a nice value", properties.get("sentence")),
+			() -> assertEquals("test1,test2,123", properties.get("list")),
 
-		assertEquals("200", yamlConstants.get("Ook.Is.Daarnaast.YamlTest1"));
-		assertEquals("MRU", yamlConstants.get("Ook.Is.Daarnaast.YamlTest2"));
-		assertEquals("true", yamlConstants.get("Ook.Is.Daarnaast.YamlTest3"));
+			() -> assertEquals("1", properties.get("list.map.one")),
+			() -> assertEquals("2", properties.get("list.map.two")),
+
+			() -> assertEquals("1", properties.get("map.one")),
+			() -> assertEquals("2", properties.get("map.two")),
+			() -> assertEquals("3", properties.get("map.three")),
+
+			() -> assertEquals("100", properties.get("array.Sergi.value")),
+			() -> assertEquals("50", properties.get("array.Niels.value")),
+
+			() -> assertEquals("1", properties.get("recursive.map.one")),
+			() -> assertEquals("2", properties.get("recursive.map.two")),
+			() -> assertEquals("3", properties.get("recursive.map.three")),
+
+			() -> assertEquals("drie", properties.get("map.with.property"))
+		);
 	}
 
 	@Test
-	public void extensionThrowError() {
-		try{
-			new PropertyLoader("ParserTestFiles/Properties.extensionNonSupported");
-			fail();
-		}
-		catch(IllegalArgumentException e){
-			assertEquals("Extension not supported: extensionNonSupported", e.getMessage());
-		}
+	public void wrongExtensionThrowError() {
+		IllegalArgumentException eae = assertThrows(IllegalArgumentException.class, () -> new PropertyLoader("ParserTestFiles/Properties.extensionNonSupported"));
+		assertEquals("Extension not supported: extensionNonSupported", eae.getMessage());
 	}
 
 	@Test
-	public void testYamlFromPropertiesConverter() {
-
-		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/YamlProperties.yaml");
-
-		String p2y = PropertiesParser.parseFile(property2Reader(yamlConstants));
-
-		Properties yamlProperties = new YamlParser(new StringReader(p2y));
-
-		assertThat( yamlConstants.entrySet(), everyItem(isIn(yamlProperties.entrySet())));
-		assertThat( yamlProperties.entrySet(), everyItem(isIn(yamlConstants.entrySet())));
-	}
-
-	@Test
-	public void testYamlIfResolves() {
-		PropertyLoader yamlConstants = new PropertyLoader(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/ResolveTest1.yaml");
+	public void testMultiFilesOverwritingProperties() {
+		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/ResolveTest1.yaml");
 		yamlConstants.load(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/ResolveTest2.properties");
 		yamlConstants.load(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/ResolveTest3.yaml");
 
@@ -183,8 +180,8 @@ public class PropertyLoaderTest {
 	}
 
 	@Test
-	public void testYamlTypes() {
-		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/Types.yaml");
+	public void testYamlFromPropertiesConverter() {
+		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/YamlProperties.yaml");
 
 		String p2y = PropertiesParser.parseFile(property2Reader(yamlConstants));
 

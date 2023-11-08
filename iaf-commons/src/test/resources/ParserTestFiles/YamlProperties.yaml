@@ -2,5 +2,11 @@ application:
     security:
         http:
             authenticators:
-                testte: {type: AD, baseDn: '', url: 'ldap://10.1.2.3'}
-                myADAuth: {type: AD, baseDn: '', url: 'ldap://10.1.2.3'}
+                one:
+                 -  type: AD
+                    baseDn: ''
+                    url: 'ldap://10.1.2.3'
+                two:
+                 -  type: AD
+                    baseDn: ''
+                    url: 'ldap://10.1.2.3'
