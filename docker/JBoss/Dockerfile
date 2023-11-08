@@ -1,19 +1,17 @@
-ARG JBOSS_VARIANT=eap74-openjdk11-openshift-rhel8
-ARG JBOSS_VERSION=7.4.0
 ARG REGISTRY=private.docker.nexus.frankframework.org
-FROM ${REGISTRY}/jboss-eap-7/${JBOSS_VARIANT}:${JBOSS_VERSION} AS jboss-base
-
-USER root
-RUN mkdir $JBOSS_HOME/standalone/data
-RUN chown jboss:jboss $JBOSS_HOME/standalone/data
+ARG JBOSS_VARIANT=eap74-openjdk11-openshift-rhel8
+ARG JBOSS_BASE_VERSION=7.4.0
+ARG JBOSS_VERSION=7.4.13-7
+FROM ${REGISTRY}/jboss-eap-7/${JBOSS_VARIANT}:${JBOSS_BASE_VERSION} AS jboss-base
 
 COPY src/configuration/createCS.sh /home/createCS.sh
 COPY target/dependencies/secrets /opt/frank/secrets
 
 RUN /home/createCS.sh
-USER jboss
 
-FROM jboss-base
+FROM ${REGISTRY}/jboss-eap-7/${JBOSS_VARIANT}:${JBOSS_VERSION}
+
+RUN mkdir $JBOSS_HOME/standalone/data
 
 ENV DISABLE_EMBEDDED_JMS_BROKER=true
 # Copy dependencies
@@ -36,4 +34,3 @@ COPY target/dependencies/frank /opt/frank
 
 # Copy war
 COPY target/dependencies/ibis-adapterframework-test.war $JBOSS_HOME/standalone/deployments/iaf-test.war
-
