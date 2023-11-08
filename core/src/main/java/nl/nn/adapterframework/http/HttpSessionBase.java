@@ -76,6 +76,7 @@ import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * <p>
@@ -191,7 +192,9 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	private @Getter boolean followRedirects=true;
 	private @Getter boolean ignoreRedirects=false;
-	private @Getter String protocol=null;
+
+	private String protocol = null;
+	private String supportedCipherSuites = null;
 	private SSLConnectionSocketFactory sslSocketFactory;
 
 	private boolean disableCookies = false;
@@ -422,21 +425,29 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	@Nonnull
 	protected SSLConnectionSocketFactory getSSLConnectionSocketFactory() throws ConfigurationException {
-		SSLConnectionSocketFactory sslSocketFactory;
+		SSLConnectionSocketFactory sslConnectionSocketFactory;
 		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
 
+		final String[] supportedProtocols = StringUtils.isBlank(protocol) ? null : new String[] { protocol };
+		final String[] cipherSuites;
+		if(StringUtils.isNotBlank(supportedCipherSuites)) {
+			cipherSuites = StringUtil.splitToStream(supportedCipherSuites).toArray(String[]::new);
+		} else {
+			cipherSuites = null;
+		}
+
 		try {
-			javax.net.ssl.SSLSocketFactory socketfactory = AuthSSLContextFactory.createSSLSocketFactory(this, this, getProtocol());
-			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
+			javax.net.ssl.SSLSocketFactory socketfactory = AuthSSLContextFactory.createSSLSocketFactory(this, this, protocol);
+			sslConnectionSocketFactory = new SSLConnectionSocketFactory(socketfactory, supportedProtocols, cipherSuites, hostnameVerifier);
 		} catch (Exception e) {
 			throw new ConfigurationException("cannot create or initialize SocketFactory", e);
 		}
 
 		// This method will be overwritten by the connectionManager when connectionPooling is enabled!
 		// Can still be null when no default or an invalid system sslSocketFactory has been defined
-		httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
+		httpClientBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
 
-		return sslSocketFactory;
+		return sslConnectionSocketFactory;
 	}
 
 	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase) throws IOException {
@@ -732,9 +743,19 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	/**
 	 * Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated.
-	 * @ff.default SSL
+	 * @ff.default TLS
 	 */
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
+	}
+
+	/**
+	 * Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with {@code protocol} as the provided Suite may not be valid for the provided Protocol
+	 * See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.
+	 * 
+	 * @see <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html">Java Security Standard Algorithm Names Specification</a>
+	 */
+	public void setSupportedCipherSuites(String supportedCipherSuites) {
+		this.supportedCipherSuites = supportedCipherSuites;
 	}
 }
