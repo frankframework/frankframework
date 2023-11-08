@@ -109,7 +109,7 @@
 		<dependency><!-- javax based dependency -->
 			<groupId>jakarta.xml.soap</groupId>
 			<artifactId>jakarta.xml.soap-api</artifactId>
-			<version>1.4.2</version>
+			<version>3.0.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>jakarta.activation</groupId>

@@ -28,7 +28,7 @@ import nl.nn.adapterframework.util.DateUtils;
  */
 class UniqueFileGenerator {
 
-	private static AtomicInteger atomicCount = new AtomicInteger(1);
+	private static final AtomicInteger atomicCount = new AtomicInteger(1);
 
 	private UniqueFileGenerator() {
 

@@ -2,16 +2,23 @@ package nl.nn.adapterframework.management.bus.endpoints;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.messaging.Message;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.management.bus.BusTopic;
 import nl.nn.adapterframework.testutil.MatchUtils;
+import nl.nn.adapterframework.testutil.SpringRootInitializer;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
 
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(initializers = {SpringRootInitializer.class})
 public class TestSecurityItems extends BusTestBase {
 
 	@BeforeEach
@@ -31,6 +38,7 @@ public class TestSecurityItems extends BusTestBase {
 	}
 
 	@Test
+	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void getSecurityItems() throws Exception {
 		mockFixedQuerySenderResult("select datasource from database", ResultSetBuilder.create().build());
 
