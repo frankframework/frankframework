@@ -308,7 +308,8 @@ public class PropertyLoader extends Properties {
 					break;
 				case "yml":
 				case "yaml":
-					putAll(new YamlParser(reader));
+					YamlParser parser = new YamlParser();
+					putAll(parser.load(reader));
 					break;
 				default:
 					throw new IllegalArgumentException("Extension not supported: " + extension);

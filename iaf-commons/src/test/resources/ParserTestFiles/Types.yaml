@@ -79,3 +79,6 @@ recursive:
     three: 3
 
 map.with.property: drie
+
+null:
+empty: ""

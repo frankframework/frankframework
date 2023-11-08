@@ -159,7 +159,8 @@ public class PropertyLoaderTest {
 			() -> assertEquals("2", properties.get("recursive.map.two")),
 			() -> assertEquals("3", properties.get("recursive.map.three")),
 
-			() -> assertEquals("drie", properties.get("map.with.property"))
+			() -> assertEquals("drie", properties.get("map.with.property")),
+			() -> assertEquals("", properties.get("empty"))
 		);
 	}
 
@@ -185,7 +186,8 @@ public class PropertyLoaderTest {
 
 		String p2y = PropertiesParser.parseFile(property2Reader(yamlConstants));
 
-		Properties yamlProperties = new YamlParser(new StringReader(p2y));
+		YamlParser parser = new YamlParser();
+		Properties yamlProperties = parser.load(new StringReader(p2y));
 
 		assertThat( yamlConstants.entrySet(), everyItem(isIn(yamlProperties.entrySet())));
 		assertThat( yamlProperties.entrySet(), everyItem(isIn(yamlConstants.entrySet())));

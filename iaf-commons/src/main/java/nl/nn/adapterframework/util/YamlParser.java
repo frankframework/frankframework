@@ -25,17 +25,25 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 
-public class YamlParser extends Properties {
+public class YamlParser {
+
+	private final Properties properties;
 
 	/**
 	 * Loads and parses a yaml file.
 	 * Uses the {@link #handleRawValue(String, Object)} method to recursively loop over all values.
 	 */
-	public YamlParser(Reader reader) {
+	public YamlParser() {
+		this.properties = new Properties();
+	}
+
+	public Properties load(Reader reader) {
 		Yaml yaml = new Yaml();
 
 		Map<String, Object> obj = yaml.loadAs(reader, Map.class);
 		obj.entrySet().forEach(entry -> handleRawValue(entry.getKey(), entry.getValue()) );
+
+		return properties;
 	}
 
 	/**
@@ -60,8 +68,10 @@ public class YamlParser extends Properties {
 
 		// Threat as a single value and store it in the properties.
 		else {
-			String valueToString = value.toString(); //String / Integer
-			setProperty(key, valueToString);
+			if(value != null) {
+				String valueToString = value.toString(); //String / Integer
+				properties.setProperty(key, valueToString);
+			}
 		}
 	}
 
@@ -108,7 +118,7 @@ public class YamlParser extends Properties {
 			}
 		}
 		if(!listProperty.isEmpty()) {
-			setProperty(key, listProperty.stream().collect(Collectors.joining(",")));
+			properties.setProperty(key, listProperty.stream().collect(Collectors.joining(",")));
 		}
 	}
 }
