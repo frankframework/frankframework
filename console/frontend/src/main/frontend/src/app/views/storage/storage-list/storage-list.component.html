@@ -150,7 +150,7 @@
           <ng-template #dateDt let-data="adtData" let-columnId="userData.column">
             <span *ngIf="data[columnId]" appToDate [time]="data[columnId]">{{data[columnId]}}</span>
           </ng-template>
-          <table id="datatable" class="table table-striped table-hover" #datatable>
+          <!-- <table id="datatable" class="table table-striped table-hover" #datatable> -->
           <table id="datatable" class="table table-striped table-hover" datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger">
             <thead>
               <tr>

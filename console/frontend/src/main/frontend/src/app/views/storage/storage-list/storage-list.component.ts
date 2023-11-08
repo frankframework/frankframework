@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import type { ADTColumns, ADTSettings } from 'angular-datatables/src/models/settings';
-import { DataTable } from "simple-datatables"
+// import { DataTable } from "simple-datatables"
 import { StateService } from "@uirouter/angularjs";
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { CookiesService } from 'src/angularjs/app/services/cookies.service';
@@ -68,7 +68,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
   closeNote = (index: number) => { this.storageService.closeNote(index); };
   getProcessStateIcon = (processState: string) => { this.appService.getProcessStateIcon(processState); }
 
-  @ViewChild('datatable') dtElement!: ElementRef<HTMLTableElement>;
+  // @ViewChild('datatable') dtElement!: ElementRef<HTMLTableElement>;
   @ViewChild(DataTableDirective) dataTable!: DataTableDirective;
   @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;
   @ViewChild('dateDt') dateDt!: TemplateRef<string>;
@@ -240,8 +240,8 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     }
 
     // simple-datatables
-    const table = new DataTable(this.dtElement.nativeElement, {
-      columns: columns,
+    /* const table = new DataTable(this.dtElement.nativeElement, {
+      // columns: columns,
       searchable: false,
       paging: true,
     });
@@ -260,7 +260,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
         { text: "label", data: "label", type: 'string' },
       ],
       data: []
-    };
+    }; */
 
     this.dtTrigger.next(this.dtOptions);
   }

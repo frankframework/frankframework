@@ -88,7 +88,6 @@ import { StorageListDtComponent } from './views/storage/storage-list/storage-lis
 import { SchedulerComponent } from './views/scheduler/scheduler.component';
 import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
-// import { SecurityItemsComponent } from './views/security-items/security-items.component';
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
@@ -131,32 +130,10 @@ appModule
   .directive('scheduler', downgradeComponent({ component: SchedulerComponent }) as angular.IDirectiveFactory)
   .directive('schedulerAdd', downgradeComponent({ component: SchedulerAddComponent }) as angular.IDirectiveFactory)
   .directive('schedulerEdit', downgradeComponent({ component: SchedulerEditComponent }) as angular.IDirectiveFactory)
-  .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory)
   .directive('storage', downgradeComponent({ component: StorageComponent }) as angular.IDirectiveFactory)
   .directive('storageList', downgradeComponent({ component: StorageListComponent }) as angular.IDirectiveFactory)
   .directive('storageView', downgradeComponent({ component: StorageViewComponent }) as angular.IDirectiveFactory)
   .directive('webservices', downgradeComponent({ component: WebservicesComponent }) as angular.IDirectiveFactory);
-
-const nestedRouterStates: NgHybridStateDeclaration[] = [
-  {
-    name: 'pages.storage.list',
-    url: "stores/:processState",
-    component: StorageListComponent,
-    params: {
-      processState: { value: '', squash: true },
-    }
-  },
-  {
-    name: 'pages.storage.view',
-    url: "stores/:processState/messages/:messageId",
-    component: StorageViewComponent,
-    params: {
-      processState: { value: '', squash: true },
-      messageId: { value: '', squash: true },
-    }
-  }
-];
-
 
 @NgModule({
   declarations: [
@@ -189,7 +166,7 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     ScrollToTopComponent,
     StatusComponent,
     StorageComponent,
-    // StorageListComponent,
+    StorageListComponent,
     StorageViewComponent,
     AdapterstatisticsComponent,
     StorageListDtComponent,
@@ -211,7 +188,6 @@ const nestedRouterStates: NgHybridStateDeclaration[] = [
     TimeSinceDirective,
     QuickSubmitFormDirective,
     FitHeightDirective,
-    StorageListDtComponent,
     SideNavigationDirective,
   ],
   imports: [
