@@ -5,9 +5,9 @@
 	<div class="row">
 		<div class="col-lg-12">
 			<div class="m-b-md float-e-margins">
-				<div class="col-md-12 m-t-md table-responsive" ng-if="$ctrl.securityRoles">
+				<div class="col-md-5 m-t-md table-responsive" ng-if="$ctrl.securityRoles">
 					<div class="ibox-title">
-						<h4>Security Role Bindings</h4>
+						<h4>Security Roles</h4>
 					</div>
 					<div class="ibox-content">
 						<table class="table table-striped">
@@ -15,37 +15,12 @@
 								<tr>
 									<th>Role</th>
 									<th>Access</th>
-									<th>specialSubjects</th>
-									<th>Groups</th>
 								</tr>
 							</thead>
 							<tbody>
 								<tr ng-repeat="(roleName, role) in $ctrl.securityRoles">
-									<td>{{role["role-name"]}}</td>
+									<td>{{role.name}}</td>
 									<td><i class="fa {{role.allowed ? 'fa-check-square' : 'fa-times-circle'}}"></i></td>
-									<td><p ng-repeat="subject in role.specialSubjects">{{subject}}</p></td>
-									<td><p ng-repeat="group in role.groups">{{group}}</p></td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-				</div>
-				<div class="col-md-5 m-t-md table-responsive" ng-if="$ctrl.serverProps">
-					<div class="ibox-title">
-						<h4>Transaction Service</h4>
-					</div>
-					<div class="ibox-content">
-						<table class="table">
-							<tbody>
-								<tr>
-									<td title="The default maximum time allowed for a transaction that is started on this server before the transaction service initiates timeout completion. Any transaction that does not begin completion processing before this timeout occurs is rolled back. This timeout is used only if the application component does not set its own transaction timeout. The upper-limit of this timeout is constrained by the maximum transaction timeout. For example, if you set a value of 500 for the total transaction lifetime timeout, and a value of 300 for the maximum transaction timeout, transactions will time out after 300 seconds."
-										>Total transaction lifetime timeout (in seconds)</td>
-									<td>{{$ctrl.serverProps.totalTransactionLifetimeTimeout}}</td>
-								</tr>
-								<tr>
-									<td title="Specifies the upper limit of the transaction timeout for transactions that run in this server. This value should be greater than or equal to the total transaction lifetime timeout and greater than or equal to the application component timeout. If the maximum transaction timeout is set to a value less than either the total transaction lifetime timeout or the application component timeout, application component transactions that may require more time will timeout when the maximum transaction timeout is reached."
-										>Maximum transaction timeout (in seconds)</td>
-									<td>{{$ctrl.serverProps.maximumTransactionTimeout}}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -157,15 +132,12 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat-start="realm in $ctrl.jmsRealms">
-									<td rowspan="2">{{realm.name}}</td>
-									<td rowspan="2">{{realm.datasourceName}}</td>
-									<td rowspan="2">{{realm.queueConnectionFactoryName}}</td>
-									<td rowspan="2">{{realm.topicConnectionFactoryName}}</td>
+								<tr ng-repeat="realm in $ctrl.jmsRealms">
+									<td>{{realm.name}}</td>
+									<td>{{realm.datasourceName}}</td>
+									<td>{{realm.queueConnectionFactoryName}}</td>
+									<td>{{realm.topicConnectionFactoryName}}</td>
 									<td>{{realm.info}}</td>
-								</tr>
-								<tr ng-repeat-end>
-									<td>{{$ctrl.realm.connectionPoolProperties}}</td>
 								</tr>
 							</tbody>
 						</table>
@@ -184,12 +156,9 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr ng-repeat-start="datasource in $ctrl.datasources">
-									<td rowspan="2">{{datasource.datasourceName}}</td>
+								<tr ng-repeat="datasource in $ctrl.datasources">
+									<td>{{datasource.datasourceName}}</td>
 									<td>{{datasource.info}}</td>
-								</tr>
-								<tr ng-repeat-end>
-									<td>{{$ctrl.datasource.connectionPoolProperties}}</td>
 								</tr>
 							</tbody>
 						</table>

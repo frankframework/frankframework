@@ -93,8 +93,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * Note 2:
  * To debug ssl-related problems, set the following system property:
  * <ul>
- * <li>IBM / WebSphere: <code>-Djavax.net.debug=true</code></li>
- * <li>SUN: <code>-Djavax.net.debug=all</code></li>
+ * <li><code>-Djavax.net.debug=all</code></li>
  * </ul>
  * </p>
  * <p>
@@ -291,7 +290,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		}
 	}
 
-	/** 
+	/**
 	 * In order to support multiThreading and connectionPooling.
 	 * The connectionManager has to be initialized with a sslSocketFactory.
 	 * The pool must be re-created once closed.
