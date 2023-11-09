@@ -83,8 +83,15 @@ class KafkaInternalSender<T,M> extends KafkaFacade implements ISender {
 	}
 
 	@Override
-	public void open() {
+	public void open() throws SenderException {
 		producer = new KafkaProducer<>(properties);
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			throw new SenderException(e);
+		}
+		Double metric = (Double) producer.metrics().values().stream().filter(item -> item.metricName().name().equals("response-total")).findFirst().orElseThrow(() -> new SenderException("Failed to get response-total metric.")).metricValue();
+		if (metric.intValue() == 0) throw new SenderException("Didn't get a response from Kafka while connecting for Sending.");
 	}
 
 	@Override

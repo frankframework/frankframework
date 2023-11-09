@@ -26,8 +26,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -62,6 +62,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
  * @param <M> Message type.
  */
 class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener<ConsumerRecord<T, M>> {
+	static Predicate<String> patternPredicate = Pattern.compile("^[a-zA-Z0-9._\\-*]*$").asPredicate();
 	//setter is for testing purposes only.
 	private @Setter(AccessLevel.PACKAGE) Consumer<T, M> consumer;
 	private @Setter(AccessLevel.PACKAGE) Function<Properties, Consumer<T,M>> consumerGenerator = KafkaConsumer::new;
@@ -70,7 +71,7 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 	private @Setter boolean fromBeginning;
 	private @Setter int patternRecheckInterval;
 	private @Setter String topics;
-	private @Getter(AccessLevel.PACKAGE) List<Pattern> topicPatterns;
+	private @Getter(AccessLevel.PACKAGE) Pattern topicPattern;
 	private final Duration pollDuration = Duration.ofMillis(1);
 	private final Map<TopicPartition, OffsetAndMetadata> offsetAndMetadataMap = new HashMap<>();
 	private final BiFunction<M, MessageContext, Message> converter;
@@ -109,10 +110,13 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer);
 		properties.setProperty(ConsumerConfig.METADATA_MAX_AGE_CONFIG, String.valueOf(patternRecheckInterval));
 		properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
-		topicPatterns = StringUtil.splitToStream(topics)
-				.map(Pattern::compile) //Convert the topic to a regex pattern, to allow for wildcards in topic names.
-				.collect(Collectors.toList());
-		if(topicPatterns.isEmpty()) throw new ConfigurationException("topics must contain at least one valid topic");
+		List<String> topicList = StringUtil.split(topics);
+		for(String topic: topicList) {
+			if(!patternPredicate.test(topic)) throw new ConfigurationException("topics contains invalid characters. Only a-zA-Z0-9._-* are allowed. (topic: ["+topic+"])");
+		}
+		String pattern = String.join("|", topicList);
+		if(pattern.isEmpty()) throw new ConfigurationException("topics must contain at least one valid topic");
+		topicPattern = Pattern.compile(pattern);
 	}
 
 	@Override
@@ -120,13 +124,13 @@ class KafkaInternalListener<T,M> extends KafkaFacade implements IPullingListener
 		lock.lock();
 		try {
 			consumer = consumerGenerator.apply(properties);
-			topicPatterns.forEach(consumer::subscribe);
+			consumer.subscribe(topicPattern);
 			waiting = consumer.poll(Duration.ofMillis(500)).iterator();
 			if (waiting.hasNext()) return;
 			waiting = consumer.poll(Duration.ofMillis(500)).iterator();
 			if (waiting.hasNext()) return;
 			Double metric = (Double) consumer.metrics().values().stream().filter(item -> item.metricName().name().equals("response-total")).findFirst().orElseThrow(() -> new ListenerException("Failed to get response-total metric.")).metricValue();
-			if (metric.intValue() == 0) throw new ListenerException("Didn't get a response from Kafka while connecting.");
+			if (metric.intValue() == 0) throw new ListenerException("Didn't get a response from Kafka while connecting for Listening.");
 		} catch(RuntimeException e) {
 			throw new ListenerException(e);
 		} finally {

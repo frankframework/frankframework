@@ -17,6 +17,7 @@ package nl.nn.adapterframework.extensions.kafka;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -58,7 +59,7 @@ public class KafkaReceiverTest {
 	@BeforeEach
 	void setUp() throws Exception {
 		listener = new KafkaListener();
-		listener.setTopics("test.*.test2");
+		listener.setTopics("test.*.test2, anothertopic");
 		listener.setClientId("test");
 		listener.setGroupId("testGroup");
 		listener.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
@@ -112,9 +113,9 @@ public class KafkaReceiverTest {
 		);
 	}
 
-	@Test
-	public void test() throws Exception {
-		String topic="test.test.test2";
+	@ParameterizedTest
+	@MethodSource
+	public void test(String topic) throws Exception {
 		listener.open();
 		HashMap<TopicPartition, Long> startOffsets = new HashMap<>();
 		TopicPartition topicPartition = new TopicPartition(topic, 0);
@@ -148,6 +149,12 @@ public class KafkaReceiverTest {
 		listener.close();
 	}
 
+	static Stream<Arguments> test() {
+		return Stream.of(
+				"test.test.test2",
+				"anothertopic"
+		).map(Arguments::of);
+	}
 	@ParameterizedTest
 	@MethodSource
 	void generateInternalListenerTest(KafkaType kafkaType1, KafkaType kafkaType2) {

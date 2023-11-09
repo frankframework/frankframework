@@ -49,6 +49,10 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-kafka</artifactId>
+		</dependency>
 
 		<!-- Servlet support for multiple contexts -->
 		<dependency>

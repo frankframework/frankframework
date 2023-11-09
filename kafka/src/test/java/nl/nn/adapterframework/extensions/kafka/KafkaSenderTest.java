@@ -18,7 +18,6 @@ package nl.nn.adapterframework.extensions.kafka;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.apache.kafka.clients.producer.MockProducer;
@@ -61,21 +60,22 @@ public class KafkaSenderTest {
 
 	@ParameterizedTest
 	@MethodSource
-	void validateParameters(Consumer<KafkaFacade> consumer, boolean shouldSucceed, String name) {
-		consumer.accept(sender);
-		if(shouldSucceed) Assertions.assertDoesNotThrow(sender::configure, name);
-		else Assertions.assertThrows(ConfigurationException.class, sender::configure, name);
+	void validateInvalidTopic(String topic, String name) {
+		sender.setTopic(topic);
+		Assertions.assertThrows(ConfigurationException.class, sender::configure, name);
 	}
-	public static Consumer<KafkaSender> wrap(Consumer<KafkaSender> function) {
-		return function;
-	}
-	static Stream<Arguments> validateParameters() {
+	static Stream<Arguments> validateInvalidTopic() {
 		return Stream.of(
-				Arguments.of(wrap(sender->sender.setTopic(null)), false, "null topic"),
-				Arguments.of(wrap(sender->sender.setTopic("")), false, "empty topic"),
-				Arguments.of(wrap(sender->sender.setTopic("test")), true, "valid topic"),
-				Arguments.of(wrap(sender->sender.setTopic("test,test2")), false, "multiple topics"),
-				Arguments.of(wrap(sender->sender.setTopic("test*")), false, "wildcard topic")
+				Arguments.of(null, "null topic"),
+				Arguments.of("", "empty topic"),
+				Arguments.of("test,test2", "multiple topics"),
+				Arguments.of("test*", "wildcard topic")
 		);
+	}
+
+	@Test
+	void validateValidTopic() {
+		sender.setTopic("test");
+		Assertions.assertDoesNotThrow(sender::configure, "valid topic");
 	}
 }
