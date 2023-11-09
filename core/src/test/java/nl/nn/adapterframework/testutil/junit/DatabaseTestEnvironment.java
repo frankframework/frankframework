@@ -10,6 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
+import nl.nn.adapterframework.dbms.DbmsSupportFactory;
+
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.ExceptionUtils;
@@ -19,7 +21,6 @@ import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import lombok.Getter;
 import nl.nn.adapterframework.dbms.IDbmsSupport;
-import nl.nn.adapterframework.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
@@ -83,7 +84,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 		assertEquals(productKey, dataSourceInfo.getProperty(URLDataSourceFactory.PRODUCT_KEY), "DataSourceName does not match ProductKey");
 
 		configuration = type.getConfigurationContext(productKey);
-		IDbmsSupportFactory dbmsSupportFactory = config.getBean(IDbmsSupportFactory.class, "dbmsSupportFactory");
+		DbmsSupportFactory dbmsSupportFactory = config.getBean(DbmsSupportFactory.class, "dbmsSupportFactory");
 		dbmsSupport = dbmsSupportFactory.getDbmsSupport(dataSource);
 	}
 

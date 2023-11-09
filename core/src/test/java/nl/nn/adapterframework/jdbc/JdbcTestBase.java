@@ -17,6 +17,8 @@ import java.util.Properties;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import nl.nn.adapterframework.dbms.DbmsSupportFactory;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -38,7 +40,6 @@ import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.Getter;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.dbms.IDbmsSupport;
-import nl.nn.adapterframework.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.testutil.TestConfiguration;
@@ -82,7 +83,7 @@ public abstract class JdbcTestBase {
 	public String productKey;
 	private DataSource dataSource;
 
-	private @Getter IDbmsSupportFactory dbmsSupportFactory;
+	private @Getter DbmsSupportFactory dbmsSupportFactory;
 	protected @Getter IDbmsSupport dbmsSupport;
 
 	@Parameters(name= "{0}: {1}")
@@ -121,7 +122,7 @@ public abstract class JdbcTestBase {
 
 		testPeekShouldSkipRecordsAlreadyLocked = Boolean.parseBoolean(dataSourceInfo.getProperty(URLDataSourceFactory.TEST_PEEK_KEY));
 		configuration = transactionManagerType.getConfigurationContext(productKey);
-		dbmsSupportFactory = configuration.getBean(IDbmsSupportFactory.class, "dbmsSupportFactory");
+		dbmsSupportFactory = configuration.getBean(DbmsSupportFactory.class, "dbmsSupportFactory");
 
 		connection = createNonTransactionalConnection();
 

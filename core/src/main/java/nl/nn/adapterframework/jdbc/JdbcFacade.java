@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import nl.nn.adapterframework.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.dbms.JdbcException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -35,7 +36,6 @@ import nl.nn.adapterframework.core.IXAEnabled;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.dbms.IDbmsSupport;
-import nl.nn.adapterframework.dbms.IDbmsSupportFactory;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
@@ -72,7 +72,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	private boolean transacted = false;
 	private boolean connectionsArePooled=true; // TODO: make this a property of the DataSourceFactory
 
-	private IDbmsSupportFactory dbmsSupportFactory=null;
+	private DbmsSupportFactory dbmsSupportFactory=null;
 	private IDbmsSupport dbmsSupport=null;
 	private CredentialFactory cf=null;
 	private StatisticsKeeper connectionStatistics;
@@ -143,7 +143,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 		return dsinfo;
 	}
 
-	public void setDbmsSupportFactory(IDbmsSupportFactory dbmsSupportFactory) {
+	public void setDbmsSupportFactory(DbmsSupportFactory dbmsSupportFactory) {
 		this.dbmsSupportFactory=dbmsSupportFactory;
 	}
 

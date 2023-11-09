@@ -37,12 +37,11 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @author Gerrit van Brakel
  */
 @Log4j2
-public class DbmsSupportFactory implements IDbmsSupportFactory {
+public class DbmsSupportFactory {
 	private Map<DataSource, IDbmsSupport> dbmsSupport = new ConcurrentHashMap<>();
 
 	private @Getter Properties dbmsSupportMap;
 
-	@Override
 	public IDbmsSupport getDbmsSupport(DataSource datasource) {
 		return dbmsSupport.computeIfAbsent(datasource, this::compute);
 	}
