@@ -19,7 +19,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
 import com.aspose.cells.LoadOptions;
@@ -27,11 +26,12 @@ import com.aspose.cells.SaveFormat;
 import com.aspose.cells.Style;
 import com.aspose.cells.Workbook;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
 
+@Log4j2
 class CellsConvertor extends AbstractConvertor {
 
 	private static final MediaType XLS_MEDIA_TYPE = new MediaType("application", "vnd.ms-excel");
@@ -39,8 +39,6 @@ class CellsConvertor extends AbstractConvertor {
 	private static final MediaType XLS_MEDIA_TYPE_MACRO_ENABLED = new MediaType("application", "vnd.ms-excel.sheet.macroenabled.12");
 
 	private static final Map<MediaType, String> FILE_TYPE_MAP = new HashMap<>();
-
-	private static final Logger LOGGER = LogUtil.getLogger(CellsConvertor.class);
 
 	static {
 		FILE_TYPE_MAP.put(XLS_MEDIA_TYPE, "xls");
@@ -52,7 +50,7 @@ class CellsConvertor extends AbstractConvertor {
 
 	protected CellsConvertor(CisConfiguration configuration) {
 		super(configuration, XLS_MEDIA_TYPE, XLS_MEDIA_TYPE_MACRO_ENABLED, XLSX_MEDIA_TYPE);
-		defaultLoadOptions = new Fontsetter(configuration.getFontsDirectory()).getCellsLoadOptions();
+		defaultLoadOptions = new FontManager(configuration.getFontsDirectory()).getCellsLoadOptions();
 	}
 
 	@Override
@@ -62,7 +60,7 @@ class CellsConvertor extends AbstractConvertor {
 			Workbook workbook = new Workbook(inputStream, defaultLoadOptions);
 
 			Style style = workbook.getDefaultStyle();
-			LOGGER.debug("Default font: " + style.getFont());
+			log.debug("default font: [{}]", style.getFont());
 
 			workbook.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));

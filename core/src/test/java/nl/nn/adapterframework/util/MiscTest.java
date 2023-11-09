@@ -1,16 +1,13 @@
 package nl.nn.adapterframework.util;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
@@ -248,21 +245,4 @@ public class MiscTest {
 		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
 	}
 
-	@Test
-	public void testIbmDescriptorResources() throws Exception {
-		String descriptorPath = Misc.getApplicationDeploymentDescriptorPath();
-		assertThat(descriptorPath, Matchers.endsWith("META-INF"));
-		String applBindings = Misc.getDeployedApplicationBindings();
-		assertNotNull(applBindings);
-		String deploymentDescriptor = Misc.getApplicationDeploymentDescriptor();
-		assertNotNull(deploymentDescriptor);
-	}
-
-	@Test
-	public void testIbmConfigurationResources() throws Exception {
-		String configurationResources = Misc.getConfigurationResources();
-		assertThat(configurationResources, Matchers.startsWith("<dummy xml=\"file\" />"));
-		String server = Misc.getConfigurationServer();
-		assertThat(server, Matchers.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
-	}
 }

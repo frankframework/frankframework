@@ -18,11 +18,18 @@ package nl.nn.adapterframework.http;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
@@ -76,6 +83,7 @@ import nl.nn.adapterframework.lifecycle.ConfigurableLifecycle;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * <p>
@@ -93,8 +101,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * Note 2:
  * To debug ssl-related problems, set the following system property:
  * <ul>
- * <li>IBM / WebSphere: <code>-Djavax.net.debug=true</code></li>
- * <li>SUN: <code>-Djavax.net.debug=all</code></li>
+ * <li><code>-Djavax.net.debug=all</code></li>
  * </ul>
  * </p>
  * <p>
@@ -192,7 +199,9 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	private @Getter boolean followRedirects=true;
 	private @Getter boolean ignoreRedirects=false;
-	private @Getter String protocol=null;
+
+	private String protocol;
+	private String supportedCipherSuites = null;
 	private SSLConnectionSocketFactory sslSocketFactory;
 
 	private boolean disableCookies = false;
@@ -232,6 +241,8 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		if (getMaxConnections() <= 0) {
 			throw new ConfigurationException("maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}
+
+		validateProtocolsAndCiphers();
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
@@ -282,6 +293,34 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		configureRedirectStrategy();
 	}
 
+	private void validateProtocolsAndCiphers() throws ConfigurationException {
+		SSLParameters sslParams = null;
+		try {
+			sslParams = SSLContext.getDefault().getSupportedSSLParameters();
+		} catch (NoSuchAlgorithmException e) {
+			log.warn("no default SSLContext available", e);
+		}
+
+		if(StringUtils.isNotEmpty(protocol)) {
+			try {
+				SSLContext.getInstance(protocol);
+			} catch (NoSuchAlgorithmException e) {
+				String errorMessage = "unknown protocol ["+protocol+"]";
+				if(sslParams != null) {
+					errorMessage += ", must be one of ["+Stream.of(sslParams.getProtocols()).collect(Collectors.joining(", "))+"]";
+				}
+				throw new ConfigurationException(errorMessage, e);
+			}
+		}
+
+		if(sslParams != null && StringUtils.isNotEmpty(supportedCipherSuites)) {
+			List<String> allowedCipherSuites = Arrays.asList(sslParams.getCipherSuites());
+			if(Collections.indexOfSubList(allowedCipherSuites, StringUtil.split(supportedCipherSuites)) == -1) {
+				throw new ConfigurationException("Unsupported CipherSuite(s), must be one (or more) of "+allowedCipherSuites);
+			}
+		}
+	}
+
 	/** The redirect strategy used to only redirect GET, DELETE and HEAD. */
 	private void configureRedirectStrategy() {
 		if(isFollowRedirects()) {
@@ -291,7 +330,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 		}
 	}
 
-	/** 
+	/**
 	 * In order to support multiThreading and connectionPooling.
 	 * The connectionManager has to be initialized with a sslSocketFactory.
 	 * The pool must be re-created once closed.
@@ -423,21 +462,29 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 
 	@Nonnull
 	protected SSLConnectionSocketFactory getSSLConnectionSocketFactory() throws ConfigurationException {
-		SSLConnectionSocketFactory sslSocketFactory;
+		SSLConnectionSocketFactory sslConnectionSocketFactory;
 		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();
 
+		final String[] supportedProtocols = StringUtils.isBlank(protocol) ? null : new String[] { protocol };
+		final String[] cipherSuites;
+		if(StringUtils.isNotBlank(supportedCipherSuites)) {
+			cipherSuites = StringUtil.splitToStream(supportedCipherSuites).toArray(String[]::new);
+		} else {
+			cipherSuites = null;
+		}
+
 		try {
-			javax.net.ssl.SSLSocketFactory socketfactory = AuthSSLContextFactory.createSSLSocketFactory(this, this, getProtocol());
-			sslSocketFactory = new SSLConnectionSocketFactory(socketfactory, hostnameVerifier);
+			javax.net.ssl.SSLSocketFactory socketfactory = AuthSSLContextFactory.createSSLSocketFactory(this, this, protocol);
+			sslConnectionSocketFactory = new SSLConnectionSocketFactory(socketfactory, supportedProtocols, cipherSuites, hostnameVerifier);
 		} catch (Exception e) {
 			throw new ConfigurationException("cannot create or initialize SocketFactory", e);
 		}
 
 		// This method will be overwritten by the connectionManager when connectionPooling is enabled!
 		// Can still be null when no default or an invalid system sslSocketFactory has been defined
-		httpClientBuilder.setSSLSocketFactory(sslSocketFactory);
+		httpClientBuilder.setSSLSocketFactory(sslConnectionSocketFactory);
 
-		return sslSocketFactory;
+		return sslConnectionSocketFactory;
 	}
 
 	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase) throws IOException {
@@ -732,10 +779,21 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	}
 
 	/**
-	 * Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated.
-	 * @ff.default SSL
+	 * Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated.
+	 * @see <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html">Supported Protocols</a>.
+	 * @ff.default TLSv1.2
 	 */
 	public void setProtocol(String protocol) {
 		this.protocol = protocol;
+	}
+
+	/**
+	 * Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with {@code protocol} as the provided Suite may not be valid for the provided Protocol
+	 * See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.
+	 * 
+	 * @see <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html">Java Security Standard Algorithm Names Specification</a>
+	 */
+	public void setSupportedCipherSuites(String supportedCipherSuites) {
+		this.supportedCipherSuites = supportedCipherSuites;
 	}
 }

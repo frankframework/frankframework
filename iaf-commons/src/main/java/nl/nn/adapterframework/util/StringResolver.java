@@ -244,14 +244,10 @@ public class StringResolver {
 	}
 
 	private static Optional<String> resolveReplacement(String key, Map<?, ?> props1, Map<?, ?> props2, SubstitutionContext ctx) {
-		// TODO: In Java9 and later this can be done a bit nicer using Optional.or()
 		return Environment.getSystemProperty(key, null)
-				.map(Optional::of)
-				.orElseGet(() -> findInAdditionalResolvers(key, props1, props2, ctx))
-				.map(Optional::of)
-				.orElseGet((()-> getReplacementFromProps(key, props1)))
-				.map(Optional::of)
-				.orElseGet((()-> getReplacementFromProps(key, props2)))
+				.or(() -> findInAdditionalResolvers(key, props1, props2, ctx))
+				.or(() -> getReplacementFromProps(key, props1))
+				.or(() -> getReplacementFromProps(key, props2))
 				;
 	}
 

@@ -22,6 +22,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-dbms</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-security</artifactId>
 		</dependency>
 		<dependency>
@@ -109,7 +113,7 @@
 		<dependency><!-- javax based dependency -->
 			<groupId>jakarta.xml.soap</groupId>
 			<artifactId>jakarta.xml.soap-api</artifactId>
-			<version>1.4.2</version>
+			<version>3.0.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>jakarta.activation</groupId>
@@ -301,12 +305,6 @@
 			<artifactId>spring-security-core</artifactId>
 		</dependency>
 
-		<dependency> <!-- for version number compare -->
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-artifact</artifactId>
-			<version>3.9.5</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
@@ -464,7 +462,7 @@
 		<dependency>
 			<groupId>com.sendgrid</groupId>
 			<artifactId>sendgrid-java</artifactId>
-			<version>4.9.3</version>
+			<version>4.10.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.bouncycastle</groupId>
@@ -765,7 +763,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>9.37</version>
+			<version>9.37.1</version>
 		</dependency>
 
 		<dependency>

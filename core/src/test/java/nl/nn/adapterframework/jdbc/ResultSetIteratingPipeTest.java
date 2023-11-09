@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterInputStream;
 
+import nl.nn.adapterframework.dbms.JdbcException;
+
+import nl.nn.adapterframework.util.DbmsUtil;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -138,7 +142,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
-		String jdbcResult = JdbcUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM "+TEST_TABLE+" WHERE TINT = '4'");
+		String jdbcResult = DbmsUtil.executeStringQuery(connection, "SELECT COUNT('TKEY') FROM "+TEST_TABLE+" WHERE TINT = '4'");
 		assertEquals("10", jdbcResult);
 	}
 

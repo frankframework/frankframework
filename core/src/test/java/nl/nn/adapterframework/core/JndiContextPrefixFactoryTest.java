@@ -8,13 +8,7 @@ import nl.nn.adapterframework.util.AppConstants;
 
 public class JndiContextPrefixFactoryTest {
 	private enum ApplicationServer {
-		WAS,TOMCAT,JBOSS;
-	}
-
-	@Test
-	public void contextPrefixWAS() {
-		JndiContextPrefixFactory factory = createFactory(ApplicationServer.WAS);
-		assertEquals("", factory.getContextPrefix());
+		TOMCAT,JBOSS;
 	}
 
 	@Test
