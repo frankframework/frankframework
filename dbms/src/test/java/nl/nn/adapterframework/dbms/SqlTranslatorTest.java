@@ -39,7 +39,7 @@ public class SqlTranslatorTest {
 		);
 	}
 
-	@ParameterizedTest()
+	@ParameterizedTest
 	@MethodSource("data")
 	public void test(String source, String target, String query, String expected) throws Throwable {
 		try {
