@@ -275,7 +275,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-adapterframework-dbms</artifactId>
+				<artifactId>ibis-adapterframework-kafka</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
