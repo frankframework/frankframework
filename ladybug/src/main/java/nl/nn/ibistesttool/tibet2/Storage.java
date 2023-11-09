@@ -234,8 +234,6 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 			query.append(rowNumber);
 		}
 		query.append(" from " + table);
-		// According to fastDateFormat javadoc it needs to be synchronized when accessed by multiple threads, hence
-		// instantiate it here instead of instantiating it at class level and synchronizing it.
 		for (int i = 0; i < rangeSearchValues.size(); i++) {
 			String searchValue = rangeSearchValues.get(i);
 			if (searchValue != null) {
