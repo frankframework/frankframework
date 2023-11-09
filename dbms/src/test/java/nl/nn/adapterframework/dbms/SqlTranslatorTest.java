@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.dbms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.stream.Stream;
 
@@ -9,6 +8,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class SqlTranslatorTest {
 
 	public static Stream<Arguments> data() {
@@ -46,13 +48,11 @@ public class SqlTranslatorTest {
 			SqlTranslator translator = new SqlTranslator(source, target);
 			String out = translator.translate(query);
 
-			System.out.println("IN : " + query);
-			System.out.println("OUT: " + out);
+			log.debug("IN : {}", query);
+			log.debug("OUT: {}", out);
 			assertEquals(expected, out, query);
 		} catch (Throwable t) {
-			if (checkExceptionClass(t, expected)) {
-				assertTrue(true);
-			} else {
+			if (!checkExceptionClass(t, expected)) {
 				throw t;
 			}
 		}

@@ -11,20 +11,23 @@
 	</parent>
 
 	<artifactId>ibis-adapterframework-dbms</artifactId>
-	<name>Ibis AdapterFramework Dbms</name>
+	<name>Ibis AdapterFramework DBMS</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-commons</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
 
-		<dependency>
+		<dependency> <!-- consider making this optional -->
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-jdbc</artifactId>
 		</dependency>
@@ -33,11 +36,6 @@
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-artifact</artifactId>
 			<version>3.9.5</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
 		</dependency>
 
 		<dependency>
@@ -50,6 +48,6 @@
 			<artifactId>log4j-core</artifactId>
 			<scope>test</scope>
 		</dependency>
-    </dependencies>
+	</dependencies>
 
 </project>

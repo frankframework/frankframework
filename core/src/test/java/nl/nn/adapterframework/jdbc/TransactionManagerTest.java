@@ -3,16 +3,13 @@ package nl.nn.adapterframework.jdbc;
 import static org.junit.Assert.assertEquals;
 
 import java.sql.Connection;
-import java.sql.SQLException;
-
-import nl.nn.adapterframework.dbms.JdbcException;
-
-import nl.nn.adapterframework.util.DbmsUtil;
 
 import org.junit.Test;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
+import nl.nn.adapterframework.dbms.JdbcException;
+import nl.nn.adapterframework.util.DbmsUtil;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 public class TransactionManagerTest extends TransactionManagerTestBase {
