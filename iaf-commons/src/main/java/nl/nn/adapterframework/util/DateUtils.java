@@ -84,7 +84,7 @@ public class DateUtils {
 	}
 
 	/**
-	 * Parses a string to a Date using XML Schema dateTime data type (GDate)
+	 * Parses a string to a Date using LocalDateTime with SystemDefault ZoneId
 	 */
 	public static Date parseXmlDateTime(String s) {
 		s = s.trim();
