@@ -29,6 +29,7 @@ export type Trigger = {
   filter: string,
   period: number,
   sources?: Record<string, string[]>,
+  changedSources: string[];
   threshold: number,
   id: number,
   type: string,

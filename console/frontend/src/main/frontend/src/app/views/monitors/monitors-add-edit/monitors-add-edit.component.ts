@@ -22,9 +22,11 @@ interface Event {
 })
 export class MonitorsAddEditComponent implements OnInit {
   loading: boolean = true;
+  componentLoading = true;
   selectedConfiguration: string = "";
   monitor: string = "";
   events: Record<string, Event> = {};
+  eventsOptions: string[] = [];
   severities: string[] = [];
   triggerId: number = -1;
   trigger: Trigger = {
@@ -33,6 +35,7 @@ export class MonitorsAddEditComponent implements OnInit {
     filter: "",
     period: 0,
     sources: {},
+    changedSources: [],
     threshold: 0,
     id: 0,
     type: "ALARM",
@@ -64,27 +67,28 @@ export class MonitorsAddEditComponent implements OnInit {
       this.url = "configurations/" + this.selectedConfiguration + "/monitors/" + this.monitor + "/triggers/" + this.triggerId;
 
       this.apiService.Get(this.url, (data) => {
-        // Object.assign(this, data);
+        this.eventsOptions = Object.keys(data.events).sort();
         this.events = data.events;
         this.severities = data.severities;
         this.trigger = data.trigger;
         this.calculateEventSources();
 
         if (data.trigger && data.trigger.sources) {
-          let sources = data.trigger.sources;
-          this.trigger.sources = {};
+          let sources = { ...data.trigger.sources };
+          this.trigger.changedSources = [];
           this.trigger.adapters = [];
 
           for (const adapter in sources) {
             if (data.trigger.filter == "SOURCE") {
               for (const i in sources[adapter]) {
-                this.trigger.sources[adapter] = [adapter + "$$" + sources[adapter][i]];
+                this.trigger.changedSources.push(adapter + "$$" + sources[adapter][i]);
               }
             } else {
               this.trigger.adapters.push(adapter);
             }
           }
         }
+        this.componentLoading = false;
       }, () => {
         this.$state.go('pages.monitors', this.stateParams);
       });
@@ -112,7 +116,7 @@ export class MonitorsAddEditComponent implements OnInit {
 
       for (const adapter in eventSources) {
         for (const i in eventSources[adapter]) {
-          retVal.push({ adapter: adapter, source: eventSources[adapter][i] });
+          retVal.push({ adapter, source: eventSources[adapter][i] });
         }
       }
 
@@ -135,10 +139,10 @@ export class MonitorsAddEditComponent implements OnInit {
       delete trigger.sources;
     } else if (trigger.filter == "SOURCE") {
       delete trigger.adapters;
-      let sources = trigger.sources;
+      let sources = trigger.changedSources;
       trigger.sources = {};
 
-      for (const item in sources) {
+      for (const item of sources) {
         let s = item.split("$$");
         let adapter = s[0];
         let source = s[1];
