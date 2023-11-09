@@ -69,7 +69,7 @@ public enum Dbms {
 				}
 			}
 		}
-		log.debug("Returning nl.nn.adapterframework.dbms.GenericDbmsSupport for product [{}]", product);
+		log.debug("Returning GenericDbmsSupport for product [{}]", product);
 		return new GenericDbmsSupport();
 	}
 
