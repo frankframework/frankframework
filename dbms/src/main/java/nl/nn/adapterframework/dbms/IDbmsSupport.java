@@ -37,9 +37,6 @@ import javax.annotation.Nonnull;
  */
 public interface IDbmsSupport {
 
-	/**
-	 * Numeric value defining database type, defined in {@link DbmsSupportFactory}.
-	 */
 	Dbms getDbms();
 
 	String getDbmsName();
