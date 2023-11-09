@@ -1060,6 +1060,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		assertEqualsIgnoreCRLF(getFile("specialCharactersDoubleEscaped.txt"), result.trim());
 	}
 
+	@Test
 	public void unsupportedScheme() throws Throwable {
 		sender = getSender();
 		Message input = new Message("hallo");
