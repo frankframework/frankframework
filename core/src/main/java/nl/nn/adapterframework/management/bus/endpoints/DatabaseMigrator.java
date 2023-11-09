@@ -33,7 +33,7 @@ import nl.nn.adapterframework.configuration.IbisManager;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.BytesResource;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BinaryResponseMessage;

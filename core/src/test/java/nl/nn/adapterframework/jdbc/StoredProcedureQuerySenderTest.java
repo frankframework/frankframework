@@ -37,6 +37,7 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
+import nl.nn.adapterframework.dbms.JdbcException;
 
 public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 

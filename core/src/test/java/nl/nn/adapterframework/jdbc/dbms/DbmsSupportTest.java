@@ -28,6 +28,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import nl.nn.adapterframework.dbms.Dbms;
+import nl.nn.adapterframework.util.DbmsUtil;
+
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
 import org.junit.Test;
@@ -35,7 +38,7 @@ import org.junit.Test;
 import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.util.DateUtils;
@@ -59,12 +62,12 @@ public class DbmsSupportTest extends JdbcTestBase {
 
 	@Test
 	public void testTableLessSelect() throws JdbcException {
-		assertEquals(4, JdbcUtil.executeIntQuery(connection,"SELECT 2+2 "+dbmsSupport.getFromForTablelessSelect()));
+		assertEquals(4, DbmsUtil.executeIntQuery(connection,"SELECT 2+2 "+dbmsSupport.getFromForTablelessSelect()));
 	}
 
 	@Test
 	public void testTableLessSelectWithIntParam() throws JdbcException {
-		assertEquals(4, JdbcUtil.executeIntQuery(connection,"SELECT 1+? "+dbmsSupport.getFromForTablelessSelect(), 3));
+		assertEquals(4, DbmsUtil.executeIntQuery(connection,"SELECT 1+? "+dbmsSupport.getFromForTablelessSelect(), 3));
 	}
 
 //	@Test
@@ -268,7 +271,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 	}
 	@Test
 	public void testNumericAsFloat() throws Exception {
-		assumeFalse(dbmsSupport.getDbms()==Dbms.POSTGRESQL); // This fails on PostgreSQL, precision of setFloat appears to be too low"
+		assumeFalse(dbmsSupport.getDbms()== Dbms.POSTGRESQL); // This fails on PostgreSQL, precision of setFloat appears to be too low"
 		float number = 1234.5677F;
 		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER) VALUES (4,?)";
 		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
@@ -571,8 +574,8 @@ public class DbmsSupportTest extends JdbcTestBase {
 		executeTranslatedQuery(connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT,TBOOLEAN) VALUES (30,99,"+dbmsSupport.getBooleanValue(false)+")", QueryType.OTHER);
 		executeTranslatedQuery(connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT,TBOOLEAN) VALUES (31,99,"+dbmsSupport.getBooleanValue(true)+")", QueryType.OTHER);
 
-		assertEquals(30, JdbcUtil.executeIntQuery(connection, "SELECT TKEY FROM "+TEST_TABLE+" WHERE TINT=99 AND TBOOLEAN="+dbmsSupport.getBooleanValue(false)));
-		assertEquals(31, JdbcUtil.executeIntQuery(connection, "SELECT TKEY FROM "+TEST_TABLE+" WHERE TINT=99 AND TBOOLEAN="+dbmsSupport.getBooleanValue(true)));
+		assertEquals(30, DbmsUtil.executeIntQuery(connection, "SELECT TKEY FROM "+TEST_TABLE+" WHERE TINT=99 AND TBOOLEAN="+dbmsSupport.getBooleanValue(false)));
+		assertEquals(31, DbmsUtil.executeIntQuery(connection, "SELECT TKEY FROM "+TEST_TABLE+" WHERE TINT=99 AND TBOOLEAN="+dbmsSupport.getBooleanValue(true)));
 
 	}
 
@@ -587,15 +590,15 @@ public class DbmsSupportTest extends JdbcTestBase {
 		executeTranslatedQuery(connection, "INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (40,100)", QueryType.OTHER);
 
 		String selectQuery="SELECT TKEY FROM "+TEST_TABLE+" WHERE TINT=100";
-		assertEquals(40, JdbcUtil.executeIntQuery(connection, selectQuery));
+		assertEquals(40, DbmsUtil.executeIntQuery(connection, selectQuery));
 
 		String readQueueQuery = dbmsSupport.prepareQueryTextForWorkQueueReading(1, selectQuery);
 		String peekQueueQuery = dbmsSupport.prepareQueryTextForWorkQueuePeeking(1, selectQuery);
 
 		// test that peek and read find records when they are available
-		assertEquals(40, JdbcUtil.executeIntQuery(connection, peekQueueQuery));
-		assertEquals(40, JdbcUtil.executeIntQuery(connection, readQueueQuery));
-		assertEquals(40, JdbcUtil.executeIntQuery(connection, peekQueueQuery));
+		assertEquals(40, DbmsUtil.executeIntQuery(connection, peekQueueQuery));
+		assertEquals(40, DbmsUtil.executeIntQuery(connection, readQueueQuery));
+		assertEquals(40, DbmsUtil.executeIntQuery(connection, peekQueueQuery));
 
 		ReadNextRecordConcurrentlyTester nextRecordTester = null;
 		Semaphore actionFinished = null;

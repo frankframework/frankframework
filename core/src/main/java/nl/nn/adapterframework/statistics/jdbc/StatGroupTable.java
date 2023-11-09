@@ -17,16 +17,19 @@ package nl.nn.adapterframework.statistics.jdbc;
 
 import java.sql.Connection;
 
+import nl.nn.adapterframework.dbms.DbmsException;
+import nl.nn.adapterframework.util.DbmsUtil;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Utility class to populate and reference groups used in statistics.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9.8
  */
@@ -57,21 +60,21 @@ public class StatGroupTable {
 		insertRootQuery="INSERT INTO "+tableName+"("+keyColumn+","+instanceKeyColumn+","+nameColumn+","+typeColumn+") VALUES (?,?,?,?)";
 	}
 
-	public int findOrInsert(Connection connection, int parentKey, int instanceKey, String name, String type) throws JdbcException {
+	public int findOrInsert(Connection connection, int parentKey, int instanceKey, String name, String type) throws JdbcException, DbmsException {
 		int result;
 
 		if (parentKey<0) {
-			result = JdbcUtil.executeIntQuery(connection,selectRootByNameQuery,instanceKey,name);
+			result = DbmsUtil.executeIntQuery(connection,selectRootByNameQuery,instanceKey,name);
 		} else if (StringUtils.isNotEmpty(name)) {
-			result = JdbcUtil.executeIntQuery(connection,selectByNameAndTypeQuery,parentKey,instanceKey,name,type);
+			result = DbmsUtil.executeIntQuery(connection,selectByNameAndTypeQuery,parentKey,instanceKey,name,type);
 		} else {
-			result = JdbcUtil.executeIntQuery(connection,selectByTypeQuery,parentKey,instanceKey,type);
+			result = DbmsUtil.executeIntQuery(connection,selectByTypeQuery,parentKey,instanceKey,type);
 
 		}
 		if (result>=0) {
 			return result;
 		}
-		result = JdbcUtil.executeIntQuery(connection,selectNextValueQuery);
+		result = DbmsUtil.executeIntQuery(connection,selectNextValueQuery);
 		if (parentKey<0) {
 			JdbcUtil.executeStatement(connection,insertRootQuery,instanceKey,name);
 		} else {

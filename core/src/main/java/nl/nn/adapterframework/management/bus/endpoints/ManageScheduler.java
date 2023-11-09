@@ -33,7 +33,7 @@ import org.springframework.messaging.Message;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.ActionSelector;
 import nl.nn.adapterframework.management.bus.BusAction;

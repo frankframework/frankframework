@@ -34,14 +34,14 @@ import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * DatabaseMigration implementation for IAF. 
- * 
+ * DatabaseMigration implementation for IAF.
+ *
  * @author	Niels Meijer
  * @since	7.0-B4
  *

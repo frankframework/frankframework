@@ -32,23 +32,23 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
  * Pipe that performs domain transforming on the basis of a database table.
  *
- * Every string which equals "%![DT{<code>label</code>,<code>valueIn</code>,<code>type</code>}]" will be replaced by <code>valueOut</code>. 
- * 
+ * Every string which equals "%![DT{<code>label</code>,<code>valueIn</code>,<code>type</code>}]" will be replaced by <code>valueOut</code>.
+ *
  * The field <code>type</code>, which is optional, indicates the format of <code>valueIn</code>. Currently the following types are supported:
- * 
+ *
  * <ul>
  *   <li><code>string</code> (default): the methode setString() is used</li>
  *   <li><code>number</code>: the method setDouble() is used </li>
  * </ul>
- *  
- * 
+ *
+ *
  * @author  Peter Leeuwenburgh
  * @since   4.9
  */

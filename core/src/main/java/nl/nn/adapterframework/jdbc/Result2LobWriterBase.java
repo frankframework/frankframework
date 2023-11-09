@@ -33,7 +33,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.ReferTo;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.SpringUtils;
