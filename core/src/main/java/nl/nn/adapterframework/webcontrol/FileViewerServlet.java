@@ -24,16 +24,10 @@ import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.net.URL;
-import java.util.Map;
 
-import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -41,15 +35,11 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassLoaderUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Shows a textfile either as HTML or as Text.
@@ -86,11 +76,6 @@ public class FileViewerServlet extends HttpServletBase {
 	// key that is looked up to retrieve texts to be signaled
 	private static final String fvConfigKey="FileViewerServlet.signal";
 
-	private static final String log4j_html_xslt = "/xml/xsl/log4j_html.xsl";
-	private static final String log4j_text_xslt = "/xml/xsl/log4j_text.xsl";
-	private static final String log4j_prefix    = "<log4j:log4j xmlns:log4j=\"http://jakarta.apache.org/log4\">\n\n";
-	private static final String log4j_postfix	  = "</log4j:log4j>";
-
 	public static final String permissionRules = AppConstants.getInstance().getProperty("FileViewerServlet.permission.rules");
 
 	public static String makeConfiguredReplacements(String input) {
@@ -102,24 +87,7 @@ public class FileViewerServlet extends HttpServletBase {
 		return StringUtils.replace(input, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
 	}
 
-
-	public static void transformReader(Reader reader, String filename, Map<String, Object> parameters, HttpServletResponse response, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException {
-		PrintWriter out = response.getWriter();
-		Reader fileReader = new EncapsulatingReader(reader, log4j_prefix, log4j_postfix, true);
-		URL xsltSource = ClassLoaderUtils.getResourceURL(stylesheetUrl);
-		if (xsltSource!=null) {
-			Transformer transformer = XmlUtils.createTransformer(xsltSource);
-			if (parameters!=null) {
-				XmlUtils.setTransformerParameters(transformer, parameters);
-			}
-			XmlUtils.transformXml(transformer, new StreamSource(fileReader),out);
-			out.close();
-		} else {
-			showReaderContents(fileReader,filename,"text",response,title);
-		}
-	}
-
-	public static void showReaderContents(Reader reader, String filename, String type, HttpServletResponse response, String title) throws DomBuilderException, TransformerException, IOException {
+	public static void showReaderContents(Reader reader, String filename, String type, HttpServletResponse response, String title) throws IOException {
 		PrintWriter out = response.getWriter();
 		if (type==null) {
 			response.setContentType("text/html");
@@ -168,20 +136,11 @@ public class FileViewerServlet extends HttpServletBase {
 				lastPart=filename;
 			}
 			response.setHeader("Content-Disposition","inline; filename=\""+lastPart+"\"");
-			if (filename.indexOf("_xml.log")>=0) {
-				Reader fileReader = new EncapsulatingReader(reader, log4j_prefix, log4j_postfix, true);
-				try(LineNumberReader lnr = new LineNumberReader(fileReader)) {
-					String line;
-					while ((line=lnr.readLine())!=null) {
-						out.println(line+"\n");
-					}
-				}
-			}
 		}
 		out.close();
 	}
 
-	public static void showInputStreamContents(InputStream inputStream, String filename, String type, HttpServletResponse response) throws DomBuilderException, TransformerException, IOException {
+	public static void showInputStreamContents(InputStream inputStream, String filename, String type, HttpServletResponse response) throws IOException {
 		ServletOutputStream outputStream = response.getOutputStream();
 		if (type.equalsIgnoreCase("zip")) {
 			response.setContentType("application/zip");
@@ -201,15 +160,12 @@ public class FileViewerServlet extends HttpServletBase {
 	}
 
 	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		try {
-
 			String type=(String)request.getAttribute("resultType");
 			if (type==null) { type=request.getParameter("resultType"); }
 			String fileName=(String)request.getAttribute("fileName");
 			if (fileName==null) { fileName=request.getParameter("fileName"); }
-			String log4j = (String) request.getAttribute("log4j");
-			if (log4j == null) { log4j = request.getParameter("log4j"); }
 
 			if (fileName==null) {
 				PrintWriter out = response.getWriter();
@@ -224,35 +180,20 @@ public class FileViewerServlet extends HttpServletBase {
 					return;
 				}
 			}
-			boolean log4jFlag = "xml".equalsIgnoreCase(log4j) || "true".equalsIgnoreCase(log4j);
-			if (log4jFlag) {
-				String stylesheetUrl;
-				if ("html".equalsIgnoreCase(type)) {
-					response.setContentType("text/html");
-					stylesheetUrl=log4j_html_xslt;
-				} else {
-					response.setContentType("text/plain");
-					stylesheetUrl=log4j_text_xslt;
-				}
-				transformReader(new FileReader(fileName), fileName, null, response, stylesheetUrl, fileName);
+
+			if (type.equalsIgnoreCase("zip") || type.equalsIgnoreCase("bin")) {
+				showInputStreamContents(new DataInputStream(new FileInputStream(fileName)), fileName, type, response);
 			} else {
-				if (type.equalsIgnoreCase("zip") || type.equalsIgnoreCase("bin")) {
-					showInputStreamContents(new DataInputStream(new FileInputStream(fileName)), fileName, type, response);
-				} else {
-					showReaderContents(new FileReader(fileName), fileName, type, response, fileName);
-				}
+				showReaderContents(new FileReader(fileName), fileName, type, response, fileName);
 			}
 		} catch (IOException e) {
 			log.error("FileViewerServlet caught IOException" , e);
 			throw e;
-		} catch (Throwable e) {
-			log.error("FileViewerServlet caught Throwable" , e);
-			throw new ServletException("FileViewerServlet caught Throwable" ,e);
 		}
 	}
 
 	@Override
-	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		doGet(request, response);
 	}
 
