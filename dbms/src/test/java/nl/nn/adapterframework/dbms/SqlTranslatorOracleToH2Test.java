@@ -1,9 +1,10 @@
 package nl.nn.adapterframework.dbms;
 
-import static org.junit.Assert.assertEquals;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SqlTranslatorOracleToH2Test {
 
@@ -47,7 +48,7 @@ public class SqlTranslatorOracleToH2Test {
 		assertEquals(query,  skipIrrelevantWhitespace(expected), skipIrrelevantWhitespace(result));
 	}
 
-	@Ignore("too hard for SqlTranslator to create identity column")
+	@Disabled("too hard for SqlTranslator to create identity column")
 	@Test
 	public void testConvertQueryCreateTableIbisStore() throws JdbcException {
 		String query = "CREATE TABLE IBISSTORE (MESSAGEKEY NUMBER(10) NOT NULL, TYPE CHAR(1 CHAR), SLOTID VARCHAR2(100 CHAR), HOST VARCHAR2(100 CHAR), MESSAGEID VARCHAR2(100 CHAR), CORRELATIONID VARCHAR2(256 CHAR), MESSAGEDATE TIMESTAMP(6), COMMENTS VARCHAR2(1000 CHAR), MESSAGE BLOB, EXPIRYDATE TIMESTAMP(6), LABEL VARCHAR2(100 CHAR), CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY));";
@@ -109,7 +110,7 @@ public class SqlTranslatorOracleToH2Test {
 		assertEquals(query, null, result);
 	}
 
-	@Ignore("too hard for SqlTranslator to create identity column")
+	@Disabled("too hard for SqlTranslator to create identity column")
 	@Test
 	public void testIgnoreAlterTableIbisStore() throws JdbcException {
 		String query = "ALTER TABLE IBISSTORE ADD (CONSTRAINT PK_IBISSTORE PRIMARY KEY (MESSAGEKEY));";

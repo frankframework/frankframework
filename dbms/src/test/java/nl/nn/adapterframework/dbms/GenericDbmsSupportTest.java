@@ -1,11 +1,12 @@
 package nl.nn.adapterframework.dbms;
 
-import static org.junit.Assert.assertEquals;
-
 import java.sql.SQLException;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class GenericDbmsSupportTest {
 

@@ -1,14 +1,12 @@
 package nl.nn.adapterframework.dbms;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 @RunWith(Parameterized.class)
@@ -66,7 +64,7 @@ public class SqlTranslatorTest {
 			assertEquals(query, expected, out);
 		} catch (Throwable t) {
 			if (checkExceptionClass(t, expected)) {
-				Assert.assertTrue(true);
+				assertTrue(true);
 			} else {
 				throw t;
 			}
