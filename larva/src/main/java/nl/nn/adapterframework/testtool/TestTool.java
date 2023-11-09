@@ -29,12 +29,12 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.text.ParseException;
 import java.text.ParsePosition;
-import java.time.DateTimeException;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,8 +57,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-
-import nl.nn.adapterframework.util.DateUtils;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
@@ -175,9 +173,9 @@ public class TestTool {
 	 * 		   positive: number of scenarios that failed
 	 */
 	public static int runScenarios(IbisContext ibisContext, String paramLogLevel,
-			String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
-			int timeout, String realPath, String paramScenariosRootDirectory,
-			Writer out, boolean silent) {
+								   String paramAutoScroll, String paramExecute, String paramWaitBeforeCleanUp,
+								   int timeout, String realPath, String paramScenariosRootDirectory,
+								   Writer out, boolean silent) {
 		AppConstants appConstants = AppConstants.getInstance();
 		String logLevel = "wrong pipeline messages";
 		String autoScroll = "true";
@@ -774,7 +772,7 @@ public class TestTool {
 			String scenarioPassedFailed = "scenario passed/failed";
 			if (LOG_LEVEL_ORDER.indexOf(
 					"[" + (String) writers.get("loglevel") + "]") == LOG_LEVEL_ORDER
-							.indexOf("[" + scenarioPassedFailed + "]")) {
+					.indexOf("[" + scenarioPassedFailed + "]")) {
 				writeLog("<h5 hidden='true'>Difference description:</h5>",
 						scenarioPassedFailed, writers, false);
 				writeLog(
@@ -1148,7 +1146,7 @@ public class TestTool {
 	 * @param child   the child pathname to convert to a absolute pathname
 	 */
 	public static String getAbsolutePath(String parent, String child,
-			boolean addFileSeparator) {
+										 boolean addFileSeparator) {
 		File result;
 		File file = new File(child);
 		if (file.isAbsolute()) {
@@ -2256,24 +2254,24 @@ public class TestTool {
 			if (j != -1) {
 				debugMessage("Key 2 found", writers);
 				String dateString = result.substring(i + key1.length(), j);
-				Instant instant;
+				Date date;
 				boolean remainingString = false;
 				try {
-					DateTimeFormatter dateTimeFormatter = null;
+					SimpleDateFormat simpleDateFormat = null;
 					if (pattern == null) {
 						// Expect time in milliseconds
-						instant = Instant.ofEpochMilli(Long.parseLong(dateString));
+						date = new Date(Long.parseLong(dateString));
 					} else {
-						dateTimeFormatter = DateTimeFormatter.ofPattern(pattern);
+						simpleDateFormat = new SimpleDateFormat(pattern);
 						ParsePosition parsePosition = new ParsePosition(0);
-						instant = Instant.from(dateTimeFormatter.parse(dateString, parsePosition));
+						date = simpleDateFormat.parse(dateString, parsePosition);
 						if (parsePosition.getIndex() != dateString.length()) {
 							remainingString = true;
 							i = result.indexOf(key1, j + key2.length());
 							if (errorMessageOnRemainingString) {
 								errorMessage("Found remaining string after parsing date with pattern '"
-											 + pattern + "': "
-											 + dateString.substring(parsePosition.getIndex()), writers);
+										+ pattern + "': "
+										+ dateString.substring(parsePosition.getIndex()), writers);
 							}
 						}
 					}
@@ -2287,13 +2285,13 @@ public class TestTool {
 							String currentTime;
 							long currentTimeMillis;
 							if (pattern == null) {
-								currentTime = String.valueOf(System.currentTimeMillis());
-								currentTimeMillis = System.currentTimeMillis();
+								currentTime = "" + System.currentTimeMillis();
+								currentTimeMillis = Long.parseLong(currentTime);
 							} else {
-								currentTime = DateUtils.format(Instant.now(), pattern);
-								currentTimeMillis = DateUtils.parseToInstant(currentTime, dateTimeFormatter).toEpochMilli();
+								currentTime = simpleDateFormat.format(new Date(System.currentTimeMillis()));
+								currentTimeMillis = simpleDateFormat.parse(currentTime).getTime();
 							}
-							if (instant.toEpochMilli() >= currentTimeMillis - Long.parseLong(margin) && instant.toEpochMilli() <= currentTimeMillis + Long.parseLong(margin)) {
+							if (date.getTime() >= currentTimeMillis - Long.parseLong(margin) && date.getTime() <= currentTimeMillis + Long.parseLong(margin)) {
 								result = result.substring(0, i) + key1 + ignoreText + result.substring(j);
 								i = result.indexOf(key1, i + key1.length() + ignoreText.length() + key2.length());
 							} else {
@@ -2302,7 +2300,7 @@ public class TestTool {
 							}
 						}
 					}
-				} catch(DateTimeException e) {
+				} catch(ParseException e) {
 					i = -1;
 					errorMessage("Could not parse margin or date: " + e.getMessage(), e, writers);
 				} catch(NumberFormatException e) {
@@ -2317,7 +2315,7 @@ public class TestTool {
 	}
 
 	public static String formatDecimalContentBetweenKeys(String string,
-		String key1, String key2, Map writers) {
+														 String key1, String key2, Map writers) {
 		String result = string;
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
@@ -2422,8 +2420,8 @@ public class TestTool {
 					value = httpServletResponseMock;
 				}
 				/** Support for httpRequest parameterType is removed because it depends on Spring and Http-client libraries that contain CVEs. Upgrading these libraries requires some work.
-				On the other hand, httpRequest parameter is only used in CreateRestViewPipe. It is unlikely to create a larva test for this pipe.
-				Therefore, it is decided to stop supporting it. */
+				 On the other hand, httpRequest parameter is only used in CreateRestViewPipe. It is unlikely to create a larva test for this pipe.
+				 Therefore, it is decided to stop supporting it. */
 				/* else if ("httpRequest".equals(type)) {
 					value = properties.getProperty(property + _param + i + ".value");
 					if("multipart".equals(value)){
@@ -2597,7 +2595,7 @@ public class TestTool {
 	 * @param properties Properties to be checked
 	 *
 	 * @return HashMap<String, HashMap<String, HashMap<String, String>>> as HashMap<'ignoreContentBetweenKeys', Hashmap<'fieldA', HashMap<'key1', '<field name="A">'>
-	*/
+	 */
 
 	public static HashMap<String, HashMap<String, HashMap<String, String>>> mapPropertiesToIgnores(Properties properties){
 		HashMap<String, HashMap<String, HashMap<String, String>>> returnMap = new HashMap<>();
@@ -2659,14 +2657,14 @@ public class TestTool {
 	 * Caller of mapPropertiesByIdentifier() should not necescarrily know about all attributes related to an ignore.
 	 *
 	 * @param propertyName The name of the ignore we are checking, in the example 'ignoreContentBetweenKeys'
-	*/
+	 */
 	public static ArrayList<String> findAttributesForIgnore(String propertyName) {
 		ArrayList<String> attributes = null;
 
 		switch (propertyName) {
 			case "decodeUnzipContentBetweenKeys":
-			  	attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2", "replaceNewlines"} ) );
-			  	break;
+				attributes = new ArrayList( Arrays.asList( new String[]{"key1", "key2", "replaceNewlines"} ) );
+				break;
 			case "canonicaliseFilePathContentBetweenKeys":
 			case "replaceRegularExpressionKeys":
 			case "ignoreContentBetweenKeys":
