@@ -17,9 +17,9 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.dbms.GenericDbmsSupport;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.JdbcException;
+import nl.nn.adapterframework.dbms.GenericDbmsSupport;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.management.bus.BusTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
@@ -27,9 +27,9 @@ import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilde
 /**
  * Enables the ability to provide a mockable DirectQuerySender. In some places a new QuerySender is created to execute (custom) statements.
  * This allows the result to be mocked.
- * 
+ *
  * @See {@link BusTestBase#mockDirectQuerySenderResult(String, Message)}
- * 
+ *
  * @author Niels Meijer
  */
 public class DirectQuerySenderMock extends DirectQuerySender {

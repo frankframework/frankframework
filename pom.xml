@@ -268,6 +268,11 @@
 				<artifactId>ibis-adapterframework-aws</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-dbms</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- explicit dependency to force version 1.1.1 -->
 			<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
@@ -1192,6 +1197,7 @@
 				<module>ladybug</module>
 				<module>test</module>
 				<module>example</module>
+				<module>dbms</module>
 			</modules>
 		</profile>
 		<profile>

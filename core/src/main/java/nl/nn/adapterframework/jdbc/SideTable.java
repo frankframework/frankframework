@@ -17,14 +17,16 @@ package nl.nn.adapterframework.jdbc;
 
 import java.sql.Connection;
 
+import nl.nn.adapterframework.dbms.JdbcException;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.util.DbmsUtil;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Utility class to populate and reference side tables.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9.8
  */
@@ -49,11 +51,11 @@ public class SideTable {
 	public int findOrInsert(Connection connection, String name) throws JdbcException {
 		int result;
 
-		result = JdbcUtil.executeIntQuery(connection,selectQuery,name);
+		result = DbmsUtil.executeIntQuery(connection,selectQuery,name);
 		if (result>=0) {
 			return result;
 		}
-		result = JdbcUtil.executeIntQuery(connection,selectNextValueQuery);
+		result = DbmsUtil.executeIntQuery(connection,selectNextValueQuery);
 		JdbcUtil.executeStatement(connection,insertQuery,result,name);
 		return result;
 	}

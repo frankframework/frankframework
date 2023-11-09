@@ -21,13 +21,13 @@ import java.sql.ResultSet;
 
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.ReaderLineIterator;
 
 /**
  * abstract baseclass for Pipes that iterate over the lines in a lob.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
