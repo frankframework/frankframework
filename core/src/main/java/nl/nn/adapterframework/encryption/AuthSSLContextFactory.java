@@ -48,7 +48,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class AuthSSLContextFactory {
 	protected static Logger log = LogUtil.getLogger(MethodHandles.lookup().lookupClass());
 
-	protected @Setter @Getter String protocol = "SSL";
+	protected @Setter @Getter String protocol = "TLSv1.2";
 
 	private HasKeystore keystoreOwner;
 	private HasTruststore trustoreOwner;
