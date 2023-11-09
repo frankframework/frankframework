@@ -57,7 +57,7 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 				return getDbmsSupport(connection);
 			}
 		} catch (SQLException | DbmsException e) {
-			log.warn("SQL exception while trying to get a connection from datasource [" + datasource + "]", e);
+			log.warn("SQL exception while trying to get a connection from datasource [{}]", datasource, e);
 			return new GenericDbmsSupport();
 		}
 	}
@@ -82,15 +82,15 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 				log.debug("no dbmsSupportMap specified, reverting to built-in types");
 			} else {
 				if (!supportMap.containsKey(product)) {
-					log.debug("product [" + product + "] not configured in dbmsSupportMap, will search in built-in types");
+					log.debug("product [{}] not configured in dbmsSupportMap, will search in built-in types", product);
 				} else {
 					String dbmsSupportClass = supportMap.getProperty(product);
 					if (StringUtils.isEmpty(dbmsSupportClass)) {
-						log.warn("product [" + product + "] configured empty in dbmsSupportMap, will search in built-in types");
+						log.warn("product [{}] configured empty in dbmsSupportMap, will search in built-in types", product);
 					} else {
 						try {
 							if (log.isDebugEnabled())
-								log.debug("creating dbmsSupportClass [" + dbmsSupportClass + "] for product [" + product + "] productVersion [" + productVersion + "]");
+								log.debug("creating dbmsSupportClass [{}] for product [{}] productVersion [{}]", dbmsSupportClass, product, productVersion);
 							return (IDbmsSupport) ClassUtils.newInstance(dbmsSupportClass);
 						} catch (Exception e) {
 							throw new DbmsException("Cannot create dbmsSupportClass [" + dbmsSupportClass + "] for product [" + product + "] productVersion [" + productVersion + "]", e);
@@ -100,7 +100,7 @@ public class DbmsSupportFactory implements IDbmsSupportFactory {
 			}
 			return Dbms.findDbmsSupportByProduct(product, productVersion);
 		}
-		log.debug("Setting databasetype to GENERIC, productName [" + product + "]");
+		log.debug("Setting databasetype to GENERIC, productName [{}]", product);
 		return new GenericDbmsSupport();
 	}
 

@@ -53,23 +53,23 @@ public enum Dbms {
 			return new MariaDbDbmsSupport(productVersion);
 		}
 		if (product.startsWith("DB2/")) {
-			log.debug("Setting databasetype to DB2 for product [" + product + "]");
+			log.debug("Setting databasetype to DB2 for product [{}]", product);
 			return new Db2DbmsSupport();
 		}
 		for (Dbms dbms : values()) {
 			if (dbms.getProductName().equals(product)) {
-				log.debug("Setting databasetype to [" + dbms + "]");
+				log.debug("Setting databasetype to [{}]", dbms);
 				IDbmsSupport result;
 				try {
 					result = dbms.dbmsSupportClass.newInstance();
-					log.debug("Returning built-in DBMS [" + dbms + "] found for product [" + product + "]");
+					log.debug("Returning built-in DBMS [{}] found for product [{}]", dbms, product);
 					return result;
 				} catch (IllegalAccessException | InstantiationException e) {
-					log.warn("Could not instantiate DbmsSupport for DBMS [" + dbms + "] found for product [" + product + "]", e);
+					log.warn("Could not instantiate DbmsSupport for DBMS [{}] found for product [{}]",dbms, product, e);
 				}
 			}
 		}
-		log.debug("Returning nl.nn.adapterframework.dbms.GenericDbmsSupport for product [" + product + "]");
+		log.debug("Returning nl.nn.adapterframework.dbms.GenericDbmsSupport for product [{}]", product);
 		return new GenericDbmsSupport();
 	}
 

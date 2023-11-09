@@ -206,7 +206,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		try {
 			return DbmsUtil.executeIntQuery(conn, query) >= 1;
 		} catch (Exception e) {
-			log.warn("could not determine presence of index [" + indexName + "] on table [" + tableName + "]", e);
+			log.warn("could not determine presence of index [{}] on table [{}]", indexName, tableName, e);
 			return false;
 		}
 	}
@@ -217,7 +217,7 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 		try {
 			return DbmsUtil.executeIntQuery(conn, query) >= 1;
 		} catch (Exception e) {
-			log.warn("could not determine presence of sequence [" + sequenceName + "]", e);
+			log.warn("could not determine presence of sequence [{}]", sequenceName, e);
 			return false;
 		}
 	}

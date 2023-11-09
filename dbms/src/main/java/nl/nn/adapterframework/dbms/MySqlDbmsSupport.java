@@ -130,7 +130,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		try {
 			return DbmsUtil.executeIntQuery(conn, query.toString()) >= 1;
 		} catch (Exception e) {
-			log.warn("could not determine presence of index columns on table [" + tableName + "] using query [" + query + "]", e);
+			log.warn("could not determine presence of index columns on table [{}] using query [{}]", tableName, query, e);
 			return false;
 		}
 	}

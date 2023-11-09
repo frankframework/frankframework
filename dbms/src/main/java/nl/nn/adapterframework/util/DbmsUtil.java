@@ -56,7 +56,7 @@ public class DbmsUtil {
 	 * @throws DbmsException if there is an error in query execution or parameter mapping
 	 */
 	public static String executeStringQuery(Connection connection, String query, Object... params) throws DbmsException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query [" + query + "]" + displayParameters(params));
+		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]{}", query, displayParameters(params));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt, params);
 			try (ResultSet rs = stmt.executeQuery()) {
@@ -98,7 +98,7 @@ public class DbmsUtil {
 	 * @throws DbmsException if there is an error in query execution or parameter mapping
 	 */
 	public static int executeIntQuery(Connection connection, String query, Object... params) throws DbmsException {
-		if (log.isDebugEnabled()) log.debug("prepare and execute query [" + query + "]" + displayParameters(params));
+		if (log.isDebugEnabled()) log.debug("prepare and execute query [{}]{}", query, displayParameters(params));
 		try (PreparedStatement stmt = connection.prepareStatement(query)) {
 			applyParameters(stmt, params);
 			try (ResultSet rs = stmt.executeQuery()) {

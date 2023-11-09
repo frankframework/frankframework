@@ -81,7 +81,7 @@ public class SqlTranslator implements ISqlTranslator {
 			for (String label : sources.keySet()) {
 				Matcher matcher = sources.get(label).matcher(query);
 				if (matcher.find()) {
-					if (log.isTraceEnabled()) log.trace(String.format("Found a match for label [%s] pattern [%s]", label, sources.get(label)));
+					if (log.isTraceEnabled()) log.trace("Found a match for label [{}] pattern [{}]", label, sources.get(label));
 					String replacement = targets.get(label);
 					if (StringUtils.isNotEmpty(replacement)) {
 						query = matcher.replaceAll(replacement);
@@ -106,7 +106,7 @@ public class SqlTranslator implements ISqlTranslator {
 	protected Pattern toPattern(String str) {
 		// Make sure there are no greedy matchers.
 		String pattern = str.replaceAll("\\.\\*", ".*?");
-		log.trace("Compiling pattern [" + pattern + "]");
+		log.trace("Compiling pattern [{}]", pattern);
 		return Pattern.compile(pattern, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 	}
 
@@ -135,7 +135,7 @@ public class SqlTranslator implements ISqlTranslator {
 				if (!line.startsWith("#") && equalsPos >= 0) {
 					String key = line.substring(0, equalsPos).trim().toLowerCase();
 					String value = line.substring(equalsPos + 1).trim();
-					if (log.isTraceEnabled()) log.trace("read key [" + key + "] value [" + value + "]");
+					if (log.isTraceEnabled()) log.trace("read key [{}] value [{}]", key, value);
 					int sourceMatchPos = key.indexOf(sourceMatch);
 					if (sourceMatchPos > 0) {
 						String label = key.substring(0, sourceMatchPos);
@@ -158,7 +158,7 @@ public class SqlTranslator implements ISqlTranslator {
 			if (target == null || target.equals(source) || target.equals("$0")) {
 				it.remove();
 			} else {
-				log.debug(String.format("configured translation pattern label [%s] source [%s] target [%s]", label, source, target));
+				log.debug("configured translation pattern label [{}] source [{}] target [{}]", label, source, target);
 			}
 		}
 		return true;

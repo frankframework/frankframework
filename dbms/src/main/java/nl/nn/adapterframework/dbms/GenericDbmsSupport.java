@@ -483,7 +483,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		try {
 			return DbmsUtil.executeIntQuery(conn, query.toString()) >= 1;
 		} catch (Exception e) {
-			log.warn("could not determine presence of index columns on table [" + tableName + "] using query [" + query + "]", e);
+			log.warn("could not determine presence of index columns on table [{}] using query [{}]", tableName, query, e);
 			return false;
 		}
 	}
@@ -503,7 +503,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		try {
 			return DbmsUtil.executeIntQuery(conn, query, tableName.toUpperCase()) >= 1;
 		} catch (Exception e) {
-			log.warn("could not determine presence of table [" + tableName + "]", e);
+			log.warn("could not determine presence of table [{}]", tableName, e);
 			return false;
 		}
 	}
@@ -523,26 +523,26 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		try {
 			return DbmsUtil.executeIntQuery(conn, query, tableName.toUpperCase(), columnName.toUpperCase()) >= 1;
 		} catch (Exception e) {
-			log.warn("could not determine correct presence of column [" + columnName + "] of table [" + tableName + "]", e);
+			log.warn("could not determine correct presence of column [{}] of table [{}]", columnName, tableName, e);
 			return false;
 		}
 	}
 
 	@Override
 	public boolean isIndexPresent(Connection conn, String schemaOwner, String tableName, String indexName) {
-		log.warn("could not determine presence of index [" + indexName + "] on table [" + tableName + "]");
+		log.warn("could not determine presence of index [{}] on table [{}]", indexName, tableName);
 		return true;
 	}
 
 	@Override
 	public boolean isSequencePresent(Connection conn, String schemaOwner, String tableName, String sequenceName) {
-		log.warn("could not determine presence of sequence [" + sequenceName + "]");
+		log.warn("could not determine presence of sequence [{}]", sequenceName);
 		return true;
 	}
 
 	@Override
 	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws DbmsException {
-		log.warn("could not determine presence of index columns on table [" + tableName + "]");
+		log.warn("could not determine presence of index columns on table [{}]", tableName);
 		return true;
 	}
 
@@ -635,7 +635,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	protected void warnConvertQuery(String sqlDialectFrom) {
-		log.warn("don't know how to convert queries from [" + sqlDialectFrom + "] to [" + getDbmsName() + "]");
+		log.warn("don't know how to convert queries from [{}] to [{}]", sqlDialectFrom, getDbmsName());
 	}
 
 	protected boolean isQueryConversionRequired(String sqlDialectFrom) {
