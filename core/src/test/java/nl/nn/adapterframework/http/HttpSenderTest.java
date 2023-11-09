@@ -18,6 +18,7 @@ package nl.nn.adapterframework.http;
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
@@ -106,8 +107,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	public void testKnownProtocol() throws Exception {
 		sender = getSender();
 		sender.setProtocol("TLSv1.2");
-		sender.configure();
-		assertTrue(true);
+		assertDoesNotThrow(sender::configure);
 	}
 
 	@Test
@@ -123,8 +123,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	public void testSupportedCipherSuite() throws Exception {
 		sender = getSender();
 		sender.setSupportedCipherSuites("TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384");
-		sender.configure();
-		assertTrue(true);
+		assertDoesNotThrow(sender::configure);
 	}
 
 	@Test
@@ -140,8 +139,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	public void testEmptyCipherSuite() throws Exception {
 		sender = getSender();
 		sender.setSupportedCipherSuites("");
-		sender.configure();
-		assertTrue(true);
+		assertDoesNotThrow(sender::configure);
 	}
 
 	@Test
