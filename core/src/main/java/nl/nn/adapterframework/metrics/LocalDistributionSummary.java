@@ -107,8 +107,9 @@ public class LocalDistributionSummary extends AbstractDistributionSummary {
 		return calculateVariance(count(), Math.round(totalAmount()), sumOfSquares.sum());
 	}
 	private double calculateVariance(long count, long sum, long sumOfSquares) {
-		if (count>1) {
-			return (sumOfSquares-((sum*sum)/count))/(count-1);
+		if (count > 1) {
+			long sumSQ = (sumOfSquares-((sum*sum)/count));
+			return (double) sumSQ / (count-1);
 		} else {
 			return Double.NaN;
 		}
