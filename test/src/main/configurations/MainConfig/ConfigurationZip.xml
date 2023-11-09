@@ -316,7 +316,7 @@
 					collectResults="false" elementXPathExpression="/files/file"
 					>
 				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
-						javaListener="ibis4test-zip-iterator-sub">
+						javaListener="ibis4test-zip-iterator-add-files">
 					<param name="zipHandle" sessionKey="zipHandle"/>
 				</sender>
 			</pipe>
@@ -334,10 +334,26 @@
 					name="Create unzip target directory"
 					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
 					action="mkdir"
-					getInputFromFixedValue="${testdata.dir}/unziperator"
+					getInputFromFixedValue="${testdata.dir}/unziperator">
+
+				<forward name="success" path="Create result file"/>
+				<forward name="exception" path="Create result file"/>
+			</pipe>
+			<pipe
+					name="Create result file"
+					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					action="create"
+					filename="${testdata.dir}/result.xml"
 			/>
 			<pipe
-					name="UnZip"
+					name="Write opening tag"
+					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					action="append"
+					filename="${testdata.dir}/result.xml"
+					getInputFromFixedValue="&lt;result&gt;"
+			/>
+			<pipe
+					name="Unzip"
 					className="nl.nn.adapterframework.pipes.UnzipPipe"
 					processFile="true"
 					getInputFromFixedValue="${testdata.dir}/ziperator.zip"
@@ -345,25 +361,47 @@
 					assumeDirectoryExists="true"
 			/>
 			<pipe
-					name="Get Filename first result file"
-					className="nl.nn.adapterframework.pipes.XsltPipe"
-					xpathExpression="/results/result[1]/fileName/text()"
+					name="ForEachFile"
+					className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
+					collectResults="false" elementXPathExpression="/results/result/fileName"
+			>
+				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+						javaListener="ibis4test-zip-iterator-collect-files">
+					<param name="zipHandle" sessionKey="zipHandle"/>
+				</sender>
+			</pipe>
+			<pipe
+					name="Write closing tag"
+					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					action="append"
+					filename="${testdata.dir}/result.xml"
+					getInputFromFixedValue="&lt;/result&gt;"
 			/>
 			<pipe
-					name="readFile"
+					name="Remove unzip target directory"
 					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
-					action="read"
+					action="rmdir"
+					getInputFromFixedValue="${testdata.dir}/unziperator">
+
+				<forward name="success" path="Read Result File"/>
+				<forward name="exception" path="Read Result File"/>
+			</pipe>
+			<pipe
+					name="Read Result File"
+					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					filename="${testdata.dir}/result.xml"
+					action="readDelete"
 			/>
 		</pipeline>
 	</adapter>
 
-	<adapter name="Zip-Iterator-Sub">
+	<adapter name="Zip-Iterator-Sub1-Add-To-Zip">
 		<receiver
-			name="Zip-Iterator-Sub"
+			name="Zip-Iterator-Sub1-Add-To-Zip"
 			>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
-				name="ibis4test-zip-iterator-sub"
+				name="ibis4test-zip-iterator-add-files"
 				/>
 		</receiver>
 		<pipeline>
@@ -381,6 +419,35 @@
 				<param name="filename" sessionKey="originalMessage" xpathExpression="file"/>
 				<forward name="success" path="READY"/>
 			</pipe>
+		</pipeline>
+	</adapter>
+
+	<adapter name="Zip-Iterator-Sub2-Collect-Files">
+		<receiver
+			name="Zip-Iterator-Sub2-Collect-Files"
+			>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="ibis4test-zip-iterator-collect-files"
+				/>
+		</receiver>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success"/>
+			</exits>
+
+			<pipe
+					name="Read File"
+					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					action="read">
+				<param name="filename" xpathExpression="fileName"/>
+			</pipe>
+			<pipe
+					name="Write File"
+					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					action="append"
+					filename="${testdata.dir}/result.xml"
+			/>
 		</pipeline>
 	</adapter>
 </module>
