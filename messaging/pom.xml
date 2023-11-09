@@ -7,8 +7,8 @@
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-ibm</artifactId>
-	<name>Ibis AdapterFramework support for IBM</name>
+	<artifactId>ibis-adapterframework-messaging</artifactId>
+	<name>Ibis AdapterFramework support for Messaging Systems</name>
 
 	<dependencies>
 		<dependency>
