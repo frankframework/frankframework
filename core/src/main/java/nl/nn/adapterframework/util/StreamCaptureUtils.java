@@ -202,8 +202,10 @@ public class StreamCaptureUtils {
 						// Make the bytes available for debugger even when the stream was not used (might be because the
 						// pipe or sender that normally consumes the stream is stubbed by the debugger)
 						int len = read(new byte[maxSize]);
-						if (log.isTraceEnabled()) log.trace(len+" bytes available at close");
+						log.trace("{} bytes available at close", len);
 					}
+				} catch (Exception e) {
+					log.debug("Exception checking remaining bytes at close, ignoring: {}", e::getMessage);
 				} finally {
 					super.close();
 				}
@@ -273,12 +275,14 @@ public class StreamCaptureUtils {
 			@Override
 			public void close() throws IOException {
 				try {
-					if (charsRead<maxSize && ready()) {
+					if (charsRead < maxSize && ready()) {
 						// Make the bytes available for debugger even when the stream was not used (might be because the
 						// pipe or sender that normally consumes the stream is stubbed by the debugger)
 						int len = read(new char[maxSize]);
-						if (log.isTraceEnabled()) log.trace(len+" chararacters available at close");
+						log.trace("{} characters available at close", len);
 					}
+				} catch (Exception e) {
+					log.debug("Exception checking remaining characters at close, ignoring: {}", e::getMessage);
 				} finally {
 					super.close();
 				}
