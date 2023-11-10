@@ -181,9 +181,9 @@
 					<connection-url>jdbc:h2:file:./ibis4test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;AUTO_SERVER=TRUE</connection-url>
 					<driver>h2</driver>
 				</datasource>
-				<xa-datasource jndi-name="java:/jdbc/ibis4test-oracle" pool-name="ibis4test-oracle">
+				<xa-datasource jndi-name="java:/jdbc/ibis4test-oracle-xa" pool-name="ibis4test-oracle">
 					<driver>oracle</driver>
-					<xa-datasource-property name="URL">jdbc:oracle:thin:@${env.jdbc.hostname:host.docker.internal}:1521:XE</xa-datasource-property>
+					<xa-datasource-property name="URL">jdbc:oracle:thin:@${env.jdbc.hostname:localhost}:1521:XE</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
 						<credential-reference store="CS" alias="testiaf_user"/>
@@ -195,7 +195,7 @@
 				</xa-datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-mssql" pool-name="ibis4test-mssql" enabled="true" use-java-context="true" spy="false" use-ccm="true" statistics-enabled="false">
 					<xa-datasource-property name="SelectMethod">direct</xa-datasource-property>
-					<xa-datasource-property name="URL">jdbc:sqlserver://${env.jdbc.hostname:host.docker.internal}:1433;database=testiaf</xa-datasource-property>
+					<xa-datasource-property name="URL">jdbc:sqlserver://${env.jdbc.hostname:localhost}:1433;database=testiaf</xa-datasource-property>
 					<xa-datasource-property name="encrypt">false</xa-datasource-property>
 					<xa-datasource-property name="trustServerCertificate">true</xa-datasource-property>
 					<driver>mssql</driver>
@@ -223,7 +223,7 @@
 				</xa-datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-mysql" pool-name="ibis4test-mysql">
 					<driver>mysql</driver>
-					<xa-datasource-property name="URL">jdbc:mysql://${env.jdbc.hostname:host.docker.internal}:3307/testiaf</xa-datasource-property>
+					<xa-datasource-property name="URL">jdbc:mysql://${env.jdbc.hostname:localhost}:3307/testiaf</xa-datasource-property>
 					<xa-datasource-property name="pinGlobalTxToPhysicalConnection">true</xa-datasource-property>
 					<xa-datasource-property name="serverTimezone">Europe/Amsterdam</xa-datasource-property>
 					<security>
@@ -233,7 +233,7 @@
 				</xa-datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-mariadb" pool-name="ibis4test-mariadb">
 					<driver>mariadb</driver>
-					<xa-datasource-property name="Url">jdbc:mariadb://${env.jdbc.hostname:host.docker.internal}:3306/testiaf</xa-datasource-property>
+					<xa-datasource-property name="Url">jdbc:mariadb://${env.jdbc.hostname:localhost}:3306/testiaf</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
 						<credential-reference store="CS" alias="testiaf_user"/>
@@ -241,7 +241,7 @@
 				</xa-datasource>
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-postgres-xa" pool-name="ibis4test-postgres">
 					<driver>postgresql</driver>
-					<xa-datasource-property name="URL">jdbc:postgresql://${env.jdbc.hostname:host.docker.internal}:5432/testiaf</xa-datasource-property>
+					<xa-datasource-property name="URL">jdbc:postgresql://${env.jdbc.hostname:localhost}:5432/testiaf</xa-datasource-property>
 					<security>
 						<user-name>testiaf_user</user-name>
 						<credential-reference store="CS" alias="testiaf_user"/>
@@ -250,7 +250,7 @@
 				<xa-datasource jndi-name="java:/jdbc/ibis4test-db2-xa" pool-name="ibis4test-db2">
 					<driver>db2</driver>
 					<xa-datasource-property name="databaseName">testiaf</xa-datasource-property>
-					<xa-datasource-property name="serverName">${env.jdbc.hostname:host.docker.internal}</xa-datasource-property>
+					<xa-datasource-property name="serverName">${env.jdbc.hostname:localhost}</xa-datasource-property>
 					<xa-datasource-property name="portNumber">50000</xa-datasource-property>
 					<xa-datasource-property name="driverType">4</xa-datasource-property>
 					<security>
@@ -571,7 +571,7 @@
 				<resource-adapter id="activemq">
 				  	<archive>activemq-rar.rar</archive>
 					<transaction-support>XATransaction</transaction-support>
-					<config-property name="ServerUrl">tcp://${env.jms.hostname:host.docker.internal}:61616</config-property>
+					<config-property name="ServerUrl">tcp://${env.jms.hostname:localhost}:61616</config-property>
 					<connection-definitions>
 						<connection-definition class-name="org.apache.activemq.ra.ActiveMQManagedConnectionFactory" jndi-name="jms/qcf-activemq" enabled="true" use-java-context="true" pool-name="jms/qcf-activemq" use-ccm="true">
 							<xa-pool>
@@ -695,7 +695,7 @@
 			<remote-destination host="localhost" port="25"/>
 		</outbound-socket-binding>
 		<outbound-socket-binding name="artemis">
-			<remote-destination host="${env.jms.hostname:host.docker.internal}" port="61615"/>
+			<remote-destination host="${env.jms.hostname:localhost}" port="61615"/>
 		</outbound-socket-binding>
 	</socket-binding-group>
 </server>
