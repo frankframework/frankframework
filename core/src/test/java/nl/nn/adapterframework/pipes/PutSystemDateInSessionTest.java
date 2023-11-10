@@ -46,7 +46,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		session.put("stub4testtool.fixeddate", "22331");
 
 		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "dummy", session));
-		assertThat(e.getMessage(), Matchers.containsString("cannot parse fixed date"));
+		assertThat(e.getMessage(), Matchers.containsString("could not be parsed at"));
 	}
 
 	@Test

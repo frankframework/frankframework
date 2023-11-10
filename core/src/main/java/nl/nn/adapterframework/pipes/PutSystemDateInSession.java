@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -95,7 +96,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	}
 
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException, DateTimeException {
 
 		String formattedDate;
 		if (isGetCurrentTimeStampInMillis()) {

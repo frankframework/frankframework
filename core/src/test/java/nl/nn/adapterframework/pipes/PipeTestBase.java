@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.time.DateTimeException;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -77,7 +78,11 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	}
 
 	protected PipeRunResult doPipe(P pipe, Object input, PipeLineSession session) throws PipeRunException {
-		return doPipe(pipe, Message.asMessage(input), session);
+		try {
+			return doPipe(pipe, Message.asMessage(input), session);
+		} catch (DateTimeException e) {
+			throw new PipeRunException(pipe, e.getMessage());
+		}
 	}
 
 	@SuppressWarnings("deprecation")
