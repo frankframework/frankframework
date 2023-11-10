@@ -198,12 +198,6 @@
 			<version>1.10.0</version>
 		</dependency>
 
-<!-- 	(old) digester is used in the StatisticsParser -->
-		<dependency>
-			<groupId>commons-digester</groupId>
-			<artifactId>commons-digester</artifactId>
-			<version>2.1</version>
-		</dependency>
 		<!-- Requirement for Jboss 7.5 -->
 		<dependency>
 			<groupId>commons-validator</groupId>
@@ -896,7 +890,6 @@
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
-			<version>${spring-security.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -131,7 +131,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-transport-native-epoll</artifactId>
-				<version>4.1.100.Final</version>
+				<version>4.1.101.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -187,7 +187,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-adapterframework-ibm</artifactId>
+				<artifactId>ibis-adapterframework-messaging</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -1234,7 +1234,7 @@
 			</activation>
 			<modules>
 				<module>coolgen</module>
-				<module>ibm</module>
+				<module>messaging</module>
 				<module>ifsa</module>
 				<module>sap</module>
 				<module>tibco</module>

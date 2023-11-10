@@ -24,7 +24,6 @@ import org.springframework.context.ApplicationEventPublisherAware;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.management.IbisAction;
-import nl.nn.adapterframework.statistics.HasStatistics.Action;
 
 /**
  * An IBIS Manager gives various methods for the control of an IBIS instance.
@@ -71,8 +70,6 @@ public interface IbisManager extends ApplicationEventPublisherAware, Application
 
 	@Deprecated
 	public List<Adapter> getRegisteredAdapters();
-
-	public void dumpStatistics(Action action);
 
 	public ApplicationEventPublisher getApplicationEventPublisher();
 
