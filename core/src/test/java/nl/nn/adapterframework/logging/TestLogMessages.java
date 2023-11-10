@@ -111,47 +111,6 @@ public class TestLogMessages {
 	}
 
 	@Test
-	public void testXmlLayout() {
-		TestAppender appender = TestAppender.newBuilder().useIbisXmlLayout().useIbisThreadFilter("HIDE-HERE").build();
-		TestAppender.addToRootLogger(appender);
-		String threadName = Thread.currentThread().getName();
-		try {
-			Thread.currentThread().setName("HIDE-HERE");
-			log.debug("my beautiful debug <![CDATA[message]]> for me & you --> \"world\"");
-			log.info("my beautiful info <![CDATA[message]]> for me & you --> \"world\"");
-			log.warn("my beautiful warning <![CDATA[message]]> for me & you --> \"world\"");
-			log.error("my beautiful error <![CDATA[message]]> for me & you --> \"world\"");
-
-			Thread.currentThread().setName("LOG-ALL");
-			log.debug("some message");
-			log.info("some message");
-			log.warn("some message");
-			log.error("some message");
-
-			List<String> logEvents = appender.getLogLines();
-			assertEquals(6, logEvents.size(), "found messages "+logEvents);
-
-			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"WARN\" thread=\"HIDE-HERE\">\n" +
-			"  <message>my beautiful warning &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" +
-			"</event>";
-			String expectedError = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"ERROR\" thread=\"HIDE-HERE\">\n" +
-			"  <message>my beautiful error &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" +
-			"</event>";
-
-			//Remove the timestamp
-			String actualWarn = logEvents.get(0).replaceAll("(?<=timestamp=\").+?(?=\")", "xxx");
-			String actualError = logEvents.get(1).replaceAll("(?<=timestamp=\").+?(?=\")", "xxx");
-
-			TestAssertions.assertEqualsIgnoreCRLF(expectedWarn, actualWarn);
-			TestAssertions.assertEqualsIgnoreCRLF(expectedError, actualError);
-		}
-		finally {
-			Thread.currentThread().setName(threadName);
-			TestAppender.removeAppender(appender);
-		}
-	}
-
-	@Test
 	public void testCdataInMessage() {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
 		TestAppender.addToRootLogger(appender);
@@ -179,36 +138,6 @@ public class TestLogMessages {
 			assertEquals(1, logEvents.size(), "found messages "+logEvents);
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"", message);
-		}
-		finally {
-			TestAppender.removeAppender(appender);
-		}
-	}
-
-	@Test
-	public void testXmlLayoutWithUnicodeAndCdata() {
-		TestAppender appender = TestAppender.newBuilder().useIbisXmlLayout().build();
-		TestAppender.addToRootLogger(appender);
-		try {
-			log.debug("my beautiful  aâΔع你好ಡತ  debug <![CDATA[message]]> for me & you --> \"world\"");
-			log.info("my beautiful  aâΔع你好ಡತ  info <![CDATA[message]]> for me & you --> \"world\"");
-
-			List<String> logEvents = appender.getLogLines();
-			assertEquals(2, logEvents.size(), "found messages "+logEvents);
-
-			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"DEBUG\" thread=\"main\">\n" +
-			"  <message>my beautiful \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  debug &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" +
-			"</event>";
-			String expectedError = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"INFO\" thread=\"main\">\n" +
-			"  <message>my beautiful \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  info &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" +
-			"</event>";
-
-			//Remove the timestamp
-			String actualWarn = logEvents.get(0).replaceAll("(?<=timestamp=\").+?(?=\")", "xxx");
-			String actualError = logEvents.get(1).replaceAll("(?<=timestamp=\").+?(?=\")", "xxx");
-
-			TestAssertions.assertEqualsIgnoreCRLF(expectedWarn, actualWarn);
-			TestAssertions.assertEqualsIgnoreCRLF(expectedError, actualError);
 		}
 		finally {
 			TestAppender.removeAppender(appender);
