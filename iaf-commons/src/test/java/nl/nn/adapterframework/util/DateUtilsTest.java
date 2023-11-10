@@ -117,7 +117,7 @@ public class DateUtilsTest {
 
 	@Test
 	public void testParseXmlInvalidDateTime() throws Exception {
-		assertThrows(IllegalArgumentException.class, ()-> DateUtils.parseXmlDateTime("2013-12-10 12:41:43"));
+		assertThrows(DateTimeParseException.class, ()-> DateUtils.parseXmlDateTime("2013-12-10 12:41:43"));
 	}
 
 	@Test
