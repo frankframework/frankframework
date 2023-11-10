@@ -19,6 +19,7 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -92,8 +93,9 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 		// verify matchOneOf claims
 		if(StringUtils.isNotEmpty(anyMatchClaims)) {
-			boolean matchesOneOf = splitClaims(anyMatchClaims)
-					.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toSet())))
+			Map<String, Set<String>> allowedValuesByClaim = splitClaims(anyMatchClaims)
+					.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toSet())));
+			boolean matchesOneOf = allowedValuesByClaim
 					.entrySet()
 					.stream()
 					.anyMatch(entry -> entry.getValue().contains(getClaimAsString(entry.getKey())));
