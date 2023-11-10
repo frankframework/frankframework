@@ -1,66 +1,15 @@
 import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { StateParams } from '@uirouter/angularjs';
-import type { ChartData, ChartDataset, ChartOptions, ChartType } from 'chart.js';
+import { ActivatedRoute } from '@angular/router';
+import type { ChartData, ChartDataset, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
-import { AppConstants } from 'src/angularjs/app/app.module';
-import { AppService } from 'src/angularjs/app/app.service';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { DebugService } from 'src/angularjs/app/services/debug.service';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
-import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
-import { APPCONSTANTS } from 'src/app/app.module';
+import { AppConstants, AppService } from 'src/app/app.service';
+import { DebugService } from 'src/app/services/debug.service';
+import { MiscService } from 'src/app/services/misc.service';
+import { SweetalertService } from 'src/app/services/sweetalert.service';
+import { AdapterstatisticsService, Statistics } from './adapterstatistics.service';
 
-type StatisticsKeeper = {
-  name: string,
-  count: number,
-  min: number | null,
-  max: number | null,
-  avg: number | null,
-  stdDev: number | null,
-  sum: number | null,
-  first: number | null,
-  last: number | null,
-}
 
-type StatisticDetails = StatisticsKeeper & {
-  "p50": number | null,
-  "p90": number | null,
-  "p95": number | null,
-  "p98": number | null
-}
-
-type StatisticDetailsTime = StatisticDetails & {
-  "100ms": | null,
-  "1000ms": | null,
-  "2000ms": | null,
-  "10000ms": | null,
-}
-
-type StatisticDetailsSize = StatisticDetails & {
-  "100000B": | null,
-  "1000000B": | null,
-}
-
-type Statistics = {
-  types: string[],
-  totalMessageProccessingTime: StatisticDetailsTime,
-  receivers: {
-    class: string,
-    idle: unknown[],
-    messagesReceived: number,
-    messagesRetried: number,
-    name: string,
-    processing: StatisticsKeeper[]
-  }[],
-  durationPerPipe: StatisticDetailsTime[],
-  hourly: {
-    count: number,
-    time: string
-  }[],
-  sizePerPipe: StatisticDetailsSize[],
-  labels: string[]
-}
 
 @Component({
   selector: 'app-adapterstatistics',
@@ -69,8 +18,8 @@ type Statistics = {
 })
 export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   defaults = { "name": "Name", "count": "Count", "min": "Min", "max": "Max", "avg": "Average", "stdDev": "StdDev", "sum": "Sum", "first": "First", "last": "Last" };
-  adapterName = this.$stateParams['name'];
-  configuration = this.$stateParams['configuration'];
+  adapterName: string | null = null;
+  configuration: string | null = null;
   refreshing = false;
   dataset: Partial<ChartDataset<"line", number[]>> = {
     fill: false,
@@ -125,20 +74,30 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   };
 
   private _subscriptions = new Subscription();
+  private appConstants: AppConstants;
 
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   constructor(
     private appService: AppService,
-    private Api: ApiService,
-    private $stateParams: StateParams,
-    private SweetAlert: SweetAlertService,
-    @Inject(APPCONSTANTS) private appConstants: AppConstants,
+    private route: ActivatedRoute,
+    private statisticsService: AdapterstatisticsService,
+    private SweetAlert: SweetalertService,
     private Debug: DebugService,
     private Misc: MiscService
-  ) { }
+  ) {
+    this.appConstants = this.appService.APP_CONSTANTS;
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
+    });
+    this._subscriptions.add(appConstantsSubscription);
+}
 
   ngOnInit() {
+    const routeParams = this.route.snapshot.paramMap;
+    this.adapterName = routeParams.get('name');
+    this.configuration = routeParams.get('configuration');
+
     if (!this.adapterName) {
       this.SweetAlert.Warning("Adapter not found!");
       return;
@@ -163,7 +122,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
 
   refresh() {
     this.refreshing = true;
-    this.Api.Get("configurations/" + this.Misc.escapeURL(this.configuration) + "/adapters/" + this.Misc.escapeURL(this.adapterName) + "/statistics", (data: Statistics) => {
+    this.statisticsService.getStatistics(this.configuration!, this.adapterName!).subscribe((data) => {
       this.stats = data;
 
       let labels: string[] = [];

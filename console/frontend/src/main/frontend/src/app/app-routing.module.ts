@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { LogoutComponent } from './components/logout/logout.component';
 import { StatusComponent } from './views/status/status.component';
-// import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
+import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
 import { StorageComponent } from './views/storage/storage.component';
 import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
 import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
@@ -40,14 +40,14 @@ const routes: Routes = [
       breadcrumbs: 'Adapter > Status',
     },
   },
-  // {
-  //   path: ":configuration/adapter/:name/statistics",
-  //   component: AdapterstatisticsComponent,
-  //   title: 'Adapter Statistics',
-  //   data: {
-  //     breadcrumbs: 'Adapter > Statistics'
-  //   },
-  // },
+  {
+    path: ":configuration/adapter/:name/statistics",
+    component: AdapterstatisticsComponent,
+    title: 'Adapter Statistics',
+    data: {
+      breadcrumbs: 'Adapter > Statistics'
+    },
+  },
   {
     path: ':configuration/adapters/:adapter/:storageSource/:storageSourceName',
     component: StorageComponent,

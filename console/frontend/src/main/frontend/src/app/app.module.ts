@@ -57,11 +57,11 @@ import { StorageComponent } from './views/storage/storage.component';
 import { StorageListComponent } from './views/storage/storage-list/storage-list.component';
 import { StorageViewComponent } from './views/storage/storage-view/storage-view.component';
 import { StorageListDtComponent } from './views/storage/storage-list/storage-list-dt/storage-list-dt.component';
-// import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
-// import { FormatStatisticsPipe } from './views/adapterstatistics/format-statistics.pipe';
+import { AdapterstatisticsComponent } from './views/adapterstatistics/adapterstatistics.component';
+import { FormatStatisticsPipe } from './views/adapterstatistics/format-statistics.pipe';
 import { DropLastCharPipe } from './pipes/drop-last-char.pipe';
 import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-submit-form.directive';
-// import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
+import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
 import { FitHeightDirective } from './views/iframe/fit-height.directive';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 // import { WebservicesComponent } from './views/webservices/webservices.component';
@@ -114,7 +114,7 @@ const windowProvider: ValueProvider = {
     StorageListComponent,
     StorageViewComponent,
     StorageListDtComponent,
-    // AdapterstatisticsComponent,
+    AdapterstatisticsComponent,
     // SecurityItemsComponent,
     // WebservicesComponent,
     // MonitorsComponent,
@@ -127,8 +127,8 @@ const windowProvider: ValueProvider = {
     SearchFilterPipe,
     TruncatePipe,
     VariablesFilterPipe,
-    // FormatStatisticsPipe,
-    // FormatStatKeysPipe,
+    FormatStatisticsPipe,
+    FormatStatKeysPipe,
 
     // directives
     ToDateDirective,
