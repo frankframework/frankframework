@@ -1,9 +1,10 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -27,7 +28,7 @@ public class DateUtilsTest {
 
 	@BeforeAll
 	public static void setUp() {
-		if(!CI_TZ.hasSameRules(TEST_TZ)) {
+		if (!CI_TZ.hasSameRules(TEST_TZ)) {
 			LOG.warn("CI TimeZone [{}] differs from test TimeZone [{}]", CI_TZ::getDisplayName, TEST_TZ::getDisplayName);
 		}
 	}
@@ -36,14 +37,14 @@ public class DateUtilsTest {
 	 * Tests have been written in UTC, adjust the TimeZone for CI running with a different default TimeZone
 	 */
 	private Date getCorrectedDate(Date date) {
-		if(CI_TZ.hasSameRules(TEST_TZ)) {
+		if (CI_TZ.hasSameRules(TEST_TZ)) {
 			return date;
 		} else {
 			Calendar calendar = Calendar.getInstance();
 			calendar.setTime(date);
 			int offset = CI_TZ.getOffset(calendar.getTime().getTime());
-			calendar.add(Calendar.MILLISECOND, - offset);
-			LOG.info("adjusting date [{}] with offset [{}] to [{}]", ()->date, ()->offset, calendar::getTime);
+			calendar.add(Calendar.MILLISECOND, -offset);
+			LOG.info("adjusting date [{}] with offset [{}] to [{}]", () -> date, () -> offset, calendar::getTime);
 			return calendar.getTime();
 		}
 	}
@@ -78,26 +79,23 @@ public class DateUtilsTest {
 
 	@Test
 	public void testParseToDate() throws Exception {
-		Date date = DateUtils.parseToDate("05-10-13", DateUtils.DATE_FORMATTER);
-		assertEquals(getCorrectedDate(1380931200000L), date.getTime());
+		assertThrows(DateTimeParseException.class, () -> DateUtils.parseToDate("05-10-13", DateUtils.DATE_FORMATTER));
 	}
 
 	@Test
 	public void testParseToDateFullYear() throws Exception {
-		Date date = DateUtils.parseToDate("05-10-2014", DateUtils.DATE_FORMATTER);
+		Date date = DateUtils.parseToDate("05-10-2014", "dd-MM-yyyy");
 		assertEquals(getCorrectedDate(1412467200000L), date.getTime());
 	}
 
 	@Test
 	public void unableToParseDate() throws Exception {
-		Date date = DateUtils.parseToDate("05/10/98", DateUtils.DATE_FORMATTER);
-		assertNull(date);
+		assertThrows(DateTimeParseException.class, () -> DateUtils.parseToDate("05/10/98", DateUtils.DATE_FORMATTER));
 	}
 
 	@Test
 	public void unableToParseFullGenericWithoutTime() throws Exception {
-		Date date = DateUtils.parseToDate("2000-01-01", DateUtils.FULL_GENERIC_FORMATTER);
-		assertNull(date);
+		assertThrows(DateTimeParseException.class, () -> DateUtils.parseToDate("2000-01-01", DateUtils.FULL_GENERIC_FORMATTER));
 	}
 
 	@Test
@@ -114,7 +112,7 @@ public class DateUtilsTest {
 
 	@Test
 	public void testParseXmlInvalidDateTime() throws Exception {
-		assertThrows(IllegalArgumentException.class, ()-> DateUtils.parseXmlDateTime("2013-12-10 12:41:43"));
+		assertThrows(IllegalArgumentException.class, () -> DateUtils.parseXmlDateTime("2013-12-10 12:41:43"));
 	}
 
 	@Test
@@ -140,6 +138,6 @@ public class DateUtilsTest {
 		Date d1 = DateUtils.parseAnyDate("10-10-2013");
 		Date d2 = DateUtils.parseAnyDate("2013-10-10");
 		boolean b = DateUtils.isSameDay(d1, d2);
-		assertEquals(true, b);
+		assertTrue(b);
 	}
 }

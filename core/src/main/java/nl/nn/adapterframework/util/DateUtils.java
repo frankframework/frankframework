@@ -15,20 +15,18 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
-
-import lombok.extern.log4j.Log4j2;
 
 import org.apache.xmlbeans.GDate;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Utilities for formatting and parsing dates.
@@ -45,7 +43,7 @@ public class DateUtils {
 	public static final String FORMAT_MILLISECONDS = "######.###";
 	public static final DateTimeFormatter GENERIC_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	public static final String FORMAT_DATE = "dd-MM-yy";
-	public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(FORMAT_DATE + "[' ']['T'][H:mm[:ss[.S]]][X]");
+	public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(FORMAT_DATE);
 	public static final DateTimeFormatter TIME_HMS_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
 
 	public static String format(Instant instant, String dateFormat) {
@@ -99,20 +97,57 @@ public class DateUtils {
 	/**
 	 * Parses a string to a Date, according to the pattern
 	 */
-	public static Date parseToDate(String s, String dateFormat) throws DateTimeException {
-		return parseToDate(s, DateTimeFormatter.ofPattern(dateFormat));
+	public static Date parseToDate(String s, String pattern) throws DateTimeException {
+		return parseToDate(s, DateTimeFormatter.ofPattern(addTimePatternIfNecessary(pattern)));
+	}
+
+	private static String addTimePatternIfNecessary(String pattern) {
+		String timePattern = "'T'HH:mm:ss";
+		if (!pattern.contains(timePattern)) {
+			pattern += timePattern;
+		}
+		return pattern;
 	}
 
 	public static Date parseToDate(String s, DateTimeFormatter df) throws DateTimeException {
-		return new Date(parseToInstant(s, df).toEpochMilli());
+		Instant instant = parseToInstant(s, df);
+		if (instant == null) {
+			return null;
+		}
+		return new Date(instant.toEpochMilli());
+	}
+
+	private static String addTimeIfNecessary(String value) {
+		value = value.replace("/", "-");
+		String[] splitValues = value.split("[-:]");
+        if (splitValues.length == 3) {
+            String value1 = getString(value, splitValues);
+            if (value1 != null) return value1;
+            return value.trim() + "T00:00:00";
+        }
+		return value;
+	}
+
+	private static String getString(String value, String[] splitValues) {
+		boolean yearHasMoreThanTwoChars = false;
+		for (String splitValue : splitValues) {
+			if (splitValue.length() > 2) {
+				yearHasMoreThanTwoChars = true;
+				break;
+			}
+		}
+		if (!yearHasMoreThanTwoChars) {
+			return value;
+		}
+		return null;
 	}
 
 	public static Instant parseToInstant(String s, String pattern) throws DateTimeException {
-		return parseToInstant(s, DateTimeFormatter.ofPattern(pattern));
+		return parseToInstant(s, DateTimeFormatter.ofPattern(addTimePatternIfNecessary(pattern)));
 	}
 
-	public static Instant parseToInstant(String s, DateTimeFormatter df) throws DateTimeException {
-		LocalDateTime ldt = LocalDateTime.parse(s, df);
+	public static Instant parseToInstant(String s, DateTimeFormatter df) throws DateTimeParseException {
+		LocalDateTime ldt = LocalDateTime.parse(addTimeIfNecessary(s), df);
 		return ldt.atZone(ZoneId.systemDefault()).toInstant();
 	}
 
