@@ -9,7 +9,7 @@ import { StorageViewComponent } from './views/storage/storage-view/storage-view.
 import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
 import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
 // import { WebservicesComponent } from './views/webservices/webservices.component';
-// import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
+import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
 import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
@@ -186,14 +186,14 @@ const routes: Routes = [
       breadcrumbs: 'Scheduler > Edit Schedule'
     },
   }, */
-  // {
-  //   path: 'environment-variables',
-  //   component: EnvironmentVariablesComponent,
-  //   title: 'Environment Variables',
-  //   data: {
-  //     breadcrumbs: 'Environment Variables'
-  //   }
-  // },
+  {
+    path: 'environment-variables',
+    component: EnvironmentVariablesComponent,
+    title: 'Environment Variables',
+    data: {
+      breadcrumbs: 'Environment Variables'
+    }
+  },
   {
     path: 'jdbc/execute-query',
     component: JdbcExecuteQueryComponent,

@@ -1,14 +1,9 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppConstants } from 'src/angularjs/app/app.module';
-import { AppService, Configuration } from 'src/angularjs/app/app.service';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { APPCONSTANTS } from 'src/app/app.module';
+import { AppConstants, AppService, Configuration } from 'src/app/app.service';
+import { KeyValue } from '@angular/common';
 
-interface keyValProperty {
-  key: string,
-  val: string,
-}
+type keyValProperty = KeyValue<string, string>;
 
 @Component({
   selector: 'app-environment-variables',
@@ -24,20 +19,25 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
   configurations: Configuration[] = [];
 
   private _subscriptions = new Subscription();
+  private appConstants: AppConstants;
 
   constructor(
-    private appService: AppService,
-    @Inject(APPCONSTANTS) private appConstants: AppConstants,
-    private apiService: ApiService,
-  ) { };
+    private appService: AppService
+  ) {
+    this.appConstants = this.appService.APP_CONSTANTS;
+    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
+    });
+    this._subscriptions.add(appConstantsSubscription);
+  };
 
   ngOnInit() {
-    function convertPropertiesToArray(propertyList: keyValProperty[]) {
-      var tmp = new Array();
+    function convertPropertiesToArray(propertyList: Record<string, string>) {
+      var tmp: keyValProperty[] = [];
       for (var variableName in propertyList) {
         tmp.push({
           key: variableName,
-          val: propertyList[variableName]
+          value: propertyList[variableName]
         });
       }
       return tmp;
@@ -47,7 +47,7 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
     const configurationsSubscription = this.appService.configurations$.subscribe(() => { this.configurations = this.appService.configurations; });
     this._subscriptions.add(configurationsSubscription);
 
-    this.apiService.Get("environmentvariables", (data) => {
+    this.appService.getEnvironmentVariables().subscribe((data) => {
       var instanceName = null;
       for (var configName in data["Application Constants"]) {
         this.appConstants[configName] = convertPropertiesToArray(data["Application Constants"][configName]);

@@ -41,7 +41,6 @@ export class StatusComponent implements OnInit, OnDestroy {
     exception_starting: 0,
     exception_stopping: 0,
     error: 0,
-    paused: 0
   };
   receiverSummary: Summary = {
     started: 0,
@@ -51,7 +50,6 @@ export class StatusComponent implements OnInit, OnDestroy {
     exception_starting: 0,
     exception_stopping: 0,
     error: 0,
-    paused: 0
   };
   messageSummary: MessageSummary = {
     info: 0,

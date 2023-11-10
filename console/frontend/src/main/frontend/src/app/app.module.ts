@@ -49,8 +49,8 @@ import { ToDateDirective } from './components/to-date.directive';
 import { LiquibaseComponent } from './views/liquibase/liquibase.component';
 import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
 import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse-queue.component';
-// import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
-// import { VariablesFilterPipe } from './pipes/variablesFilter.pipe';
+import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
+import { VariablesFilterPipe } from './pipes/variablesFilter.pipe';
 import { TimeSinceDirective } from './components/time-since.directive';
 import { FlowComponent } from './views/status/flow/flow.component';
 import { StorageComponent } from './views/storage/storage.component';
@@ -65,12 +65,13 @@ import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-
 import { FitHeightDirective } from './views/iframe/fit-height.directive';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 // import { WebservicesComponent } from './views/webservices/webservices.component';
-import { SchedulerComponent } from './views/scheduler/scheduler.component';
-import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
-import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
+// import { SchedulerComponent } from './views/scheduler/scheduler.component';
+// import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
+// import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
-import { MonitorsComponent } from './views/monitors/monitors.component';
-import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';import { TitleStrategy } from '@angular/router';
+// import { MonitorsComponent } from './views/monitors/monitors.component';
+// import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
+import { TitleStrategy } from '@angular/router';
 import { PagesTitleStrategy } from './pages-title-strategy';
 
 const windowProvider: ValueProvider = {
@@ -83,7 +84,7 @@ const windowProvider: ValueProvider = {
   declarations: [
     AppComponent,
     CustomViewsComponent,
-    // EnvironmentVariablesComponent,
+    EnvironmentVariablesComponent,
     FlowComponent,
     HamburgerComponent,
     // IbisstoreSummaryComponent,
@@ -104,9 +105,9 @@ const windowProvider: ValueProvider = {
     PagesNavigationComponent,
     PagesTopinfobarComponent,
     PagesTopnavbarComponent,
-    SchedulerComponent,
-    SchedulerEditComponent,
-    SchedulerAddComponent,
+    // SchedulerComponent,
+    // SchedulerEditComponent,
+    // SchedulerAddComponent,
     ScrollToTopComponent,
     StatusComponent,
     StorageComponent,
@@ -125,7 +126,7 @@ const windowProvider: ValueProvider = {
     OrderByPipe,
     SearchFilterPipe,
     TruncatePipe,
-    // VariablesFilterPipe,
+    VariablesFilterPipe,
     // FormatStatisticsPipe,
     // FormatStatKeysPipe,
 
