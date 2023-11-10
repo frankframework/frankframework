@@ -17,6 +17,7 @@ package nl.nn.adapterframework.http.rest;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -86,12 +87,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String charset = null;
 
 	// for jwt validation
-	private @Getter String requiredIssuer=null;
-	private @Getter String jwksUrl=null;
-	private @Getter String jwtHeader="Authorization";
-	private @Getter String requiredClaims=null;
-	private @Getter String exactMatchClaims=null;
-	private @Getter String matchOneOfClaims=null;
+	private @Getter String requiredIssuer = null;
+	private @Getter String jwksUrl = null;
+	private @Getter String jwtHeader = "Authorization";
+	private @Getter String requiredClaims = null;
+	private @Getter String exactMatchClaims = null;
+	private @Getter String anyMatchClaims = null;
 	private @Getter String roleClaim;
 
 	private @Getter String principalNameClaim = "sub";
@@ -125,7 +126,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			}
 
 			// validate if these attributes are configured as valid key/value pairs, i.e: "appid=abc,appid=xyz" to prevent exceptions.
-			validateClaimAttribute(matchOneOfClaims, "matchOneOfClaims");
+			validateClaimAttribute(anyMatchClaims, "anyMatchClaims");
 			validateClaimAttribute(exactMatchClaims, "exactMatchClaims");
 		}
 
@@ -136,12 +137,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private void validateClaimAttribute(String claimAttributeToValidate, String claimAttributeName) throws ConfigurationException {
 		if(StringUtils.isNotEmpty(claimAttributeToValidate)){
-			Optional<String> invalidClaim = StringUtil.splitToStream(claimAttributeToValidate)
+			List<String> invalidClaims = StringUtil.splitToStream(claimAttributeToValidate)
 					.filter(claim -> StringUtil.split(claim, "=").size() != 2)
-					.findFirst();
+					.collect(Collectors.toList());
 
-			if(invalidClaim.isPresent()){
-				throw new ConfigurationException("["+invalidClaim.get()+"] is not a valid key/value pair for ["+claimAttributeName+"].");
+			if(!invalidClaims.isEmpty()){
+				throw new ConfigurationException("[" + invalidClaims + "] are not a valid key/value pairs for [" + claimAttributeName + "].");
 			}
 		}
 	}
@@ -385,8 +386,8 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/** Comma separated key value pairs to one-of match with JWT payload. e.g. "appid=a,appid=b" */
-	public void setMatchOneOfClaims(String string) {
-		this.matchOneOfClaims = string;
+	public void setAnyMatchClaims(String string) {
+		this.anyMatchClaims = string;
 	}
 
 	/** Claim name which specifies the role */

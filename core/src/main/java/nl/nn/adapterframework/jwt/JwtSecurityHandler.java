@@ -22,6 +22,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringUtil;
 
@@ -31,6 +34,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.PipeLineSession;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.Logger;
 
 public class JwtSecurityHandler implements ISecurityHandler {
@@ -64,25 +68,22 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		return () -> (String) claimsSet.get(principalNameClaim);
 	}
 
-	public void validateClaims(String requiredClaims, String exactMatchClaims, String matchOneOfClaims) throws AuthorizationException {
+	public void validateClaims(String requiredClaims, String exactMatchClaims, String anyMatchClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
-			Optional<String> missingClaim  = StringUtil.splitToStream(requiredClaims)
+			List<String> missingClaims = StringUtil.splitToStream(requiredClaims)
 					.filter(claim -> !claimsSet.containsKey(claim))
-					.findFirst();
+					.collect(Collectors.toList());
 
-			if(missingClaim.isPresent()){
-				throw new AuthorizationException("JWT missing required claims: ["+missingClaim.get()+"]");
+			if(!missingClaims.isEmpty()){
+				throw new AuthorizationException("JWT missing required claims: " + missingClaims);
 			}
 		}
 
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
 			Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
-					.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)))
-					.entrySet()
-					.stream()
-					.filter(entry -> !claimsSet.get(entry.getKey()).equals(entry.getValue()))
+					.filter(entry -> !entry.getValue().equals(getClaimAsString(entry.getKey())))
 					.findFirst();
 
 			if(nonMatchingClaim.isPresent()){
@@ -93,28 +94,38 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 
 		// verify matchOneOf claims
-		if(StringUtils.isNotEmpty(matchOneOfClaims)) {
-			boolean matchesOneOf = splitClaims(matchOneOfClaims)
-					.collect(Collectors.groupingBy(pair -> pair.get(0), Collectors.mapping(pair -> pair.get(1), Collectors.toList())))
+		if(StringUtils.isNotEmpty(anyMatchClaims)) {
+			boolean matchesOneOf = splitClaims(anyMatchClaims)
+					.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toSet())))
 					.entrySet()
 					.stream()
-					.anyMatch(entry -> entry.getValue().contains((String) claimsSet.get(entry.getKey())));
+					.anyMatch(entry -> entry.getValue().contains(getClaimAsString(entry.getKey())));
 
 			if(!matchesOneOf){
-				throw new AuthorizationException("JWT does not match one of: ["+matchOneOfClaims+"]");
+				throw new AuthorizationException("JWT does not match one of: ["+ anyMatchClaims +"]");
 			}
 		}
 	}
 
-	private Stream<List<String>> splitClaims(String claimsToSplit){
+	@Nonnull
+	private String getClaimAsString(String claim) {
+		Object value = claimsSet.get(claim);
+		if (value == null) {
+			return "";
+		}
+		return String.valueOf(value);
+	}
+
+	private Stream<Map.Entry<String, String>> splitClaims(String claimsToSplit){
 		return StringUtil.splitToStream(claimsToSplit)
 				.map(s -> StringUtil.split(s, "="))
-				.filter(this::isValidKeyValuePair);
+				.filter(this::isValidKeyValuePair)
+				.map(pair -> ImmutablePair.of(pair.get(0), pair.get((1))));
 	}
 
 	private boolean isValidKeyValuePair(List<String> pair) {
 		if (pair.size() != 2 || pair.stream().anyMatch(String::isEmpty)) {
-			log.warn("Skipping claim validation for [" + pair + "] because it's not a valid key/value pair!");
+			log.warn("Skipping claim validation for [{}] because it's not a valid key/value pair!", pair);
 			return false;
 		}
 		return true;
