@@ -28,24 +28,6 @@ import nl.nn.adapterframework.core.SenderException;
  */
 public interface StatisticsKeeperIterationHandler<D> {
 
-	public static final long PERIOD_ALLOWED_LENGTH_HOUR=1100*60*60; // 10% extra
-	public static final long PERIOD_ALLOWED_LENGTH_DAY=PERIOD_ALLOWED_LENGTH_HOUR*24;
-	public static final long PERIOD_ALLOWED_LENGTH_WEEK=PERIOD_ALLOWED_LENGTH_DAY*7;
-	public static final long PERIOD_ALLOWED_LENGTH_MONTH=PERIOD_ALLOWED_LENGTH_DAY*31;
-	public static final long PERIOD_ALLOWED_LENGTH_YEAR=PERIOD_ALLOWED_LENGTH_DAY*366;
-
-	public static final String[] PERIOD_FORMAT_HOUR={"hour","HH"};
-	public static final String[] PERIOD_FORMAT_DATEHOUR={"datehour","yyyy-MM-dd HH"};
-	public static final String[] PERIOD_FORMAT_DAY={"day","dd"};
-	public static final String[] PERIOD_FORMAT_DATE={"date","yyyy-MM-dd"};
-	public static final String[] PERIOD_FORMAT_WEEKDAY={"weekday","E"};
-	public static final String[] PERIOD_FORMAT_WEEK={"week","ww"};
-	public static final String[] PERIOD_FORMAT_YEARWEEK={"yearweek","yyyy'W'ww"};
-	public static final String[] PERIOD_FORMAT_MONTH={"month","MM"};
-	public static final String[] PERIOD_FORMAT_YEARMONTH={"yearmonth","yyyy-MM"};
-	public static final String[] PERIOD_FORMAT_YEAR={"year","yyyy"};
-
-
 	public void configure() throws ConfigurationException;
 	public D start(Date now, Date mainMark, Date detailMark) throws SenderException;
 	public void end(D data) throws SenderException;

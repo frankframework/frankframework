@@ -28,6 +28,7 @@ import java.util.Date;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import nl.nn.adapterframework.dbms.JdbcException;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;

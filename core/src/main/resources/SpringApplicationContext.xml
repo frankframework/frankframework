@@ -273,14 +273,14 @@
 
 	<bean
 		name="dbmsSupportFactory"
-		class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory"
+		class="nl.nn.adapterframework.dbms.DbmsSupportFactory"
 		scope="singleton"
 		>
 		<property name="dbmsSupportMap">
 			<props>
 				<!-- configure additional DbmsSupport mappings here -->
-				<prop key="DB2/NT">nl.nn.adapterframework.jdbc.dbms.Db2DbmsSupport</prop>
-				<prop key="DB2/LINUXX8664">nl.nn.adapterframework.jdbc.dbms.Db2DbmsSupport</prop>
+				<prop key="DB2/NT">nl.nn.adapterframework.dbms.Db2DbmsSupport</prop>
+				<prop key="DB2/LINUXX8664">nl.nn.adapterframework.dbms.Db2DbmsSupport</prop>
 			</props>
 		</property>
 	</bean>

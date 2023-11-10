@@ -32,8 +32,8 @@ import org.springframework.messaging.Message;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.Dbms;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.transformer.QueryOutputToListOfMaps;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.ActionSelector;

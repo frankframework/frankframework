@@ -24,6 +24,8 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
+import nl.nn.adapterframework.dbms.JdbcException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -33,7 +35,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;

@@ -21,13 +21,14 @@ import java.io.Writer;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.JdbcException;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Wrapper around DBMS provided Writer for CLOB, that updates CLOB and ResultSet and closes them at writer.close().
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class ClobWriter extends FilterWriter {

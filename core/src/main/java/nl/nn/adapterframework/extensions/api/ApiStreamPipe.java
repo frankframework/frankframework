@@ -18,6 +18,8 @@ package nl.nn.adapterframework.extensions.api;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import nl.nn.adapterframework.util.DbmsUtil;
+
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -25,7 +27,7 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.pipes.StreamPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
@@ -47,6 +49,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *    <li>multipart call with in the first (string) part the unique messageId and in the following (file) parts the filestreams</li>
  * </ol>
  * </p>
+ *
  * @author Peter Leeuwenburgh
  */
 @Deprecated
@@ -126,7 +129,7 @@ public class ApiStreamPipe extends StreamPipe {
 		String query = "SELECT MESSAGEKEY FROM IBISSTORE WHERE TYPE='" + ITransactionalStorage.StorageType.MESSAGESTORAGE.getCode() + "' AND SLOTID='" + slotId + "' AND MESSAGEID='" + messageId + "'";
 		Connection conn = dummyQuerySender.getConnection();
 		try {
-			return JdbcUtil.executeStringQuery(conn, query);
+			return DbmsUtil.executeStringQuery(conn, query);
 		} finally {
 			if (conn != null) {
 				try {

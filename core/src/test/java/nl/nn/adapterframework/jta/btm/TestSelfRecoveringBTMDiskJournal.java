@@ -28,12 +28,13 @@ import bitronix.tm.TransactionManagerServices;
 import bitronix.tm.journal.DiskJournal;
 import bitronix.tm.journal.Journal;
 import bitronix.tm.journal.TransactionLogAppender;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.DbmsUtil;
 
 public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase {
 
@@ -73,7 +74,7 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 	private int getNumberOfLines() throws JdbcException, SQLException {
 		String preparedQuery = dbmsSupport.prepareQueryTextForNonLockingRead(SELECT_QUERY);
 		try (Connection connection = createNonTransactionalConnection()) {
-			return JdbcUtil.executeIntQuery(connection, preparedQuery);
+			return DbmsUtil.executeIntQuery(connection, preparedQuery);
 		}
 	}
 
@@ -168,7 +169,7 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 			assertTrue(txStatus.isCompleted());
 			assertFalse(txManagedConnection.isClosed());
 
-			JdbcException ex = assertThrows(JdbcException.class, () -> JdbcUtil.executeIntQuery(txManagedConnection, SELECT_QUERY));
+			JdbcException ex = assertThrows(JdbcException.class, () -> DbmsUtil.executeIntQuery(txManagedConnection, SELECT_QUERY));
 			assertThat(ex.getMessage(), Matchers.endsWith("connection handle already closed")); // But the connection handle apparently is !?
 		}
 	}

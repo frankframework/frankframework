@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
-	Beans defined in this file are unique for every configuration. If you want 
+<!--
+	Beans defined in this file are unique for every configuration. If you want
 	to reuse a bean over multiple configurations, add it to the SpringApplicationContext.xml
 	Singleton beans are managed by Spring and will be closed upon configuration unload.
  -->
@@ -21,7 +21,7 @@
 
 	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
 	<bean id="dataSourceFactory" class="${URLDataSourceFactory}" />
-	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory" />
+	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.dbms.DbmsSupportFactory" />
 
 	<bean
 		id="txManagerProxy"

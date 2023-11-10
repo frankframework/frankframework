@@ -24,16 +24,16 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Iterator over ResultSet.
- * 
+ *
  * Each row is returned in the same way a row is usually returned from a query.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.7
  */
