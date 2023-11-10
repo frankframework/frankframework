@@ -89,6 +89,8 @@ import { SchedulerComponent } from './views/scheduler/scheduler.component';
 import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
+import { MonitorsComponent } from './views/monitors/monitors.component';
+import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -119,6 +121,8 @@ appModule
   .directive('liquibase', downgradeComponent({ component: LiquibaseComponent }) as angular.IDirectiveFactory)
   .directive('logout', downgradeComponent({ component: LogoutComponent }) as angular.IDirectiveFactory)
   .directive('minimalizaSidebar', downgradeComponent({ component: MinimalizaSidebarComponent }) as angular.IDirectiveFactory)
+  .directive('monitors', downgradeComponent({ component: MonitorsComponent }) as angular.IDirectiveFactory)
+  .directive('monitorsAddEdit', downgradeComponent({ component: MonitorsAddEditComponent }) as angular.IDirectiveFactory)
   .directive('pagesFooter', downgradeComponent({ component: PagesFooterComponent }) as angular.IDirectiveFactory)
   .directive('pagesNavigation', downgradeComponent({ component: PagesNavigationComponent }) as angular.IDirectiveFactory)
   .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
@@ -172,6 +176,8 @@ appModule
     StorageListDtComponent,
     SecurityItemsComponent,
     WebservicesComponent,
+    MonitorsComponent,
+    MonitorsAddEditComponent,
 
     // pipes
     ConfigurationFilterPipe,

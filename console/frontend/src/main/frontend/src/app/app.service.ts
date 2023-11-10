@@ -319,8 +319,8 @@ export class AppService {
       this.timeout = window.setTimeout(() => this.updateAdapterSummary(), 1000);
       return;
     }
-    if (configurationName == undefined)
-      configurationName = this.$state.params["configuration"];
+    // if (configurationName == undefined)
+      // configurationName = this.$state.params["configuration"];
 
     var adapterSummary: Record<Lowercase<RunState>, number> = {
       started: 0,
