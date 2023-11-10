@@ -36,6 +36,7 @@ public class WsdlXmlValidatorMixedModeTest {
 
 	public WsdlXmlValidator getInputValidator() throws Exception {
 		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
+		val.setAddNamespaceToSchema(true);
 		val.setWsdl(WSDL);
 		val.setSoapBody(REQUEST_SOAP_BODY);
 		val.setThrowException(true);
@@ -47,6 +48,7 @@ public class WsdlXmlValidatorMixedModeTest {
 	}
 	public WsdlXmlValidator getOutputValidator() throws Exception {
 		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
+		val.setAddNamespaceToSchema(true);
 		val.setWsdl(WSDL);
 		val.setSoapBody(RESPONSE_SOAP_BODY);
 		val.setThrowException(true);
@@ -58,6 +60,7 @@ public class WsdlXmlValidatorMixedModeTest {
 	}
 	public WsdlXmlValidator getMixedValidator() throws Exception  {
 		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
+		val.setAddNamespaceToSchema(true);
 		val.setWsdl(WSDL);
 		val.setSoapBody(REQUEST_SOAP_BODY);
 		val.setOutputSoapBody(RESPONSE_SOAP_BODY);
