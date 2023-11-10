@@ -30,7 +30,7 @@
  *	EclipseSource - initial API and implementation
  *
  ******************************************************************************/
-package nl.nn.adapterframework.extensions.javascript;
+package nl.nn.adapterframework.javascript;
 
 import java.io.File;
 import java.io.FileOutputStream;
