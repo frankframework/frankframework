@@ -16,19 +16,18 @@
 package nl.nn.adapterframework.webcontrol;
 
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
-import java.io.Reader;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -87,7 +86,7 @@ public class FileViewerServlet extends HttpServletBase {
 		return StringUtils.replace(input, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
 	}
 
-	public static void showReaderContents(Reader reader, String filename, String type, HttpServletResponse response, String title) throws IOException {
+	private static void showReaderContents(String filepath, String type, HttpServletResponse response) throws IOException {
 		PrintWriter out = response.getWriter();
 		if (type==null) {
 			response.setContentType("text/html");
@@ -95,68 +94,54 @@ public class FileViewerServlet extends HttpServletBase {
 			return;
 		}
 
-		if (type.equalsIgnoreCase("html")){
+		if (type.equalsIgnoreCase("html")) { // Assume it's a log file
 			response.setContentType("text/html");
 
 			out.println("<html>");
 			out.println("<head>");
-			out.println("<title>"+AppConstants.getInstance().getProperty("instance.name.lc")+"@"+Misc.getHostname()+" - "+title+"</title>");
+			out.println("<title>"+AppConstants.getInstance().getProperty("instance.name.lc")+"@"+Misc.getHostname()+" - "+filepath+"</title>");
 			out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\"iaf/"+AppConstants.getInstance().getProperty(fvConfigKey+".css")+"\">");
 			out.println("</head>");
 			out.println("<body>");
 
-			LineNumberReader lnr = new LineNumberReader(reader);
-			String line;
-			while ((line=lnr.readLine())!=null) {
-				out.println(makeConfiguredReplacements(XmlEncodingUtils.encodeChars(line))+"<br/>");
+			try(FileReader reader = new FileReader(filepath); LineNumberReader lnr = new LineNumberReader(reader)) {
+				String line;
+				while ((line=lnr.readLine())!=null) {
+					out.println(makeConfiguredReplacements(XmlEncodingUtils.encodeChars(line))+"<br/>");
+				}
 			}
 
 			out.println("</body>");
 			out.println("</html>");
-		}
-		if (type.equalsIgnoreCase("text")) {
-			response.setContentType("text/plain");
-			String lastPart;
-			try {
-				File f= new File(filename);
-				lastPart=f.getName();
-			} catch (Throwable t) {
-				lastPart=filename;
+		} else {
+			String filename = FilenameUtils.getName(filepath);
+			if (type.equalsIgnoreCase("text")) {
+				response.setContentType("text/plain");
+				response.setHeader("Content-Disposition","attachment; filename=\""+filename+"\""); //download
+			} else if (type.equalsIgnoreCase("xml")) {
+				response.setContentType("application/xml");
+				response.setHeader("Content-Disposition","inline; filename=\""+filename+"\""); //show in browser
 			}
-			response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
-			StreamUtil.readerToWriter(reader, out);
-		}
-		if (type.equalsIgnoreCase("xml")) {
-			response.setContentType("application/xml");
-			String lastPart;
-			try {
-				File f= new File(filename);
-				lastPart=f.getName();
-			} catch (Throwable t) {
-				lastPart=filename;
+			try(FileReader reader = new FileReader(filepath)) {
+				StreamUtil.readerToWriter(reader, out);
 			}
-			response.setHeader("Content-Disposition","inline; filename=\""+lastPart+"\"");
 		}
 		out.close();
 	}
 
-	public static void showInputStreamContents(InputStream inputStream, String filename, String type, HttpServletResponse response) throws IOException {
-		ServletOutputStream outputStream = response.getOutputStream();
-		if (type.equalsIgnoreCase("zip")) {
-			response.setContentType("application/zip");
-		} else {
-			response.setContentType("application/octet-stream");
+	public static void showInputStreamContents(String filepath, String type, HttpServletResponse response) throws IOException {
+		try(InputStream inputStream = new DataInputStream(new FileInputStream(filepath))) {
+			ServletOutputStream outputStream = response.getOutputStream();
+			if (type.equalsIgnoreCase("zip")) {
+				response.setContentType("application/zip");
+			} else {
+				response.setContentType("application/octet-stream");
+			}
+			String filename = FilenameUtils.getName(filepath);
+			response.setHeader("Content-Disposition","attachment; filename=\""+filename+"\"");
+			StreamUtil.streamToStream(inputStream, outputStream);
+			outputStream.close();
 		}
-		String lastPart;
-		try {
-			File f= new File(filename);
-			lastPart=f.getName();
-		} catch (Throwable t) {
-			lastPart=filename;
-		}
-		response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
-		StreamUtil.streamToStream(inputStream, outputStream);
-		outputStream.close();
 	}
 
 	@Override
@@ -182,19 +167,15 @@ public class FileViewerServlet extends HttpServletBase {
 			}
 
 			if (type.equalsIgnoreCase("zip") || type.equalsIgnoreCase("bin")) {
-				showInputStreamContents(new DataInputStream(new FileInputStream(fileName)), fileName, type, response);
+				showInputStreamContents(fileName, type, response);
 			} else {
-				showReaderContents(new FileReader(fileName), fileName, type, response, fileName);
+				showReaderContents(fileName, type, response);
 			}
 		} catch (IOException e) {
-			log.error("FileViewerServlet caught IOException" , e);
-			throw e;
+			log.error("FileViewerServlet caught IOException", e);
+			response.resetBuffer();
+			response.sendError(500);
 		}
-	}
-
-	@Override
-	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		doGet(request, response);
 	}
 
 	@Override
