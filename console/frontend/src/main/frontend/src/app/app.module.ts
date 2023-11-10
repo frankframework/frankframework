@@ -65,8 +65,12 @@ import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-
 import { FitHeightDirective } from './views/iframe/fit-height.directive';
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 // import { WebservicesComponent } from './views/webservices/webservices.component';
+import { SchedulerComponent } from './views/scheduler/scheduler.component';
+import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
+import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
-import { TitleStrategy } from '@angular/router';
+import { MonitorsComponent } from './views/monitors/monitors.component';
+import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';import { TitleStrategy } from '@angular/router';
 import { PagesTitleStrategy } from './pages-title-strategy';
 
 const windowProvider: ValueProvider = {
@@ -100,6 +104,9 @@ const windowProvider: ValueProvider = {
     PagesNavigationComponent,
     PagesTopinfobarComponent,
     PagesTopnavbarComponent,
+    SchedulerComponent,
+    SchedulerEditComponent,
+    SchedulerAddComponent,
     ScrollToTopComponent,
     StatusComponent,
     StorageComponent,
@@ -109,6 +116,8 @@ const windowProvider: ValueProvider = {
     // AdapterstatisticsComponent,
     // SecurityItemsComponent,
     // WebservicesComponent,
+    // MonitorsComponent,
+    // MonitorsAddEditComponent,
 
     // pipes
     ConfigurationFilterPipe,

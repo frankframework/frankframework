@@ -35,5 +35,4 @@ export class ToDateDirective implements OnChanges, OnDestroy {
   ngOnDestroy() {
     this._subscriptions.unsubscribe();
   }
-
 }

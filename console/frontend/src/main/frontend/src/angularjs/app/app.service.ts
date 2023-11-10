@@ -2,7 +2,7 @@ import { StateService } from "@uirouter/angularjs";
 import { appModule } from "./app.module";
 import { Subject } from "rxjs";
 
-export type RunState = 'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED';
+export type RunState = 'ERROR' | 'STARTING' | 'EXCEPTION_STARTING' | 'STARTED' | 'STOPPING' | 'EXCEPTION_STOPPING' | 'STOPPED' | 'PAUSED';
 export type RunStateRuntime = RunState | 'loading'
 export type MessageLevel = 'INFO' | 'WARN' | 'ERROR';
 export type AdapterStatus = 'started' | 'warning' | 'stopped';
@@ -32,6 +32,7 @@ type Message = {
   date: number,
   level: MessageLevel,
   message: string,
+  text?: string
 }
 
 export interface AdapterMessage extends Message {
@@ -80,6 +81,27 @@ export type Adapter = {
   messagesInError?: number,
   messageLogMessageCount?: number,
   errorStoreMessageCount?: number,
+}
+
+export type Job = {
+  name: string,
+  description: string,
+  state: RunState,
+  type?: string,
+  jobGroupName?: string,
+  stateful?: boolean,
+  durable?: boolean,
+  messages: Message[],
+  triggers: Trigger[]
+}
+
+export type Trigger = {
+  name: string,
+  cronExpression: string,
+  repeatInterval: string,
+  startTime: string,
+  previousFireTime: string,
+  nextFireTime: string
 }
 
 export type Configuration = {
@@ -152,7 +174,8 @@ export class AppService {
     stopping: 0,
     exception_starting: 0,
     exception_stopping: 0,
-    error: 0
+    error: 0,
+    paused: 0
   };
   receiverSummary: Summary = {
     started: 0,
@@ -161,7 +184,8 @@ export class AppService {
     stopping: 0,
     exception_starting: 0,
     exception_stopping: 0,
-    error: 0
+    error: 0,
+    paused: 0
   };
   messageSummary: MessageSummary = {
     info: 0,
@@ -210,6 +234,7 @@ export class AppService {
       else
         updatedConfigurations.push(config);
     }
+
     this.configurations = updatedConfigurations;
     this.configurationsSubject.next(updatedConfigurations);
   }
@@ -255,7 +280,8 @@ export class AppService {
       stopping: 0,
       exception_starting: 0,
       exception_stopping: 0,
-      error: 0
+      error: 0,
+      paused: 0
     };
     var receiverSummary: Record<Lowercase<RunState>, number> = {
       started: 0,
@@ -264,7 +290,8 @@ export class AppService {
       stopping: 0,
       exception_starting: 0,
       exception_stopping: 0,
-      error: 0
+      error: 0,
+      paused: 0
     };
     var messageSummary: Record<Lowercase<MessageLevel>, number> = {
       info: 0,
