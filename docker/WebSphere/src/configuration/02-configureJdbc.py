@@ -47,7 +47,7 @@ createDatasource('ibis4test-h2', 'H2 JDBC Driver (XA)', [], [
 
 authAliasName = 'testiaf_user'
 
-createTemplatedDatasource('ibis4test-oracle', 'Oracle JDBC Driver (XA)', 'Oracle JDBC Driver XA DataSource', authAliasName, [
+createTemplatedDatasource('ibis4test-oracle-xa', 'Oracle JDBC Driver (XA)', 'Oracle JDBC Driver XA DataSource', authAliasName, [
 		[['name', 'URL'], ['value', 'jdbc:oracle:thin:@${jdbc.hostname}:1521:XE']]
 	])
 
