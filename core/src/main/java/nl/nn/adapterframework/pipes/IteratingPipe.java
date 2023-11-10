@@ -427,8 +427,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 								if(isIgnoreExceptions()){
 									itemResult = "<exception>"+ XmlEncodingUtils.encodeChars(senderResult.getResult().asString())+"</exception>";
 								} else {
-									SenderException se = new SenderException(senderResult.getResult().asString());
-									exceptions.add(se);
+									exceptions.add(new SenderException(senderResult.getResult().asString()));
 								}
 							}
 						} else {
