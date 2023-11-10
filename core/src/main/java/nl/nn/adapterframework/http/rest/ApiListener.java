@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.http.rest;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -85,11 +86,12 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String charset = null;
 
 	// for jwt validation
-	private @Getter String requiredIssuer=null;
-	private @Getter String jwksUrl=null;
-	private @Getter String jwtHeader="Authorization";
-	private @Getter String requiredClaims=null;
-	private @Getter String exactMatchClaims=null;
+	private @Getter String requiredIssuer = null;
+	private @Getter String jwksUrl = null;
+	private @Getter String jwtHeader = "Authorization";
+	private @Getter String requiredClaims = null;
+	private @Getter String exactMatchClaims = null;
+	private @Getter String anyMatchClaims = null;
 	private @Getter String roleClaim;
 
 	private @Getter String principalNameClaim = "sub";
@@ -117,14 +119,33 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 				throw new ConfigurationException("cannot set consumes attribute when using method [DELETE]");
 		}
 
-		if(getAuthenticationMethod() == AuthenticationMethods.JWT && StringUtils.isEmpty(getJwksUrl())) {
-			throw new ConfigurationException("jwksUrl cannot be empty");
+		if(getAuthenticationMethod() == AuthenticationMethods.JWT) {
+			if(StringUtils.isEmpty(getJwksUrl())){
+				throw new ConfigurationException("jwksUrl cannot be empty");
+			}
+
+			// validate if these attributes are configured as valid key/value pairs, i.e: "appid=abc,appid=xyz" to prevent exceptions.
+			validateClaimAttribute(anyMatchClaims, "anyMatchClaims");
+			validateClaimAttribute(exactMatchClaims, "exactMatchClaims");
 		}
 
 		contentType = produces.getMimeType(charset);
 
 		buildPhysicalDestinationName();
 	}
+
+	private void validateClaimAttribute(String claimAttributeToValidate, String claimAttributeName) throws ConfigurationException {
+		if(StringUtils.isNotEmpty(claimAttributeToValidate)){
+			List<String> invalidClaims = StringUtil.splitToStream(claimAttributeToValidate)
+					.filter(claim -> StringUtil.split(claim, "=").size() != 2)
+					.collect(Collectors.toList());
+
+			if(!invalidClaims.isEmpty()){
+				throw new ConfigurationException("[" + invalidClaims + "] are not a valid key/value pairs for [" + claimAttributeName + "].");
+			}
+		}
+	}
+
 
 	@Override
 	public void open() throws ListenerException {
@@ -358,9 +379,14 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.requiredClaims = string;
 	}
 
-	/** Comma separated key value pairs to match with JWT payload. e.g. "sub=UnitTest, aud=test" */
+	/** Comma separated key value pairs to exactly match with JWT payload. e.g. "sub=UnitTest, aud=test" */
 	public void setExactMatchClaims(String string) {
 		this.exactMatchClaims = string;
+	}
+
+	/** Comma separated key value pairs to one-of match with JWT payload. e.g. "appid=a,appid=b" */
+	public void setAnyMatchClaims(String string) {
+		this.anyMatchClaims = string;
 	}
 
 	/** Claim name which specifies the role */
