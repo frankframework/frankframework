@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -36,48 +38,62 @@ import org.apache.xmlbeans.GDate;
 @Log4j2
 public class DateUtils {
 	public static final String fullIsoFormat = "yyyy-MM-dd'T'HH:mm:sszzz";
-	public static final String shortIsoFormat = "yyyy-MM-dd";
-
+	public static final DateTimeFormatter fullIsoFormatter = DateTimeFormatter.ofPattern(fullIsoFormat);
+	public static final DateTimeFormatter shortIsoFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd[' ']['T'][H:mm[:ss[.S]]][X]");
 	public static final String FORMAT_FULL_GENERIC = "yyyy-MM-dd HH:mm:ss.SSS";
+	public static final DateTimeFormatter FULL_GENERIC_FORMATTER = DateTimeFormatter.ofPattern(FORMAT_FULL_GENERIC);
 	public static final String FORMAT_MILLISECONDS = "######.###";
-	public static final String FORMAT_GENERICDATETIME = "yyyy-MM-dd HH:mm:ss";
+	public static final DateTimeFormatter GENERIC_DATETIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	public static final String FORMAT_DATE = "dd-MM-yy";
-	public static final String FORMAT_TIME_HMS = "HH:mm:ss";
+	public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern(FORMAT_DATE + "[' ']['T'][H:mm[:ss[.S]]][X]");
+	public static final DateTimeFormatter TIME_HMS_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
 
 	public static String format(Instant instant, String dateFormat) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
+		return format(instant, formatter);
+	}
+
+	public static String format(Instant instant, DateTimeFormatter formatter) {
 		LocalDateTime ldt = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
 		return ldt.format(formatter);
 	}
+
 	public static String format(Date date, String dateFormat) {
 		return format(date.toInstant(), dateFormat);
+	}
+
+	public static String format(Date date, DateTimeFormatter formatter) {
+		return format(date.toInstant(), formatter);
 	}
 
 	public static String format(long date, String dateFormat) {
 		return format(Instant.ofEpochMilli(date), dateFormat);
 	}
 
+	public static String format(long date, DateTimeFormatter formatter) {
+		return format(Instant.ofEpochMilli(date), formatter);
+	}
+
 	public static String format(long date) {
-		return format(Instant.ofEpochMilli(date), FORMAT_FULL_GENERIC);
+		return format(Instant.ofEpochMilli(date), FULL_GENERIC_FORMATTER);
 	}
 
 	public static String format(Date date) {
-		return format(date.toInstant(), FORMAT_FULL_GENERIC);
+		return format(date.toInstant(), FULL_GENERIC_FORMATTER);
 	}
 
 	/**
 	 * Get current date-time timestamp in ISO 8601 format.
-	 * Get current date-time timestamp in ISO 8601 format.
 	 */
 	public static String getIsoTimeStamp() {
-		return format(Instant.now(), fullIsoFormat);
+		return format(Instant.now(), fullIsoFormatter);
 	}
 
 	/**
 	 * Get current date-time timestamp in generic format.
 	 */
 	public static String getTimeStamp() {
-		return format(Instant.now(), FORMAT_GENERICDATETIME);
+		return format(Instant.now(), GENERIC_DATETIME_FORMATTER);
 	}
 
 	/**
@@ -114,78 +130,6 @@ public class DateUtils {
 	public static Date parseAnyDate(String dateInAnyFormat) throws CalendarParserException {
 		Calendar c = CalendarParser.parse(dateInAnyFormat);
 		return new Date(c.getTimeInMillis());
-	}
-
-	/**
-	 * Convert date format
-	 *
-	 * @param from  String	date format from.
-	 * @param to    String	date format to.
-	 * @param value String	date to reformat.
-	 */
-	public static String convertDate(String from, String to, String value) throws ParseException {
-		log.debug("convertDate from [" + from + "] to [" + to + "] value [" + value + "]");
-		String result = "";
-
-		DateTimeFormatter formatterFrom = DateTimeFormatter.ofPattern(from);
-		DateTimeFormatter formatterTo = DateTimeFormatter.ofPattern(to);
-
-		LocalDateTime localDateTime = LocalDateTime.parse(value, formatterFrom);
-
-		String tempStr = localDateTime.format(formatterFrom);
-
-		if (tempStr.equals(value)) {
-			result = localDateTime.format(formatterTo);
-		} else {
-			log.warn("Error on validating input (" + value + ") with reverse check [" + tempStr + "]");
-			throw new ParseException("Error on validating input (" + value + ") with reverse check [" + tempStr + "]", 0);
-		}
-
-		log.debug("convertDate result [" + result + "]");
-		return result;
-	}
-
-	/**
-	 * Add a number of years, months, days to a date specified in a shortIsoFormat, and return it in the same format.
-	 * Als een datum component niet aangepast hoeft te worden, moet 0 meegegeven worden.
-	 * Dus bijv: changeDate("2006-03-23", 2, 1, -4) = "2008-05-19"
-	 *
-	 * @param date   A String representing a date in format yyyy-MM-dd.
-	 * @param years
-	 * @param months
-	 * @param days
-	 */
-	public static String changeDate(String date, int years, int months, int days) throws ParseException {
-		return changeDate(date, years, months, days, "yyyy-MM-dd");
-	}
-
-	/**
-	 * Add a number of years, months, days to a date specified in a certain format, and return it in the same format.
-	 * Als een datum component niet aangepast hoeft te worden, moet 0 meegegeven worden.
-	 * Dus bijv: changeDate("2006-03-23", 2, 1, -4) = "2008-05-19"
-	 *
-	 * @param date       A String representing a date in format (dateFormat).
-	 * @param years      int
-	 * @param months     int
-	 * @param days       int
-	 * @param dateFormat A String representing the date format of date.
-	 */
-	public static String changeDate(String date, int years, int months, int days, String dateFormat) throws ParseException {
-		if (log.isDebugEnabled()) log.debug("changeDate date [" + date + "] years [" + years + "] months [" + months + "] days [" + days + "]");
-		String result;
-
-
-		DateTimeFormatter df = DateTimeFormatter.ofPattern(dateFormat);
-		Date d = parseToDate(date, df);
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(d);
-		cal.add(Calendar.YEAR, years);
-		cal.add(Calendar.MONTH, months);
-		cal.add(Calendar.DAY_OF_MONTH, days);
-		result = df.format(cal.getTime().toInstant());
-
-		log.debug("changeDate result [" + result + "]");
-		return result;
 	}
 
 	public static boolean isSameDay(Date date1, Date date2) {

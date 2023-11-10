@@ -65,14 +65,14 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		String result = (String) session.get("first");
 
 		Date date = DateUtils.parseToDate(fixedDate, PutSystemDateInSession.FORMAT_FIXEDDATETIME);
-		assertEquals(DateUtils.format(date, DateUtils.fullIsoFormat), result);
+		assertEquals(DateUtils.format(date, DateUtils.fullIsoFormatter), result);
 
 		pipe.setSessionKey("second");
 		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
-		Date first = DateUtils.parseToDate(result, DateUtils.fullIsoFormat);
-		Date second = DateUtils.parseToDate(secondResult, DateUtils.fullIsoFormat);
+		Date first = DateUtils.parseToDate(result, DateUtils.fullIsoFormatter);
+		Date second = DateUtils.parseToDate(secondResult, DateUtils.fullIsoFormatter);
 
 		long timeDifference = second.getTime() - first.getTime();
 		assertEquals(0, timeDifference);
@@ -147,8 +147,8 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
-		Date first = DateUtils.parseToDate(result, DateUtils.fullIsoFormat);
-		Date second = DateUtils.parseToDate(secondResult, DateUtils.fullIsoFormat);
+		Date first = DateUtils.parseToDate(result, DateUtils.fullIsoFormatter);
+		Date second = DateUtils.parseToDate(secondResult, DateUtils.fullIsoFormatter);
 
 		long timeDifference = second.getTime() - first.getTime();
 

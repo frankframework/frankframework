@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.core;
 
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -365,12 +366,12 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@JmxAttribute(description = "The date/time of the last processed message")
 	public String getLastMessageDate() {
-		return getLastMessageDate(DateUtils.FORMAT_FULL_GENERIC);
+		return getLastMessageDate(DateUtils.FULL_GENERIC_FORMATTER);
 	}
-	public String getLastMessageDate(String dateFormat) {
+	public String getLastMessageDate(DateTimeFormatter formatter) {
 		String result;
 		if (lastMessageDate != 0)
-			result = DateUtils.format(new Date(lastMessageDate), dateFormat);
+			result = DateUtils.format(new Date(lastMessageDate), formatter);
 		else
 			result = "-";
 		return result;
@@ -570,10 +571,10 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@JmxAttribute(description = "Up Since")
 	public String getStatsUpSince() {
-		return getStatsUpSince(DateUtils.FORMAT_FULL_GENERIC);
+		return getStatsUpSince(DateUtils.FULL_GENERIC_FORMATTER);
 	}
-	public String getStatsUpSince(String dateFormat) {
-		return DateUtils.format(new Date(statsUpSince), dateFormat);
+	public String getStatsUpSince(DateTimeFormatter formatter) {
+		return DateUtils.format(new Date(statsUpSince), formatter);
 	}
 	public Date getStatsUpSinceDate() {
 		return new Date(statsUpSince);
@@ -689,8 +690,8 @@ public class Adapter implements IAdapter, NamedBean {
 			if (log.isDebugEnabled()) {
 				log.debug("Adapter: [{}] STAT: Pipeline finished processing message with messageId [{}] exit-state [{}] started {} finished {} total duration: {} ms",
 						getName(), messageId, result.getState(),
-						DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC),
-						DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC),
+						DateUtils.format(new Date(startTime)),
+						DateUtils.format(new Date(endTime)),
 						duration);
 			} else {
 				log.info("Adapter [{}] Pipeline finished processing message with messageId [{}] with exit-state [{}]", getName(), messageId, result.getState());

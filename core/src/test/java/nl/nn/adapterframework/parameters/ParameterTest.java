@@ -1339,7 +1339,7 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof Date);
 
-			assertEquals(expectedDate, DateUtils.format((Date) result, DateUtils.FORMAT_FULL_GENERIC));
+			assertEquals(expectedDate, DateUtils.format((Date) result));
 
 		} finally {
 			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
@@ -1364,7 +1364,7 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof Date);
 
-			assertEquals(expectedDate, DateUtils.format((Date) result, DateUtils.FORMAT_FULL_GENERIC));
+			assertEquals(expectedDate, DateUtils.format((Date) result));
 
 		} finally {
 			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
@@ -1391,7 +1391,7 @@ public class ParameterTest {
 			assertTrue(result instanceof Date);
 
 
-			assertEquals(expectedDate, DateUtils.format((Date) result, DateUtils.FORMAT_FULL_GENERIC));
+			assertEquals(expectedDate, DateUtils.format((Date) result));
 
 		} finally {
 			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
@@ -1417,7 +1417,7 @@ public class ParameterTest {
 			assertTrue(result instanceof Date);
 
 
-			assertEquals(expectedDate, DateUtils.format((Date) result, DateUtils.FORMAT_FULL_GENERIC));
+			assertEquals(expectedDate, DateUtils.format((Date) result));
 
 		} finally {
 			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");

@@ -232,7 +232,7 @@ public class CreateRestViewPipe extends XsltPipe {
 	}
 
 	private String getUptime() {
-		return DateUtils.format(getApplicationContext().getStartupDate(), DateUtils.FORMAT_GENERICDATETIME);
+		return DateUtils.format(getApplicationContext().getStartupDate(), DateUtils.GENERIC_DATETIME_FORMATTER);
 	}
 
 	private String retrieveMenuBarParameter(String srcPrefix) {

@@ -21,7 +21,7 @@ import java.util.Map;
 
 /**
  * Utility class to report process parameters like memory usage as an xml-element.
- * 
+ *
  * @since 4.2
  */
 public class ProcessMetrics {
@@ -78,7 +78,7 @@ public class ProcessMetrics {
 		addNumberProperty(props, "totalMemory", totalMem);
 		addNumberProperty(props, "heapSize", totalMem-freeMem);
 		addNumberProperty(props, "maxMemory", maxMemory);
-		addProperty(props, "currentTime", DateUtils.format(new Date(),DateUtils.FORMAT_FULL_GENERIC));
+		addProperty(props, "currentTime", DateUtils.format(new Date()));
 		return xmlh.toXML();
 	}
 

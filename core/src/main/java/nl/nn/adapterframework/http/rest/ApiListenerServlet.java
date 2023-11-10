@@ -564,7 +564,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(!Message.isEmpty(result)) {
 					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
 					if(StringUtils.isNotEmpty(lastModified)) {
-						Date date = DateUtils.parseToDate(lastModified, DateUtils.FORMAT_FULL_GENERIC);
+						Date date = DateUtils.parseToDate(lastModified, DateUtils.FULL_GENERIC_FORMATTER);
 						if(date != null) {
 							lastModDate = date.getTime();
 						}

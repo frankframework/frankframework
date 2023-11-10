@@ -72,8 +72,8 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		root.addAttribute("version",STATISTICS_XML_VERSION);
 		root.addAttribute("heapSize", Long.toString (totalMem-freeMem) );
 		root.addAttribute("totalMemory", Long.toString(totalMem) );
-		root.addAttribute("timestamp",DateUtils.format(now,DateUtils.FORMAT_GENERICDATETIME));
-		root.addAttribute("intervalStart",DateUtils.format(mainMark,DateUtils.FORMAT_GENERICDATETIME));
+		root.addAttribute("timestamp",DateUtils.format(now,DateUtils.GENERIC_DATETIME_FORMATTER));
+		root.addAttribute("intervalStart",DateUtils.format(mainMark,DateUtils.GENERIC_DATETIME_FORMATTER));
 		root.addAttribute("host",Misc.getHostname());
 		root.addAttribute("instance",AppConstants.getInstance().getProperty("instance.name"));
 		addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_HOUR,PERIOD_FORMAT_DATEHOUR},PERIOD_ALLOWED_LENGTH_HOUR,"",mainMark);
@@ -82,7 +82,7 @@ public class StatisticsKeeperXmlBuilder implements StatisticsKeeperIterationHand
 		addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_MONTH,PERIOD_FORMAT_YEARMONTH},PERIOD_ALLOWED_LENGTH_MONTH,"",mainMark);
 		addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_YEAR},PERIOD_ALLOWED_LENGTH_YEAR,"",mainMark);
 		if (detailMark!=null) {
-			root.addAttribute("intervalStartDetail",DateUtils.format(detailMark,DateUtils.FORMAT_GENERICDATETIME));
+			root.addAttribute("intervalStartDetail",DateUtils.format(detailMark,DateUtils.GENERIC_DATETIME_FORMATTER));
 			addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_HOUR,PERIOD_FORMAT_DATEHOUR},PERIOD_ALLOWED_LENGTH_HOUR,"Detail",detailMark);
 			addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_DAY,PERIOD_FORMAT_DATE,PERIOD_FORMAT_WEEKDAY},PERIOD_ALLOWED_LENGTH_DAY,"Detail",detailMark);
 			addPeriodIndicator(root,now,new String[][]{PERIOD_FORMAT_WEEK,PERIOD_FORMAT_YEARWEEK},PERIOD_ALLOWED_LENGTH_WEEK,"Detail",detailMark);

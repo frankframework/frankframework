@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * List the contents of a directory as XML.
- * 
+ *
  * @author Johan Verrips IOS
  */
 public class Dir2Xml  {
@@ -120,11 +120,11 @@ public class Dir2Xml  {
 		// Get the modification date of the file
 		Date modificationDate = new Date(file.lastModified());
 		//add date
-		String date = DateUtils.format(modificationDate, DateUtils.FORMAT_DATE);
+		String date = DateUtils.format(modificationDate, DateUtils.DATE_FORMATTER);
 		fileXml.addAttribute("modificationDate", date);
 
 		// add the time
-		String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
+		String time = DateUtils.format(modificationDate, DateUtils.TIME_HMS_FORMATTER);
 		fileXml.addAttribute("modificationTime", time);
 
 		return fileXml;

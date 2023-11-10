@@ -637,11 +637,11 @@ public class FileHandler implements IScopeProvider {
 			fSize.setValue(Misc.toFileSize(fileSize,true));
 			fileXml.addSubElement(fSize);
 			Date lastModified = new Date(file.lastModified());
-			String date = DateUtils.format(lastModified, DateUtils.FORMAT_DATE);
+			String date = DateUtils.format(lastModified, DateUtils.DATE_FORMATTER);
 			XmlBuilder modificationDate = new XmlBuilder("modificationDate");
 			modificationDate.setValue(date);
 			fileXml.addSubElement(modificationDate);
-			String time = DateUtils.format(lastModified, DateUtils.FORMAT_TIME_HMS);
+			String time = DateUtils.format(lastModified, DateUtils.TIME_HMS_FORMATTER);
 			XmlBuilder modificationTime = new XmlBuilder("modificationTime");
 			modificationTime.setValue(time);
 			fileXml.addSubElement(modificationTime);

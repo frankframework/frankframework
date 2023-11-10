@@ -91,7 +91,7 @@ public class ConfigurationDTO {
 
 	public void setDatabaseAttributes(String filename, Date creationDate, String user, Boolean active, Boolean autoreload) {
 		this.filename = filename;
-		this.created = DateUtils.format(creationDate, DateUtils.FORMAT_GENERICDATETIME);
+		this.created = DateUtils.format(creationDate, DateUtils.GENERIC_DATETIME_FORMATTER);
 		this.user = user;
 		this.active = active;
 		this.autoreload = autoreload;

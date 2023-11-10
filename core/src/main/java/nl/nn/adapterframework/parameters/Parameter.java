@@ -794,13 +794,13 @@ public class Parameter implements IConfigurable, IWithParameters {
 				return rawValue;
 			}
 			try {
-				return DateUtils.parseToDate(Message.asString(rawValue), StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateUtils.FORMAT_GENERICDATETIME);
+				return StringUtils.isNotEmpty(patternFormatString) ? DateUtils.parseToDate(Message.asString(rawValue), patternFormatString) : DateUtils.parseToDate(Message.asString(rawValue), DateUtils.GENERIC_DATETIME_FORMATTER);
 			} catch (DateTimeException | IOException e) {
 				throw new ParameterException("Cannot parse ["+rawValue+"] as date", e);
 			}
 		}
 		if (rawValue instanceof Date) {
-			return DateUtils.format((Date) rawValue, StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateUtils.FORMAT_GENERICDATETIME);
+			return StringUtils.isNotEmpty(patternFormatString) ? DateUtils.format((Date) rawValue, patternFormatString) : DateUtils.format((Date) rawValue, DateUtils.GENERIC_DATETIME_FORMATTER);
 		}
 		try {
 			return Message.asString(rawValue);
@@ -855,7 +855,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 					Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
 					if (fixedDateTime == null) {
 						try {
-							fixedDateTime = DateUtils.parseToDate(PutSystemDateInSession.FIXEDDATETIME, DateUtils.FORMAT_GENERICDATETIME);
+							fixedDateTime = DateUtils.parseToDate(PutSystemDateInSession.FIXEDDATETIME, DateUtils.GENERIC_DATETIME_FORMATTER);
 						} catch (DateTimeException e) {
 							throw new ParameterException("Could not parse FIXEDDATETIME [" + PutSystemDateInSession.FIXEDDATETIME + "]", e);
 						}

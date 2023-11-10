@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
  * DateUtils Tester.
  * The assertions are in the form of testing the date in most cases, not the time
  * because of the time difference between timezones that might occur.
- * 
+ *
  * @author Ricardo
  */
 public class DateUtilsTest {
@@ -71,32 +71,32 @@ public class DateUtilsTest {
 	@Test
 	public void testFormatForDateDateFormat() throws Exception {
 		Date d = getCorrectedDate(new Date(1503600000));
-		String time = DateUtils.format(d, DateUtils.FORMAT_FULL_GENERIC);
+		String time = DateUtils.format(d);
 		assertEquals("1970-01-18 09:40:00.000", time);
 
 	}
 
 	@Test
 	public void testParseToDate() throws Exception {
-		Date date = DateUtils.parseToDate("05-10-13", DateUtils.FORMAT_DATE);
+		Date date = DateUtils.parseToDate("05-10-13", DateUtils.DATE_FORMATTER);
 		assertEquals(getCorrectedDate(1380931200000L), date.getTime());
 	}
 
 	@Test
 	public void testParseToDateFullYear() throws Exception {
-		Date date = DateUtils.parseToDate("05-10-2014", DateUtils.FORMAT_DATE);
+		Date date = DateUtils.parseToDate("05-10-2014", DateUtils.DATE_FORMATTER);
 		assertEquals(getCorrectedDate(1412467200000L), date.getTime());
 	}
 
 	@Test
 	public void unableToParseDate() throws Exception {
-		Date date = DateUtils.parseToDate("05/10/98", DateUtils.FORMAT_DATE);
+		Date date = DateUtils.parseToDate("05/10/98", DateUtils.DATE_FORMATTER);
 		assertNull(date);
 	}
 
 	@Test
 	public void unableToParseFullGenericWithoutTime() throws Exception {
-		Date date = DateUtils.parseToDate("2000-01-01", DateUtils.FORMAT_FULL_GENERIC);
+		Date date = DateUtils.parseToDate("2000-01-01", DateUtils.FULL_GENERIC_FORMATTER);
 		assertNull(date);
 	}
 
@@ -133,24 +133,6 @@ public class DateUtilsTest {
 	public void testParseAnyDate3() throws Exception {
 		Date date = DateUtils.parseAnyDate("05/10/98 05:47:13");
 		assertEquals(getCorrectedDate(907566433000L), date.getTime());
-	}
-
-	@Test
-	public void testConvertDate() throws Exception {
-		String date = DateUtils.convertDate(DateUtils.FORMAT_DATE, DateUtils.FORMAT_FULL_GENERIC, "18-03-13");
-		assertEquals("2013-03-18 00:00:00.000", date);
-	}
-
-	@Test
-	public void testChangeDateForDateYearsMonthsDays() throws Exception {
-		String date = DateUtils.changeDate("2013-10-10", 2, 3, 5);
-		assertEquals("2016-01-15", date);
-	}
-
-	@Test
-	public void testChangeDateForDateYearsMonthsDaysDateFormat() throws Exception {
-		String date = DateUtils.changeDate("10-10-13", 2, 3, 5, DateUtils.FORMAT_DATE);
-		assertEquals("15-01-16", date);
 	}
 
 	@Test
