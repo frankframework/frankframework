@@ -42,7 +42,6 @@ import bitronix.tm.resource.jms.PoolingConnectionFactory;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.core.IbisException;
-import nl.nn.adapterframework.extensions.ifsa.IfsaException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.Counter;
@@ -370,16 +369,16 @@ public class MessagingSource  {
 		return useJms102;
 	}
 
-	private void deleteDynamicQueue(Queue queue) throws IfsaException {
+	private void deleteDynamicQueue(Queue queue) throws JmsException {
 		if (queue!=null) {
 			try {
 				if (!(queue instanceof TemporaryQueue)) {
-					throw new IfsaException("Queue ["+queue.getQueueName()+"] is not a TemporaryQueue");
+					throw new JmsException("Queue ["+queue.getQueueName()+"] is not a TemporaryQueue");
 				}
 				TemporaryQueue tqueue = (TemporaryQueue)queue;
 				tqueue.delete();
 			} catch (JMSException e) {
-				throw new IfsaException("cannot delete temporary queue",e);
+				throw new JmsException("cannot delete temporary queue",e);
 			}
 		}
 	}
@@ -402,7 +401,7 @@ public class MessagingSource  {
 		return result;
 	}
 
-	public void releaseDynamicReplyQueue(Queue replyQueue) throws IfsaException {
+	public void releaseDynamicReplyQueue(Queue replyQueue) throws JmsException {
 		if (!useSingleDynamicReplyQueue()) {
 			deleteDynamicQueue(replyQueue);
 		}

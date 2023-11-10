@@ -273,6 +273,11 @@
 				<artifactId>ibis-adapterframework-dbms</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>nn-specials</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- explicit dependency to force version 1.1.1 -->
 			<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
@@ -1233,6 +1238,7 @@
 				</property>
 			</activation>
 			<modules>
+				<module>nn-specials</module>
 				<module>coolgen</module>
 				<module>messaging</module>
 				<module>ifsa</module>

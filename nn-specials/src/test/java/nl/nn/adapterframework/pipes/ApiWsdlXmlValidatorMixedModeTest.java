@@ -13,6 +13,7 @@ import nl.nn.adapterframework.core.IDualModeValidator;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
@@ -21,7 +22,7 @@ import nl.nn.adapterframework.validation.ValidatorTestBase;
 /**
   * @author Gerrit van Brakel
  */
-public class WsdlXmlValidatorMixedModeTest {
+public class ApiWsdlXmlValidatorMixedModeTest {
 
 	private static final String WSDL	 = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl";
 	private static final String REQUEST  = ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/GetPolicyDetails/GetPolicyDetails-Request.xml";
@@ -35,7 +36,7 @@ public class WsdlXmlValidatorMixedModeTest {
 	private TestConfiguration configuration = new TestConfiguration();
 
 	public WsdlXmlValidator getInputValidator() throws Exception {
-		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
+		WsdlXmlValidator val = configuration.createBean(ApiWsdlXmlValidator.class);
 		val.setWsdl(WSDL);
 		val.setSoapBody(REQUEST_SOAP_BODY);
 		val.setThrowException(true);
@@ -46,7 +47,7 @@ public class WsdlXmlValidatorMixedModeTest {
 		return val;
 	}
 	public WsdlXmlValidator getOutputValidator() throws Exception {
-		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
+		WsdlXmlValidator val = configuration.createBean(ApiWsdlXmlValidator.class);
 		val.setWsdl(WSDL);
 		val.setSoapBody(RESPONSE_SOAP_BODY);
 		val.setThrowException(true);
@@ -57,7 +58,7 @@ public class WsdlXmlValidatorMixedModeTest {
 		return val;
 	}
 	public WsdlXmlValidator getMixedValidator() throws Exception  {
-		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
+		WsdlXmlValidator val = configuration.createBean(ApiWsdlXmlValidator.class);
 		val.setWsdl(WSDL);
 		val.setSoapBody(REQUEST_SOAP_BODY);
 		val.setOutputSoapBody(RESPONSE_SOAP_BODY);
