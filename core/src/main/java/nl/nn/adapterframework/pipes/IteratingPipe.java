@@ -417,7 +417,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					List<Throwable> exceptions = new ArrayList<>();
 					for (ParallelSenderExecutor pse : executorList) {
 						count++;
-						String itemResult="";
+						String itemResult;
 						if (pse.getThrowable() == null) {
 							SenderResult senderResult = pse.getReply();
 							if (senderResult.isSuccess()) {
