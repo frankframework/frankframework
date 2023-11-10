@@ -300,14 +300,18 @@
 				<param name="filename" value="${testdata.dir}/ziperator.zip"/>
 			</pipe>
 
+			<!-- Data for the files in the ZIP to be created. All static in-built so we do not need a FilePipe -->
 			<pipe
 					name="Get File List"
 					className="nl.nn.adapterframework.pipes.FixedResultPipe"
 					returnString="&lt;files&gt;
-									&lt;file&gt;file1.txt&lt;/file&gt;
-									&lt;file&gt;file2.txt&lt;/file&gt;
-									&lt;file&gt;file3.txt&lt;/file&gt;
-								&lt;/files&gt;"
+	&lt;file&gt;&lt;filename&gt;file1.txt&lt;/filename&gt;&lt;contents&gt;File1 Contents
+&lt;/contents&gt;&lt;/file&gt;
+	&lt;file&gt;&lt;filename&gt;file2.txt&lt;/filename&gt;&lt;contents&gt;Contents of File 2
+&lt;/contents&gt;&lt;/file&gt;
+	&lt;file&gt;&lt;filename&gt;file3.txt&lt;/filename&gt;&lt;contents&gt;File The Third, contents thereof
+&lt;/contents&gt;&lt;/file&gt;
+&lt;/files&gt;"
 			/>
 
 			<pipe
@@ -409,6 +413,14 @@
 				<exit path="READY" state="success"/>
 			</exits>
 
+			<pipe name="Extract File Contents From Message Into Session"
+				  className="nl.nn.adapterframework.pipes.EchoPipe"
+				  elementToMove="contents"
+				  elementToMoveSessionKey="fileContents"/>
+			<pipe name="Get File Contents For Zip"
+				  className="nl.nn.adapterframework.pipes.GetFromSession"
+				  sessionKey="fileContents"/>
+
 			<!-- Encode/decode causes the original to be registered for close at end of this sub-adapter, issue 5702 -->
 			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe"
 				  direction="encode"/>
@@ -416,7 +428,7 @@
 				  direction="decode"/>
 
 			<pipe className="nl.nn.adapterframework.compression.ZipWriterPipe" collectionName="zipHandle" name="WriteDataToZipStream">
-				<param name="filename" sessionKey="originalMessage" xpathExpression="file"/>
+				<param name="filename" sessionKey="originalMessage" xpathExpression="file/filename"/>
 				<forward name="success" path="READY"/>
 			</pipe>
 		</pipeline>
