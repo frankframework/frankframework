@@ -23,19 +23,16 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StringUtil;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.PipeLineSession;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.logging.log4j.Logger;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.StringUtil;
 
 public class JwtSecurityHandler implements ISecurityHandler {
 	protected Logger log = LogUtil.getLogger(this);
