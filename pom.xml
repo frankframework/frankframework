@@ -1217,6 +1217,8 @@
 				<module>aws</module>
 				<module>cmis</module>
 				<module>aspose</module>
+				<module>nn-specials</module>
+				<module>messaging</module>
 			</modules>
 		</profile>
 		<profile>
@@ -1238,23 +1240,13 @@
 				</property>
 			</activation>
 			<modules>
-				<module>nn-specials</module>
 				<module>coolgen</module>
-				<module>messaging</module>
 				<module>ifsa</module>
 				<module>sap</module>
 				<module>tibco</module>
 				<module>idin</module>
 			</modules>
 			<repositories>
-				<repository>
-					<id>central</id>
-					<name>Central Repository</name>
-					<url>https://repo.maven.apache.org/maven2/</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</repository>
 				<repository>
 					<id>proprietary</id>
 					<url>https://nexus.frankframework.org/content/repositories/private/</url>

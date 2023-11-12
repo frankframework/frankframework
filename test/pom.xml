@@ -253,7 +253,7 @@
 					<artifactId>nn-specials</artifactId>
 					<scope>runtime</scope>
 				</dependency>
-		 </dependencies>
+			</dependencies>
 		</profile>
 		<profile>
 			<id>database-drivers</id>
