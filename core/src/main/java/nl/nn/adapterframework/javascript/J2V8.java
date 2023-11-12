@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package nl.nn.adapterframework.extensions.javascript;
+package nl.nn.adapterframework.javascript;
 
 import java.lang.reflect.Field;
 
