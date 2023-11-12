@@ -261,8 +261,9 @@ public class IbisApplicationContext implements Closeable {
 		modulesToScanFor.add("ibis-adapterframework-console-backend");
 		modulesToScanFor.add("ibis-adapterframework-coolgen");
 		modulesToScanFor.add("ibis-adapterframework-core");
+		modulesToScanFor.add("nn-specials");
 		modulesToScanFor.add("credentialprovider");
-		modulesToScanFor.add("ibis-adapterframework-ibm");
+		modulesToScanFor.add("ibis-adapterframework-messaging");
 		modulesToScanFor.add("ibis-adapterframework-idin");
 		modulesToScanFor.add("ibis-adapterframework-ifsa");
 		modulesToScanFor.add("ibis-adapterframework-ladybug");
