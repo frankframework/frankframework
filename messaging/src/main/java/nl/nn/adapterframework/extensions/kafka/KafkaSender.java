@@ -36,10 +36,9 @@ import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.stream.Message;
 
 /**
- * This class should NOT be used outside of this kafka package.
- * This class isn't public to prevent generation of javadoc/frankdoc.
+ * Experimental {@link ISender} for sending messages to a Kafka instance.
  */
-class KafkaSender extends KafkaFacade implements ISender {
+public class KafkaSender extends KafkaFacade implements ISender {
 
 	//setter is for testing purposes only.
 	private @Setter(AccessLevel.PACKAGE) Producer<Object, Object> producer;
@@ -56,9 +55,14 @@ class KafkaSender extends KafkaFacade implements ISender {
 	private @Setter KafkaType messageType = KafkaType.BYTEARRAY;
 
 	private String getSerializer(KafkaType kafkaType) {
-		if (kafkaType == KafkaType.BYTEARRAY) return ByteArraySerializer.class.getName();
-		if (kafkaType == KafkaType.STRING) return StringSerializer.class.getName();
-		throw new IllegalArgumentException("Unknown KafkaType ["+kafkaType+"]");
+		switch (kafkaType) {
+			case BYTEARRAY:
+				return ByteArraySerializer.class.getName();
+			case STRING:
+				return StringSerializer.class.getName();
+			default:
+				throw new IllegalArgumentException("Unknown KafkaType [" + kafkaType + "]");
+		}
 	}
 
 	private <M> M getMessage(Message message) throws SenderException {

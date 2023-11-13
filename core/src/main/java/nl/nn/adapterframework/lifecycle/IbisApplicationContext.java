@@ -271,7 +271,7 @@ public class IbisApplicationContext implements Closeable {
 		modulesToScanFor.add("ibis-adapterframework-sap");
 		modulesToScanFor.add("ibis-adapterframework-tibco");
 		modulesToScanFor.add("ibis-adapterframework-webapp");
-		modulesToScanFor.add("ibis-adapterframework-kafka");
+		modulesToScanFor.add("ibis-adapterframework-messaging");
 
 		registerApplicationModules(modulesToScanFor);
 	}

@@ -45,6 +45,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -55,12 +56,12 @@ import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.StringUtil;
 
 /**
- * This class should NOT be used outside of this kafka package.
- * This class isn't public to prevent generation of javadoc/frankdoc.
+ * Experimental {@link IListener} for listening to a topic in
+ * a Kafka instance.
  */
 public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord<?, ?>> {
 
-	static Predicate<String> patternPredicate = Pattern.compile("^[a-zA-Z0-9._\\-*]*$").asPredicate();
+	private static final Predicate<String> TOPIC_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9._\\-*]*$").asPredicate();
 
 	/** The group id of the consumer */
 	private @Setter String groupId;
@@ -71,15 +72,24 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	/** How often to check for new topics when using Patterns. (in MS) */
 	private @Setter int patternRecheckInterval = 5000;
 
-	/** The topics to listen to, separated by `,`. Wildcards are supported with `example.*`. */
+	/**
+	 * The topics to listen to as comma-separated list. Regular expressions are supported,
+	 * for instance: {@code example.*}.
+	 */
 	private @Setter String topics;
 
-	/** The type of the key. Used for deserializing.
-	 * @ff.default STRING **/
+	/**
+	 * The type of the key. Used for deserializing.
+	 * See {@link KafkaType} for supported types.
+	 * @ff.default STRING
+	 */
 	private @Setter KafkaType keyType = KafkaType.STRING;
 
-	/** The type of the message. Used for deserializing.
-	 * @ff.default BYTEARRAY **/
+	/**
+	 * The type of the message. Used for deserializing.
+	 * See {@link KafkaType} for supported types.
+	 * @ff.default BYTEARRAY
+	 */
 	private @Setter KafkaType messageType = KafkaType.BYTEARRAY;
 
 	//setter is for testing purposes only.
@@ -93,15 +103,25 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	private final Lock lock = new ReentrantLock();
 
 	private static String getDeserializer(KafkaType type) throws ConfigurationException {
-		if(type==KafkaType.STRING) return StringDeserializer.class.getName();
-		if(type==KafkaType.BYTEARRAY) return ByteArrayDeserializer.class.getName();
-		throw new ConfigurationException("Unknown KafkaType ["+type+"]");
+		switch (type) {
+			case STRING:
+				return StringDeserializer.class.getName();
+			case BYTEARRAY:
+				return ByteArrayDeserializer.class.getName();
+			default:
+				throw new ConfigurationException("Unknown KafkaType ["+type+"]");
+		}
 	}
 
 	public static <M> BiFunction<M, MessageContext, Message> messageConverterFactory(KafkaType kafkaType) throws ConfigurationException {
-		if(kafkaType == KafkaType.STRING) return (M message, MessageContext messageContext) -> new Message((String) message, messageContext);
-		if(kafkaType == KafkaType.BYTEARRAY) return (M message, MessageContext messageContext) -> new Message((byte[]) message, messageContext);
-		throw new ConfigurationException("Unknown KafkaType ["+kafkaType+"]");
+		switch (kafkaType) {
+			case STRING:
+				return (M message, MessageContext messageContext) -> new Message((String) message, messageContext);
+			case BYTEARRAY:
+				return (M message, MessageContext messageContext) -> new Message((byte[]) message, messageContext);
+			default:
+				throw new ConfigurationException("Unknown KafkaType [" + kafkaType + "]");
+		}
 	}
 	@Override
 	public void configure() throws ConfigurationException {
@@ -120,7 +140,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 		properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 		List<String> topicList = StringUtil.split(topics);
 		for(String topic: topicList) {
-			if(!patternPredicate.test(topic)) throw new ConfigurationException("topics contains invalid characters. Only a-zA-Z0-9._-* are allowed. (topic: ["+topic+"])");
+			if(!TOPIC_NAME_PATTERN.test(topic)) throw new ConfigurationException("topics contains invalid characters. Only a-zA-Z0-9._-* are allowed. (topic: ["+topic+"])");
 		}
 		String pattern = String.join("|", topicList);
 		if(pattern.isEmpty()) throw new ConfigurationException("topics must contain at least one valid topic");

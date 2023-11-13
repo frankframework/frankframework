@@ -15,6 +15,9 @@
 */
 package nl.nn.adapterframework.extensions.kafka;
 
+/**
+ * The supported types for Kafka keys and messages.
+ */
 public enum KafkaType {
 	STRING,
 	BYTEARRAY,
