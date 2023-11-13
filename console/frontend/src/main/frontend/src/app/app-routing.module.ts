@@ -13,8 +13,8 @@ import { EnvironmentVariablesComponent } from './views/environment-variables/env
 // import { SecurityItemsComponent } from './views/security-items/security-items.component';
 import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
 import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
-// import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
-// import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
+import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
+import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
 import { LiquibaseComponent } from './views/liquibase/liquibase.component';
 import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/iframe-custom-view.component';
 import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
@@ -226,14 +226,14 @@ const routes: Routes = [
       breadcrumbs: 'Connection Overview'
     }
   }, */
-  // {
-  //   path: 'inlinestores/overview',
-  //   component: InlinestoreComponent,
-  //   title: 'InlineStore Overview',
-  //   data: {
-  //     breadcrumbs: 'InlineStore Overview'
-  //   }
-  // },
+  {
+    path: 'inlinestores/overview',
+    component: InlinestoreComponent,
+    title: 'InlineStore Overview',
+    data: {
+      breadcrumbs: 'InlineStore Overview'
+    }
+  },
   /* {
     path: 'monitors',
     component: MonitorsComponent,
@@ -258,14 +258,14 @@ const routes: Routes = [
       breadcrumbs: 'Monitors > Triggers > Add'
     },
   }, */
-  // {
-  //   path: 'ibisstore-summary',
-  //   component: IbisstoreSummaryComponent,
-  //   title: 'Ibisstore Summary',
-  //   data: {
-  //     breadcrumbs: 'JDBC > Ibisstore Summary'
-  //   }
-  // },
+  {
+    path: 'ibisstore-summary',
+    component: IbisstoreSummaryComponent,
+    title: 'Ibisstore Summary',
+    data: {
+      breadcrumbs: 'JDBC > Ibisstore Summary'
+    }
+  },
   {
     path: 'liquibase',
     component: LiquibaseComponent,

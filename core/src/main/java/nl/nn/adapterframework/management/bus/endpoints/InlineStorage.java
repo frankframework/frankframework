@@ -58,7 +58,7 @@ public class InlineStorage extends BusEndpointBase {
 								try {
 									int count = browser.getMessageCount();
 									if(count > 0) {
-										InlineStoreItem item = new InlineStoreItem(adapter.getName(), receiver.getName(), count);
+										InlineStoreItem item = new InlineStoreItem(config.getName(), adapter.getName(), receiver.getName(), count);
 										storeItemsGroupedByProcessState.get(state.getName()).getItems().add(item);
 										storeItemsGroupedByProcessState.get(state.getName()).setTotalMessageCount(storeItemsGroupedByProcessState.get(state.getName()).getTotalMessageCount() + count);
 									}
@@ -82,6 +82,7 @@ public class InlineStorage extends BusEndpointBase {
 
 	@AllArgsConstructor
 	private static class InlineStoreItem {
+		private @Getter @Setter String configurationName;
 		private @Getter @Setter String adapterName;
 		private @Getter @Setter String receiverName;
 		private @Getter @Setter int messageCount;

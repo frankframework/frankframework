@@ -31,7 +31,7 @@ import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pa
 import { PagesTopnavbarComponent } from './components/pages/pages-topnavbar/pages-topnavbar.component';
 import { HamburgerComponent } from './components/pages/pages-topnavbar/hamburger.component';
 import { InputFileUploadComponent } from './components/input-file-upload/input-file-upload.component';
-// import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
+import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
 import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
 import { OrderByPipe } from './pipes/orderby.pipe';
 import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
@@ -39,7 +39,7 @@ import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/ifr
 import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
 import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
 import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
-// import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
+import { IbisstoreSummaryComponent } from './views/ibisstore-summary/ibisstore-summary.component';
 import { StatusComponent } from './views/status/status.component';
 import { LogoutComponent } from './components/logout/logout.component';
 import { ConfigurationFilterPipe } from './pipes/configuration-filter.pipe';
@@ -87,12 +87,12 @@ const windowProvider: ValueProvider = {
     EnvironmentVariablesComponent,
     FlowComponent,
     HamburgerComponent,
-    // IbisstoreSummaryComponent,
+    IbisstoreSummaryComponent,
     IframeCustomViewComponent,
     IframeLadybugComponent,
     IframeLadybugBetaComponent,
     IframeLarvaComponent,
-    // InlinestoreComponent,
+    InlinestoreComponent,
     InputFileUploadComponent,
     JdbcBrowseTablesComponent,
     JdbcExecuteQueryComponent,

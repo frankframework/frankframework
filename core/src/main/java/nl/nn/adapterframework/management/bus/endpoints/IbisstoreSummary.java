@@ -23,6 +23,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import nl.nn.adapterframework.configuration.Configuration;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
@@ -93,52 +95,54 @@ public class IbisstoreSummary extends BusEndpointBase {
 	private Map<String, SlotIdRecord> getSlotmap() {
 		Map<String, SlotIdRecord> slotmap = new HashMap<>();
 
-		for(Adapter adapter: getIbisManager().getRegisteredAdapters()) {
-			for (Receiver receiver: adapter.getReceivers()) {
-				ITransactionalStorage errorStorage=receiver.getErrorStorage();
-				if (errorStorage!=null) {
-					String slotId=errorStorage.getSlotId();
-					if (StringUtils.isNotEmpty(slotId)) {
-						SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
-						String type = errorStorage.getType();
-						slotmap.put(type+"/"+slotId,sir);
+		for(Configuration config : getIbisManager().getConfigurations()){
+			for(Adapter adapter: config.getRegisteredAdapters()){
+				for (Receiver receiver: adapter.getReceivers()) {
+					ITransactionalStorage errorStorage=receiver.getErrorStorage();
+					if (errorStorage!=null) {
+						String slotId=errorStorage.getSlotId();
+						if (StringUtils.isNotEmpty(slotId)) {
+							SlotIdRecord sir=new SlotIdRecord(config.getName(), adapter.getName(),receiver.getName(),null);
+							String type = errorStorage.getType();
+							slotmap.put(type+"/"+slotId,sir);
+						}
+					}
+					ITransactionalStorage messageLog=receiver.getMessageLog();
+					if (messageLog!=null) {
+						String slotId=messageLog.getSlotId();
+						if (StringUtils.isNotEmpty(slotId)) {
+							SlotIdRecord sir=new SlotIdRecord(config.getName(), adapter.getName(),receiver.getName(),null);
+							String type = messageLog.getType();
+							slotmap.put(type+"/"+slotId,sir);
+						}
 					}
 				}
-				ITransactionalStorage messageLog=receiver.getMessageLog();
-				if (messageLog!=null) {
-					String slotId=messageLog.getSlotId();
-					if (StringUtils.isNotEmpty(slotId)) {
-						SlotIdRecord sir=new SlotIdRecord(adapter.getName(),receiver.getName(),null);
-						String type = messageLog.getType();
-						slotmap.put(type+"/"+slotId,sir);
-					}
-				}
-			}
-			PipeLine pipeline=adapter.getPipeLine();
-			if (pipeline!=null) {
-				for (int i=0; i<pipeline.getPipeLineSize(); i++) {
-					IPipe pipe=pipeline.getPipe(i);
-					if (pipe instanceof MessageSendingPipe) {
-						MessageSendingPipe msp=(MessageSendingPipe)pipe;
-						ITransactionalStorage messageLog = msp.getMessageLog();
-						if (messageLog!=null) {
-							String slotId=messageLog.getSlotId();
-							if (StringUtils.isNotEmpty(slotId)) {
-								SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
-								String type = messageLog.getType();
-								slotmap.put(type+"/"+slotId,sir);
-								slotmap.put(slotId,sir);
-							}
-						} else {
-							ISender sender = msp.getSender();
-							if(sender instanceof ITransactionalStorage) {
-								ITransactionalStorage transactionalStorage = (ITransactionalStorage) sender;
-								String slotId=transactionalStorage.getSlotId();
+				PipeLine pipeline=adapter.getPipeLine();
+				if (pipeline!=null) {
+					for (int i=0; i<pipeline.getPipeLineSize(); i++) {
+						IPipe pipe=pipeline.getPipe(i);
+						if (pipe instanceof MessageSendingPipe) {
+							MessageSendingPipe msp=(MessageSendingPipe)pipe;
+							ITransactionalStorage messageLog = msp.getMessageLog();
+							if (messageLog!=null) {
+								String slotId=messageLog.getSlotId();
 								if (StringUtils.isNotEmpty(slotId)) {
-									SlotIdRecord sir=new SlotIdRecord(adapter.getName(),null,msp.getName());
-									String type = transactionalStorage.getType();
+									SlotIdRecord sir=new SlotIdRecord(config.getName(), adapter.getName(),null,msp.getName());
+									String type = messageLog.getType();
 									slotmap.put(type+"/"+slotId,sir);
 									slotmap.put(slotId,sir);
+								}
+							} else {
+								ISender sender = msp.getSender();
+								if(sender instanceof ITransactionalStorage) {
+									ITransactionalStorage transactionalStorage = (ITransactionalStorage) sender;
+									String slotId=transactionalStorage.getSlotId();
+									if (StringUtils.isNotEmpty(slotId)) {
+										SlotIdRecord sir=new SlotIdRecord(config.getName(), adapter.getName(),null,msp.getName());
+										String type = transactionalStorage.getType();
+										slotmap.put(type+"/"+slotId,sir);
+										slotmap.put(slotId,sir);
+									}
 								}
 							}
 						}
@@ -228,6 +232,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 				if (StringUtils.isNotEmpty(slotid)) {
 					SlotIdRecord sir=slotmap.get(type+"/"+slotid);
 					if (sir!=null) {
+						slotBuilder.add("configuration", sir.configurationName);
 						slotBuilder.add("adapter",sir.adapterName);
 						if (StringUtils.isNotEmpty(sir.receiverName) ) {
 							slotBuilder.add("receiver",sir.receiverName);
@@ -269,15 +274,17 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 }
 
 class SlotIdRecord {
+	public String configurationName;
 	public String adapterName;
 	public String receiverName;
 	public String pipeName;
 
-	SlotIdRecord(String adapterName, String receiverName, String pipeName) {
+	SlotIdRecord(String configurationName, String adapterName, String receiverName, String pipeName) {
 		super();
-		this.adapterName=adapterName;
-		this.receiverName=receiverName;
-		this.pipeName=pipeName;
+		this.configurationName = configurationName;
+		this.adapterName = adapterName;
+		this.receiverName = receiverName;
+		this.pipeName = pipeName;
 	}
 }
 

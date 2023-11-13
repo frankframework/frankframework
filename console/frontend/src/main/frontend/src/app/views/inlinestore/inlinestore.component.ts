@@ -1,12 +1,15 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { AppService } from 'src/angularjs/app/app.service';
-import { ApiService } from 'src/angularjs/app/services/api.service';
+import { AppService } from 'src/app/app.service';
 
-interface stateItemItem {
+type stateItemItem = {
+  configurationName: string,
   adapterName: string,
   receiverName: string,
   messageCount: number
 }
+
+type InlineStore = Record<string, { items: stateItemItem[], totalMessageCount: number }>;
 
 @Component({
   selector: 'app-inlinestore',
@@ -14,17 +17,17 @@ interface stateItemItem {
   styleUrls: ['./inlinestore.component.scss'],
 })
 export class InlinestoreComponent implements OnInit {
-  result: Record<string, { items: stateItemItem[], totalMessageCount: number }> = {};
+  result: InlineStore = {};
   getProcessStateIcon = (processState: string) => this.appService.getProcessStateIcon(processState);
   getProcessStateIconColor = (processState: string) => this.appService.getProcessStateIconColor(processState)
 
   constructor(
-    private apiService: ApiService,
+    private http: HttpClient,
     private appService: AppService,
   ) { };
 
   ngOnInit(): void {
-    this.apiService.Get("inlinestores/overview", (data) => {
+    this.http.get<InlineStore>(this.appService.absoluteApiPath + "inlinestores/overview").subscribe((data) => {
       this.result = data;
     });
   };

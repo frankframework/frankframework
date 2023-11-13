@@ -2,6 +2,32 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 
+interface Date {
+  id: string
+  count: number
+}
+
+interface Slot {
+  id: string,
+  first: string,
+  configuration: string,
+  adapter: string,
+  receiver: string,
+  pipe: string,
+  msgcount: number,
+  dates: Date[]
+}
+
+interface JdbcBrowseReturnData {
+  query: string
+  fielddefinition: Record<string, string>
+  result: Record<string, Record<string, string>>
+}
+
+interface JdbcSummaryReturnData {
+  result: JdbcSummary[]
+}
+
 export type JDBC = {
   queryTypes: string[]
   datasources: string[]
@@ -28,10 +54,16 @@ export interface JdbcQueryForm {
   trimSpaces: boolean
 }
 
-export interface JdbcBrowseReturnData {
-  query: string
-  fielddefinition: Record<string, string>
-  result: Record<string, Record<string, string>>
+export interface JdbcSummaryForm {
+  datasource: string
+}
+
+export interface JdbcSummary {
+  name: string
+  slotcount: number
+  slots?: Slot[]
+  msgcount: number
+  type: string
 }
 
 @Injectable({
@@ -54,6 +86,10 @@ export class JdbcService {
 
   postJdbcQuery(formData: JdbcQueryForm) {
     return this.http.post(this.appService.absoluteApiPath + "jdbc/query", formData, { responseType: 'text' });
+  }
+
+  postJdbcSummary(formData: JdbcSummaryForm){
+    return this.http.post<JdbcSummaryReturnData>(this.appService.absoluteApiPath + "jdbc/summary", formData);
   }
 
   postJdbcLiquibase(formData: FormData) {
