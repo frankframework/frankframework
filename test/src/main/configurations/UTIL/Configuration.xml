@@ -3,9 +3,6 @@
 	<Include ref="ConfigurationLarva.xml"/>
 	<Include ref="ConfigurationTestSendMail.xml"/>
 
-	<!-- Include configuration for console functions -->
-	<Include ref="ConfigurationUploadFiles.xml"/>
-
 	<!-- Run saved Ladybug test reports at a configurable CRON interval -->
 	<Include ref="ConfigurationLadybug.xml"/>
 
