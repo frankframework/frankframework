@@ -32,8 +32,9 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurable {
 	private final @Getter(onMethod = @__(@Override)) String domain = "KAFKA";
-	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter @Setter ApplicationContext applicationContext;
+	private final @Getter(onMethod = @__(@Override)) ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter(onMethod = @__(@Override)) @Setter ApplicationContext applicationContext;
+
 	protected final Logger log = LogUtil.getLogger(this);
 
 	private @Setter @Getter String name;
@@ -42,14 +43,13 @@ public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurab
 	/** The client id to use when connecting to the Kafka cluster. */
 	private @Setter @Getter(AccessLevel.PACKAGE) String clientId;
 
-	protected Properties properties = new Properties();
+	protected final Properties properties = new Properties();
 
 	@Override
 	public void configure() throws ConfigurationException {
 		if(StringUtils.isEmpty(bootstrapServers)) throw new ConfigurationException("bootstrapServers must be specified");
 		if(StringUtils.isEmpty(clientId)) throw new ConfigurationException("clientId must be specified");
 
-		properties = new Properties();
 		properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 		properties.setProperty(CommonClientConfigs.CLIENT_ID_CONFIG, clientId);
 	}

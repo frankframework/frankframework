@@ -55,15 +55,17 @@ public class KafkaReceiverTest {
 
 	@BeforeEach
 	void setUp() throws Exception {
-		listener = new KafkaListener();
+		listener = new KafkaListener() {
+			@Override
+			protected org.apache.kafka.clients.consumer.Consumer<String, byte[]> buildConsumer() {
+				return mockListener;
+			}
+		};
 		listener.setTopics("test.*.test2, anothertopic");
 		listener.setClientId("test");
 		listener.setGroupId("testGroup");
 		listener.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
-		listener.setKeyType(KafkaType.STRING);
-		listener.setMessageType(KafkaType.BYTEARRAY);
 		listener.configure();
-		listener.setConsumerGenerator(properties -> mockListener);
 		Map<MetricName, Metric> metrics = new HashMap<>();
 		MetricName metricName = new MetricName("response-total", "consumer-node-metrics", "The total number of responses received", Collections.singletonMap("client-id", "test"));
 		Value value = new Value();
@@ -80,33 +82,31 @@ public class KafkaReceiverTest {
 
 	@ParameterizedTest
 	@MethodSource
-	void validateParameters(Consumer<KafkaListener> consumer, boolean shouldSucceed, String name) {
-		consumer.accept(listener);
+	void validateParameters(Consumer<KafkaListener> configurer, boolean shouldSucceed, String name) {
+		configurer.accept(listener);
 		if(shouldSucceed) Assertions.assertDoesNotThrow(listener::configure, name);
 		else Assertions.assertThrows(ConfigurationException.class, listener::configure, name);
 	}
-	public static Consumer<KafkaListener> wrap(Consumer<KafkaListener> function) {
+	public static Consumer<KafkaListener> configure(Consumer<KafkaListener> function) {
 		return function;
 	}
 	static Stream<Arguments> validateParameters() {
 		return Stream.of(
-				Arguments.of(wrap(listener->listener.setTopics(null)), false, "null topics"),
-				Arguments.of(wrap(listener->listener.setTopics("")), false, "empty topics"),
-				Arguments.of(wrap(listener->listener.setTopics("test")), true, "valid topics 1"),
-				Arguments.of(wrap(listener->listener.setTopics("test,test2")), true, "valid topics 2"),
-				Arguments.of(wrap(listener->listener.setTopics("test.test2")), true, "valid topics 3"),
-				Arguments.of(wrap(listener->listener.setGroupId(null)), false, "null groupId"),
-				Arguments.of(wrap(listener->listener.setGroupId("")), false, "empty groupId"),
-				Arguments.of(wrap(listener->listener.setGroupId("test")), true, "valid groupId"),
-				Arguments.of(wrap(listener->listener.setPatternRecheckInterval(0)), false, "0 patternRecheckInterval"),
-				Arguments.of(wrap(listener->listener.setPatternRecheckInterval(100)), true, "valid patternRecheckInterval"),
-				Arguments.of(wrap(listener->listener.setFromBeginning(true)), true, "valid fromBeginning"),
-				Arguments.of(wrap(listener->listener.setFromBeginning(false)), true, "valid fromBeginning"),
-				Arguments.of(wrap(listener->listener.setKeyType(null)), false, "null keyType"),
-				Arguments.of(wrap(listener->listener.setMessageType(null)), false, "null messageType"),
-				Arguments.of(wrap(listener->listener.setPatternRecheckInterval(0)), false, "0 patternRecheckInterval"),
-				Arguments.of(wrap(listener->listener.setPatternRecheckInterval(9)), false, "9 patternRecheckInterval"),
-				Arguments.of(wrap(listener->listener.setPatternRecheckInterval(10)), true, "10 patternRecheckInterval")
+				Arguments.of(configure(listener->listener.setTopics(null)), false, "null topics"),
+				Arguments.of(configure(listener->listener.setTopics("")), false, "empty topics"),
+				Arguments.of(configure(listener->listener.setTopics("test")), true, "valid topics 1"),
+				Arguments.of(configure(listener->listener.setTopics("test,test2")), true, "valid topics 2"),
+				Arguments.of(configure(listener->listener.setTopics("test.test2")), true, "valid topics 3"),
+				Arguments.of(configure(listener->listener.setGroupId(null)), false, "null groupId"),
+				Arguments.of(configure(listener->listener.setGroupId("")), false, "empty groupId"),
+				Arguments.of(configure(listener->listener.setGroupId("test")), true, "valid groupId"),
+				Arguments.of(configure(listener->listener.setPatternRecheckInterval(0)), false, "0 patternRecheckInterval"),
+				Arguments.of(configure(listener->listener.setPatternRecheckInterval(100)), true, "valid patternRecheckInterval"),
+				Arguments.of(configure(listener->listener.setFromBeginning(true)), true, "valid fromBeginning"),
+				Arguments.of(configure(listener->listener.setFromBeginning(false)), true, "valid fromBeginning"),
+				Arguments.of(configure(listener->listener.setPatternRecheckInterval(0)), false, "0 patternRecheckInterval"),
+				Arguments.of(configure(listener->listener.setPatternRecheckInterval(9)), false, "9 patternRecheckInterval"),
+				Arguments.of(configure(listener->listener.setPatternRecheckInterval(10)), true, "10 patternRecheckInterval")
 		);
 	}
 
@@ -127,7 +127,7 @@ public class KafkaReceiverTest {
 
 		Assertions.assertNull(mockListener.committed(Set.of(topicPartition)).get(topicPartition));
 
-		RawMessageWrapper<ConsumerRecord<?, ?>> wrapper = listener.getRawMessage(new HashMap<>());
+		RawMessageWrapper<ConsumerRecord<String, byte[]>> wrapper = listener.getRawMessage(new HashMap<>());
 		Assertions.assertEquals(1L, mockListener.committed(Set.of(topicPartition)).get(topicPartition).offset());
 		Message message = listener.extractMessage(wrapper, new HashMap<>());
 

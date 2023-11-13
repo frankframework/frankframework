@@ -20,7 +20,6 @@ import java.util.concurrent.Future;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
@@ -41,39 +40,10 @@ import nl.nn.adapterframework.stream.Message;
 public class KafkaSender extends KafkaFacade implements ISender {
 
 	//setter is for testing purposes only.
-	private @Setter(AccessLevel.PACKAGE) Producer<Object, Object> producer;
+	private @Setter(AccessLevel.PACKAGE) Producer<String, byte[]> producer;
 
 	/** The topic to send messages to. Only one topic per sender. Wildcards are not supported. */
 	private @Setter String topic;
-
-	/** The type of the key. Used for serializing.
-	 * @ff.default STRING **/
-	private @Setter KafkaType keyType = KafkaType.STRING;
-
-	/** The type of the message. Used for serializing.
-	 * @ff.default BYTEARRAY **/
-	private @Setter KafkaType messageType = KafkaType.BYTEARRAY;
-
-	private String getSerializer(KafkaType kafkaType) {
-		switch (kafkaType) {
-			case BYTEARRAY:
-				return ByteArraySerializer.class.getName();
-			case STRING:
-				return StringSerializer.class.getName();
-			default:
-				throw new IllegalArgumentException("Unknown KafkaType [" + kafkaType + "]");
-		}
-	}
-
-	private <M> M getMessage(Message message) throws SenderException {
-		try {
-			if (messageType == KafkaType.BYTEARRAY) return (M) message.asByteArray();
-			if (messageType == KafkaType.STRING) return (M) message.asString();
-		} catch(Exception e) {
-			throw new SenderException("Failed to convert message to message type:", e);
-		}
-		throw new SenderException("Unknown KafkaType ["+messageType+"]");
-	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -81,16 +51,11 @@ public class KafkaSender extends KafkaFacade implements ISender {
 		if (StringUtils.isEmpty(topic)) throw new ConfigurationException("topic must be specified");
 		if(topic.contains(",")) throw new ConfigurationException("Only one topic is allowed to be used for sender.");
 		if(topic.contains("*")) throw new ConfigurationException("Wildcards are not allowed to be used for sender.");
-
-		String keySerializer = getSerializer(keyType);
-		String valueSerializer = getSerializer(messageType);
-		properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializer);
-		properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, valueSerializer);
 	}
 
 	@Override
 	public void open() throws SenderException {
-		producer = new KafkaProducer<>(properties);
+		producer = new KafkaProducer<>(properties, new StringSerializer(), new ByteArraySerializer());
 		try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) {
@@ -107,14 +72,14 @@ public class KafkaSender extends KafkaFacade implements ISender {
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
-		Object messageData;
+		byte[] messageData;
 		try {
 			message.preserve();
-			messageData = getMessage(message);
+			messageData = message.asByteArray();
 		} catch (Exception e) {
 			throw new SenderException("Failed to convert message to message type:", e);
 		}
-		ProducerRecord<Object, Object> producerRecord = new ProducerRecord<>(topic, messageData);
+		ProducerRecord<String, byte[]> producerRecord = new ProducerRecord<>(topic, messageData);
 		Future<RecordMetadata> future = producer.send(producerRecord);
 		RecordMetadata metadata;
 		try {

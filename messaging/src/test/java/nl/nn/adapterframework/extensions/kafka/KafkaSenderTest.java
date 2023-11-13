@@ -37,7 +37,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 public class KafkaSenderTest {
-	final MockProducer<?, ?> mockProducer = new MockProducer<>(true, new StringSerializer(), new ByteArraySerializer());
+	final MockProducer<String, byte[]> mockProducer = new MockProducer<>(true, new StringSerializer(), new ByteArraySerializer());
 	final KafkaSender sender = new KafkaSender();
 
 	@BeforeEach
@@ -46,8 +46,7 @@ public class KafkaSenderTest {
 		sender.setClientId("test");
 		sender.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
 		sender.configure();
-		//noinspection unchecked
-		sender.setProducer((Producer<Object, Object>) mockProducer);
+		sender.setProducer((Producer<String, byte[]>) mockProducer);
 	}
 
 	@Test

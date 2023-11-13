@@ -21,11 +21,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -59,7 +56,7 @@ import nl.nn.adapterframework.util.StringUtil;
  * Experimental {@link IListener} for listening to a topic in
  * a Kafka instance.
  */
-public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord<?, ?>> {
+public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord<String, byte[]>> {
 
 	private static final Predicate<String> TOPIC_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9._\\-*]*$").asPredicate();
 
@@ -78,64 +75,22 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	 */
 	private @Setter String topics;
 
-	/**
-	 * The type of the key. Used for deserializing.
-	 * See {@link KafkaType} for supported types.
-	 * @ff.default STRING
-	 */
-	private @Setter KafkaType keyType = KafkaType.STRING;
-
-	/**
-	 * The type of the message. Used for deserializing.
-	 * See {@link KafkaType} for supported types.
-	 * @ff.default BYTEARRAY
-	 */
-	private @Setter KafkaType messageType = KafkaType.BYTEARRAY;
-
 	//setter is for testing purposes only.
-	private @Setter(AccessLevel.PACKAGE) Consumer<?, ?> consumer;
-	private @Setter(AccessLevel.PACKAGE) Function<Properties, Consumer<?, ?>> consumerGenerator = KafkaConsumer::new;
-	private Iterator<? extends ConsumerRecord<?, ?>> waiting;
+	private @Setter(AccessLevel.PACKAGE) Consumer<String, byte[]> consumer;
+	private Iterator<? extends ConsumerRecord<String, byte[]>> waiting;
 	private final Duration pollDuration = Duration.ofMillis(1);
 	private final Map<TopicPartition, OffsetAndMetadata> offsetAndMetadataMap = new HashMap<>();
-	private BiFunction<Object, MessageContext, Message> converter;
 	private @Getter(AccessLevel.PACKAGE) Pattern topicPattern;
 	private final Lock lock = new ReentrantLock();
 
-	private static String getDeserializer(KafkaType type) throws ConfigurationException {
-		switch (type) {
-			case STRING:
-				return StringDeserializer.class.getName();
-			case BYTEARRAY:
-				return ByteArrayDeserializer.class.getName();
-			default:
-				throw new ConfigurationException("Unknown KafkaType ["+type+"]");
-		}
-	}
-
-	public static <M> BiFunction<M, MessageContext, Message> messageConverterFactory(KafkaType kafkaType) throws ConfigurationException {
-		switch (kafkaType) {
-			case STRING:
-				return (M message, MessageContext messageContext) -> new Message((String) message, messageContext);
-			case BYTEARRAY:
-				return (M message, MessageContext messageContext) -> new Message((byte[]) message, messageContext);
-			default:
-				throw new ConfigurationException("Unknown KafkaType [" + kafkaType + "]");
-		}
-	}
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		this.converter = messageConverterFactory(messageType);
-		String keyDeserializer = getDeserializer(keyType);
-		String valueDeserializer = getDeserializer(messageType);
 		if (StringUtils.isEmpty(groupId)) throw new ConfigurationException("groupId must be specified");
 		if (StringUtils.isEmpty(topics)) throw new ConfigurationException("topics must be specified");
 		if(patternRecheckInterval < 10) throw new ConfigurationException("patternRecheckInterval should be at least 10");
 		properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 		properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, fromBeginning ? "earliest" : "latest");
-		properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer);
-		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer);
 		properties.setProperty(ConsumerConfig.METADATA_MAX_AGE_CONFIG, String.valueOf(patternRecheckInterval));
 		properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 		List<String> topicList = StringUtil.split(topics);
@@ -151,7 +106,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	public void open() throws ListenerException {
 		lock.lock();
 		try {
-			consumer = consumerGenerator.apply(properties);
+			consumer = buildConsumer();
 			consumer.subscribe(topicPattern);
 			waiting = consumer.poll(Duration.ofMillis(100)).iterator();
 			if (waiting.hasNext()) return;
@@ -162,6 +117,10 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	protected Consumer<String, byte[]> buildConsumer() {
+		return new KafkaConsumer<>(properties, new StringDeserializer(), new ByteArrayDeserializer());
 	}
 
 	@Override
@@ -177,9 +136,9 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 
 	@Override
 	public Message extractMessage(
-			@Nonnull RawMessageWrapper<ConsumerRecord<?, ?>> wrappedMessage, @Nonnull Map<String, Object> context) {
+			@Nonnull RawMessageWrapper<ConsumerRecord<String, byte[]>> wrappedMessage, @Nonnull Map<String, Object> context) {
 		Map<String, String> headers=new HashMap<>();
-		ConsumerRecord<?, ?> rawMessage = wrappedMessage.getRawMessage();
+		ConsumerRecord<String, byte[]> rawMessage = wrappedMessage.getRawMessage();
 		rawMessage.headers().forEach(header->{
 			try {
 				headers.put(header.key(), new String(header.value(), StandardCharsets.UTF_8));
@@ -193,11 +152,11 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 		context.put("kafkaOffset", rawMessage.offset());
 		context.put("kafkaTimestamp", rawMessage.timestamp());
 		context.put("kafkaHeaders", headers);
-		return converter.apply(rawMessage.value(), new MessageContext(context));
+		return new Message(rawMessage.value(), new MessageContext(context));
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<ConsumerRecord<?, ?>> rawMessage, PipeLineSession pipeLineSession) {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<ConsumerRecord<String, byte[]>> rawMessage, PipeLineSession pipeLineSession) {
 		//nothing.
 	}
 
@@ -218,12 +177,12 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	}
 
 	@Override
-	public RawMessageWrapper<ConsumerRecord<?, ?>> getRawMessage(@Nonnull Map<String, Object> threadContext) {
+	public RawMessageWrapper<ConsumerRecord<String, byte[]>> getRawMessage(@Nonnull Map<String, Object> threadContext) {
 		lock.lock();
 		try {
 			if (!waiting.hasNext()) waiting = consumer.poll(pollDuration).iterator();
 			if (!waiting.hasNext()) return null;
-			ConsumerRecord<?, ?> next = waiting.next();
+			ConsumerRecord<String, byte[]> next = waiting.next();
 			offsetAndMetadataMap.put(new TopicPartition(next.topic(), next.partition()), new OffsetAndMetadata(next.offset() + 1));
 			consumer.commitAsync(offsetAndMetadataMap, (Map<TopicPartition, OffsetAndMetadata> offsets, Exception exception) -> {
 				if (exception != null) {
