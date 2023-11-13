@@ -23,12 +23,14 @@ public class KafkaPatternValidatorTest {
 		listener.setGroupId("testGroup");
 		listener.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
 	}
+
 	@ParameterizedTest
 	@MethodSource
 	public void validateValidTopics(String topics, String expected) {
 		listener.setTopics(topics);
 		Assertions.assertDoesNotThrow(listener::configure, topics);
 	}
+
 	public static Stream<Arguments> validateValidTopics() {
 		return Stream.of(
 				Arguments.of("test", "test"),
@@ -44,6 +46,7 @@ public class KafkaPatternValidatorTest {
 		listener.setTopics(topics);
 		Assertions.assertThrows(ConfigurationException.class, listener::configure, topics);
 	}
+
 	public static Stream<Arguments> validateInvalidTopics() {
 		//Simply List.of() doesn't work, because it doesn't allow null values.
 		List<String> data = Lists.newArrayList(

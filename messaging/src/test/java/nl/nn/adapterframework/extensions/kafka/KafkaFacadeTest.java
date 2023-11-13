@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.extensions.kafka;
 
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -41,24 +40,28 @@ public class KafkaFacadeTest {
 		facade.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
 		facade.configure();
 	}
+
 	@ParameterizedTest
 	@MethodSource
-	void validateParameters(Consumer<KafkaFacade> consumer, boolean shouldSucceed, String name) {
-		consumer.accept(facade);
+	void validateParameters(KafkaFacadeConfigurer configurer, boolean shouldSucceed, String name) {
+		configurer.configure(facade);
 		if(shouldSucceed) Assertions.assertDoesNotThrow(facade::configure, name);
 		else Assertions.assertThrows(ConfigurationException.class, facade::configure, name);
 	}
-	public static Consumer<KafkaFacade> wrap(Consumer<KafkaFacade> function) {
-		return function;
+
+	@FunctionalInterface
+	interface KafkaFacadeConfigurer {
+		void configure(KafkaFacade kafkaFacade);
 	}
+
 	static Stream<Arguments> validateParameters() {
 		return Stream.of(
-				Arguments.of(wrap(listener->listener.setBootstrapServers(null)), false, "null bootstrapServers"),
-				Arguments.of(wrap(listener->listener.setBootstrapServers("")), false, "empty bootstrapServers"),
-				Arguments.of(wrap(listener->listener.setBootstrapServers("example.com:9092")), true, "valid bootstrapServers"),
-				Arguments.of(wrap(listener->listener.setClientId(null)), false, "null clientId"),
-				Arguments.of(wrap(listener->listener.setClientId("")), false, "empty clientId"),
-				Arguments.of(wrap(listener->listener.setClientId("test")), true, "valid clientId")
+				Arguments.of((KafkaFacadeConfigurer)listener->listener.setBootstrapServers(null), false, "null bootstrapServers"),
+				Arguments.of((KafkaFacadeConfigurer)listener->listener.setBootstrapServers(""), false, "empty bootstrapServers"),
+				Arguments.of((KafkaFacadeConfigurer)listener->listener.setBootstrapServers("example.com:9092"), true, "valid bootstrapServers"),
+				Arguments.of((KafkaFacadeConfigurer)listener->listener.setClientId(null), false, "null clientId"),
+				Arguments.of((KafkaFacadeConfigurer)listener->listener.setClientId(""), false, "empty clientId"),
+				Arguments.of((KafkaFacadeConfigurer)listener->listener.setClientId("test"), true, "valid clientId")
 		);
 	}
 }
