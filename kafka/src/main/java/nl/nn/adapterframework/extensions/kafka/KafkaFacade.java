@@ -15,21 +15,20 @@
 */
 package nl.nn.adapterframework.extensions.kafka;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IConfigurable;
-
-import nl.nn.adapterframework.util.LogUtil;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
-import java.util.Properties;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.HasPhysicalDestination;
+import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurable {
 	private final @Getter(onMethod = @__(@Override)) String domain = "KAFKA";
@@ -42,7 +41,8 @@ public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurab
 	private @Setter @Getter(AccessLevel.PACKAGE) String bootstrapServers;
 	/** The client id to use when connecting to the Kafka cluster. */
 	private @Setter @Getter(AccessLevel.PACKAGE) String clientId;
-	protected Properties properties;
+
+	protected Properties properties = new Properties();
 
 	@Override
 	public void configure() throws ConfigurationException {

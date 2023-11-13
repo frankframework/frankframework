@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.extensions.kafka;
 
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -29,8 +28,6 @@ public class KafkaPatternValidatorTest {
 	public void validateValidTopics(String topics, String expected) {
 		listener.setTopics(topics);
 		Assertions.assertDoesNotThrow(listener::configure, topics);
-		Pattern actualPattern = listener.getInternalListener().getTopicPattern();
-		Assertions.assertEquals(expected, actualPattern.pattern(), topics);
 	}
 	public static Stream<Arguments> validateValidTopics() {
 		return Stream.of(

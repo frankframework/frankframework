@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.extensions.kafka;
 
+import static org.apache.kafka.clients.consumer.ConsumerRecord.NULL_SIZE;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,8 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-
-import nl.nn.adapterframework.core.ListenerException;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
@@ -42,14 +42,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.receivers.RawMessageWrapper;
-import nl.nn.adapterframework.stream.Message;
-
 import org.mockito.Mockito;
 
-import static org.apache.kafka.clients.consumer.ConsumerRecord.NULL_SIZE;
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.receivers.RawMessageWrapper;
+import nl.nn.adapterframework.stream.Message;
 
 public class KafkaReceiverTest {
 	final MockConsumer<String, byte[]> mockListener = Mockito.spy(new MockConsumer<>(OffsetResetStrategy.EARLIEST));
@@ -65,7 +63,7 @@ public class KafkaReceiverTest {
 		listener.setKeyType(KafkaType.STRING);
 		listener.setMessageType(KafkaType.BYTEARRAY);
 		listener.configure();
-		listener.getInternalListener().setConsumerGenerator(properties -> mockListener);
+		listener.setConsumerGenerator(properties -> mockListener);
 		Map<MetricName, Metric> metrics = new HashMap<>();
 		MetricName metricName = new MetricName("response-total", "consumer-node-metrics", "The total number of responses received", Collections.singletonMap("client-id", "test"));
 		Value value = new Value();
@@ -129,7 +127,7 @@ public class KafkaReceiverTest {
 
 		Assertions.assertNull(mockListener.committed(Set.of(topicPartition)).get(topicPartition));
 
-		RawMessageWrapper<ConsumerRecord> wrapper = listener.getRawMessage(new HashMap<>());
+		RawMessageWrapper<ConsumerRecord<?, ?>> wrapper = listener.getRawMessage(new HashMap<>());
 		Assertions.assertEquals(1L, mockListener.committed(Set.of(topicPartition)).get(topicPartition).offset());
 		Message message = listener.extractMessage(wrapper, new HashMap<>());
 
@@ -153,21 +151,6 @@ public class KafkaReceiverTest {
 				"test.test.test2",
 				"anothertopic"
 		).map(Arguments::of);
-	}
-	@ParameterizedTest
-	@MethodSource
-	void generateInternalListenerTest(KafkaType kafkaType1, KafkaType kafkaType2) {
-		Assertions.assertDoesNotThrow(()->KafkaListener.generateInternalListener(kafkaType1, kafkaType2, null));
-	}
-
-	static Stream<Arguments> generateInternalListenerTest() {
-		Stream.Builder<Arguments> argumentBuilder = Stream.builder();
-		for (KafkaType keyType : KafkaType.values()) {
-			for (KafkaType messageType : KafkaType.values()) {
-				argumentBuilder.add(Arguments.of(keyType, messageType));
-			}
-		}
-		return argumentBuilder.build();
 	}
 
 	@Test
