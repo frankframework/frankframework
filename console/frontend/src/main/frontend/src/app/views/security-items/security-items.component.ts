@@ -1,50 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AppService, Certificate, Pipe } from 'src/angularjs/app/app.service';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-
-interface CertificateList {
-  adapter: string
-  pipe: string
-  certificate: Certificate
-}
-
-interface SecurityRole {
-  allowed: boolean
-  'role-name': string
-  specialSubjects: string
-  groups: string
-}
-
-interface AuthEntry {
-  alias: string
-  username: string
-  password: string
-}
-
-interface SapSystem {
-  name: string
-  info: string
-}
-
-interface JmsRealm {
-  name: string
-  datasourceName: string
-  queueConnectionFactoryName: string
-  topicConnectionFactoryName: string
-  info: string
-  connectionPoolProperties: string
-}
-
-interface ServerProps {
-  maximumTransactionTimeout: string
-  totalTransactionLifetimeTimeout: string
-}
-
-interface Datasource {
-  datasourceName: string
-  info: string
-  connectionPoolProperties: string
-}
+import { AppService, Certificate, Pipe } from 'src/app/app.service';
+import { AuthEntry, CertificateList, Datasource, JmsRealm, SapSystem, SecurityItemsService, SecurityRole, ServerProps } from './security-items.service';
 
 @Component({
   selector: 'app-security-items',
@@ -62,8 +18,8 @@ export class SecurityItemsComponent implements OnInit {
   datasources: Datasource[] = [];
 
   constructor(
-    private apiService: ApiService,
-    private appService: AppService
+    private appService: AppService,
+    private securityItemsService: SecurityItemsService
   ) { };
 
   ngOnInit(): void {
@@ -85,8 +41,14 @@ export class SecurityItemsComponent implements OnInit {
       };
     };
 
-    this.apiService.Get("securityitems", (data) => {
-      Object.assign(this, data)
+    this.securityItemsService.getSecurityItems().subscribe((data) => {
+      this.authEntries = data.authEntries;
+      this.datasources = data.datasources;
+      this.jmsRealms = data.jmsRealms;
+      this.sapSystems = data.sapSystems;
+      this.securityRoles = data.securityRoles;
+      this.serverProps = data.serverProps;
+      this.xmlComponents = data.xmlComponents;
     });
   };
 }

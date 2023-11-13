@@ -10,7 +10,7 @@ import { JmsBrowseQueueComponent } from './views/jms/jms-browse-queue/jms-browse
 import { JmsSendMessageComponent } from './views/jms/jms-send-message/jms-send-message.component';
 // import { WebservicesComponent } from './views/webservices/webservices.component';
 import { EnvironmentVariablesComponent } from './views/environment-variables/environment-variables.component';
-// import { SecurityItemsComponent } from './views/security-items/security-items.component';
+import { SecurityItemsComponent } from './views/security-items/security-items.component';
 import { JdbcBrowseTablesComponent } from './views/jdbc/jdbc-browse-tables/jdbc-browse-tables.component';
 import { JdbcExecuteQueryComponent } from './views/jdbc/jdbc-execute-query/jdbc-execute-query.component';
 import { InlinestoreComponent } from './views/inlinestore/inlinestore.component';
@@ -210,14 +210,14 @@ const routes: Routes = [
       breadcrumbs: 'JDBC > Browse Tables'
     }
   },
-  // {
-  //   path: 'security-items',
-  //   component: SecurityItemsComponent,
-  //   data: {
-  //     pageTitle: 'Security Items',
-  //     breadcrumbs: 'Security Items'
-  //   }
-  // },
+  {
+    path: 'security-items',
+    component: SecurityItemsComponent,
+    data: {
+      pageTitle: 'Security Items',
+      breadcrumbs: 'Security Items'
+    }
+  },
   /* {
     path: 'connections',
     component: ConnectionsComponent,
