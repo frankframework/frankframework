@@ -25,10 +25,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-messaging</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-aspose</artifactId>
 		</dependency>
 		<dependency>
@@ -41,11 +37,40 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-sap</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-tibco</artifactId>
+			<artifactId>ibis-adapterframework-messaging</artifactId>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>proprietary</id>
+			<activation>
+				<property>
+					<name>proprietary</name>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.ibissource</groupId>
+					<artifactId>ibis-adapterframework-sap</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.ibissource</groupId>
+					<artifactId>ibis-adapterframework-tibco</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.ibissource</groupId>
+					<artifactId>ibis-adapterframework-idin</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.ibissource</groupId>
+					<artifactId>ibis-adapterframework-coolgen</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.ibissource</groupId>
+					<artifactId>ibis-adapterframework-ifsa</artifactId>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
 </project>
