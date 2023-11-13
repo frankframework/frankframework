@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.stream.Stream;
 
 import org.apache.kafka.clients.producer.MockProducer;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -36,15 +37,17 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 
 public class KafkaSenderTest {
-	final MockProducer<String, byte[]> mockProducer = new MockProducer<>(true, new StringSerializer(), new ByteArraySerializer());
+	final MockProducer<?, ?> mockProducer = new MockProducer<>(true, new StringSerializer(), new ByteArraySerializer());
 	final KafkaSender sender = new KafkaSender();
+
 	@BeforeEach
 	void setUp() throws Exception {
 		sender.setTopic("test.test2");
 		sender.setClientId("test");
 		sender.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
 		sender.configure();
-		sender.getInternalSender().setProducer(mockProducer);
+		//noinspection unchecked
+		sender.setProducer((Producer<Object, Object>) mockProducer);
 	}
 
 	@Test
@@ -53,9 +56,9 @@ public class KafkaSenderTest {
 		PipeLineSession session = new PipeLineSession();
 		sender.sendMessage(message, session);
 		assertEquals(mockProducer.history().size(), 1, "One message should be sent");
-		ProducerRecord<String, byte[]> test = mockProducer.history().get(0);
-		assertEquals(test.topic(), "test.test2", "Topic should be test.test2");
-		assertArrayEquals(test.value(), "Hello World".getBytes(), "Message should be set");
+		ProducerRecord<?, ?> test = mockProducer.history().get(0);
+		assertEquals("test.test2", test.topic(), "Topic should be test.test2");
+		assertArrayEquals("Hello World".getBytes(), (byte[]) test.value(), "Message should be set");
 	}
 
 	@ParameterizedTest

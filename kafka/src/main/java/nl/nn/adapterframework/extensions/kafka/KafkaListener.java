@@ -133,9 +133,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 		try {
 			consumer = consumerGenerator.apply(properties);
 			consumer.subscribe(topicPattern);
-			waiting = consumer.poll(Duration.ofMillis(500)).iterator();
-			if (waiting.hasNext()) return;
-			waiting = consumer.poll(Duration.ofMillis(500)).iterator();
+			waiting = consumer.poll(Duration.ofMillis(100)).iterator();
 			if (waiting.hasNext()) return;
 			Double metric = (Double) consumer.metrics().values().stream().filter(item -> item.metricName().name().equals("response-total")).findFirst().orElseThrow(() -> new ListenerException("Failed to get response-total metric.")).metricValue();
 			if (metric.intValue() == 0) throw new ListenerException("Didn't get a response from Kafka while connecting for Listening.");
