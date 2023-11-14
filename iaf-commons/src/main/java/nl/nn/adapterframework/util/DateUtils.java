@@ -18,8 +18,6 @@ package nl.nn.adapterframework.util;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -81,17 +79,6 @@ public class DateUtils {
 		return df.parse(s, p);
 	}
 
-	/**
-	 * Parses a string to a Date using LocalDateTime with SystemDefault ZoneId
-	 */
-	public static Date parseXmlDateTime(String s) {
-		s = s.trim();
-		if (!s.contains("T") && s.length() == 10) {
-			s += "T00:00:00";
-		}
-		LocalDateTime localDateTime = LocalDateTime.parse(s);
-		return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-	}
 	/**
 	 * Parses a string to a Date using CalendarParser
 	 */
