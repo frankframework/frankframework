@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -42,7 +43,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	public void testFixedDateTimeFormatInvalid() throws Exception {
 		configureAndStartPipe();
 		pipe.setReturnFixedDate(true);
-		pipe.setDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
+		pipe.setDateFormat(DateUtils.FORMAT_GENERICDATETIME);
 		pipe.setSessionKey("first");
 		session.put("stub4testtool.fixeddate", "22331");
 
@@ -65,8 +66,8 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String result = (String) session.get("first");
 
-		SimpleDateFormat parser = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
-		SimpleDateFormat formatter = new SimpleDateFormat(DateUtils.fullIsoFormat);
+		DateFormat parser = DateUtils.GENERIC_DATETIME_FORMATTER;
+		DateFormat formatter = DateUtils.FULL_ISO_FORMATTER;
 
 		Date date = parser.parse(fixedDate);
 		assertEquals(formatter.format(date), result);
@@ -85,7 +86,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	@Test
 	public void testReturnFixedDate() throws Exception {
 		pipe.setSessionKey("first");
-		pipe.setDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
+		pipe.setDateFormat(DateUtils.FORMAT_GENERICDATETIME);
 		configureAndStartPipe();
 		// TODO : this field must be set before configure
 		// but setting stub mod from AppConstants does not work
@@ -99,7 +100,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
-		SimpleDateFormat formatter = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
+		DateFormat formatter = DateUtils.GENERIC_DATETIME_FORMATTER;
 		Date first = formatter.parse(result);
 		Date second = formatter.parse(secondResult);
 

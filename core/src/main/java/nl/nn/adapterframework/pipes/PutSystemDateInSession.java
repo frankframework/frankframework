@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,7 +45,6 @@ import nl.nn.adapterframework.util.DateUtils;
 public class PutSystemDateInSession extends FixedForwardPipe {
 	public static final Object OBJECT = new Object();
 	public static final String FIXEDDATETIME  ="2001-12-17 09:30:47";
-	public static final String FORMAT_FIXEDDATETIME  ="yyyy-MM-dd HH:mm:ss";
 	public static final String FIXEDDATE_STUB4TESTTOOL_KEY  ="stub4testtool.fixeddate";
 
 	private String sessionKey="systemDate";
@@ -103,7 +103,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 		}
 		else {
 			if (isReturnFixedDate()) {
-				SimpleDateFormat formatterFrom = new SimpleDateFormat(FORMAT_FIXEDDATETIME);
+				DateFormat formatterFrom = DateUtils.GENERIC_DATETIME_FORMATTER;
 				String fixedDateTime = session.getString(FIXEDDATE_STUB4TESTTOOL_KEY);
 				if (StringUtils.isEmpty(fixedDateTime)) {
 					fixedDateTime = FIXEDDATETIME;
@@ -112,7 +112,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 				try {
 					d = formatterFrom.parse(fixedDateTime);
 				} catch (ParseException e) {
-					throw new PipeRunException(this,"cannot parse fixed date ["+fixedDateTime+"] with format ["+FORMAT_FIXEDDATETIME+"]",e);
+					throw new PipeRunException(this,"cannot parse fixed date ["+fixedDateTime+"] with format ["+DateUtils.FORMAT_GENERICDATETIME+"]",e);
 				}
 				formattedDate = formatter.format(d);
 			}

@@ -34,9 +34,11 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class DateUtils {
 	public static final String fullIsoFormat          = "yyyy-MM-dd'T'HH:mm:sszzz";
+	public static final DateFormat FULL_ISO_FORMATTER = new SimpleDateFormat(fullIsoFormat);
 	public static final String shortIsoFormat         = "yyyy-MM-dd";
 
 	public static final String FORMAT_FULL_GENERIC      = "yyyy-MM-dd HH:mm:ss.SSS";
+	public static final DateFormat FULL_GENERIC_FORMATTER = new SimpleDateFormat(FORMAT_FULL_GENERIC);
 	public static final String FORMAT_MILLISECONDS	   ="######.###";
 	public static final String FORMAT_GENERICDATETIME  ="yyyy-MM-dd HH:mm:ss";
 	public static final DateFormat GENERIC_DATETIME_FORMATTER = new SimpleDateFormat(FORMAT_GENERICDATETIME);
@@ -56,10 +58,10 @@ public class DateUtils {
 	}
 
 	public static String format(long date) {
-		return format(new Date(date), FORMAT_FULL_GENERIC);
+		return format(new Date(date));
 	}
 	public static String format(Date date) {
-		return format(date, FORMAT_FULL_GENERIC);
+		return format(date, FULL_GENERIC_FORMATTER);
 	}
 
 	public static String formatNow() {
