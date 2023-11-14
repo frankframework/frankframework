@@ -698,7 +698,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	/**
-	 * If set <code>true</code>, for actions {@value #ACTION_CREATE}, {@value #ACTION_MOVE}, {@value #ACTION_COPY} or {@value #ACTION_RENAME}, the destination file is overwritten if it already exists
+	 * If set <code>true</code>, for actions {@value #ACTION_CREATE}, {@value #ACTION_WRITE1}, {@value #ACTION_MOVE}, {@value #ACTION_COPY} or {@value #ACTION_RENAME}, the destination file is overwritten if it already exists
 	 * @ff.default false
 	 */
 	public void setOverwrite(boolean overwrite) {
