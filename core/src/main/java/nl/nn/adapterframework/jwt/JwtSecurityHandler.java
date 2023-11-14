@@ -18,16 +18,25 @@ package nl.nn.adapterframework.jwt;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.ISecurityHandler;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StringUtil;
 
 public class JwtSecurityHandler implements ISecurityHandler {
+	protected Logger log = LogUtil.getLogger(this);
 
 	private final @Getter Map<String, Object> claimsSet;
 	private final @Getter String roleClaim;
@@ -57,32 +66,68 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		return () -> (String) claimsSet.get(principalNameClaim);
 	}
 
-	public void validateClaims(String requiredClaims, String exactMatchClaims) throws AuthorizationException {
+	public void validateClaims(String requiredClaims, String exactMatchClaims, String anyMatchClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
-			List<String> claims = StringUtil.split(requiredClaims);
-			for (String claim : claims) {
-				if(!claimsSet.containsKey(claim)) {
-					throw new AuthorizationException("JWT missing required claims: ["+claim+"]");
-				}
+			List<String> missingClaims = StringUtil.splitToStream(requiredClaims)
+					.filter(claim -> !claimsSet.containsKey(claim))
+					.collect(Collectors.toList());
+
+			if(!missingClaims.isEmpty()){
+				throw new AuthorizationException("JWT missing required claims: " + missingClaims);
 			}
 		}
 
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
-			Map<String, String> claims = StringUtil.splitToStream(exactMatchClaims)
-					.map(s -> StringUtil.split(s, "="))
-					.collect(Collectors.toMap(item -> item.get(0), item -> item.get(1)));
+			Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
+					.filter(entry -> !entry.getValue().equals(getClaimAsString(entry.getKey())))
+					.findFirst();
 
-			for (Map.Entry<String, String> entry : claims.entrySet()) {
-				String key = entry.getKey();
-				String expectedValue = entry.getValue();
-				Object value = claimsSet.get(key);
-				if(!expectedValue.equals(value)) { //Value may be a List, Long or String
-					throw new AuthorizationException("JWT "+key+" claim has value ["+value+"], must be ["+expectedValue+"]");
-				}
+			if(nonMatchingClaim.isPresent()){
+				String key = nonMatchingClaim.get().getKey();
+				String expectedValue = nonMatchingClaim.get().getValue();
+				throw new AuthorizationException("JWT "+key+" claim has value ["+claimsSet.get(key)+"], must be ["+expectedValue+"]");
 			}
 		}
+
+		// verify matchOneOf claims
+		if(StringUtils.isNotEmpty(anyMatchClaims)) {
+			Map<String, Set<String>> allowedValuesByClaim = splitClaims(anyMatchClaims)
+					.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toSet())));
+			boolean matchesOneOf = allowedValuesByClaim
+					.entrySet()
+					.stream()
+					.anyMatch(entry -> entry.getValue().contains(getClaimAsString(entry.getKey())));
+
+			if(!matchesOneOf){
+				throw new AuthorizationException("JWT does not match one of: ["+ anyMatchClaims +"]");
+			}
+		}
+	}
+
+	@Nonnull
+	private String getClaimAsString(String claim) {
+		Object value = claimsSet.get(claim);
+		if (value == null) {
+			return "";
+		}
+		return String.valueOf(value);
+	}
+
+	private Stream<Map.Entry<String, String>> splitClaims(String claimsToSplit){
+		return StringUtil.splitToStream(claimsToSplit)
+				.map(s -> StringUtil.split(s, "="))
+				.filter(this::isValidKeyValuePair)
+				.map(pair -> ImmutablePair.of(pair.get(0), pair.get((1))));
+	}
+
+	private boolean isValidKeyValuePair(List<String> pair) {
+		if (pair.size() != 2 || pair.stream().anyMatch(String::isEmpty)) {
+			log.warn("Skipping claim validation for [{}] because it's not a valid key/value pair!", pair);
+			return false;
+		}
+		return true;
 	}
 
 }

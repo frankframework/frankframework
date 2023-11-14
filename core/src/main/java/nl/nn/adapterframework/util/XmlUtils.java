@@ -138,8 +138,6 @@ public class XmlUtils {
 	private static ConcurrentHashMap<String,TransformerPool> utilityTPs = new ConcurrentHashMap<String,TransformerPool>();
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
-	private static final String ADAPTERSITE_XSLT = "/xml/xsl/web/adapterSite.xsl";
-
 	public static final XMLEventFactory EVENT_FACTORY = XMLEventFactory.newFactory();
 	public static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newFactory();
 	public static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
@@ -1553,16 +1551,6 @@ public class XmlUtils {
 		} else {
 			return attribute1.getValue().equals(attribute2.getValue());
 		}
-	}
-
-
-	public static String getAdapterSite(String input, Map parameters) throws IOException, SAXException, TransformerException {
-		URL xsltSource = ClassLoaderUtils.getResourceURL(ADAPTERSITE_XSLT);
-		Transformer transformer = XmlUtils.createTransformer(xsltSource);
-		if (parameters != null) {
-			XmlUtils.setTransformerParameters(transformer, parameters);
-		}
-		return XmlUtils.transformXml(transformer, input);
 	}
 
 	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws DomBuilderException, XPathExpressionException {

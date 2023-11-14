@@ -2418,63 +2418,7 @@ public class TestTool {
 					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
 					httpServletResponseMock.setOutputFile(outputFile);
 					value = httpServletResponseMock;
-				}
-				/** Support for httpRequest parameterType is removed because it depends on Spring and Http-client libraries that contain CVEs. Upgrading these libraries requires some work.
-				On the other hand, httpRequest parameter is only used in CreateRestViewPipe. It is unlikely to create a larva test for this pipe.
-				Therefore, it is decided to stop supporting it. */
-				/* else if ("httpRequest".equals(type)) {
-					value = properties.getProperty(property + _param + i + ".value");
-					if("multipart".equals(value)){
-						MockMultipartHttpServletRequest request = new MockMultipartHttpServletRequest();
-						// following line is required to avoid
-						// "(FileUploadException) the request was rejected because
-						// no multipart boundary was found"
-						request.setContentType("multipart/mixed;boundary=gc0p4Jq0M2Yt08jU534c0p");
-						List<Part> parts = new ArrayList<>();
-						boolean partsProcessed = false;
-						int j = 1;
-						while (!partsProcessed) {
-							String filename = properties.getProperty(property + _param + i + ".part" + j + ".filename");
-							if (filename == null) {
-								partsProcessed = true;
-							} else {
-								String partFile = properties.getProperty(property + _param + i + ".part" + j + ".filename.absolutepath");
-								String partType = properties.getProperty(property + _param + i + ".part" + j + _type);
-								String partName = properties.getProperty(property + _param + i + ".part" + j + _name);
-								if ("file".equalsIgnoreCase(partType)) {
-									File file = new File(partFile);
-									try {
-										FilePart filePart = new FilePart( "file" + j, (partName == null ? file.getName() : partName), file);
-										parts.add(filePart);
-									} catch (FileNotFoundException e) {
-										errorMessage("Could not read file '" + partFile+ "': " + e.getMessage(), e, writers);
-									}
-								} else {
-									String string = readFile(partFile, writers);
-									StringPart stringPart = new StringPart((partName == null ? "string" + j : partName), string);
-									parts.add(stringPart);
-								}
-								j++;
-							}
-						}
-						Part[] allParts = new Part[parts.size()];
-						allParts = parts.toArray(allParts);
-						MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(allParts, new PostMethod().getParams());
-						ByteArrayOutputStream requestContent = new ByteArrayOutputStream();
-						try {
-							multipartRequestEntity.writeRequest(requestContent);
-						} catch (IOException e) {
-							errorMessage("Could not create multipart: " + e.getMessage(), e, writers);
-						}
-						request.setContent(requestContent.toByteArray());
-						request.setContentType(multipartRequestEntity.getContentType());
-						value = request;
-					}
-					else{
-						value = new MockHttpServletRequest();
-					}
-				} */
-				else {
+				} else {
 					value = properties.getProperty(property + _param + i + ".value");
 					if (value == null) {
 						String filename = properties.getProperty(property + _param + i + ".valuefile.absolutepath");

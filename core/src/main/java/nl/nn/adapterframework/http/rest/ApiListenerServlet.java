@@ -288,11 +288,9 @@ public class ApiListenerServlet extends HttpServletBase {
 					case AUTHROLE:
 						List<String> roles = listener.getAuthenticationRoleList();
 						if(roles != null) {
-							for (String role : roles) {
-								if(request.isUserInRole(role)) {
-									userPrincipal = new ApiPrincipal(); //Create a dummy user
-									break;
-								}
+							boolean userIsInRole = roles.stream().anyMatch(request::isUserInRole);
+							if(userIsInRole) {
+								userPrincipal = new ApiPrincipal();
 							}
 						}
 						break;
@@ -314,17 +312,16 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 						String requiredClaims = listener.getRequiredClaims();
 						String exactMatchClaims = listener.getExactMatchClaims();
+						String anyMatchClaims = listener.getAnyMatchClaims();
 						JwtSecurityHandler handler = (JwtSecurityHandler)messageContext.getSecurityHandler();
 						try {
-							handler.validateClaims(requiredClaims, exactMatchClaims);
+							handler.validateClaims(requiredClaims, exactMatchClaims, anyMatchClaims);
 							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
 								List<String> authRoles = listener.getAuthenticationRoleList();
 								if(authRoles != null) {
-									for (String role : authRoles) {
-										if(handler.isUserInRole(role, messageContext)) {
-											userPrincipal = new ApiPrincipal();
-											break;
-										}
+									boolean userIsInRole = authRoles.stream().anyMatch(role -> handler.isUserInRole(role, messageContext));
+									if(userIsInRole) {
+										userPrincipal = new ApiPrincipal();
 									}
 								} else {
 									userPrincipal = new ApiPrincipal();

@@ -279,6 +279,21 @@
 				<version>${project.version}</version>
 			</dependency>
 
+
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>bundle-minimal</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>bundle-full</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+			</dependency>
+
+
 			<!-- explicit dependency to force version 1.1.1 -->
 			<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
 				<groupId>javax.activation</groupId>
@@ -364,7 +379,7 @@
 				<artifactId>spring-jms</artifactId>
 				<version>${spring.version}</version>
 			</dependency>
-			<dependency>
+			<dependency><!-- required for CMIS and the IbisTester class -->
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-test</artifactId>
 				<version>${spring.version}</version>
@@ -1203,6 +1218,7 @@
 				<module>test</module>
 				<module>example</module>
 				<module>dbms</module>
+				<module>bundle-minimal</module>
 			</modules>
 		</profile>
 		<profile>
@@ -1219,6 +1235,7 @@
 				<module>aspose</module>
 				<module>nn-specials</module>
 				<module>messaging</module>
+				<module>bundle-full</module>
 			</modules>
 		</profile>
 		<profile>
