@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,8 +10,11 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -21,6 +25,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.stream.Message;
@@ -31,7 +36,11 @@ import nl.nn.adapterframework.testutil.TestScopeProvider;
 import nl.nn.adapterframework.xml.StringBuilderContentHandler;
 import nl.nn.adapterframework.xml.XmlWriter;
 
+@Log4j2
 public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
+
+	private static final TimeZone CI_TZ = Calendar.getInstance().getTimeZone();
+	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("UTC");
 
 	public void testRemoveNamespaces(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
 		testXslt(XmlUtils.makeRemoveNamespacesXslt(omitXmlDeclaration, indent),input,expected);
@@ -292,5 +301,102 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 		assertEquals(expected, XmlUtils.normalizeAttributeValue(input));
 		assertEquals(null, XmlUtils.normalizeAttributeValue(null));
+	}
+
+	private static Date getCorrectedDate(Date date) {
+		if(CI_TZ.hasSameRules(TEST_TZ)) {
+			return date;
+		} else {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(date);
+			int offset = CI_TZ.getOffset(calendar.getTime().getTime());
+			calendar.add(Calendar.MILLISECOND, - offset);
+			log.info("adjusting date [{}] with offset [{}] to [{}]", ()->date, ()->offset, calendar::getTime);
+			return calendar.getTime();
+		}
+	}
+
+	/**
+	 * Tests have been written in UTC, adjust the TimeZone for CI running with a different default TimeZone
+	 */
+	public static long getCorrectedDate(long l) {
+		Date date = new Date(l);
+		return getCorrectedDate(date).getTime();
+	}
+
+	@Test
+	public void testParseXmlDate() {
+		Date date = XmlUtils.parseXmlDateTime("2013-12-10");
+		assertEquals(getCorrectedDate(1386633600000L), date.getTime());
+	}
+
+	@Test
+	public void testParseXmlDateTime() {
+		Date date = XmlUtils.parseXmlDateTime("2013-12-10T12:41:43");
+		assertEquals(getCorrectedDate(1386679303000L), date.getTime());
+	}
+
+	@Test
+	public void testParseXmlInvalidDateTime() {
+		assertThrows(IllegalArgumentException.class, ()-> XmlUtils.parseXmlDateTime("2013-12-10 12:41:43"));
+	}
+	@Test
+	public void Should_ReturnDateObject_When_StringWithDateIsProvided() {
+		String s = "2023-12-09";
+		assertInstanceOf(Date.class, XmlUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ReturnDateObject_When_StringWithDateTimeIsProvided() {
+		String s = "2023-12-09T00:00:00";
+		assertInstanceOf(Date.class, XmlUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ReturnDateObject_When_StringWithFebruary29thInLeapYearIsProvided() {
+		String s = "2024-02-29T00:00:00";
+		assertInstanceOf(Date.class, XmlUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ReturnDateObject_When_StringWithDateTimeWithYear2400IsProvided() {
+		String s = "2400-02-29T18:08:05";
+		assertInstanceOf(Date.class, XmlUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ThrowError_When_StringWithHoursOutOfBoundsIsProvided() {
+		String s = "2023-13-09T24:08:05";
+		assertThrows(IllegalArgumentException.class, () -> XmlUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ThrowError_When_StringWithMinutesOutOfBoundsIsProvided() {
+		String s = "2023-13-09T18:60:05";
+		assertThrows(IllegalArgumentException.class, () -> XmlUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ThrowError_When_StringWithSecondsOutOfBoundsIsProvided() {
+		String s = "2023-13-09T18:08:60";
+		assertThrows(IllegalArgumentException.class, () -> XmlUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ThrowError_When_StringWithMonthOutOfBoundsIsProvided() {
+		String s = "2023-13-09T18:08:05";
+		assertThrows(IllegalArgumentException.class, () -> XmlUtils.parseXmlDateTime(s));
+	}
+
+	@Test
+	public void Should_ThrowError_When_StringWithDayOutOfBoundsIsProvided() {
+		String s = "2023-11-31T18:08:05";
+		assertThrows(IllegalArgumentException.class, () -> XmlUtils.parseXmlDateTime(s));
+	}
+
+	@Test //A year is a leap year when it dividable by 4, but not if dividable by 100, except dividable by 400
+	public void Should_ThrowError_When_StringWithDateTimeWithYearDividableBy100WithFebruary29thIsProvided() {
+		String s = "2100-02-29T18:08:05";
+		assertThrows(IllegalArgumentException.class, () -> XmlUtils.parseXmlDateTime(s));
 	}
 }

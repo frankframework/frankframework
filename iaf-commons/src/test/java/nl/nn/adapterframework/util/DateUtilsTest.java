@@ -1,11 +1,8 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -76,7 +73,6 @@ public class DateUtilsTest {
 		Date d = getCorrectedDate(new Date(1503600000));
 		String time = DateUtils.format(d, DateUtils.FORMAT_FULL_GENERIC);
 		assertEquals("1970-01-18 09:40:00.000", time);
-
 	}
 
 	@Test
@@ -101,23 +97,6 @@ public class DateUtilsTest {
 	public void unableToParseFullGenericWithoutTime() throws Exception {
 		Date date = DateUtils.parseToDate("2000-01-01", DateUtils.FORMAT_FULL_GENERIC);
 		assertNull(date);
-	}
-
-	@Test
-	public void testParseXmlDate() throws Exception {
-		Date date = DateUtils.parseXmlDateTime("2013-12-10");
-		assertEquals(getCorrectedDate(1386633600000L), date.getTime());
-	}
-
-	@Test
-	public void testParseXmlDateTime() throws Exception {
-		Date date = DateUtils.parseXmlDateTime("2013-12-10T12:41:43");
-		assertEquals(getCorrectedDate(1386679303000L), date.getTime());
-	}
-
-	@Test
-	public void testParseXmlInvalidDateTime() throws Exception {
-		assertThrows(DateTimeParseException.class, ()-> DateUtils.parseXmlDateTime("2013-12-10 12:41:43"));
 	}
 
 	@Test
@@ -162,65 +141,5 @@ public class DateUtilsTest {
 		Date d2 = DateUtils.parseAnyDate("2013-10-10");
 		boolean b = DateUtils.isSameDay(d1, d2);
 		assertEquals(true, b);
-	}
-
-	@Test
-	public void Should_ReturnDateObject_When_StringWithDateIsProvided() {
-		String s = "2023-12-09";
-		assertInstanceOf(Date.class, DateUtils.parseXmlDateTime(s));
-	}
-
-	@Test
-	public void Should_ReturnDateObject_When_StringWithDateTimeIsProvided() {
-		String s = "2023-12-09T00:00:00";
-		assertInstanceOf(Date.class, DateUtils.parseXmlDateTime(s));
-	}
-
-	@Test
-	public void Should_ReturnDateObject_When_StringWithFebruary29thInLeapYearIsProvided() {
-		String s = "2024-02-29T00:00:00";
-		assertInstanceOf(Date.class, DateUtils.parseXmlDateTime(s));
-	}
-
-	@Test
-	public void Should_ReturnDateObject_When_StringWithDateTimeWithYear2400IsProvided() {
-		String s = "2400-02-29T18:08:05";
-		assertInstanceOf(Date.class, DateUtils.parseXmlDateTime(s));
-	}
-
-	@Test
-	public void Should_ThrowError_When_StringWithHoursOutOfBoundsIsProvided() {
-		String s = "2023-13-09T24:08:05";
-		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime(s));
-	}
-
-	@Test
-	public void Should_ThrowError_When_StringWithMinutesOutOfBoundsIsProvided() {
-		String s = "2023-13-09T18:60:05";
-		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime(s));
-	}
-
-	@Test
-	public void Should_ThrowError_When_StringWithSecondsOutOfBoundsIsProvided() {
-		String s = "2023-13-09T18:08:60";
-		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime(s));
-	}
-
-	@Test
-	public void Should_ThrowError_When_StringWithMonthOutOfBoundsIsProvided() {
-		String s = "2023-13-09T18:08:05";
-		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime(s));
-	}
-
-	@Test
-	public void Should_ThrowError_When_StringWithDayOutOfBoundsIsProvided() {
-		String s = "2023-11-31T18:08:05";
-		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime(s));
-	}
-
-	@Test //A year is a leap year when it dividable by 4, but not if dividable by 100, except dividable by 400
-	public void Should_ThrowError_When_StringWithDateTimeWithYearDividableBy100WithFebruary29thIsProvided() {
-		String s = "2100-02-29T18:08:05";
-		assertThrows(DateTimeParseException.class, () -> DateUtils.parseXmlDateTime(s));
 	}
 }
