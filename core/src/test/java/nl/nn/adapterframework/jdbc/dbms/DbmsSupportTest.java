@@ -28,20 +28,19 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import nl.nn.adapterframework.dbms.Dbms;
-import nl.nn.adapterframework.util.DbmsUtil;
-
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
 import org.junit.Test;
 
 import lombok.Getter;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.functional.ThrowingSupplier;
+import nl.nn.adapterframework.dbms.Dbms;
 import nl.nn.adapterframework.dbms.JdbcException;
+import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DbmsUtil;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -311,8 +310,8 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testJdbcSetParameter() throws Exception {
 		String number = "1234.5678";
-		String datetime = DateUtils.format(new Date(), DateUtils.FORMAT_GENERICDATETIME);
-		String date = DateUtils.format(new Date(), DateUtils.shortIsoFormat);
+		String datetime = DateUtils.formatNow(DateUtils.GENERIC_DATETIME_FORMATTER);
+		String date = DateUtils.formatNow(DateUtils.shortIsoFormat);
 
 		assumeFalse(dbmsSupport.getDbmsName().equals("Oracle")); // This fails on Oracle, cannot set a non-integer number via setString()
 		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)";

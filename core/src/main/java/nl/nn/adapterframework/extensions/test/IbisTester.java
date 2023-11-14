@@ -22,7 +22,6 @@ import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.security.AccessControlException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -405,7 +404,7 @@ public class IbisTester {
 	}
 
 	private static String getIsoTimeStamp() {
-		return DateUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss.SSS");
+		return DateUtils.formatNow();
 	}
 
 	private static String getMemoryInfo() {

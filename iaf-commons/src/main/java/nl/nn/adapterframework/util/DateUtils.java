@@ -15,15 +15,16 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import lombok.extern.log4j.Log4j2;
-
 import org.apache.xmlbeans.GDate;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Utilities for formatting and parsing dates.
@@ -38,12 +39,16 @@ public class DateUtils {
 	public static final String FORMAT_FULL_GENERIC      = "yyyy-MM-dd HH:mm:ss.SSS";
 	public static final String FORMAT_MILLISECONDS	   ="######.###";
 	public static final String FORMAT_GENERICDATETIME  ="yyyy-MM-dd HH:mm:ss";
+	public static final DateFormat GENERIC_DATETIME_FORMATTER = new SimpleDateFormat(FORMAT_GENERICDATETIME);
 	public static final String FORMAT_DATE             ="dd-MM-yy";
 	public static final String FORMAT_TIME_HMS         ="HH:mm:ss";
 
-	public static String format(Date date, String dateFormat) {
-		SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+	public static String format(Date date, DateFormat formatter) {
 		return formatter.format(date);
+	}
+
+	public static String format(Date date, String dateFormat) {
+		return format(date, new SimpleDateFormat(dateFormat));
 	}
 
 	public static String format(long date, String dateFormat) {
@@ -57,19 +62,31 @@ public class DateUtils {
 		return format(date, FORMAT_FULL_GENERIC);
 	}
 
+	public static String formatNow() {
+		return format(new Date());
+	}
+
+	public static String formatNow(DateFormat format) {
+		return format(new Date(), format);
+	}
+
+	public static String formatNow(String format) {
+		return formatNow(new SimpleDateFormat(format));
+	}
+
 
 	/**
 	 * Get current date-time timestamp in ISO 8601 format.
 	 */
 	public static String getIsoTimeStamp() {
-		return format(new Date(), fullIsoFormat);
+		return formatNow(fullIsoFormat);
 	}
 
 	/**
 	 * Get current date-time timestamp in generic format.
 	 */
 	public static String getTimeStamp() {
-		return format(new Date(), FORMAT_GENERICDATETIME);
+		return formatNow(GENERIC_DATETIME_FORMATTER);
 	}
 
 	/**
