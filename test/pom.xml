@@ -243,16 +243,6 @@
 					<artifactId>ibis-adapterframework-ladybug</artifactId>
 					<scope>runtime</scope>
 				</dependency>
-				<dependency>
-					<groupId>org.ibissource</groupId>
-					<artifactId>ibis-adapterframework-messaging</artifactId>
-					<scope>runtime</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.ibissource</groupId>
-					<artifactId>nn-specials</artifactId>
-					<scope>runtime</scope>
-				</dependency>
 			</dependencies>
 		</profile>
 		<profile>
