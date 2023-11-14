@@ -18,12 +18,10 @@ package nl.nn.adapterframework.http.mime;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import lombok.extern.log4j.Log4j2;
-import nl.nn.adapterframework.util.LogUtil;
 
 @Log4j2
 public abstract class MultipartUtils {
