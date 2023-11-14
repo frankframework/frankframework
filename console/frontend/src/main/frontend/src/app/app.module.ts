@@ -64,7 +64,7 @@ import { QuickSubmitFormDirective } from './views/jdbc/jdbc-execute-query/quick-
 import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.pipe';
 import { FitHeightDirective } from './views/iframe/fit-height.directive';
 import { SecurityItemsComponent } from './views/security-items/security-items.component';
-// import { WebservicesComponent } from './views/webservices/webservices.component';
+import { WebservicesComponent } from './views/webservices/webservices.component';
 // import { SchedulerComponent } from './views/scheduler/scheduler.component';
 // import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 // import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
@@ -116,7 +116,7 @@ const windowProvider: ValueProvider = {
     StorageListDtComponent,
     AdapterstatisticsComponent,
     SecurityItemsComponent,
-    // WebservicesComponent,
+    WebservicesComponent,
     // MonitorsComponent,
     // MonitorsAddEditComponent,
 

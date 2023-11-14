@@ -1,25 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
-
-interface Service {
-  name: string
-  method: string
-  view: string
-  uriPattern: string
-}
-
-interface ApiListener {
-  method: string
-  uriPattern: string
-  error: string
-}
-
-interface Wsdl {
-  configuration: string
-  adapter: string
-  error: string
-}
+import { AppService } from 'src/app/app.service';
+import { MiscService } from 'src/app/services/misc.service';
+import { ApiListener, Service, WebservicesService, Wsdl } from './webservices.service';
 
 @Component({
   selector: 'app-webservices',
@@ -27,23 +9,27 @@ interface Wsdl {
   styleUrls: ['./webservices.component.scss']
 })
 export class WebservicesComponent implements OnInit {
-  rootURL: string = this.miscService.getServerPath();
+  rootURL: string = this.appService.getServerPath();
   services: Service[] = [];
   apiListeners: ApiListener[] = [];
   wsdls: Wsdl[] = [];
 
   constructor(
-    private apiService: ApiService,
-    private miscService: MiscService
+    private appService: AppService,
+    private wsService: WebservicesService
   ) { };
 
   ngOnInit() {
-    this.apiService.Get("webservices", (data) => {
-      Object.assign(this, data);
+    this.wsService.getWebservices().subscribe((data) => {
+      this.apiListeners = data.apiListeners;
+      this.services = data.services;
+      this.wsdls = data.wsdls;
+
+      console.log(this.rootURL)
     });
   };
 
-  compileURL(apiListener: any) {
+  compileURL(apiListener: ApiListener) {
     return this.rootURL + "iaf/api/webservices/openapi.json?uri=" + encodeURI(apiListener.uriPattern);
   };
 };
