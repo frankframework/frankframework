@@ -27,6 +27,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 import lombok.AccessLevel;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -37,6 +38,7 @@ import nl.nn.adapterframework.stream.Message;
 /**
  * Experimental {@link ISender} for sending messages to a Kafka instance.
  */
+@Log4j2
 public class KafkaSender extends KafkaFacade implements ISender {
 
 	//setter is for testing purposes only.
@@ -48,9 +50,12 @@ public class KafkaSender extends KafkaFacade implements ISender {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(topic)) throw new ConfigurationException("topic must be specified");
-		if(topic.contains(",")) throw new ConfigurationException("Only one topic is allowed to be used for sender.");
-		if(topic.contains("*")) throw new ConfigurationException("Wildcards are not allowed to be used for sender.");
+		if (StringUtils.isEmpty(topic))
+			throw new ConfigurationException("topic must be specified");
+		if (topic.contains(","))
+			throw new ConfigurationException("Only one topic is allowed to be used for sender.");
+		if (topic.contains("*"))
+			throw new ConfigurationException("Wildcards are not allowed to be used for sender.");
 	}
 
 	@Override
@@ -59,6 +64,7 @@ public class KafkaSender extends KafkaFacade implements ISender {
 		try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			throw new SenderException(e);
 		}
 		Double metric = (Double) producer.metrics().values().stream().filter(item -> item.metricName().name().equals("response-total")).findFirst().orElseThrow(() -> new SenderException("Failed to get response-total metric.")).metricValue();
@@ -84,6 +90,9 @@ public class KafkaSender extends KafkaFacade implements ISender {
 		RecordMetadata metadata;
 		try {
 			metadata = future.get();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new SenderException(e);
 		} catch (Exception e) {
 			throw new SenderException(e);
 		}
@@ -94,6 +103,6 @@ public class KafkaSender extends KafkaFacade implements ISender {
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "TOPIC(" + topic + ") on ("+ getBootstrapServers() +")";
+		return "TOPIC(" + topic + ") on (" + getBootstrapServers() + ")";
 	}
 }

@@ -19,23 +19,21 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IConfigurable;
-import nl.nn.adapterframework.util.LogUtil;
 
+@Log4j2
 public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurable {
 	private final @Getter(onMethod = @__(@Override)) String domain = "KAFKA";
 	private final @Getter(onMethod = @__(@Override)) ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter(onMethod = @__(@Override)) @Setter ApplicationContext applicationContext;
-
-	protected final Logger log = LogUtil.getLogger(this);
 
 	private @Setter @Getter String name;
 	/** The bootstrap servers to connect to, as a comma separated list. */

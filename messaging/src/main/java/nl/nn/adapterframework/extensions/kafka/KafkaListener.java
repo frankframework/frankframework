@@ -41,6 +41,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPullingListener;
@@ -56,6 +57,7 @@ import nl.nn.adapterframework.util.StringUtil;
  * Experimental {@link IListener} for listening to a topic in
  * a Kafka instance.
  */
+@Log4j2
 public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord<String, byte[]>> {
 
 	private static final Predicate<String> TOPIC_NAME_PATTERN = Pattern.compile("^[a-zA-Z0-9._\\-*]*$").asPredicate();
@@ -86,19 +88,25 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (StringUtils.isEmpty(groupId)) throw new ConfigurationException("groupId must be specified");
-		if (StringUtils.isEmpty(topics)) throw new ConfigurationException("topics must be specified");
-		if(patternRecheckInterval < 10) throw new ConfigurationException("patternRecheckInterval should be at least 10");
+		if (StringUtils.isEmpty(groupId))
+			throw new ConfigurationException("groupId must be specified");
+		if (StringUtils.isEmpty(topics))
+			throw new ConfigurationException("topics must be specified");
+		if (patternRecheckInterval < 10)
+			throw new ConfigurationException("patternRecheckInterval should be at least 10");
+
 		properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
 		properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, fromBeginning ? "earliest" : "latest");
 		properties.setProperty(ConsumerConfig.METADATA_MAX_AGE_CONFIG, String.valueOf(patternRecheckInterval));
 		properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+
 		List<String> topicList = StringUtil.split(topics);
-		for(String topic: topicList) {
-			if(!TOPIC_NAME_PATTERN.test(topic)) throw new ConfigurationException("topics contains invalid characters. Only a-zA-Z0-9._-* are allowed. (topic: ["+topic+"])");
+		for (String topic : topicList) {
+			if (!TOPIC_NAME_PATTERN.test(topic))
+				throw new ConfigurationException("topics contains invalid characters. Only a-zA-Z0-9._-* are allowed. (topic: [" + topic + "])");
 		}
 		String pattern = String.join("|", topicList);
-		if(pattern.isEmpty()) throw new ConfigurationException("topics must contain at least one valid topic");
+		if (pattern.isEmpty()) throw new ConfigurationException("topics must contain at least one valid topic");
 		topicPattern = Pattern.compile(pattern);
 	}
 
@@ -112,7 +120,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 			if (waiting.hasNext()) return;
 			Double metric = (Double) consumer.metrics().values().stream().filter(item -> item.metricName().name().equals("response-total")).findFirst().orElseThrow(() -> new ListenerException("Failed to get response-total metric.")).metricValue();
 			if (metric.intValue() == 0) throw new ListenerException("Didn't get a response from Kafka while connecting for Listening.");
-		} catch(RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw new ListenerException(e);
 		} finally {
 			lock.unlock();
@@ -137,12 +145,12 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	@Override
 	public Message extractMessage(
 			@Nonnull RawMessageWrapper<ConsumerRecord<String, byte[]>> wrappedMessage, @Nonnull Map<String, Object> context) {
-		Map<String, String> headers=new HashMap<>();
+		Map<String, String> headers = new HashMap<>();
 		ConsumerRecord<String, byte[]> rawMessage = wrappedMessage.getRawMessage();
-		rawMessage.headers().forEach(header->{
+		rawMessage.headers().forEach(header -> {
 			try {
 				headers.put(header.key(), new String(header.value(), StandardCharsets.UTF_8));
-			} catch(Exception e) {
+			} catch (Exception e) {
 				log.warn("Failed to convert header key [{}] to string. Bytearray value: [{}]", header.key(), header.value(), e);
 			}
 		});
@@ -162,7 +170,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "TOPICS(" + topics + ") on ("+ getBootstrapServers() +")";
+		return "TOPICS(" + topics + ") on (" + getBootstrapServers() + ")";
 	}
 
 	@Nonnull
