@@ -273,6 +273,11 @@
 				<artifactId>ibis-adapterframework-dbms</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>nn-specials</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 
 			<dependency>
@@ -1228,6 +1233,7 @@
 				<module>aws</module>
 				<module>cmis</module>
 				<module>aspose</module>
+				<module>nn-specials</module>
 				<module>messaging</module>
 				<module>bundle-full</module>
 			</modules>
@@ -1258,14 +1264,6 @@
 				<module>idin</module>
 			</modules>
 			<repositories>
-				<repository>
-					<id>central</id>
-					<name>Central Repository</name>
-					<url>https://repo.maven.apache.org/maven2/</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</repository>
 				<repository>
 					<id>proprietary</id>
 					<url>https://nexus.frankframework.org/content/repositories/private/</url>
