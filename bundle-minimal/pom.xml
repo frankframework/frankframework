@@ -9,6 +9,7 @@
 
 	<artifactId>bundle-minimal</artifactId>
 	<name>Frank!Framework minimal bundle</name>
+	<description>The minimum dependencies required to run as a monolithic application</description>
 	<packaging>pom</packaging>
 
 	<dependencies>

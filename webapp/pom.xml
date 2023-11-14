@@ -16,24 +16,4 @@
 		<m2eclipse.wtp.contextRoot>iaf-webapp</m2eclipse.wtp.contextRoot>
 	</properties>
 
-	<dependencies>
-		<!-- jboss-logging is required for Narayana -->
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-			<version>${jboss-logging.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
-		<!-- Servlet support for multiple contexts -->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-web</artifactId>
-		</dependency>
-	</dependencies>
 </project>

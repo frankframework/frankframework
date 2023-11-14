@@ -9,7 +9,7 @@
 
 	<artifactId>bundle-full</artifactId>
 	<name>Frank!Framework full bundle</name>
-	<description>Minimal bundle + all extra and proprietary modules</description>
+	<description>Minimal bundle + all extra + (optionally) all proprietary modules</description>
 	<packaging>pom</packaging>
 
 	<dependencies>
@@ -25,15 +25,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-aspose</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-aws</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-cmis</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
