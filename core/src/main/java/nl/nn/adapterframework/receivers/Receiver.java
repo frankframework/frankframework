@@ -1024,7 +1024,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@Override
 	public Message processRequest(IListener<M> origin, @Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Message message, @Nonnull PipeLineSession session) throws ListenerException {
 		Objects.requireNonNull(session, "Session can not be null");
-		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
+		try (final CloseableThreadContext.Instance ignored = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
 				throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 			}
