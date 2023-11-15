@@ -41,7 +41,7 @@ public abstract class MultipartUtils {
 	public static String getFieldName(BodyPart part) {
 		try {
 			String[] id = part.getHeader("Content-ID"); //MTOM requests
-			if(id != null && !StringUtils.isBlank(id[0])) {
+			if(id != null && StringUtils.isNotBlank(id[0])) {
 				String idField = id[0];
 				return idField.substring(1, idField.length()-1);
 			}
