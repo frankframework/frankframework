@@ -1110,7 +1110,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private CloseableThreadContext.Instance getLoggingContext(@Nonnull IListener<M> listener, @Nonnull PipeLineSession session) {
 		CloseableThreadContext.Instance result = LogUtil.getThreadContext(adapter, session.getMessageId(), session);
-		result.put(THREAD_CONTEXT_KEY_NAME, listener.getName()).put(THREAD_CONTEXT_KEY_TYPE, ClassUtils.classNameOf(listener));
+		result.put(THREAD_CONTEXT_KEY_NAME, listener.getName());
+		result.put(THREAD_CONTEXT_KEY_TYPE, ClassUtils.classNameOf(listener));
 		return result;
 	}
 
@@ -1174,7 +1175,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean historyAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
-		try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session)) {
+		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session)) {
 			lastMessageDate = startProcessingTimestamp;
 			log.debug("{} received message with messageId [{}] correlationId [{}]", logPrefix, messageWrapper.getId(), messageWrapper.getCorrelationId());
 

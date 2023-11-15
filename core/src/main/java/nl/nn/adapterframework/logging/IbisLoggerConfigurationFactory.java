@@ -104,6 +104,8 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		} catch (IOException e) {
 			System.err.println(LOG_PREFIX + "unable to configure Log4J2");
 			throw new IllegalStateException(LOG_PREFIX + "unable to configure Log4J2", e);
+		} finally {
+			ThreadContext.clearAll();
 		}
 	}
 

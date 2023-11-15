@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<log4j2:Configuration status="warn" name="${ctx:instance.name}" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="log4j-config.xsd" packages="nl.nn.adapterframework.logging">
+<log4j2:Configuration status="warn" name="${ctx:instance.name}" verbose="true" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="log4j-config.xsd">
 	<!-- https://logging.apache.org/log4j/2.x/manual/customloglevels.html -->
 
 	<Appenders>
@@ -26,7 +26,7 @@
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min"  />
 		</Appender>
 		<Appender name="msg-text" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log.%i" append="true">
-			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m %X %x%n"/>
+			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m %TC %x%n"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
