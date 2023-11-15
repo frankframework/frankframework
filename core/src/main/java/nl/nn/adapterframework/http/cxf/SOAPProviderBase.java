@@ -17,6 +17,7 @@ package nl.nn.adapterframework.http.cxf;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -92,6 +93,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 		Message response;
 		try (PipeLineSession pipelineSession = new PipeLineSession()) {
 			String correlationId = Misc.createSimpleUUID();
+			PipeLineSession.setListenerParameters(pipelineSession, correlationId, correlationId, new Date(), null);
 			log.debug(getLogPrefix(correlationId)+"received message");
 			String soapProtocol = SOAPConstants.SOAP_1_1_PROTOCOL;
 
