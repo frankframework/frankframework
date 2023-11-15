@@ -5,8 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import jakarta.mail.BodyPart;
@@ -14,10 +18,14 @@ import jakarta.mail.internet.MimeBodyPart;
 
 public class MultipartUtilsTest {
 
-	@Test
-	public void testBinaryFile() throws Exception {
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"form-data; name=\"file\"; filename=\"dummy.jpg\"",
+			"form-data; name=\"file\"; filename=\"polisnr=123.jpg\"",
+	})
+	public void testBinaryFile(String headerValue) throws Exception {
 		BodyPart part = new MimeBodyPart();
-		part.setHeader("Content-Disposition", "form-data; name=\"file\"; filename=\"dummy.jpg\"");
+		part.setHeader("Content-Disposition", headerValue);
 		assertTrue(MultipartUtils.isBinary(part));
 	}
 
@@ -59,6 +67,27 @@ public class MultipartUtilsTest {
 		BodyPart part = new MimeBodyPart();
 		part.setHeader("Content-Disposition", headerValue);
 		assertFalse(MultipartUtils.isBinary(part));
+	}
+
+	@ParameterizedTest
+	@MethodSource
+	public void testGetFileName(String headerValue, String expectedFilename) throws Exception {
+		// Arrange
+		BodyPart part = new MimeBodyPart();
+		part.setHeader("Content-Disposition", headerValue);
+
+		// Act
+		String fileName = MultipartUtils.getFileName(part);
+
+		// Assert
+		assertEquals(expectedFilename, fileName);
+	}
+
+	public static Stream<Arguments> testGetFileName() {
+		return Stream.of(
+				Arguments.of("attachment; filename=\"dummy.jpg\"; name=\"field_name\"", "dummy.jpg"),
+				Arguments.of("attachment; filename=\"polis=123.pdf\"; name=\"field_name\"", "polis=123.pdf")
+		);
 	}
 
 	@Test
