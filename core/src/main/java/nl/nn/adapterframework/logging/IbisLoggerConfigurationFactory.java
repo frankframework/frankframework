@@ -91,6 +91,7 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 			Properties properties = getProperties();
 			Map<String, String> substitutions = populateThreadContextProperties(configuration, properties);
 			ThreadContext.putAll(substitutions); // Only add the substituted variables to the ThreadContext
+			//Perhaps it's an idea to clear the ThreadContext after the configuration has been loaded.
 
 			initLogExpressionHiding(properties);
 
@@ -104,8 +105,6 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		} catch (IOException e) {
 			System.err.println(LOG_PREFIX + "unable to configure Log4J2");
 			throw new IllegalStateException(LOG_PREFIX + "unable to configure Log4J2", e);
-		} finally {
-			ThreadContext.clearAll();
 		}
 	}
 

@@ -22,7 +22,6 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.pattern.ConverterKeys;
 import org.apache.logging.log4j.core.pattern.LogEventPatternConverter;
 import org.apache.logging.log4j.core.pattern.PatternConverter;
-import org.apache.logging.log4j.util.PerformanceSensitive;
 
 @Plugin(name = "IbisNdcPatternConverter", category = PatternConverter.CATEGORY)
 @ConverterKeys({"TC"})
@@ -37,7 +36,6 @@ public class IbisNdcPatternConverter extends LogEventPatternConverter {
 	}
 
 	@Override
-	@PerformanceSensitive("allocation")
 	public void format(final LogEvent event, final StringBuilder stringBuilder) {
 		if(!event.getContextData().isEmpty()) {
 			for(Entry<String, String> entry : event.getContextData().toMap().entrySet()) {
