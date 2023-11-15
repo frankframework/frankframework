@@ -1,1 +1,4 @@
-<root xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"><item>cid=[nameOfRequest]</item><item>messageId=[nameOfRequest]</item><item>tcid=[]</item></root>
+<root xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+	<item>cid=[nameOfRequest]</item>
+	<item>messageId=[nameOfRequest]</item>
+</root>
