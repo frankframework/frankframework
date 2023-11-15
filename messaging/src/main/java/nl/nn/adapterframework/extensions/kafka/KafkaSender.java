@@ -29,6 +29,7 @@ import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -37,7 +38,11 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Experimental {@link ISender} for sending messages to a Kafka instance.
+ * The Kafka integration is still under development so do not
+ * currently use unless you wish to participate in this development.
  */
+@Deprecated(forRemoval = false)
+@ConfigurationWarning("Experimental and under development. Do not use unless you wish to participate in this development.")
 @Log4j2
 public class KafkaSender extends KafkaFacade implements ISender {
 

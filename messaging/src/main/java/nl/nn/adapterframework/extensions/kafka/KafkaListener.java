@@ -43,6 +43,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPullingListener;
 import nl.nn.adapterframework.core.ListenerException;
@@ -56,7 +57,11 @@ import nl.nn.adapterframework.util.StringUtil;
 /**
  * Experimental {@link IListener} for listening to a topic in
  * a Kafka instance.
+ * The Kafka integration is still under development so do not
+ * currently use unless you wish to participate in this development.
  */
+@Deprecated(forRemoval = false)
+@ConfigurationWarning("Experimental and under development. Do not use unless you wish to participate in this development.")
 @Log4j2
 public class KafkaListener extends KafkaFacade implements IPullingListener<ConsumerRecord<String, byte[]>> {
 
