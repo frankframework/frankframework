@@ -27,9 +27,6 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -43,6 +40,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
+import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -57,6 +55,7 @@ import nl.nn.adapterframework.senders.IbisJavaSender;
 import nl.nn.adapterframework.senders.IbisLocalSender;
 import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
@@ -70,7 +69,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	private static final String CONFIGURATION2MERMAID_XSLT = "/xml/xsl/configuration2mermaid.xsl";
 
 	private final List<String> resourceMethods;
-	private String frankElements;
+	private Document frankElements;
 
 	private TransformerPool transformerPoolAdapter;
 	private TransformerPool transformerPoolConfig;
@@ -84,7 +83,8 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		frankElements = compileFrankElementList();
+		String frankElementsList = compileFrankElementList();
+		frankElements = XmlUtils.buildDomDocument(new InputSource(new StringReader(frankElementsList)), true);
 
 		Resource xsltSourceAdapter = Resource.getResource(ADAPTER2MERMAID_XSLT);
 		transformerPoolAdapter = TransformerPool.getInstance(xsltSourceAdapter, 2);
@@ -202,13 +202,13 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	protected String generateMermaid(String xml) throws FlowGenerationException {
 		try {
 			Map<String, Object> xsltParams = new HashMap<>(1);//frankElements
-			xsltParams.put("frankElements", XmlUtils.buildDomDocument(new InputSource(new StringReader(frankElements)), true));
+			xsltParams.put("frankElements", frankElements);
 			if(xml.startsWith("<adapter")) {
 				return transformerPoolAdapter.transform(xml, xsltParams);
 			} else {
 				return transformerPoolConfig.transform(xml, xsltParams);
 			}
-		} catch (IOException | TransformerException | SAXException | DomBuilderException e) {
+		} catch (IOException | TransformerException | SAXException e) {
 			throw new FlowGenerationException("error transforming [xml] to [mermaid]", e);
 		}
 	}

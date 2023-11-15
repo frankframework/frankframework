@@ -1,22 +1,22 @@
 flowchart
-	d2e2>"<b>Test1</b><br/>JavaListener"]:::normal
+	d2e2("<b>Test1</b><br/>JavaListener"):::normal
 	d2e12("<b>InputValidator</b>"):::normal
 	d2e73("<b>resolveError</b><br/>Text2XmlPipe"):::errorOutline
 	d2e17-ERROR("<b>OutputWrapper</b>"):::normal
 	d2e12-ERROR("<b>OutputValidator</b>"):::normal
-	d2e7>"<b>error</b>"]:::normal
+	d2e7("<b>error</b>"):::normal
 	d2e17-EXIT("<b>OutputWrapper</b>"):::normal
 	d2e12-EXIT("<b>OutputValidator</b>"):::normal
-	d2e6>"<b>success</b>"]:::normal
+	d2e6("<b>success</b>"):::normal
 	d2e16("<b>InputWrapper</b>"):::normal
-	d2e18{{"<b>TestXmlIfWithForwards</b><br/>XmlIf"}}:::normal
-	d2e24{{"<b>TestXmlIfWithAttributes</b><br/>XmlIf"}}:::normal
-	d2e32{{"<b>TestXmlSwitchWithForwards</b><br/>XmlSwitch"}}:::normal
-	d2e61{{"<b>TestCompareInteger</b><br/>CompareIntegerPipe"}}:::normal
-	d2e38{{"<b>TestXmlSwitchWithAttributes</b><br/>XmlSwitch"}}:::normal
-	d2e26{{"<b>TestXmlIfWithBoth</b><br/>XmlIf"}}:::normal
-	d2e40{{"<b>TestXmlSwitchWithBoth</b><br/>XmlSwitch"}}:::normal
-	d2e47{{"<b>TestXmlSwitchWithNone</b><br/>XmlSwitch"}}:::normal
+	d2e18("<b>TestXmlIfWithForwards</b><br/>XmlIf"):::normal
+	d2e24("<b>TestXmlIfWithAttributes</b><br/>XmlIf"):::normal
+	d2e32("<b>TestXmlSwitchWithForwards</b><br/>XmlSwitch"):::normal
+	d2e61("<b>TestCompareInteger</b><br/>CompareIntegerPipe"):::normal
+	d2e38("<b>TestXmlSwitchWithAttributes</b><br/>XmlSwitch"):::normal
+	d2e26("<b>TestXmlIfWithBoth</b><br/>XmlIf"):::normal
+	d2e40("<b>TestXmlSwitchWithBoth</b><br/>XmlSwitch"):::normal
+	d2e47("<b>TestXmlSwitchWithNone</b><br/>XmlSwitch"):::normal
 	d2e49("<b>TestCompareString</b><br/>TestCompareString"):::normal
 	classDef normal fill:#fff,stroke-width:4px,stroke:#8bc34a;
 	classDef errorOutline fill:#fff,stroke-width:4px,stroke:#ec4758;

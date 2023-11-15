@@ -1,13 +1,13 @@
 flowchart
-	d1e7>"ApiListener"]:::listener0
-	d1e9>"JavaListener"]:::listener4
+	d1e7("ApiListener"):::listener
+	d1e9("JavaListener"):::listener
 	d1e12("<a style='font-size:28px'>ConfigWithLocalSenders0</a>"):::normal
-	d1e16("IbisLocalSender"):::sender4
-	d1e25>"JdbcListener"]:::listener2
-	d1e27>"JavaListener"]:::listener4
+	d1e16("IbisLocalSender"):::sender
+	d1e25("JdbcListener"):::listener
+	d1e27("JavaListener"):::listener
 	d1e30("<a style='font-size:28px'>ConfigWithLocalSenders1</a>"):::normal
-	d1e36("MqttSender"):::sender1
-	d1e38("IbisLocalSender"):::sender4
+	d1e36("MqttSender"):::sender
+	d1e38("IbisLocalSender"):::sender
 	classDef normal fill:#fff,stroke-width:4px,stroke:#8bc34a;
 	classDef listener0 fill:#fff,stroke-width:4px,stroke:#fe41ff;
 	classDef listener1 fill:#fff,stroke-width:4px,stroke:#18a689;
