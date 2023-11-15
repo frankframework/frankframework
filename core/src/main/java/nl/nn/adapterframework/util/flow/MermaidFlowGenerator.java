@@ -17,6 +17,7 @@ package nl.nn.adapterframework.util.flow;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -25,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.TransformerException;
+
+import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.XmlUtils;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -39,6 +43,7 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.http.MediaType;
 import org.springframework.util.Assert;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
@@ -197,13 +202,13 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 	protected String generateMermaid(String xml) throws FlowGenerationException {
 		try {
 			Map<String, Object> xsltParams = new HashMap<>(1);//frankElements
-			xsltParams.put("frankElements", frankElements);
+			xsltParams.put("frankElements", XmlUtils.buildDomDocument(new InputSource(new StringReader(frankElements)), true));
 			if(xml.startsWith("<adapter")) {
 				return transformerPoolAdapter.transform(xml, xsltParams);
 			} else {
 				return transformerPoolConfig.transform(xml, xsltParams);
 			}
-		} catch (IOException | TransformerException | SAXException e) {
+		} catch (IOException | TransformerException | SAXException | DomBuilderException e) {
 			throw new FlowGenerationException("error transforming [xml] to [mermaid]", e);
 		}
 	}

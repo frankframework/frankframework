@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mermaid="mm:mermaid" version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.0">
 	<xsl:output method="text" indent="yes" omit-xml-declaration="yes"/>
 
-	<xsl:variable name="pipeTypes" select="document('pipeTypes.xml')/root"/>
+	<xsl:param name="frankElements"/>
 	<xsl:variable name="errorForwards" select="('exception','failure','fail','timeout','illegalResult','presumedTimeout','interrupt','parserError','outputParserError','outputFailure')"/>
 
 	<xsl:template match="/">
@@ -101,7 +101,7 @@
 	<xsl:template name="defaultCopyActions">
 		<xsl:attribute name="elementID" select="generate-id()"/>
 		<xsl:apply-templates select="@*|*" mode="#current"/>
-		<xsl:copy-of select="$pipeTypes/(*[name()=current()/@className],*[name()=current()/name()])[1]/mermaid:*"/>
+		<xsl:copy-of select="$frankElements/(*[name()=current()/@className],*[name()=current()/name()])[1]/*"/>
 	</xsl:template>
 
 	<xsl:template match="*" mode="convertElements">
@@ -130,14 +130,14 @@
 	<xsl:template match="listener" mode="convertElements">
 		<xsl:call-template name="createMermaidElement">
 			<xsl:with-param name="text" select="(tokenize(@className,'\.')[last()],'Listener')[1]"/>
-			<xsl:with-param name="style" select="concat('listener', mermaid:modifier)"/>
+			<xsl:with-param name="style" select="concat('listener', modifier)"/>
 		</xsl:call-template>
 	</xsl:template>
 
 	<xsl:template match="sender" mode="convertElements">
 		<xsl:call-template name="createMermaidElement">
 			<xsl:with-param name="text" select="(tokenize(@className,'\.')[last()],'Sender')[1]"/>
-			<xsl:with-param name="style" select="concat('sender', mermaid:modifier)"/>
+			<xsl:with-param name="style" select="concat('sender', modifier)"/>
 		</xsl:call-template>
 	</xsl:template>
 
@@ -155,7 +155,7 @@
 
 		<xsl:text>	</xsl:text>
 		<xsl:value-of select="@elementID"/>
-		<xsl:value-of select="($shapeStartMap/field[@type = current()/mermaid:type],'(')[1]"/>
+		<xsl:value-of select="($shapeStartMap/field[@type = current()/type],'(')[1]"/>
 		<xsl:text>"</xsl:text>
 		<xsl:if test="name() = 'pipeline'">
 			<xsl:text><![CDATA[<a style='font-size:28px'>]]></xsl:text>
@@ -165,7 +165,7 @@
 			<xsl:text><![CDATA[</a>]]></xsl:text>
 		</xsl:if>
 		<xsl:text>"</xsl:text>
-		<xsl:value-of select="($shapeEndMap/field[@type = current()/mermaid:type],')')[1]"/>
+		<xsl:value-of select="($shapeEndMap/field[@type = current()/type],')')[1]"/>
 		<xsl:text>:::</xsl:text>
 		<xsl:value-of select="$style"/>
 		<xsl:text>&#10;</xsl:text>

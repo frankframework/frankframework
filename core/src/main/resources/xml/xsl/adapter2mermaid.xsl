@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:mermaid="mm:mermaid" version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.0">
+	<xsl:param name="frankElements"/>
+
 	<xsl:output method="text" indent="yes" omit-xml-declaration="yes"/>
 
 	<xsl:variable name="adapterCount" select="count(//adapter)"/>
-	<xsl:variable name="pipeTypes" select="document('pipeTypes.xml')/root"/>
 	<xsl:variable name="errorForwards" select="('exception','failure','fail','timeout','illegalResult','presumedTimeout','interrupt','parserError','outputParserError','outputFailure')"/>
 
 	<xsl:template match="/">
@@ -85,7 +86,7 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<xsl:template match="mermaid:attribute" mode="preprocess"></xsl:template>
+	<xsl:template match="attribute" mode="preprocess"></xsl:template>
 	<xsl:template match="sender" mode="preprocess"></xsl:template>
 
 	<xsl:template match="@*|comment()" mode="preprocess">
@@ -392,7 +393,7 @@
 					<pair>
 						<xsl:variable name="target" select="$newOriginalPipes/*[@elementID=current()/@targetID]"/>
 						<xsl:copy>
-							<xsl:attribute name="errorHandling" select="$errorHandling or @name = $errorForwards or $target/mermaid:type = 'errorhandling'"/>
+							<xsl:attribute name="errorHandling" select="$errorHandling or @name = $errorForwards or $target/type = 'errorhandling'"/>
 							<xsl:copy-of select="@*|*"/>
 						</xsl:copy>
 						<xsl:copy-of select="$target"/>
@@ -446,24 +447,24 @@
 	</xsl:template>
 
 	<xsl:template name="styleElement">
-		<xsl:variable name="type" select="$pipeTypes/*[name()=(current()/@className,current()/name())][1]"/>
+		<xsl:variable name="type" select="$frankElements/*[name()=(current()/@className,current()/name())][1]"/>
 		<xsl:choose>
-			<xsl:when test="$type/mermaid:type = 'endpoint' and count(sender) = 1">
-				<xsl:variable name="newType" select="$pipeTypes/*[name()=current()/sender/@className]"/>
-				<xsl:copy-of select="($newType,$type)[1]/mermaid:type"/>
+			<xsl:when test="$type/type = 'endpoint' and count(sender) = 1">
+				<xsl:variable name="newType" select="$frankElements/*[name()=current()/sender/@className]"/>
+				<xsl:copy-of select="($newType,$type)[1]/type"/>
 			</xsl:when>
 			<xsl:otherwise>
-				<xsl:copy-of select="$type/mermaid:type"/>
+				<xsl:copy-of select="$type/type"/>
 			</xsl:otherwise>
 		</xsl:choose>
-		<xsl:if test="mermaid:attribute,$type/mermaid:attribute">
-			<xsl:for-each-group select="mermaid:attribute,$type/mermaid:attribute" group-by="@name">
-				<mermaid:attribute>
+		<xsl:if test="attribute,$type/attribute">
+			<xsl:for-each-group select="attribute,$type/attribute" group-by="@name">
+				<attribute>
 					<xsl:if test="not(current-group()[1]/@showValue)">
 						<xsl:attribute name="showValue">true</xsl:attribute>
 					</xsl:if>
 					<xsl:copy-of select="current-group()[1]/(@*,*)"/>
-				</mermaid:attribute>
+				</attribute>
 			</xsl:for-each-group>
 		</xsl:if>
 	</xsl:template>
@@ -564,7 +565,7 @@
 		<field type="validator">([</field>
 		<field type="wrapper">[[</field>
 		<field type="translator">(</field>
-		<field type="splitter">[/</field>
+		<field type="iterator">[/</field>
 		<field type="router">{{</field>
 		<field type="session">[/</field>
 		<field type="errorhandling">[</field>
@@ -575,7 +576,7 @@
 		<field type="validator">])</field>
 		<field type="wrapper">]]</field>
 		<field type="translator">)</field>
-		<field type="splitter">\]</field>
+		<field type="iterator">\]</field>
 		<field type="router">}}</field>
 		<field type="session">/]</field>
 		<field type="errorhandling">]</field>
@@ -588,7 +589,7 @@
 
 		<xsl:text>	</xsl:text>
 		<xsl:value-of select="@elementID"/>
-		<xsl:value-of select="($shapeStartMap/field[@type = current()/mermaid:type],'(')[1]"/>
+		<xsl:value-of select="($shapeStartMap/field[@type = current()/type],'(')[1]"/>
 		<xsl:text>"<![CDATA[<b>]]></xsl:text>
 		<xsl:value-of select="$text"/>
 		<xsl:text><![CDATA[</b>]]></xsl:text>
@@ -618,10 +619,10 @@
 					<xsl:text><![CDATA[</i>]]></xsl:text>
 				</xsl:when>
 			</xsl:choose>
-			<xsl:if test="mermaid:attribute">
-				<xsl:for-each select="@*[name() = current()/mermaid:attribute/@name]">
+			<xsl:if test="attribute">
+				<xsl:for-each select="@*[name() = current()/attribute/@name]">
 					<xsl:text><![CDATA[<br/>]]></xsl:text>
-					<xsl:variable name="specialAttr" select="../mermaid:attribute[@name = current()/name()][1]"/>
+					<xsl:variable name="specialAttr" select="../attribute[@name = current()/name()][1]"/>
 					<xsl:value-of select="if($specialAttr/@text) then ($specialAttr/@text) else (concat($specialAttr/@name,': '))"/>
 					<xsl:if test="$specialAttr/@showValue = 'true'">
 						<xsl:text><![CDATA[<i>]]></xsl:text>
@@ -643,7 +644,7 @@
 			</xsl:if>
 		</xsl:if>
 		<xsl:text>"</xsl:text>
-		<xsl:value-of select="($shapeEndMap/field[@type = current()/mermaid:type],')')[1]"/>
+		<xsl:value-of select="($shapeEndMap/field[@type = current()/type],')')[1]"/>
 		<xsl:text>:::</xsl:text>
 		<xsl:choose>
 			<xsl:when test="xs:boolean(@errorHandling)">
