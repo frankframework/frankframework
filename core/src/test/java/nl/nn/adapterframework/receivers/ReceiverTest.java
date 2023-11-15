@@ -566,7 +566,7 @@ public class ReceiverTest {
 	}
 
 	@Test
-	public void processLargeResult() throws Exception {
+	public void testResultLargerThanMaxCommentSize() throws Exception {
 		// Arrange
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
 		MessageStoreListener<String> listener = setupMessageStoreListener();
