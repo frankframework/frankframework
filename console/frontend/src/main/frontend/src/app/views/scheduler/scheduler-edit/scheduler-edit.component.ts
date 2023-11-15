@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { Adapter, AppService, Configuration } from 'src/angularjs/app/app.service';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { StateParams } from '@uirouter/angularjs';
 import { SchedulerAddEditParent } from '../scheduler-add-edit-parent';
+import { AppService } from 'src/app/app.service';
 
 interface StateItem {
   type: string
@@ -32,8 +30,6 @@ export class SchedulerEditComponent extends SchedulerAddEditParent implements On
   editMode: boolean = true;
 
   constructor(
-    private Api: ApiService,
-    private stateParams: StateParams,
     private appService: AppService
   ) {
     super();

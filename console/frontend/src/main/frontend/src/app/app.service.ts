@@ -31,7 +31,7 @@ export type Receiver = {
   threadCountControllable?: true
 }
 
-type Message = {
+export type Message = {
   date: number,
   level: MessageLevel,
   message: string,

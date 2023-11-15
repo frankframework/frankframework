@@ -56,9 +56,9 @@ import { FormatStatKeysPipe } from './views/adapterstatistics/format-stat-keys.p
 import { FitHeightDirective } from './views/iframe/fit-height.directive';
 import { SecurityItemsComponent } from './views/security-items/security-items.component';
 import { WebservicesComponent } from './views/webservices/webservices.component';
-// import { SchedulerComponent } from './views/scheduler/scheduler.component';
-// import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
-// import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
+import { SchedulerComponent } from './views/scheduler/scheduler.component';
+import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
+import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
@@ -96,9 +96,9 @@ const windowProvider: ValueProvider = {
     PagesNavigationComponent,
     PagesTopinfobarComponent,
     PagesTopnavbarComponent,
-    // SchedulerComponent,
-    // SchedulerEditComponent,
-    // SchedulerAddComponent,
+    SchedulerComponent,
+    SchedulerEditComponent,
+    SchedulerAddComponent,
     ScrollToTopComponent,
     StatusComponent,
     StorageComponent,

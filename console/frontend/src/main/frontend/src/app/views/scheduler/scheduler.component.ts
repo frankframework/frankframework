@@ -1,11 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Adapter, AppService, Job } from 'src/angularjs/app/app.service';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { PollerService } from 'src/angularjs/app/services/poller.service';
-import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
-import { StateService } from "@uirouter/angularjs";
+import { Router } from '@angular/router';
+import { AppService, Message, RunState } from 'src/app/app.service';
+import { PollerService } from 'src/app/services/poller.service';
+import { SchedulerService } from './scheduler.service';
+import { SweetalertService } from 'src/app/services/sweetalert.service';
 
-interface Scheduler {
+type Scheduler = {
   name: string
   version: string
   started: boolean
@@ -18,6 +18,29 @@ interface Scheduler {
   threadPoolSize: number
   schedulerClass: string
   jobStoreClass: string
+}
+
+export type JobState = 'NONE' | 'NORMAL' | 'PAUSED' | 'COMPLETE' | 'ERROR' | 'BLOCKED';
+
+export type Job = {
+  name: string,
+  description: string,
+  state: JobState,
+  type?: string,
+  jobGroupName?: string,
+  stateful?: boolean,
+  durable?: boolean,
+  messages: Message[],
+  triggers: Trigger[]
+}
+
+export type Trigger = {
+  name: string,
+  cronExpression: string,
+  repeatInterval: string,
+  startTime: string,
+  previousFireTime: string,
+  nextFireTime: string
 }
 
 @Component({
@@ -49,16 +72,16 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   private initialized = false;
 
   constructor(
-    private apiService: ApiService,
+    private router: Router,
     private pollerService: PollerService,
-    private stateService: StateService,
-    private sweetAlertService: SweetAlertService,
+    private sweetAlertService: SweetalertService,
     private appService: AppService,
+    private schedulerService: SchedulerService
   ) { };
 
   ngOnInit(): void {
     this.pollerService.add("schedules", (data) => {
-      Object.assign(this, data);
+      // TODO Object.assign(this, data);
       this.refreshing = false;
       if (!this.initialized) {
         for (const job of Object.keys(this.jobs)) {
@@ -83,35 +106,35 @@ export class SchedulerComponent implements OnInit, OnDestroy {
 
   start() {
     this.refreshing = true;
-    this.apiService.Put("schedules", { action: "start" });
+    this.schedulerService.putSchedulesAction("start").subscribe();
   };
 
   pauseScheduler() {
     this.refreshing = true;
-    this.apiService.Put("schedules", { action: "pause" });
+    this.schedulerService.putSchedulesAction("pause").subscribe();
   };
 
   pause(jobGroup: string, jobName: string) {
-    this.apiService.Put("schedules/" + jobGroup + "/jobs/" + jobName, { action: "pause" });
+    this.schedulerService.putScheduleJobAction(jobGroup, jobName, "pause").subscribe();
   };
 
   resume(jobGroup: string, jobName: string) {
-    this.apiService.Put("schedules/" + jobGroup + "/jobs/" + jobName, { action: "resume" });
+    this.schedulerService.putScheduleJobAction(jobGroup, jobName, "resume").subscribe();
   };
 
   remove(jobGroup: string, jobName: string) {
     this.sweetAlertService.Confirm({ title: "Please confirm the deletion of '" + jobName + "'" }, (imSure: boolean) => {
       if (imSure) {
-        this.apiService.Delete("schedules/" + jobGroup + "/jobs/" + jobName);
+        this.schedulerService.deleteScheduleJob(jobGroup, jobName);
       }
     });
   };
 
   trigger(jobGroup: string, jobName: string) {
-    this.apiService.Put("schedules/" + jobGroup + "/jobs/" + jobName, { action: "trigger" });
+    this.schedulerService.putScheduleJobAction(jobGroup, jobName, "trigger").subscribe();
   };
 
   edit(jobGroup: string, jobName: string) {
-    this.stateService.go('pages.edit_schedule', { name: jobName, group: jobGroup });
+    this.router.navigate(['scheduler', 'edit', jobGroup, jobName]);
   };
 }

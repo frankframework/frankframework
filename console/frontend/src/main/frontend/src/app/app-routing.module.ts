@@ -22,6 +22,9 @@ import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.c
 import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
+import { SchedulerComponent } from './views/scheduler/scheduler.component';
+import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
+import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 
 const routes: Routes = [
   /* {
@@ -164,30 +167,30 @@ const routes: Routes = [
       breadcrumbs: 'Webservices'
     }
   },
-  /* {
+  {
     path: 'scheduler',
     component: SchedulerComponent,
     title: 'Scheduler',
     data: {
       breadcrumbs: 'Scheduler'
     }
-  }, */
-  /* {
+  },
+  {
     path: 'scheduler/new',
     component: SchedulerAddComponent,
     title: 'Add Schedule',
     data: {
       breadcrumbs: 'Scheduler > Add Schedule'
     },
-  }, */
-  /* {
+  },
+  {
     path: 'scheduler/edit/:group/:name',
     component: SchedulerEditComponent,
     title: 'Edit Schedule',
     data: {
       breadcrumbs: 'Scheduler > Edit Schedule'
     },
-  }, */
+  },
   {
     path: 'environment-variables',
     component: EnvironmentVariablesComponent,

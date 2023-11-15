@@ -1,7 +1,5 @@
 import { OnInit } from "@angular/core";
-import { Adapter, AppService, Configuration } from "src/angularjs/app/app.service";
-import { ApiService } from "src/angularjs/app/services/api.service";
-import { StateParams } from '@uirouter/angularjs';
+import { Adapter, Configuration } from "src/app/app.service";
 
 interface StateItem {
   type: string
