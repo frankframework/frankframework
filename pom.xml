@@ -1212,23 +1212,11 @@
 				<module>management-gateway</module>
 				<module>core</module>
 				<module>console</module>
-				<module>webapp</module>
 				<module>larva</module>
 				<module>ladybug</module>
-				<module>test</module>
-				<module>example</module>
 				<module>dbms</module>
 				<module>bundle-minimal</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>extra-modules</id>
-			<activation>
-				<property>
-					<name>extra-modules</name>
-				</property>
-			</activation>
-			<modules>
+
 				<module>akamai</module>
 				<module>aws</module>
 				<module>cmis</module>
@@ -1236,6 +1224,10 @@
 				<module>nn-specials</module>
 				<module>messaging</module>
 				<module>bundle-full</module>
+
+				<module>webapp</module>
+				<module>test</module>
+				<module>example</module>
 			</modules>
 		</profile>
 		<profile>
