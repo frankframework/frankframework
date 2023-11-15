@@ -5,7 +5,7 @@
     "logContext": {
         "listener.type": "JavaListener",
         "adapter": "ForEachChildElementPipe",
-        "exitState": "SUCCESS",
+        "exit.state": "SUCCESS",
         "pipeline.duration": "3",
         "listener": "listener of [JavaListener]",
         "cid": "Test Tool correlation id(6)"

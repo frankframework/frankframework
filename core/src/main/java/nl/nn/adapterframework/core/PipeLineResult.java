@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package nl.nn.adapterframework.core;
+
+import javax.annotation.Nonnull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -32,14 +34,25 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class PipeLineResult {
 
-	private @Getter @Setter Message result;
-	private @Getter @Setter ExitState state;
+	private @Setter Message result;
+	private @Setter ExitState state;
 	private @Getter @Setter int exitCode;
 
 	public boolean isSuccessful() {
 		return getState()==ExitState.SUCCESS;
 	}
-	
+
+	public @Nonnull Message getResult() {
+		if (result == null) {
+			return Message.nullMessage();
+		}
+		return result;
+	}
+
+	public @Nonnull ExitState getState() {
+		return state;
+	}
+
 	@Override
 	public String toString(){
 		return "result=["+result+"] state=["+state+"]";
