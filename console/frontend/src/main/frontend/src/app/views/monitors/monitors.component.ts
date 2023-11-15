@@ -1,41 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { StateParams, StateService } from '@uirouter/angularjs';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
-import { AppService, Configuration } from 'src/angularjs/app/app.service';
-
-interface Monitor {
-  hits: number
-  destinations: string[]
-  name: string
-  raised: boolean
-  type: string
-  lastHit: string
-  triggers: Trigger[]
-  displayName: string
-  activeDestinations: boolean[]
-  edit: boolean
-  alarm: Alarm
-}
-
-interface Alarm {
-  source: string
-  severity: string
-}
-
-export type Trigger = {
-  name: string,
-  severity: string,
-  filter: string,
-  period: number,
-  sources?: Record<string, string[]>,
-  changedSources: string[];
-  threshold: number,
-  id: number,
-  type: string,
-  events: string[],
-  adapters?: string[]
-}
+import { AppService, Configuration } from 'src/app/app.service';
+import { Monitor, MonitorsService, Trigger } from './monitors.service';
+import { ActivatedRoute, ParamMap, Params, Router, convertToParamMap } from '@angular/router';
 
 @Component({
   selector: 'app-monitors',
@@ -51,17 +17,18 @@ export class MonitorsComponent implements OnInit {
   configurations: Configuration[] = [];
   activeDestinations: string[] = [];
 
+  private routeQueryParams: ParamMap = convertToParamMap({});
+
   constructor(
-    private apiService: ApiService,
-    private stateParams: StateParams,
-    private $state: StateService,
-    private miscService: MiscService,
+    private router: Router,
+    private route: ActivatedRoute,
     private appService: AppService,
+    private monitorsService: MonitorsService
   ) { };
 
   ngOnInit(): void {
-    this.configurations = this.appService.configurations;
-    this.appService.configurations$.subscribe(() => {
+    this.route.queryParamMap.subscribe( params => {
+      this.routeQueryParams = params;
       this.configurations = this.appService.configurations;
 
       if (this.configurations.length > 0) {
@@ -69,30 +36,37 @@ export class MonitorsComponent implements OnInit {
       }
     });
 
-    if (this.configurations.length > 0) {
-      this.updateConfigurations();
-    }
+    this.appService.configurations$.subscribe(() => {
+      this.configurations = this.appService.configurations;
+
+      if (this.configurations.length > 0) {
+        this.updateConfigurations();
+      }
+    });
   };
 
   updateConfigurations() {
-    let configName = this.stateParams['configuration'];         // See if the configuration query param is populated
-    if (!configName) configName = this.configurations[0].name;  // Fall back to the first configuration
-    this.changeConfiguration(configName);                       // Update the view
+    let configName = this.routeQueryParams.get('configuration'); // See if the configuration query param is populated
+    if (!configName) configName = this.configurations[0].name; // Fall back to the first configuration
+    this.changeConfiguration(configName); // Update the view
   };
 
   changeConfiguration(name: string) {
     this.selectedConfiguration = name;
+    const configurationQueryParameter = this.routeQueryParams.get('configuration');
 
-    if (this.stateParams['configuration'] == "" || this.stateParams['configuration'] != name) { // Update the URL
-      this.$state.transitionTo('pages.monitors', { configuration: name }, { notify: false, reload: false });
+    if (configurationQueryParameter == "" || configurationQueryParameter != name) { // Update the URL
+      this.router.navigate([], { relativeTo: this.route, queryParams: { configuration: name }});
     }
 
     this.update();
   };
 
   update() {
-    this.apiService.Get("configurations/" + this.selectedConfiguration + "/monitors", (data) => {
-      Object.assign(this, data);
+    this.monitorsService.getMonitors(this.selectedConfiguration).subscribe((data) => {
+      this.destinations = data.destinations;
+      this.eventTypes = data.eventTypes;
+      this.monitors = data.monitors;
 
       this.totalRaised = 0;
       for (const monitor of this.monitors) {
@@ -107,20 +81,14 @@ export class MonitorsComponent implements OnInit {
     });
   };
 
-  getUrl(monitor: Monitor, trigger?: Trigger) {
-    let url = "configurations/" + this.selectedConfiguration + "/monitors/" + monitor.name;
-    if (trigger) url += "/triggers/" + trigger.id;
-    return url;
-  };
-
   raise(monitor: Monitor, trigger?: Trigger) {
-    this.apiService.Put(this.getUrl(monitor, trigger), { action: "raise" }, () => {
+    this.monitorsService.putMonitorOrTriggerAction("raise", this.selectedConfiguration, monitor, trigger).subscribe(() => {
       this.update();
     });
   };
 
   clear(monitor: Monitor, trigger?: Trigger) {
-    this.apiService.Put(this.getUrl(monitor, trigger), { action: "clear" }, () => {
+    this.monitorsService.putMonitorOrTriggerAction("clear", this.selectedConfiguration, monitor, trigger).subscribe(() => {
       this.update();
     });
   };
@@ -134,25 +102,25 @@ export class MonitorsComponent implements OnInit {
       }
     }
 
-    this.apiService.Put(this.getUrl(monitor, trigger), { action: "edit", name: monitor.displayName, type: monitor.type, destinations: destinations }, () => {
+    this.monitorsService.putMonitorOrTriggerEdit(destinations, this.selectedConfiguration, monitor, trigger).subscribe(() => {
       this.update();
     });
   };
 
   deleteMonitor(monitor: Monitor, trigger?: Trigger) {
-    this.apiService.Delete(this.getUrl(monitor, trigger), () => {
+    this.monitorsService.deleteMonitorOrTrigger(this.selectedConfiguration, monitor, trigger).subscribe(() => {
       this.update();
     });
   };
 
   deleteTrigger(monitor: Monitor, trigger?: Trigger) {
-    this.apiService.Delete(this.getUrl(monitor, trigger), () => {
+    this.monitorsService.deleteMonitorOrTrigger(this.selectedConfiguration, monitor, trigger).subscribe(() => {
       this.update();
     });
   };
 
   downloadXML(monitorName?: string) {
-    let url = this.miscService.getServerPath() + "iaf/api/configurations/" + this.selectedConfiguration + "/monitors";
+    let url = this.appService.getServerPath() + "iaf/api/configurations/" + this.selectedConfiguration + "/monitors";
     if (monitorName) {
       url += "/" + monitorName;
     }

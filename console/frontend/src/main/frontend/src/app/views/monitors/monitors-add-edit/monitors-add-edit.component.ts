@@ -1,18 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from "src/angularjs/app/services/api.service";
-import { Adapter, AppService } from "src/app/app.service";
-import { StateParams } from '@uirouter/angularjs';
-import { StateService } from "@uirouter/angularjs";
-import { Trigger } from '../monitors.component';
-import { state } from '@angular/animations';
+import { MonitorsService, Trigger, Event } from '../monitors.service';
+import { AppService } from 'src/app/app.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { combineLatestWith } from 'rxjs';
 
-interface EventSource {
+type EventSource = {
   adapter: string,
   source: string
-}
-
-interface Event {
-  sources: Record<string, string[]>;
 }
 
 @Component({
@@ -38,62 +32,68 @@ export class MonitorsAddEditComponent implements OnInit {
     changedSources: [],
     threshold: 0,
     id: 0,
-    type: "ALARM",
+    type: "",
     events: [],
     adapters: []
   }
   eventSources: Record<string, EventSource[]> = {};
-  url: string = "";
   disabled: boolean = false;
   pageTitle = "";
 
   constructor(
+    private router: Router,
+    private route: ActivatedRoute,
     private appService: AppService,
-    private apiService: ApiService,
-    private $state: StateService,
-    private stateParams: StateParams,
+    private monitorsService: MonitorsService
   ) { };
 
   ngOnInit(): void {
     this.appService.loading$.subscribe(_ => this.loading = false);
-    this.pageTitle = this.$state.current.data.pageTitle;
+    this.route.title.subscribe(title => { this.pageTitle = title ?? "";  });
 
-    if (this.stateParams['configuration'] == "" || this.stateParams['monitor'] == "") {
-      this.$state.go('pages.monitors');
-    } else {
-      this.selectedConfiguration = this.stateParams['configuration'];
-      this.monitor = this.stateParams['monitor'];
-      this.triggerId = this.stateParams['trigger'] || "";
-      this.url = "configurations/" + this.selectedConfiguration + "/monitors/" + this.monitor + "/triggers/" + this.triggerId;
+    this.route.paramMap.pipe(
+      combineLatestWith(this.route.queryParamMap)
+    ).subscribe(([params, queryParams]) => {
+      if (!queryParams.has('configuration')) {
+        this.router.navigate(['/monitors']);
+      } else {
+        this.selectedConfiguration = queryParams.get('configuration')!;
+        this.monitor = params.get('monitor')!;
+        const triggerParam = params.get('trigger')!;
+        this.triggerId = triggerParam === 'new' ? -1 : +triggerParam;
 
-      this.apiService.Get(this.url, (data) => {
-        this.eventsOptions = Object.keys(data.events).sort();
-        this.events = data.events;
-        this.severities = data.severities;
-        this.trigger = data.trigger;
-        this.calculateEventSources();
+        this.monitorsService.getTrigger(this.selectedConfiguration, this.monitor, this.triggerId).subscribe({ next: (data) => {
+          this.eventsOptions = Object.keys(data.events).sort();
+          this.events = data.events;
+          this.severities = data.severities;
+          if(data.trigger)
+            this.trigger = data.trigger;
+          this.calculateEventSources();
 
-        if (data.trigger && data.trigger.sources) {
-          let sources = { ...data.trigger.sources };
-          this.trigger.changedSources = [];
-          this.trigger.adapters = [];
+          if (data.trigger && data.trigger.sources) {
+            let sources = { ...data.trigger.sources };
+            this.trigger.changedSources = [];
+            this.trigger.adapters = [];
 
-          for (const adapter in sources) {
-            if (data.trigger.filter == "SOURCE") {
-              for (const i in sources[adapter]) {
-                this.trigger.changedSources.push(adapter + "$$" + sources[adapter][i]);
+            for (const adapter in sources) {
+              if (data.trigger.filter == "SOURCE") {
+                for (const i in sources[adapter]) {
+                  this.trigger.changedSources.push(adapter + "$$" + sources[adapter][i]);
+                }
+              } else {
+                this.trigger.adapters.push(adapter);
               }
-            } else {
-              this.trigger.adapters.push(adapter);
             }
           }
-        }
-        this.componentLoading = false;
-      }, () => {
-        this.$state.go('pages.monitors', this.stateParams);
-      });
-    }
+          this.componentLoading = false;
+        }, error: () => this.navigateBack()});
+      }
+    });
   };
+
+  navigateBack() {
+    this.router.navigate(['monitors'], { queryParams: { configuration: this.selectedConfiguration } });
+  }
 
   getAdaptersForEvents(events: string[]) {
     if (!events) return [];
@@ -152,12 +152,12 @@ export class MonitorsAddEditComponent implements OnInit {
     };
 
     if (this.triggerId && this.triggerId > -1) {
-      this.apiService.Put(this.url, trigger, (returnData) => {
-        this.$state.go('pages.monitors', this.stateParams);
+      this.monitorsService.putTriggerUpdate(this.selectedConfiguration, this.monitor, this.triggerId, trigger).subscribe(() => {
+        this.navigateBack();
       });
     } else {
-      this.apiService.Post(this.url, JSON.stringify(trigger), (returnData) => {
-        this.$state.go('pages.monitors', this.stateParams);
+      this.monitorsService.postTrigger(this.selectedConfiguration, this.monitor, this.triggerId, trigger).subscribe(() => {
+        this.navigateBack();
       });
     }
   };

@@ -20,6 +20,8 @@ import { IframeCustomViewComponent } from './views/iframe/iframe-custom-view/ifr
 import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-ladybug.component';
 import { IframeLarvaComponent } from './views/iframe/iframe-larva/iframe-larva.component';
 import { IframeLadybugBetaComponent } from './views/iframe/iframe-ladybug-beta/iframe-ladybug-beta.component';
+import { MonitorsComponent } from './views/monitors/monitors.component';
+import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 
 const routes: Routes = [
   /* {
@@ -234,30 +236,30 @@ const routes: Routes = [
       breadcrumbs: 'InlineStore Overview'
     }
   },
-  /* {
+  {
     path: 'monitors',
     component: MonitorsComponent,
     title: 'Monitors',
     data: {
       breadcrumbs: 'Monitors'
     }
-  }, */
-  /* {
+  },
+  {
     path: 'monitors/:monitor/triggers/:trigger',
     component: MonitorsAddEditComponent,
     title: 'Edit Trigger',
     data: {
       breadcrumbs: 'Monitors > Triggers > Edit'
     },
-  }, */
-  /* {
+  },
+  {
     path: 'monitors/:monitor/triggers/new',
     component: MonitorsAddEditComponent,
     title: 'Add Trigger',
     data: {
       breadcrumbs: 'Monitors > Triggers > Add'
     },
-  }, */
+  },
   {
     path: 'ibisstore-summary',
     component: IbisstoreSummaryComponent,

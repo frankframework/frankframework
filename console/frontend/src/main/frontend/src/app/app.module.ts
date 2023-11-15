@@ -1,10 +1,8 @@
-import { DoBootstrap, InjectionToken, NgModule, ValueProvider } from '@angular/core';
+import { NgModule, ValueProvider } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-// import { UpgradeModule, downgradeComponent } from '@angular/upgrade/static';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-// import { NgHybridStateDeclaration, UIRouterUpgradeModule } from '@uirouter/angular-hybrid';
 import { NgIdleModule } from '@ng-idle/core';
 import { NgChartsModule } from 'ng2-charts';
 import { LaddaModule } from 'angular2-ladda';
@@ -13,13 +11,6 @@ import { DataTablesModule } from 'angular-datatables';
 import { AppRoutingModule } from './app-routing.module';
 
 import '../angularjs/main';
-// import '../angularjs/app/app.module';
-// import '../angularjs/app/app.config';
-// import '../angularjs/services';
-// import '../angularjs/filters';
-// import '../angularjs/directives';
-// import '../angularjs/controllers';
-// import '../angularjs/components';
 
 import { AppComponent } from './app.component';
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
@@ -69,8 +60,8 @@ import { WebservicesComponent } from './views/webservices/webservices.component'
 // import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 // import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
-// import { MonitorsComponent } from './views/monitors/monitors.component';
-// import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
+import { MonitorsComponent } from './views/monitors/monitors.component';
+import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { TitleStrategy } from '@angular/router';
 import { PagesTitleStrategy } from './pages-title-strategy';
 
@@ -117,8 +108,8 @@ const windowProvider: ValueProvider = {
     AdapterstatisticsComponent,
     SecurityItemsComponent,
     WebservicesComponent,
-    // MonitorsComponent,
-    // MonitorsAddEditComponent,
+    MonitorsComponent,
+    MonitorsAddEditComponent,
 
     // pipes
     ConfigurationFilterPipe,
@@ -143,9 +134,7 @@ const windowProvider: ValueProvider = {
     HttpClientModule,
     LaddaModule,
     NgbModule,
-    // UpgradeModule,
     AppRoutingModule,
-    // UIRouterUpgradeModule.forRoot(/* { states: nestedRouterStates } */),
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot(),
     DataTablesModule

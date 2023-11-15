@@ -24,8 +24,6 @@ export class WebservicesComponent implements OnInit {
       this.apiListeners = data.apiListeners;
       this.services = data.services;
       this.wsdls = data.wsdls;
-
-      console.log(this.rootURL)
     });
   };
 

@@ -124,12 +124,23 @@
                     <td>{{trigger.threshold}}</td>
                     <td>{{trigger.period}}</td>
                     <td *ngIf="monitor.edit" class="pull-right">
-                      <button title="Edit trigger {{trigger.name}}" class="btn btn-info btn-xs" type="button" uiSref="pages.monitors_editTrigger" [uiParams]="{monitor:monitor.name, trigger:trigger.id, configuration:selectedConfiguration}">Edit</button>
-                      <button title="Delete trigger {{trigger.name}}" class="btn btn-danger btn-xs" type="button" (click)="deleteTrigger(monitor, trigger)">Delete</button>
+                      <button
+                        title="Edit trigger {{trigger.name}}"
+                        class="btn btn-info btn-xs"
+                        type="button"
+                        [routerLink]="['/monitors', monitor.name, 'triggers', trigger.id]"
+                        [queryParams]="{ configuration: selectedConfiguration }"
+                      >Edit</button>
+                      <button
+                        title="Delete trigger {{trigger.name}}"
+                        class="btn btn-danger btn-xs"
+                        type="button"
+                        (click)="deleteTrigger(monitor, trigger)"
+                      >Delete</button>
                     </td>
                   </tr>
                   <tr *ngIf="monitor.edit">
-                    <td colspan="7" class="text-center"><button class="btn btn-primary btn-outline btn-xs" uiSref="pages.monitors_addTrigger" [uiParams]="{monitor:monitor.name, configuration:selectedConfiguration}"><i class="fa fa-plus"></i> <i>Add Trigger</i></button></td>
+                    <td colspan="7" class="text-center"><button class="btn btn-primary btn-outline btn-xs" [routerLink]="['/monitors', monitor.name, 'triggers', 'new']" [queryParams]="{ configuration:selectedConfiguration }"><i class="fa fa-plus"></i> <i>Add Trigger</i></button></td>
                   </tr>
                 </tbody>
               </table>
