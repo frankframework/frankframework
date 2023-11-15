@@ -30,9 +30,11 @@ import java.util.Set;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.TestAppender;
@@ -46,6 +48,11 @@ public class TestLogMessages {
 	private static String TEST_REGEX_IN  = "log my name but not my password! username=\"top\" password=\"secret\" hihi";
 	private static String TEST_REGEX_OUT = "log my name but not my password! username=\"top\" password=\"******\" hihi";
 	private static String PATTERN = "%level - %m";
+
+	@BeforeEach
+	public void setup() {
+		ThreadContext.clearAll();
+	}
 
 	@Test
 	public void testHideRegexMatchInLogMessage() {
@@ -287,7 +294,7 @@ public class TestLogMessages {
 			List<String> logEvents = appender.getLogLines();
 			assertEquals(1, logEvents.size());
 			String message = logEvents.get(0);
-			assertEquals(message, "DEBUG - Adapter Success ");
+			assertEquals("DEBUG - Adapter Success ", message);
 		}
 		finally {
 			TestAppender.removeAppender(appender);
