@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.logging;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -24,9 +27,14 @@ import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.TestAppender;
@@ -40,6 +48,11 @@ public class TestLogMessages {
 	private static String TEST_REGEX_IN  = "log my name but not my password! username=\"top\" password=\"secret\" hihi";
 	private static String TEST_REGEX_OUT = "log my name but not my password! username=\"top\" password=\"******\" hihi";
 	private static String PATTERN = "%level - %m";
+
+	@BeforeEach
+	public void setup() {
+		ThreadContext.clearAll();
+	}
 
 	@Test
 	public void testHideRegexMatchInLogMessage() {
@@ -312,6 +325,50 @@ public class TestLogMessages {
 		} finally {
 			TestAppender.removeAppender(appender);
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);
+		}
+	}
+
+	@Test
+	public void testMessageLogThreadContext() throws Exception {
+		PatternLayout layout =  PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
+		TestAppender appender = TestAppender.newBuilder().setLayout(layout).build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("key", "value").put("key.two", "value2")) {
+				log.debug("Adapter Success");
+			}
+
+			List<String> logEvents = appender.getLogLines();
+			assertEquals(1, logEvents.size());
+			String message = logEvents.get(0);
+			assertAll(
+				() -> assertThat(message, StringContains.containsString("DEBUG - Adapter Success ")),
+				() -> assertThat(message, StringContains.containsString("key [value]")),
+				() -> assertThat(message, StringContains.containsString("key-two [value2]")),
+				() -> assertFalse(message.endsWith(" "), "message should not end with a space"),
+				() -> assertFalse(message.contains("log.dir")) // No other info in log context
+			);
+		}
+		finally {
+			TestAppender.removeAppender(appender);
+		}
+	}
+
+	@Test
+	public void testMessageEmptyLogThreadContext() throws Exception {
+		PatternLayout layout =  PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
+		TestAppender appender = TestAppender.newBuilder().setLayout(layout).build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			log.debug("Adapter Success");
+
+			List<String> logEvents = appender.getLogLines();
+			assertEquals(1, logEvents.size());
+			String message = logEvents.get(0);
+			assertEquals("DEBUG - Adapter Success ", message);
+		}
+		finally {
+			TestAppender.removeAppender(appender);
 		}
 	}
 }

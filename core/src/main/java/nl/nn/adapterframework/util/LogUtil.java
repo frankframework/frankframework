@@ -31,7 +31,15 @@ import nl.nn.adapterframework.core.PipeLineSession;
  */
 public class LogUtil {
 
-	public static final String MESSAGE_LOGGER="MSG";
+	public static final String MESSAGE_LOGGER = "MSG";
+
+	public static final String MDC_ADAPTER_KEY = "adapter";
+
+	public static final String MDC_EXIT_STATE_KEY = "exit.state";
+	public static final String MDC_EXIT_CODE_KEY = "exit.code";
+
+	public static final String MDC_MESSAGE_ID_KEY = "mid";
+	public static final String MDC_CORRELATION_ID_KEY = "cid";
 
 
 	public static Logger getRootLogger() {
@@ -73,9 +81,9 @@ public class LogUtil {
 	}
 
 	public static CloseableThreadContext.Instance getThreadContext(IAdapter adapter, String messageId, PipeLineSession session) {
-		String lastAdapter= ThreadContext.get("adapter");
+		String lastAdapter= ThreadContext.get(MDC_ADAPTER_KEY);
 		String currentAdapter= adapter.getName();
-		CloseableThreadContext.Instance ctc = CloseableThreadContext.put("adapter", currentAdapter);
+		CloseableThreadContext.Instance ctc = CloseableThreadContext.put(MDC_ADAPTER_KEY, currentAdapter);
 		if (lastAdapter!=null && !lastAdapter.equals(currentAdapter)) {
 			ctc.push("caller="+lastAdapter);
 		}
@@ -85,10 +93,10 @@ public class LogUtil {
 
 	public static void setIdsToThreadContext(CloseableThreadContext.Instance ctc, String messageId, String correlationId) {
 		if (StringUtils.isNotEmpty(messageId)) {
-			ctc.put("mid", messageId);
+			ctc.put(MDC_MESSAGE_ID_KEY, messageId);
 		}
 		if (StringUtils.isNotEmpty(correlationId)) {
-			ctc.put("cid", correlationId);
+			ctc.put(MDC_CORRELATION_ID_KEY, correlationId);
 		}
 	}
 }
