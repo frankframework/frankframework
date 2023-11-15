@@ -825,7 +825,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			runState.setRunState(RunState.STARTED);
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		} catch (Throwable t) {
-			error("error occured while starting", t);
+			error("error occurred while starting", t);
 
 			runState.setRunState(RunState.EXCEPTION_STARTING);
 			closeAllResources(); //Close potential dangling resources, don't change state here..
@@ -1340,8 +1340,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						result=pipeLineResult.getResult();
 
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
-						if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN) { //Since we can determine the size, assume the message is preserved
-							errorMessage += result.asString().substring(0, ITransactionalStorage.MAXCOMMENTLEN);
+						if(!Message.isEmpty(result) && result.isRepeatable() && result.size() > ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length()) { //Since we can determine the size, assume the message is preserved
+							String resultString = result.asString();
+							errorMessage += resultString.substring(0, Math.min(ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length(), resultString.length()));
 						} else {
 							errorMessage += result;
 						}

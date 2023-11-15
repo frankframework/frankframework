@@ -45,6 +45,7 @@ import nl.nn.adapterframework.jdbc.MessageStoreListener;
 import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
@@ -562,5 +563,43 @@ public class ReceiverTest {
 
 		assertEquals(RunState.STOPPED, receiver.getRunState());
 		assertEquals(RunState.STOPPED, adapter.getRunState());
+	}
+
+	@Test
+	public void testResultLargerThanMaxCommentSize() throws Exception {
+		// Arrange
+		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		MessageStoreListener<String> listener = setupMessageStoreListener();
+		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		Adapter adapter = setupAdapter(receiver);
+
+		// The actual size of a message as string can be shorter than the reported size. This could be due to incorrect
+		// cached size in metadata, or due to conversion from byte[] to String for instance.
+		// If the reported size was just above the MAXCOMMENTLEN while the actual size was below then this could cause
+		// a StringIndexOutOfBoundsException. (Issue #5752).
+		// Here we force the issue by specifically crafting such a message; in practice the difference will be less extreme.
+		Message result = new Message("a short message");
+		result.getContext().put(MessageContext.METADATA_SIZE, (long)ITransactionalStorage.MAXCOMMENTLEN + 100);
+		PipeLineResult plr = new PipeLineResult();
+		plr.setResult(result);
+		plr.setState(ExitState.SUCCESS);
+
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any());
+
+		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		receiver.setTxManager(transactionManager);
+
+		configuration.configure();
+		configuration.start();
+
+		waitForState(receiver, RunState.STARTED);
+
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Message message = receiver.processRequest(listener, "cid", "raw", Message.nullMessage(), session);
+
+		// Assert
+		assertEquals(result, message);
 	}
 }
