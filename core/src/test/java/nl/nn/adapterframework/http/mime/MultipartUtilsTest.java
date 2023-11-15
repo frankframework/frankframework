@@ -86,7 +86,8 @@ public class MultipartUtilsTest {
 	public static Stream<Arguments> testGetFileName() {
 		return Stream.of(
 				Arguments.of("attachment; filename=\"dummy.jpg\"; name=\"field_name\"", "dummy.jpg"),
-				Arguments.of("attachment; filename=\"polis=123.pdf\"; name=\"field_name\"", "polis=123.pdf")
+				Arguments.of("attachment; filename=\"polis=123.pdf\"; name=\"field_name\"", "polis=123.pdf"),
+				Arguments.of("attachment; filename=; name=\"field_name\"", null)
 		);
 	}
 

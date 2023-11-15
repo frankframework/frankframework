@@ -102,9 +102,9 @@ public abstract class MultipartUtils {
 
 	private static String parseParameterField(String cdFields, String fieldName) {
 		for(String field : cdFields.split(";")) {
-			String[] f = field.trim().split("=");
+			String[] f = field.trim().split("=", 2);
 			String name = f[0];
-			if(f.length > 1 && fieldName.equalsIgnoreCase(name)) {
+			if(f.length > 1 && fieldName.equalsIgnoreCase(name) && StringUtils.isNotBlank(f[1])) {
 				return f[1].substring(1, f[1].length()-1);
 			}
 		}
