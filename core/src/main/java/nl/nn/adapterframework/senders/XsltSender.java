@@ -423,12 +423,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		indentXml = b;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("please use attribute 'removeNamespaces' instead")
-	public void setNamespaceAware(boolean b) {
-		setRemoveNamespaces(!b);
-	}
-
 	/**
 	 * If set <code>true</code> namespaces (and prefixes) in the input message are removed before transformation
 	 * @ff.default false

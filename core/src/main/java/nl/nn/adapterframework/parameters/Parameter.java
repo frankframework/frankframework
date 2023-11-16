@@ -1035,11 +1035,6 @@ public class Parameter implements IConfigurable, IWithParameters {
 	public void setUsername(String string) {
 		username = string;
 	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute username instead")
-	public void setUserName(String username) {
-		setUsername(username);
-	}
 
 	/** Default password that is used when a <code>pattern</code> containing {password} is specified */
 	public void setPassword(String string) {

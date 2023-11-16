@@ -316,7 +316,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setIndentXml(true);
 		sender.setOutputType(OutputType.TEXT);
 		sender.setOmitXmlDeclaration(true);
-		sender.setNamespaceAware(namespaceAware);
+		sender.setRemoveNamespaces(!namespaceAware);
 		sender.configure();
 		sender.open();
 		Message input=new Message(NAMESPACE_UNAWARENESS_INPUT);

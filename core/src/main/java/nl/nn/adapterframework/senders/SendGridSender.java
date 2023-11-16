@@ -41,7 +41,6 @@ import com.sendgrid.helpers.mail.objects.Personalization;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.encryption.HasKeystore;
@@ -295,11 +294,6 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		httpSession.setProxyUsername(string);
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Please use \"proxyUsername\" instead")
-	public void setProxyUserName(String string) {
-		setProxyUsername(string);
-	}
 	@ReferTo(HttpSessionBase.class)
 	public void setProxyPassword(String string) {
 		httpSession.setProxyPassword(string);
@@ -310,35 +304,12 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		httpSession.setProxyRealm(string);
 	}
 
-
-
-	@Deprecated
-	@ConfigurationWarning("Please use attribute keystore instead")
-	public void setCertificate(String string) {
-		setKeystore(string);
-	}
-	@Deprecated
-	@ConfigurationWarning("has been replaced with keystoreType")
-	public void setCertificateType(KeystoreType value) {
-		setKeystoreType(value);
-	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute keystoreAuthAlias instead")
-	public void setCertificateAuthAlias(String string) {
-		setKeystoreAuthAlias(string);
-	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute keystorePassword instead")
-	public void setCertificatePassword(String string) {
-		setKeystorePassword(string);
-	}
-
-
 	@Override
 	@ReferTo(HttpSessionBase.class)
 	public void setKeystore(String keystore) {
 		httpSession.setKeystore(keystore);
 	}
+
 	@Override
 	public String getKeystore() {
 		return httpSession.getKeystore();
@@ -349,6 +320,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setKeystoreType(KeystoreType keystoreType) {
 		httpSession.setKeystoreType(keystoreType);
 	}
+
 	@Override
 	public KeystoreType getKeystoreType() {
 		return httpSession.getKeystoreType();
@@ -359,6 +331,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setKeystoreAuthAlias(String keystoreAuthAlias) {
 		httpSession.setKeystoreAuthAlias(keystoreAuthAlias);
 	}
+
 	@Override
 	public String getKeystoreAuthAlias() {
 		return httpSession.getKeystoreAuthAlias();
@@ -369,6 +342,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setKeystorePassword(String keystorePassword) {
 		httpSession.setKeystorePassword(keystorePassword);
 	}
+
 	@Override
 	public String getKeystorePassword() {
 		return httpSession.getKeystorePassword();
@@ -379,6 +353,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setKeystoreAlias(String keystoreAlias) {
 		httpSession.setKeystoreAlias(keystoreAlias);
 	}
+
 	@Override
 	public String getKeystoreAlias() {
 		return httpSession.getKeystoreAlias();
@@ -389,6 +364,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setKeystoreAliasAuthAlias(String keystoreAliasAuthAlias) {
 		httpSession.setKeystoreAliasAuthAlias(keystoreAliasAuthAlias);
 	}
+
 	@Override
 	public String getKeystoreAliasAuthAlias() {
 		return httpSession.getKeystoreAliasAuthAlias();
@@ -399,6 +375,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setKeystoreAliasPassword(String keystoreAliasPassword) {
 		httpSession.setKeystoreAliasPassword(keystoreAliasPassword);
 	}
+
 	@Override
 	public String getKeystoreAliasPassword() {
 		return httpSession.getKeystoreAliasPassword();
@@ -409,6 +386,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		httpSession.setKeyManagerAlgorithm(keyManagerAlgorithm);
 	}
+
 	@Override
 	public String getKeyManagerAlgorithm() {
 		return httpSession.getKeyManagerAlgorithm();
@@ -419,6 +397,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setTruststore(String truststore) {
 		httpSession.setTruststore(truststore);
 	}
+
 	@Override
 	public String getTruststore() {
 		return httpSession.getTruststore();
@@ -429,17 +408,18 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setTruststoreType(KeystoreType truststoreType) {
 		httpSession.setTruststoreType(truststoreType);
 	}
+
 	@Override
 	public KeystoreType getTruststoreType() {
 		return httpSession.getTruststoreType();
 	}
-
 
 	@Override
 	@ReferTo(HttpSessionBase.class)
 	public void setTruststoreAuthAlias(String truststoreAuthAlias) {
 		httpSession.setTruststoreAuthAlias(truststoreAuthAlias);
 	}
+
 	@Override
 	public String getTruststoreAuthAlias() {
 		return httpSession.getTruststoreAuthAlias();
@@ -450,6 +430,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	public void setTruststorePassword(String truststorePassword) {
 		httpSession.setTruststorePassword(truststorePassword);
 	}
+
 	@Override
 	public String getTruststorePassword() {
 		return httpSession.getTruststorePassword();
