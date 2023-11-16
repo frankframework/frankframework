@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { StateParams, StateService } from '@uirouter/angularjs';
-import { AppService, Configuration } from 'src/app/app.service';
-
+import { AppService, Configuration } from 'src/angularjs/app/app.service'
+;
 interface TransitionObject {
   name?: string
   loaded?: boolean
