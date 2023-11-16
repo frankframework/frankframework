@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletContext;
+import javax.servlet.annotation.WebListener;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.bus.spring.SpringBus;
@@ -45,6 +46,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Niels Meijer
  *
  */
+@WebListener
 public class IbisApplicationInitializer extends ContextLoaderListener {
 	private static final Logger LOG = LogUtil.getLogger(IbisApplicationInitializer.class);
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");

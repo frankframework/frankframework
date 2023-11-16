@@ -59,7 +59,6 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @see org.springframework.web.context.support.WebApplicationContextUtils#getWebApplicationContext
  */
 public class IbisApplicationContext implements Closeable {
-	private Exception startupException;
 
 	public enum BootState {
 		FIRST_START, STARTING, STARTED, STOPPING, STOPPED, ERROR;
@@ -70,7 +69,7 @@ public class IbisApplicationContext implements Closeable {
 
 	protected static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final Logger LOG = LogUtil.getLogger(IbisApplicationContext.class);
-	private final Logger applicationLog = LogUtil.getLogger("APPLICATION");
+	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 	private BootState state = BootState.FIRST_START;
 	private final Map<String, String> iafModules = new HashMap<>();
 
@@ -88,12 +87,9 @@ public class IbisApplicationContext implements Closeable {
 	 * @throws BeansException If the Factory can not be created.
 	 */
 	protected void createApplicationContext() throws BeansException {
-		applicationLog.debug("Creating IbisApplicationContext");
+		APPLICATION_LOG.debug("Creating IbisApplicationContext");
 		if (!state.equals(BootState.FIRST_START)) {
 			state = BootState.STARTING;
-		}
-		if (startupException != null) {
-			startupException = null;
 		}
 
 		long start = System.currentTimeMillis();
@@ -109,11 +105,11 @@ public class IbisApplicationContext implements Closeable {
 			applicationContext.refresh();
 		} catch (BeansException be) {
 			state = BootState.ERROR;
-			startupException = be; //Save this in case we might need it later
+			APPLICATION_LOG.fatal("Unable to initialize IbisApplicationContext", be);
 			throw be;
 		}
 
-		applicationLog.info("Created IbisApplicationContext [{}] in {} ms", applicationContext::getId, () -> (System.currentTimeMillis() - start));
+		APPLICATION_LOG.info("Created IbisApplicationContext [{}] in {} ms", applicationContext::getId, () -> (System.currentTimeMillis() - start));
 		state = BootState.STARTED;
 	}
 
@@ -204,7 +200,7 @@ public class IbisApplicationContext implements Closeable {
 			applicationContext.close();
 			applicationContext = null;
 
-			applicationLog.info("Closed IbisApplicationContext [{}]", oldContextName);
+			APPLICATION_LOG.info("Closed IbisApplicationContext [{}]", oldContextName);
 		}
 	}
 
@@ -233,13 +229,6 @@ public class IbisApplicationContext implements Closeable {
 
 	public BootState getBootState() {
 		return state;
-	}
-
-	public Exception getStartupException() {
-		if (BootState.ERROR.equals(state)) {
-			return startupException;
-		}
-		return null;
 	}
 
 	/**
@@ -288,7 +277,7 @@ public class IbisApplicationContext implements Closeable {
 			if (version != null) {
 				iafModules.put(module, version);
 				APP_CONSTANTS.put(module + ".version", version);
-				applicationLog.debug("Loading IAF module [{}] version [{}]", module, version);
+				APPLICATION_LOG.debug("Loading IAF module [{}] version [{}]", module, version);
 			}
 		}
 	}

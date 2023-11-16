@@ -9,21 +9,6 @@
 		These actions are configured in an XML file. On the event several actions, called pipes, grouped in a pipeline, are fired.
 	</description>
 
-	<filter>
-		<filter-name>CacheControlFilter</filter-name>
-		<filter-class>nl.nn.adapterframework.http.CacheControlFilter</filter-class>
-	</filter>
-
-	<filter-mapping>
-		<filter-name>CacheControlFilter</filter-name>
-		<url-pattern>/rest/*</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>CacheControlFilter</filter-name>
-		<url-pattern>/iaf/api/*</url-pattern>
-	</filter-mapping>
-
 	<!-- Spring Security -->
 	<filter>
 		<filter-name>springSecurityFilterChain</filter-name>
@@ -40,9 +25,6 @@
 		After loading the ROOT context with all HTTP/CXF servlets (endpoints) all servlets will be initialized.
 		IbisApplicationServlet will start the IbisContext. It must be the first servlet to start up.
 	-->
-	<listener>
-		<listener-class>nl.nn.adapterframework.lifecycle.IbisApplicationInitializer</listener-class>
-	</listener>
 	<servlet>
 		<description>Initializes the configuration</description>
 		<display-name>Ibis Application Servlet</display-name>
