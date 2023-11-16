@@ -15,19 +15,27 @@
 */
 package nl.nn.adapterframework.logging;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.junit.Test;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestAssertions;
@@ -41,6 +49,11 @@ public class TestLogMessages {
 	private static String TEST_REGEX_OUT = "log my name but not my password! username=\"top\" password=\"******\" hihi";
 	private static String PATTERN = "%level - %m";
 
+	@BeforeEach
+	public void setup() {
+		ThreadContext.clearAll();
+	}
+
 	@Test
 	public void testHideRegexMatchInLogMessage() {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
@@ -53,7 +66,7 @@ public class TestLogMessages {
 			log.debug(TEST_REGEX_IN);
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals("found messages "+logEvents, 1, logEvents.size());
+			assertEquals(1, logEvents.size(), "found messages "+logEvents);
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - "+ TEST_REGEX_OUT, message);
 		}
@@ -72,7 +85,7 @@ public class TestLogMessages {
 			log.debug("my beautiful log with <password>TO BE HIDDEN</password> hidden value");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals("found messages " + logEvents, 1, logEvents.size());
+			assertEquals(1, logEvents.size(), "found messages "+logEvents);
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - my beautiful log with <password>************</password> hidden value", message);
 		}
@@ -100,7 +113,7 @@ public class TestLogMessages {
 			log.error("some message");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals("found messages "+logEvents, 6, logEvents.size());
+			assertEquals(6, logEvents.size(), "found messages "+logEvents);
 			assertEquals("WARN - my beautiful warning message", logEvents.get(0));
 			assertEquals("ERROR - my beautiful error message", logEvents.get(1));
 		}
@@ -129,7 +142,7 @@ public class TestLogMessages {
 			log.error("some message");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals("found messages "+logEvents, 6, logEvents.size());
+			assertEquals(6, logEvents.size(), "found messages "+logEvents);
 
 			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"WARN\" thread=\"HIDE-HERE\">\n" +
 			"  <message>my beautiful warning &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" +
@@ -176,7 +189,7 @@ public class TestLogMessages {
 			log.debug("my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals("found messages "+logEvents, 1, logEvents.size());
+			assertEquals(1, logEvents.size(), "found messages "+logEvents);
 			String message = logEvents.get(0);
 			assertEquals("DEBUG - my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"", message);
 		}
@@ -194,7 +207,7 @@ public class TestLogMessages {
 			log.info("my beautiful  aâΔع你好ಡತ  info <![CDATA[message]]> for me & you --> \"world\"");
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals("found messages "+logEvents, 2, logEvents.size());
+			assertEquals(2, logEvents.size(), "found messages "+logEvents);
 
 			String expectedWarn = "<event logger=\"nl.nn.adapterframework.logging.TestLogMessages\" timestamp=\"xxx\" level=\"DEBUG\" thread=\"main\">\n" +
 			"  <message>my beautiful \\u0010 a\\u00E2\\u0394\\u0639\\u4F60\\u597D\\u0CA1\\u0CA4  debug &lt;![CDATA[message]]&gt; for me &amp; you --&gt; \\\"world\\\"</message>\n" +
@@ -225,7 +238,7 @@ public class TestLogMessages {
 			log.debug(TEST_REGEX_IN);
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals("found messages "+logEvents, 1, logEvents.size());
+			assertEquals(1, logEvents.size(), "found messages "+logEvents);
 			String message = logEvents.get(0);
 
 			String expected = "DEBUG - "+ TEST_REGEX_IN.substring(0, length).trim() + " ...("+(TEST_REGEX_IN.length()-length)+" more characters)";
@@ -249,7 +262,7 @@ public class TestLogMessages {
 			log.debug("Oh no, something went wrong!", t);
 
 			List<String> logEvents = appender.getLogLines();
-			assertEquals("found messages "+logEvents, 1, logEvents.size());
+			assertEquals(1, logEvents.size(), "found messages "+logEvents);
 			String message = logEvents.get(0);
 
 			String expected = "DEBUG - Oh no, something went wrong! java.lang.Throwable: my exception message\n" +
@@ -264,7 +277,7 @@ public class TestLogMessages {
 	@Test
 	public void throwExceptionWhenOldLog4jVersion() throws Exception {
 		URL log4jOld = TestFileUtils.getTestFileURL("/Logging/log4j-old.xml");
-		assertNotNull("cannot find log4j-old.xml", log4jOld);
+		assertNotNull(log4jOld, "cannot find log4j-old.xml");
 		InputStream oldLog4jConfiguration = log4jOld.openStream();
 		IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
 			IbisLoggerConfigurationFactory.readLog4jConfiguration(oldLog4jConfiguration);
@@ -275,7 +288,7 @@ public class TestLogMessages {
 	@Test
 	public void readLog4jConfiguration() throws Exception {
 		URL log4jNew = TestFileUtils.getTestFileURL("/Logging/log4j-new.xml");
-		assertNotNull("cannot find log4j-new.xml", log4jNew);
+		assertNotNull(log4jNew, "cannot find log4j-new.xml");
 		InputStream newLog4jConfiguration = log4jNew.openStream();
 
 		String config = IbisLoggerConfigurationFactory.readLog4jConfiguration(newLog4jConfiguration);
@@ -308,10 +321,54 @@ public class TestLogMessages {
 			log.warn("warn");
 			log.error("error");
 
-			assertEquals("found messages "+appender.getLogLines(), 4, appender.getNumberOfAlerts());
+			assertEquals(4, appender.getNumberOfAlerts(), "found messages "+appender.getLogLines());
 		} finally {
 			TestAppender.removeAppender(appender);
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);
+		}
+	}
+
+	@Test
+	public void testMessageLogThreadContext() throws Exception {
+		PatternLayout layout =  PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
+		TestAppender appender = TestAppender.newBuilder().setLayout(layout).build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("key", "value").put("key.two", "value2")) {
+				log.debug("Adapter Success");
+			}
+
+			List<String> logEvents = appender.getLogLines();
+			assertEquals(1, logEvents.size());
+			String message = logEvents.get(0);
+			assertAll(
+				() -> assertThat(message, StringContains.containsString("DEBUG - Adapter Success ")),
+				() -> assertThat(message, StringContains.containsString("key [value]")),
+				() -> assertThat(message, StringContains.containsString("key-two [value2]")),
+				() -> assertFalse(message.endsWith(" "), "message should not end with a space"),
+				() -> assertFalse(message.contains("log.dir")) // No other info in log context
+			);
+		}
+		finally {
+			TestAppender.removeAppender(appender);
+		}
+	}
+
+	@Test
+	public void testMessageEmptyLogThreadContext() throws Exception {
+		PatternLayout layout =  PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
+		TestAppender appender = TestAppender.newBuilder().setLayout(layout).build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			log.debug("Adapter Success");
+
+			List<String> logEvents = appender.getLogLines();
+			assertEquals(1, logEvents.size());
+			String message = logEvents.get(0);
+			assertEquals("DEBUG - Adapter Success ", message);
+		}
+		finally {
+			TestAppender.removeAppender(appender);
 		}
 	}
 }
