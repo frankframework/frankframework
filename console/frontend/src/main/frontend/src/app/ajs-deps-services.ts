@@ -23,3 +23,4 @@ export const $stateParamsServiceProvider: FactoryProvider = {
   useFactory: $stateParamsServiceFactory,
   deps: ['$injector']
 }
+

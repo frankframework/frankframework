@@ -89,6 +89,10 @@ import { SchedulerComponent } from './views/scheduler/scheduler.component';
 import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
+import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
+import { ConfigurationsShowComponent } from './views/configurations/configurations-show/configurations-show.component';
+import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
+import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -102,6 +106,10 @@ const windowProvider: ValueProvider = {
 }
 
 appModule
+  .directive('configurationsManageComponent', downgradeComponent({ component: ConfigurationsManageComponent }) as angular.IDirectiveFactory)
+  .directive('configurationsShowComponent', downgradeComponent({ component: ConfigurationsShowComponent }) as angular.IDirectiveFactory)
+  .directive('configurationsUploadComponent', downgradeComponent({ component: ConfigurationsUploadComponent }) as angular.IDirectiveFactory)
+  .directive('configurationsManageDetailsComponent', downgradeComponent({ component: ConfigurationsManageDetailsComponent }) as angular.IDirectiveFactory)
   .directive('environmentVariables', downgradeComponent({ component: EnvironmentVariablesComponent }) as angular.IDirectiveFactory)
   .directive('flow', downgradeComponent({ component: FlowComponent }) as angular.IDirectiveFactory)
   .directive('hamburger', downgradeComponent({ component: HamburgerComponent }) as angular.IDirectiveFactory)
@@ -189,6 +197,10 @@ appModule
     QuickSubmitFormDirective,
     FitHeightDirective,
     SideNavigationDirective,
+    ConfigurationsManageComponent,
+    ConfigurationsShowComponent,
+    ConfigurationsUploadComponent,
+    ConfigurationsManageDetailsComponent,
   ],
   imports: [
     BrowserModule,
