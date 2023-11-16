@@ -21,7 +21,9 @@ import nl.nn.adapterframework.core.ITransactionalStorage;
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.IWrapperPipe;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.Reintroduce;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 
 /**
  * Plain extension to {@link MessageSendingPipe} that can be used directly in configurations.
@@ -33,6 +35,7 @@ import nl.nn.adapterframework.doc.Reintroduce;
  * @author  Dennis van Loon
  */
 @Category("Basic")
+@ElementType(ElementTypes.ENDPOINT)
 public class SenderPipe extends MessageSendingPipe {
 
 	@Override

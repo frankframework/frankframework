@@ -1,0 +1,46 @@
+flowchart
+	d2e2("<b>testtool-HelloLines</b><br/>JavaListener"):::normal
+	d2e4("<b>ApiListener</b><br/>ApiListener"):::normal
+	d2e6("<b>testtool-HelloLines-1</b><br/>JavaListener"):::normal
+	d2e8("<b>WebServiceListener</b><br/>WebServiceListener"):::normal
+	d2e10("<b>testtool-HelloLines-2</b><br/>JavaListener"):::normal
+	d2e15("<b>ValidateInput</b><br/>SoapValidator"):::normal
+	d2e68("<b>Create example plain text message</b><br/>FixedResultPipe"):::errorOutline
+	d2e72("<b>Transform plain text message to XML</b><br/>Text2XmlPipe"):::errorOutline
+	d2e77("<b>Add position to elements</b><br/>XsltPipe"):::errorOutline
+	d2e81("<b>Transform XML message to JSON message</b><br/>Json2XmlValidator"):::errorOutline
+	d2e25("<b>Remove namespaces</b><br/>XsltPipe"):::normal
+	d2e29("<b>Only one line?</b><br/>XmlSwitch"):::normal
+	d2e35("<b>Call HelloWorld</b><br/>IbisLocalSender"):::normal
+	d2e41("<b>Transform result to XML</b><br/>Text2XmlPipe"):::normal
+	d2e53("<b>Add documentation</b><br/>XsltPipe"):::normal
+	d2e21-READY("<b>OutputValidator</b><br/>XmlValidator"):::normal
+	d2e85("<b>resolveFailure</b><br/>XsltPipe"):::errorOutline
+	d2e14("<b>SUCCESS</b>"):::normal
+	d2e45("<b>Call HelloWorld for every line</b><br/>IbisLocalSender"):::normal
+	classDef normal fill:#fff,stroke-width:4px,stroke:#8bc34a;
+	classDef errorOutline fill:#fff,stroke-width:4px,stroke:#ec4758;
+	d2e2 --> |success| d2e15
+	d2e4 --> |success| d2e15
+	d2e6 --> |success| d2e15
+	d2e8 --> |success| d2e15
+	d2e10 --> |success| d2e15
+	d2e15 --> |failure| d2e68
+	d2e15 --> |parserError| d2e72
+	d2e15 --> |success| d2e25
+	d2e68 --> |success| d2e72
+	d2e72 --> |success| d2e77
+	d2e77 --> |success| d2e81
+	d2e81 --> |success| d2e25
+	d2e25 --> |success| d2e29
+	d2e29 --> |true| d2e35
+	d2e29 --> |false| d2e45
+	d2e35 --> |success| d2e41
+	d2e41 --> |success| d2e53
+	d2e53 --> |success| d2e21-READY
+	d2e21-READY --> |failure| d2e85
+	d2e21-READY --> |success<br/>READY| d2e14
+	d2e85 --> |success| d2e21-READY
+	d2e45 --> |success| d2e53
+	linkStyle 0,1,2,3,4,7,12,13,14,15,16,17,19,21 stroke:#8bc34a,stroke-width:3px,fill:none;
+	linkStyle 5,6,8,9,10,11,18,20 stroke:#ec4758,stroke-width:3px,fill:none;

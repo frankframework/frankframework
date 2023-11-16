@@ -20,7 +20,9 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.FrankDocGroup;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
@@ -32,6 +34,7 @@ import nl.nn.adapterframework.stream.Message;
  * @since   4.2
  */
 @FrankDocGroup(order = 30, name = "Listeners")
+@ElementType(ElementTypes.LISTENER)
 public interface IListener<M> extends IConfigurable {
 
 	/**
