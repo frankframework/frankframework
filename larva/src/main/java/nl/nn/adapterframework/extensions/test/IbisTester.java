@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
 import java.security.AccessControlException;
 import java.util.Collection;
 import java.util.Date;
@@ -30,9 +29,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -45,6 +41,7 @@ import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -96,35 +93,13 @@ public class IbisTester {
 				request.setParameter("scenariosrootdirectory", scenariosRootDir);
 			}
 			Writer writer = new StringWriter();
-			runScenarios(application, request, writer, silent);
+			TestTool.runScenarios(application, request, writer, silent, webAppPath);
 			if (scenario == null) {
 				String htmlString = "<html><head/><body>" + writer.toString() + "</body></html>";
 				return XmlUtils.toXhtml(Message.asMessage(htmlString));
 			} else {
 				return writer.toString();
 			}
-		}
-
-		// This is necessarily because we can't depend on the ladybug module
-		public void runScenarios(ServletContext application,
-				HttpServletRequest request, Writer out, boolean silent)
-				throws IllegalArgumentException, SecurityException,
-				IllegalAccessException, InvocationTargetException,
-				NoSuchMethodException, ClassNotFoundException {
-
-			Class<?>[] args_types = new Class<?>[5];
-			args_types[0] = ServletContext.class;
-			args_types[1] = HttpServletRequest.class;
-			args_types[2] = Writer.class;
-			args_types[3] = boolean.class;
-			args_types[4] = String.class;
-			Object[] args = new Object[5];
-			args[0] = application;
-			args[1] = request;
-			args[2] = out;
-			args[3] = silent;
-			args[4] = webAppPath;
-			Class.forName("nl.nn.adapterframework.testtool.TestTool").getMethod("runScenarios", args_types).invoke(null, args);
 		}
 	}
 
