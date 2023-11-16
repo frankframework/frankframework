@@ -215,7 +215,7 @@ public class ApiListenerServletTest extends Mockito {
 			}
 		}
 
-		if(!method.equals(Methods.GET)) {
+		if(method != Methods.GET) {
 			request.setContent(content);
 		}
 
@@ -1170,7 +1170,7 @@ public class ApiListenerServletTest extends Mockito {
 	@EnumSource(Methods.class)
 	public void testRequestWithAccept(Methods method) throws Exception {
 		//you may not set the OPTIONS method on an ApiListener, the Servlet should handle this without calling the adapter
-		assumeFalse(method.equals(Methods.OPTIONS));
+		assumeFalse(method == Methods.OPTIONS);
 
 		// Arrange
 		String uri = "/messageWithJson2XmlValidator";

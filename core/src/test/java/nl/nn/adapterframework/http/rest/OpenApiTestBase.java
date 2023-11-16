@@ -314,7 +314,7 @@ public class OpenApiTestBase extends Mockito {
 			@Override
 			public synchronized void add(String message, Date date, MessageKeeperLevel level) {
 				log.debug("SysOutMessageKeeper {} - {}", level, message);
-				if(MessageKeeperLevel.ERROR.equals(level)) fail(message);
+				if(MessageKeeperLevel.ERROR == level) fail(message);
 			}
 		}
 	}
