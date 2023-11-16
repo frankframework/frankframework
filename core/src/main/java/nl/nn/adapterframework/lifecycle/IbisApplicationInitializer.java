@@ -54,13 +54,13 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 	@Override
 	protected WebApplicationContext createWebApplicationContext(ServletContext servletContext) {
 		System.setProperty(EndpointImpl.CHECK_PUBLISH_ENDPOINT_PERMISSON_PROPERTY_WITH_SECURITY_MANAGER, "false");
-		APPLICATION_LOG.debug("Starting IBIS WebApplicationInitializer");
+		APPLICATION_LOG.debug("Starting Frank EnvironmentContext");
 
 		determineApplicationServerType(servletContext);
 
 		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
 		applicationContext.setConfigLocations(getSpringConfigurationFiles());
-		applicationContext.setDisplayName("IbisApplicationInitializer");
+		applicationContext.setDisplayName("EnvironmentContext");
 
 		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
 		propertySources.remove(StandardEnvironment.SYSTEM_PROPERTIES_PROPERTY_SOURCE_NAME);
@@ -93,7 +93,7 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 
 	@Override
 	public void closeWebApplicationContext(ServletContext servletContext) {
-		APPLICATION_LOG.info("Stopping IBIS WebApplicationInitializer");
+		APPLICATION_LOG.info("Stopping Frank EnvironmentContext");
 		super.closeWebApplicationContext(servletContext);
 	}
 
@@ -105,8 +105,8 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		try {
 			WebApplicationContext wac = super.initWebApplicationContext(servletContext);
 			SpringBus bus = (SpringBus) wac.getBean("cxf");
-			LOG.info("Successfully started IBIS WebApplicationInitializer with SpringBus [{}]", bus::getId);
-			APPLICATION_LOG.info("Successfully started IBIS WebApplicationInitializer");
+			LOG.info("Successfully started Frank EnvironmentContext with SpringBus [{}]", bus::getId);
+			APPLICATION_LOG.info("Successfully started Frank EnvironmentContext");
 			return wac;
 		} catch (Exception e) {
 			LOG.fatal("IBIS ApplicationInitializer failed to initialize", e);
