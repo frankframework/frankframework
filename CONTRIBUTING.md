@@ -165,7 +165,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - Optionally (when you have access to the proprietary jars some modules depend on) add your Nexus credentials and enable the proprietary profile in your maven settings.xml
 - In the Git Perspective, right click the IAF Repository and click 'Import Projects...'
 - The Import wizard appears which allows you to import many different kinds of projects.
-- **deselect**: iaf-coolgen, iaf-ibm, iaf-ifsa, iaf-sap, iaf-tibco, iaf-idin, docker\* and ear (unless you have access to the proprietary repository), Finish.
+- **deselect**: iaf-ifsa, iaf-sap, iaf-tibco, iaf-idin, docker\* and ear (unless you have access to the proprietary repository), Finish.
 - Window, Open Perspective, Other..., Java EE.
 - Right click iaf, Maven, Update Project..., OK. Now Eclipse will update the classpath settings according to the module pom file. (Updating the project may take a while!)
 
