@@ -234,6 +234,7 @@ export class AppService {
       else
         updatedConfigurations.push(config);
     }
+
     this.configurations = updatedConfigurations;
     this.configurationsSubject.next(updatedConfigurations);
   }
