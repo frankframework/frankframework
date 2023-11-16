@@ -93,7 +93,7 @@ public class IbisTester {
 				request.setParameter("scenariosrootdirectory", scenariosRootDir);
 			}
 			Writer writer = new StringWriter();
-			TestTool.runScenarios(application, request, writer, silent, webAppPath);
+			TestTool.runScenarios(ibisContext, request, writer, silent, webAppPath);
 			if (scenario == null) {
 				String htmlString = "<html><head/><body>" + writer.toString() + "</body></html>";
 				return XmlUtils.toXhtml(Message.asMessage(htmlString));
