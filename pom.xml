@@ -1214,6 +1214,7 @@
 
 				<module>akamai</module>
 				<module>aws</module>
+				<module>batch</module>
 				<module>cmis</module>
 				<module>aspose</module>
 				<module>nn-specials</module>
