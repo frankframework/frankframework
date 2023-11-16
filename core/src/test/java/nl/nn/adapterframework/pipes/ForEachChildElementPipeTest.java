@@ -1085,7 +1085,7 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 	private class SwitchCounter {
 		public int count;
 		private String prevLabel;
-		public Map<String,Integer> hitCount = new HashMap<String,Integer>();
+		public Map<String,Integer> hitCount = new HashMap<>();
 
 		public void mark(String label) {
 			if (prevLabel==null || !prevLabel.equals(label)) {

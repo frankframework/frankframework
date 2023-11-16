@@ -149,7 +149,7 @@ public class ApiListenerTest {
 	public void isConsumableMULTIPARTS() {
 		//There are different multipart contentTypes, see: https://msdn.microsoft.com/en-us/library/ms527355(v=exchg.10).aspx
 		//Test at least the 3 most commonly used multiparts
-		List<String> acceptHeaders = new ArrayList<String>();
+		List<String> acceptHeaders = new ArrayList<>();
 		acceptHeaders.add("multipart/form-data");
 		acceptHeaders.add("multipart/related");
 		acceptHeaders.add("multipart/mixed");

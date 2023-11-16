@@ -77,7 +77,7 @@ public class WildFlyCredentialFactoryTest {
 	@Test
 	public void testGetAliases() throws UnsupportedOperationException, CredentialStoreException {
 		String[] aliasesArray = {"a", "b", "c"};
-		this.aliases = new HashSet<String>(Arrays.asList(aliasesArray));
+		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
 		Collection<String> result = credentialFactory.getConfiguredAliases();
 
@@ -90,7 +90,7 @@ public class WildFlyCredentialFactoryTest {
 	@Test
 	public void testGetAliasesWithUsername() throws UnsupportedOperationException, CredentialStoreException {
 		String[] aliasesArray = {"a", "a/username", "b"};
-		this.aliases = new HashSet<String>(Arrays.asList(aliasesArray));
+		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
 		Collection<String> result = credentialFactory.getConfiguredAliases();
 
@@ -111,7 +111,7 @@ public class WildFlyCredentialFactoryTest {
 	@Test
 	public void testHasCredentials() throws UnsupportedOperationException, CredentialStoreException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
-		this.aliases = new HashSet<String>(Arrays.asList(aliasesArray));
+		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
 		assertTrue(credentialFactory.hasCredentials("a"));
 		assertTrue(credentialFactory.hasCredentials("b"));
@@ -122,7 +122,7 @@ public class WildFlyCredentialFactoryTest {
 	@Test
 	public void testGetCredentialsExistingAlias() throws UnsupportedOperationException, CredentialStoreException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
-		this.aliases = new HashSet<String>(Arrays.asList(aliasesArray));
+		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
 		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("a", () -> "defaultUsername", () -> "defaultPassword");
 		assertEquals("a", wfc.getAlias());
@@ -133,7 +133,7 @@ public class WildFlyCredentialFactoryTest {
 	@Test
 	public void testGetCredentialsExistingAliasNoUsername() throws UnsupportedOperationException, CredentialStoreException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
-		this.aliases = new HashSet<String>(Arrays.asList(aliasesArray));
+		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
 		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("b", () -> "defaultUsername", () -> "defaultPassword");
 		assertEquals("b", wfc.getAlias());
@@ -144,7 +144,7 @@ public class WildFlyCredentialFactoryTest {
 	@Test
 	public void testGetCredentialsExistingAliasNoPassword() throws UnsupportedOperationException, CredentialStoreException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
-		this.aliases = new HashSet<String>(Arrays.asList(aliasesArray));
+		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
 		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("c", () -> "defaultUsername", () -> "defaultPassword");
 		assertEquals("c", wfc.getAlias());
@@ -155,7 +155,7 @@ public class WildFlyCredentialFactoryTest {
 	@Test
 	public void testGetCredentialsNotExistingAlias() throws UnsupportedOperationException, CredentialStoreException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
-		this.aliases = new HashSet<String>(Arrays.asList(aliasesArray));
+		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
 		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("d", () -> "defaultUsername", () -> "defaultPassword");
 		assertEquals("d", wfc.getAlias());

@@ -138,7 +138,7 @@ public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 	}
 
 	public class MockDispatcher {
-		public Map<String, Method> rsRequests = new HashMap<String, Method>();
+		public Map<String, Method> rsRequests = new HashMap<>();
 
 		/**
 		 * scan all methods in the JAX-RS class

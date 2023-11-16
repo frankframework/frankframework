@@ -80,7 +80,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 
 	@Test
 	public void uploadScript() throws Exception {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("dummy".getBytes()), "script.xml"));
 
@@ -102,7 +102,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 
 	@Test
 	public void uploadZipWithScripts() throws Exception {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("dummy".getBytes()), "script.zip"));
 

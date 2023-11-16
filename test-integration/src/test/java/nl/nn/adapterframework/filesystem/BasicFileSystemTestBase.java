@@ -78,8 +78,8 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	 * asserts a number of files to be present in folder.
 	 */
 	public void fileSystemTestListFile(int numFilesExpected, String folder) throws Exception {
-		Set<F> files = new HashSet<F>();
-		Set<String> filenames = new HashSet<String>();
+		Set<F> files = new HashSet<>();
+		Set<String> filenames = new HashSet<>();
 		int count = 0;
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 			Iterator<F> it = ds.iterator();

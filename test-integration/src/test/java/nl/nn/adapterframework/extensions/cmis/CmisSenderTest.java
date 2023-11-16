@@ -157,7 +157,7 @@ public class CmisSenderTest {
     public void testParallel(int numParallel) throws Exception {
     	System.out.println("start testing with ["+numParallel+"] threads...");
 		long t0=System.currentTimeMillis();
-    	ArrayList<CmisSenderTester> threads = new ArrayList<CmisSenderTester>();
+    	ArrayList<CmisSenderTester> threads = new ArrayList<>();
 		for (int i=0;i<numParallel;i++) {
 			threads.add(new CmisSenderTester());
 		}

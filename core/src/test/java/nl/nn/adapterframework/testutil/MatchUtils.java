@@ -58,9 +58,9 @@ public class MatchUtils {
 	}
 
 	public static void assertMapEquals(Map<String,String> exp, Map<String,String> act) {
-		SortedMap<String,String> exps=new TreeMap<String,String>(exp);
+		SortedMap<String,String> exps=new TreeMap<>(exp);
 		String expStr=mapToString(exps);
-		SortedMap<String,String> acts=new TreeMap<String,String>(act);
+		SortedMap<String,String> acts=new TreeMap<>(act);
 		String actStr=mapToString(acts);
 		assertEquals(expStr,actStr);
 	}

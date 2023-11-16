@@ -156,7 +156,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		if (files==null) {
 			throw new FileSystemException("files in folder ["+folderName+"] is null");
 		}
-		List<M> fileList = new ArrayList<M>();
+		List<M> fileList = new ArrayList<>();
 		fileList.addAll((Collection<? extends M>) files.values());
 		return FileSystemUtils.getDirectoryStream(fileList.iterator());
 	}
@@ -248,7 +248,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		M fileDuplicate = (M)new MockFile(f.getName(), destFolder);
 		fileDuplicate.setContents(Arrays.copyOf(f.getContents(),f.getContents().length));
 		if (f.getAdditionalProperties()!=null) {
-			Map<String,Object> propDup = new HashMap<String,Object>();
+			Map<String,Object> propDup = new HashMap<>();
 			propDup.putAll(f.getAdditionalProperties());
 			fileDuplicate.setAdditionalProperties(propDup);
 		}
