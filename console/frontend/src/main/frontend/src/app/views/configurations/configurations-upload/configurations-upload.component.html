@@ -42,21 +42,21 @@
             <div class="row form-group">
               <label class="col-sm-3 control-label">Multiple Configurations</label>
               <div class="col-sm-9">
-                <input icheck type="checkbox" [ngModel]="form.multiple_configs" />
+                <input icheck type="checkbox" name="multiple_configs" [ngModel]="form.multiple_configs" />
                 <small class="m-l-sm">To upload multiple configurations compressed in 1 zip-archive.</small>
               </div>
             </div>
             <div class="row form-group">
               <label class="col-sm-3 control-label">Startup Configuration</label>
               <div class="col-sm-9">
-                <input icheck type="checkbox" [ngModel]="form.activate_config" />
+                <input icheck type="checkbox" name="activate_config" [ngModel]="form.activate_config" />
                 <small class="m-l-sm">Load this version of the configuration on application startup or by manually reloading the configuration. Resets this flag for other versions of this configuration.</small>
               </div>
             </div>
             <div class="row form-group">
               <label class="col-sm-3 control-label">Reload Automatically</label>
               <div class="col-sm-9">
-                <input icheck type="checkbox" [ngModel]="form.automatic_reload" />
+                <input icheck type="checkbox" name="automatic_reload" [ngModel]="form.automatic_reload" />
                 <small class="m-l-sm">Load this version of the configuration at the next reload event if it has also been selected as 'Startup Configuration'.</small>
               </div>
             </div>

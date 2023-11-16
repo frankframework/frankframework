@@ -21,7 +21,7 @@ type Form = {
   styleUrls: ['./configurations-upload.component.scss']
 })
 export class ConfigurationsUploadComponent implements OnInit {
-  datasources = [];
+  datasources: string[] = [];
   form: Form = {
     name: "",
     datasource: "",
@@ -34,8 +34,8 @@ export class ConfigurationsUploadComponent implements OnInit {
   file: File | null = {
     name: ""
   };
-  result = "";
-  error = "";
+  result: string = "";
+  error: string = "";
 
   constructor(
     private Api: ApiService,

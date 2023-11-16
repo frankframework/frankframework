@@ -17,8 +17,8 @@
           <div class="m-l-lg inline">
             Show:
             <div class="btn-group">
-              <label class="btn btn-sm btn-default" [ngModel]="loadedConfiguration" uib-btn-radio="true" (click)="update()">Loaded Configuration</label>
-              <label class="btn btn-sm btn-default" [ngModel]="loadedConfiguration" uib-btn-radio="false" (click)="update()">Original Configuration</label>
+              <button class="btn btn-sm btn-default" uib-btn-radio="true" (click)="update()">Loaded Configuration</button>
+              <button class="btn btn-sm btn-default" uib-btn-radio="false" (click)="update()">Original Configuration</button>
             </div>
           </div>
           <br />

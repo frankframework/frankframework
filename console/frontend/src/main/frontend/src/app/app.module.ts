@@ -108,10 +108,10 @@ const windowProvider: ValueProvider = {
 }
 
 appModule
-  .directive('configurationsManageComponent', downgradeComponent({ component: ConfigurationsManageComponent }) as angular.IDirectiveFactory)
-  .directive('configurationsShowComponent', downgradeComponent({ component: ConfigurationsShowComponent }) as angular.IDirectiveFactory)
-  .directive('configurationsUploadComponent', downgradeComponent({ component: ConfigurationsUploadComponent }) as angular.IDirectiveFactory)
-  .directive('configurationsManageDetailsComponent', downgradeComponent({ component: ConfigurationsManageDetailsComponent }) as angular.IDirectiveFactory)
+  .directive('configurationsManage', downgradeComponent({ component: ConfigurationsManageComponent }) as angular.IDirectiveFactory)
+  .directive('configurationsShow', downgradeComponent({ component: ConfigurationsShowComponent }) as angular.IDirectiveFactory)
+  .directive('configurationsUpload', downgradeComponent({ component: ConfigurationsUploadComponent }) as angular.IDirectiveFactory)
+  .directive('configurationsManageDetails', downgradeComponent({ component: ConfigurationsManageDetailsComponent }) as angular.IDirectiveFactory)
   .directive('environmentVariables', downgradeComponent({ component: EnvironmentVariablesComponent }) as angular.IDirectiveFactory)
   .directive('flow', downgradeComponent({ component: FlowComponent }) as angular.IDirectiveFactory)
   .directive('hamburger', downgradeComponent({ component: HamburgerComponent }) as angular.IDirectiveFactory)

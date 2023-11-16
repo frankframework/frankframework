@@ -25,7 +25,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let conf in configurations" [ngClass]="{'text-danger': (conf.exception) }" [attr.title]="conf.exception">
+              <tr *ngFor="let conf of configurations" [ngClass]="{'text-danger': (conf.exception) }" [title]="conf.exception">
                 <!-- Todo: <td *ngIf="conf.type == 'DatabaseClassLoader'"><a ui-sref="pages.manage_configuration_details(conf)">{{conf.name}}</a></td> -->
                 <td *ngIf="conf.type != 'DatabaseClassLoader'">{{conf.name}}</td>
                 <td>{{conf.version ? conf.version : "-"}}</td>

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { StateParams, StateService } from '@uirouter/angularjs';
+import { Configuration } from 'src/angularjs/app/app.service';
 import { ApiService } from 'src/angularjs/app/services/api.service';
 import { MiscService } from 'src/angularjs/app/services/misc.service';
 import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
@@ -11,11 +12,18 @@ import { ToastrService } from 'src/angularjs/app/services/toastr.service';
   styleUrls: ['./configurations-manage.component.scss']
 })
 export class ConfigurationsManageComponent implements OnInit {
-  configuration = {};
-  configurations = {};
-  loading = false;
+  configuration: Configuration = {
+    name: "",
+    stubbed: false,
+    state: "STOPPED",
+    type: "DatabaseClassLoader",
+    jdbcMigrator: false,
+    version: ""
+  };
+  configurations: Configuration[] = [];
+  loading: boolean = false;
   promise: any;
-  versions: any;
+  versions: Configuration[] = [];
 
   constructor(
     private stateParams: StateParams,
@@ -60,11 +68,11 @@ export class ConfigurationsManageComponent implements OnInit {
     });
   };
 
-  download(config: any) {
+  download(config: Configuration) {
     window.open(this.miscService.getServerPath() + "iaf/api/configurations/" + config.name + "/versions/" + encodeURIComponent(config.version) + "/download");
   };
 
-  deleteConfig(config: any) {
+  deleteConfig(config: Configuration) {
     var message = "";
 
     if (config.version) {
@@ -83,7 +91,7 @@ export class ConfigurationsManageComponent implements OnInit {
     });
   };
 
-  activate(config: any) {
+  activate(config: Configuration) {
     for (const x in this.versions) {
       var configs = this.versions[x];
       if (configs.version != config.version)
@@ -96,7 +104,7 @@ export class ConfigurationsManageComponent implements OnInit {
     });
   };
 
-  scheduleReload(config: any) {
+  scheduleReload(config: Configuration) {
     this.apiService.Put("configurations/" + config.name + "/versions/" + encodeURIComponent(config.version), { autoreload: config.autoreload }, (data) => {
       this.toastrService.success("Successfully " + (config.autoreload ? "enabled" : "disabled") + " Auto Reload for version '" + config.version + "'");
     }, () => {
