@@ -10,6 +10,7 @@ Upcoming (8.0)
 
 ### Non backwards compatible changes
 - CreateRestViewPipe has been removed. It is no longer possible to open the old (blue) user interface.
+- IBulkDataListener has been removed. This feature was only supported through custom listeners and not tested.
 
 
 7.9
