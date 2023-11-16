@@ -182,11 +182,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-adapterframework-coolgen</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-messaging</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -1249,7 +1244,6 @@
 				</property>
 			</activation>
 			<modules>
-				<module>coolgen</module>
 				<module>ifsa</module>
 				<module>sap</module>
 				<module>tibco</module>
