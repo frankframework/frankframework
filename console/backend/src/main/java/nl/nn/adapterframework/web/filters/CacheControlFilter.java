@@ -1,5 +1,5 @@
 /*
-Copyright 2016-2019 Integration Partners B.V.
+Copyright 2016-2019, 2023 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package nl.nn.adapterframework.http;
+package nl.nn.adapterframework.web.filters;
 
 import java.io.IOException;
 import java.util.Date;
@@ -27,13 +27,12 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import nl.nn.adapterframework.util.LogUtil;
 
 public class CacheControlFilter implements Filter {
 
-	private Logger log = null;
+	private Logger log = LogManager.getLogger(this);
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -42,9 +41,6 @@ public class CacheControlFilter implements Filter {
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-		if(log == null)
-			log = LogUtil.getLogger(this);
-
 		HttpServletResponse resp = (HttpServletResponse) response;
 		HttpServletRequest req = (HttpServletRequest) request;
 		//resp.setHeader("Expires", "Tue, 03 Jul 2001 06:00:00 GMT");
