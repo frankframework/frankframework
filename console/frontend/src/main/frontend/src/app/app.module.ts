@@ -95,6 +95,7 @@ import { ConfigurationsUploadComponent } from './views/configurations/configurat
 import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
+import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -150,6 +151,10 @@ appModule
 @NgModule({
   declarations: [
     // AppComponent,
+    ConfigurationsManageComponent,
+    ConfigurationsShowComponent,
+    ConfigurationsUploadComponent,
+    ConfigurationsManageDetailsComponent,
     CustomViewsComponent,
     EnvironmentVariablesComponent,
     FlowComponent,
@@ -198,15 +203,12 @@ appModule
     FormatStatKeysPipe,
 
     // directives
+    FormatCodeDirective,
     ToDateDirective,
     TimeSinceDirective,
     QuickSubmitFormDirective,
     FitHeightDirective,
     SideNavigationDirective,
-    ConfigurationsManageComponent,
-    ConfigurationsShowComponent,
-    ConfigurationsUploadComponent,
-    ConfigurationsManageDetailsComponent,
   ],
   imports: [
     BrowserModule,

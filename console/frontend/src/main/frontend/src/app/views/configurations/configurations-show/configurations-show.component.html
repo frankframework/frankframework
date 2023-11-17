@@ -26,7 +26,7 @@
             <button title="Copy Configuration" (click)="clipboard()" class="btn btn-default btn-xs" type="button">Copy <i class="fa fa-clipboard"></i></button>
           </div>
           <div class="clearfix"></div>
-          <!-- Todo: <pre format-code="configuration"></pre> -->
+          <pre appFormatCode [text]="configuration"></pre>
         </div>
       </div>
     </div>
