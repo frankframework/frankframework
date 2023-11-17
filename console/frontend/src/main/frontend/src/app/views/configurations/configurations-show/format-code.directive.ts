@@ -13,7 +13,7 @@ export class FormatCodeDirective implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     var code = document.createElement('code');
-    // Todo:
+    // TODO:
     // this.element.addClass("line-numbers");
     // this.element.addClass("language-markup");
     // this.element.append(code);
@@ -25,11 +25,11 @@ export class FormatCodeDirective implements OnChanges {
 
       addOnClickEvent(code);
 
-      // Todo: $location.hash(initHash);
+      // TODO: $location.hash(initHash);
       let el = angular.element("#"); // Todo: + initHash
       if (el) {
         el.addClass("line-selected");
-        // Todo: let lineNumber = Math.max(0, parseInt(initHash.substr(1)) - 15);
+        // TODO: let lineNumber = Math.max(0, parseInt(initHash.substr(1)) - 15);
         setTimeout(() => {
           let lineElement = angular.element("#L")[0]; // Todo:  + lineNumber
           if (lineElement) {
@@ -44,7 +44,7 @@ export class FormatCodeDirective implements OnChanges {
     function addOnClickEvent(root: HTMLElement) {
       let spanElements = $(root).children("span.line-numbers-rows").children("span");
       spanElements.on("click", (event) => {
-        // Todo:
+        // TODO:
         // let target = $(event.target);
         // target.parent().children(".line-selected").removeClass("line-selected");
         // let anchor = target.attr('id');
@@ -53,7 +53,7 @@ export class FormatCodeDirective implements OnChanges {
       });
     }
 
-    // Todo:
+    // TODO:
     // this.element.on('$destroy', function () {
     //   watch();
     // });

@@ -96,7 +96,7 @@ export class ConfigurationsUploadComponent implements OnInit {
         automatic_reload: false,
       };
       if (this.file != null) {
-        // Todo: angular.element(".form-file")[0].value = null;
+        // TODO: angular.element(".form-file")[0].value = null;
         this.file = null;
       }
     }, (errorData, status, errorMsg) => {
