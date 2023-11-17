@@ -61,10 +61,15 @@ import { SchedulerComponent } from './views/scheduler/scheduler.component';
 import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
+import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
+import { ConfigurationsShowComponent } from './views/configurations/configurations-show/configurations-show.component';
+import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
+import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { PagesTitleStrategy } from './pages-title-strategy';
 import { WithJavaListenerPipe } from './pipes/with-java-listener.pipe';
+import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -123,6 +128,7 @@ const windowProvider: ValueProvider = {
     FormatStatKeysPipe,
 
     // directives
+    FormatCodeDirective,
     ToDateDirective,
     TimeSinceDirective,
     QuickSubmitFormDirective,
