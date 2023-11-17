@@ -3,8 +3,9 @@
 
 	<parent>
 		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>bundle-minimal</artifactId>
 		<version>${revision}</version>
+		<relativePath>../bundle-minimal/pom.xml</relativePath>
 	</parent>
 
 	<artifactId>ibis-adapterframework-example</artifactId>
@@ -17,15 +18,6 @@
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-webapp</artifactId>
-			<type>war</type>
-		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
@@ -47,7 +39,7 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<scope>test</scope>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -61,7 +53,7 @@
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
-				<version>9.4.53.v20231009</version>
+				<version>10.0.18</version>
 				<configuration>
 					<systemProperties>
 						<systemProperty>
@@ -78,7 +70,7 @@
 						</systemProperty>
 					</systemProperties>
 					<webAppConfig>
-						<webInfIncludeJarPattern>.*/ibis-adapterframework-[^/]*\.jar$</webInfIncludeJarPattern>
+						<webInfIncludeJarPattern>./WEB-INF/lib/ibis-adapterframework-[^/]*\.jar|./WEB-INF/lib/spring-[^/]*\.jar</webInfIncludeJarPattern>
 						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
 					</webAppConfig>
 					<loginServices>
