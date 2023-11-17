@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AppService, Message, RunState } from 'src/app/app.service';
+import { AppService, JobMessage, RunState } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
-import { SchedulerService } from './scheduler.service';
+import { SchedulerService, Trigger } from './scheduler.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 
 type Scheduler = {
@@ -30,17 +30,8 @@ export type Job = {
   jobGroupName?: string,
   stateful?: boolean,
   durable?: boolean,
-  messages: Message[],
+  messages: JobMessage[],
   triggers: Trigger[]
-}
-
-export type Trigger = {
-  name: string,
-  cronExpression: string,
-  repeatInterval: string,
-  startTime: string,
-  previousFireTime: string,
-  nextFireTime: string
 }
 
 @Component({
@@ -81,7 +72,9 @@ export class SchedulerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.pollerService.add("schedules", (data) => {
-      // TODO Object.assign(this, data);
+      this.scheduler = data.scheduler;
+      this.jobs = data.jobs;
+
       this.refreshing = false;
       if (!this.initialized) {
         for (const job of Object.keys(this.jobs)) {
@@ -123,9 +116,9 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   };
 
   remove(jobGroup: string, jobName: string) {
-    this.sweetAlertService.Confirm({ title: "Please confirm the deletion of '" + jobName + "'" }, (imSure: boolean) => {
-      if (imSure) {
-        this.schedulerService.deleteScheduleJob(jobGroup, jobName);
+    this.sweetAlertService.Confirm({ title: "Please confirm the deletion of '" + jobName + "'" }).then((result) => {
+      if (result.isConfirmed) {
+        this.schedulerService.deleteScheduleJob(jobGroup, jobName).subscribe();
       }
     });
   };

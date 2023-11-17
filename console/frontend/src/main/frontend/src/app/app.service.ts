@@ -31,14 +31,18 @@ export type Receiver = {
   threadCountControllable?: true
 }
 
-export type Message = {
+type Message = {
   date: number,
   level: MessageLevel,
-  message: string,
+}
+
+export interface JobMessage extends Message {
+  text: string
 }
 
 export interface AdapterMessage extends Message {
-  capacity: number
+  capacity: number,
+  message: string
 }
 
 export type Pipe = {
@@ -98,7 +102,7 @@ export type Alert = {
 
 export type MessageLog = {
   errorStoreCount: number,
-  messages: Message[],
+  messages: AdapterMessage[],
   messageLevel: MessageLevel,
 }
 

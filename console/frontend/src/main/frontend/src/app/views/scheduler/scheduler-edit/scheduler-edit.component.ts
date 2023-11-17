@@ -1,24 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { SchedulerAddEditParent } from '../scheduler-add-edit-parent';
 import { AppService } from 'src/app/app.service';
-
-interface StateItem {
-  type: string
-  message: string
-}
-
-interface Form {
-  name: string
-  group: string
-  adapter: string
-  listener: string
-  cron: string
-  interval: string
-  message: string
-  description: string
-  locker: boolean
-  lockkey: string
-}
+import { SchedulerService } from '../scheduler.service';
+import { ActivatedRoute } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-scheduler-edit',
@@ -26,17 +11,20 @@ interface Form {
   styleUrls: ['./scheduler-edit.component.scss']
 })
 export class SchedulerEditComponent extends SchedulerAddEditParent implements OnInit {
-  url: string = "";
-  editMode: boolean = true;
+  override editMode = true;
+
+  private groupName = "";
+  private jobName = "";
 
   constructor(
-    private appService: AppService
+    private route: ActivatedRoute,
+    private appService: AppService,
+    private schedulerService: SchedulerService
   ) {
     super();
   };
 
-  ngOnInit(): void {
-    this.url = "schedules/" + this.stateParams['group'] + "/jobs/" + this.stateParams['name'];
+  ngOnInit() {
 
     this.configurations = this.appService.configurations;
     this.appService.configurations$.subscribe(() => { this.configurations = this.appService.configurations; });
@@ -44,20 +32,25 @@ export class SchedulerEditComponent extends SchedulerAddEditParent implements On
     this.adapters = this.appService.adapters;
     this.appService.adapters$.subscribe(() => { this.adapters = this.appService.adapters; });
 
-    this.Api.Get(this.url, (data) => {
-      this.selectedConfiguration = data.configuration;
-      this.form = {
-        name: data.name,
-        group: data.group,
-        adapter: data.adapter,
-        listener: data.listener,
-        cron: data.triggers[0].cronExpression || "",
-        interval: data.triggers[0].repeatInterval || "",
-        message: data.message,
-        description: data.description,
-        locker: data.locker,
-        lockkey: data.lockkey,
-      };
+    this.route.paramMap.subscribe(params => {
+      this.groupName = params.get('group')!;
+      this.jobName = params.get('name')!;
+
+      this.schedulerService.getJob(this.groupName, this.jobName).subscribe((data) => {
+        this.selectedConfiguration = data.configuration;
+        this.form = {
+          name: data.name,
+          group: data.group,
+          adapter: data.adapter,
+          listener: data.listener,
+          cron: data.triggers[0].cronExpression || "",
+          interval: data.triggers[0].repeatInterval || "",
+          message: data.message,
+          description: data.description,
+          locker: data.locker,
+          lockkey: data.lockkey,
+        };
+      });
     });
   };
 
@@ -84,11 +77,11 @@ export class SchedulerEditComponent extends SchedulerAddEditParent implements On
     if (this.form.lockkey)
       fd.append("lockkey", this.form.lockkey);
 
-    this.Api.Put(this.url, fd, (data) => {
+    this.schedulerService.putJob(this.groupName, this.jobName, fd).subscribe({ next: (data) => {
       this.addLocalAlert("success", "Successfully edited schedule!");
-    }, (errorData, status, errorMsg) => {
-      var error = (errorData) ? errorData.error : errorMsg;
+    }, error: (errorData: HttpErrorResponse) => {
+      var error = (errorData.error) ? errorData.error.error : errorData.message;
       this.addLocalAlert("warning", error);
-    }, false);
+    }}); // TODO no intercept
   };
 }

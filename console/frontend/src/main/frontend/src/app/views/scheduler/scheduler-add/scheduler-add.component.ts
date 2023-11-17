@@ -1,24 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { SchedulerAddEditParent } from '../scheduler-add-edit-parent';
 import { AppService } from 'src/app/app.service';
-
-interface StateItem {
-  type: string
-  message: string
-}
-
-interface Form {
-  name: string
-  group: string
-  adapter: string
-  listener: string
-  cron: string
-  interval: string
-  message: string
-  description: string
-  locker: boolean
-  lockkey: string
-}
+import { SchedulerService } from '../scheduler.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-scheduler-add',
@@ -26,10 +10,9 @@ interface Form {
   styleUrls: ['./scheduler-add.component.scss']
 })
 export class SchedulerAddComponent extends SchedulerAddEditParent implements OnInit {
-  editMode: boolean = false;
-
   constructor(
     private appService: AppService,
+    private schedulerService: SchedulerService
   ) {
     super();
   };
@@ -58,7 +41,7 @@ export class SchedulerAddComponent extends SchedulerAddEditParent implements OnI
     fd.append("locker", this.form.locker.toString());
     fd.append("lockkey", this.form.lockkey);
 
-    this.apiService.Post("schedules", fd, (data) => {
+    this.schedulerService.postSchedule(fd).subscribe({ next: () => {
       this.addLocalAlert("success", "Successfully added schedule!");
       this.selectedConfiguration = "";
       this.form = {
@@ -73,9 +56,9 @@ export class SchedulerAddComponent extends SchedulerAddEditParent implements OnI
         locker: false,
         lockkey: "",
       };
-    }, (errorData, status, errorMsg) => {
-      var error = (errorData) ? errorData.error : errorMsg;
+    }, error: (errorData: HttpErrorResponse) => {
+      var error = (errorData.error) ? errorData.error.error : errorData.message;
       this.addLocalAlert("warning", error);
-    }, false);
+    }}); //TODO no intercept
   };
 };

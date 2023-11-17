@@ -2,6 +2,7 @@ import { NgModule, ValueProvider } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { TitleStrategy } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgIdleModule } from '@ng-idle/core';
 import { NgChartsModule } from 'ng2-charts';
@@ -62,8 +63,8 @@ import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
-import { TitleStrategy } from '@angular/router';
 import { PagesTitleStrategy } from './pages-title-strategy';
+import { WithJavaListenerPipe } from './pipes/with-java-listener.pipe';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -127,6 +128,7 @@ const windowProvider: ValueProvider = {
     QuickSubmitFormDirective,
     FitHeightDirective,
     SideNavigationDirective,
+    WithJavaListenerPipe,
   ],
   imports: [
     BrowserModule,

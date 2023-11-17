@@ -7,8 +7,11 @@
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div *ngIf="databaseSchedulesEnabled" class="pull-right">
-            <!-- TODO: Router-->
-            <button ui-sref="pages.add_schedule" class="btn btn-xs btn-info pull-right" type="button"><i class="fa fa-plus-circle" aria-hidden="true"></i> <span>Add new schedule</span></button>
+            <button
+              routerLink="new"
+              class="btn btn-xs btn-info pull-right"
+              type="button"><i class="fa fa-plus-circle" aria-hidden="true"
+            ></i> <span>Add new schedule</span></button>
           </div>
           <h4>Scheduler</h4>
         </div>
@@ -88,7 +91,7 @@
           </div>
           <div class="col-md-12 space-15">
             <div class="input-group" id="searchbar">
-              <input type="text" class="form-control" placeholder="Search ... (Ctrl + Shift + F)" [ngModel]="searchFilter" name="search" />
+              <input type="text" class="form-control" placeholder="Search ... (Ctrl + Shift + F)" [(ngModel)]="searchFilter" name="search" />
               <i [hidden]="!searchFilter.length" (click)="searchFilter = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"></i>
               <span class="input-group-addon">
                 <i class="fa fa-search" aria-hidden="true"></i>

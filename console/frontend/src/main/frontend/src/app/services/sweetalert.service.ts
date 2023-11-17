@@ -15,16 +15,17 @@ export class SweetalertService {
 
   constructor(private Debug: DebugService) { }
 
-  defaults(title: string | SweetAlertOptions, text?: string | ((imSure: boolean) => void)) {
+  defaults(title: string | SweetAlertOptions, text?: string) {
     // let args = arguments || [];
     let options = { ...this.defaultSettings };
 
     //expects (String, String) or (JsonObject, Function)
     if (typeof title == "object") {
       options = { ...options, ...title };
-      if (typeof text == "function") {
-        options.callback = text;
-      }
+      // DEPRECATED
+      // if (typeof text == "function") {
+      //   options.callback = text;
+      // }
     } else if (typeof title == "string") {
       options.title = title;
       if (typeof text == "string") {
@@ -35,7 +36,7 @@ export class SweetalertService {
     return options; //let [options, callback] = this.defaults.apply(this, arguments);
   }
 
-  Input(title: string | SweetAlertOptions, text?: string | (() => void)) {
+  Input(title: string | SweetAlertOptions, text?: string) {
     let options = this.defaults(title, text);
     if (options.input == undefined)
       options.input = "text";
@@ -43,46 +44,36 @@ export class SweetalertService {
     return Swal.fire(options)
   }
 
-  Confirm(title: string | SweetAlertOptions, text?: string | ((imSure: boolean) => void)) { //(JsonObject, Callback)-> returns boolean
+  Confirm(title: string | SweetAlertOptions, text?: string) { //(JsonObject, Callback)-> returns boolean
     let options: SweetAlertSettings = {
       title: "Are you sure?",
       showCancelButton: true,
     };
     options = { ...options, ...this.defaults(title, text) };
-    if (!options.callback)
-      return Swal.fire(options);
-    return Swal.fire(options).then(result => options.callback ? options.callback(result.value) : result);
+    return Swal.fire(options);
   }
 
-  Info(title: string | SweetAlertOptions, text?: string | (() => void)) {
+  Info(title: string | SweetAlertOptions, text?: string) {
     let options: SweetAlertSettings = {};
     options = { ...{ type: "info" }, ...this.defaults(title, text) };
-    if (!options.callback)
-      return Swal.fire(options);
-    return Swal.fire(options).then(result => options.callback ? options.callback(result.value) : result);
+    return Swal.fire(options);
   }
 
-  Warning(title: string | SweetAlertOptions, text?: string | (() => void)) {
+  Warning(title: string | SweetAlertOptions, text?: string) {
     let options: SweetAlertSettings = {};
     options = { ...{ type: "warning" }, ...this.defaults(title, text) };
-    if (!options.callback)
-      return Swal.fire(options);
-    return Swal.fire(options).then(result => options.callback ? options.callback(result.value) : result);
+    return Swal.fire(options);
   }
 
-  Error(title: string | SweetAlertOptions, text?: string | (() => void)) {
+  Error(title: string | SweetAlertOptions, text?: string) {
     let options: SweetAlertSettings = {};
     options = { ...{ type: "error" }, ...this.defaults(title, text) };
-    if (!options.callback)
-      return Swal.fire(options);
-    return Swal.fire(options).then(result => options.callback ? options.callback(result.value) : result);
+    return Swal.fire(options);
   }
 
-  Success(title: string | SweetAlertOptions, text?: string | (() => void)) {
+  Success(title: string | SweetAlertOptions, text?: string) {
     let options: SweetAlertSettings = {};
     options = { ...{ type: "success" }, ...this.defaults(title, text) };
-    if (!options.callback)
-      return Swal.fire(options);
     return Swal.fire(options).then(result => options.callback ? options.callback(result.value) : result);
   }
 }
