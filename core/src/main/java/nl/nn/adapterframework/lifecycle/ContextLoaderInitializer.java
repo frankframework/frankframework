@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020 - 2023 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,39 +20,82 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletContext;
-import javax.servlet.annotation.WebListener;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.ResourceUtils;
-import org.springframework.web.context.ContextLoaderListener;
+import org.springframework.web.WebApplicationInitializer;
+import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
-import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
- * Starts a Spring Context before all Servlets are initialized. This allows the use of dynamically creating
- * Spring wired Servlets (using the {@link ServletManager}). These beans can be retrieved later on from within
- * the IbisContext, and are unaffected by the {@link IbisContext#fullReload()}.
- *
+ * Programmatically load the Frank!Framework Web Environment.
+ * It's important this is loaded first, and before any programmatic listeners have been added.
+ * The EnvironmentContext will load servlets and filters.
+ * 
+ * Uses the same order as well as delegation as the SpringBootServletInitializer used in the Frank!Console WAR.
+ * 
  * @author Niels Meijer
- *
  */
-@WebListener
-public class IbisApplicationInitializer extends ContextLoaderListener {
-	private static final Logger LOG = LogUtil.getLogger(IbisApplicationInitializer.class);
+@Order(Ordered.HIGHEST_PRECEDENCE)
+public class ContextLoaderInitializer implements WebApplicationInitializer {
+	private static final Logger LOG = LogUtil.getLogger(ContextLoaderInitializer.class);
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	@Override
-	protected WebApplicationContext createWebApplicationContext(ServletContext servletContext) {
+	public void onStartup(ServletContext servletContext) throws ServletException {
+		WebApplicationContext applicationContext = createApplicationContext(servletContext);
+		ContextLoader contextLoader = new ContextLoader(applicationContext);
+
+		try {
+			WebApplicationContext wac = contextLoader.initWebApplicationContext(servletContext);
+			SpringBus bus = (SpringBus) wac.getBean("cxf");
+			LOG.info("Successfully started Frank EnvironmentContext with SpringBus [{}]", bus::getId);
+			APPLICATION_LOG.info("Successfully started Frank EnvironmentContext");
+		} catch (Exception e) {
+			LOG.fatal("IBIS ApplicationInitializer failed to initialize", e);
+			APPLICATION_LOG.fatal("IBIS ApplicationInitializer failed to initialize", e);
+			throw e;
+		}
+
+		ContextCloseEventListener listener = new ContextCloseEventListener(contextLoader);
+		servletContext.addListener(listener);
+	}
+
+	private static class ContextCloseEventListener implements ServletContextListener {
+		private final ContextLoader contextLoader;
+
+		public ContextCloseEventListener(ContextLoader contextLoader) {
+			this.contextLoader = contextLoader;
+		}
+
+		@Override
+		public void contextInitialized(ServletContextEvent sce) {
+			// We don't need to initialize anything, just listen to the close event.
+		}
+
+		@Override
+		public void contextDestroyed(ServletContextEvent sce) {
+			APPLICATION_LOG.info("Stopping Frank EnvironmentContext");
+			contextLoader.closeWebApplicationContext(sce.getServletContext());
+		}
+	}
+
+	private WebApplicationContext createApplicationContext(ServletContext servletContext) {
 		System.setProperty(EndpointImpl.CHECK_PUBLISH_ENDPOINT_PERMISSON_PROPERTY_WITH_SECURITY_MANAGER, "false");
 		APPLICATION_LOG.debug("Starting Frank EnvironmentContext");
 
@@ -89,30 +132,6 @@ public class IbisApplicationInitializer extends ContextLoaderListener {
 		}
 
 		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
-	}
-
-	@Override
-	public void closeWebApplicationContext(ServletContext servletContext) {
-		APPLICATION_LOG.info("Stopping Frank EnvironmentContext");
-		super.closeWebApplicationContext(servletContext);
-	}
-
-	/*
-	 * Purely here to print the CXF SpringBus ID
-	 */
-	@Override
-	public WebApplicationContext initWebApplicationContext(ServletContext servletContext) {
-		try {
-			WebApplicationContext wac = super.initWebApplicationContext(servletContext);
-			SpringBus bus = (SpringBus) wac.getBean("cxf");
-			LOG.info("Successfully started Frank EnvironmentContext with SpringBus [{}]", bus::getId);
-			APPLICATION_LOG.info("Successfully started Frank EnvironmentContext");
-			return wac;
-		} catch (Exception e) {
-			LOG.fatal("IBIS ApplicationInitializer failed to initialize", e);
-			APPLICATION_LOG.fatal("IBIS ApplicationInitializer failed to initialize", e);
-			throw e;
-		}
 	}
 
 	private void determineApplicationServerType(ServletContext servletContext) {

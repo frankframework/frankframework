@@ -9,6 +9,8 @@
 
 	<context:property-placeholder location="classpath:application.properties"/>
 
+	<context:component-scan base-package="nl.nn.adapterframework.web" />
+
 	<bean id="tomcat" class="org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory">
 		<property name="port" value="${server.port}"/>
 	</bean>

@@ -11,8 +11,6 @@
 
 	<context:property-placeholder location="classpath:application.properties"/>
 
-	<context:component-scan base-package="nl.nn.adapterframework.web" />
-
 	<!-- Messaging Gateway -->
 	<bean id="outboundGateway" class="nl.nn.adapterframework.management.bus.OutboundGatewayFactory">
 		<property name="gatewayClassname" value="${management.gateway.outbound.class}" />
