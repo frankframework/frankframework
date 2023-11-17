@@ -25,7 +25,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
-import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -107,7 +106,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 		return (Session) threadContext.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 	}
 
-	protected void releaseSession(Session session) throws ListenerException {
+	protected void releaseSession(Session session) {
 		if (isSessionsArePooled()) {
 			closeSession(session);
 		}
@@ -187,7 +186,7 @@ public class PullingJmsListener extends JmsListenerBase implements IPostboxListe
 
 
 	@Override
-	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {
+	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws SenderException, ListenerException, JMSException, IOException {
 		Session session = (Session) pipeLineSession.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY);
 		if (session==null) {
 			try {

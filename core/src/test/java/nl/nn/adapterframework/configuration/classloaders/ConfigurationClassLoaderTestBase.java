@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
@@ -185,7 +184,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 
 	//Not only test through setters and getters but also properties
 	@Test
-	public void testSchemeWithClassLoaderManager() throws ConfigurationException {
+	public void testSchemeWithClassLoaderManager() {
 		URL resource = getResource("ClassLoaderTestFile.xml");
 
 		assertNotNull(resource, "resource ["+resource+"] must be found");
@@ -264,7 +263,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 	}
 
 	@Test
-	public void toStringTest() throws Exception {
+	public void toStringTest() {
 		String logPrefix = classLoader.getClass().getSimpleName() + "@" + Integer.toHexString(classLoader.hashCode());
 
 		//Should match DatabaseClassLoader@1234abcd[<CONFIG-NAME>]
@@ -272,7 +271,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 	}
 
 	@Test
-	public void testInvalidPath() throws Exception {
+	public void testInvalidPath() {
 		URL url = getResource("//foo/../bar.txt");
 		assertNull(url);
 	}

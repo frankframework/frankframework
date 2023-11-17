@@ -185,7 +185,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 		LOG.debug("Command [{}] returned {}", () -> cmd, ftpClient::getReplyString);
 	}
 
-	private FTPClient createFTPClient() throws GeneralSecurityException, IOException {
+	private FTPClient createFTPClient() throws IOException, GeneralSecurityException {
 		FtpType transport = getFtpType();
 		Proxy proxy = getProxy();
 		if (transport == FtpType.FTP) {

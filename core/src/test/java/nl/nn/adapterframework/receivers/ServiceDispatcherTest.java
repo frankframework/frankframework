@@ -55,7 +55,7 @@ public class ServiceDispatcherTest {
 	}
 
 	@Test
-	public void testDispatchRequestMessageNull() throws ListenerException, IOException {
+	public void testDispatchRequestMessageNull() throws ListenerException {
 		// Arrange
 		Message message = new Message("MESSAGE");
 

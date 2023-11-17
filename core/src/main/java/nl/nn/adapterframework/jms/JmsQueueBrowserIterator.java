@@ -22,7 +22,6 @@ import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
-import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,7 +42,7 @@ public class JmsQueueBrowserIterator implements IMessageBrowsingIterator {
 	private final QueueBrowser queueBrowser;
 	private final Enumeration  enm;
 
-	public JmsQueueBrowserIterator(JMSFacade facade, Queue destination, String selector) throws JMSException, NamingException, JmsException {
+	public JmsQueueBrowserIterator(JMSFacade facade, Queue destination, String selector) throws JMSException, JmsException {
 		this.facade=facade;
 		this.session=facade.createSession();
 		if (StringUtils.isEmpty(selector)) {

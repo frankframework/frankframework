@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.filesystem;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Vector;
@@ -37,7 +36,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	@Before
-	public void setUp() throws ConfigurationException, IOException, FileSystemException {
+	public void setUp() throws ConfigurationException, FileSystemException {
 		open();
 		cleanFolder();
 	}

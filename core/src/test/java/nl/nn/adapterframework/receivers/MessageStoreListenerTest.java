@@ -26,7 +26,6 @@ import javax.sql.DataSource;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.MessageStoreListener;
 import nl.nn.adapterframework.dbms.GenericDbmsSupport;
@@ -40,7 +39,7 @@ public class MessageStoreListenerTest<M> extends ListenerTestBase<M, MessageStor
 	public MessageStoreListener<M> createListener() throws Exception {
 		MessageStoreListener listener = spy(new MessageStoreListener() {
 			@Override
-			protected MessageWrapper<Object> getRawMessage(Connection conn, Map threadContext) throws ListenerException {
+			protected MessageWrapper<Object> getRawMessage(Connection conn, Map threadContext) {
 				//super class JdbcListener always wraps this in a MessageWrapper
 				return new MessageWrapper<>(Message.asMessage(threadContext.get(STUB_RESULT_KEY)), String.valueOf(threadContext.get(PipeLineSession.MESSAGE_ID_KEY)), null);
 			}

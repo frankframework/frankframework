@@ -35,7 +35,7 @@ public class IncreaseIntegerPipeTest extends PipeTestBase<IncreaseIntegerPipe> {
 	}
 
 	@Test
-	public void testCannotIncreaseBy2AsNoSessionKey() throws Exception {
+	public void testCannotIncreaseBy2AsNoSessionKey() {
 		session.put("a", "4");
 		pipe.setIncrement(2);
 

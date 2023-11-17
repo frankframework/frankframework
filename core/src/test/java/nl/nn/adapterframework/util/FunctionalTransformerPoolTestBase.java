@@ -16,7 +16,7 @@ public class FunctionalTransformerPoolTestBase {
 		TestAssertions.assertEqualsIgnoreCRLF(expected,actual,message);
 	}
 
-	public void testTransformerPool(TransformerPool tp, Source input, String expected, boolean namespaceAware, String message) throws DomBuilderException, TransformerException, IOException {
+	public void testTransformerPool(TransformerPool tp, Source input, String expected, boolean namespaceAware, String message) throws TransformerException, IOException {
 		String actual=tp.transform(input);
 		TestAssertions.assertEqualsIgnoreCRLF(expected,actual,message);
 	}

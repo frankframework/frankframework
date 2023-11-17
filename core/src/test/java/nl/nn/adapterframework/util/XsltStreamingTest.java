@@ -183,7 +183,7 @@ public class XsltStreamingTest {
 	}
 
 	@Test()
-	public void testStreamingXsltViaStreamSource() throws SAXException, DomBuilderException, TransformerException, IOException {
+	public void testStreamingXsltViaStreamSource() throws TransformerException, IOException {
 		/*
 		 * create transformer
 		 * feed SAX source events

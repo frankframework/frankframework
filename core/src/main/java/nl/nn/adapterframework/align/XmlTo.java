@@ -170,7 +170,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 		super.characters(ch, start, length);
 	}
 
-	public static ValidatorHandler setupHandler(URL schemaURL, DocumentContainer documentContainer) throws SAXException, IOException {
+	public static ValidatorHandler setupHandler(URL schemaURL, DocumentContainer documentContainer) throws SAXException {
 
 		ValidatorHandler validatorHandler = XmlAligner.getValidatorHandler(schemaURL);
 

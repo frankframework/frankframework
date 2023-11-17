@@ -1717,7 +1717,7 @@ public class ApiListenerServletTest extends Mockito {
 			this(uri, method, consumes, produces, null, null);
 		}
 
-		public ApiListenerBuilder(String uri, Methods method, MediaTypes consumes, MediaTypes produces, AuthMethods authMethod, String multipartBodyName) throws ListenerException, ConfigurationException {
+		public ApiListenerBuilder(String uri, Methods method, MediaTypes consumes, MediaTypes produces, AuthMethods authMethod, String multipartBodyName) {
 			listener = spy(ApiListener.class);
 			listener.setUriPattern(uri);
 			listener.setMethod(EnumUtils.parse(HttpMethod.class, method.name()));
@@ -1830,12 +1830,12 @@ public class ApiListenerServletTest extends Mockito {
 		private @Setter Object responseContent = null;
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, RawMessageWrapper<Message> message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, RawMessageWrapper<Message> message, PipeLineSession session, boolean duplicatesAlreadyChecked) {
 			fail("method should not be called");
 		}
 
 		@Override
-		public void processRawMessage(IListener<Message> origin, RawMessageWrapper<Message> message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException {
+		public void processRawMessage(IListener<Message> origin, RawMessageWrapper<Message> message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) {
 			fail("method should not be called");
 		}
 

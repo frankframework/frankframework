@@ -42,7 +42,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Provides all JNDI functions and is meant to act as a base class.
- * 
+ *
  * <br/>
  * @author Johan Verrips IOS
  */

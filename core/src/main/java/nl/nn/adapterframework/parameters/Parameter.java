@@ -369,7 +369,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return defaultValueMethodsList;
 	}
 
-	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws ParameterException, TransformerException, IOException {
+	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
 		pool.transform(xmlSource,transformResult, pvl);

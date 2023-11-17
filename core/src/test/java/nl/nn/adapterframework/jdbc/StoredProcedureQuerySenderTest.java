@@ -57,7 +57,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	}
 
 	@After
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if (session != null) {
 			session.close();
 		}

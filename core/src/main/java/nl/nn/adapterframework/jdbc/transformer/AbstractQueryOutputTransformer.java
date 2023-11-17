@@ -31,7 +31,7 @@ public abstract class AbstractQueryOutputTransformer extends XMLFilterImpl {
 	private String currentField;
 	protected StringBuilder output, currentBuilder;
 
-	public AbstractQueryOutputTransformer() throws SAXException {
+	public AbstractQueryOutputTransformer() {
 		super();
 	}
 

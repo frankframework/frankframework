@@ -18,7 +18,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 public class TestBrowseJdbcTable extends BusTestBase {
 
 	@Test
-	public void testBrowseTableWithoutTablename() throws Exception {
+	public void testBrowseTableWithoutTablename() {
 		URL url = TestFileUtils.getTestFileURL("/Management/BrowseJdbcResponseMessage.xml");
 		nl.nn.adapterframework.stream.Message responseXmlMessage = new nl.nn.adapterframework.stream.UrlMessage(url);
 		mockDirectQuerySenderResult("BrowseTable QuerySender", responseXmlMessage);
@@ -47,7 +47,7 @@ public class TestBrowseJdbcTable extends BusTestBase {
 	}
 
 	@Test
-	public void testBrowseTableMaxSmallerThenMin() throws Exception {
+	public void testBrowseTableMaxSmallerThenMin() {
 		URL url = TestFileUtils.getTestFileURL("/Management/BrowseJdbcResponseMessage.xml");
 		nl.nn.adapterframework.stream.Message responseXmlMessage = new nl.nn.adapterframework.stream.UrlMessage(url);
 		mockDirectQuerySenderResult("BrowseTable QuerySender", responseXmlMessage);
@@ -66,7 +66,7 @@ public class TestBrowseJdbcTable extends BusTestBase {
 	}
 
 	@Test
-	public void testBrowseTableMaxMoreThen100() throws Exception {
+	public void testBrowseTableMaxMoreThen100() {
 		URL url = TestFileUtils.getTestFileURL("/Management/BrowseJdbcResponseMessage.xml");
 		nl.nn.adapterframework.stream.Message responseXmlMessage = new nl.nn.adapterframework.stream.UrlMessage(url);
 		mockDirectQuerySenderResult("BrowseTable QuerySender", responseXmlMessage);

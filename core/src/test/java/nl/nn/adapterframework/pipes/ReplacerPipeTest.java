@@ -24,7 +24,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	}
 
 	@Test
-	public void everythingNull() throws Exception {
+	public void everythingNull() {
 		pipe.setFind("laa");
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
@@ -86,7 +86,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	}
 
 	@Test
-	public void replaceNonXMLCharLongerThanOne() throws Exception {
+	public void replaceNonXMLCharLongerThanOne() {
 		pipe.setFind("test");
 		pipe.setReplace("head");
 		pipe.setReplaceNonXmlChar("klkl");

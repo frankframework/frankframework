@@ -146,7 +146,7 @@ public class TestMonitoring extends BusTestBase {
 	}
 
 	@Test
-	public void addMonitor() throws Exception {
+	public void addMonitor() {
 		// Arrange
 		String requestJson = "{\"name\":\"newName\", \"type\":\"TECHNICAL\", \"destinations\":[\"mockDestination\"]}";
 		MessageBuilder<String> request = createRequestMessage(requestJson, BusTopic.MONITORING, BusAction.UPLOAD);
@@ -169,7 +169,7 @@ public class TestMonitoring extends BusTestBase {
 
 	@ParameterizedTest
 	@ValueSource(strings = {"raise", "clear"})
-	public void updateMonitorState(String state) throws Exception {
+	public void updateMonitorState(String state) {
 		// Arrange
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.MANAGE);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
@@ -191,7 +191,7 @@ public class TestMonitoring extends BusTestBase {
 	// This also indirectly tests the use of EnumUtils to parse DTO enums
 	@ParameterizedTest
 	@ValueSource(strings = {"TECHNICAL", "technical", "tEchNical"})
-	public void updateMonitor(String type) throws Exception {
+	public void updateMonitor(String type) {
 		// Arrange
 		String requestJson = "{\"name\":\"newName\", \"type\":\""+type+"\", \"destinations\":[\"mockDestination\"]}";
 		MessageBuilder<String> request = createRequestMessage(requestJson, BusTopic.MONITORING, BusAction.MANAGE);
@@ -213,7 +213,7 @@ public class TestMonitoring extends BusTestBase {
 	}
 
 	@Test
-	public void deleteMonitor() throws Exception {
+	public void deleteMonitor() {
 		// Arrange
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.DELETE);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);
@@ -265,7 +265,7 @@ public class TestMonitoring extends BusTestBase {
 	}
 
 	@Test
-	public void addTrigger() throws Exception {
+	public void addTrigger() {
 		// Arrange
 		String jsonInput = "{\"type\":\"ALARM\",\"filter\":\"NONE\",\"events\":[\"Receiver Configured\"],\"severity\":\"HARMLESS\",\"threshold\":1,\"period\":2}";
 		MessageBuilder<String> request = createRequestMessage(jsonInput, BusTopic.MONITORING, BusAction.UPLOAD);
@@ -421,7 +421,7 @@ public class TestMonitoring extends BusTestBase {
 	}
 
 	@Test
-	public void deleteTrigger() throws Exception {
+	public void deleteTrigger() {
 		// Arrange
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MONITORING, BusAction.DELETE);
 		request.setHeader("configuration", TestConfiguration.TEST_CONFIGURATION_NAME);

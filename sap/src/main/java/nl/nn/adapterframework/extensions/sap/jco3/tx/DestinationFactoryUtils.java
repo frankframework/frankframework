@@ -68,7 +68,7 @@ public abstract class DestinationFactoryUtils {
 	 */
 	public static String getTransactionalTid(
 			final SapSystemImpl sapSystem, final JCoDestination existingDestination, final boolean synchedLocalTransactionAllowed)
-			throws SapException, JCoException {
+			throws JCoException {
 
 		return doGetTransactionalTid(sapSystem, new ResourceFactory() {
 			@Override
@@ -96,7 +96,7 @@ public abstract class DestinationFactoryUtils {
 
 	public static JCoDestination getTransactionalDestination(
 			final SapSystemImpl sapSystem, final boolean synchedLocalTransactionAllowed)
-			throws SapException, JCoException {
+			throws JCoException {
 
 		return doGetTransactionalDestination(sapSystem, new ResourceFactory() {
 			@Override
