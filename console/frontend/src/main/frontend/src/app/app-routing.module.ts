@@ -25,6 +25,7 @@ import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/mon
 import { SchedulerComponent } from './views/scheduler/scheduler.component';
 import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
+import { ConfigurationsShowComponent } from './views/configurations/configurations-show/configurations-show.component';
 
 const routes: Routes = [
   /* {
@@ -79,14 +80,14 @@ const routes: Routes = [
       breadcrumbs: 'Notifications'
     },
   }, */
-  /* {
+  {
     path: 'configurations',
-    component: ConfigurationsComponent,
+    component: ConfigurationsShowComponent,
     title: 'Configurations',
     data: {
       breadcrumbs: 'Configurations > Show',
     },
-  }, */
+  },
   /* {
     path: 'configurations/upload',
     component: ConfigurationsUploadComponent,

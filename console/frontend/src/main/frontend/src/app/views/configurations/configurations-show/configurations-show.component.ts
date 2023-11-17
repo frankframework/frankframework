@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { StateParams, StateService } from '@uirouter/angularjs';
-import { AppService, Configuration } from 'src/angularjs/app/app.service'
-;
+import { ViewportScroller } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AppService, Configuration } from 'src/app/app.service';
+import { ConfigurationsService } from '../configurations.service';
+
 interface TransitionObject {
   name?: string
   loaded?: boolean
@@ -16,22 +17,32 @@ interface TransitionObject {
 export class ConfigurationsShowComponent implements OnInit {
   configurations: Configuration[] = [];
   configuration: string = "";
-  selectedConfiguration: string = (this.stateParams['name'] != '') ? this.stateParams['name'] : "All";
-  loadedConfiguration: boolean = (this.stateParams['loaded'] != undefined && this.stateParams['loaded'] == false);
-  // TODO: anchor = this.$location.hash();
+  selectedConfiguration: string = "All"
+  loadedConfiguration: boolean = false;
+  anchor = "";
 
   constructor(
-    private apiService: ApiService,
-    private stateParams: StateParams,
-    private stateService: StateService,
-    // TODO: private $location: ,
+    private router: Router,
+    private route: ActivatedRoute,
+    private viewportScroller: ViewportScroller,
+    private configurationsService: ConfigurationsService,
     private appService: AppService,
   ) { };
 
   ngOnInit(): void {
     this.configurations = this.appService.configurations;
     this.appService.configurations$.subscribe(() => { this.configurations = this.appService.configurations; });
-    this.getConfiguration();
+
+    this.route.fragment.subscribe(hash => {
+      this.anchor = hash ?? "";
+    })
+
+    this.route.queryParamMap.subscribe(params => {
+      this.selectedConfiguration = params.has('name') && params.get('name') != '' ? params.get('name')! : "All";
+      this.loadedConfiguration = true; // used to be always "" but `"" == false` returns true so idk why this even exists
+
+      this.getConfiguration();
+    });
   }
 
   update() {
@@ -40,48 +51,46 @@ export class ConfigurationsShowComponent implements OnInit {
 
   changeConfiguration(name: string) {
     this.selectedConfiguration = name;
-    // TODO: this.$location.hash(''); //clear the hash from the url
-    // TODO: this.anchor = ""; //unset hash anchor
+    this.router.navigate([], { relativeTo: this.route, fragment: "" });
+    this.anchor = ""; //unset hash anchor
     this.getConfiguration();
   };
 
   updateQueryParams() {
-    var transitionObj: TransitionObject = {};
+    let transitionObj: TransitionObject = {};
     if (this.selectedConfiguration != "All")
       transitionObj.name = this.selectedConfiguration;
     if (!this.loadedConfiguration)
       transitionObj.loaded = this.loadedConfiguration;
 
-    this.stateService.transitionTo('pages.configuration', transitionObj, { notify: false, reload: false });
+    this.router.navigate([], { relativeTo: this.route, queryParams: transitionObj });
   };
 
   clipboard() {
     if (this.configuration) {
-      var el = document.createElement('textarea');
+      let el = document.createElement('textarea');
       el.value = this.configuration;
       el.setAttribute('readonly', '');
       el.style.position = 'absolute';
       el.style.left = '-9999px';
       document.body.appendChild(el);
       el.select();
-      document.execCommand('copy');
+      document.execCommand('copy'); // TODO: soon deprecated
       document.body.removeChild(el);
     }
   }
 
   getConfiguration() {
     this.updateQueryParams();
-    var uri = "configurations";
 
-    if (this.selectedConfiguration != "All") uri += "/" + this.selectedConfiguration;
-    if (this.loadedConfiguration) uri += "?loadedConfiguration=true";
 
-    this.apiService.Get(uri, (data) => {
+    this.configurationsService.getConfiguration(this.selectedConfiguration, this.loadedConfiguration).subscribe((data) => {
       this.configuration = data;
 
-      // TODO: if (this.anchor) {
-      //   this.$location.hash(this.anchor);
-      // }
+      if (this.anchor) {
+        this.router.navigate([], { relativeTo: this.route, fragment: this.anchor });
+      }
+      this.viewportScroller.scrollToAnchor(this.anchor);
     });
   };
 }

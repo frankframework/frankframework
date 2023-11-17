@@ -4,7 +4,7 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="row">
     <div class="col-lg-12 tabs-container">
-      <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+      <ul class="nav nav-tabs" role="menu">
         <li [ngClass]="{active : selectedConfiguration == 'All'}"><a (click)="changeConfiguration('All')">All</a></li>
         <li [ngClass]="{active : selectedConfiguration == configuration.name}" *ngFor="let configuration of configurations">
           <a (click)="changeConfiguration(configuration.name)">{{configuration.name}}</a>
@@ -17,8 +17,17 @@
           <div class="m-l-lg inline">
             Show:
             <div class="btn-group">
-              <button class="btn btn-sm btn-default" uib-btn-radio="true" (click)="update()">Loaded Configuration</button>
-              <button class="btn btn-sm btn-default" uib-btn-radio="false" (click)="update()">Original Configuration</button>
+              <button
+                class="btn btn-sm btn-default"
+                [ngClass]="{ active: this.loadedConfiguration }"
+                uib-btn-radio="true"
+                (click)="update()"
+              >Loaded Configuration</button>
+              <button
+                class="btn btn-sm btn-default"
+                [ngClass]="{ active: !this.loadedConfiguration }"
+                (click)="update()"
+              >Original Configuration</button>
             </div>
           </div>
           <br />
