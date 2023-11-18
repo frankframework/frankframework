@@ -132,6 +132,15 @@ public class IbisTester {
 		}
 		System.setProperty("log.level", "INFO");
 		System.setProperty("dtap.stage", "LOC");
+
+		/*
+		 * By default the ladybug AOP config is included. This gives the following error:
+		 * LinkageError: loader 'app' attempted duplicate class definition for XYZ
+		 * 
+		 * Current default SPRING.CONFIG.LOCATIONS = spring${application.server.type}${application.server.type.custom}.xml,springIbisDebuggerAdvice.xml,springCustom.xml
+		 * Overwrite so only IBISTEST is used.
+		 */
+		System.setProperty("SPRING.CONFIG.LOCATIONS", "springIBISTEST.xml");
 		System.setProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
 		System.setProperty("flow.create.url", "");
 		debug("***start***");

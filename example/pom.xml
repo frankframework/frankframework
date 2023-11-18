@@ -41,11 +41,6 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-larva</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 
 	<build>
