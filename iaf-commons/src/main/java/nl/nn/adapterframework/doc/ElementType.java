@@ -18,15 +18,19 @@ package nl.nn.adapterframework.doc;
 import static java.lang.annotation.ElementType.TYPE;
 
 import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Target(TYPE)
 @Label(name="Element Type")
 @Documented
+@Retention(RetentionPolicy.RUNTIME)
 public @interface ElementType {
 
 	public enum ElementTypes {
 		UNKNOWN,
+		LISTENER,
 		ENDPOINT,
 		VALIDATOR,
 		WRAPPER,

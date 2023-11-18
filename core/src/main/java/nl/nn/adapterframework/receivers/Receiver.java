@@ -62,7 +62,6 @@ import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IHasProcessState;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
@@ -1204,21 +1203,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Message result = null;
 			PipeLineResult pipeLineResult = null;
 			try {
-				Message pipelineMessage;
-				if (getListener() instanceof IBulkDataListener) {
-					try {
-						IBulkDataListener<M> bdl = (IBulkDataListener<M>)getListener();
-						pipelineMessage=new Message(bdl.retrieveBulkData(messageWrapper, message, session));
-					} catch (Throwable t) {
-						errorMessage = t.getMessage();
-						messageInError = true;
-						error("exception retrieving bulk data", t);
-						throw wrapExceptionAsListenerException(t);
-					}
-				} else {
-					pipelineMessage = businessMessage.getMessage();
-				}
-
 				numReceived.increase();
 				showProcessingContext(messageId, businessCorrelationId, session);
 	//			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
@@ -1232,7 +1216,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						log.debug("{} activating TimeoutGuard with transactionTimeout [{}]s", logPrefix, getTransactionTimeout());
 						tg.activateGuard(getTransactionTimeout());
 
-						pipeLineResult = adapter.processMessageWithExceptions(messageId, pipelineMessage, session);
+						pipeLineResult = adapter.processMessageWithExceptions(messageId, businessMessage.getMessage(), session);
 
 						setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
 						session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, String.valueOf(pipeLineResult.getExitCode()));
