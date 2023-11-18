@@ -273,6 +273,11 @@
 				<artifactId>nn-specials</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-batch</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 
 			<dependency>
