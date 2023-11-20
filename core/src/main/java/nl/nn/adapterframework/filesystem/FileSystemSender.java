@@ -18,7 +18,6 @@ package nl.nn.adapterframework.filesystem;
 import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.ParameterException;
@@ -194,21 +193,11 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 		actor.setBase64(base64);
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'wildCard' has been renamed to 'wildcard'")
-	public void setWildCard(String wildcard) {
-		setWildcard(wildcard);
-	}
 	@ReferTo(FileSystemActor.class)
 	public void setWildcard(String wildcard) {
 		actor.setWildcard(wildcard);
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'excludeWildCard' has been renamed to 'excludeWildcard'")
-	public void setExcludeWildCard(String excludeWildcard) {
-		setExcludeWildcard(excludeWildcard);
-	}
 	@ReferTo(FileSystemActor.class)
 	public void setExcludeWildcard(String excludeWildcard) {
 		actor.setExcludeWildcard(excludeWildcard);

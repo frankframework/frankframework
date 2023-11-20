@@ -23,7 +23,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
 		assertThat(e.getMessage(), endsWith("has neither fileName nor returnString specified"));
 	}
-	
+
 	@Test
 	public void testReturnString() throws Exception {
 		String text="Dit is het resultaat";
@@ -48,7 +48,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 	@Test
 	public void testFilename() throws Exception {
 		String filename = "/FixedResult/input.xml";
-		sender.setFileName(filename);
+		sender.setFilename(filename);
 		sender.configure();
 		sender.open();
 
@@ -61,7 +61,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 	@Test
 	public void testWithStylesheet() throws Exception {
 		String filename = "/FixedResult/input.xml";
-		sender.setFileName(filename);
+		sender.setFilename(filename);
 		sender.setStyleSheetName("/FixedResult/sub.xslt");
 		sender.configure();
 		sender.open();

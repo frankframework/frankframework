@@ -20,7 +20,6 @@ import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.stream.Message;
@@ -87,13 +86,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		returnString = string;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
-	public void setFileName(String fileName) {
-		setFilename(fileName);
-	}
-
-	/** name of the file containing the resultmessage */
+	/** name of the file containing the result message */
 	public void setFilename(String filename) {
 		this.filename = filename;
 	}
