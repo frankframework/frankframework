@@ -24,4 +24,8 @@ export class InputFileUploadComponent {
     }
     this.onUpdateFile.emit(files[0]); //Can only parse 1 file!
   }
+
+  reset(){
+    this.fileInput.nativeElement.value = '';
+  }
 }

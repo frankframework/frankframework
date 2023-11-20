@@ -74,6 +74,6 @@ export class SweetalertService {
   Success(title: string | SweetAlertOptions, text?: string) {
     let options: SweetAlertSettings = {};
     options = { ...{ type: "success" }, ...this.defaults(title, text) };
-    return Swal.fire(options).then(result => options.callback ? options.callback(result.value) : result);
+    return Swal.fire(options);
   }
 }

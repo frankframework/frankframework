@@ -28,6 +28,7 @@ import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/schedul
 import { ConfigurationsShowComponent } from './views/configurations/configurations-show/configurations-show.component';
 import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
 import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
+import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
 
 const routes: Routes = [
   /* {
@@ -90,14 +91,14 @@ const routes: Routes = [
       breadcrumbs: 'Configurations > Show',
     },
   },
-  /* {
+  {
     path: 'configurations/upload',
     component: ConfigurationsUploadComponent,
     title: 'Manage Configurations',
     data: {
       breadcrumbs: 'Configurations > Upload',
     }
-  }, */
+  },
   {
     path: 'configurations/manage',
     component: ConfigurationsManageComponent,
@@ -337,13 +338,13 @@ const routes: Routes = [
     path: 'error',
     component: ErrorComponent,
   }, */
-  /* {
+  {
     path: '**',
     redirectTo: 'status',
     data: {
       breadcrumbs: 'Loading'
     }
-  } */
+  }
 ];
 
 @NgModule({

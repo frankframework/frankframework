@@ -26,15 +26,19 @@ export class ConfigurationsService {
   }
 
   getConfigurationVersions(configurationName: string){
-    return this.http.get<Configuration[]>("configurations/" + configurationName + "/versions");
+    return this.http.get<Configuration[]>(this.appService.absoluteApiPath + "configurations/" + configurationName + "/versions");
+  }
+
+  postConfiguration(data: FormData){
+    return this.http.post<Record<string, string>>(this.appService.absoluteApiPath + "configurations", data);
   }
 
   updateConfigurationVersion(configurationName: string, configurationVersion: string, configuration: Record<string, any>){
-    return this.http.put("configurations/" + configurationName + "/versions/" + configurationVersion, configuration);
+    return this.http.put(this.appService.absoluteApiPath + "configurations/" + configurationName + "/versions/" + configurationVersion, configuration);
   }
 
   deleteConfigurationVersion(configurationName: string, configurationVersion: string){
-    return this.http.delete("configurations/" + configurationName + "/versions/" + configurationVersion);
+    return this.http.delete(this.appService.absoluteApiPath + "configurations/" + configurationName + "/versions/" + configurationVersion);
   }
 
 }

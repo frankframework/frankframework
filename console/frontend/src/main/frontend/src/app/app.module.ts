@@ -63,7 +63,7 @@ import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
 import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
 import { ConfigurationsShowComponent } from './views/configurations/configurations-show/configurations-show.component';
-// import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
+import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
 import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
@@ -83,7 +83,7 @@ const windowProvider: ValueProvider = {
     ConfigurationsManageComponent,
     ConfigurationsManageDetailsComponent,
     ConfigurationsShowComponent,
-    // ConfigurationsUploadComponent,
+    ConfigurationsUploadComponent,
     CustomViewsComponent,
     EnvironmentVariablesComponent,
     FlowComponent,

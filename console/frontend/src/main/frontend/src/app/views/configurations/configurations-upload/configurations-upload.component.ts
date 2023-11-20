@@ -1,9 +1,9 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { AppConstants } from 'src/angularjs/app/app.module';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { AppService } from 'src/angularjs/app/app.service';
-import { APPCONSTANTS } from 'src/app/app.module';
-import { File } from 'src/angularjs/app/app.service';
+import { Component, Inject, OnInit, ViewChild } from '@angular/core';
+import { AppConstants, AppService } from 'src/app/app.service';
+import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
+import { JdbcService } from '../../jdbc/jdbc.service';
+import { ConfigurationsService } from '../configurations.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 type Form = {
   name: string
@@ -31,17 +31,25 @@ export class ConfigurationsUploadComponent implements OnInit {
     activate_config: true,
     automatic_reload: false,
   };
-  file: File | null = {
-    name: ""
-  };
+  file: File | null = null;
   result: string = "";
   error: string = "";
 
+  @ViewChild(InputFileUploadComponent) fileInput!: InputFileUploadComponent;
+
+  private appConstants: AppConstants;
+
   constructor(
-    private Api: ApiService,
-    @Inject(APPCONSTANTS) private appConstants: AppConstants,
+    private configurationsService: ConfigurationsService,
+    private jdbcService: JdbcService,
     private appService: AppService,
-  ) { };
+  ) {
+    this.appConstants = this.appService.APP_CONSTANTS;
+    this.appService.appConstants$.subscribe(() => {
+      this.appConstants = this.appService.APP_CONSTANTS;
+      this.form.datasource = this.appConstants['jdbc.datasource.default'];
+    });
+  }
 
 
   ngOnInit(): void {
@@ -49,7 +57,7 @@ export class ConfigurationsUploadComponent implements OnInit {
       this.form.datasource = this.appConstants['jdbc.datasource.default'];
     });
 
-    this.Api.Get("jdbc", (data) => {
+    this.jdbcService.getJdbc().subscribe((data) => {
       Object.assign(this, data)
       this.form.datasource = (this.appConstants['jdbc.datasource.default'] != undefined) ? this.appConstants['jdbc.datasource.default'] : data.datasources[0];
     });
@@ -74,36 +82,38 @@ export class ConfigurationsUploadComponent implements OnInit {
     fd.append("automatic_reload", this.form.automatic_reload.toString());
     fd.append("file", this.file as any, this.file.name);
 
-    this.Api.Post("configurations", fd, (data) => {
-      this.error = "";
-      this.result = "";
+    this.configurationsService.postConfiguration(fd).subscribe({
+      next: (data) => {
+        this.error = "";
+        this.result = "";
 
-      for (const pair in data) {
-        if (data[pair] == "loaded") {
-          this.result += "Successfully uploaded configuration [" + pair + "]<br/>";
-        } else {
-          this.error += "Could not upload configuration from the file [" + pair + "]: " + data[pair] + "<br/>";
+        for (const pair in data) {
+          if (data[pair] == "loaded") {
+            this.result += "Successfully uploaded configuration [" + pair + "]<br/>";
+          } else {
+            this.error += "Could not upload configuration from the file [" + pair + "]: " + data[pair] + "<br/>";
+          }
         }
-      }
 
-      this.form = {
-        name: "",
-        datasource: this.datasources[0],
-        encoding: "",
-        version: "",
-        multiple_configs: false,
-        activate_config: true,
-        automatic_reload: false,
-      };
-      if (this.file != null) {
-        // TODO: angular.element(".form-file")[0].value = null;
-        this.file = null;
+        this.form = {
+          name: "",
+          datasource: this.datasources[0],
+          encoding: "",
+          version: "",
+          multiple_configs: false,
+          activate_config: true,
+          automatic_reload: false,
+        };
+        if (this.file != null) {
+          this.fileInput.reset();
+          this.file = null;
+        }
+      }, error: (errorData: HttpErrorResponse) => {
+        var error = (errorData.error) ? errorData.error : errorData.message;
+        this.error = error;
+        this.result = "";
       }
-    }, (errorData, status, errorMsg) => {
-      var error = (errorData) ? errorData.error : errorMsg;
-      this.error = error;
-      this.result = "";
-    }, false);
+    }); // TODO no intercept
   };
 
   reset() {
@@ -118,6 +128,8 @@ export class ConfigurationsUploadComponent implements OnInit {
       activate_config: true,
       automatic_reload: false,
     };
+    this.fileInput.reset();
+    this.file = null;
   };
 
 }
