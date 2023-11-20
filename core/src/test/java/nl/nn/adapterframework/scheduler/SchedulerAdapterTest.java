@@ -42,7 +42,7 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 
 	@Override
 	@BeforeEach
-	public void setUp() throws SchedulerException, ParseException {
+	public void setUp() throws SchedulerException {
 		super.setUp();
 		schedulerAdapter = new SchedulerAdapter();
 	}
@@ -69,17 +69,17 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testGetJobMessages() throws SchedulerException {
+	public void testGetJobMessages() {
 		assertEquals("<jobMessages/>", schedulerAdapter.getJobMessages(null).toXML().trim());
 	}
 
 	@Test
-	public void testJobDataMapToXmlBuilder() throws SchedulerException {
+	public void testJobDataMapToXmlBuilder() {
 		JobDataMap jobDataMap = new JobDataMap();
 		jobDataMap.put(JAVALISTENER, "javaListener");
 		jobDataMap.put(CORRELATIONID, "correlationId");
 		jobDataMap.put(MESSAGE, "message");
-		
+
 		assertEquals("<jobMessages/>", schedulerAdapter.getJobMessages(null).toXML().trim());
 	}
 
@@ -93,7 +93,7 @@ public class SchedulerAdapterTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testGetSchedulerMetaDataToXml() throws SchedulerException {
+	public void testGetSchedulerMetaDataToXml() {
 		assertTrue(schedulerAdapter.getSchedulerMetaDataToXml(schedulerHelper.getScheduler()).toXML().contains("<schedulerMetaData "));
 	}
 

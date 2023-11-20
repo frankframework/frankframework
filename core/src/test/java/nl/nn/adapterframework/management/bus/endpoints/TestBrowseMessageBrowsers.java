@@ -106,7 +106,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 
 	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if(adapter != null) {
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
 		}
@@ -114,7 +114,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	@Test
-	public void getMessageById() throws Exception {
+	public void getMessageById() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.GET);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
@@ -130,7 +130,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	@Test
-	public void getMessageByIdFromReceiver() throws Exception {
+	public void getMessageByIdFromReceiver() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.GET);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
@@ -145,7 +145,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	@Test
-	public void downloadJsonMessageByIdFromReceiver() throws Exception {
+	public void downloadJsonMessageByIdFromReceiver() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
@@ -159,7 +159,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	@Test
-	public void downloadXmlMessageByIdFromReceiver() throws Exception {
+	public void downloadXmlMessageByIdFromReceiver() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
@@ -173,7 +173,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	@Test
-	public void getMessageByIdFromPipe() throws Exception {
+	public void getMessageByIdFromPipe() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.GET);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
@@ -187,7 +187,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	@Test
-	public void downloadJsonMessageByIdFromPipe() throws Exception {
+	public void downloadJsonMessageByIdFromPipe() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
@@ -201,7 +201,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	@Test
-	public void downloadXmlMessageByIdFromPipe() throws Exception {
+	public void downloadXmlMessageByIdFromPipe() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DOWNLOAD);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
@@ -254,7 +254,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	@Test
-	public void resendMessageById() throws Exception {
+	public void resendMessageById() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.STATUS);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
 		request.setHeader(BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapter.getName());
@@ -272,7 +272,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 	}
 
 	@Test
-	public void deleteMessageById() throws Exception {
+	public void deleteMessageById() {
 		TransactionManagerMock.reset();
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.MESSAGE_BROWSER, BusAction.DELETE);
 		request.setHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, getConfiguration().getName());
@@ -316,7 +316,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		}
 
 		@Override
-		public RawMessageWrapper<String> changeProcessState(RawMessageWrapper<String> message, ProcessState toState, String reason) throws ListenerException {
+		public RawMessageWrapper<String> changeProcessState(RawMessageWrapper<String> message, ProcessState toState, String reason) {
 			return message;
 		}
 

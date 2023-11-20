@@ -237,7 +237,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				blockOpen=true;
 			}
 		}
-		public void endIterating() throws SenderException, TimeoutException, IOException {
+		public void endIterating() throws SenderException, IOException, TimeoutException {
 			if (blockOpen && sender instanceof IBlockEnabledSender<?>) {
 				((IBlockEnabledSender)sender).closeBlock(blockHandle, session);
 			}
@@ -248,7 +248,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				results.append("<results count=\""+getCount()+"\"/>");
 			}
 		}
-		public void startBlock() throws SenderException, TimeoutException, IOException {
+		public void startBlock() throws SenderException, TimeoutException {
 			if (!isParallel() && !blockOpen && sender instanceof IBlockEnabledSender<?>) {
 				blockHandle = ((IBlockEnabledSender)sender).openBlock(session);
 				blockOpen=true;
@@ -257,7 +257,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		/**
 		 * @return true when looping should continue, false when stop is required.
 		 */
-		public boolean endBlock() throws SenderException, TimeoutException, IOException {
+		public boolean endBlock() throws SenderException {
 			if (!isParallel() && sender instanceof IBlockEnabledSender<?>) {
 				((IBlockEnabledSender)sender).closeBlock(blockHandle, session);
 				blockOpen=false;
@@ -409,7 +409,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			results.append(itemResult).append("\n");
 		}
 
-		public void waitForResults() throws SenderException, IOException {
+		public void waitForResults() throws SenderException {
 			if (isParallel()) {
 				try {
 					guard.waitForAllResources();
@@ -429,7 +429,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						}
 						addResult(count, pse.getRequest(), itemResult);
 					}
-				} catch (InterruptedException e) {
+				} catch (InterruptedException | IOException e) {
 					throw new SenderException("was interrupted",e);
 				}
 			}

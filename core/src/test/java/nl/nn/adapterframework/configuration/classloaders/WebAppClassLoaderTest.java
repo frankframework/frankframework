@@ -37,7 +37,7 @@ public class WebAppClassLoaderTest extends ConfigurationClassLoaderTestBase<WebA
 
 	/* test classpath resource retrieval */
 	@Test
-	public void absoluteUrl() throws Exception {
+	public void absoluteUrl() {
 		URL resource = getResource(getAbsoluteFilePath("ClassLoaderTestFile.xml"));
 		assertNotNull(resource, "unable to retrieve resource from zip file");
 	}

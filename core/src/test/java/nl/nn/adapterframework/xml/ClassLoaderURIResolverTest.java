@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,7 +82,7 @@ public class ClassLoaderURIResolverTest {
 		return scopeProvider;
 	}
 
-	private String getBase(IScopeProvider classLoaderProvider, BaseType baseType) throws ConfigurationException, IOException {
+	private String getBase(IScopeProvider classLoaderProvider, BaseType baseType) throws ConfigurationException {
 		URL result=null;
 		switch (baseType) {
 		case LOCAL:

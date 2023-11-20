@@ -252,7 +252,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	}
 
 	@Test
-	public void testCaptureFakeFilePath() throws Exception {
+	public void testCaptureFakeFilePath() {
 		pipe.setMessageIsContent(false);
 		pipe.setCompress(true);
 
@@ -260,7 +260,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	}
 
 	@Test
-	public void testCaptureUncompressedLegitimateFilePath() throws Exception {
+	public void testCaptureUncompressedLegitimateFilePath() {
 		pipe.setMessageIsContent(false);
 		pipe.setCompress(false);
 		pipe.setFileFormat(FileFormat.GZ);
@@ -353,7 +353,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	}
 
 	@Test
-	public void testCaptureIllegitimateFilePath() throws Exception {
+	public void testCaptureIllegitimateFilePath() {
 		pipe.setMessageIsContent(false);
 		pipe.setCompress(true);
 

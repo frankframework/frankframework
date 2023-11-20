@@ -236,7 +236,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		}
 	}
 
-	private String toFile(String filename) throws FileSystemException {
+	private String toFile(String filename) {
 		return filename;
 	}
 

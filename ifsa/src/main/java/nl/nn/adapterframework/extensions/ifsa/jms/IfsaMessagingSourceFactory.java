@@ -105,7 +105,7 @@ public class IfsaMessagingSourceFactory extends MessagingSourceFactory {
 	}
 
 	@Override
-	protected ConnectionFactory createConnectionFactory(Context context, String applicationId, boolean createDestination, boolean useJms102) throws IbisException, NamingException {
+	protected ConnectionFactory createConnectionFactory(Context context, String applicationId, boolean createDestination, boolean useJms102) throws NamingException {
 		IFSAQueueConnectionFactory ifsaQueueConnectionFactory = (IFSAQueueConnectionFactory) ((IFSAContext)context).lookupBusConnection(applicationId);
 		if (log.isDebugEnabled()) {
 			log.debug("IfsaConnection for application ["+applicationId+"] got ifsaQueueConnectionFactory with properties:"

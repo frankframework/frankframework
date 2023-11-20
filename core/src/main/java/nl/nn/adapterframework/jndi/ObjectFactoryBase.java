@@ -48,7 +48,7 @@ public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
 	protected abstract L lookup(String jndiName, Properties jndiEnvironment) throws NamingException;
 
 	@SuppressWarnings("unchecked")
-	protected O augment(L object, String objectName) throws NamingException {
+	protected O augment(L object, String objectName) {
 		return (O)object;
 	}
 
@@ -57,7 +57,7 @@ public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
 		return get(jndiName, null);
 	}
 
-	public O get(String jndiName, Properties jndiEnvironment) throws NamingException {
+	public O get(String jndiName, Properties jndiEnvironment) {
 		return objects.computeIfAbsent(jndiName, k -> compute(k, jndiEnvironment));
 	}
 
@@ -75,7 +75,6 @@ public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
 		return objects.computeIfAbsent(jndiName, k -> compute(object, jndiName));
 	}
 
-	@SneakyThrows(NamingException.class)
 	private O compute(L object, String jndiName) {
 		return augment(object, jndiName);
 	}

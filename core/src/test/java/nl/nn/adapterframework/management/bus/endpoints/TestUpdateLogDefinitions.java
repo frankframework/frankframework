@@ -81,7 +81,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 	}
 
 	@Test
-	public void reconfigureLogDefinitionsNoHeaders() throws Exception {
+	public void reconfigureLogDefinitionsNoHeaders() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 
 		try {
@@ -94,14 +94,14 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 	}
 
 	@Test
-	public void reconfigureLogDefinitionsEmptyHeader() throws Exception {
+	public void reconfigureLogDefinitionsEmptyHeader() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 		request.setHeader("reconfigure", "");
 		assertThrows(MessageHandlingException.class, () -> callSyncGateway(request));
 	}
 
 	@Test
-	public void reconfigureLogDefinitions() throws Exception {
+	public void reconfigureLogDefinitions() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 		request.setHeader("reconfigure", "true");
 		Message<?> response = callSyncGateway(request);
@@ -110,7 +110,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 	}
 
 	@Test
-	public void updateLogDefinitionsEmptyHeader() throws Exception {
+	public void updateLogDefinitionsEmptyHeader() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 		request.setHeader("logPackage", LOG_DEFINITION_PACKAGE);
 		request.setHeader("level", "");
@@ -125,7 +125,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 	}
 
 	@Test
-	public void updateLogDefinitionsNoHeader() throws Exception {
+	public void updateLogDefinitionsNoHeader() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 		request.setHeader("logPackage", LOG_DEFINITION_PACKAGE);
 
@@ -139,7 +139,7 @@ public class TestUpdateLogDefinitions extends BusTestBase {
 	}
 
 	@Test
-	public void updateLogDefinitions() throws Exception {
+	public void updateLogDefinitions() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.LOG_DEFINITIONS, BusAction.MANAGE);
 		request.setHeader("logPackage", LOG_DEFINITION_PACKAGE);
 		request.setHeader("level", "debug");

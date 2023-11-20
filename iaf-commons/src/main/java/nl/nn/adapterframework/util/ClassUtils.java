@@ -423,7 +423,7 @@ public abstract class ClassUtils {
 		return infoList;
 	}
 
-	public static Map<String,Object> getClassInfo(Class<?> clazz, ClassLoader classLoader) throws IOException {
+	public static Map<String,Object> getClassInfo(Class<?> clazz, ClassLoader classLoader) {
 		Map<String,Object> result = new LinkedHashMap<>();
 		String classLoaderName=classLoader!=null? classLoader.toString() : "<system classloader>";
 		result.put("classLoader", classLoaderName);

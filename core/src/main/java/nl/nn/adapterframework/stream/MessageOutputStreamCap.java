@@ -70,7 +70,7 @@ public class MessageOutputStreamCap extends MessageOutputStream {
 	}
 
 	@Override
-	public JsonEventHandler asJsonEventHandler() throws StreamingException {
+	public JsonEventHandler asJsonEventHandler() {
 		if (super.asNative()==null) {
 			setRequestStream(new StringWriter());
 		}

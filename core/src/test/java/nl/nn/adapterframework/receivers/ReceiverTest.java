@@ -78,7 +78,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import bitronix.tm.TransactionManagerServices;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.AdapterManager;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IListenerConnector;
@@ -157,7 +156,7 @@ public class ReceiverTest {
 		return listener;
 	}
 
-	public <M> Receiver<M> setupReceiver(IListener<M> listener) throws Exception {
+	public <M> Receiver<M> setupReceiver(IListener<M> listener) {
 		@SuppressWarnings("unchecked")
 		Receiver<M> receiver = configuration.createBean(Receiver.class);
 		configuration.autowireByName(listener);
@@ -203,7 +202,7 @@ public class ReceiverTest {
 		return adapter;
 	}
 
-	public Receiver<String> setupReceiverWithMessageStoreListener(MessageStoreListener<String> listener, ITransactionalStorage<Serializable> errorStorage) throws ConfigurationException {
+	public Receiver<String> setupReceiverWithMessageStoreListener(MessageStoreListener<String> listener, ITransactionalStorage<Serializable> errorStorage) {
 		Receiver<String> receiver = configuration.createBean(Receiver.class);
 		receiver.setListener(listener);
 		receiver.setName("receiver");

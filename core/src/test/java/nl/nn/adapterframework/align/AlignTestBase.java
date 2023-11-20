@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
@@ -29,7 +28,7 @@ public abstract class AlignTestBase {
 		testFiles(schemaFile, namespace, rootElement, inputFile, false, null);
 	}
 
-	public URL getSchemaURL(String schemaFile) throws IOException {
+	public URL getSchemaURL(String schemaFile) {
 		URL result=TestFileUtils.getTestFileURL(BASEDIR+schemaFile);
 		if (result==null) {
 			fail("cannot find schema ["+schemaFile+"]");
@@ -37,7 +36,7 @@ public abstract class AlignTestBase {
 		return result;
 	}
 
-	protected String getTestFile(String file) throws IOException, TimeoutException {
+	protected String getTestFile(String file) throws IOException {
 		return TestFileUtils.getTestFile(BASEDIR+file);
 	}
 

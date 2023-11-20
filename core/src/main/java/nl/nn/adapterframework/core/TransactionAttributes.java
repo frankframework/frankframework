@@ -15,12 +15,13 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.LogUtil;

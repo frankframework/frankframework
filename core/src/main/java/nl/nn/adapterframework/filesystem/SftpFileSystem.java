@@ -285,7 +285,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public long getFileSize(SftpFileRef f) throws FileSystemException {
+	public long getFileSize(SftpFileRef f) {
 		getFileAttributes(f);
 		return f.getSize();
 	}
@@ -310,7 +310,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public String getParentFolder(SftpFileRef file) throws FileSystemException {
+	public String getParentFolder(SftpFileRef file) {
 		return file.getFolder();
 	}
 

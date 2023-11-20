@@ -790,7 +790,7 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	/**
 	 * Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with {@code protocol} as the provided Suite may not be valid for the provided Protocol
 	 * See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.
-	 * 
+	 *
 	 * @see <a href="https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html">Java Security Standard Algorithm Names Specification</a>
 	 */
 	public void setSupportedCipherSuites(String supportedCipherSuites) {

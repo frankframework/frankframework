@@ -15,11 +15,9 @@
 */
 package nl.nn.adapterframework.extensions.bis;
 
-import java.io.IOException;
 import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
@@ -107,7 +105,7 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) throws TransformerException, IOException {
+	public Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) {
 		return message;
 	}
 
