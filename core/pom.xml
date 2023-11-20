@@ -447,7 +447,7 @@
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId>
 			<artifactId>xmlbeans</artifactId>
-			<version>5.1.1</version>
+			<version>5.2.0</version>
 			<exclusions>
 				<exclusion><!-- Java 8 scoped profile -->
 					<groupId>xml-apis</groupId>
