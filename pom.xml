@@ -1215,7 +1215,7 @@
 				</property>
 			</activation>
 			<modules>
-				<module>iaf-commons</module>
+				<module>commons</module>
 				<module>security</module>
 				<module>credentialProvider</module>
 				<module>management-gateway</module>
