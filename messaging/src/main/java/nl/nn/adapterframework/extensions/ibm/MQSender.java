@@ -25,7 +25,6 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.TopicSession;
-import javax.naming.NamingException;
 
 import com.ibm.mq.jms.JMSC;
 import com.ibm.mq.jms.MQDestination;
@@ -50,7 +49,7 @@ public class MQSender extends JmsSender {
 
 	@Override
 	public MessageProducer getMessageProducer(Session session,
-			Destination destination) throws NamingException, JMSException {
+			Destination destination) throws JMSException {
 		setTargetClientMQ(destination);
 		return super.getMessageProducer(session, destination);
 	}

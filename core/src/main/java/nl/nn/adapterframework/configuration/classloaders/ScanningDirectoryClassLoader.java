@@ -38,7 +38,7 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 	private int scanInterval = 10;
 	private ScheduledFuture<?> future;
 
-	public ScanningDirectoryClassLoader(ClassLoader parent) throws ConfigurationException {
+	public ScanningDirectoryClassLoader(ClassLoader parent) {
 		super(parent);
 	}
 

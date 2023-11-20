@@ -75,7 +75,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 	}
 
 	@Test
-	public void testNullXMLFile() throws Exception {
+	public void testNullXMLFile() {
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
 		pFrom.setValue("dummy@dummy.com");
@@ -129,7 +129,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 	}
 
 	@Test
-	public void testParametersEmptyRecipients() throws Exception {
+	public void testParametersEmptyRecipients() {
 
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
@@ -183,7 +183,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 	}
 
 	@Test
-	public void testAttachmentsFromSessionKey() throws Exception {
+	public void testAttachmentsFromSessionKey() {
 
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
@@ -240,7 +240,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 	}
 
 	@Test
-	public void testAttachmentsContentBase64() throws Exception {
+	public void testAttachmentsContentBase64() {
 
 		Parameter pFrom = new Parameter();
 		pFrom.setName("from");
@@ -285,7 +285,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 		assertEquals(correlationID, result);
 	}
 
-	public void sendMessage(String filePath) throws Exception {
+	public void sendMessage(String filePath) {
 		sender.configure();
 		sender.open();
 		Message sampleMailXML = MessageTestUtils.getMessage(filePath);

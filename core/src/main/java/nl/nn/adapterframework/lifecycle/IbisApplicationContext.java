@@ -88,7 +88,7 @@ public class IbisApplicationContext implements Closeable {
 	 */
 	protected void createApplicationContext() throws BeansException {
 		APPLICATION_LOG.debug("Creating IbisApplicationContext");
-		if (!state.equals(BootState.FIRST_START)) {
+		if (state != BootState.FIRST_START) {
 			state = BootState.STARTING;
 		}
 

@@ -37,10 +37,10 @@ import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * A Trigger that has its type configured at startup. Either use type = ALARM or type = CLEARING.
- *  
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
- * 
+ *
  */
 public class Trigger implements ITrigger {
 	protected Logger log = LogUtil.getLogger(this);

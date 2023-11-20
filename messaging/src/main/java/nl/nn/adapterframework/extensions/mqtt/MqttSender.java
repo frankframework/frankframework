@@ -80,7 +80,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 		return new SenderResult(sendMessage(message, session, null));
 	}
 
-	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException, TimeoutException {
+	public Message sendMessage(Message message, PipeLineSession session, String soapHeader) throws SenderException {
 		try {
 			if(!client.isConnected()) {
 				super.open();

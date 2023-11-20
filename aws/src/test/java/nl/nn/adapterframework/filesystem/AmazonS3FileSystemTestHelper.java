@@ -3,7 +3,6 @@ package nl.nn.adapterframework.filesystem;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -143,7 +142,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public InputStream _readFile(String folder, String filename) throws FileNotFoundException {
+	public InputStream _readFile(String folder, String filename) {
 		String path = StringUtil.concatStrings(folder, "/", filename);
 		final S3Object file = s3Client.getObject(bucketName, path);
 		InputStream is = file.getObjectContent();
@@ -159,7 +158,7 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	@Override
-	public void _createFolder(String folderName) throws IOException {
+	public void _createFolder(String folderName) {
 		String foldername = folderName.endsWith("/") ? folderName : folderName +"/";
 		s3Client.putObject(bucketName, foldername, "");
 	}

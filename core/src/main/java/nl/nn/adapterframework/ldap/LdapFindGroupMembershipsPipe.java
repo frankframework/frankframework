@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlBuilder;
 
@@ -82,19 +81,13 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 	@Override
 	public void start() throws PipeStartException {
 		super.start();
-		try {
-			ldapClient.open();
-		} catch (SenderException e) {
-			throw new PipeStartException(e);
-		}
+		ldapClient.open();
 	}
 
 	@Override
 	public void stop() {
 		try {
 			ldapClient.close();
-		} catch (SenderException e) {
-			log.warn("cannot close ldapClient",e);
 		} finally {
 			super.stop();
 		}

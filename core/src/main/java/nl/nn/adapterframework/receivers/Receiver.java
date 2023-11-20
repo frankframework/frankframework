@@ -1764,7 +1764,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 */
 	@Protected
 	public void setRunState(RunState state) {
-		if(RunState.ERROR.equals(state)) {
+		if(RunState.ERROR == state) {
 			log.debug("{} Set RunState to ERROR -> Stop Running", this::getLogPrefix);
 			stopRunning();
 		}

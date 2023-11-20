@@ -1051,7 +1051,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties.
 	 * @ff.default <code>INFO, unless overridden by property msg.log.level.default</code>
 	 */
-	public void setMsgLogLevel(MessageLogLevel level) throws ConfigurationException {
+	public void setMsgLogLevel(MessageLogLevel level) {
 		msgLogLevel = level.getEffectiveLevel();
 	}
 

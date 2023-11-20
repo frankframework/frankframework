@@ -37,25 +37,25 @@ public class MiscTest {
 	 * Method: toFileSize(String value, long defaultValue)
 	 */
 	@Test
-	public void testToFileSizeForValueDefaultValue() throws Exception {
+	public void testToFileSizeForValueDefaultValue() {
 		long res = Misc.toFileSize("14GB", 20);
 		assertEquals("15032385536", Long.toString(res));
 	}
 
 	@Test
-	public void testNegativeToFileSize() throws Exception {
+	public void testNegativeToFileSize() {
 		String size = Misc.toFileSize(-1);
 		assertEquals("-1", size);
 	}
 
 	@Test
-	public void testToFileSize1024() throws Exception {
+	public void testToFileSize1024() {
 		String size = Misc.toFileSize(1024);
 		assertEquals("1KB", size);
 	}
 
 	@Test
-	public void testNegativeToFileSize512MB() throws Exception {
+	public void testNegativeToFileSize512MB() {
 		String size = Misc.toFileSize(1024*1024*5);
 		assertEquals("5MB", size);
 	}
@@ -87,7 +87,7 @@ public class MiscTest {
 	 * collectionDescription, boolean lowercase)
 	 */
 	@Test
-	public void testAddItemsToList() throws Exception {
+	public void testAddItemsToList() {
 		List<String> stringCollection = new ArrayList<>();
 		String list = "a,b,C";
 		String collectionDescription = "First 3 letters of the alphabet";
@@ -104,7 +104,7 @@ public class MiscTest {
 	 * Method: getFileSystemTotalSpace()
 	 */
 	@Test
-	public void testGetFileSystemTotalSpace() throws Exception {
+	public void testGetFileSystemTotalSpace() {
 		assertFalse(Misc.getFileSystemTotalSpace().isEmpty());
 	}
 
@@ -112,7 +112,7 @@ public class MiscTest {
 	 * Method: getFileSystemFreeSpace()
 	 */
 	@Test
-	public void testGetFileSystemFreeSpace() throws Exception {
+	public void testGetFileSystemFreeSpace() {
 		assertFalse(Misc.getFileSystemFreeSpace().isEmpty());
 	}
 
@@ -120,7 +120,7 @@ public class MiscTest {
 	 * Method: getAge(long value)
 	 */
 	@Test
-	public void testGetAge() throws Exception {
+	public void testGetAge() {
 		assertFalse(Misc.getAge(1).isEmpty());
 	}
 
@@ -128,7 +128,7 @@ public class MiscTest {
 	 * Method: getDurationInMs(long value)
 	 */
 	@Test
-	public void testGetDurationInMs() throws Exception {
+	public void testGetDurationInMs() {
 		assertFalse(Misc.getDurationInMs(14).isEmpty());
 	}
 
@@ -136,7 +136,7 @@ public class MiscTest {
 	 * Method: parseAge(String value, long defaultValue)
 	 */
 	@Test
-	public void testParseAge() throws Exception {
+	public void testParseAge() {
 		long res = Misc.parseAge("2D", 100);
 		assertEquals(172800000, res);
 	}
@@ -146,7 +146,7 @@ public class MiscTest {
 	 * hideMethod)
 	 */
 	@Test
-	public void testCleanseMessage() throws Exception {
+	public void testCleanseMessage() {
 		String s = "Donald Duck 23  Hey hey  14  Wooo";
 		String regex = "\\d";
 		String res = Misc.cleanseMessage(s, regex, HideMethod.ALL);

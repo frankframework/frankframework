@@ -17,14 +17,12 @@ package nl.nn.adapterframework.util.flow.graphviz;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Test;
 
 public class OptionsTest {
 
 	@Test
-	public void optionsSVGformat() throws IOException {
+	public void optionsSVGformat() {
 		Options options = Options.create();
 		options.format(Format.SVG);
 		String json = options.toJson(true);
@@ -33,7 +31,7 @@ public class OptionsTest {
 	}
 
 	@Test
-	public void optionsSVG_STANDALONEformat() throws IOException {
+	public void optionsSVG_STANDALONEformat() {
 		Options options = Options.create();
 		options.format(Format.SVG_STANDALONE);
 		String json = options.toJson(true);
@@ -42,7 +40,7 @@ public class OptionsTest {
 	}
 
 	@Test
-	public void optionsJSONformat() throws IOException {
+	public void optionsJSONformat() {
 		Options options = Options.create();
 		options.format(Format.JSON);
 		String json = options.toJson(true);
@@ -51,7 +49,7 @@ public class OptionsTest {
 	}
 
 	@Test
-	public void optionsTotalMemory() throws IOException {
+	public void optionsTotalMemory() {
 		Options options = Options.create();
 		options.totalMemory(512);
 		String json = options.toJson(true);
@@ -60,7 +58,7 @@ public class OptionsTest {
 	}
 
 	@Test
-	public void optionsYInvertTrue() throws IOException {
+	public void optionsYInvertTrue() {
 		Options options = Options.create();
 		options.yInvert(true);
 		String json = options.toJson(true);
@@ -69,7 +67,7 @@ public class OptionsTest {
 	}
 
 	@Test
-	public void optionsYInvertFalse() throws IOException {
+	public void optionsYInvertFalse() {
 		Options options = Options.create();
 		options.yInvert(false);
 		String json = options.toJson(true);
@@ -78,7 +76,7 @@ public class OptionsTest {
 	}
 
 	@Test
-	public void optionsRawJson() throws IOException {
+	public void optionsRawJson() {
 		Options options = Options.create();
 		options.yInvert(false);
 		options.totalMemory(512);
@@ -88,7 +86,7 @@ public class OptionsTest {
 	}
 
 	@Test
-	public void fullJsonToOptions() throws IOException {
+	public void fullJsonToOptions() {
 		String json = "{format:'SVG',engine:'dot',totalMemory:'512',yInvert:false}";
 		Options options = Options.fromJson(json);
 
@@ -96,7 +94,7 @@ public class OptionsTest {
 	}
 
 	@Test
-	public void minimalJsonToOptions() throws IOException {
+	public void minimalJsonToOptions() {
 		String json = "{format:'SVG',engine:'dot'}";
 		Options options = Options.fromJson(json);
 

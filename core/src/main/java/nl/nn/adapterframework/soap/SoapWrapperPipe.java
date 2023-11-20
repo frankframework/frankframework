@@ -278,7 +278,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		return DEFAULT_SOAP_VERSION_FOR_WRAPPING.namespace;
 	}
 
-	protected Message unwrapMessage(Message message, PipeLineSession session) throws SAXException, TransformerException, IOException {
+	protected Message unwrapMessage(Message message, PipeLineSession session) throws IOException, TransformerException, SAXException {
 		return soapWrapper.getBody(message, isAllowPlainXml(), session, getSoapNamespaceSessionKey());
 	}
 

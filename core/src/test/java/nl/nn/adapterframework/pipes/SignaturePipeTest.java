@@ -100,7 +100,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	}
 
 	@Test
-	public void tryUsingSamePasswordForKeystoreAndKeyPairHavingDifferentPasswords() throws Exception {
+	public void tryUsingSamePasswordForKeystoreAndKeyPairHavingDifferentPasswords() {
 		pipe.setKeystore("/Signature/ks_multipassword.jks");
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreType(KeystoreType.JKS);

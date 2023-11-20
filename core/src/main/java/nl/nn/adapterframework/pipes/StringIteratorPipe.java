@@ -73,12 +73,12 @@ public class StringIteratorPipe extends IteratingPipe<String> {
 			private boolean processingInBlocks=false;
 
 			@Override
-			public void endIterating() throws SenderException, TimeoutException, IOException {
+			public void endIterating() throws SenderException, IOException, TimeoutException {
 				finalizeBlock();
 				super.endIterating();
 			}
 			@Override
-			public void startBlock() throws SenderException, TimeoutException, IOException {
+			public void startBlock() throws SenderException, TimeoutException {
 				processingInBlocks=true;
 				super.startBlock();
 				if (isCombineBlocks()) {

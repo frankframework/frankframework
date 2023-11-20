@@ -72,7 +72,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		mockDatabase();
 	}
 
-	public void configureClassloader(String type, String configurationName) throws Exception {
+	public void configureClassloader(String type, String configurationName) {
 		if(type == null || type.equals("DummyClassLoader"))
 			skip = true;
 		else if(type.isEmpty()) //If empty string, it's a WebAppClassLoader
@@ -105,7 +105,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	}
 
 	@BeforeEach
-	public void setUp() throws ConfigurationException, Exception {
+	public void setUp() {
 		AppConstants.removeInstance();
 		appConstants = AppConstants.getInstance();
 		String configurationsNames = "";

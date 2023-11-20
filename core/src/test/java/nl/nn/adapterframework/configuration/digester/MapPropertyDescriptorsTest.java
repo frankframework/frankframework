@@ -92,7 +92,7 @@ public class MapPropertyDescriptorsTest {
 	}
 
 	@Test
-	public void testIfAllConfigurationWarningsAreDeprecated() throws ClassNotFoundException, IntrospectionException {
+	public void testIfAllConfigurationWarningsAreDeprecated() throws ClassNotFoundException {
 		for (String beanName : getClassesThatImplementIConfigurable()) {
 			Class<?> beanClass = Class.forName(beanName);
 

@@ -162,7 +162,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		configureSoapValidator(addNamespaceToSchema, null);
 	}
 
-	private void configureSoapValidator(boolean addNamespaceToSchema, SoapVersion soapVersion) throws ConfigurationException {
+	private void configureSoapValidator(boolean addNamespaceToSchema, SoapVersion soapVersion) {
 		if (addNamespaceToSchema) {
 			pipe.setAddNamespaceToSchema(addNamespaceToSchema);
 		}
