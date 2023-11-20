@@ -20,13 +20,12 @@
               <button
                 class="btn btn-sm btn-default"
                 [ngClass]="{ active: this.loadedConfiguration }"
-                uib-btn-radio="true"
-                (click)="update()"
+                (click)="update(true)"
               >Loaded Configuration</button>
               <button
                 class="btn btn-sm btn-default"
                 [ngClass]="{ active: !this.loadedConfiguration }"
-                (click)="update()"
+                (click)="update(false)"
               >Original Configuration</button>
             </div>
           </div>

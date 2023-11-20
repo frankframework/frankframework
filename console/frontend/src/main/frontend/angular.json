@@ -43,8 +43,14 @@
               }
             ],
             "styles": [
-              "src/styles.scss",
-              "node_modules/datatables.net-dt/css/jquery.dataTables.css"
+              "node_modules/bootstrap/dist/css/bootstrap.css",
+              "node_modules/font-awesome/css/font-awesome.css",
+              "node_modules/ladda/dist/ladda-themeless.min.css",
+              "node_modules/prismjs/themes/prism.css",
+              "node_modules/prismjs/plugins/line-numbers/prism-line-numbers.css",
+              "node_modules/prismjs/plugins/line-highlight/prism-line-highlight.css",
+              "node_modules/datatables.net-dt/css/jquery.dataTables.css",
+              "src/styles.scss"
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.js",
@@ -57,21 +63,8 @@
             "allowedCommonJsDependencies": [
               "angular",
               "sweetalert2",
-              "angular-animate",
-              "angular-aria",
-              "angular-chart.js",
-              "angular-cookies",
               "angular-datatables/dist/angular-datatables",
               "angular-datatables/dist/plugins/buttons/angular-datatables.buttons",
-              "angular-ladda",
-              "angular-messages",
-              "angular-parse-ext",
-              "angular-resource",
-              "angular-route",
-              "angular-sanitize",
-              "angular-touch",
-              "angular-ui-bootstrap",
-              "angularjs-toaster",
               "pace-js",
               "prismjs"
             ]

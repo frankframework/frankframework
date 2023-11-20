@@ -2,7 +2,7 @@ import { Component, Inject, LOCALE_ID, OnDestroy, OnInit, Renderer2 } from '@ang
 import { Idle } from '@ng-idle/core';
 import { Observable, Subscription, combineLatest, filter, first } from 'rxjs';
 import { Adapter, AppConstants, AppService, ServerInfo } from './app.service';
-import { ActivatedRoute, Data, NavigationEnd, ParamMap, Router, RouterEvent } from '@angular/router';
+import { ActivatedRoute, Data, NavigationEnd, NavigationStart, ParamMap, Router, RouterEvent, convertToParamMap } from '@angular/router';
 import { ViewportScroller, formatDate } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 // @ts-ignore pace-js does not have types
@@ -36,7 +36,7 @@ export class AppComponent implements OnInit, OnDestroy {
   routeData: Data = {};
 
   private urlHash$!: Observable<string | null>;
-  private routeQueryParams!: ParamMap;
+  private routeQueryParams: ParamMap = convertToParamMap({});
   private _subscriptions = new Subscription();
 
   constructor(
@@ -65,6 +65,15 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     this.urlHash$ = this.route.fragment;
+    this.router.events.pipe(
+      filter((e) =>
+        e instanceof NavigationStart && e.url.startsWith('/!')
+      ), first()
+    ).subscribe((e) => {
+      const event = e as any as NavigationStart
+        this.router.navigateByUrl(event.url.replace('/!', ''));
+    });
+
     this.router.events.pipe(
       filter((e) => e instanceof NavigationEnd)
     ).subscribe((e) => {

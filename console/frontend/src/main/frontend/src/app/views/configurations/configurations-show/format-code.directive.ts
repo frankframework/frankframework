@@ -33,16 +33,18 @@ export class FormatCodeDirective implements OnInit, OnChanges {
       this.addOnClickEvent(this.code);
 
       // $location.hash(this.initHash);
-      let el = $("#" + this.initHash);
-      if (el) {
-        el.addClass("line-selected");
-        let lineNumber = Math.max(0, parseInt(this.initHash.substr(1)) - 15);
-        setTimeout(() => {
-          let lineElement = $("#L")[0]; // Todo:  + lineNumber
-          if (lineElement) {
-            lineElement.scrollIntoView();
-          }
-        }, 500)
+      if(this.initHash != ""){
+        let el = $("#" + this.initHash);
+        if (el) {
+          el.addClass("line-selected");
+          let lineNumber = Math.max(0, parseInt(this.initHash.substring(1)) - 15);
+          setTimeout(() => {
+            let lineElement = $("#L" + lineNumber)[0];
+            if (lineElement) {
+              lineElement.scrollIntoView();
+            }
+          }, 500)
+        }
       }
     } else if (this.text === '') {
       $(this.code).text(this.text);
@@ -56,7 +58,7 @@ export class FormatCodeDirective implements OnInit, OnChanges {
       target.parent().children(".line-selected").removeClass("line-selected");
       let anchor = target.attr('id');
       target.addClass("line-selected");
-      this.router.navigate([], { relativeTo: this.route, fragment: anchor });
+      this.router.navigate([], { relativeTo: this.route, queryParams: this.route.snapshot.queryParams, fragment: anchor });
     });
   }
 }

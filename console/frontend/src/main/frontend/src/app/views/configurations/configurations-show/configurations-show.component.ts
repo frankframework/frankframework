@@ -39,13 +39,16 @@ export class ConfigurationsShowComponent implements OnInit {
 
     this.route.queryParamMap.subscribe(params => {
       this.selectedConfiguration = params.has('name') && params.get('name') != '' ? params.get('name')! : "All";
-      this.loadedConfiguration = true; // used to be always "" but `"" == false` returns true so idk why this even exists
+      // this.loadedConfiguration = true; // used to be always "" but `"" == false` returns true so idk why this even exists
+      this.loadedConfiguration = !(params.has('loaded') && params.get('loaded') == "false");
 
       this.getConfiguration();
     });
   }
 
-  update() {
+  update(loaded: boolean) {
+    this.loadedConfiguration = loaded;
+    this.anchor = "";
     this.getConfiguration();
   };
 
@@ -57,13 +60,15 @@ export class ConfigurationsShowComponent implements OnInit {
   };
 
   updateQueryParams() {
-    let transitionObj: TransitionObject = {};
+    const transitionObj: TransitionObject = {};
     if (this.selectedConfiguration != "All")
       transitionObj.name = this.selectedConfiguration;
     if (!this.loadedConfiguration)
       transitionObj.loaded = this.loadedConfiguration;
 
-    this.router.navigate([], { relativeTo: this.route, queryParams: transitionObj });
+    const fragment = this.anchor != "" ? this.anchor : undefined;
+
+    this.router.navigate([], { relativeTo: this.route, queryParams: transitionObj, fragment });
   };
 
   clipboard() {
@@ -88,9 +93,9 @@ export class ConfigurationsShowComponent implements OnInit {
       this.configuration = data;
 
       if (this.anchor) {
-        this.router.navigate([], { relativeTo: this.route, fragment: this.anchor });
+        // this.router.navigate([], { relativeTo: this.route, fragment: this.anchor });
+        this.viewportScroller.scrollToAnchor(this.anchor);
       }
-      this.viewportScroller.scrollToAnchor(this.anchor);
     });
   };
 }
