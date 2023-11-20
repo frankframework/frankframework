@@ -9,7 +9,7 @@ Frank!Framework
 [![Pull Requests](https://img.shields.io/github/commit-activity/m/ibissource/iaf?label=Pull%20Requests)](https://github.com/ibissource/iaf/pulls)
 [![codecov](https://codecov.io/gh/ibissource/iaf/branch/master/graph/badge.svg)](https://codecov.io/gh/ibissource/iaf)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/56a982cc39084043b2e283a146206ec9)](https://www.codacy.com/gh/ibissource/iaf/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ibissource/iaf&amp;utm_campaign=Badge_Grade)
-[![CodeFactor](https://www.codefactor.io/repository/github/ibissource/iaf/badge)](https://www.codefactor.io/repository/github/ibissource/iaf)
+[![CodeFactor](https://www.codefactor.io/repository/github/frankframework/frankframework/badge)](https://www.codefactor.io/repository/github/frankframework/frankframework)
 [![total GitHub contributors](https://img.shields.io/github/contributors-anon/ibissource/iaf.svg)](https://github.com/ibissource/iaf/graphs/contributors)
 [![Maven Central](https://img.shields.io/maven-central/v/org.ibissource/ibis-adapterframework-parent.svg?label=Maven%20Central)](https://central.sonatype.com/search?namespace=org.ibissource&q=adapterframework)
 [![Latest Snapshot](https://img.shields.io/nexus/public/org.ibissource/ibis-adapterframework-core?label=Latest%20Snapshot&server=https%3A%2F%2Fnexus.frankframework.org%2F)](https://nexus.frankframework.org/#browse/browse)
