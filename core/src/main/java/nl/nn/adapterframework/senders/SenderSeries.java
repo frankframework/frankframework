@@ -120,6 +120,13 @@ public class SenderSeries extends SenderWrapperBase {
 		return false;
 	}
 
+
+
+	@Deprecated // replaced by registerSender, to allow for multiple senders in XSD. Method must be present, as it is used by Digester
+	public final void setSender(ISender sender) {
+		registerSender(sender);
+	}
+
 	/**
 	 * one or more specifications of senders that will be executed one after another. Each sender will get the result of the preceding one as input.
 	 * @ff.mandatory
