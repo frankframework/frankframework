@@ -17,7 +17,6 @@ package nl.nn.adapterframework.webcontrol;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -31,7 +30,7 @@ import nl.nn.adapterframework.util.AppConstants;
 public class RedirectIndexProxy extends HttpServletBase {
 
 	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String consoleLocation = AppConstants.getInstance().getProperty("console.location");
 		if(StringUtils.isNotEmpty(consoleLocation)) {
 			response.sendRedirect(consoleLocation);

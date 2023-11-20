@@ -201,7 +201,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 		return validate(input, session, validatorHandler, null, context);
 	}
 
-	public ValidationResult validate(Object input, PipeLineSession session, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException, PipeRunException, ConfigurationException {
+	public ValidationResult validate(Object input, PipeLineSession session, ValidatorHandler validatorHandler, XMLFilterImpl filter, ValidationContext context) throws XmlValidatorException {
 
 		if (filter != null) {
 			// If a filter is present, connect its output to the context.contentHandler.
@@ -344,7 +344,7 @@ public abstract class AbstractXmlValidator implements IConfigurationAware {
 	}
 
 	/**
-	 * If set to <code>1.0</code>, Xerces's previous XML Schema factory will be used, which would make all XSD 1.1 features illegal. The default behaviour can also be set with <code>xsd.processor.version</code> property. 
+	 * If set to <code>1.0</code>, Xerces's previous XML Schema factory will be used, which would make all XSD 1.1 features illegal. The default behaviour can also be set with <code>xsd.processor.version</code> property.
 	 * @ff.default <code>1.1</code>
 	 */
 	public void setXmlSchemaVersion(String xmlSchemaVersion) {

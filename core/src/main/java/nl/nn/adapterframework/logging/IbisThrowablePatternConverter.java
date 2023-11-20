@@ -32,7 +32,7 @@ import org.apache.logging.log4j.util.Strings;
 @ConverterKeys({ "iEx", "iThrowable" })
 public final class IbisThrowablePatternConverter extends ThrowablePatternConverter {
 
-	private final String CAUSED_BY = "Caused by: ";
+	private static final String CAUSED_BY = "Caused by: ";
 
 	private IbisThrowablePatternConverter(final Configuration config, final String[] options) {
 		super("IbisThrowablePatternConverter", "throwable", options, config);

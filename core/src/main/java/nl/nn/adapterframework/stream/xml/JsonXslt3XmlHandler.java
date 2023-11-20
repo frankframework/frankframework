@@ -48,7 +48,7 @@ public class JsonXslt3XmlHandler implements JsonEventHandler {
 
 	public boolean parse(String key, JsonParser parser) throws IOException, SAXException {
 		Event event = parser.next();
-		if (event.equals(Event.START_OBJECT)) {
+		if (event == Event.START_OBJECT) {
 			startElement("map", key);
 			while ((event = parser.next())!=Event.END_OBJECT) {
 				if (event!=Event.KEY_NAME) {

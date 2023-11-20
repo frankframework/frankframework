@@ -72,8 +72,8 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 		testTransformerPool(XmlUtils.getRemoveUnusedNamespacesTransformerPool(omitXmlDeclaration, indent), input, expected);
 	}
 
-	public void testRemoveUnusedNamespacesXslt2(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
-		testXslt(XmlUtils.makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration, indent), input, expected);
+	public void testRemoveUnusedNamespacesXslt2(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException {
+		testXslt(XmlUtils.makeRemoveUnusedNamespacesXslt2(omitXmlDeclaration, indent),input,expected);
 //		testTransformerPool(XmlUtils.getRemoveUnusedNamespacesXslt2TransformerPool(omitXmlDeclaration, indent),input,expected);
 	}
 
@@ -152,7 +152,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	@Test
 	@Disabled("Saxon 9.6 does not return parameters, transformer.getParameter() is nowhere used in framework code")
 	public void testSettingTransformerParameters() throws IOException, TransformerConfigurationException {
-		Map<String, Object> parameters = new HashMap<String, Object>();
+		Map<String, Object> parameters = new HashMap<>();
 		parameters.put("stringParamKey", "stringParamValue");
 		parameters.put("byteArrayParamKey", "byteArrayParamValue".getBytes());
 		parameters.put("baisParamKey", new ByteArrayInputStream("baisParamValue".getBytes()));

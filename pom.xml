@@ -16,16 +16,16 @@
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
-		<jackson.version>2.15.3</jackson.version>
+		<jackson.version>2.16.0</jackson.version>
 		<cxf.version>3.6.2</cxf.version>
-		<spring.version>5.3.30</spring.version>
+		<spring.version>5.3.31</spring.version>
 		<spring-security.version>5.8.8</spring-security.version>
 		<spring-integration.version>5.5.19</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.13.1.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
-		<micrometer.version>1.11.5</micrometer.version>
+		<micrometer.version>1.12.0</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
@@ -126,7 +126,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>3.25.0</version>
+				<version>3.25.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
@@ -178,11 +178,6 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-sap</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-adapterframework-coolgen</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -273,6 +268,31 @@
 				<artifactId>ibis-adapterframework-dbms</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>nn-specials</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-batch</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>bundle-minimal</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>bundle-full</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+			</dependency>
+
 
 			<!-- explicit dependency to force version 1.1.1 -->
 			<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
@@ -359,7 +379,7 @@
 				<artifactId>spring-jms</artifactId>
 				<version>${spring.version}</version>
 			</dependency>
-			<dependency>
+			<dependency><!-- required for CMIS and the IbisTester class -->
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-test</artifactId>
 				<version>${spring.version}</version>
@@ -1192,26 +1212,23 @@
 				<module>management-gateway</module>
 				<module>core</module>
 				<module>console</module>
-				<module>webapp</module>
 				<module>larva</module>
 				<module>ladybug</module>
-				<module>test</module>
-				<module>example</module>
 				<module>dbms</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>extra-modules</id>
-			<activation>
-				<property>
-					<name>extra-modules</name>
-				</property>
-			</activation>
-			<modules>
+				<module>bundle-minimal</module>
+
 				<module>akamai</module>
 				<module>aws</module>
+				<module>batch</module>
 				<module>cmis</module>
 				<module>aspose</module>
+				<module>nn-specials</module>
+				<module>messaging</module>
+				<module>bundle-full</module>
+
+				<module>webapp</module>
+				<module>test</module>
+				<module>example</module>
 			</modules>
 		</profile>
 		<profile>
@@ -1233,22 +1250,12 @@
 				</property>
 			</activation>
 			<modules>
-				<module>coolgen</module>
-				<module>messaging</module>
 				<module>ifsa</module>
 				<module>sap</module>
 				<module>tibco</module>
 				<module>idin</module>
 			</modules>
 			<repositories>
-				<repository>
-					<id>central</id>
-					<name>Central Repository</name>
-					<url>https://repo.maven.apache.org/maven2/</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</repository>
 				<repository>
 					<id>proprietary</id>
 					<url>https://nexus.frankframework.org/content/repositories/private/</url>

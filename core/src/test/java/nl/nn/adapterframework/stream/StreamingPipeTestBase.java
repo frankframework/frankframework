@@ -6,6 +6,7 @@ import static org.junit.Assume.assumeNotNull;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -145,7 +146,7 @@ public abstract class StreamingPipeTestBase<P extends StreamingPipe> extends Pip
 		}
 
 		@Override
-		public void afterClose() throws Exception {
+		public void afterClose() throws SQLException {
 			super.afterClose();
 			closeCount++;
 		}

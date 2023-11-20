@@ -18,12 +18,11 @@ package nl.nn.adapterframework.scheduler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.text.ParseException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +39,7 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 
 	@Override
 	@BeforeEach
-	public void setUp() throws SchedulerException, ParseException {
+	public void setUp() throws SchedulerException {
 		super.setUp();
 		schedulerSender = configuration.createBean(SchedulerSender.class);
 		schedulerSender.setName(JOB_NAME);
@@ -48,7 +47,7 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testConfigureWithJobNamePattern() throws ConfigurationException, SchedulerException {
+	public void testConfigureWithJobNamePattern() throws ConfigurationException {
 		schedulerSender.setJavaListener("dummyJavaListener");
 		schedulerSender.setCronExpressionPattern("0 0 5 * * ?");
 		schedulerSender.setJobNamePattern("DummyJobNamePattern");
@@ -58,7 +57,7 @@ public class SchedulerSenderTest extends SchedulerTestBase {
 	}
 
 	@Test
-	public void testConfigure() throws ConfigurationException, SenderException, SchedulerException, IOException {
+	public void testConfigure() throws ConfigurationException, SenderException, SchedulerException {
 		schedulerSender.setJavaListener("dummyJavaListener");
 		schedulerSender.setCronExpressionPattern("0 0 5 * * ?");
 

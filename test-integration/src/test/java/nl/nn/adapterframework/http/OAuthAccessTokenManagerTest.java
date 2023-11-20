@@ -28,7 +28,7 @@ public class OAuthAccessTokenManagerTest {
 	private int expiry = 60;
 
 	@Before
-	public void setup() throws Exception {
+	public void setup() {
 		httpSender = new HttpSender();
 		httpSender.setUrl("https://dummy");
 		httpSender.configure();
@@ -36,7 +36,7 @@ public class OAuthAccessTokenManagerTest {
 	}
 
 	@Test
-	public void testRetrieveAccessToken() throws Exception {
+	public void testRetrieveAccessToken() {
 		String tokenEndpoint = TOKENENDPOINT;
 		String scope = "email";
 		String clientId = clientClientId;
@@ -52,7 +52,7 @@ public class OAuthAccessTokenManagerTest {
 	}
 
 	@Test
-	public void testRetrieveAccessTokenNoScope() throws Exception {
+	public void testRetrieveAccessTokenNoScope() {
 		String tokenEndpoint = TOKENENDPOINT;
 		String scope = null;
 		String clientId = clientClientId;
@@ -68,7 +68,7 @@ public class OAuthAccessTokenManagerTest {
 	}
 
 	@Test
-	public void testRetrieveAccessTokenWrongCredentials() throws Exception {
+	public void testRetrieveAccessTokenWrongCredentials() {
 		String tokenEndpoint = TOKENENDPOINT;
 		String scope = "email";
 		String clientId = clientClientId;
@@ -83,7 +83,7 @@ public class OAuthAccessTokenManagerTest {
 	}
 
 	@Test
-	public void testRetrieveAccessTokenWrongTokenEndpoint() throws Exception {
+	public void testRetrieveAccessTokenWrongTokenEndpoint() {
 		String tokenEndpoint = TOKENENDPOINT+"x";
 		String scope = "email";
 		String clientId = clientClientId;

@@ -50,7 +50,7 @@ public class Json2XmlValidatorSmileyTest {
 		return prr.getResult().asString();
 	}
 
-	public String jsonToXml(String json) throws SAXException, IOException {
+	public String jsonToXml(String json) throws SAXException {
 		return Json2Xml.translate(json, TestFileUtils.getTestFileURL("/"+xsd), true, "x", "");
 	}
 

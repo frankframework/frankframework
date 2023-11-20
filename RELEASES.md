@@ -4,9 +4,18 @@ Ibis AdapterFramework release notes
 [Tags](https://github.com/ibissource/iaf/releases)
 [JavaDocs](https://javadoc.frankframework.org/)
 
-Upcoming (7.9)
+Upcoming (8.0)
 --------------
-[Commits](https://github.com/ibissource/iaf/compare/v7.8-RC1...HEAD)
+[Commits](https://github.com/ibissource/iaf/compare/v7.9-RC1...HEAD)
+
+### Non backwards compatible changes
+- CreateRestViewPipe has been removed. It is no longer possible to open the old (blue) user interface.
+- IBulkDataListener has been removed. This feature was only supported through custom listeners and not tested.
+
+
+7.9
+---
+[Commits](https://github.com/ibissource/iaf/compare/v7.8-RC1...v7.9-RC1)
 
 ### Non backwards compatible changes
 

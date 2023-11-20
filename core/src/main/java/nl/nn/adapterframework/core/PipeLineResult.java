@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.core;
 
+import javax.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.core.PipeLine.ExitState;
@@ -33,18 +35,22 @@ import nl.nn.adapterframework.stream.Message;
 public class PipeLineResult {
 
 	private @Setter Message result;
-	private @Getter @Setter ExitState state;
+	private @Setter ExitState state;
 	private @Getter @Setter int exitCode;
 
 	public boolean isSuccessful() {
 		return getState()==ExitState.SUCCESS;
 	}
 
-	public Message getResult() {
+	public @Nonnull Message getResult() {
 		if (result == null) {
 			return Message.nullMessage();
 		}
 		return result;
+	}
+
+	public @Nonnull ExitState getState() {
+		return state;
 	}
 
 	@Override

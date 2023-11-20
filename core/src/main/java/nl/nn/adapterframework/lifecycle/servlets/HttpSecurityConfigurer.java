@@ -60,7 +60,7 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 	}
 
 	@Override
-	public void init(WebSecurity webSecurity) throws Exception {
+	public void init(WebSecurity webSecurity) {
 		if(servletContext != null) servletContext.log("Enabling Spring WebSecurity");
 		servletManager.startAuthenticators();
 	}

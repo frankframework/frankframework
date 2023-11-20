@@ -16,7 +16,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 	private String testFolderPrefix = "fs_test";
 	private String sourceOfMessages_folder=null;
 
-	public void testFolders()  throws Exception{
+	public void testFolders(){
 		String folderName = testFolderPrefix+"_testFolders";
 
 		try {
@@ -43,7 +43,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 //		}
 //	}
 
-	public void testFiles()  throws Exception{
+	public void testFiles(){
 		String folderName = testFolderPrefix+"_testFiles";
 		String folderName2 = folderName+"-2";
 
@@ -105,7 +105,7 @@ public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileS
 		assertFalse(fileSystem.folderExists(folderName), "folder ["+folderName+"] should not exist anymore after being deleted");
 	}
 
-	public void testFileSystemUtils()  throws Exception{
+	public void testFileSystemUtils(){
 		String folderName = testFolderPrefix+"_testFileSystemUtils";
 		String folderName2 = folderName+"-2";
 

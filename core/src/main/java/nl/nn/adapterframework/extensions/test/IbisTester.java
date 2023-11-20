@@ -210,17 +210,17 @@ public class IbisTester {
 		for (Adapter adapter: ibisContext.getIbisManager().getRegisteredAdapters()) {
 			adaptersCount++;
 			RunState runState = adapter.getRunState();
-			if (!(RunState.STARTED).equals(runState)) {
+			if ((RunState.STARTED) != runState) {
 				debug("adapter [" + adapter.getName() + "] has state [" + runState + "], will retry...");
 				int count = 30;
-				while (count-- > 0 && !(RunState.STARTED).equals(runState)) {
+				while (count-- > 0 && (RunState.STARTED) != runState) {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}
 					runState = adapter.getRunState();
-					if (!(RunState.STARTED).equals(runState)) {
+					if ((RunState.STARTED) != runState) {
 						debug("adapter [" + adapter.getName() + "] has state [" + runState + "], retries left [" + count + "]");
 					} else {
 						debug("adapter [" + adapter.getName() + "] has state [" + runState + "]");
@@ -229,7 +229,7 @@ public class IbisTester {
 			} else {
 				debug("adapter [" + adapter.getName() + "] has state [" + runState + "]");
 			}
-			if ((RunState.STARTED).equals(runState)) {
+			if ((RunState.STARTED) == runState) {
 				adaptersStarted++;
 			} else {
 				error("adapter [" + adapter.getName() + "] has state [" + runState + "]");

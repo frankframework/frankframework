@@ -57,44 +57,44 @@ public class DateUtilsTest {
 	}
 
 	@Test
-	public void testFormatLong() throws Exception {
+	public void testFormatLong() {
 		String date = DateUtils.format(getCorrectedDate(1380931200000L));
 		assertEquals("2013-10-05 00:00:00.000", date);
 	}
 
 	@Test
-	public void testFormatDate() throws Exception {
+	public void testFormatDate() {
 		String date = DateUtils.format(getCorrectedDate(new Date(1380931200000L)));
 		assertEquals("2013-10-05 00:00:00.000", date);
 	}
 
 	@Test
-	public void testFormatForDateDateFormat() throws Exception {
+	public void testFormatForDateDateFormat() {
 		Date d = getCorrectedDate(new Date(1503600000));
 		String time = DateUtils.format(d, DateUtils.FORMAT_FULL_GENERIC);
 		assertEquals("1970-01-18 09:40:00.000", time);
 	}
 
 	@Test
-	public void testParseToDate() throws Exception {
+	public void testParseToDate() {
 		Date date = DateUtils.parseToDate("05-10-13", DateUtils.FORMAT_DATE);
 		assertEquals(getCorrectedDate(1380931200000L), date.getTime());
 	}
 
 	@Test
-	public void testParseToDateFullYear() throws Exception {
+	public void testParseToDateFullYear() {
 		Date date = DateUtils.parseToDate("05-10-2014", DateUtils.FORMAT_DATE);
 		assertEquals(getCorrectedDate(1412467200000L), date.getTime());
 	}
 
 	@Test
-	public void unableToParseDate() throws Exception {
+	public void unableToParseDate() {
 		Date date = DateUtils.parseToDate("05/10/98", DateUtils.FORMAT_DATE);
 		assertNull(date);
 	}
 
 	@Test
-	public void unableToParseFullGenericWithoutTime() throws Exception {
+	public void unableToParseFullGenericWithoutTime() {
 		Date date = DateUtils.parseToDate("2000-01-01", DateUtils.FORMAT_FULL_GENERIC);
 		assertNull(date);
 	}

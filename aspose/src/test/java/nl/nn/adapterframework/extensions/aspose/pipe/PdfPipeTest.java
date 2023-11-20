@@ -572,13 +572,13 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Test
-	public void wrongPdfOutputLocation() throws Exception {
+	public void wrongPdfOutputLocation() {
 		pipe.setPdfOutputLocation("not a valid location");
 		assertThrows(ConfigurationException.class, pipe::configure);
 	}
 
 	@Test
-	public void nullAction() throws Exception {
+	public void nullAction() {
 		assertThrows(ConfigurationException.class, pipe::configure, "please specify an action for pdf pipe [PdfPipe under test]. possible values: [CONVERT, COMBINE]");
 	}
 
@@ -594,7 +594,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Test
-	public void wrongLicense() throws Exception {
+	public void wrongLicense() {
 		pipe.setAction(DocumentAction.CONVERT); //without action the pipe will never reach the license block!
 		pipe.setLicense("test123");//can't find this 'license' file
 		assertThrows(ConfigurationException.class, pipe::configure);

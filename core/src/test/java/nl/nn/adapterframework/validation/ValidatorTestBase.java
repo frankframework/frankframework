@@ -183,7 +183,7 @@ public abstract class ValidatorTestBase {
 		return new SchemasProvider() {
 
 			public Set<IXSD> getXsds() throws ConfigurationException {
-				Set<IXSD> xsds = new LinkedHashSet<IXSD>();
+				Set<IXSD> xsds = new LinkedHashSet<>();
 				String[] split =  schemaLocation.trim().split("\\s+");
 				if (split.length % 2 != 0) throw new ConfigurationException("The schema must exist from an even number of strings, but it is " + schemaLocation);
 				for (int i = 0; i < split.length; i += 2) {
@@ -206,7 +206,7 @@ public abstract class ValidatorTestBase {
 				} catch(Exception e) {
 					throw new ConfigurationException("could not merge schema's", e);
 				}
-				List<Schema> schemas = new ArrayList<Schema>();
+				List<Schema> schemas = new ArrayList<>();
 				SchemaUtils.sortByDependencies(xsds, schemas);
 				return schemas;
 			}

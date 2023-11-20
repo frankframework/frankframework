@@ -50,9 +50,6 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.KeystoreType;
-import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
-import nl.nn.adapterframework.extensions.esb.EsbJmsListener.MessageProtocol;
-import nl.nn.adapterframework.extensions.esb.EsbUtils;
 import nl.nn.adapterframework.http.RestListener;
 import nl.nn.adapterframework.jdbc.JdbcSenderBase;
 import nl.nn.adapterframework.jms.JmsBrowser;
@@ -365,23 +362,6 @@ public class AdapterStatus extends BusEndpointBase {
 				jmsBrowser.setDestinationType(jlb.getDestinationType());
 				receiverInfo.put("pendingMessagesCount", getMessageCount(receiverRunState, jmsBrowser));
 			}
-			boolean isEsbJmsFFListener = false;
-			if (listener instanceof EsbJmsListener) {
-				EsbJmsListener ejl = (EsbJmsListener) listener;
-				if(ejl.getMessageProtocol() != null) {
-					if (ejl.getMessageProtocol()== MessageProtocol.FF) {
-						isEsbJmsFFListener = true;
-					}
-					if(showPendingMsgCount) {
-						String esbNumMsgs = EsbUtils.getQueueMessageCount(ejl);
-						if (esbNumMsgs == null) {
-							esbNumMsgs = "?";
-						}
-						receiverInfo.put("esbPendingMessagesCount", esbNumMsgs);
-					}
-				}
-			}
-			receiverInfo.put("isEsbJmsFFListener", isEsbJmsFFListener);
 
 			ISender rsender = receiver.getSender();
 			if (rsender!=null) { // this sender has preference, but avoid overwriting listeners sender with null

@@ -89,7 +89,7 @@ public class IbisApplicationContext implements Closeable {
 	 */
 	protected void createApplicationContext() throws BeansException {
 		applicationLog.debug("Creating IbisApplicationContext");
-		if (!state.equals(BootState.FIRST_START)) {
+		if (state != BootState.FIRST_START) {
 			state = BootState.STARTING;
 		}
 		if (startupException != null) {
@@ -236,7 +236,7 @@ public class IbisApplicationContext implements Closeable {
 	}
 
 	public Exception getStartupException() {
-		if (BootState.ERROR.equals(state)) {
+		if (BootState.ERROR == state) {
 			return startupException;
 		}
 		return null;
@@ -256,13 +256,14 @@ public class IbisApplicationContext implements Closeable {
 		modulesToScanFor.add("ibis-adapterframework-akamai");
 		modulesToScanFor.add("ibis-adapterframework-aspose");
 		modulesToScanFor.add("ibis-adapterframework-aws");
+		modulesToScanFor.add("ibis-adapterframework-batch");
 		modulesToScanFor.add("ibis-adapterframework-cmis");
 		modulesToScanFor.add("ibis-adapterframework-commons");
 		modulesToScanFor.add("ibis-adapterframework-console-backend");
-		modulesToScanFor.add("ibis-adapterframework-coolgen");
 		modulesToScanFor.add("ibis-adapterframework-core");
+		modulesToScanFor.add("nn-specials");
 		modulesToScanFor.add("credentialprovider");
-		modulesToScanFor.add("ibis-adapterframework-ibm");
+		modulesToScanFor.add("ibis-adapterframework-messaging");
 		modulesToScanFor.add("ibis-adapterframework-idin");
 		modulesToScanFor.add("ibis-adapterframework-ifsa");
 		modulesToScanFor.add("ibis-adapterframework-ladybug");

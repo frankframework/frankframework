@@ -309,7 +309,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 		return validatorHandler;
 	}
-	public XMLReader createValidatingParser(PipeLineSession session, ValidationContext context) throws XmlValidatorException, ConfigurationException, PipeRunException {
+	public XMLReader createValidatingParser(PipeLineSession session, ValidationContext context) throws XmlValidatorException {
 		SymbolTable symbolTable = ((XercesValidationContext)context).getSymbolTable();
 		XMLGrammarPool grammarPool = ((XercesValidationContext)context).getGrammarPool();
 

@@ -131,7 +131,7 @@ public class UnzipPipe extends FixedForwardPipe {
 			}
 		}
 		if (StringUtils.isEmpty(getCollectFileContentsBase64Encoded())) {
-			base64Extensions = new ArrayList<String>();
+			base64Extensions = new ArrayList<>();
 		} else {
 			base64Extensions = Arrays.asList(getCollectFileContentsBase64Encoded().split(","));
 		}

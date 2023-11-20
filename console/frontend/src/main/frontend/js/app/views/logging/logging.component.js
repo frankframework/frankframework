@@ -40,43 +40,8 @@ const LoggingController = function ($scope, Api, Misc, $timeout, $state, $stateP
         }
     };
 
-    var getFileType = function (fileName) {
-        if (fileName.indexOf('-stats_') >= 0)
-            return 'stats';
-        else if (fileName.indexOf('_xml.log') >= 0)
-            return 'log4j';
-        else if (fileName.indexOf('-stats_') >= 0 || fileName.indexOf('_xml.log') >= 0)
-            return 'xml';
-        else if (fileName.indexOf('-stats_') < 0 && fileName.indexOf('_xml.log') < 0)
-            return 'html';
-    };
-
     var openFile = function (file) {
-        var resultType = "";
-        var params = "";
-        var as = getFileType(file.name);
-        switch (as) {
-            case "stats":
-                resultType = "html";
-                params += "&stats=true";
-                break;
-
-            case "log4j":
-                resultType = "html";
-                params += "&log4j=true";
-
-            default:
-                resultType = as;
-                break;
-        }
-
-        var URL = Misc.getServerPath() + "FileViewerServlet?resultType=" + resultType + "&fileName=" + Misc.escapeURL(file.path) + params;
-        if (resultType == "xml") {
-            window.open(URL, "_blank");
-            return;
-        }
-
-        ctrl.viewFile = URL;
+        ctrl.viewFile = Misc.getServerPath() + "FileViewerServlet?resultType=html&fileName=" + Misc.escapeURL(file.path);
         $timeout(function () {
             var iframe = angular.element("iframe");
 

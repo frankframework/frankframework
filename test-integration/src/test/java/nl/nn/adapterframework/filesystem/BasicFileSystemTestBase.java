@@ -50,18 +50,18 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	}
 
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		log.debug("tearDown start");
 		fileSystem.close();
 		log.debug("tearDown finished");
 	}
 
 	@Test
-	public void fileSystemTestConfigureAndOpen() throws Exception {
+	public void fileSystemTestConfigureAndOpen() {
 		// just perform the setup()
 	}
 
-	protected F getFirstFileFromFolder(String folder) throws Exception {
+	protected F getFirstFileFromFolder(String folder) {
 		try (DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 			Iterator<F> it = ds.iterator();
 			if (it == null) {
@@ -77,9 +77,9 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 	/**
 	 * asserts a number of files to be present in folder.
 	 */
-	public void fileSystemTestListFile(int numFilesExpected, String folder) throws Exception {
-		Set<F> files = new HashSet<F>();
-		Set<String> filenames = new HashSet<String>();
+	public void fileSystemTestListFile(int numFilesExpected, String folder) {
+		Set<F> files = new HashSet<>();
+		Set<String> filenames = new HashSet<>();
 		int count = 0;
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 			Iterator<F> it = ds.iterator();
@@ -155,7 +155,7 @@ public abstract class BasicFileSystemTestBase<F, FS extends IBasicFileSystem<F>>
 
 	}
 
-	public void fileSystemTestRandomFileShouldNotExist(String randomFileName) throws Exception {
+	public void fileSystemTestRandomFileShouldNotExist(String randomFileName) {
 		F f=fileSystem.toFile(randomFileName);
 		assertFalse(fileSystem.exists(f), "RandomFileShouldNotExist");
 	}

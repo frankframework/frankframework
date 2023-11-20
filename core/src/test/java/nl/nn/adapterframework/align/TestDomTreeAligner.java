@@ -31,7 +31,7 @@ public class TestDomTreeAligner extends AlignTestBase {
 
 		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
 		XSModel xsModel = xsLoader.loadURI(xsdUri);
-		List<XSModel> schemaInformation = new LinkedList<XSModel>();
+		List<XSModel> schemaInformation = new LinkedList<>();
 		schemaInformation.add(xsModel);
 
 		String xmlString = getTestFile(inputFile + ".xml");

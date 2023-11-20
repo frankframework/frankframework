@@ -354,7 +354,7 @@ public class Stub4TesttoolTest {
 	}
 
 	private void stub4testtoolTest(String baseDirectory, boolean disableValidators) throws Exception {
-		Map<String, Object> parameters = new Hashtable<String, Object>();
+		Map<String, Object> parameters = new Hashtable<>();
 		parameters.put(STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, disableValidators);
 
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/" + STUB4TESTTOOL_ORIGINAL_FILENAME);

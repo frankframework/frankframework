@@ -2,8 +2,6 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
-
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,13 +14,13 @@ public class XmlBuilderTest {
 	private final String XML_RENDERED_UNICODE_CHARACTERS = "¿#16; aâΔع你好ಡತ";
 
 	@BeforeEach
-	public void initXMLUnit() throws IOException {
+	public void initXMLUnit() {
 		XMLUnit.setIgnoreWhitespace(true);
 		XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
 	}
 
 	@Test
-	public void test() throws Exception {
+	public void test() {
 		XmlBuilder summaryXML = new XmlBuilder("summary");
 		XmlBuilder adapterStateXML = new XmlBuilder("adapterState");
 		adapterStateXML.addAttribute("started", 9);
@@ -82,7 +80,7 @@ public class XmlBuilderTest {
 	}
 
 	@Test
-	public void test2() throws Exception {
+	public void test2() {
 		XmlBuilder schema = new XmlBuilder("schema");
 		schema.addAttribute("xmlns", "http://www.w3.org/2001/XMLSchema");
 		schema.addAttribute("targetNamespace",
@@ -115,7 +113,7 @@ public class XmlBuilderTest {
 	@Test
 	// test3 equals test2 except that 'addSubElement' is done directly after
 	// creating instead of at the end.
-	public void test3() throws Exception {
+	public void test3() {
 		XmlBuilder schema = new XmlBuilder("schema");
 		schema.addAttribute("xmlns", "http://www.w3.org/2001/XMLSchema");
 		schema.addAttribute("targetNamespace",

@@ -75,11 +75,11 @@ public class LdapFindMembershipsPipeTest {
 	}
 
 	@Test
-	public void findMembershipsRecursivelyWithCache() throws Exception {
+	public void findMembershipsRecursivelyWithCache() {
 		pipe.setBaseDN(baseDN);
 		pipe.setRecursiveSearch(true);
 
-		EhCache<Set<String>> cache = new EhCache<Set<String>>();
+		EhCache<Set<String>> cache = new EhCache<>();
 		cache.setTimeToLiveSeconds(3600);
 		pipe.setCache(cache);
 		pipe.configure();

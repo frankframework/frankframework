@@ -377,8 +377,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		long afterFilesCreated=System.currentTimeMillis();
 
-		Set<F> files = new HashSet<F>();
-		Set<String> filenames = new HashSet<String>();
+		Set<F> files = new HashSet<>();
+		Set<String> filenames = new HashSet<>();
 		int count = 0;
 		try(DirectoryStream<F> ds = fileSystem.listFiles(folder)) {
 			Iterator<F> it = ds.iterator();
@@ -513,8 +513,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		createFile(null, FILE2, contents2);
 		_createFolder(folderName);
 
-		Set<F> files = new HashSet<F>();
-		Set<String> filenames = new HashSet<String>();
+		Set<F> files = new HashSet<>();
+		Set<String> filenames = new HashSet<>();
 		try(DirectoryStream<F> ds = fileSystem.listFiles(null)) {
 			Iterator<F> it = ds.iterator();
 			// Count files
