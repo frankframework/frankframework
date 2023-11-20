@@ -111,7 +111,7 @@ public class MultipartUtilsTest {
 	}
 
 	@Test
-	public void testIsBinaryNullHeader() throws Exception {
+	public void testIsBinaryNullHeader() {
 		BodyPart part = new MimeBodyPart();
 		assertFalse(MultipartUtils.isBinary(part));
 	}
@@ -124,7 +124,7 @@ public class MultipartUtilsTest {
 	}
 
 	@Test
-	public void testGetFieldNameNullHeader() throws Exception {
+	public void testGetFieldNameNullHeader() {
 		BodyPart part = new MimeBodyPart();
 		assertNull(MultipartUtils.getFieldName(part));
 	}

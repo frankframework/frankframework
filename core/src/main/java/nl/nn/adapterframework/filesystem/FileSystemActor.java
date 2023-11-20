@@ -47,7 +47,6 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -244,7 +243,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 //	}
 
 	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, FileSystemAction configuredAction, FileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
-		if (configuredAction.equals(action)) {
+		if (configuredAction == action) {
 			boolean parameter1Set = parameterList != null && parameterList.findParameter(parameter1) != null;
 			boolean parameter2Set = parameterList != null && parameterList.findParameter(parameter2) != null;
 			boolean attributeSet  = StringUtils.isNotEmpty(attributeValue);
@@ -328,7 +327,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 	}
 
-	public Message doAction(@Nonnull Message input, ParameterValueList pvl, @Nonnull PipeLineSession session) throws FileSystemException, TimeoutException {
+	public Message doAction(@Nonnull Message input, ParameterValueList pvl, @Nonnull PipeLineSession session) throws FileSystemException {
 		FileSystemAction action = null;
 		try {
 			input.closeOnCloseOf(session, getClass().getSimpleName() + " of a " + fileSystem.getClass().getSimpleName()); // don't know if the input will be used

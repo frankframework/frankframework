@@ -94,7 +94,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 				| NtlmFlags.NTLMSSP_REQUEST_TARGET;
 
 		@Override
-		public String generateType1Msg(final String domain, final String workstation) throws NTLMEngineException {
+		public String generateType1Msg(final String domain, final String workstation) {
 			final Type1Message type1Message = new Type1Message(TYPE_1_FLAGS, domain, workstation);
 			return Base64.encode(type1Message.toByteArray());
 		}

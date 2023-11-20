@@ -147,7 +147,7 @@ public class AdapterStatistics extends BusEndpointBase {
 		}
 
 		@Override
-		public void handleScalar(Object data, String scalarName, ScalarMetricBase meter) throws SenderException {
+		public void handleScalar(Object data, String scalarName, ScalarMetricBase meter) {
 			handleScalar(data, scalarName, meter.getValue());
 		}
 

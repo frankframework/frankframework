@@ -89,7 +89,7 @@ public class IbisApplicationContext implements Closeable {
 	 */
 	protected void createApplicationContext() throws BeansException {
 		applicationLog.debug("Creating IbisApplicationContext");
-		if (!state.equals(BootState.FIRST_START)) {
+		if (state != BootState.FIRST_START) {
 			state = BootState.STARTING;
 		}
 		if (startupException != null) {
@@ -236,7 +236,7 @@ public class IbisApplicationContext implements Closeable {
 	}
 
 	public Exception getStartupException() {
-		if (BootState.ERROR.equals(state)) {
+		if (BootState.ERROR == state) {
 			return startupException;
 		}
 		return null;

@@ -23,7 +23,7 @@ public class CounterStatisticTest {
 	 *
 	 */
 	@Test
-	public void testPerformActionSummaryOrFull() throws Exception {
+	public void testPerformActionSummaryOrFull() {
 		CounterStatistic cs = new CounterStatistic(10);
 		cs.initMetrics(new SimpleMeterRegistry(), "group", new ArrayList<>(), "counter under test");
 		cs.performAction(Action.SUMMARY);
@@ -36,7 +36,7 @@ public class CounterStatisticTest {
 	 *
 	 */
 	@Test
-	public void testPerformActionMarkMain() throws Exception {
+	public void testPerformActionMarkMain() {
 		CounterStatistic cs = new CounterStatistic(10);
 		cs.initMetrics(new SimpleMeterRegistry(), "group", new ArrayList<>(), "counter under test");
 		cs.performAction(Action.MARK_MAIN);
@@ -44,7 +44,7 @@ public class CounterStatisticTest {
 	}
 
 	@Test
-	public void testPerformActionMarkFull() throws Exception {
+	public void testPerformActionMarkFull() {
 		CounterStatistic cs = new CounterStatistic(10);
 		cs.initMetrics(new SimpleMeterRegistry(), "group", new ArrayList<>(), "counter under test");
 		cs.performAction(Action.MARK_FULL);
@@ -57,7 +57,7 @@ public class CounterStatisticTest {
 	 *
 	 */
 	@Test
-	public void testGetIntervalValue() throws Exception {
+	public void testGetIntervalValue() {
 		CounterStatistic cs = new CounterStatistic(10);
 		cs.initMetrics(new SimpleMeterRegistry(), "group", new ArrayList<>(), "counter under test");
 		assertEquals(0, cs.getIntervalValue());

@@ -120,7 +120,7 @@ public enum TransactionManagerType {
 		}
 	}
 
-	public List<String> getAvailableDataSources() throws NamingException {
+	public List<String> getAvailableDataSources() {
 		URLDataSourceFactory dataSourceFactory = new URLDataSourceFactory();
 		return dataSourceFactory.getDataSourceNames();
 	}

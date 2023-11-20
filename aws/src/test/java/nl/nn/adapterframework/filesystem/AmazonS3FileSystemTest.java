@@ -45,7 +45,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	}
 
 	@Test
-	public void testConfigureAccessKey() throws Exception {
+	public void testConfigureAccessKey() {
 		fileSystem.setAuthAlias(null);
 		fileSystem.setAccessKey("123");
 		fileSystem.setSecretKey(null);
@@ -55,7 +55,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	}
 
 	@Test
-	public void testConfigureSecretKey() throws Exception {
+	public void testConfigureSecretKey() {
 		fileSystem.setAuthAlias(null);
 		fileSystem.setAccessKey(null);
 		fileSystem.setSecretKey("123");
@@ -86,7 +86,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	}
 
 	@Test
-	public void testInvalidRegion() throws Exception {
+	public void testInvalidRegion() {
 		fileSystem.setClientRegion("tralala");
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);
@@ -94,7 +94,7 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3Object, AmazonS3Fil
 	}
 
 	@Test
-	public void testInvalidBucketName() throws Exception {
+	public void testInvalidBucketName() {
 		fileSystem.setBucketName("tr/89/**-alala");
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);

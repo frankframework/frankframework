@@ -111,7 +111,7 @@ public class MultipartEntityTest {
 	}
 
 	@Test
-	public void testFormdataBoundary() throws Exception {
+	public void testFormdataBoundary() {
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		MultipartEntity entity = builder.build();
 		String contentType = entity.getContentType().getValue();
@@ -120,7 +120,7 @@ public class MultipartEntityTest {
 	}
 
 	@Test
-	public void testMtomBoundary() throws Exception {
+	public void testMtomBoundary() {
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setMtomMultipart();
 		MultipartEntity entity = builder.build();

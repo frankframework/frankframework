@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.configuration.classloaders;
 
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
@@ -28,7 +27,7 @@ public class BytesURLStreamHandler extends URLStreamHandler {
 	}
 
 	@Override
-	protected URLConnection openConnection(URL url) throws IOException {
+	protected URLConnection openConnection(URL url) {
 		return new BytesURLConnection(url, bytes);
 	}
 }

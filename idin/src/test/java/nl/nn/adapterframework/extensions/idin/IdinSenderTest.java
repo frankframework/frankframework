@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.extensions.idin;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -76,7 +75,7 @@ public class IdinSenderTest extends Mockito {
 	}
 
 	@Before
-	public void initializeIdinSender() throws FileNotFoundException, ParserConfigurationException, SAXException, IOException {
+	public void initializeIdinSender() throws ParserConfigurationException, SAXException, IOException {
 		URL expectedUrl = ClassLoaderUtils.getResourceURL("bankid-config.xml");
 		Configuration.defaultInstance().Load(expectedUrl.openStream());
 		Communicator communicator = mock(Communicator.class);
@@ -96,7 +95,7 @@ public class IdinSenderTest extends Mockito {
 
 	@Ignore
 	@Test
-	public void randomMessage() throws SenderException, TimeoutException, SAXException, IOException {
+	public void randomMessage() throws SenderException, TimeoutException, IOException {
 		String message = "<test><woop>1</woop></test>";
 		PipeLineSession session = null;
 		String result = sender.sendMessageOrThrow(new Message(message), session).asString();

@@ -91,7 +91,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Override
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if (mailListener!=null) {
 			mailListener.close();
 		}
@@ -255,7 +255,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 	@Test
 	@Ignore("skip NDR filter for now")
-	public void readFileBounce1() throws Exception {
+	public void readFileBounce1() {
 		String targetFolder="Onbestelbaar 1";
 		String originalRecipient="onbestelbaar@weetikwaarwelniet.nl";
 		String originalFrom="";
@@ -298,7 +298,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 	@Test
 	@Ignore("skip NDR filter for now")
-	public void readFileBounce2() throws Exception {
+	public void readFileBounce2() {
 		String targetFolder="Bounce 2";
 		String originalRecipient="";
 		String originalFrom="";
@@ -349,7 +349,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 	@Test
 	@Ignore("skip NDR filter for now")
-	public void readFileBounce3WithAttachmentInOriginalMail() throws Exception {
+	public void readFileBounce3WithAttachmentInOriginalMail() {
 		String targetFolder="Bounce 3";
 		String originalRecipient="";
 		String originalFrom="";
@@ -401,7 +401,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 	@Test
 	@Ignore("skip NDR filter for now")
-	public void readFileBounce4() throws Exception {
+	public void readFileBounce4() {
 		String targetFolder="Bounce 4";
 		String originalRecipient="";
 		String originalFrom="";
@@ -452,7 +452,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Test
-	public void readEmptyFolder() throws Exception {
+	public void readEmptyFolder() {
 		String targetFolder="Empty";
 		mailListener.setCreateFolders(true);
 		configureAndOpen(targetFolder,null);
@@ -557,7 +557,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 //	}
 
 	@Test
-	public void testMessageBrowserOpen() throws Exception {
+	public void testMessageBrowserOpen() {
 		mailListener.setProcessedFolder("Done");
 		mailListener.configure();
 		mailListener.open();
@@ -589,7 +589,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Test // this happens when the receiver/listener is closed, but its storages are browsed
-	public void testMessageBrowserClosed() throws Exception {
+	public void testMessageBrowserClosed() {
 		mailListener.setProcessedFolder("Done");
 		mailListener.configure();
 		mailListener.open();
@@ -620,7 +620,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 	}
 
 	@Test
-	public void testMessageBrowserFilterTest() throws Exception {
+	public void testMessageBrowserFilterTest() {
 		mailListener.setProcessedFolder("Done");
 		mailListener.configure();
 		mailListener.open();

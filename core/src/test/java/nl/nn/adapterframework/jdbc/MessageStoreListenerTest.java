@@ -7,8 +7,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.doAnswer;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Date;
 
 import org.junit.After;
@@ -287,7 +285,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals("fakeComments", item.getCommentString());
 	}
 
-	private String insertARecord(String message, char type) throws SQLException, IOException, SenderException, ConfigurationException {
+	private String insertARecord(String message, char type) throws SenderException, ConfigurationException {
 		storage.setType(type+"");
 		storage.configure();
 		storage.open();

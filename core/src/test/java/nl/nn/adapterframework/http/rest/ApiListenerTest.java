@@ -51,7 +51,7 @@ public class ApiListenerTest {
 	}
 
 	@Test
-	public void testOptionsMethod() throws ConfigurationException {
+	public void testOptionsMethod() {
 		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
 			listener.setMethod(HttpMethod.OPTIONS);
 		});

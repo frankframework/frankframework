@@ -20,7 +20,7 @@ public class CmisEventListenerTest extends ListenerTestBase<Message, CmisEventLi
 	}
 
 	@Test
-	public void testEventAttribute() throws Exception {
+	public void testEventAttribute() {
 		listener.setEventListener("getObject");
 	}
 }

@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -49,7 +48,6 @@ import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
 import nl.nn.adapterframework.http.HttpSession;
 import nl.nn.adapterframework.http.HttpSessionBase;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -133,7 +131,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 	/**
 	 * Creates sendgrid mail object
 	 */
-	private Mail createEmail(GridMailSession gridMailSession) throws SenderException, DomBuilderException, IOException {
+	private Mail createEmail(GridMailSession gridMailSession) throws SenderException {
 		Mail mail = new Mail();
 		Personalization personalization = gridMailSession.getPersonalization();
 

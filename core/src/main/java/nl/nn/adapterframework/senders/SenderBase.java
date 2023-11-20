@@ -28,7 +28,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 /**
  * Baseclass for senders.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
  */
@@ -65,7 +65,7 @@ public abstract class SenderBase implements ISender {
 	/**
 	 * Returns the true name of the class and not <code>XsltPipe$$EnhancerBySpringCGLIB$$563e6b5d</code>.
 	 * {@link ClassUtils#nameOf(Object)} makes sure the original class will be used.
-	 * 
+	 *
 	 * @return className + name of the ISender
 	 */
 	protected String getLogPrefix() {

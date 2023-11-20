@@ -67,7 +67,7 @@ public class MessageTestUtils {
 
 	public static Message getNonRepeatableMessage(MessageType type) throws IOException {
 		Message message = type.getMessage();
-		if(type.equals(MessageType.BINARY)) {
+		if(type == MessageType.BINARY) {
 			return new Message(new FilterInputStream(message.asInputStream()) {}, message.getContext());
 		}
 		return new Message(new FilterReader(message.asReader(StreamUtil.AUTO_DETECT_CHARSET)) {}, message.getContext());

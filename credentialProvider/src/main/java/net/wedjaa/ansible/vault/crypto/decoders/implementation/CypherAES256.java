@@ -124,7 +124,7 @@ public class CypherAES256 implements CypherInterface
         return Arrays.copyOfRange(decrypted, 0, length);
     }
 
-    public byte[] pad(byte[] cleartext) throws IOException
+    public byte[] pad(byte[] cleartext)
     {
         byte[] padded = null;
 

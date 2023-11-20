@@ -420,7 +420,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		message.setJMSCorrelationID(correlationID);
 	}
 
-	public Destination getDestination() throws NamingException, JMSException, JmsException {
+	public Destination getDestination() throws JmsException {
 		if (StringUtils.isEmpty(getDestinationName())) {
 			throw new JmsException("no (default) destinationName specified");
 		}
@@ -501,11 +501,11 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * @param destination the Destination
 	 * @return the MessageConsumer
 	 */
-	public MessageConsumer getMessageConsumer(Session session, Destination destination) throws NamingException, JMSException {
+	public MessageConsumer getMessageConsumer(Session session, Destination destination) throws JMSException {
 		return getMessageConsumer(session, destination, getMessageSelector());
 	}
 
-	public MessageProducer getMessageProducer(Session session, Destination destination) throws NamingException, JMSException {
+	public MessageProducer getMessageProducer(Session session, Destination destination) throws JMSException {
 		MessageProducer mp;
 		if (useJms102()) {
 			if (useTopicFunctions) {

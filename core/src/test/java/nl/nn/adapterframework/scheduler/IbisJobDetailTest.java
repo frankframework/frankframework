@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.scheduler.job.SendMessageJob;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.Locker;
@@ -19,7 +18,7 @@ public class IbisJobDetailTest {
 	private SendMessageJob jobDef2;
 
 	@BeforeEach
-	public void setup() throws ConfigurationException {
+	public void setup() {
 		Configuration configuration = new TestConfiguration();
 
 		jobDef1 = SpringUtils.createBean(configuration, SendMessageJob.class);

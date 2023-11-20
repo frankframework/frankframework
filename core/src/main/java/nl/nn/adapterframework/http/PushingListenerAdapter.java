@@ -89,7 +89,7 @@ public abstract class PushingListenerAdapter implements IPushingListener<Message
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Message> rawMessage, PipeLineSession pipeLineSession) {
 		// descendants can override this method when specific actions are required
 	}
 

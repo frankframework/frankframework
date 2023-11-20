@@ -23,7 +23,6 @@ import java.util.TimeZone;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -88,7 +87,7 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 		assertEquals(expected.trim().replace("\r",""), actual.trim().replace("\r",""), message);
 	}
 
-	public static void assertXpathValueEquals(String expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
+	public static void assertXpathValueEquals(String expected, String source, String xpathExpr) throws SAXException, TransformerException, IOException {
 		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
 
@@ -97,7 +96,7 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 		assertEquals(expected,result,xpathExpr);
 	}
 
-	public static void assertXpathValueEquals(int expected, String source, String xpathExpr) throws SAXException, XPathExpressionException, TransformerException, IOException {
+	public static void assertXpathValueEquals(int expected, String source, String xpathExpr) throws SAXException, TransformerException, IOException {
 		String xslt=XmlUtils.createXPathEvaluatorSource(xpathExpr);
 		Transformer transformer = XmlUtils.createTransformer(xslt);
 
