@@ -270,7 +270,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.setFilter("NDR");
 		configureAndOpen(targetFolder,null);
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
@@ -316,7 +316,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.setFilter("NDR");
 		configureAndOpen(targetFolder,null);
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
@@ -368,7 +368,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.setFilter("NDR");
 		configureAndOpen(targetFolder,null);
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
@@ -420,7 +420,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.setFilter("NDR");
 		configureAndOpen(targetFolder,null);
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
@@ -457,7 +457,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.setCreateFolders(true);
 		configureAndOpen(targetFolder,null);
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNull(rawMessage);

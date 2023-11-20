@@ -137,12 +137,12 @@ class StringUtilTest {
 	@Test
 	public void testSafeCollectionToStringWithException() {
 		// Arrange
-		Collection<Object> c = new ArrayList<Object>() {
+		Collection<Object> c = new ArrayList<>() {
 			@Override
 			@Nonnull
 			public Iterator<Object> iterator() {
 				final Iterator<Object> delegate = super.iterator();
-				return new Iterator<Object>() {
+				return new Iterator<>() {
 					@Override
 					public boolean hasNext() {
 						return true;

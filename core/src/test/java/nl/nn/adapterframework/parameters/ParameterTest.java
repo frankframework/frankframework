@@ -476,7 +476,7 @@ public class ParameterTest {
 		p.setType(ParameterType.MAP);
 		p.configure();
 
-		Map<String, String> map = new HashMap<String, String>();
+		Map<String, String> map = new HashMap<>();
 		map.put("item", "value");
 		map.put("item2", "value2");
 		map.put("item3", "value3");

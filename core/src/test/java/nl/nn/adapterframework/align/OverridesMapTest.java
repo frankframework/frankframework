@@ -11,7 +11,7 @@ public class OverridesMapTest {
 
 	@BeforeEach
 	public void setUp() {
-		map = new OverridesMap<String>();
+		map = new OverridesMap<>();
 	}
 
 	AlignmentContext parse(String path) {

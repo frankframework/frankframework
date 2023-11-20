@@ -32,7 +32,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 
 		configureAndOpen(targetFolder,null);
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
@@ -55,7 +55,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 
 		configureAndOpen(targetFolder,null);
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
 		String message = mailListener.extractMessage(rawMessage, threadContext).asString();
@@ -91,7 +91,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 //			waitForActionToFinish();
 //		}
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull("no message found", rawMessage);
 

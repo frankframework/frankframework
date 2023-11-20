@@ -27,7 +27,7 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 
 	@Test
 	public void testWrongEncoding() {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("service", "dummyService123"));
 		attachments.add(new StringAttachment("encoding", "fakeEncoding"));
 		attachments.add(new StringAttachment("message", "inputMessage"));
@@ -38,7 +38,7 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 
 	@Test
 	public void testFileWrongEncoding() {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("service", "dummyService123"));
 		attachments.add(new StringAttachment("encoding", "fakeEncoding"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("inputMessage".getBytes()), "script.xml"));
@@ -49,7 +49,7 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 
 	@Test
 	public void testMessageServiceListeners() {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("service", "dummyService123"));
 		attachments.add(new StringAttachment("message", "inputMessage"));
 
@@ -69,7 +69,7 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 
 	@Test
 	public void testFileServiceListeners() {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("service", "dummyService123"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("inputMessage".getBytes()), "script.xml"));
 

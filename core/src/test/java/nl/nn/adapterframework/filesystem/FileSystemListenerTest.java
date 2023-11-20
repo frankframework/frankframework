@@ -60,7 +60,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		super.setUp();
 		fileSystemListener = createFileSystemListener();
 		autowireByName(fileSystemListener);
-		threadContext=new HashMap<String,Object>();
+		threadContext=new HashMap<>();
 	}
 
 	@Override
