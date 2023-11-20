@@ -68,7 +68,7 @@ public class TestJson2Xml extends AlignTestBase {
 
 		JsonStructure json = Utils.string2Json(jsonIn);
 		LOG.debug("jsonIn [{}]", json);
-		Map<String,Object> overrideMap = new HashMap<String,Object>();
+		Map<String,Object> overrideMap = new HashMap<>();
 		overrideMap.put("Key not expected", "value of unexpected key");
 		if (json instanceof JsonObject) {
 			JsonObject jo = (JsonObject)json;

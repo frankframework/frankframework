@@ -27,7 +27,7 @@ public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
 
 	@Test
 	public void testWrongEncoding() {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("connectionFactory", "qcf/connectionFactory"));
 		attachments.add(new StringAttachment("destination", "some-queue"));
 		attachments.add(new StringAttachment("type", "type"));
@@ -41,7 +41,7 @@ public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
 
 	@Test
 	public void testFileWrongEncoding() {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("connectionFactory", "qcf/connectionFactory"));
 		attachments.add(new StringAttachment("destination", "some-queue"));
 		attachments.add(new StringAttachment("type", "type"));
@@ -55,7 +55,7 @@ public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
 
 	@Test
 	public void testWithMessage() {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("connectionFactory", "qcf/connectionFactory"));
 		attachments.add(new StringAttachment("destination", "some-queue"));
 		attachments.add(new StringAttachment("type", "type"));
@@ -78,7 +78,7 @@ public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
 
 	@Test
 	public void testWithFile() {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("connectionFactory", "qcf/connectionFactory"));
 		attachments.add(new StringAttachment("destination", "some-queue"));
 		attachments.add(new StringAttachment("type", "type"));

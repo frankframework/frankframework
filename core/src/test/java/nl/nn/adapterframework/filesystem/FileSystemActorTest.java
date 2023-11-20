@@ -59,7 +59,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		autowireByName(fileSystem);
 		fileSystem.configure();
 		fileSystem.open();
-		actor = new FileSystemActor<F, FS>();
+		actor = new FileSystemActor<>();
 		result = null;
 	}
 

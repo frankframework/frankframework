@@ -180,8 +180,8 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	public OutputStream _createFile(String folder, String filename) throws Exception {
-		Set<AccessMask> accessMask = new HashSet<AccessMask>(EnumSet.of(AccessMask.FILE_ADD_FILE));
-		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>(EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
+		Set<AccessMask> accessMask = new HashSet<>(EnumSet.of(AccessMask.FILE_ADD_FILE));
+		Set<SMB2CreateOptions> createOptions = new HashSet<>(EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
 
 		String path = (folder != null) ? folder + "/" + filename : filename;
 		final File file = diskShare.openFile(path, accessMask, null, SMB2ShareAccess.ALL,
@@ -277,13 +277,13 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 	}
 
 	private File getFile(String filename, AccessMask accessMask, SMB2CreateDisposition createDisposition) {
-		Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
+		Set<SMB2ShareAccess> shareAccess = new HashSet<>();
 		shareAccess.addAll(SMB2ShareAccess.ALL);
 
-		Set<SMB2CreateOptions> createOptions = new HashSet<SMB2CreateOptions>();
+		Set<SMB2CreateOptions> createOptions = new HashSet<>();
 		createOptions.add(SMB2CreateOptions.FILE_WRITE_THROUGH);
 
-		Set<AccessMask> accessMaskSet = new HashSet<AccessMask>();
+		Set<AccessMask> accessMaskSet = new HashSet<>();
 		accessMaskSet.add(accessMask);
 		File file;
 
