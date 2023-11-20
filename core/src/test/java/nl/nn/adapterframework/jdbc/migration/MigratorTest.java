@@ -6,11 +6,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -140,6 +143,16 @@ public class MigratorTest extends TransactionManagerTestBase {
 	}
 
 	private String applyIgnores(String sqlScript) {
+		Pattern regex = Pattern.compile("(\\d+)\\'\\)");
+		Matcher match = regex.matcher(sqlScript);
+		if(match.find()) {
+			String deploymentId = match.group(1);
+			sqlScript = sqlScript.replace(deploymentId, "IGNORE");
+		}
+		else {
+			fail("no match found");
+			return null;
+		}
 		sqlScript = sqlScript.replaceAll("\\'[4-9]\\.\\d+\\.\\d{1,3}\\'", "'VERSION'"); //Replace the Liquibase Version
 		sqlScript = sqlScript.replaceAll("'\\d{1,2}:[a-f0-9]{32}'", "'CHANGESET-CHECKSUM'"); //Replace the Liquibase Changeset Checksum
 
