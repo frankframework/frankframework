@@ -368,7 +368,7 @@ public class StrictJsonDocumentWriter implements StrictJsonWriter {
 
 
 	private void checkState(final State requiredState) {
-		if (!state.equals(requiredState)) {
+		if (state != requiredState) {
 			throw new BsonInvalidOperationException("Invalid state " + state);
 		}
 	}

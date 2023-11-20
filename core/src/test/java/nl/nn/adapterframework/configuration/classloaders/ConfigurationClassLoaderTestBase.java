@@ -196,21 +196,21 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 	@Test
 	public void testReportLevelERROR() {
 		classLoader.setReportLevel("dummy");
-		assertTrue(classLoader.getReportLevel().equals(ReportLevel.ERROR));
+		assertTrue(classLoader.getReportLevel() == ReportLevel.ERROR);
 	}
 
 	// test lowercase level
 	@Test
 	public void testReportLeveldebug() {
 		classLoader.setReportLevel("debug");
-		assertTrue(classLoader.getReportLevel().equals(ReportLevel.DEBUG));
+		assertTrue(classLoader.getReportLevel() == ReportLevel.DEBUG);
 	}
 
 	// test uppercase level
 	@Test
 	public void testReportLevelDEBUG() {
 		classLoader.setReportLevel("DEBUG");
-		assertTrue(classLoader.getReportLevel().equals(ReportLevel.DEBUG));
+		assertTrue(classLoader.getReportLevel() == ReportLevel.DEBUG);
 	}
 
 	@Test

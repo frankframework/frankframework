@@ -178,7 +178,7 @@ public class HttpMessageEntityTest {
 
 		HttpMessageEntity entity = new HttpMessageEntity(message);
 
-		if(type.equals(MessageType.BINARY)) {
+		if(type == MessageType.BINARY) {
 			assertNull(message.getCharset());
 			assertNull(entity.getContentEncoding());
 		} else {
@@ -191,12 +191,12 @@ public class HttpMessageEntityTest {
 		entity.writeTo(boas);
 
 		// Assert
-		if(preserved || type.equals(MessageType.BINARY)) {
+		if(preserved || type == MessageType.BINARY) {
 			assertEquals(entity.getContentLength(), boas.toByteArray().length);
 		} else {
 			assertEquals(-1, entity.getContentLength());
 		}
-		String boasString = type.equals(MessageType.BINARY) ? boas.toString(): boas.toString(message.getCharset());
+		String boasString = type == MessageType.BINARY ? boas.toString(): boas.toString(message.getCharset());
 		assertEquals(type.getMessage().asString(StreamUtil.AUTO_DETECT_CHARSET), boasString);
 	}
 
