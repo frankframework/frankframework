@@ -35,7 +35,7 @@ import org.springframework.core.env.PropertiesPropertySource;
 * @author Niels Meijer
 */
 public abstract class CustomPropertySourcePostProcessor implements BeanFactoryPostProcessor, PriorityOrdered, EnvironmentAware {
-	private final String CUSTOM_PROPERTIES_PROPERTY_SOURCE_NAME = "CustomPropertySource";
+	private static final String CUSTOM_PROPERTIES_PROPERTY_SOURCE_NAME = "CustomPropertySource";
 	private ConfigurableEnvironment environment;
 
 	@Override

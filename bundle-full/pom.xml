@@ -19,6 +19,12 @@
 			<type>pom</type>
 		</dependency>
 
+		<!-- redefined so transient dependencies are version locked -->
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-core</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-akamai</artifactId>
