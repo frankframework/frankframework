@@ -27,7 +27,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class MicroMeterPercentileEstimator implements PercentileEstimator {
 
 	private @Setter DistributionSummary distributionSummary;
-	private double[] percentiles;
+	private final double[] percentiles;
 
 	public MicroMeterPercentileEstimator(DistributionSummary distributionSummary, double[] percentiles) {
 		this.distributionSummary = distributionSummary;

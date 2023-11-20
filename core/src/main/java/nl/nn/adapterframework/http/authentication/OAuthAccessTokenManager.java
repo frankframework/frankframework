@@ -68,12 +68,12 @@ public class OAuthAccessTokenManager {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private URI tokenEndpoint;
-	private Scope scope;
-	private CredentialFactory clientCredentialFactory;
-	private boolean useClientCredentialsGrant;
-	private HttpSessionBase httpSession;
-	private int expiryMs;
-	private boolean authenticatedTokenRequest; // if set true, clientId and clientSecret will be added as Basic Authentication header, instead of as request parameters
+	private final Scope scope;
+	private final CredentialFactory clientCredentialFactory;
+	private final boolean useClientCredentialsGrant;
+	private final HttpSessionBase httpSession;
+	private final int expiryMs;
+	private final boolean authenticatedTokenRequest; // if set true, clientId and clientSecret will be added as Basic Authentication header, instead of as request parameters
 
 	private AccessToken accessToken;
 	private long accessTokenRefreshTime;

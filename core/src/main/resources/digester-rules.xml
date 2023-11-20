@@ -23,7 +23,6 @@
 
 	<rule pattern="*/receiver" registerMethod="registerReceiver" beanClass="nl.nn.adapterframework.receivers.Receiver"/>
 	<!-- Also applied for monitors -->
-	<rule pattern="*/sender" registerMethod="setSender" beanClass="nl.nn.adapterframework.core.ISender" />
 	<rule pattern="*/sender" registerMethod="registerSender" beanClass="nl.nn.adapterframework.core.ISender" /> <!-- to tell FrankDoc about multiplicity of SenderSeries and ParallelSenders. Duplicate pattern will be suppressed by core digester -->
 	<rule pattern="*/listener" factory="nl.nn.adapterframework.configuration.digester.ListenerFactory" registerMethod="setListener"/>
 	<rule pattern="*/errorSender" registerMethod="setErrorSender" beanClass="nl.nn.adapterframework.core.ISender"/>

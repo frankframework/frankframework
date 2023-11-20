@@ -40,12 +40,12 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class CmisEventDispatcher {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	private static CmisEventDispatcher self = null;
 	public static final String CMIS_EVENT_KEY = "CmisEvent";
-	private Map<CmisEvent, CmisEventListener> eventListeners = new ConcurrentHashMap<>();
-	private String dispatcherName = AppConstants.getInstance().getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"adapterDispatcher");
+	private final Map<CmisEvent, CmisEventListener> eventListeners = new ConcurrentHashMap<>();
+	private final String dispatcherName = AppConstants.getInstance().getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX + "adapterDispatcher");
 
 	public static synchronized CmisEventDispatcher getInstance() {
 		if(self == null) {

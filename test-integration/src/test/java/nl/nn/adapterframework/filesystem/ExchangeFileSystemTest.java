@@ -18,16 +18,16 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessa
 
 	//private String DEFAULT_URL = "https://outlook.office365.com/EWS/Exchange.asmx";
 
-	private String url         = PropertyUtil.getProperty(PROPERTY_FILE, "url");
-	private String mailaddress = PropertyUtil.getProperty(PROPERTY_FILE, "mailaddress");
+	private final String url = PropertyUtil.getProperty(PROPERTY_FILE, "url");
+	private final String mailaddress = PropertyUtil.getProperty(PROPERTY_FILE, "mailaddress");
 //	private String basefolder2 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder2");
 //	private String basefolder3 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder3");
-	private String client_id   = PropertyUtil.getProperty(PROPERTY_FILE, "client_id");
-	private String client_secr = PropertyUtil.getProperty(PROPERTY_FILE, "client_secret");
-	private String tenantId    = PropertyUtil.getProperty(PROPERTY_FILE, "tenant_id");
+	private final String client_id = PropertyUtil.getProperty(PROPERTY_FILE, "client_id");
+	private final String client_secr = PropertyUtil.getProperty(PROPERTY_FILE, "client_secret");
+	private final String tenantId = PropertyUtil.getProperty(PROPERTY_FILE, "tenant_id");
 
 
-	private String nonExistingFileName = "AAMkAGNmZTczMWUwLWQ1MDEtNDA3Ny1hNjU4LTlmYTQzNjE0NjJmYgBGAAAAAAALFKqetECyQKQyuRBrRSzgBwDx14SZku4LS5ibCBco+nmXAAAAAAEMAADx14SZku4LS5ibCBco+nmXAABMFuwsAAA=";
+	private final String nonExistingFileName = "AAMkAGNmZTczMWUwLWQ1MDEtNDA3Ny1hNjU4LTlmYTQzNjE0NjJmYgBGAAAAAAALFKqetECyQKQyuRBrRSzgBwDx14SZku4LS5ibCBco+nmXAAAAAAEMAADx14SZku4LS5ibCBco+nmXAABMFuwsAAA=";
 
 	@Override
 	protected ExchangeFileSystem createFileSystem() throws ConfigurationException {

@@ -39,10 +39,10 @@ import nl.nn.adapterframework.jms.IConnectionFactoryFactory;
 import nl.nn.adapterframework.jms.JmsTransactionalStorage;
 
 public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
-	private Map<String, ConnectionFactory> objects = new ConcurrentHashMap<>();
+	private final Map<String, ConnectionFactory> objects = new ConcurrentHashMap<>();
 	public static final String MOCK_CONNECTION_FACTORY_NAME = "dummyMockConnectionFactory";
 
-	private static ThreadLocal<MessageHandler> messageHandlers = new ThreadLocal<>();
+	private static final ThreadLocal<MessageHandler> messageHandlers = new ThreadLocal<>();
 
 	public ConnectionFactoryFactoryMock() throws JMSException {
 		ConnectionFactory cf = mock(ConnectionFactory.class);

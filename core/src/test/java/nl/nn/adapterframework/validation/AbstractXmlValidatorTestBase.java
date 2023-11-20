@@ -17,7 +17,7 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
  */
 public abstract class AbstractXmlValidatorTestBase extends XmlValidatorTestBase {
 
-	private Class<? extends AbstractXmlValidator> implementation;
+	private final Class<? extends AbstractXmlValidator> implementation;
 
 	@Parameterized.Parameters
 	public static Collection<Object[]> data() {

@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class RootValidation {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private List<String> rootValidation;
+	private final List<String> rootValidation;
 
 	public RootValidation(String... rootElement) {
 		rootValidation = Arrays.asList(rootElement);

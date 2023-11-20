@@ -9,7 +9,7 @@ import nl.nn.adapterframework.testutil.ConcurrentActionTester;
 
 public abstract class ConcurrentJdbcActionTester extends ConcurrentActionTester {
 
-	private ThrowingSupplier<Connection,SQLException> connectionSupplier;
+	private final ThrowingSupplier<Connection, SQLException> connectionSupplier;
 
 	private Connection connection;
 

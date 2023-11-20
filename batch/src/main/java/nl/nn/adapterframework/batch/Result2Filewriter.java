@@ -42,7 +42,7 @@ public class Result2Filewriter extends ResultWriter {
 	private @Getter String move2dirAfterFinalize;
 	private @Getter String filenamePattern;
 
-	private Map<String,File> openFiles = Collections.synchronizedMap(new HashMap<>());
+	private final Map<String, File> openFiles = Collections.synchronizedMap(new HashMap<>());
 
 	public Result2Filewriter() {
 		super();

@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.ClassUtils;
 public abstract class ApplicationWarningsBase implements ApplicationContextAware, InitializingBean, DisposableBean {
 	private ApplicationContext applicationContext;
 	private AppConstants appConstants;
-	private List<String> warnings = new LinkedList<>();
+	private final List<String> warnings = new LinkedList<>();
 
 	@Override
 	public void afterPropertiesSet() {

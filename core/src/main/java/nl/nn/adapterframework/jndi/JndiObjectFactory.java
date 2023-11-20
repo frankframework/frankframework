@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  */
 public class JndiObjectFactory<O,L> extends ObjectFactoryBase<O,L> implements ApplicationContextAware {
 
-	private Class<L> lookupClass;
+	private final Class<L> lookupClass;
 	private @Setter String jndiContextPrefix = null;
 
 	public JndiObjectFactory(Class<L> lookupClass) {

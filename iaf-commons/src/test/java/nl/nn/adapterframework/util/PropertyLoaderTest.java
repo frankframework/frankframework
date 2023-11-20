@@ -19,8 +19,8 @@ import org.junit.jupiter.api.Test;
 
 public class PropertyLoaderTest {
 
-	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-	private String propertyFile = "StringResolver.properties";
+	private final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	private final String propertyFile = "StringResolver.properties";
 	private PropertyLoader constants;
 
 	@BeforeEach

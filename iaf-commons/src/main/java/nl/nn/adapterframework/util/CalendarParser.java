@@ -46,11 +46,11 @@ class ParserState {
 	static final int UNSET = Integer.MIN_VALUE;
 
 	/** <tt>true</tt> if year should appear before month. */
-	private boolean yearBeforeMonth;
+	private final boolean yearBeforeMonth;
 	/** <tt>true</tt> if year should appear before day. */
-	private boolean yearBeforeDay;
+	private final boolean yearBeforeDay;
 	/** <tt>true</tt> if month should appear before day. */
-	private boolean monthBeforeDay;
+	private final boolean monthBeforeDay;
 
 	/** year. */
 	private int year;

@@ -52,7 +52,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class PkiUtil {
-	private static Logger log = LogUtil.getLogger(MethodHandles.lookup().lookupClass());
+	private static final Logger log = LogUtil.getLogger(MethodHandles.lookup().lookupClass());
 
 	public static HasTruststore keyStoreAsTrustStore(HasKeystore keystoreOwner) {
 		return new HasTruststore() {

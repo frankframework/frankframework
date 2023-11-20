@@ -15,7 +15,7 @@ import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
 
 public class CollectorPipeTest extends PipeTestBase<CollectorPipeBase<TestCollector, TestCollectorPart>> {
-	private TestCollector collector = new TestCollector();
+	private final TestCollector collector = new TestCollector();
 
 	@Override
 	public CollectorPipeBase<TestCollector, TestCollectorPart> createPipe() throws ConfigurationException {

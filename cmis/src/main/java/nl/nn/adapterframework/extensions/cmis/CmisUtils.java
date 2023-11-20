@@ -142,8 +142,8 @@ public class CmisUtils {
 	public static final String CMIS_BINDING_KEY = "cmisBinding";
 	public static final String CMIS_CALLCONTEXT_KEY = "cmisCallContext";
 
-	private static Logger log = LogUtil.getLogger(CmisUtils.class);
-	private static String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");
+	private static final Logger log = LogUtil.getLogger(CmisUtils.class);
+	private static final String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");
 
 	public static void populateCmisAttributes(PipeLineSession session) {
 		CallContext callContext = (CallContext) session.get(CMIS_CALLCONTEXT_KEY);

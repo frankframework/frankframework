@@ -80,9 +80,9 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	private @Getter @Setter boolean deepSearch=false;
 	private @Getter @Setter boolean failOnWildcards=false;
 
-	private String prefixPrefix="ns";
+	private final String prefixPrefix = "ns";
 	private int prefixPrefixCounter=1;
-	private Map<String,String>prefixMap=new HashMap<String,String>();
+	private final Map<String, String> prefixMap = new HashMap<String, String>();
 
 
 	public ToXml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {

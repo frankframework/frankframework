@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.MessageKeeper;
 public class MigratorTest extends TransactionManagerTestBase {
 
 	private LiquibaseMigrator migrator = null;
-	private String tableName="DUMMYTABLE";
+	private final String tableName = "DUMMYTABLE";
 
 	@Override
 	protected void prepareDatabase() throws Exception {

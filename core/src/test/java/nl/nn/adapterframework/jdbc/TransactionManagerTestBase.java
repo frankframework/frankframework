@@ -26,9 +26,9 @@ public abstract class TransactionManagerTestBase extends JdbcTestBase {
 	public Timeout testTimeout = Timeout.seconds(60);
 
 	protected IThreadConnectableTransactionManager txManager;
-	private List<TransactionStatus> transactionsToClose = new ArrayList<>();
+	private final List<TransactionStatus> transactionsToClose = new ArrayList<>();
 
-	private static TransactionManagerType singleTransactionManagerType = null; // set to a specific transaction manager type, to speed up testing
+	private static final TransactionManagerType singleTransactionManagerType = null; // set to a specific transaction manager type, to speed up testing
 
 	@Parameters(name= "{0}: {1}")
 	public static Collection data() throws NamingException {

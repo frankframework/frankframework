@@ -41,7 +41,7 @@ public abstract class ResultWriter extends AbstractResultHandler {
 	private @Getter String onCloseBlock="</#name#>";
 	private @Getter String blockNamePattern="#name#";
 
-	private Map<String,Writer> openWriters = Collections.synchronizedMap(new HashMap<>());
+	private final Map<String, Writer> openWriters = Collections.synchronizedMap(new HashMap<>());
 
 	protected abstract Writer createWriter(PipeLineSession session, String streamId) throws Exception;
 

@@ -18,9 +18,9 @@ import nl.nn.adapterframework.xml.XmlWriter;
 
 public class DocumentBuilderTest {
 
-	private String expectedJson = "{\"attr1\":\"alpha quote[\\\"]\",\"attr2\":1.2,\"attr3\":true,\"attr4\":\"a b  c d e f   g\",\"veld1\":\"waarde1 quote[\\\"]\",\"veld2\":10,\"array\":[\"elem1\",\"elem2\"],\"repField\":[\"rep1\",\"rep2\"],\"objField\":{\"o1\":\"w1\",\"o2\":10}}";
-	private String expectedXml =     "<root attr1=\"alpha quote[&quot;]\" attr2=\"1.2\" attr3=\"true\" attr4=\"a b  c d e f   g\"><veld1>waarde1 quote[\"]</veld1><veld2>10</veld2><array><element>elem1</element><element>elem2</element></array><repField>rep1</repField><repField>rep2</repField><objField><o1>w1</o1><o2>10</o2></objField></root>";
-	private String expectedXmlPref = "<root pref_attr1=\"pref:alpha quote[&quot;]\" pref_attr2=\"1.2\" pref_attr3=\"true\" pref_attr4=\"a b  c d e f   g\"><pref_veld1>pref:waarde1 quote[\"]</pref_veld1><pref_veld2>10</pref_veld2><pref_array><pref_element>pref:elem1</pref_element><pref_element>pref:elem2</pref_element></pref_array><pref_repField>pref:rep1</pref_repField><pref_repField>pref:rep2</pref_repField><pref_objField><pref_o1>pref:w1</pref_o1><pref_o2>10</pref_o2></pref_objField></root>";
+	private final String expectedJson = "{\"attr1\":\"alpha quote[\\\"]\",\"attr2\":1.2,\"attr3\":true,\"attr4\":\"a b  c d e f   g\",\"veld1\":\"waarde1 quote[\\\"]\",\"veld2\":10,\"array\":[\"elem1\",\"elem2\"],\"repField\":[\"rep1\",\"rep2\"],\"objField\":{\"o1\":\"w1\",\"o2\":10}}";
+	private final String expectedXml = "<root attr1=\"alpha quote[&quot;]\" attr2=\"1.2\" attr3=\"true\" attr4=\"a b  c d e f   g\"><veld1>waarde1 quote[\"]</veld1><veld2>10</veld2><array><element>elem1</element><element>elem2</element></array><repField>rep1</repField><repField>rep2</repField><objField><o1>w1</o1><o2>10</o2></objField></root>";
+	private final String expectedXmlPref = "<root pref_attr1=\"pref:alpha quote[&quot;]\" pref_attr2=\"1.2\" pref_attr3=\"true\" pref_attr4=\"a b  c d e f   g\"><pref_veld1>pref:waarde1 quote[\"]</pref_veld1><pref_veld2>10</pref_veld2><pref_array><pref_element>pref:elem1</pref_element><pref_element>pref:elem2</pref_element></pref_array><pref_repField>pref:rep1</pref_repField><pref_repField>pref:rep2</pref_repField><pref_objField><pref_o1>pref:w1</pref_o1><pref_o2>10</pref_o2></pref_objField></root>";
 
 	public void buildDocument(IDocumentBuilder root) throws SAXException {
 		try (ObjectBuilder object = root.startObject()) {

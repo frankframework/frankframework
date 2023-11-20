@@ -36,9 +36,9 @@ import nl.nn.adapterframework.util.LogUtil;
 public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> implements IMessageBrowser<F> {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private FS fileSystem;
-	private String folder;
-	private String messageIdPropertyKey;
+	private final FS fileSystem;
+	private final String folder;
+	private final String messageIdPropertyKey;
 
 	private @Getter @Setter String hideRegex = null;
 	private @Getter @Setter HideMethod hideMethod = HideMethod.ALL;

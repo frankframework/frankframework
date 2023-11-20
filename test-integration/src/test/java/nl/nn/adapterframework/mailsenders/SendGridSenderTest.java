@@ -8,7 +8,7 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.SenderException;
 
 public class SendGridSenderTest extends MailSenderTestBase<SendGridSenderWrapper> {
-	private String password = "";
+	private final String password = "";
 
 	@Override
 	public SendGridSenderWrapper createSender() {

@@ -49,8 +49,8 @@ public class IfsaMessagingSource extends MessagingSource {
 	private static final String CLEANUP_ON_CLOSE_KEY="ifsa.cleanUpOnClose";
 	private static Boolean cleanUpOnClose=null;
 
-	private boolean preJms22Api;
-	private boolean xaEnabled;
+	private final boolean preJms22Api;
+	private final boolean xaEnabled;
 
 	public IfsaMessagingSource(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, Map messagingSourceMap, boolean preJms22Api, boolean xaEnabled) {
 		super(applicationId,context,connectionFactory,messagingSourceMap,null,false,true);

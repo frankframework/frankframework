@@ -19,8 +19,8 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
  *
  */
 public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTestBase<IMailSender> {
-	private String correlationID = "fakeCorrelationID";
-	private String examplesMainFolder = "/MailSender/";
+	private final String correlationID = "fakeCorrelationID";
+	private final String examplesMainFolder = "/MailSender/";
 
 	@Override
 	public abstract M createSender();

@@ -137,7 +137,7 @@ public class XmlUtils {
 	private static Boolean autoReload = null;
 	private static Integer buffersize=null;
 
-	private static ConcurrentHashMap<String,TransformerPool> utilityTPs = new ConcurrentHashMap<String,TransformerPool>();
+	private static final ConcurrentHashMap<String, TransformerPool> utilityTPs = new ConcurrentHashMap<String, TransformerPool>();
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
 	public static final XMLEventFactory EVENT_FACTORY = XMLEventFactory.newFactory();

@@ -41,9 +41,9 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class VerifyDatabaseConnectionBean implements ApplicationContextAware, InitializingBean {
 
-	private Logger log = LogUtil.getLogger(this);
-	private String defaultDatasource = AppConstants.getInstance().getProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
-	private boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
+	private final Logger log = LogUtil.getLogger(this);
+	private final String defaultDatasource = AppConstants.getInstance().getProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
+	private final boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
 	private @Setter ApplicationContext applicationContext;
 
 	@Override

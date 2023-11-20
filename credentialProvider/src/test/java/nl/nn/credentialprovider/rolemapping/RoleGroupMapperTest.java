@@ -32,7 +32,7 @@ import nl.nn.credentialprovider.RoleToGroupMappingJndiRealm;
 public class RoleGroupMapperTest {
 
 	private static InMemoryDirectoryServer inMemoryDirectoryServer = null;
-	private static String baseDNs = "dc=myorg,dc=com";
+	private static final String baseDNs = "dc=myorg,dc=com";
 	private static final Log log = LogFactory.getLog(RoleGroupMapperTest.class);
 
 	private RoleToGroupMappingJndiRealm setupRoleToGroupMappingJndiRealm(Context context, String pathname) {

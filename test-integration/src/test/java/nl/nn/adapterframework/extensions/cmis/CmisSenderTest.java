@@ -30,21 +30,21 @@ public class CmisSenderTest {
 	private int length1=0;
 	private int length2=0;
 
-	private String testProperties="CmisSender.properties";
+	private final String testProperties = "CmisSender.properties";
 	private Properties properties;
 
-	private int numParallel=5; // not used for ramp up test
+	private final int numParallel = 5; // not used for ramp up test
 
-	private int numCycles=10;
-	private int maxConnections=20;
-	private int numSenders=2;
+	private final int numCycles = 10;
+	private final int maxConnections = 20;
+	private final int numSenders = 2;
 
-	private boolean testViaHttpSender=false;
+	private final boolean testViaHttpSender = false;
 
-	private int threadCount[] = {  1,  5, 10, 15, 20, 25, 30 };
+	private final int threadCount[] = {1, 5, 10, 15, 20, 25, 30};
 
-	private StringBuilder results=new StringBuilder();
-	private String separator="\t";
+	private final StringBuilder results = new StringBuilder();
+	private final String separator = "\t";
 
 
 

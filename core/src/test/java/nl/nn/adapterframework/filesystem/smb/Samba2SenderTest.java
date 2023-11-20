@@ -14,15 +14,15 @@ import nl.nn.adapterframework.testutil.junit.LocalFileServer.FileSystemType;
 
 public class Samba2SenderTest extends FileSystemSenderTest<Samba2Sender, SmbFileRef, Samba2FileSystem> {
 
-	private String username = "frankframework";
-	private String password = "pass_123";
-	private String host = "localhost";
+	private final String username = "frankframework";
+	private final String password = "pass_123";
+	private final String host = "localhost";
 	private int port = 445;
 
-	private String shareName = "home";
-	private String kdc = "localhost";
-	private String realm = "DUMMYDOMAIN.NL";
-	private String domain = "dummyDomain.nl";
+	private final String shareName = "home";
+	private final String kdc = "localhost";
+	private final String realm = "DUMMYDOMAIN.NL";
+	private final String domain = "dummyDomain.nl";
 
 	@LocalFileSystemMock
 	private static LocalFileServer fs;

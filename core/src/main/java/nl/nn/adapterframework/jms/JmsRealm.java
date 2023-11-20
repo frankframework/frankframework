@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	private String realmName;
 

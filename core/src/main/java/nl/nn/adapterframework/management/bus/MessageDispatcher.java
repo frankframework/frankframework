@@ -51,7 +51,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 
 public class MessageDispatcher implements InitializingBean, ApplicationContextAware {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	private @Setter String packageName;
 	private @Setter BeanFactory beanFactory;
 	private @Setter ApplicationContext applicationContext;

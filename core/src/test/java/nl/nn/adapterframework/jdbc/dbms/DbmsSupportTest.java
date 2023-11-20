@@ -46,7 +46,7 @@ import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class DbmsSupportTest extends JdbcTestBase {
-	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
+	private final boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
 
 	@Test
 	public void testGetDbmsSupport() {

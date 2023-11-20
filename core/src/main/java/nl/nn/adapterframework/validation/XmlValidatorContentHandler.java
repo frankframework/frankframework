@@ -40,7 +40,7 @@ public class XmlValidatorContentHandler extends DefaultHandler2 {
 	private static final int MAX_NAMESPACE_WARNINGS = 5;
 
 	// state
-	private List<String> elements = new ArrayList<>();
+	private final List<String> elements = new ArrayList<>();
 
 	private final Set<String> validNamespaces;
 	private final RootValidations rootValidations;

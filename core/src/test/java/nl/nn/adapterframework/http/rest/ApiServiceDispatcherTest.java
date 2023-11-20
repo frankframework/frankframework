@@ -19,7 +19,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 public class ApiServiceDispatcherTest {
 
 	private ApiServiceDispatcher dispatcher = null;
-	private int amount = 100;
+	private final int amount = 100;
 
 	@Before
 	public void setUp() {

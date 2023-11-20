@@ -154,8 +154,8 @@ import nl.nn.adapterframework.util.XmlEncodingUtils;
  */
 public class LdapSender extends JndiBase implements ISenderWithParameters {
 
-	private String FILTER = "filterExpression";
-	private String ENTRYNAME = "entryName";
+	private final String FILTER = "filterExpression";
+	private final String ENTRYNAME = "entryName";
 
 	private @Getter int searchTimeout=20000;
 

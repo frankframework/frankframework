@@ -16,11 +16,11 @@
 package nl.nn.adapterframework.extensions.esb;
 
 public class EsbConnectionFactoryInfo {
-	private Object managedConnectionFactory;
-	private String contextFactoryClassname;
-	private String url;
-	private String userName;
-	private String password;
+	private final Object managedConnectionFactory;
+	private final String contextFactoryClassname;
+	private final String url;
+	private final String userName;
+	private final String password;
 
 	public EsbConnectionFactoryInfo(Object managedConnectionFactory,
 			String contextFactoryClassname, String url, String userName,

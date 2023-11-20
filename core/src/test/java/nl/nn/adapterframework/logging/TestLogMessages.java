@@ -45,9 +45,9 @@ import nl.nn.adapterframework.util.LogUtil;
 public class TestLogMessages {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private static String TEST_REGEX_IN  = "log my name but not my password! username=\"top\" password=\"secret\" hihi";
-	private static String TEST_REGEX_OUT = "log my name but not my password! username=\"top\" password=\"******\" hihi";
-	private static String PATTERN = "%level - %m";
+	private static final String TEST_REGEX_IN = "log my name but not my password! username=\"top\" password=\"secret\" hihi";
+	private static final String TEST_REGEX_OUT = "log my name but not my password! username=\"top\" password=\"******\" hihi";
+	private static final String PATTERN = "%level - %m";
 
 	@BeforeEach
 	public void setup() {

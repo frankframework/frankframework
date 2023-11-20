@@ -42,9 +42,9 @@ import org.w3c.dom.Element;
  */
 public class IbisNavigationService implements NavigationService {
 
-	private NavigationService navigationService;
-	private CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
-	private CallContext callContext;
+	private final NavigationService navigationService;
+	private final CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
+	private final CallContext callContext;
 
 	public IbisNavigationService(NavigationService navigationService, CallContext callContext) {
 		this.navigationService = navigationService;

@@ -42,9 +42,9 @@ import org.w3c.dom.Node;
  */
 public class IbisRepositoryService implements RepositoryService {
 
-	private RepositoryService repositoryService;
-	private CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
-	private CallContext callContext;
+	private final RepositoryService repositoryService;
+	private final CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
+	private final CallContext callContext;
 
 	public IbisRepositoryService(RepositoryService repositoryService, CallContext callContext) {
 		this.repositoryService = repositoryService;

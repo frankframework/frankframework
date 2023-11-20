@@ -23,7 +23,7 @@ public class ResourceTest {
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
-	private IScopeProvider testScopeProvider = new TestScopeProvider();
+	private final IScopeProvider testScopeProvider = new TestScopeProvider();
 
 	private void testUri(IScopeProvider cl, String ref, String expectedContents, String expectedSystemId) throws TransformerException, SAXException, IOException {
 		testUri(cl, ref, null, expectedContents, expectedSystemId);

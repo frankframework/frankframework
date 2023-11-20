@@ -29,7 +29,7 @@ import com.sap.conn.jco.JCoParameterList;
  */
 public class RootHandler extends Handler {
 
-	private List<JCoParameterList> parameterLists;
+	private final List<JCoParameterList> parameterLists;
 	private boolean parsedRequestRoot = false;
 
 	public RootHandler(List<JCoParameterList> parameterLists) {

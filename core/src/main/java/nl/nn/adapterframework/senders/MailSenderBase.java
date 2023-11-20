@@ -84,7 +84,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	private @Getter String bounceAddress;
 	private @Getter String domainWhitelist;
 
-	private ArrayList<String> allowedDomains = new ArrayList<>();
+	private final ArrayList<String> allowedDomains = new ArrayList<>();
 
 	protected abstract String sendEmail(MailSessionBase mailSession) throws SenderException;
 

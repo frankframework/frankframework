@@ -30,14 +30,14 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Jaco de Groot
  */
 public class SenderThread extends Thread {
-	private static Logger log = LogUtil.getLogger(SenderThread.class);
+	private static final Logger log = LogUtil.getLogger(SenderThread.class);
 
-	private String name;
-	private ISender sender;
+	private final String name;
+	private final ISender sender;
 	private PipeLineSession session;
-	private String request;
+	private final String request;
 	private String response;
-	private String correlationId;
+	private final String correlationId;
 	private SenderException senderException;
 	private IOException ioException;
 	private TimeoutException timeOutException;

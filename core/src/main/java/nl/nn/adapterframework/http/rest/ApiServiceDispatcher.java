@@ -64,8 +64,8 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class ApiServiceDispatcher {
 
-	private Logger log = LogUtil.getLogger(this);
-	private ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<>(new ApiUriComparator());
+	private final Logger log = LogUtil.getLogger(this);
+	private final ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<>(new ApiUriComparator());
 	private static ApiServiceDispatcher self = null;
 
 	public static synchronized ApiServiceDispatcher getInstance() {

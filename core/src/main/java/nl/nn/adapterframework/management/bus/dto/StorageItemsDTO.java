@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.MessageBrowsingFilter;
 
 public class StorageItemsDTO {
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	private final @Getter int totalMessages;
 	private final @Getter int skipMessages;
 	private final @Getter int messageCount;

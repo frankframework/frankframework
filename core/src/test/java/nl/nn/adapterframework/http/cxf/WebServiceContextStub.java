@@ -10,7 +10,7 @@ import org.w3c.dom.Element;
 
 public class WebServiceContextStub implements WebServiceContext {
 
-	private MessageContextStub messageContext = new MessageContextStub();
+	private final MessageContextStub messageContext = new MessageContextStub();
 	@Override
 	public EndpointReference getEndpointReference(Element... arg0) {
 		// TODO Auto-generated method stub

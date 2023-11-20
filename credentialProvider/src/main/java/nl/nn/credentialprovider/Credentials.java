@@ -26,8 +26,8 @@ public class Credentials implements ICredentials {
 	private String alias;
 	private String username;
 	private String password;
-	private Supplier<String> usernameSupplier;
-	private Supplier<String> passwordSupplier;
+	private final Supplier<String> usernameSupplier;
+	private final Supplier<String> passwordSupplier;
 	private boolean gotCredentials=false;
 
 	public Credentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {

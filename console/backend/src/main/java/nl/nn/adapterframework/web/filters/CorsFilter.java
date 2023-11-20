@@ -52,7 +52,7 @@ public class CorsFilter implements Filter {
 	@Value("${iaf-api.cors.enforced:false}")
 	private boolean enforceCORS;
 
-	private CorsConfiguration config = new CorsConfiguration();
+	private final CorsConfiguration config = new CorsConfiguration();
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {

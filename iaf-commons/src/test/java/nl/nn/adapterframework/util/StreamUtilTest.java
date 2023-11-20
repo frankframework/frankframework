@@ -47,8 +47,8 @@ public class StreamUtilTest {
 		f.delete();
 	}
 
-	private String UTF8_EXPECTED="ABC één euro: €1,00";
-	private String OTHER_EXPECTED="ABC néé hè";
+	private final String UTF8_EXPECTED = "ABC één euro: €1,00";
+	private final String OTHER_EXPECTED = "ABC néé hè";
 
 	public void testReader(String inputFile, String expected) throws IOException {
 		testReader(inputFile, expected, null);

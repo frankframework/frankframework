@@ -11,7 +11,7 @@ import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class TestApplicationWarnings {
-	private Logger log = LogUtil.getLogger(TestApplicationWarnings.class);
+	private final Logger log = LogUtil.getLogger(TestApplicationWarnings.class);
 
 	private TestConfiguration configuration = null;
 

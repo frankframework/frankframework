@@ -32,7 +32,7 @@ import nl.nn.adapterframework.util.Semaphore;
  */
 public class CheckSemaphorePipeLineProcessor extends PipeLineProcessorBase {
 
-	private Map<PipeLine,Semaphore> pipeLineThreadCounts=new ConcurrentHashMap<>();
+	private final Map<PipeLine, Semaphore> pipeLineThreadCounts = new ConcurrentHashMap<>();
 
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {

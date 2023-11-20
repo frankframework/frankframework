@@ -5,9 +5,9 @@ import java.util.Map;
 
 public class MockAttachment {
 
-	private String name;
-	private String filename;
-	private String contentType;
+	private final String name;
+	private final String filename;
+	private final String contentType;
 	private Map<String,Object> additionalProperties;
 	private byte[] contents;
 	

@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
 
 public class CacheControlFilter implements Filter {
 
-	private Logger log = LogManager.getLogger(this);
+	private final Logger log = LogManager.getLogger(this);
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {

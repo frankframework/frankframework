@@ -41,10 +41,10 @@ import nl.nn.adapterframework.xml.SaxException;
 public class NamespaceAligningFilter extends XMLFilterImpl {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	private XmlAligner aligner;
-	private Deque<ElementInfo> stack = new ArrayDeque<>();
+	private final XmlAligner aligner;
+	private final Deque<ElementInfo> stack = new ArrayDeque<>();
 
-	private Map<String,String> namespacePrefixes=new HashMap<>();
+	private final Map<String, String> namespacePrefixes = new HashMap<>();
 
 	private static class ElementInfo {
 		String namespacePrefix;
