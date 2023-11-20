@@ -148,8 +148,7 @@ public class MigratorTest extends TransactionManagerTestBase {
 		if(match.find()) {
 			String deploymentId = match.group(1);
 			sqlScript = sqlScript.replace(deploymentId, "IGNORE");
-		}
-		else {
+		} else {
 			fail("no match found");
 			return null;
 		}
