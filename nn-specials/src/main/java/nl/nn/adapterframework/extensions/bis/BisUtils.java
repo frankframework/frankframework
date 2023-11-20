@@ -152,7 +152,7 @@ public class BisUtils {
 		return messageHeaderElement.toXML();
 	}
 
-	public String prepareResult(String errorCode, String errorText, String serviceName, String actionName, String detailText) throws DomBuilderException, IOException, TransformerException {
+	public String prepareResult(String errorCode, String errorText, String serviceName, String actionName, String detailText) {
 		XmlBuilder resultElement = new XmlBuilder("Result");
 		resultElement.addAttribute("xmlns", "http://www.ing.com/CSP/XSD/General/Message_2");
 		XmlBuilder statusElement = new XmlBuilder("Status");

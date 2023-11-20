@@ -182,15 +182,15 @@ public class ConfigurationDigesterTest {
 
 	private class XmlErrorHandler implements ErrorHandler {
 		@Override
-		public void warning(SAXParseException exception) throws SAXParseException {
+		public void warning(SAXParseException exception) {
 			System.err.println("Warning at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
-		public void error(SAXParseException exception) throws SAXParseException {
+		public void error(SAXParseException exception) {
 			System.err.println("Error at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 		@Override
-		public void fatalError(SAXParseException exception) throws SAXParseException {
+		public void fatalError(SAXParseException exception) {
 			System.err.println("FatalError at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());
 		}
 	}

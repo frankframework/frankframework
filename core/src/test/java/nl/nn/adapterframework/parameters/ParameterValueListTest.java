@@ -11,13 +11,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 
 public class ParameterValueListTest {
 
 	@Test
-	public void testParameterValueList() throws ParameterException {
+	public void testParameterValueList() {
 		ParameterValueList list = new ParameterValueList();
 		ParameterValue key2 = new ResolvedParameterValue("key2", "value2");
 		list.add(new ResolvedParameterValue("key1", "value1"));

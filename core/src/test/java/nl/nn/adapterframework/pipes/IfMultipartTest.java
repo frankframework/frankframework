@@ -25,7 +25,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart> {
 	private MockHttpServletRequest request;
 
 	@Before
-	public void before() throws Exception {
+	public void before() {
 		request = new MockHttpServletRequest();
 		MockitoAnnotations.initMocks(this);
 	}

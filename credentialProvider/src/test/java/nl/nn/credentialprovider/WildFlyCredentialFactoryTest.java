@@ -109,7 +109,7 @@ public class WildFlyCredentialFactoryTest {
 	}
 
 	@Test
-	public void testHasCredentials() throws UnsupportedOperationException, CredentialStoreException {
+	public void testHasCredentials() throws UnsupportedOperationException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
@@ -120,7 +120,7 @@ public class WildFlyCredentialFactoryTest {
 	}
 
 	@Test
-	public void testGetCredentialsExistingAlias() throws UnsupportedOperationException, CredentialStoreException {
+	public void testGetCredentialsExistingAlias() throws UnsupportedOperationException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
@@ -131,7 +131,7 @@ public class WildFlyCredentialFactoryTest {
 	}
 
 	@Test
-	public void testGetCredentialsExistingAliasNoUsername() throws UnsupportedOperationException, CredentialStoreException {
+	public void testGetCredentialsExistingAliasNoUsername() throws UnsupportedOperationException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
@@ -142,7 +142,7 @@ public class WildFlyCredentialFactoryTest {
 	}
 
 	@Test
-	public void testGetCredentialsExistingAliasNoPassword() throws UnsupportedOperationException, CredentialStoreException {
+	public void testGetCredentialsExistingAliasNoPassword() throws UnsupportedOperationException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
@@ -153,7 +153,7 @@ public class WildFlyCredentialFactoryTest {
 	}
 
 	@Test
-	public void testGetCredentialsNotExistingAlias() throws UnsupportedOperationException, CredentialStoreException {
+	public void testGetCredentialsNotExistingAlias() throws UnsupportedOperationException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 

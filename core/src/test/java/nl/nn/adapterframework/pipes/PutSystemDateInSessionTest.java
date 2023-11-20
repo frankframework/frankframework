@@ -23,7 +23,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testConfigureNullDateFormat() throws Exception {
+	public void testConfigureNullDateFormat() {
 		pipe.setDateFormat(null);
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
@@ -31,7 +31,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testConfigureNullSessionKey() throws Exception {
+	public void testConfigureNullSessionKey() {
 		pipe.setSessionKey(null);
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
@@ -109,7 +109,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testConfigureIsReturnFixedDatewithoutStub() throws Exception {
+	public void testConfigureIsReturnFixedDatewithoutStub() {
 		pipe.setSessionKey("dummy");
 		pipe.setReturnFixedDate(true);
 
@@ -130,7 +130,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testConfigureInvalidDateFormat() throws Exception {
+	public void testConfigureInvalidDateFormat() {
 		pipe.setDateFormat("test");
 		pipe.setSessionKey("dummy");
 

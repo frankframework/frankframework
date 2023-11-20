@@ -49,7 +49,7 @@ public class TestConnectionOverview extends BusTestBase {
 
 	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if(adapter != null) {
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
 		}

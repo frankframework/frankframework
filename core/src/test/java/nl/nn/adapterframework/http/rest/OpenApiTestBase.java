@@ -59,7 +59,7 @@ public class OpenApiTestBase extends Mockito {
 	}
 
 	@Before
-	public void setUp() throws ServletException {
+	public void setUp() {
 		AppConstants.getInstance().setProperty("hostname", "hostname");
 		AppConstants.getInstance().setProperty("dtap.stage", "xxx");
 		configuration = new TestConfiguration();
@@ -314,7 +314,7 @@ public class OpenApiTestBase extends Mockito {
 			@Override
 			public synchronized void add(String message, Date date, MessageKeeperLevel level) {
 				log.debug("SysOutMessageKeeper {} - {}", level, message);
-				if(MessageKeeperLevel.ERROR.equals(level)) fail(message);
+				if(MessageKeeperLevel.ERROR == level) fail(message);
 			}
 		}
 	}

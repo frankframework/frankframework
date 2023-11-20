@@ -115,7 +115,7 @@ public class DomTreeAligner extends Tree2Xml<Document,Node> {
 		return nilAttribute!=null && "true".equals(nilAttribute.getTextContent());
 	}
 	@Override
-	public Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, Node node) throws SAXException {
+	public Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, Node node) {
 		Map<String, String> result=new HashMap<String, String>();
 		NamedNodeMap attributes=node.getAttributes();
 		if (attributes!=null) {

@@ -40,7 +40,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 	}
 
 	@Test
-	public void testMessage() throws Exception {
+	public void testMessage() {
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		List<Attachment> attachments = new ArrayList<>();
@@ -54,7 +54,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 	}
 
 	@Test
-	public void testFileMessage() throws Exception {
+	public void testFileMessage() {
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		List<Attachment> attachments = new ArrayList<>();
@@ -86,7 +86,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 	}
 
 	@Test
-	public void testPipelineBinaryResponse() throws Exception {
+	public void testPipelineBinaryResponse() {
 		doAnswer((e)->{return new BinaryResponseMessage("dummy data".getBytes());}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		List<Attachment> attachments = new ArrayList<>();
@@ -100,7 +100,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 	}
 
 	@Test
-	public void testPipelineUnknownResponse() throws Exception {
+	public void testPipelineUnknownResponse() {
 		doAnswer((e)->{return new GenericMessage<>(123L);}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
 		List<Attachment> attachments = new ArrayList<>();

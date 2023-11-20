@@ -113,7 +113,7 @@ public class CalcboxOutputReader implements XMLReader {
 
 		// Tags with '#SAMENGESTELD' are not interesting for us,
 		// because next tag gives this information (redundant protocol error:)
-		if(!(line.indexOf("#SAMENGESTELD") == -1))
+		if(line.indexOf("#SAMENGESTELD") != -1)
 			return;
 
 		// place tag in arraylist

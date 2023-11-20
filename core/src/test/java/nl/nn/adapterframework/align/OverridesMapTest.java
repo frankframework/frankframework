@@ -10,7 +10,7 @@ public class OverridesMapTest {
 	private OverridesMap<String> map;
 
 	@BeforeEach
-	public void setUp() throws Exception {
+	public void setUp() {
 		map = new OverridesMap<>();
 	}
 

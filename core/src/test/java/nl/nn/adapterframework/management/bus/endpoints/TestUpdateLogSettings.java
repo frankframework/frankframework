@@ -32,7 +32,7 @@ public class TestUpdateLogSettings extends BusTestBase {
 	}
 
 	@Test
-	public void updateLogDefinitionsNoHeader() throws Exception {
+	public void updateLogDefinitionsNoHeader() {
 		assertEquals(-1, IbisMaskingLayout.getMaxLength(), "maxLength should default to -1 (off)");
 		boolean logIntermediary = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
 		assertTrue(logIntermediary);

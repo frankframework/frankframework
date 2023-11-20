@@ -24,7 +24,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 	}
 
 	@Test
-	public void testExtractMessageWithAttachments() throws Exception {
+	public void testExtractMessageWithAttachments() {
 		String targetFolder="MessageWithAttachments";
 		String recipient=mailaddress_fancy;
 		String from=recipient;
@@ -47,7 +47,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 	}
 
 	@Test
-	public void testExtractMessageWithNestedAttachments() throws Exception {
+	public void testExtractMessageWithNestedAttachments() {
 		String targetFolder="MessageWithNestedAttachments";
 		String recipient=mailaddress_fancy;
 		String from=recipient;
@@ -70,7 +70,7 @@ public class ExchangeMailListenerTest extends ExchangeMailListenerTestBase {
 	}
 	@Test
 	@Ignore
-	public void moveAndCopyToFolders() throws Exception {
+	public void moveAndCopyToFolders() {
 		String baseFolder=basefolder2;
 		String targetFolder="FileWithAttachments";
 		String processedFolder = "processedFolder";

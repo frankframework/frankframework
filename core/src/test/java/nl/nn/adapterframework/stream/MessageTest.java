@@ -342,7 +342,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testReaderToString() throws Exception {
+	public void testReaderToString() {
 		StringReader source = new StringReader(testString);
 		Message adapter = new Message(source);
 		testToString(adapter, StringReader.class);
@@ -492,7 +492,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testStringToString() throws Exception {
+	public void testStringToString() {
 		String source = testString;
 		Message adapter = new Message(source);
 		testToString(adapter, String.class);
@@ -585,7 +585,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testURLToString() throws Exception {
+	public void testURLToString() {
 		URL source = this.getClass().getResource(testStringFile);
 		Message adapter = new UrlMessage(source);
 		testToString(adapter, URL.class);
@@ -636,7 +636,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testFileToString() throws Exception {
+	public void testFileToString() {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
 		Message adapter = new FileMessage(source);
 		testToString(adapter, File.class);
@@ -687,7 +687,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testPathToString() throws Exception {
+	public void testPathToString() {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
 		Message adapter = new PathMessage(source);
 		testToString(adapter, source.getClass());
@@ -1025,7 +1025,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testMessageSizeReader() throws Exception {
+	public void testMessageSizeReader() {
 		Message message = new Message(new StringReader("string"));
 		assertEquals(-1, message.size(), "size differs or could not be determined");
 	}

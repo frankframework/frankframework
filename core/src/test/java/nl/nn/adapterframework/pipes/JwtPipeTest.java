@@ -50,13 +50,13 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	public void noSecret() throws Exception {
+	public void noSecret() {
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertThat(ex.getMessage(), Matchers.containsString("must either provide a [sharedSecret] (alias) or parameter"));
 	}
 
 	@Test
-	public void secretTooShort() throws Exception {
+	public void secretTooShort() {
 		pipe.setSharedSecret("Potato");
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertThat(ex.getMessage(), Matchers.containsString("must be at least 256 bits"));

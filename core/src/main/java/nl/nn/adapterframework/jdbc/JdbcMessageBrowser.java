@@ -193,7 +193,7 @@ public abstract class JdbcMessageBrowser<M> extends JdbcFacade implements IMessa
 		private boolean current;
 		private boolean eof;
 
-		ResultSetIterator(Connection conn, ResultSet rs) throws SQLException {
+		ResultSetIterator(Connection conn, ResultSet rs) {
 			this.conn=conn;
 			this.rs=rs;
 			current=false;

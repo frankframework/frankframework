@@ -284,7 +284,7 @@ public class TestLogMessages {
 	}
 
 	@Test
-	public void testMessageEmptyLogThreadContext() throws Exception {
+	public void testMessageEmptyLogThreadContext() {
 		PatternLayout layout =  PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
 		TestAppender appender = TestAppender.newBuilder().setLayout(layout).build();
 		TestAppender.addToRootLogger(appender);

@@ -32,7 +32,7 @@ public class ApiServiceDispatcherTest {
 	}
 
 	@Test
-	public void testAddManyConcurrentSimultaneousListeners() throws ListenerException, InterruptedException {
+	public void testAddManyConcurrentSimultaneousListeners() throws InterruptedException {
 		List<Thread> list = new ArrayList<>();
 
 		// Spin up many simultaneous threads to 'bomb' the dispatcher with many concurrent requests
@@ -73,7 +73,7 @@ public class ApiServiceDispatcherTest {
 			listener.setName(name);
 			listener.setMethod(HttpMethod.GET);
 			listener.setUriPattern(name);
-			
+
 			try {
 				dispatcher.registerServiceClient(listener);
 			} catch (ListenerException e) {

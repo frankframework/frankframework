@@ -44,7 +44,7 @@ public abstract class FileHandlerTestBase {
 	protected abstract IFileHandler createFileHandler() throws IllegalAccessException, InstantiationException;
 
 	@Before
-	public void setup() throws ConfigurationException, IllegalAccessException, InstantiationException {
+	public void setup() throws IllegalAccessException, InstantiationException {
 		handler = createFileHandler();
 	}
 
@@ -56,7 +56,7 @@ public abstract class FileHandlerTestBase {
 		return contents.replaceAll("[\n\r]", "");
 	}
 
-	private String testIllegalAction(String action) throws Exception {
+	private String testIllegalAction(String action) {
 		handler.setActions(action);
 		return assertThrows(ConfigurationException.class, handler::configure).getMessage();
 	}

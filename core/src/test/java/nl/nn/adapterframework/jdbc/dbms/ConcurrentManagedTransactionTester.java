@@ -1,5 +1,7 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
+import java.sql.SQLException;
+
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
@@ -18,13 +20,13 @@ public abstract class ConcurrentManagedTransactionTester extends ConcurrentActio
 	}
 
 	@Override
-	public void initAction() throws Exception {
+	public void initAction() throws SQLException {
 		TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW,20);
 		mainItx = new IbisTransaction(txManager, txDef, "ConcurrentManagedTransactionTester");
 	}
 
 	@Override
-	public void finalizeAction() throws Exception {
+	public void finalizeAction() throws SQLException {
 		if(mainItx != null) {
 			mainItx.complete();
 		}

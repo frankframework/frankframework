@@ -203,7 +203,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testEmptyXmlTag() throws Exception {
+	public void testEmptyXmlTag() {
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertThat(e.getMessage(), Matchers.containsString("Attribute [xmlTag] must be specified"));
 	}
