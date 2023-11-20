@@ -26,7 +26,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 public class MessageUtilsTest {
 
 	@Test
-	public void testCharset() throws Exception {
+	public void testCharset() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.setCharacterEncoding("tja"); //overridden by content-type header
 		request.setContentType("application/xml;  charset=utf-8"); //2 spaces
@@ -39,7 +39,7 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	public void testCharsetUtf8() throws Exception {
+	public void testCharsetUtf8() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.setCharacterEncoding("tja"); //overridden by content-type header
 		request.setContentType("application/xml;  charset=utf-16"); //2 spaces
@@ -52,7 +52,7 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	public void testMd5Hash() throws Exception {
+	public void testMd5Hash() {
 		Message message = new Message("test message");
 
 		String hash = MessageUtils.generateMD5Hash(message);
@@ -63,7 +63,7 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	public void testCRC32Checksum() throws Exception {
+	public void testCRC32Checksum() {
 		Message message = new Message("test message");
 
 		Long checksum = MessageUtils.generateCRC32(message);
@@ -102,7 +102,7 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	public void testComputeMimeTypeWithISO8559Charset() throws Exception {
+	public void testComputeMimeTypeWithISO8559Charset() {
 		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
 		Message message = new UrlMessage(url);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
@@ -111,7 +111,7 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	public void testComputeMimeTypeBinaryContent() throws Exception {
+	public void testComputeMimeTypeBinaryContent() {
 		URL url = ClassLoaderUtils.getResourceURL("/Logging/pdf-parsed-with-wrong-charset.pdf");
 		Message message = new UrlMessage(url);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
@@ -120,7 +120,7 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	public void testComputeMimeTypeBinaryContentTwice() throws Exception {
+	public void testComputeMimeTypeBinaryContentTwice() {
 		URL url = ClassLoaderUtils.getResourceURL("/Logging/pdf-parsed-with-wrong-charset.pdf");
 		Message message = new UrlMessage(url);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
@@ -130,7 +130,7 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	public void testComputeMimeTypeWithISO8559CharsetAuto() throws Exception {
+	public void testComputeMimeTypeWithISO8559CharsetAuto() {
 		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
 		Message message = new UrlMessage(url);
 		message.getContext().put(MessageContext.METADATA_CHARSET, "auto");
@@ -141,7 +141,7 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	public void testComputeMimeTypeWithISO8559CharsetUTF8() throws Exception {
+	public void testComputeMimeTypeWithISO8559CharsetUTF8() {
 		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
 		Message message = new UrlMessage(url);
 		message.getContext().put(MessageContext.METADATA_CHARSET, "utf-8"); //Is wrong, but it's been set, to must be used...
@@ -191,14 +191,14 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	public void testJsonMessage() throws Exception {
+	public void testJsonMessage() {
 		Message json = Message.asMessage("{\"GUID\": \"ABC\"}");
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
 		assertEquals("application/octet-stream", mimeType.toString()); //mime-type cannot be determined
 	}
 	@Test
-	public void testJsonMessageWithName() throws Exception {
+	public void testJsonMessageWithName() {
 		Message json = new Message("{\"GUID\": \"ABC\"}", new MessageContext().withName("foo.json"));
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);

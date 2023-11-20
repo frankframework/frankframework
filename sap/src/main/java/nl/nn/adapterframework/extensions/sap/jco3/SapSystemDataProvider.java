@@ -116,7 +116,7 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 		registerSystem(sapSystem);
 	}
 
-	public synchronized void updateSystem(SapSystemImpl sapSystem) throws SapException {
+	public synchronized void updateSystem(SapSystemImpl sapSystem) {
 		log.debug("Update " + sapSystem.getName());
 		destinationDataEventListener.updated(sapSystem.getName());
 	}

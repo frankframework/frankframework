@@ -280,7 +280,7 @@ public class FileHandler implements IScopeProvider {
 		}
 	}
 
-	private String getEffectiveFileName(byte[] in, PipeLineSession session) throws IOException {
+	private String getEffectiveFileName(byte[] in, PipeLineSession session) {
 		String name = getFilename();
 		if (StringUtils.isEmpty(name)) {
 			name = session.getString(filenameSessionKey);

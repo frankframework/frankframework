@@ -151,7 +151,7 @@ public class MigratorTest extends TransactionManagerTestBase {
 	}
 
 	@Test
-	public void testScriptExecutionLogs() throws Exception {
+	public void testScriptExecutionLogs() {
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
 		try {

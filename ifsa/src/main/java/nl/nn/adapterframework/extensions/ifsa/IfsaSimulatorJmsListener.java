@@ -20,7 +20,6 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsListener;
 
 /**
@@ -32,7 +31,7 @@ import nl.nn.adapterframework.jms.JmsListener;
 public class IfsaSimulatorJmsListener extends JmsListener {
 
 	@Override
-	public Map<String, Object> extractMessageProperties(Message rawMessage) throws ListenerException {
+	public Map<String, Object> extractMessageProperties(Message rawMessage) {
 		Map<String, Object> messageProperties = super.extractMessageProperties(rawMessage);
 
 		String ifsa_bif_id = null;

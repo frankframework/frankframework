@@ -36,7 +36,7 @@ public class AmazonSqsFactoryTest {
 	}
 
 	@Test
-	public void testCreateConnectionFactory() throws JMSException {
+	public void testCreateConnectionFactory() {
 		// Arrange / Act
 		ConnectionFactory cf = sqsFactory.createConnectionFactory();
 

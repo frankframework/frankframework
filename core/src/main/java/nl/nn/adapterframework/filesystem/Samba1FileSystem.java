@@ -301,7 +301,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public String getParentFolder(SmbFile f) throws FileSystemException {
+	public String getParentFolder(SmbFile f) {
 		return f.getParent();
 	}
 

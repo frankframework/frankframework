@@ -48,7 +48,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void testFailAsWrongDirectory() throws Exception {
+	public void testFailAsWrongDirectory() {
 		Parameter param = setUp("param1");
 		pipe.addParameter(param);
 		pipe.setFilename(sourceFolderPath + "/something");
@@ -61,7 +61,7 @@ public class FixedResultTest extends PipeTestBase<FixedResultPipe> {
 	}
 
 	@Test
-	public void testEmptyFileName() throws Exception{
+	public void testEmptyFileName(){
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);
 		assertThat(e.getMessage(), Matchers.endsWith("has neither filename nor filenameSessionKey nor returnString specified"));
 	}

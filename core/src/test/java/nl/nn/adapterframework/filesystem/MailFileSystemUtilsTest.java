@@ -15,7 +15,7 @@ public class MailFileSystemUtilsTest {
 		testGetValidAddress(address, address);
 	}
 
-	public void testGetValidAddress(String expected, String address) throws AddressException {
+	public void testGetValidAddress(String expected, String address) {
 		assertEquals(expected, MailFileSystemUtils.getValidAddress("test", address));
 	}
 

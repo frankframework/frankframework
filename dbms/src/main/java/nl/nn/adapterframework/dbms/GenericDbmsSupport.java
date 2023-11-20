@@ -284,7 +284,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		return rs.getBlob(column);
 	}
 
-	protected OutputStream getBlobOutputStream(ResultSet rs, Object blobUpdateHandle) throws SQLException, DbmsException {
+	protected OutputStream getBlobOutputStream(ResultSet rs, Object blobUpdateHandle) throws SQLException {
 		return ((Blob) blobUpdateHandle).setBinaryStream(1L);
 	}
 

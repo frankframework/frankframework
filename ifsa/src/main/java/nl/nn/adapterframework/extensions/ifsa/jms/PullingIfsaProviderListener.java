@@ -102,7 +102,7 @@ public class PullingIfsaProviderListener extends IfsaListener implements IPullin
 		return (QueueSession) threadContext.get(THREAD_CONTEXT_SESSION_KEY);
 	}
 
-	protected void releaseSession(Session session) throws ListenerException {
+	protected void releaseSession(Session session) {
 		if (isSessionsArePooled()) {
 			closeSession(session);
 		}

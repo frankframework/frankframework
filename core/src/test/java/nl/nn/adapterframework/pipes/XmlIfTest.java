@@ -329,7 +329,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void emptyNamespaceDefsTest() throws Exception {
+	public void emptyNamespaceDefsTest() {
 		String pipeName = "test1";
 		pipe.setThenForwardName(pipeName);
 		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 1)");

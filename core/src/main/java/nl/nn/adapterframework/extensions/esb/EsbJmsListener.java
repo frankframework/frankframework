@@ -109,7 +109,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	public Map<String, Object> extractMessageProperties(Message rawMessage) throws ListenerException {
+	public Map<String, Object> extractMessageProperties(Message rawMessage) {
 		Map<String, Object> messageProperties = super.extractMessageProperties(rawMessage);
 		if (isCopyAEProperties()) {
 			Enumeration<?> propertyNames = null;

@@ -18,19 +18,17 @@ package nl.nn.adapterframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import nl.nn.adapterframework.dbms.JdbcException;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DB2XMLWriter;
 
@@ -84,7 +82,7 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 					result1.getStatement().clearBatch();
 				}
 				result = result1;
-			} catch (JdbcException | ParameterException | SQLException e) {
+			} catch (JdbcException | SQLException e) {
 				throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 			}
 			return result;
@@ -94,17 +92,13 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	}
 
 	@Override
-	public void closeBlock(QueryExecutionContext blockHandle, PipeLineSession session) throws SenderException {
+	public void closeBlock(QueryExecutionContext blockHandle, PipeLineSession session) {
 		try {
 			super.closeStatementSet(blockHandle);
 		} catch (Exception e) {
 			log.warn("{} Unhandled exception closing statement-set", getLogPrefix(), e);
 		}
-		try {
-			closeConnectionForSendMessage(blockHandle.getConnection(), session);
-		} catch (JdbcException | TimeoutException e) {
-			log.warn("cannot close connection", e);
-		}
+		closeConnectionForSendMessage(blockHandle.getConnection(), session);
 	}
 
 	@Override

@@ -218,7 +218,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * @deprecated please use manager.addFlow()
 	 */
 	@Deprecated
-	public void registerChild(RecordHandlingFlow flowEl) throws Exception {
+	public void registerChild(RecordHandlingFlow flowEl) throws ConfigurationException {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'flow' nested in element 'manager'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		IRecordHandlerManager manager = registeredManagers.get(flowEl.getRecordHandlerManagerRef());
 		if (manager == null) {
@@ -233,13 +233,13 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * @deprecated please use registerRecordHandler()
 	 */
 	@Deprecated
-	public void registerChild(IRecordHandler handler) throws Exception {
+	public void registerChild(IRecordHandler handler) {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'recordHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerRecordHandler(handler);
 	}
 
 	/** Handler for transforming records of a specific type */
-	public void registerRecordHandler(IRecordHandler handler) throws Exception {
+	public void registerRecordHandler(IRecordHandler handler) {
 		registeredRecordHandlers.put(handler.getName(), handler);
 	}
 
@@ -252,13 +252,13 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 * @deprecated Please use registerResultHandler()
 	 */
 	@Deprecated
-	public void registerChild(IResultHandler handler) throws Exception {
+	public void registerChild(IResultHandler handler) {
 		ConfigurationWarnings.add(this, log, "configuration using element 'child' is deprecated. Please use element 'resultHandler'", SuppressKeys.DEPRECATION_SUPPRESS_KEY, getAdapter());
 		registerResultHandler(handler);
 	}
 
 	/** Handler for processing transformed records */
-	public void registerResultHandler(IResultHandler handler) throws Exception {
+	public void registerResultHandler(IResultHandler handler) {
 		handler.setPipe(this);
 		registeredResultHandlers.put(handler.getName(), handler);
 		if (handler.isDefault()) {

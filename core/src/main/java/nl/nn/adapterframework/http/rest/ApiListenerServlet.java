@@ -134,7 +134,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	}
 
 	@Override
-	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
 		final String remoteUser = request.getRemoteUser();
 

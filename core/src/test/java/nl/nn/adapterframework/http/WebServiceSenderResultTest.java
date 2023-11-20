@@ -87,7 +87,7 @@ public class WebServiceSenderResultTest extends Mockito {
 	}
 
 	@After
-	public void setDown() throws SenderException {
+	public void setDown() {
 		if (sender != null) {
 			sender.close();
 			sender = null;

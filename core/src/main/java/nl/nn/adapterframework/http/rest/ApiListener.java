@@ -194,10 +194,10 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		builder.append(getUriPattern());
 		builder.append("; method: ").append(getMethod());
 
-		if(!MediaTypes.ANY.equals(consumes)) {
+		if(MediaTypes.ANY != consumes) {
 			builder.append("; consumes: ").append(getConsumes());
 		}
-		if(!MediaTypes.ANY.equals(produces)) {
+		if(MediaTypes.ANY != produces) {
 			builder.append("; produces: ").append(getProduces());
 		}
 

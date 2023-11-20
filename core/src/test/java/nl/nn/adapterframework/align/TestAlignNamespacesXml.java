@@ -10,7 +10,6 @@ import javax.xml.validation.ValidatorHandler;
 import org.apache.xerces.xs.XSModel;
 import org.xml.sax.SAXException;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -44,7 +43,7 @@ public class TestAlignNamespacesXml extends AlignTestBase {
 		MatchUtils.assertXmlEquals("", xmlString, writer.toString(), true);
 	}
 
-	private String removeNamespacesExceptAttributes(String xmlString) throws ConfigurationException, TransformerException, IOException, SAXException {
+	private String removeNamespacesExceptAttributes(String xmlString) throws TransformerException, IOException, SAXException {
 
 		String template = "<xsl:template match=\"*\">"
 				+ "<xsl:element name=\"{local-name()}\">"

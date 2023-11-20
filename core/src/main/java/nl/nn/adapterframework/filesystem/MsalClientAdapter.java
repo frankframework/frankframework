@@ -127,7 +127,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 	}
 
 	@Override
-	protected Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
+	protected Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) {
 		// Parse headers to comma separated string
 		Header[] responseHeaders = responseHandler.getAllHeaders();
 		String headers = "";
