@@ -27,7 +27,7 @@ public class TestSendJmsMessage extends BusTestBase {
 	public static final String DUMMY_DESTINATION = "dummyDestination";
 
 	@Test
-	public void noConnectionFactory() throws Exception {
+	public void noConnectionFactory() {
 		String payload = "<dummy message=\"true\" />";
 		MessageBuilder<String> request = createRequestMessage(payload, BusTopic.QUEUE, BusAction.UPLOAD);
 		request.setHeader("destination", DUMMY_DESTINATION);
@@ -43,7 +43,7 @@ public class TestSendJmsMessage extends BusTestBase {
 	}
 
 	@Test
-	public void noDestination() throws Exception {
+	public void noDestination() {
 		String payload = "<dummy message=\"true\" />";
 		MessageBuilder<String> request = createRequestMessage(payload, BusTopic.QUEUE, BusAction.UPLOAD);
 		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
@@ -59,7 +59,7 @@ public class TestSendJmsMessage extends BusTestBase {
 	}
 
 	@Test
-	public void noDestinationType() throws Exception {
+	public void noDestinationType() {
 		String payload = "<dummy message=\"true\" />";
 		MessageBuilder<String> request = createRequestMessage(payload, BusTopic.QUEUE, BusAction.UPLOAD);
 		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);

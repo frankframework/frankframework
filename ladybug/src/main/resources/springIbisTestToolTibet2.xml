@@ -104,7 +104,7 @@
 
 	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jndi.JndiDataSourceFactory"/>
 
-	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory"/>
+	<bean name="dbmsSupportFactory" class="nl.nn.adapterframework.dbms.DbmsSupportFactory"/>
 
 	<bean name="auditLogStorage" class="nl.nn.ibistesttool.tibet2.Storage" autowire="byName">
 		<property name="name" value="Logging"/>

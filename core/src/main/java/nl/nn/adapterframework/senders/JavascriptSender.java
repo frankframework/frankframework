@@ -30,11 +30,9 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.extensions.javascript.J2V8;
-import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
-import nl.nn.adapterframework.extensions.javascript.JavascriptException;
-import nl.nn.adapterframework.extensions.javascript.Nashorn;
-import nl.nn.adapterframework.extensions.javascript.Rhino;
+import nl.nn.adapterframework.javascript.J2V8;
+import nl.nn.adapterframework.javascript.JavascriptEngine;
+import nl.nn.adapterframework.javascript.JavascriptException;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
@@ -43,7 +41,7 @@ import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 
 /**
- * Sender used to run JavaScript code using J2V8, Rhino or Nashorn
+ * Sender used to run JavaScript code using J2V8
  *
  * This sender can execute a function of a given javascript file, the result of the function will be the output of the sender.
  * The parameters of the javascript function to run are given as parameters by the adapter configuration
@@ -70,22 +68,17 @@ public class JavascriptSender extends SenderSeries {
 
 
 	public enum JavaScriptEngines {
-		J2V8(J2V8.class),
+		J2V8(J2V8.class);
 
-		@Deprecated NASHORN(Nashorn.class),
-
-		@Deprecated RHINO(Rhino.class);
-
-		private Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
-
+		private final Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
 		private JavaScriptEngines(Class<? extends JavascriptEngine<?>> engine) {
 			this.engine = engine;
 		}
 
 		public JavascriptEngine<?> create() {
 			try {
-				return engine.newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
+				return engine.getDeclaredConstructor().newInstance();
+			} catch (Exception e) {
 				throw new IllegalStateException("Javascript engine [" + engine.getSimpleName() + "] could not be initialized.", e);
 			}
 		}

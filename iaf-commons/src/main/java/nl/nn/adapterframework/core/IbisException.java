@@ -24,7 +24,6 @@ import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.xml.sax.SAXParseException;
 
@@ -134,7 +133,7 @@ public class IbisException extends Exception {
 	}
 
 	public static String expandMessage(String msg, Throwable e, ExcludeClassInfoExceptionFilter filter) {
-		String result=null;
+		String result = null;
 		List<String> msgChain = getMessages(e, msg);
 		Throwable t = e;
 		for(String message:msgChain) {
@@ -143,9 +142,10 @@ public class IbisException extends Exception {
 			result = StringUtil.concatStrings(result, ": ", message);
 			t = getCause(t);
 		}
-		if (result==null) {
+		if (result == null) {
 			// do not replace the following with toString(), this causes an endless loop. GvB
-			result="no message, fields of this exception: "+ToStringBuilder.reflectionToString(e);
+//			result="no message, fields of this exception: " + ReflectionToStringBuilder.toStringExclude(e, "java.lang.Exception.serialVersionUID");
+			result="no message in exception: " + e.getClass().getCanonicalName();
 		}
 		return result;
 	}
@@ -219,9 +219,9 @@ public class IbisException extends Exception {
 		}
 		String specificDetails = getExceptionSpecificDetails(t);
 		if (StringUtils.isNotEmpty(specificDetails)) {
-			boolean tailContainsDetails=false;
+			boolean tailContainsDetails = false;
 			for(String part:result) {
-				if (part!=null && part.indexOf(specificDetails)>=0) {
+				if (part != null && part.contains(specificDetails)) {
 					tailContainsDetails = true;
 					break;
 				}

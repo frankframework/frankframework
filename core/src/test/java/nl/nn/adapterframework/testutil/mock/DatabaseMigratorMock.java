@@ -5,7 +5,7 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.util.StreamUtil;
 

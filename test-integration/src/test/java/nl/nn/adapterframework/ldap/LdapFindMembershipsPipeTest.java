@@ -75,7 +75,7 @@ public class LdapFindMembershipsPipeTest {
 	}
 
 	@Test
-	public void findMembershipsRecursivelyWithCache() throws Exception {
+	public void findMembershipsRecursivelyWithCache() {
 		pipe.setBaseDN(baseDN);
 		pipe.setRecursiveSearch(true);
 

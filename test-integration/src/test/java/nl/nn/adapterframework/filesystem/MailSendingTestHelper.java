@@ -30,7 +30,7 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 	}
 	
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 //		mailSender=new SendGridSender();
 		mailSender=new MailSender();
 		mailSender.setName("MailSendingTestHelper");
@@ -45,49 +45,49 @@ public class MailSendingTestHelper implements IFileSystemTestHelper {
 
 	
 	@After
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		mailSender.close();
 	}
 	
 
 	@Override
-	public boolean _fileExists(String folder, String filename) throws Exception {
+	public boolean _fileExists(String folder, String filename) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public boolean _folderExists(String folderName) throws Exception {
+	public boolean _folderExists(String folderName) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public void _deleteFile(String folder, String filename) throws Exception {
+	public void _deleteFile(String folder, String filename) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public OutputStream _createFile(String folder, String filename) throws Exception {
+	public OutputStream _createFile(String folder, String filename) {
 		currentFile=new MockFile(filename, null);
 		return currentFile.getOutputStream(true);
 	}
 
 	@Override
-	public InputStream _readFile(String folder, String filename) throws Exception {
+	public InputStream _readFile(String folder, String filename) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void _createFolder(String foldername) throws Exception {
+	public void _createFolder(String foldername) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void _deleteFolder(String folderName) throws Exception {
+	public void _deleteFolder(String folderName) {
 		// TODO Auto-generated method stub
 		
 	}

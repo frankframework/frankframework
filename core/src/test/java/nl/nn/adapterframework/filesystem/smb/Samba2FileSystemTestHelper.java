@@ -225,10 +225,10 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		try {
 			return diskShare.getFileInformation(f).getStandardInformation().isDirectory();
 		}catch(SMBApiException e) {
-			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_OBJECT_NAME_NOT_FOUND)) {
+			if(NtStatus.valueOf(e.getStatusCode()) == NtStatus.STATUS_OBJECT_NAME_NOT_FOUND) {
 				return false;
 			}
-			if(NtStatus.valueOf(e.getStatusCode()).equals(NtStatus.STATUS_DELETE_PENDING)) {
+			if(NtStatus.valueOf(e.getStatusCode()) == NtStatus.STATUS_DELETE_PENDING) {
 				return false;
 			}
 
@@ -236,7 +236,7 @@ public class Samba2FileSystemTestHelper implements IFileSystemTestHelper {
 		}
 	}
 
-	private String toFile(String filename) throws FileSystemException {
+	private String toFile(String filename) {
 		return filename;
 	}
 

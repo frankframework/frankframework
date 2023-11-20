@@ -36,10 +36,6 @@
 			<type>war</type>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-aws</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
@@ -208,7 +204,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.6.0</version>
+				<version>${javadoc-plugin.version}</version>
 				<configuration>
 					<skip>true</skip>
 				</configuration>
@@ -247,7 +243,7 @@
 					<artifactId>ibis-adapterframework-ladybug</artifactId>
 					<scope>runtime</scope>
 				</dependency>
-		 </dependencies>
+			</dependencies>
 		</profile>
 		<profile>
 			<id>database-drivers</id>

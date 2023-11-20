@@ -184,13 +184,13 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 	private class ConcurrentXATransactionTester extends ConcurrentActionTester {
 
 		@Override
-		public void initAction() throws Exception {
+		public void initAction() throws ConfigurationException, SenderException, TimeoutException {
 			prepareTable(productKey);
 			prepareTable(SECONDARY_PRODUCT);
 		}
 
 		@Override
-		public void action() throws Exception {
+		public void action() throws ConfigurationException, SenderException, TimeoutException {
 			DirectQuerySender fs1 = new DirectQuerySender();
 			configuration.autowireByName(fs1);
 			fs1.setName("fs1");

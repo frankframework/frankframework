@@ -98,6 +98,7 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 			if (StringUtils.isEmpty(filename) && contents != input) {
 				filename = input.asString();
 			}
+			session.unscheduleCloseOnSessionExit(contents);
 			MessageZipEntry entry = new MessageZipEntry(contents, filename);
 			if (includeFileHeaders) {
 				entry.computeFileHeaders();

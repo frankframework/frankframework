@@ -24,7 +24,7 @@ public class SizeLimitedVectorTest {
 	}
 
 	@Test
-	public void testSetMaxSize() throws Exception {
+	public void testSetMaxSize() {
 		SizeLimitedVector<Integer> slv = new SizeLimitedVector<>();
 		slv.setMaxSize(6);
 		slv.add(1);

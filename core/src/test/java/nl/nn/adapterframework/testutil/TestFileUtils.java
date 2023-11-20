@@ -8,10 +8,10 @@ import java.io.Reader;
 import java.net.URL;
 import java.nio.file.Paths;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Logger;
 
 import lombok.SneakyThrows;
-import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 

@@ -39,7 +39,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -107,7 +106,7 @@ public class HttpSenderResultTest extends Mockito {
 	}
 
 	@After
-	public void setDown() throws SenderException {
+	public void setDown() {
 		if (sender != null) {
 			sender.close();
 			sender = null;

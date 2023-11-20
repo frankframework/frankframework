@@ -2,7 +2,6 @@
 	<!ENTITY ManageDatabase SYSTEM "./ConfigurationManageDatabase.xml">
 	<!ENTITY CheckReload SYSTEM "./ConfigurationCheckReload.xml">
 	<!ENTITY LoadDatabaseSchedules SYSTEM "./ConfigurationLoadDatabaseSchedules.xml">
-	<!ENTITY StatScheduler SYSTEM "./ConfigurationStatScheduler.xml">
 	<!ENTITY CleanupDatabase SYSTEM "./ConfigurationCleanupDatabase.xml">
 	<!ENTITY CleanupFileSystem SYSTEM "./ConfigurationCleanupFileSystem.xml">
 	<!ENTITY RecoverAdapters SYSTEM "./ConfigurationRecoverAdapters.xml">
@@ -13,8 +12,7 @@
 	&ManageDatabase;
 	<!-- include configuration for reloading configurations -->
 	&CheckReload;
-	<!-- include configuration for collection of statistics, cleaning up the database and fxf files, and recover adapters -->
-	&StatScheduler;
+	<!-- include configuration for cleaning up the database and fxf files, and recover adapters -->
 	&LoadDatabaseSchedules;
 	&CleanupDatabase;
 	&CleanupFileSystem;

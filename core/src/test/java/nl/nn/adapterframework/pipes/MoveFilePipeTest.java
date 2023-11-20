@@ -151,7 +151,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
     @Test
     @Order(6)
-    public void moveToNewlyCreatedDirectory() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+    public void moveToNewlyCreatedDirectory() throws ConfigurationException, PipeStartException, PipeRunException {
         pipe.setCreateDirectory(true);
         pipe.setMove2dir(destFolderPath+"/new");//for MAC, different for Windows
         pipe.setDirectory(sourceFolderPath);
@@ -166,7 +166,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
     @Test
     @Order(7)
-    public void moveFilesWithWildcardTest() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+    public void moveFilesWithWildcardTest() throws ConfigurationException, PipeStartException, PipeRunException {
         pipe.setMove2dir(destFolderPath);
         pipe.setDirectory(sourceFolderPath);
         pipe.setWildcard("*.md");
@@ -194,7 +194,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
     }
     @Test
     @Order(9)
-    public void testThrowException() throws ConfigurationException, PipeStartException, PipeRunException {
+    public void testThrowException() throws ConfigurationException, PipeStartException {
         exception.expect(ConfigurationException.class);
         pipe.setThrowException(true);
         pipe.configure();
@@ -316,7 +316,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
     @Test
     @Order(17)
-    public void cantDeleteDirectoryAsWrongName() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+    public void cantDeleteDirectoryAsWrongName() throws ConfigurationException, PipeStartException, PipeRunException {
         exception.expect(PipeRunException.class);
         pipe.setMove2dir(destFolderPath);
         pipe.setDirectory("/Users/apollo11/Desktop/iaf/core/src/test/java/nl/nn/adapterframework/pipes/cantbedeleteddd");// some random, wrong directory path
@@ -351,7 +351,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
     @Test
     @Order(19)
-    public void failCreatingNewDirectory() throws ConfigurationException, PipeStartException, PipeRunException, IOException {
+    public void failCreatingNewDirectory() throws ConfigurationException, PipeStartException, PipeRunException {
         exception.expect(PipeRunException.class);
         pipe.setCreateDirectory(false);
         pipe.setMove2dir(destFolderPath+"/newas");

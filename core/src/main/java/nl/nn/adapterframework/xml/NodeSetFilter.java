@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 /**
  * Filter that copies only a single element type, and/or its contents.
  * Optionally the root is copied too.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class NodeSetFilter extends FullXmlFilter {
@@ -103,7 +103,7 @@ public class NodeSetFilter extends FullXmlFilter {
 			PrefixMapping topMapping=pendingNamespaceDefinitions.remove(pendingNamespaceDefinitions.size()-1);
 //			if (!prefix.equals(topMapping.getPrefix())) {
 //				// do this on debug, because removal is not always in order, but in order of definition in the element
-//				if (log.isTraceEnabled()) log.trace("prefixmapping to remove with prefix ["+prefix+"] does not match expected ["+topMapping.getPrefix()+"]"); 
+//				if (log.isTraceEnabled()) log.trace("prefixmapping to remove with prefix ["+prefix+"] does not match expected ["+topMapping.getPrefix()+"]");
 //			}
 		}
 	}

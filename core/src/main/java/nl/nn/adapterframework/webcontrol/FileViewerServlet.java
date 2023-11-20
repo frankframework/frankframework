@@ -16,44 +16,29 @@
 package nl.nn.adapterframework.webcontrol;
 
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
-import java.io.Reader;
-import java.net.URL;
-import java.util.Hashtable;
-import java.util.Map;
 
-import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.stream.StreamSource;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.http.HttpServletBase;
 import nl.nn.adapterframework.lifecycle.IbisInitializer;
-import nl.nn.adapterframework.statistics.StatisticsUtil;
-import nl.nn.adapterframework.statistics.parser.StatisticsParser;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassLoaderUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
-import nl.nn.adapterframework.util.EncapsulatingReader;
 import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
-import nl.nn.adapterframework.util.XmlUtils;
 
 /**
  * Shows a textfile either as HTML or as Text.
@@ -90,14 +75,6 @@ public class FileViewerServlet extends HttpServletBase {
 	// key that is looked up to retrieve texts to be signaled
 	private static final String fvConfigKey="FileViewerServlet.signal";
 
-	private static final String log4j_html_xslt = "/xml/xsl/log4j_html.xsl";
-	private static final String log4j_text_xslt = "/xml/xsl/log4j_text.xsl";
-	private static final String log4j_prefix    = "<log4j:log4j xmlns:log4j=\"http://jakarta.apache.org/log4\">\n\n";
-	private static final String log4j_postfix	  = "</log4j:log4j>";
-	private static final String stats_html_xslt = "/xml/xsl/stats_html.xsl";
-	private static final String stats_prefix    = "<statisticsCollections>";
-	private static final String stats_postfix	  = "</statisticsCollections>";
-
 	public static final String permissionRules = AppConstants.getInstance().getProperty("FileViewerServlet.permission.rules");
 
 	public static String makeConfiguredReplacements(String input) {
@@ -109,35 +86,7 @@ public class FileViewerServlet extends HttpServletBase {
 		return StringUtils.replace(input, "\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
 	}
 
-
-	public static void transformReader(Reader reader, String filename, Map<String, Object> parameters, HttpServletResponse response, String input_prefix, String input_postfix, String stylesheetUrl, String title) throws DomBuilderException, TransformerException, IOException {
-		PrintWriter out = response.getWriter();
-		Reader fileReader = new EncapsulatingReader(reader, input_prefix, input_postfix, true);
-		URL xsltSource = ClassLoaderUtils.getResourceURL(stylesheetUrl);
-		if (xsltSource!=null) {
-			Transformer transformer = XmlUtils.createTransformer(xsltSource);
-			if (parameters!=null) {
-				XmlUtils.setTransformerParameters(transformer, parameters);
-			}
-			XmlUtils.transformXml(transformer, new StreamSource(fileReader),out);
-			out.close();
-		} else {
-			showReaderContents(fileReader,filename,"text",response,title);
-		}
-	}
-
-	public static void transformSource(Source source, Map<String, Object> parameters, HttpServletResponse response, String stylesheetUrl, String title) throws TransformerException, IOException {
-		PrintWriter out = response.getWriter();
-		URL xsltSource = ClassLoaderUtils.getResourceURL(stylesheetUrl);
-		Transformer transformer = XmlUtils.createTransformer(xsltSource);
-		if (parameters!=null) {
-			XmlUtils.setTransformerParameters(transformer, parameters);
-		}
-		XmlUtils.transformXml(transformer, source, out);
-		out.close();
-	}
-
-	public static void showReaderContents(Reader reader, String filename, String type, HttpServletResponse response, String title) throws DomBuilderException, TransformerException, IOException {
+	private static void showReaderContents(String filepath, String type, HttpServletResponse response) throws IOException {
 		PrintWriter out = response.getWriter();
 		if (type==null) {
 			response.setContentType("text/html");
@@ -145,100 +94,63 @@ public class FileViewerServlet extends HttpServletBase {
 			return;
 		}
 
-		if (type.equalsIgnoreCase("html")){
+		if (type.equalsIgnoreCase("html")) { // Assume it's a log file
 			response.setContentType("text/html");
 
 			out.println("<html>");
 			out.println("<head>");
-			out.println("<title>"+AppConstants.getInstance().getProperty("instance.name.lc")+"@"+Misc.getHostname()+" - "+title+"</title>");
+			out.println("<title>"+AppConstants.getInstance().getProperty("instance.name.lc")+"@"+Misc.getHostname()+" - "+filepath+"</title>");
 			out.println("<link rel=\"stylesheet\" type=\"text/css\" href=\"iaf/"+AppConstants.getInstance().getProperty(fvConfigKey+".css")+"\">");
 			out.println("</head>");
 			out.println("<body>");
 
-			LineNumberReader lnr = new LineNumberReader(reader);
-			String line;
-			while ((line=lnr.readLine())!=null) {
-				out.println(makeConfiguredReplacements(XmlEncodingUtils.encodeChars(line))+"<br/>");
+			try(FileReader reader = new FileReader(filepath); LineNumberReader lnr = new LineNumberReader(reader)) {
+				String line;
+				while ((line=lnr.readLine())!=null) {
+					out.println(makeConfiguredReplacements(XmlEncodingUtils.encodeChars(line))+"<br/>");
+				}
 			}
 
 			out.println("</body>");
 			out.println("</html>");
-		}
-		if (type.equalsIgnoreCase("text")) {
-			response.setContentType("text/plain");
-			String lastPart;
-			try {
-				File f= new File(filename);
-				lastPart=f.getName();
-			} catch (Throwable t) {
-				lastPart=filename;
+		} else {
+			String filename = FilenameUtils.getName(filepath);
+			if (type.equalsIgnoreCase("text")) {
+				response.setContentType("text/plain");
+				response.setHeader("Content-Disposition","attachment; filename=\""+filename+"\""); //download
+			} else if (type.equalsIgnoreCase("xml")) {
+				response.setContentType("application/xml");
+				response.setHeader("Content-Disposition","inline; filename=\""+filename+"\""); //show in browser
 			}
-			response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
-			StreamUtil.readerToWriter(reader, out);
-		}
-		if (type.equalsIgnoreCase("xml")) {
-			response.setContentType("application/xml");
-			String lastPart;
-			try {
-				File f= new File(filename);
-				lastPart=f.getName();
-			} catch (Throwable t) {
-				lastPart=filename;
-			}
-			response.setHeader("Content-Disposition","inline; filename=\""+lastPart+"\"");
-			LineNumberReader lnr;
-			if (filename.indexOf("_xml.log")>=0) {
-				Reader fileReader = new EncapsulatingReader(reader, log4j_prefix, log4j_postfix, true);
-				lnr = new LineNumberReader(fileReader);
-			} else {
-				if (filename.indexOf("-stats_")>=0) {
-					Reader fileReader = new EncapsulatingReader(reader, stats_prefix, stats_postfix, true);
-					lnr = new LineNumberReader(fileReader);
-				} else {
-					lnr = new LineNumberReader(reader);
-				}
-			}
-			String line;
-			while ((line=lnr.readLine())!=null) {
-				out.println(line+"\n");
+			try(FileReader reader = new FileReader(filepath)) {
+				StreamUtil.readerToWriter(reader, out);
 			}
 		}
 		out.close();
 	}
 
-	public static void showInputStreamContents(InputStream inputStream, String filename, String type, HttpServletResponse response) throws DomBuilderException, TransformerException, IOException {
-		ServletOutputStream outputStream = response.getOutputStream();
-		if (type.equalsIgnoreCase("zip")) {
-			response.setContentType("application/zip");
-		} else {
-			response.setContentType("application/octet-stream");
+	public static void showInputStreamContents(String filepath, String type, HttpServletResponse response) throws IOException {
+		try(InputStream inputStream = new DataInputStream(new FileInputStream(filepath))) {
+			ServletOutputStream outputStream = response.getOutputStream();
+			if (type.equalsIgnoreCase("zip")) {
+				response.setContentType("application/zip");
+			} else {
+				response.setContentType("application/octet-stream");
+			}
+			String filename = FilenameUtils.getName(filepath);
+			response.setHeader("Content-Disposition","attachment; filename=\""+filename+"\"");
+			StreamUtil.streamToStream(inputStream, outputStream);
+			outputStream.close();
 		}
-		String lastPart;
-		try {
-			File f= new File(filename);
-			lastPart=f.getName();
-		} catch (Throwable t) {
-			lastPart=filename;
-		}
-		response.setHeader("Content-Disposition","attachment; filename=\""+lastPart+"\"");
-		StreamUtil.streamToStream(inputStream, outputStream);
-		outputStream.close();
 	}
 
 	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		try {
-
 			String type=(String)request.getAttribute("resultType");
 			if (type==null) { type=request.getParameter("resultType"); }
 			String fileName=(String)request.getAttribute("fileName");
 			if (fileName==null) { fileName=request.getParameter("fileName"); }
-			String log4j = (String) request.getAttribute("log4j");
-			if (log4j == null) { log4j = request.getParameter("log4j"); }
-			String stats = (String) request.getAttribute("stats");
-			if (stats == null) { stats = request.getParameter("stats"); }
-//			String pipeSplit = (String) request.getAttribute("pipeSplit");
-//			if (pipeSplit == null) { pipeSplit = request.getParameter("pipeSplit"); }
 
 			if (fileName==null) {
 				PrintWriter out = response.getWriter();
@@ -253,78 +165,17 @@ public class FileViewerServlet extends HttpServletBase {
 					return;
 				}
 			}
-			boolean log4jFlag = "xml".equalsIgnoreCase(log4j) || "true".equalsIgnoreCase(log4j);
-			if (log4jFlag) {
-				String stylesheetUrl;
-				if ("html".equalsIgnoreCase(type)) {
-					response.setContentType("text/html");
-					stylesheetUrl=log4j_html_xslt;
-				} else {
-					response.setContentType("text/plain");
-					stylesheetUrl=log4j_text_xslt;
-				}
-				transformReader(new FileReader(fileName), fileName, null, response, log4j_prefix, log4j_postfix, stylesheetUrl, fileName);
+
+			if (type.equalsIgnoreCase("zip") || type.equalsIgnoreCase("bin")) {
+				showInputStreamContents(fileName, type, response);
 			} else {
-				boolean statsFlag = "xml".equalsIgnoreCase(stats) || "true".equalsIgnoreCase(stats);
-				if (statsFlag) {
-//					boolean pipeSplitFlag = "true".equalsIgnoreCase(pipeSplit);
-					Map<String, Object> parameters = new Hashtable<>();
-					String timestamp = (String) request.getAttribute("timestamp");
-					if (timestamp == null) { timestamp = request.getParameter("timestamp"); }
-					if (timestamp!= null) {
-						parameters.put("timestamp", timestamp);
-					}
-					String servletPath="FileViewerServlet?resultType="+type+"&fileName="+fileName+"&stats="+stats+"&";
-					parameters.put("servletPath",servletPath);
-					String adapterName = (String) request.getAttribute("adapterName");
-					if (adapterName == null) { adapterName = request.getParameter("adapterName"); }
-
-					//log.debug("adapterName ["+adapterName+"]");
-					String extract;
-
-					if (StringUtils.isEmpty(adapterName) || StringUtils.isEmpty(timestamp)) {
-						StatisticsParser sp = new StatisticsParser(adapterName,timestamp); // split by pipe not yet supported
-						sp.digestStatistics(fileName);
-						extract=sp.toXml().toXML();
-					} else {
-						parameters.put("adapterName", adapterName);
-						extract=stats_prefix+StatisticsUtil.fileToString(fileName, timestamp, adapterName)+stats_postfix;
-					}
-					//log.debug(extract);
-					if ("xml".equals(request.getParameter("output"))) {
-						response.setContentType("text/xml;charset="+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-						PrintWriter pw = response.getWriter();
-						pw.write(extract);
-						pw.close();
-					} else {
-						response.setContentType("text/html;charset="+StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-						Source s= XmlUtils.stringToSourceForSingleUse(extract);
-						String stylesheetUrl=stats_html_xslt;
-						transformSource(s,parameters,response,stylesheetUrl,fileName);
-					}
-
-				} else {
-					if (type.equalsIgnoreCase("zip") || type.equalsIgnoreCase("bin")) {
-						showInputStreamContents(new DataInputStream(new FileInputStream(fileName)), fileName, type, response);
-					} else {
-//						Reader r=new BufferedReader(new InputStreamReader(new FileInputStream(fileName),"ISO-8859-1"));
-//						showReaderContents(r, fileName, type, response, request.getContextPath().substring(1),fileName);
-						showReaderContents(new FileReader(fileName), fileName, type, response, fileName);
-					}
-				}
+				showReaderContents(fileName, type, response);
 			}
 		} catch (IOException e) {
-			log.error("FileViewerServlet caught IOException" , e);
-			throw e;
-		} catch (Throwable e) {
-			log.error("FileViewerServlet caught Throwable" , e);
-			throw new ServletException("FileViewerServlet caught Throwable" ,e);
+			log.error("FileViewerServlet caught IOException", e);
+			response.resetBuffer();
+			response.sendError(500);
 		}
-	}
-
-	@Override
-	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		doGet(request, response);
 	}
 
 	@Override

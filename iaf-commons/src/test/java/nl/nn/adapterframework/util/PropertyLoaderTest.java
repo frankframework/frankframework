@@ -1,11 +1,18 @@
 package nl.nn.adapterframework.util;
 
+import static org.hamcrest.CoreMatchers.everyItem;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isIn;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.StringReader;
 import java.util.List;
+import java.util.Properties;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -127,5 +134,71 @@ public class PropertyLoaderTest {
 	@Test
 	public void testUtf8EncodedPropertyFile() {
 		assertEquals("‘’", constants.getProperty("encoding.utf8"));
+	}
+
+	@Test
+	public void testYAML() {
+		PropertyLoader properties = new PropertyLoader("ParserTestFiles/Types.yaml");
+
+		assertAll(
+			() -> assertEquals("value", properties.get("single")),
+			() -> assertEquals("this is a nice value", properties.get("sentence")),
+			() -> assertEquals("test1,test2,123", properties.get("list")),
+
+			() -> assertEquals("1", properties.get("list.map.one")),
+			() -> assertEquals("2", properties.get("list.map.two")),
+
+			() -> assertEquals("1", properties.get("map.one")),
+			() -> assertEquals("2", properties.get("map.two")),
+			() -> assertEquals("3", properties.get("map.three")),
+
+			() -> assertEquals("100", properties.get("array.Sergi.value")),
+			() -> assertEquals("50", properties.get("array.Niels.value")),
+
+			() -> assertEquals("1", properties.get("recursive.map.one")),
+			() -> assertEquals("2", properties.get("recursive.map.two")),
+			() -> assertEquals("3", properties.get("recursive.map.three")),
+
+			() -> assertEquals("drie", properties.get("map.with.property")),
+			() -> assertEquals("", properties.get("empty"))
+		);
+	}
+
+	@Test
+	public void wrongExtensionThrowError() {
+		IllegalArgumentException eae = assertThrows(IllegalArgumentException.class, () -> new PropertyLoader("ParserTestFiles/Properties.extensionNonSupported"));
+		assertEquals("Extension not supported: extensionNonSupported", eae.getMessage());
+	}
+
+	@Test
+	public void testMultiFilesOverwritingProperties() {
+		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/ResolveTest1.yaml");
+		yamlConstants.load(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/ResolveTest2.properties");
+		yamlConstants.load(PropertyLoaderTest.class.getClassLoader(), "ParserTestFiles/ResolveTest3.yaml");
+
+		assertEquals("Piet", yamlConstants.getProperty("Resolve1"));
+		assertEquals("Pat", yamlConstants.getProperty("InverseResolve3"));
+	}
+
+	@Test
+	public void testYamlFromPropertiesConverter() {
+		PropertyLoader yamlConstants = new PropertyLoader("ParserTestFiles/YamlProperties.yaml");
+
+		String p2y = PropertiesParser.parseFile(property2Reader(yamlConstants));
+
+		YamlParser parser = new YamlParser();
+		Properties yamlProperties = parser.load(new StringReader(p2y));
+
+		assertThat( yamlConstants.entrySet(), everyItem(isIn(yamlProperties.entrySet())));
+		assertThat( yamlProperties.entrySet(), everyItem(isIn(yamlConstants.entrySet())));
+	}
+
+	private StringReader property2Reader(PropertyLoader constants) {
+		// convert the AppConstants to string, so that it can be read as a file
+		StringBuilder stringBuilder = new StringBuilder();
+		for (Object key : constants.keySet()) {
+			stringBuilder.append(key).append("=").append(constants.getUnresolvedProperty((String) key)).append("\n");
+		}
+		return new StringReader(stringBuilder.toString());
 	}
 }

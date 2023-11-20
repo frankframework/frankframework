@@ -72,7 +72,7 @@ public class IbisExceptionTest {
 		IbisException exception = new IbisException(new IbisException());
 		String result = exception.getMessage();
 
-		assertTrue(result.contains("no message, fields of this exception: nl.nn.adapterframework.core.IbisException"));
+		assertTrue(result.contains("no message in exception: nl.nn.adapterframework.core.IbisException"));
 	}
 
 	@Test

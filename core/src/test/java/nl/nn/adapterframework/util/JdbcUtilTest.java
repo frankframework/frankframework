@@ -19,9 +19,9 @@ import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.jdbc.JdbcException;
-import nl.nn.adapterframework.jdbc.dbms.DbmsSupportFactory;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.JdbcException;
+import nl.nn.adapterframework.dbms.DbmsSupportFactory;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -113,7 +113,7 @@ public class JdbcUtilTest {
 		query = "SELECT COUNT(*) FROM TEMP";
 
 		// Act
-		int intResult = JdbcUtil.executeIntQuery(connection, query);
+		int intResult = DbmsUtil.executeIntQuery(connection, query);
 
 		// Assert
 		assertEquals(5, intResult);
@@ -122,7 +122,7 @@ public class JdbcUtilTest {
 		query = "SELECT TDATETIME FROM TEMP WHERE TKEY = 3";
 
 		// Act
-		String stringResult = JdbcUtil.executeStringQuery(connection, query);
+		String stringResult = DbmsUtil.executeStringQuery(connection, query);
 
 		// Assert
 		assertEquals("2018-04-12 03:05:06", stringResult);
@@ -131,7 +131,7 @@ public class JdbcUtilTest {
 		query = "SELECT TVARCHAR FROM TEMP WHERE TKEY = 4";
 
 		// Act
-		stringResult = JdbcUtil.executeStringQuery(connection, query);
+		stringResult = DbmsUtil.executeStringQuery(connection, query);
 
 		// Assert
 		assertEquals("fourth text", stringResult);

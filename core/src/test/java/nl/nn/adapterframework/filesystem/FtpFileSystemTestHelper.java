@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.junit.jupiter.api.AfterEach;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
-import nl.nn.adapterframework.util.FilenameUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
@@ -36,7 +36,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 
 	@Override
 	@BeforeEach
-	public void setUp() throws ConfigurationException, IOException, FileSystemException {
+	public void setUp() throws ConfigurationException, FileSystemException {
 		open();
 		cleanFolder();
 	}
@@ -67,7 +67,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	private void open() throws FileSystemException, ConfigurationException {
-		FtpSession ftpSession = new FtpSession();
+		FtpSession ftpSession = new FtpSession() {};
 		ftpSession.setUsername(username);
 		ftpSession.setPassword(password);
 		ftpSession.setHost(host);
@@ -119,14 +119,14 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	@Override
-	public OutputStream _createFile(String folder, String filename) throws IOException, FileSystemException {
+	public OutputStream _createFile(String folder, String filename) throws IOException {
 		String path = folder != null ? folder + "/" + filename : filename;
 		OutputStream out = ftpClient.storeFileStream(path);
 		return completePendingCommand(out);
 	}
 
 	@Override
-	public InputStream _readFile(String folder, String filename) throws IOException, FileSystemException {
+	public InputStream _readFile(String folder, String filename) throws IOException {
 		String path = folder != null ? folder + "/" + filename : filename;
 		InputStream is = ftpClient.retrieveFileStream(path);
 		ftpClient.completePendingCommand();

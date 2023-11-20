@@ -1,0 +1,68 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.ibissource</groupId>
+		<artifactId>ibis-adapterframework-parent</artifactId>
+		<version>${revision}</version>
+	</parent>
+
+	<artifactId>bundle-full</artifactId>
+	<name>Frank!Framework full bundle</name>
+	<description>Minimal bundle + all extra + (optionally) all proprietary modules</description>
+	<packaging>pom</packaging>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>bundle-minimal</artifactId>
+			<type>pom</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-akamai</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-aws</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-messaging</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>nn-specials</artifactId>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>proprietary</id>
+			<activation>
+				<property>
+					<name>proprietary</name>
+				</property>
+			</activation>
+			<dependencies>
+				<dependency>
+					<groupId>org.ibissource</groupId>
+					<artifactId>ibis-adapterframework-sap</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.ibissource</groupId>
+					<artifactId>ibis-adapterframework-tibco</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.ibissource</groupId>
+					<artifactId>ibis-adapterframework-idin</artifactId>
+				</dependency>
+				<dependency>
+					<groupId>org.ibissource</groupId>
+					<artifactId>ibis-adapterframework-ifsa</artifactId>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+</project>

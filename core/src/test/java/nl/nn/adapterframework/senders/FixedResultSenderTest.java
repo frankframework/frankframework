@@ -19,7 +19,7 @@ public class FixedResultSenderTest extends SenderTestBase<FixedResultSender> {
 	}
 
 	@Test
-	public void basic() throws Exception {
+	public void basic() {
 		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
 		assertThat(e.getMessage(), endsWith("has neither fileName nor returnString specified"));
 	}

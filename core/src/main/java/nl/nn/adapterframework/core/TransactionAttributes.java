@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,17 +15,16 @@
 */
 package nl.nn.adapterframework.core;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+
 import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.TransactionDefinition;
 
 import lombok.Getter;
 import lombok.Setter;
-import nl.nn.adapterframework.configuration.ApplicationWarnings;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.Misc;
 
 public class TransactionAttributes implements HasTransactionAttribute {
 	protected Logger log = LogUtil.getLogger(this);
@@ -40,13 +39,6 @@ public class TransactionAttributes implements HasTransactionAttribute {
 	}
 
 	public static TransactionDefinition configureTransactionAttributes(Logger log, TransactionAttribute transactionAttribute, int transactionTimeout) {
-		if (isTransacted(transactionAttribute) && transactionTimeout>0) {
-			int maximumTransactionTimeout = Misc.getMaximumTransactionTimeout();
-			if (maximumTransactionTimeout > 0 && transactionTimeout > maximumTransactionTimeout) {
-				ApplicationWarnings.add(log, "transaction timeout ["+transactionTimeout+"] exceeds the maximum transaction timeout ["+maximumTransactionTimeout+"]");
-			}
-		}
-
 		if (log.isDebugEnabled()) log.debug("creating TransactionDefinition for transactionAttribute ["+transactionAttribute+"], timeout ["+transactionTimeout+"]");
 		return SpringTxManagerProxy.getTransactionDefinition(transactionAttribute.getTransactionAttributeNum(),transactionTimeout);
 	}

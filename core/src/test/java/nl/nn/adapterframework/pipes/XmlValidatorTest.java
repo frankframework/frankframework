@@ -20,7 +20,6 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
@@ -29,7 +28,6 @@ import nl.nn.adapterframework.validation.AbstractXmlValidator;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.JavaxXmlValidator;
 import nl.nn.adapterframework.validation.XercesXmlValidator;
-import nl.nn.adapterframework.validation.XmlValidatorException;
 import nl.nn.adapterframework.validation.XmlValidatorTestBase;
 
 /**
@@ -153,8 +151,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 
 	@Override
 	public ValidationResult validate(String rootelement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws
-		IllegalAccessException, XmlValidatorException, PipeRunException, IOException, ConfigurationException, PipeStartException {
+			boolean ignoreUnknownNamespaces, String inputfile, String[] expectedFailureReasons) throws IOException, ConfigurationException, PipeStartException {
 		XmlValidator validator = getUnconfiguredValidator(schemaLocation, addNamespaceToSchema, implementation);
 		if (rootelement!=null) validator.setRoot(rootelement);
 		validator.setIgnoreUnknownNamespaces(ignoreUnknownNamespaces);

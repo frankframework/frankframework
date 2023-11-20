@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import nl.nn.adapterframework.dbms.JdbcException;
+
 import java.sql.Connection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,7 +24,7 @@ import java.util.Map;
 
 /**
  * @author  Gerrit van Brakel
- * @since  
+ * @since
  */
 public class CachedSideTable extends SideTable {
 

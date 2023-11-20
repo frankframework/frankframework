@@ -43,10 +43,13 @@ import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.dbms.Dbms;
+import nl.nn.adapterframework.dbms.DbmsException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentJdbcActionTester;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
+import nl.nn.adapterframework.util.DbmsUtil;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Semaphore;
 
@@ -515,21 +518,21 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		}
 
 		@Override
-		public void initAction(Connection conn) throws Exception {
+		public void initAction(Connection conn) throws SQLException, DbmsException {
 			String rawQuery = "UPDATE " + TEST_TABLE + " SET TINT=3 WHERE TINT!=3 AND TKEY=10";
 			query = dbmsSupport.convertQuery(rawQuery, "Oracle");
 			connection.setAutoCommit(false);
 		}
 
 		@Override
-		public void action(Connection conn) throws Exception {
+		public void action(Connection conn) throws SQLException {
 			try (PreparedStatement statement = conn.prepareStatement(query)) {
 				numRowsUpdated = statement.executeUpdate();
 			}
 		}
 
 		@Override
-		public void finalizeAction(Connection conn) throws Exception {
+		public void finalizeAction(Connection conn) throws SQLException {
 			connection.commit();
 		}
 
@@ -604,7 +607,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		if (useStatusInProcess) {
 			listener.changeProcessState(connection, rawMessage, ProcessState.AVAILABLE, "test");
 		}
-		String status = JdbcUtil.executeStringQuery(connection, "SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=10");
+		String status = DbmsUtil.executeStringQuery(connection, "SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=10");
 		assertEquals("status should be returned to available, to be able to try again", "1", status);
 	}
 

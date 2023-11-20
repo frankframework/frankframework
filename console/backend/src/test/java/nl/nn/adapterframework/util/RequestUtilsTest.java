@@ -78,7 +78,7 @@ public class RequestUtilsTest {
 	}
 
 	@Test
-	public void testGetValue() throws Exception {
+	public void testGetValue() {
 		// Arrange
 		Map<String, Object> input = new HashMap<>();
 		input.put("string", "value");

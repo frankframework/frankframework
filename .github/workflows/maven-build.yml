@@ -4,7 +4,7 @@
 name: Java CI with Maven
 
 env:
-  PROFILES: ibissource,codecoverage,extra-modules,attachFrankDoc
+  PROFILES: ibissource,codecoverage
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'ibissource') && github.actor != 'dependabot[bot]' }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   MAVEN_GOALS: verify
@@ -44,11 +44,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [ '11' ]
+        java: [ '11', '17', '21' ]
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         # We must fetch at least the immediate parents so that if this is
         # a pull request then we can checkout the head.
@@ -86,9 +86,14 @@ jobs:
       run: |
         echo "PROFILES=${{ env.PROFILES }},proprietary" >> $GITHUB_ENV
 
+    - name: FrankDoc only on Java 11
+      if: ${{ matrix.java == '11' }}
+      run: |
+        echo "PROFILES=${{ env.PROFILES }},attachFrankDoc" >> $GITHUB_ENV
+
       # Secrets are not available when commits are made by Dependabot or from GH forks
-    - name: Update environment when JDK == 11
-      if: ${{ matrix.java == '11' && env.USE_PROPRIETARY == 'true' }}
+    - name: Update environment to run on SonarSource when JDK 17
+      if: ${{ matrix.java == '17' && env.USE_PROPRIETARY == 'true' }}
       run: |
         echo "MAVEN_GOALS=${{ env.MAVEN_GOALS }} org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_ENV
 
@@ -98,7 +103,6 @@ jobs:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
-        jdk11: true # allows the use of the JDK11 profile, when running JDK11
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
       run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf
@@ -107,8 +111,8 @@ jobs:
       uses: codecov/codecov-action@v3
       continue-on-error: true #ignore failure when unable to upload the artifacts
 
-    - name: Upload coverage to Codacy
-      if: ${{ env.USE_PROPRIETARY == 'true' }}
+    - name: Upload coverage to Codacy when Java == 17
+      if: ${{ matrix.java == '17' && env.USE_PROPRIETARY == 'true' }}
       uses: codacy/codacy-coverage-reporter-action@v1
       continue-on-error: true #ignore failure when unable to upload the artifacts
       with:

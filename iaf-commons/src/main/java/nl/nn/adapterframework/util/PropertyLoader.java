@@ -28,6 +28,7 @@ import java.util.Properties;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -66,7 +67,7 @@ public class PropertyLoader extends Properties {
 	private String getSystemProperty(String key) {
 		try {
 			String result = System.getenv().get(key);
-			if (result!=null) {
+			if (result != null) {
 				return result;
 			}
 		} catch (Throwable e) {
@@ -82,7 +83,7 @@ public class PropertyLoader extends Properties {
 
 	@Override
 	public synchronized String get(Object key) {
-		return getResolvedProperty((String)key);
+		return getResolvedProperty((String) key);
 	}
 
 	@Override
@@ -214,10 +215,8 @@ public class PropertyLoader extends Properties {
 			Collections.reverse(resources);
 
 			for (URL url : resources) {
-				try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
-					load(reader);
-					LOG.info("Properties loaded from url [{}]", url::toString);
-				}
+				loadResource(url);
+				LOG.info("Properties loaded from url [{}]", url::toString);
 			}
 		} catch (IOException e) {
 			LOG.error("error reading properties from [{}]", rootPropertyFile, e);
@@ -225,6 +224,7 @@ public class PropertyLoader extends Properties {
 	}
 
 	//Special Getters
+
 
 	/**
 	 * Gets a <code>String</code> value
@@ -294,5 +294,26 @@ public class PropertyLoader extends Properties {
 		String ob = this.getResolvedProperty(key);
 		if (ob == null)return dfault;
 		return Double.parseDouble(ob);
+	}
+
+	/**
+	 * Loads the property based on it's extension
+	 */
+	private synchronized void loadResource(URL url) throws IOException {
+		String extension = FilenameUtils.getExtension(url.getPath());
+		try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+			switch (extension) {
+				case "properties":
+					load(reader);
+					break;
+				case "yml":
+				case "yaml":
+					YamlParser parser = new YamlParser();
+					putAll(parser.load(reader));
+					break;
+				default:
+					throw new IllegalArgumentException("Extension not supported: " + extension);
+			}
+		}
 	}
 }

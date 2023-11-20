@@ -25,6 +25,7 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
+import nl.nn.adapterframework.dbms.JdbcException;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -129,7 +130,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String,Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String,Object> context) {
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
@@ -146,7 +147,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 	}
 
 	@Override
-	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
+	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<String> rawMessage, PipeLineSession pipeLineSession) {
 		// No-op
 	}
 

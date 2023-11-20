@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.apache.logging.log4j.Logger;
+import javax.annotation.Nullable;
+
 import org.springframework.http.MediaType;
 
 import com.aspose.words.Document;
@@ -33,19 +34,18 @@ import com.aspose.words.LoadOptions;
 import com.aspose.words.SaveFormat;
 import com.aspose.words.SaveOptions;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Converts the files which are required and supported by the aspose words
  * library.
  *
  */
+@Log4j2
 class WordConvertor extends AbstractConvertor {
-
-	private static final Logger LOGGER = LogUtil.getLogger(WordConvertor.class);
 	private static final Map<MediaType, Supplier<LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
 
 	static {
@@ -65,13 +65,13 @@ class WordConvertor extends AbstractConvertor {
 		map.put(new MediaType("application", "rtf"), ()->new LoadOptions(LoadFormat.fromName("RTF"), null, null));
 
 		map.put(new MediaType("application", "xml"), ()->new LoadOptions(LoadFormat.fromName("TEXT"), null, null));
-		map.put(new MediaType("text", "html"), ()->new HtmlLoadOptions());
-		map.put(new MediaType("application", "xhtml+xml"), ()->new HtmlLoadOptions());
+		map.put(new MediaType("text", "html"), HtmlLoadOptions::new);
+		map.put(new MediaType("application", "xhtml+xml"), HtmlLoadOptions::new);
 		MEDIA_TYPE_LOAD_FORMAT_MAPPING = Collections.unmodifiableMap(map);
 	}
 
 	protected WordConvertor(CisConfiguration cisConfiguration) {
-		super(cisConfiguration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet().toArray(new MediaType[MEDIA_TYPE_LOAD_FORMAT_MAPPING.size()]));
+		super(cisConfiguration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
 	}
 
 	@Override
@@ -82,27 +82,32 @@ class WordConvertor extends AbstractConvertor {
 		}
 
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			LoadOptions loadOptions=null;
-			Supplier<LoadOptions> loadOptionsSupplier = MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
-			if (loadOptionsSupplier!=null) {
-				loadOptions = loadOptionsSupplier.get();
-				if(!configuration.isLoadExternalResources()){
-					OfflineResourceLoader resourceLoader = new OfflineResourceLoader();
-					loadOptions.setResourceLoadingCallback(resourceLoader);
-				}
-			}
+			LoadOptions loadOptions = getLoadOptions(mediaType);
 
 			Document doc = new Document(inputStream, loadOptions);
-			new Fontsetter(configuration.getFontsDirectory()).setFontSettings(doc);
+			new FontManager(configuration.getFontsDirectory()).setFontSettings(doc);
 			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
 			saveOptions.setMemoryOptimization(true);
 
 			long startTime = new Date().getTime();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), saveOptions);
 			long endTime = new Date().getTime();
-			LOGGER.debug("Conversion(save operation in convert method) took  :::  " + (endTime - startTime) + " ms");
+			log.debug("conversion (save operation in convert method) took [{}ms]", (endTime - startTime));
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 		}
+	}
+
+	@Nullable
+	private LoadOptions getLoadOptions(final MediaType mediaType) {
+		Supplier<LoadOptions> loadOptionsSupplier = MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType);
+		if (loadOptionsSupplier == null) {
+			return null;
+		}
+		LoadOptions loadOptions = loadOptionsSupplier.get();
+		if(!configuration.isLoadExternalResources()){
+			loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
+		}
+		return loadOptions;
 	}
 
 	@Override

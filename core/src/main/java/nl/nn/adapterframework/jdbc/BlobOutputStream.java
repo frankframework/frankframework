@@ -21,13 +21,14 @@ import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.JdbcException;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * Wrapper around DBMS provided OutputStream for BLOB, that updates BLOB and ResultSet and closes them at stream.close().
- * 
+ *
  * @author Gerrit van Brakel
  */
 public class BlobOutputStream extends FilterOutputStream {

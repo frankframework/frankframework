@@ -53,6 +53,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.dbms.DbmsException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -194,7 +196,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	@Nonnull
-	protected String convertQuery(@Nonnull String query) throws JdbcException, SQLException {
+	protected String convertQuery(@Nonnull String query) throws SQLException, DbmsException {
 		if (!StringUtils.isNotEmpty(getSqlDialect()) || getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
 			return query;
 		}
@@ -246,7 +248,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return st.getGeneratedKeys();
 	}
 
-	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message) throws SenderException, SQLException, ParameterException, JdbcException {
+	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message) throws SenderException, SQLException, JdbcException {
 		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
 		String query = getQuery(message);
 		if (BooleanUtils.isTrue(getUseNamedParams()) || (getUseNamedParams() == null && query.contains(UNP_START))) {
@@ -273,7 +275,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return connection;
 	}
 
-	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeoutException {
+	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) {
 		if (isConnectionsArePooled() && connection != null) {
 			try {
 				connection.close();
@@ -382,7 +384,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected String adjustQueryAndParameterListForNamedParameters(ParameterList parameterList, String query) throws SenderException {
+	protected String adjustQueryAndParameterListForNamedParameters(ParameterList parameterList, String query) {
 		if (log.isDebugEnabled()) {
 			log.debug("{}Adjusting list of parameters [{}]", this::getLogPrefix, ()->parameterListToString(parameterList));
 		}
@@ -441,7 +443,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return getResult(resultset,null,null);
 	}
 
-	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException, JMSException {
+	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
 		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null, null, null).getResult();
 	}
 
@@ -543,7 +545,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 
-	private BlobOutputStream getBlobOutputStream(PreparedStatement statement, int blobColumn, boolean compressBlob) throws SQLException, JdbcException, IOException {
+	private BlobOutputStream getBlobOutputStream(PreparedStatement statement, int blobColumn, boolean compressBlob) throws SQLException, JdbcException {
 		log.debug(getLogPrefix() + "executing an update BLOB command");
 		ResultSet rs = statement.executeQuery();
 		XmlBuilder result=new XmlBuilder("result");
@@ -634,7 +636,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			try {
 				connection = getConnectionWithTimeout(getTimeout());
 				queryExecutionContext = getQueryExecutionContext(connection, null);
-			} catch (JdbcException | ParameterException | SQLException | SenderException | TimeoutException e) {
+			} catch (JdbcException | SQLException | SenderException | TimeoutException e) {
 				throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 			}
 			try {
@@ -679,7 +681,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					};
 				}
 				throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
-			} catch (JdbcException | SQLException | IOException | ParameterException e) {
+			} catch (JdbcException | SQLException | ParameterException e) {
 				throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
 			}
 		});

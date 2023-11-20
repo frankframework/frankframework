@@ -400,16 +400,6 @@ public abstract class ClassUtils {
 		return result.toString();
 	}
 
-	/**
-	 * clean up file path, to replace websphere specific classpath references with generic ones.
-	 */
-	public static String getCleanedFilePath(String path) {
-		if(path.contains("wsjar:")) {
-			return path.replace("wsjar:", "jar:");
-		}
-		return path;
-	}
-
 	public static List<Object> getClassInfoList(Class<?> clazz) throws IOException {
 		ClassLoader classLoader = clazz.getClassLoader();
 		List<Object> infoList = new LinkedList<>();
@@ -433,7 +423,7 @@ public abstract class ClassUtils {
 		return infoList;
 	}
 
-	public static Map<String,Object> getClassInfo(Class<?> clazz, ClassLoader classLoader) throws IOException {
+	public static Map<String,Object> getClassInfo(Class<?> clazz, ClassLoader classLoader) {
 		Map<String,Object> result = new LinkedHashMap<>();
 		String classLoaderName=classLoader!=null? classLoader.toString() : "<system classloader>";
 		result.put("classLoader", classLoaderName);

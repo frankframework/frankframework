@@ -149,7 +149,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public String getParentFolder(Message f) throws FileSystemException {
+	public String getParentFolder(Message f) {
 		return f.getFolder().getFullName();
 	}
 
@@ -428,7 +428,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public nl.nn.adapterframework.stream.Message readAttachment(MimeBodyPart a) throws FileSystemException, IOException {
+	public nl.nn.adapterframework.stream.Message readAttachment(MimeBodyPart a) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -497,12 +497,12 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public String getCanonicalName(Message f) throws FileSystemException {
+	public String getCanonicalName(Message f) {
 		return getName(f);
 	}
 
 	@Override
-	public Date getModificationTime(Message f) throws FileSystemException {
+	public Date getModificationTime(Message f) {
 		return null;
 	}
 
@@ -603,7 +603,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	}
 
 	@Override
-	public nl.nn.adapterframework.stream.Message getMimeContent(Message emailMessage) throws FileSystemException {
+	public nl.nn.adapterframework.stream.Message getMimeContent(Message emailMessage) {
 		return new MimeContentMessage((IMAPMessage) emailMessage);
 	}
 

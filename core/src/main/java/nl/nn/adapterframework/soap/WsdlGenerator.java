@@ -41,7 +41,6 @@ import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.extensions.esb.EsbSoapValidator;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.jms.JmsListener;
@@ -171,7 +170,8 @@ public class WsdlGenerator {
 			tns = appConstants.getProperty("wsdl.targetNamespace");
 		}
 		if (tns == null) {
-			if (inputValidator instanceof EsbSoapValidator) {
+			boolean esb = ClassUtils.isClassPresent("nl.nn.adapterframework.extensions.esb.EsbSoapValidator");
+			if (esb && "nl.nn.adapterframework.extensions.esb.EsbSoapValidator".equals(inputValidator.getClass().getCanonicalName())) {
 				esbSoap = true;
 				boolean esbNamespaceWithoutServiceContext = false;
 				String schemaLocation = WsdlGeneratorUtils.getFirstNamespaceFromSchemaLocation(inputValidator);

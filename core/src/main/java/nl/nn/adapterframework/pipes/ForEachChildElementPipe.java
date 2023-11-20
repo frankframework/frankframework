@@ -195,7 +195,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			super.endDocument();
 			try {
 				callback.endIterating();
-			} catch (SenderException | TimeoutException | IOException e) {
+			} catch (SenderException | IOException | TimeoutException e) {
 				throw new SaxException(e);
 			}
 		}
@@ -448,8 +448,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 					}
 				}
 			}
-		} catch (IOException e) {
-			mainException = new SenderException(e);
 		} finally {
 			for(Entry<AutoCloseable,String> entry:closeables.entrySet()) {
 				String label = entry.getValue();

@@ -1,0 +1,78 @@
+<adapter name="Test1" description="test" active="${test}">
+	<receiver name="Test1">
+		<listener name="Test1_Listener" className="nl.nn.adapterframework.receivers.JavaListener"/>
+	</receiver>
+
+	<pipeline firstPipe="TestXmlIf">
+		<exits>
+			<exit name="EXIT" state="success" />
+			<exit path="ERROR" state="error" />
+		</exits>
+
+		<global-forwards>
+			<forward name="exception" path="ERROR"/>
+		</global-forwards>
+
+		<inputValidator responseRoot="test">
+			<forward name="exception" path="resolveError" />
+		</inputValidator>
+		<inputWrapper/>
+		<outputWrapper/>
+
+		<pipe name="TestXmlIfWithForwards" className="nl.nn.adapterframework.pipes.XmlIf"
+			  elementXPathExpression="test">
+			<forward name="then" path="TestXmlIfWithAttributes" />
+			<forward name="else" path="TestXmlIfWithBoth" />
+		</pipe>
+
+		<pipe name="TestXmlIfWithAttributes" className="nl.nn.adapterframework.pipes.XmlIf"
+			  elementXPathExpression="test" thenForwardName="TestXmlSwitchWithForwards" elseForwardName="TestXmlSwitchWithAttributes">
+		</pipe>
+
+		<pipe name="TestXmlIfWithBoth" className="nl.nn.adapterframework.pipes.XmlIf"
+			  elementXPathExpression="test" thenForwardName="TestXmlSwitchWithBoth" elseForwardName="TestCompareString">
+			<forward name="then" path="TestXmlSwitchWithForwards" />
+			<forward name="else" path="TestXmlSwitchWithAttributes" />
+		</pipe>
+
+		<pipe name="TestXmlSwitchWithForwards" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			  elementXPathExpression="test">
+			<forward name="option1" path="TestCompareInteger" />
+			<forward name="option2" path="EXIT" />
+		</pipe>
+
+		<pipe name="TestXmlSwitchWithAttributes" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			  elementXPathExpression="test" notFoundForwardName="ERROR" emptyForwardName="TestCompareInteger">
+		</pipe>
+
+		<pipe name="TestXmlSwitchWithBoth" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			  elementXPathExpression="test" notFoundForwardName="TestCompareString" emptyForwardName="ERROR">
+			<forward name="option1" path="EXIT" />
+			<forward name="option2" path="TestXmlSwitchWithNone" />
+		</pipe>
+
+		<pipe name="TestXmlSwitchWithNone" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			  elementXPathExpression="test">
+		</pipe>
+
+		<pipe name="TestCompareString" className="nl.nn.adapterframework.pipes.TestCompareString"
+			  operand1="test" operand2="test">
+			<forward name="lessthan" path="EXIT" />
+			<forward name="greaterthan" path="EXIT" />
+			<forward name="equals" path="EXIT" />
+			<forward name="success" path="EXIT" />
+			<forward name="exception" path="ERROR" />
+		</pipe>
+
+		<pipe name="TestCompareInteger" className="nl.nn.adapterframework.pipes.CompareIntegerPipe"
+			  operand1="test" operand2="test">
+			<forward name="lessthan" path="EXIT" />
+			<forward name="greaterthan" path="EXIT" />
+			<forward name="equals" path="EXIT" />
+			<forward name="success" path="EXIT" />
+			<forward name="exception" path="ERROR" />
+		</pipe>
+
+		<pipe name="resolveError" className="nl.nn.adapterframework.pipes.Text2XmlPipe"/>
+	</pipeline>
+</adapter>

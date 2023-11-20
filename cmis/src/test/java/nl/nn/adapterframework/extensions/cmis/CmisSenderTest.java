@@ -42,7 +42,7 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 	}
 
 	@Test
-	public void testCreateActionWithNoSession() throws ConfigurationException {
+	public void testCreateActionWithNoSession() {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
 		sender.setOverrideEntryPointWSDL(dummyString);
@@ -53,7 +53,7 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 	}
 
 	@Test
-	public void testGetActionWithNoSession() throws ConfigurationException {
+	public void testGetActionWithNoSession() {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
 		sender.setRepository(dummyString);

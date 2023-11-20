@@ -18,10 +18,9 @@ package nl.nn.adapterframework.collection;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.parameters.ParameterValueList;
@@ -32,17 +31,17 @@ import nl.nn.adapterframework.util.LogUtil;
 /**
  * Aggregator which handles the collection of {@link ICollector collector parts}.
  * Ensures they are closed if required and 'builds' the collection.
- * 
+ *
  * @author Niels Meijer
  *
  * @param <C> Collector to use, which creates the parts
  * @param <P> Parts to be added to each collection
  */
+@Log4j2
 public class Collection<C extends ICollector<P>, P> implements AutoCloseable, INamedObject {
 	private @Getter @Setter String name;
 	private final List<P> parts;
 	private final C collector;
-	private Logger log = LogUtil.getLogger(this);
 
 	public Collection(C collector) {
 		this.collector = collector;

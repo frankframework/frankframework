@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import jcifs.smb.NtlmPasswordAuthentication;
@@ -35,7 +36,6 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.FilenameUtils;
 
 /**
  *
@@ -302,7 +302,7 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	@Override
-	public String getParentFolder(SmbFile f) throws FileSystemException {
+	public String getParentFolder(SmbFile f) {
 		return f.getParent();
 	}
 

@@ -57,7 +57,7 @@ public class HttpListenerServlet extends HttpServletBase {
 		}
 	}
 
-	public void invoke(Message message, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+	public void invoke(Message message, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		try (PipeLineSession messageContext= new PipeLineSession()) {
 			messageContext.setSecurityHandler(securityHandler);

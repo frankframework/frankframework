@@ -25,12 +25,12 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
 
@@ -90,11 +90,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 
 	@Override
 	public void closeBlock(Connection connection, PipeLineSession session) throws SenderException {
-		try {
-			super.closeConnectionForSendMessage(connection, session);
-		} catch (JdbcException | TimeoutException e) {
-			throw new SenderException("cannot close Connection", e);
-		}
+		super.closeConnectionForSendMessage(connection, session);
 	}
 
 	@Override
@@ -142,7 +138,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 				result.getStatement().clearBatch();
 			}
 			return result;
-		} catch (JdbcException | ParameterException | SQLException e) {
+		} catch (JdbcException | SQLException e) {
 			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 		}
 	}
