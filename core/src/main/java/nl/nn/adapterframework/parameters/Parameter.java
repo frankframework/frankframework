@@ -700,7 +700,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 					}
 					Message finalRequestMessage = requestMessage;
 					LOG.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> finalRequestMessage);
-					result = DateUtils.parseXmlDateTime(requestMessage.asString());
+					result = XmlUtils.parseXmlDateTime(requestMessage.asString());
 					break;
 				}
 				case NUMBER: {

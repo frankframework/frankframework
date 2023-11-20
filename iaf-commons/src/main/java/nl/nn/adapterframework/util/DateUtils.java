@@ -23,8 +23,6 @@ import java.util.Date;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.apache.xmlbeans.GDate;
-
 /**
  * Utilities for formatting and parsing dates.
  *
@@ -79,14 +77,6 @@ public class DateUtils {
 		SimpleDateFormat df = new SimpleDateFormat(dateFormat);
 		ParsePosition p = new ParsePosition(0);
 		return df.parse(s, p);
-	}
-
-	/**
-	 * Parses a string to a Date using XML Schema dateTime data type (GDate)
-	 */
-	public static Date parseXmlDateTime(String s) {
-		GDate gdate = new org.apache.xmlbeans.GDate(s);
-		return gdate.getDate();
 	}
 
 	/**
