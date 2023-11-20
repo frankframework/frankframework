@@ -61,10 +61,10 @@ import { SchedulerComponent } from './views/scheduler/scheduler.component';
 import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
-// import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
+import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
 import { ConfigurationsShowComponent } from './views/configurations/configurations-show/configurations-show.component';
 // import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
-// import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
+import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { PagesTitleStrategy } from './pages-title-strategy';
@@ -80,8 +80,8 @@ const windowProvider: ValueProvider = {
 @NgModule({
   declarations: [
     AppComponent,
-    // ConfigurationsManageComponent,
-    // ConfigurationsManageDetailsComponent,
+    ConfigurationsManageComponent,
+    ConfigurationsManageDetailsComponent,
     ConfigurationsShowComponent,
     // ConfigurationsUploadComponent,
     CustomViewsComponent,

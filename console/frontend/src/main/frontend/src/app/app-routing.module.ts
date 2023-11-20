@@ -26,6 +26,8 @@ import { SchedulerComponent } from './views/scheduler/scheduler.component';
 import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler-add.component';
 import { SchedulerEditComponent } from './views/scheduler/scheduler-edit/scheduler-edit.component';
 import { ConfigurationsShowComponent } from './views/configurations/configurations-show/configurations-show.component';
+import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
+import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 
 const routes: Routes = [
   /* {
@@ -96,22 +98,22 @@ const routes: Routes = [
       breadcrumbs: 'Configurations > Upload',
     }
   }, */
-  /* {
+  {
     path: 'configurations/manage',
     component: ConfigurationsManageComponent,
     title: 'Manage Configurations',
     data: {
       breadcrumbs: 'Configurations > Manage',
     }
-  }, */
-  /* {
+  },
+  {
     path: 'configurations/manage/:name',
     component: ConfigurationsManageDetailsComponent,
     title: 'Manage Configurations',
     data: {
       breadcrumbs: 'Configurations > Manage',
     },
-  }, */
+  },
   /* {
     path: 'logging',
     component: LoggingComponent,

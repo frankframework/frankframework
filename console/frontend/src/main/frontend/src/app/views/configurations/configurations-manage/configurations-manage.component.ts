@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AppService, Configuration } from 'src/angularjs/app/app.service';
-import { ApiService } from 'src/angularjs/app/services/api.service';
+import { AppService, Configuration } from 'src/app/app.service';
+import { ConfigurationsService } from '../configurations.service';
 
 @Component({
   selector: 'app-configurations-manage',
@@ -11,15 +11,15 @@ export class ConfigurationsManageComponent implements OnInit {
   configurations: Configuration[] = [];
 
   constructor(
-    private Api: ApiService,
-    private appService: AppService,
+    private configurationsService: ConfigurationsService,
+    private appService: AppService
   ) { };
 
   ngOnInit(): void {
     this.configurations = this.appService.configurations;
     this.appService.configurations$.subscribe(() => { this.configurations = this.appService.configurations; });
 
-    this.Api.Get("server/configurations", (data) => {
+    this.configurationsService.getConfigurations().subscribe((data) => {
       this.appService.updateConfigurations(data);
     });
   };

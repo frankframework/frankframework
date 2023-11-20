@@ -90,7 +90,18 @@ export type Configuration = {
   stubbed: boolean,
   state: RunState,
   type: 'DatabaseClassLoader' | 'DirectoryClassLoader' | 'DummyClassLoader' | 'JarFileClassLoader' | 'ScanningDirectoryClassLoader' | 'WebAppClassLoader',
-  jdbcMigrator: boolean
+  jdbcMigrator: boolean,
+  exception?: string,
+  version?: string,
+  parent?: string,
+  filename?: string,
+  created?: string,
+  user?: string,
+  active?: boolean,
+  autoreload?: boolean,
+  loaded?: boolean,
+
+  actived?: boolean // not from the api, love the name
 }
 
 export type Alert = {

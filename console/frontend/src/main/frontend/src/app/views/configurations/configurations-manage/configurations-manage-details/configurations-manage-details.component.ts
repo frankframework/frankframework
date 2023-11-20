@@ -1,17 +1,17 @@
-import { Component, OnInit } from '@angular/core';
-import { StateParams, StateService } from '@uirouter/angularjs';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
-import { SweetAlertService } from 'src/angularjs/app/services/sweetalert.service';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'src/angularjs/app/services/toastr.service';
-import { Configuration } from 'src/angularjs/app/app.service';
+import { AppService, Configuration } from 'src/app/app.service';
+import { MiscService } from 'src/app/services/misc.service';
+import { SweetalertService } from 'src/app/services/sweetalert.service';
+import { ConfigurationsService } from '../../configurations.service';
 
 @Component({
   selector: 'app-configurations-manage-details',
   templateUrl: './configurations-manage-details.component.html',
   styleUrls: ['./configurations-manage-details.component.scss']
 })
-export class ConfigurationsManageDetailsComponent implements OnInit {
+export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   configuration: Configuration = {
     name: "",
     stubbed: false,
@@ -22,42 +22,48 @@ export class ConfigurationsManageDetailsComponent implements OnInit {
   };
   configurations: Configuration[] = [];
   loading: boolean = false;
-  promise: any;
+  promise: number = -1;
   versions: Configuration[] = [];
 
   constructor(
-    private stateParams: StateParams,
-    private stateService: StateService,
-    private apiService: ApiService,
-    private miscService: MiscService,
-    private sweetAlertService: SweetAlertService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private appService: AppService,
+    private configurationsService: ConfigurationsService,
     private toastrService: ToastrService,
-  ) { };
+    private sweetalertService: SweetalertService
+  ) {
+    const routeState = this.router.getCurrentNavigation()?.extras.state ?? {}
+    if(!routeState['configuration']){
+      this.router.navigate(['..'], { relativeTo: this.route });
+    }
+    this.configuration = routeState['configuration'];
+  };
 
-  ngOnInit(): void {
-    if (this.stateParams && this.stateParams['name'] && this.stateParams['name'] != "")
-      this.stateService.$current.data.breadcrumbs = "Configurations > Manage > " + this.stateParams['name'];
-    else
-      this.stateService.go("pages.manage_configurations");
+  ngOnInit() {
+    this.route.paramMap.subscribe(params => {
+      const nameParam = params.get('name');
+      if (nameParam && nameParam != "")
+        this.appService.customBreadcrumbs("Configurations > Manage > " + nameParam);
+      else
+        this.router.navigate(['..'], { relativeTo: this.route });
 
-    this.configuration = this.stateParams['name'];
+      this.promise = window.setInterval(() => {
+        this.update();
+      }, 30000);
 
-    this.promise = setInterval(() => {
       this.update();
-    }, 30000);
-
-    this.update();
+    });
   }
 
-  onDestroy() {
+  ngOnDestroy() {
     clearInterval(this.promise);
   };
 
   update() {
     this.loading = true;
-    this.apiService.Get("configurations/" + this.stateParams['name'] + "/versions", (data) => {
-      for (const x in data) {
-        var configs = data[x];
+    this.configurationsService.getConfigurationVersions(this.configuration.name).subscribe((data) => {
+      for (const configs of data) {
         if (configs.active) {
           configs.actived = true;
         }
@@ -69,7 +75,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit {
   };
 
   download(config: Configuration) {
-    window.open(this.miscService.getServerPath() + "iaf/api/configurations/" + config.name + "/versions/" + encodeURIComponent(config.version) + "/download");
+    window.open(this.appService.getServerPath() + "iaf/api/configurations/" + config.name + "/versions/" + encodeURIComponent(config.version!) + "/download");
   };
 
   deleteConfig(config: Configuration) {
@@ -81,9 +87,9 @@ export class ConfigurationsManageDetailsComponent implements OnInit {
       message = "Are you sure?";
     };
 
-    this.sweetAlertService.Confirm({ title: message }, (imSure) => {
-      if (imSure) {
-        this.apiService.Delete("configurations/" + config.name + "/versions/" + encodeURIComponent(config.version), () => {
+    this.sweetalertService.Confirm({ title: message }).then(result => {
+      if (result.isConfirmed) {
+        this.configurationsService.deleteConfigurationVersion(config.name, encodeURIComponent(config.version!)).subscribe(() => {
           this.toastrService.success("Successfully removed version '" + config.version + "'");
           this.update();
         });
@@ -97,18 +103,18 @@ export class ConfigurationsManageDetailsComponent implements OnInit {
       if (configs.version != config.version)
         configs.actived = false;
     }
-    this.apiService.Put("configurations/" + config.name + "/versions/" + encodeURIComponent(config.version), { activate: config.active }, (data) => {
+    this.configurationsService.updateConfigurationVersion( config.name, encodeURIComponent(config.version!), { activate: config.active! }).subscribe({ next: () => {
       this.toastrService.success("Successfully changed startup config to version '" + config.version + "'");
-    }, () => {
+    }, error: () => {
       this.update();
-    });
+    }});
   };
 
   scheduleReload(config: Configuration) {
-    this.apiService.Put("configurations/" + config.name + "/versions/" + encodeURIComponent(config.version), { autoreload: config.autoreload }, (data) => {
+    this.configurationsService.updateConfigurationVersion( config.name, encodeURIComponent(config.version!), { autoreload: config.autoreload }).subscribe({ next: () => {
       this.toastrService.success("Successfully " + (config.autoreload ? "enabled" : "disabled") + " Auto Reload for version '" + config.version + "'");
-    }, () => {
+    }, error: () => {
       this.update();
-    });
+    }});
   };
 }
