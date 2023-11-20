@@ -256,6 +256,7 @@ public class IbisApplicationContext implements Closeable {
 		modulesToScanFor.add("ibis-adapterframework-akamai");
 		modulesToScanFor.add("ibis-adapterframework-aspose");
 		modulesToScanFor.add("ibis-adapterframework-aws");
+		modulesToScanFor.add("ibis-adapterframework-batch");
 		modulesToScanFor.add("ibis-adapterframework-cmis");
 		modulesToScanFor.add("ibis-adapterframework-commons");
 		modulesToScanFor.add("ibis-adapterframework-console-backend");
