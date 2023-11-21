@@ -249,7 +249,6 @@ Performance enhancements
 7.6-RC2
 --------
 [Commits](https://github.com/frankframework/frankframework/compare/v7.6-RC1...v7.6-RC2)
-[![Build Status](https://travis-ci.org/frankframework/frankframework.png?tag=v7.6-RC2)](https://travis-ci.org/frankframework/frankframework)
 
 - Reduce debug logging and fix JBoss project names (#1592)
 - Fix 'Move to InProcess' in transaction (#1603)
@@ -279,7 +278,6 @@ Performance enhancements
 7.6-RC1
 --------
 [Commits](https://github.com/frankframework/frankframework/compare/v7.5...v7.6-RC1)
-[![Build Status](https://travis-ci.org/frankframework/frankframework.png?tag=v7.6-RC1)](https://travis-ci.org/frankframework/frankframework)
 
 - Debug streaming messages
 - Add TextSplitterPipe
@@ -331,7 +329,6 @@ Performance enhancements
 --------
 
 [Commits](https://github.com/frankframework/frankframework/compare/v7.5-RC4...v7.5)
-[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.5)](https://travis-ci.org/frankframework/frankframework)
 
 - Sync testtool enable/disable buttons (#1036)
 - Fix #1029 handling absolute paths in LocalFileSystem (#1046)
@@ -351,7 +348,6 @@ Performance enhancements
 --------
 
 [Commits](https://github.com/frankframework/frankframework/compare/v7.5-RC3...v7.5-RC4)
-[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.5-RC4)](https://travis-ci.org/frankframework/frankframework)
 
 - Set receiver color to red when in error (#761)
 - Set property to disable SecurityManager (#746)
@@ -390,7 +386,6 @@ Performance enhancements
 --------
 
 [Commits](https://github.com/frankframework/frankframework/compare/v7.5-RC2...v7.5-RC3)
-[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.5-RC3)](https://travis-ci.org/frankframework/frankframework)
 
 - Fix GUI 3.0 global console warnings #505
 - Fix configurations being reloaded due to not having a (valid) version #506
@@ -416,7 +411,6 @@ Performance enhancements
 --------
 
 [Commits](https://github.com/frankframework/frankframework/compare/v7.5-RC1...v7.5-RC2)
-[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.5-RC2)](https://travis-ci.org/frankframework/frankframework)
 
 - Nested stacktrace ends at ForEachChildElementPipe #425
 - Empty JDBC result throws NullPointerException #426
@@ -445,7 +439,6 @@ Performance enhancements
 --------
 
 [Commits](https://github.com/frankframework/frankframework/compare/v7.4...v7.5-RC1)
-[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.5-RC1)](https://travis-ci.org/frankframework/frankframework)
 
 - Make attribute firstPipe in PipeLine optional. When empty, the first Pipe in the Pipeline configuration
   is considedred to be the first. Similarly the success forward defaults to the next Pipe in the PipeLine.
@@ -516,7 +509,6 @@ Performance enhancements
 --------
 
 [Commits](https://github.com/frankframework/frankframework/compare/v7.3...v7.4)
-[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.4)](https://travis-ci.org/frankframework/frankframework)
 
 - Improve validation config warnings
 - ShowConfigurationStatus - improve error view
@@ -537,7 +529,6 @@ Performance enhancements
 --------
 
 [Commits](https://github.com/frankframework/frankframework/compare/v7.2...v7.3)
-[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.3)](https://travis-ci.org/frankframework/frankframework)
 
 - Refactor CmisListener to an event based listener, you can now have multiple listeners listening to different events
 - The cmis bridge functionality on the sender has been removed. In order to use the bridge you need to configure properties in the WAR/EAR file. See CmisSessionBuilder for more information about the properties that can be set
@@ -549,7 +540,6 @@ Performance enhancements
 --------
 
 [Commits](https://github.com/frankframework/frankframework/compare/v7.2...v7.3-RC1)
-[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.3-RC1)](https://travis-ci.org/frankframework/frankframework)
 
 - Generate IbisDoc and XSD and support beautiful configuration xml. The XSD can be used for code completion of beautiful Ibis configurations in Eclipse
 - Use XSLT 2.0 instead of 1.0 for configuration tweaks (e.g. stub4testtool.xsl)
@@ -593,7 +583,6 @@ Performance enhancements
 --------
 
 [Commits](https://github.com/frankframework/frankframework/compare/v7.1...v7.2)
-[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.2)](https://travis-ci.org/ibissource/iaf)
 
 - Fix NPE in BatchFileTransformerPipe when using an IbisLocalSender
 - Various bugfixes en performance improvements in SOAPProviders (WebServiceListener)
@@ -616,8 +605,7 @@ Performance enhancements
 7.1
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B4...v7.1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.1-B4...v7.1)
 
 - Fix NPE in HttpSender when no charset is supplied in multipart response
 - Modify GetFromSession to get key from input as well as sessionKey
@@ -642,8 +630,7 @@ Performance enhancements
 7.1-B4
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B3...v7.1-B4)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B4)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.1-B3...v7.1-B4)
 
 
 - Prevent poll guard to stop and start listener when recovering
@@ -661,8 +648,7 @@ Performance enhancements
 7.1-B3
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B2...v7.1-B3)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B3)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.1-B2...v7.1-B3)
 
 - Many IAF GUI 3.0 improvements
 - Fix Ladybug
@@ -681,8 +667,7 @@ Performance enhancements
 7.1-B2
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1-B1...v7.1-B2)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B2)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.1-B1...v7.1-B2)
 
 - Add updateEtag sessionKey to the ApiListener so it can be changed at runtime
 - Modify HttpSender logging to only give warnings for 4xx (client errors) and 5xx (server errors)
@@ -711,8 +696,7 @@ Performance enhancements
 7.1-B1
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC3...v7.1-B1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.1-B1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.0-RC3...v7.1-B1)
 
 - Move 'Dynamic parameters' from showConfiguration to showEnvironmentVariables
 - Show provided JmsDestinations with usage in showSecurityItems
@@ -798,8 +782,7 @@ Performance enhancements
 7.0-RC3
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC2...v7.0-RC3)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-RC3)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.0-RC2...v7.0-RC3)
 
 - Refactor ReplacerPipe replaceNonXmlChar and fix javadoc
 - Support Unicode supplementary characters (like a smiley) in replace/stripNonValidXmlCharacters (which is used in ReplacerPipe). In the old code a Unicode supplementary character like a smiley was seen as two characters which would both be replaced/stripped. To be backwards compatible the Unicode supplementary characters are still replaced/stripped (by one character instead of two) but can be allowed using allowUnicodeSupplementaryCharacters
@@ -816,8 +799,7 @@ Performance enhancements
 7.0-RC2
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-RC1...v7.0-RC2)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-RC2)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.0-RC1...v7.0-RC2)
 
 - Ignore import with namespace but without schemaLocation (fix on previous commit 'Support schema attribute with config in database and refactor ClassUtils.getResourceURL()')
 - Rewrite dependencies on removed URL fallback in ClassUtils.getResourceURL()
@@ -835,8 +817,7 @@ Performance enhancements
 7.0-RC1
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-B3...v7.0-RC1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-RC1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.0-B3...v7.0-RC1)
 
 - Add support for integer and boolean parameters when using QuerySenders
 - Fix broken "Show configuration warnings only at relevant configuration"
@@ -889,8 +870,7 @@ Performance enhancements
 7.0-B3
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-B2...v7.0-B3)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-B3)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.0-B2...v7.0-B3)
 
 - Add json to xml and xml to json conversion as well as json validation to xmlvalidators
 - Prevent XML Entity Expansion (XEE) injection
@@ -921,8 +901,7 @@ Performance enhancements
 7.0-B2
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.0-B1...v7.0-B2)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-B2)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.0-B1...v7.0-B2)
 
 - Fix IFSA no longer gives a warning when the managed connection factory can't be found
 - Add consumes and produces option to rest endpoints to set mediatypes, this also transforms the data from and to JSON/XML when set
@@ -1001,8 +980,7 @@ Performance enhancements
 7.0-B1
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v6.1...v7.0-B1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.0-B1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v6.1...v7.0-B1)
 
 - Replace Apache Commons Collections library v3.2 by v3.2.2
 - Don't temporarily move already temporarily moved messages
@@ -1165,8 +1143,7 @@ Performance enhancements
 6.1
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v6.0...v6.1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v6.1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v6.0...v6.1)
 
 - Equalize/refactor file name determination for FilePipe/Sender (for action "read" also consider attribute fileName and for action "info" also consider attributes fileName and classpath)
 - Add CrlPipe
@@ -1237,8 +1214,7 @@ Performance enhancements
 6.0
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5.6.1...v6.0)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v6.0)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v5.6.1...v6.0)
 
 - Add support for jetty-maven-plugin
 - Add note "Theme Bootstrap is part of a beta version" in main page of IBIS console for theme "bootstrap"
@@ -1427,8 +1403,7 @@ Performance enhancements
 5.6.1
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5.6...v5.6.1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.6.1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v5.6...v5.6.1)
 
 - Fixed bug in EsbSoapWrapper where Result element was inserted instead of Status element 
 
@@ -1437,8 +1412,7 @@ Performance enhancements
 5.6
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5.5...v5.6)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.6)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v5.5...v5.6)
 
 - Move missing errorStorage warning from MessageKeeper (at adapter level) and logfile to ConfigurationWarnings (top of console main page).
 - Replace (broken) enforceMQCompliancy on JmsSender with MQSender.
@@ -1465,8 +1439,7 @@ Performance enhancements
 5.5
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5.4...v5.5)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.5)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v5.4...v5.5)
 
 - Also when not transacted don't retrow exception caught in JMS listener (caused connection to be closed and caused possible other threads on the same listener to experience "javax.jms.IllegalStateException: Consumer closed").
 - Tweaked error logging and configuration warnings about transactional processing.
@@ -1497,8 +1470,7 @@ Performance enhancements
 5.4
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5_3...v5_4)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v5.4)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v5_3...v5_4)
 
 - First steps towards running IBISes on TIBCO AMX (as WebApp in Composite)
 - added "Used SapSystems" to console function "Show Security Items"
@@ -1518,7 +1490,7 @@ Performance enhancements
 5.3
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v5_2...v5_3)
+[Commits](https://github.com/frankframework/frankframework/compare/v5_2...v5_3)
 
 - Better DB2 support.
 - Some steps towards making a release with Maven.

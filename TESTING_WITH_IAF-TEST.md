@@ -74,7 +74,7 @@ See the Eclipse instructions for an important note about the `log.dir` setting.
 ## 4. Select database
 
 The ibis-adapterframeworkt-test project supports multiple databases. By default, an H2 local database is used.
-Docker projects for a number of other DMBSes are provided in GitHub project https://github.com/ibissource/iaf-ci-images. To use one of the provided databases, run the `rebuild.bat` script in the corresponding directory. (requires Docker to be installed on your machine). To configure the ibis-adapterframeworkt-test application, set in the catalina.properties or the VM Options the property `jdbc.dbms.default` to `oracle`, `mssql`, `mysql`, `mariadb` or `postgres`.
+Docker projects for a number of other DMBSes are provided in GitHub project https://github.com/frankframework/ci-images. To use one of the provided databases, run the `rebuild.bat` script in the corresponding directory. (requires Docker to be installed on your machine). To configure the ibis-adapterframeworkt-test application, set in the catalina.properties or the VM Options the property `jdbc.dbms.default` to `oracle`, `mssql`, `mysql`, `mariadb` or `postgres`.
 
 ## 5. Running the test scenarios
 

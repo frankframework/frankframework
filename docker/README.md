@@ -5,7 +5,7 @@ developing Franks! nor to run in production. For that, refer to the ["Frank!Fram
 documentation.
 The Docker images have been customized to run without needing much configuration.
 The images contain the test configurations and secrets to connect with
-our [auxiliary images](https://github.com/frankframework/frankframework-ci-images) which include the databases and Messaging Systems.
+our [auxiliary images](https://github.com/frankframework/ci-images) which include the databases and Messaging Systems.
 
 This folder also contains a docker compose file to make it easy to run.
 
