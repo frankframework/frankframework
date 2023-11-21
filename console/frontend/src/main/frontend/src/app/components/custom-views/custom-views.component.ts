@@ -26,8 +26,8 @@ export class CustomViewsComponent implements OnInit {
         const views = customViews.split(",");
         for (const i in views) {
           const view = views[i];
-          const name = this.appConstants[`customViews.${viewId}.name`];
-          const url = this.appConstants[`customViews.${viewId}.url`];
+          const name = this.appConstants[`customViews.${view}.name`];
+          const url = this.appConstants[`customViews.${view}.url`];
           if (name && url){
             this.customViews.push({ view, name, url }); 
           }
