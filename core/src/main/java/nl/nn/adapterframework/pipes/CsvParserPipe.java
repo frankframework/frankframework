@@ -16,9 +16,9 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.file.Files;
 import java.util.Map.Entry;
 
 import org.apache.commons.csv.CSVFormat;
@@ -90,7 +90,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 		try {
 			File tempFile = FileUtils.createTempFile();
 			try (Reader reader = message.asReader()) {
-				try (SaxDocumentBuilder document = new SaxDocumentBuilder("csv", new FileWriter(tempFile), isPrettyPrint())) {
+				try (SaxDocumentBuilder document = new SaxDocumentBuilder("csv", Files.newBufferedWriter(tempFile.toPath()), isPrettyPrint())) {
 					CSVParser csvParser = format.parse(reader);
 					for (CSVRecord csvRecord : csvParser) {
 						processCsvRecord(csvRecord, document);
