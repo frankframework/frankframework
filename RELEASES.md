@@ -1,12 +1,12 @@
 Ibis AdapterFramework release notes
 ===================================
 
-[Tags](https://github.com/ibissource/iaf/releases)
+[Tags](https://github.com/frankframework/frankframework/releases)
 [JavaDocs](https://javadoc.frankframework.org/)
 
 Upcoming (8.0)
 --------------
-[Commits](https://github.com/ibissource/iaf/compare/v7.9-RC1...HEAD)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.9-RC1...HEAD)
 
 ### Non backwards compatible changes
 - CreateRestViewPipe has been removed. It is no longer possible to open the old (blue) user interface.
@@ -16,7 +16,7 @@ Upcoming (8.0)
 
 7.9
 ---
-[Commits](https://github.com/ibissource/iaf/compare/v7.8-RC1...v7.9-RC1)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.8-RC1...v7.9-RC1)
 
 ### Non backwards compatible changes
 
@@ -47,7 +47,7 @@ Upcoming (8.0)
 
 7.8-RC1
 ---
-[Commits](https://github.com/ibissource/iaf/compare/v7.7...v7.8-RC1)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.7...v7.8-RC1)
 
 LCM dependencies (where possible)
 Generic bugfixes
@@ -123,7 +123,7 @@ Performance enhancements
 7.7
 ---
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.6.1...v7.6.2)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.6.1...v7.6.2)
 
 - New FrankDoc XSD and website
 - LCM Dependencies
@@ -197,7 +197,7 @@ Performance enhancements
 
 7.6.2
 --------
-[Commits](https://github.com/ibissource/iaf/compare/v7.6.1...v7.6.2)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.6.1...v7.6.2)
 
 - Fix gui log error message when more then x files (#2426)
 - Ladybug report keeps in progress while adapter is finished (#2496)
@@ -206,7 +206,7 @@ Performance enhancements
 
 7.6.1
 --------
-[Commits](https://github.com/ibissource/iaf/compare/v7.6...7.6-release)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.6...7.6-release)
 
 - Do not close zip archive during processing (#2109)
 - Fix log statements with throwables (#2135)
@@ -231,7 +231,7 @@ Performance enhancements
 
 7.6
 --------
-[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC2...v7.6)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.6-RC2...v7.6)
 
 - Add writeLineSeparator attribute to FileSystemPipe (#1916)
 - Fix exception pipe should to not follow exception forward (#1913)
@@ -248,8 +248,8 @@ Performance enhancements
 
 7.6-RC2
 --------
-[Commits](https://github.com/ibissource/iaf/compare/v7.6-RC1...v7.6-RC2)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?tag=v7.6-RC2)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.6-RC1...v7.6-RC2)
+[![Build Status](https://travis-ci.org/frankframework/frankframework.png?tag=v7.6-RC2)](https://travis-ci.org/frankframework/frankframework)
 
 - Reduce debug logging and fix JBoss project names (#1592)
 - Fix 'Move to InProcess' in transaction (#1603)
@@ -278,8 +278,8 @@ Performance enhancements
 
 7.6-RC1
 --------
-[Commits](https://github.com/ibissource/iaf/compare/v7.5...v7.6-RC1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?tag=v7.6-RC1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.5...v7.6-RC1)
+[![Build Status](https://travis-ci.org/frankframework/frankframework.png?tag=v7.6-RC1)](https://travis-ci.org/frankframework/frankframework)
 
 - Debug streaming messages
 - Add TextSplitterPipe
@@ -330,8 +330,8 @@ Performance enhancements
 7.5
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC4...v7.5)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.5-RC4...v7.5)
+[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.5)](https://travis-ci.org/frankframework/frankframework)
 
 - Sync testtool enable/disable buttons (#1036)
 - Fix #1029 handling absolute paths in LocalFileSystem (#1046)
@@ -350,8 +350,8 @@ Performance enhancements
 7.5-RC4
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC3...v7.5-RC4)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC4)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.5-RC3...v7.5-RC4)
+[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.5-RC4)](https://travis-ci.org/frankframework/frankframework)
 
 - Set receiver color to red when in error (#761)
 - Set property to disable SecurityManager (#746)
@@ -389,8 +389,8 @@ Performance enhancements
 7.5-RC3
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC2...v7.5-RC3)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC3)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.5-RC2...v7.5-RC3)
+[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.5-RC3)](https://travis-ci.org/frankframework/frankframework)
 
 - Fix GUI 3.0 global console warnings #505
 - Fix configurations being reloaded due to not having a (valid) version #506
@@ -415,8 +415,8 @@ Performance enhancements
 7.5-RC2
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.5-RC1...v7.5-RC2)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC2)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.5-RC1...v7.5-RC2)
+[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.5-RC2)](https://travis-ci.org/frankframework/frankframework)
 
 - Nested stacktrace ends at ForEachChildElementPipe #425
 - Empty JDBC result throws NullPointerException #426
@@ -444,8 +444,8 @@ Performance enhancements
 7.5-RC1
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.4...v7.5-RC1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.5-RC1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.4...v7.5-RC1)
+[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.5-RC1)](https://travis-ci.org/frankframework/frankframework)
 
 - Make attribute firstPipe in PipeLine optional. When empty, the first Pipe in the Pipeline configuration
   is considedred to be the first. Similarly the success forward defaults to the next Pipe in the PipeLine.
@@ -515,8 +515,8 @@ Performance enhancements
 7.4
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.3...v7.4)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.4)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.3...v7.4)
+[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.4)](https://travis-ci.org/frankframework/frankframework)
 
 - Improve validation config warnings
 - ShowConfigurationStatus - improve error view
@@ -536,8 +536,8 @@ Performance enhancements
 7.3
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.2...v7.3)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.3)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.2...v7.3)
+[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.3)](https://travis-ci.org/frankframework/frankframework)
 
 - Refactor CmisListener to an event based listener, you can now have multiple listeners listening to different events
 - The cmis bridge functionality on the sender has been removed. In order to use the bridge you need to configure properties in the WAR/EAR file. See CmisSessionBuilder for more information about the properties that can be set
@@ -548,8 +548,8 @@ Performance enhancements
 7.3-RC1
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.2...v7.3-RC1)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.3-RC1)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.2...v7.3-RC1)
+[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.3-RC1)](https://travis-ci.org/frankframework/frankframework)
 
 - Generate IbisDoc and XSD and support beautiful configuration xml. The XSD can be used for code completion of beautiful Ibis configurations in Eclipse
 - Use XSLT 2.0 instead of 1.0 for configuration tweaks (e.g. stub4testtool.xsl)
@@ -592,8 +592,8 @@ Performance enhancements
 7.2
 --------
 
-[Commits](https://github.com/ibissource/iaf/compare/v7.1...v7.2)
-[![Build Status](https://travis-ci.org/ibissource/iaf.png?branch=v7.2)](https://travis-ci.org/ibissource/iaf)
+[Commits](https://github.com/frankframework/frankframework/compare/v7.1...v7.2)
+[![Build Status](https://travis-ci.org/frankframework/frankframework.png?branch=v7.2)](https://travis-ci.org/ibissource/iaf)
 
 - Fix NPE in BatchFileTransformerPipe when using an IbisLocalSender
 - Various bugfixes en performance improvements in SOAPProviders (WebServiceListener)

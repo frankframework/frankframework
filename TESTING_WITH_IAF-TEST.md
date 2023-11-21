@@ -2,7 +2,7 @@
 
 To ensure that your contribution doesn't break any logic, we would like you to run the test scenario's within the iaf-test module before committing your changes. To do this, a number of extra dependencies are required. These are placed as runtime-dependencies in the `test/pom.xml` but the overview is placed below for verification, and in case something goes wrong with the dependency management.
 
-This guide was written with the assertion that you are A) using Eclipse, and B) have successfully ran the iaf-example module before. If this is not the case, please follow the steps as described on our [CONTRIBUTING](https://github.com/ibissource/iaf/blob/master/CONTRIBUTING.md#developing-with-eclipse) page. For users of IntelliJ, see chapter 3.
+This guide was written with the assertion that you are A) using Eclipse, and B) have successfully ran the iaf-example module before. If this is not the case, please follow the steps as described on our [CONTRIBUTING](https://github.com/frankframework/frankframework/blob/master/CONTRIBUTING.md#developing-with-eclipse) page. For users of IntelliJ, see chapter 3.
 
 ## 1. Proprietary modules and JAR dependencies
 
@@ -19,7 +19,7 @@ If you want to use Queuing or a DBMS other than H2, you need to ensure the corre
 * For PostgreSQL      : [postgresql-42.2.14](https://jdbc.postgresql.org/download/postgresql-42.2.14.jar)
 * For ActiveMQ        : [activemq-all-5.8.0.jar](https://mvnrepository.com/artifact/org.apache.activemq/activemq-core/5.8.0)
 
-**Versions are subject to change, please check our [pom.xml](https://github.com/ibissource/iaf/blob/master/pom.xml) for the current driver(s) and their corresponding versions.**
+**Versions are subject to change, please check our [pom.xml](https://github.com/frankframework/frankframework/blob/master/pom.xml) for the current driver(s) and their corresponding versions.**
 
 In Tomcat's launch configuration (go to the Java EE perspective to access your Tomcat server, find launch configuration in the Tomcat Overview window), go to the Classpath tab. Click on the User Entries item and click on the [ Add JARs... ] button. Select all JARs in the lib folder, press OK, and press OK again.
 

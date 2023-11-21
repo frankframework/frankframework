@@ -1103,9 +1103,9 @@
 	</reporting>
 
 	<scm>
-		<url>https://github.com/ibissource/iaf</url>
-		<connection>scm:git:https://github.com/ibissource/iaf.git</connection>
-		<developerConnection>scm:git:https://github.com/ibissource/iaf.git</developerConnection>
+		<url>https://github.com/frankframework/frankframework</url>
+		<connection>scm:git:https://github.com/frankframework/frankframework.git</connection>
+		<developerConnection>scm:git:https://github.com/frankframework/frankframework.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 
