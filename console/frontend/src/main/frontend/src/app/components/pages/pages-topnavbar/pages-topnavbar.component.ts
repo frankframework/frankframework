@@ -8,14 +8,14 @@ import { NotificationService } from 'src/angularjs/app/services/notification.ser
   styleUrls: ['./pages-topnavbar.component.scss']
 })
 export class PagesTopnavbarComponent implements OnInit, OnDestroy{
-  notificationCount: number = this.Notification.getCount();
+  notificationCount = this.Notification.getCount();
   notificationList: NotificationService["list"] = [];
 
-  @Input() dtapSide: string = "";
-  @Input() dtapStage: string = "";
-  @Input() serverTime: string = "";
-  @Input() userName: string = "";
-  @Input() loggedin: boolean = false;
+  @Input() dtapSide = "";
+  @Input() dtapStage = "";
+  @Input() serverTime = "";
+  @Input() userName = "";
+  @Input() loggedin = false;
   @Output() onOpenFeedback = new EventEmitter<number>();
 
   private _subscriptions = new Subscription();
