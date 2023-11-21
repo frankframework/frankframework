@@ -96,6 +96,7 @@ import { ConfigurationsManageDetailsComponent } from './views/configurations/con
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
+import { LoadingComponent } from './views/loading/loading.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -128,6 +129,7 @@ appModule
   .directive('jmsBrowseQueue', downgradeComponent({ component: JmsBrowseQueueComponent }) as angular.IDirectiveFactory)
   .directive('jmsSendMessage', downgradeComponent({ component: JmsSendMessageComponent }) as angular.IDirectiveFactory)
   .directive('liquibase', downgradeComponent({ component: LiquibaseComponent }) as angular.IDirectiveFactory)
+  .directive('loading', downgradeComponent({ component: LoadingComponent }) as angular.IDirectiveFactory)
   .directive('logout', downgradeComponent({ component: LogoutComponent }) as angular.IDirectiveFactory)
   .directive('minimalizaSidebar', downgradeComponent({ component: MinimalizaSidebarComponent }) as angular.IDirectiveFactory)
   .directive('monitors', downgradeComponent({ component: MonitorsComponent }) as angular.IDirectiveFactory)
@@ -191,6 +193,7 @@ appModule
     WebservicesComponent,
     MonitorsComponent,
     MonitorsAddEditComponent,
+    LoadingComponent,
 
     // pipes
     ConfigurationFilterPipe,
