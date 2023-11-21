@@ -569,6 +569,27 @@
 	<build>
 		<defaultGoal>install</defaultGoal>
 		<plugins>
+			<!-- Execute org.jasig.maven:notice-maven-plugin:generate in order to (re)generate a NOTICE file -->
+			<plugin>
+				<groupId>org.jasig.maven</groupId>
+				<artifactId>notice-maven-plugin</artifactId>
+				<version>2.0.0</version>
+				<configuration>
+					<excludedModules>
+						<excludedModule>ibis-adapterframework-ifsa</excludedModule>
+						<excludedModule>ibis-adapterframework-sap</excludedModule>
+						<excludedModule>ibis-adapterframework-tibco</excludedModule>
+						<excludedModule>ibis-adapterframework-idin</excludedModule>
+					</excludedModules>
+					<noticeMessage>{0} - using: {1}</noticeMessage>
+					<excludeOptional>true</excludeOptional>
+					<generateChildNotices>false</generateChildNotices>
+					<includeChildDependencies>true</includeChildDependencies>
+					<licenseMapping>
+						<param>license-mappings.xml</param>
+					</licenseMapping>
+				</configuration>
+			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
