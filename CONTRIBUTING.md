@@ -3,7 +3,7 @@
 # How to contribute
 
 Thanks for reading this we're glad you're taking an interest in contributing to our framework.
-We want you working on things you're excited about, there are however plenty of [issues](https://github.com/ibissource/iaf/issues) that can be picked up.
+We want you working on things you're excited about, there are however plenty of [issues](https://github.com/frankframework/frankframework/issues) that can be picked up.
 
 ## Running the Frank!Framework
 
@@ -11,7 +11,7 @@ If you want to experiment with the Frank!Framework, you can use the [Frank!Runne
 
 Initial:
 
-- git clone https://github.com/ibissource/iaf
+- git clone https://github.com/frankframework/frankframework
 - cd iaf
 - mvn
 - cd example
@@ -28,7 +28,7 @@ The jetty-maven-plugin requires Maven 3 and Java 1.8. We tested these instructio
 
 ## Submitting changes
 
-Please send a [GitHub Pull Request](https://github.com/ibissource/iaf/pull/new/master) with a clear list of what you've done (read more about [pull requests](https://help.github.com/articles/about-pull-requests/)). When you send a pull request, make sure all of your commits are atomic (one feature per commit) and that the title is clear, obvious and informative!
+Please send a [GitHub Pull Request](https://github.com/frankframework/frankframework/pull/new/master) with a clear list of what you've done (read more about [pull requests](https://help.github.com/articles/about-pull-requests/)). When you send a pull request, make sure all of your commits are atomic (one feature per commit) and that the title is clear, obvious and informative!
 
 Always write a clear log message for your commits. Add the current year, the name of the copyright owner and the copyright notice (when not already present) to adjusted and new files. See:
 
@@ -161,7 +161,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 ### Import the source code
 
 - Make sure Maven is able to access the internet. E.g. when behind a proxy: Window, Preferences, Maven, User Settings, settings.xml should exist and contain proxy configuration.
-- Window, Open Perspective, Other..., Git, OK, Clone a Git repository, URI: https://github.com/ibissource/iaf.git, Next, Next, Finish.
+- Window, Open Perspective, Other..., Git, OK, Clone a Git repository, URI: https://github.com/frankframework/frankframework.git, Next, Next, Finish.
 - Optionally (when you have access to the proprietary jars some modules depend on) add your Nexus credentials and enable the proprietary profile in your maven settings.xml
 - In the Git Perspective, right click the IAF Repository and click 'Import Projects...'
 - The Import wizard appears which allows you to import many different kinds of projects.
@@ -230,7 +230,7 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 
 ## Developing with IntelliJ
 
-- Clone the source any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:ibissource/iaf.git`
+- Clone the source any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:frankframework/frankframework.git`
 - If you cloned from the command line, then: From File -> Open... Select iaf folder and import it as a Maven project.
 - When asked to open the Eclipse project or the Maven project, choose opening the Maven project.
 - Make sure to select Java 11 as a default JDK.

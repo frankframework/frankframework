@@ -51,7 +51,7 @@ More info about using and creating containers can be found in [Docker.md](Docker
 All production-ready containers will be pushed to our [Nexus Repository Manager](https://nexus.frankframework.org/) `frankframework-docker` repository. Helm charts are available [in the charts repository](https://github.com/ibissource/charts).
 
 ## Frank!Manual
-In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>. If you cannot find an answer to your question feel free to [submit a question in discussions](https://github.com/ibissource/iaf/discussions).
+In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>. If you cannot find an answer to your question feel free to [submit a question in discussions](https://github.com/frankframework/frankframework/discussions).
 
 ## Contributing
 Eager to help us expand or enhance our framework?
