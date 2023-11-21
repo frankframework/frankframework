@@ -54,14 +54,12 @@
             ],
             "scripts": [
               "node_modules/jquery/dist/jquery.js",
-              "node_modules/angular/angular.js",
               "src/angularjs/plugins/iCheck/icheck.min.js",
               "node_modules/chart.js/dist/Chart.js",
               "node_modules/datatables.net/js/jquery.dataTables.js",
               "node_modules/metismenu/dist/metisMenu.js"
             ],
             "allowedCommonJsDependencies": [
-              "angular",
               "sweetalert2",
               "angular-datatables/dist/angular-datatables",
               "angular-datatables/dist/plugins/buttons/angular-datatables.buttons",
@@ -74,8 +72,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kb",
-                  "maximumError": "1mb"
+                  "maximumWarning": "1mb",
+                  "maximumError": "2mb"
                 },
                 {
                   "type": "anyComponentStyle",
