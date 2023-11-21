@@ -15,6 +15,9 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Reader;
 import java.util.Map.Entry;
 
@@ -32,19 +35,19 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.stream.PathMessage;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 /**
  * Reads a message in CSV format, and turns it into XML.
- * 
+ *
  * @author Gerrit van Brakel
  *
  */
 @ElementType(ElementTypes.TRANSLATOR)
-public class CsvParserPipe extends StreamingPipe {
+public class CsvParserPipe extends FixedForwardPipe {
 
 	private @Getter Boolean fileContainsHeader;
 	private @Getter String fieldNames;
@@ -84,31 +87,33 @@ public class CsvParserPipe extends StreamingPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		try (MessageOutputStream target=getTargetStream(session)) {
+		try {
+			File tempFile = FileUtils.createTempFile();
 			try (Reader reader = message.asReader()) {
-				try (SaxDocumentBuilder document = new SaxDocumentBuilder("csv", target.asContentHandler(), isPrettyPrint())) {
+				try (SaxDocumentBuilder document = new SaxDocumentBuilder("csv", new FileWriter(tempFile), isPrettyPrint())) {
 					CSVParser csvParser = format.parse(reader);
-					for (CSVRecord record : csvParser) {
-						try (SaxElementBuilder element = document.startElement("record")) {
-							for(Entry<String,String> entry:record.toMap().entrySet()) {
-								String key = entry.getKey();
-								if(getHeaderCase() != null) {
-									key = getHeaderCase()==HeaderCase.LOWERCASE ? key.toLowerCase() : key.toUpperCase();
-								}
-								element.addElement(key, entry.getValue());
-							}
-						} catch (SAXException e) {
-							throw new PipeRunException(this, "Exception caught at line ["+record.getRecordNumber()+"] pos ["+record.getCharacterPosition()+"]", e);
-						}
+					for (CSVRecord csvRecord : csvParser) {
+						processCsvRecord(csvRecord, document);
 					}
 				}
 			}
-			return target.getPipeRunResult();
-		} catch (Exception e) {
-			if (e instanceof PipeRunException) {
-				throw (PipeRunException)e;
-			}
+			return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath(), message.getCharset()));
+		} catch (IOException | SAXException e) {
 			throw new PipeRunException(this, "Cannot parse CSV", e);
+		}
+	}
+
+	private void processCsvRecord(final CSVRecord csvRecord, final SaxDocumentBuilder document) throws PipeRunException {
+		try (SaxElementBuilder element = document.startElement("record")) {
+			for(Entry<String,String> entry: csvRecord.toMap().entrySet()) {
+				String key = entry.getKey();
+				if(getHeaderCase() != null) {
+					key = getHeaderCase()==HeaderCase.LOWERCASE ? key.toLowerCase() : key.toUpperCase();
+				}
+				element.addElement(key, entry.getValue());
+			}
+		} catch (SAXException e) {
+			throw new PipeRunException(this, "Exception caught at line ["+ csvRecord.getRecordNumber()+"] pos ["+ csvRecord.getCharacterPosition()+"]", e);
 		}
 	}
 
@@ -142,6 +147,5 @@ public class CsvParserPipe extends StreamingPipe {
 	public void setPrettyPrint(boolean prettyPrint) {
 		this.prettyPrint = prettyPrint;
 	}
-
 
 }

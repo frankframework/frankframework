@@ -41,4 +41,8 @@ public class PathMessage extends Message {
 	public static PathMessage asTemporaryMessage(Path path) {
 		return new PathMessage(path, new MessageContext(), true);
 	}
+
+	public static PathMessage asTemporaryMessage(Path path, String charset) {
+		return new PathMessage(path, new MessageContext(charset), true);
+	}
 }
