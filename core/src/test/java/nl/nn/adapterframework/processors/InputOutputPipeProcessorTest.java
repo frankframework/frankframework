@@ -1,6 +1,10 @@
 package nl.nn.adapterframework.processors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.StringReader;
 
@@ -15,6 +19,7 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.pipes.FixedResultPipe;
 import nl.nn.adapterframework.stream.Message;
@@ -154,5 +159,206 @@ public class InputOutputPipeProcessorTest {
 	@Test
 	public void testRestoreMovedElementByteArray() throws Exception {
 		testRestoreMovedElement("ReplacedValue".getBytes());
+	}
+
+	@Test
+	public void testSkipWhenInputSessionKeyNotSet() throws Exception {
+		// Arrange
+		FixedResultPipe pipe = new FixedResultPipe();
+		pipe.setOnlyIfSessionKey("this-key-isnt-there");
+		pipe.setGetInputFromSessionKey("this-key-isnt-there");
+		pipe.setReturnString("not this");
+		PipeForward forward = new PipeForward();
+		forward.setName("success");
+		pipe.registerForward(forward);
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.asMessage("should get this");
+
+		// This should be true
+		assertTrue(pipe.skipPipe(input, session));
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals("should get this", prr.getResult().asString());
+	}
+
+	@Test
+	public void testThrowWhenInputSessionKeyNotSet() throws Exception {
+		// Arrange
+		FixedResultPipe pipe = new FixedResultPipe();
+		pipe.setOnlyIfSessionKey("this-key-is-there");
+		pipe.setGetInputFromSessionKey("this-key-isnt-there");
+		pipe.setReturnString("not this");
+		PipeForward forward = new PipeForward();
+		forward.setName("success");
+		pipe.registerForward(forward);
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.asMessage("dummy");
+		session.put("this-key-is-there", "the-key-the-value");
+
+		// This should be true
+		assertFalse(pipe.skipPipe(input, session));
+
+		// Act / Assert
+		assertThrows(PipeRunException.class, ()-> processor.processPipe(pipeLine, pipe, input, session));
+	}
+
+	@Test
+	public void testWhenUnlessSessionKeySetAndPresent() throws Exception {
+		// Arrange
+		FixedResultPipe pipe = new FixedResultPipe();
+		pipe.setUnlessSessionKey("this-key-is-there");
+		pipe.setReturnString("not this");
+		PipeForward forward = new PipeForward();
+		forward.setName("success");
+		pipe.registerForward(forward);
+		pipe.configure();
+		pipe.start();
+
+		session.put("this-key-is-there", "value");
+
+		Message input = Message.asMessage("should get this");
+
+		// This should be true
+		assertTrue(pipe.skipPipe(input, session));
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals("should get this", prr.getResult().asString());
+	}
+
+	@Test
+	public void testSkipOnEmptyInput() throws Exception {
+		// Arrange
+		FixedResultPipe pipe = new FixedResultPipe();
+		pipe.setSkipOnEmptyInput(true);
+		pipe.setReturnString("not this");
+		PipeForward forward = new PipeForward();
+		forward.setName("success");
+		pipe.registerForward(forward);
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.nullMessage();
+
+		// This should be true
+		assertTrue(pipe.skipPipe(input, session));
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertNull(prr.getResult().asString());
+	}
+
+	@Test
+	public void testEmptyInputReplaced() throws Exception {
+		// Arrange
+		FixedResultPipe pipe = new FixedResultPipe();
+		pipe.setSkipOnEmptyInput(true);
+		pipe.setEmptyInputReplacement("empty input replacement");
+		pipe.setReturnString("get this");
+		PipeForward forward = new PipeForward();
+		forward.setName("success");
+		pipe.registerForward(forward);
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.nullMessage();
+
+		// This should be true, b/c input message is empty
+		assertTrue(pipe.skipPipe(input, session));
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals("get this", prr.getResult().asString());
+	}
+
+	@Test
+	public void testGetInputFromFixedValue() throws Exception {
+		// Arrange
+		FixedResultPipe pipe = new FixedResultPipe();
+		pipe.setSkipOnEmptyInput(true);
+		pipe.setGetInputFromFixedValue("fixed value return");
+		pipe.setReturnString("get this");
+		PipeForward forward = new PipeForward();
+		forward.setName("success");
+		pipe.registerForward(forward);
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.nullMessage();
+
+		// This should be true, b/c input message is empty
+		assertTrue(pipe.skipPipe(input, session));
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals("get this", prr.getResult().asString());
+	}
+
+	@Test
+	public void testGetInputFromSessionKey() throws Exception {
+		// Arrange
+		FixedResultPipe pipe = new FixedResultPipe();
+		pipe.setSkipOnEmptyInput(true);
+		pipe.setGetInputFromSessionKey("the-session-key");
+		pipe.setReturnString("get this");
+		PipeForward forward = new PipeForward();
+		forward.setName("success");
+		pipe.registerForward(forward);
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.nullMessage();
+
+		session.put("the-session-key", "session-key-value");
+
+		// This should be true, b/c input message is empty
+		assertTrue(pipe.skipPipe(input, session));
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals("get this", prr.getResult().asString());
+	}
+
+	@Test
+	public void testSkipIfParameter() throws Exception {
+		// Arrange
+		FixedResultPipe pipe = new FixedResultPipe();
+		pipe.setIfParam("my-param");
+		pipe.setReturnString("not this");
+		PipeForward forward = new PipeForward();
+		forward.setName("success");
+		pipe.registerForward(forward);
+		Parameter param = new Parameter("my-param", "the-value");
+		pipe.addParameter(param);
+		pipe.configure();
+		pipe.start();
+
+		Message input = Message.asMessage("should get this");
+
+		// This should be true, b/c input message is empty
+		assertTrue(pipe.skipPipe(input, session));
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals("should get this", prr.getResult().asString());
 	}
 }
