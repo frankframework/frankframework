@@ -30,12 +30,12 @@ public class PathMessage extends Message {
 	}
 
 	private PathMessage(Path path, MessageContext context, boolean removeOnClose) {
-		super(new SerializableFileReference(path, removeOnClose), new MessageContext(context)
-				.withModificationTime(path.toFile().lastModified())
-				.withSize(path.toFile().length())
-				.withName(path.getFileName().toString())
-				.withLocation(path.toAbsolutePath().toString())
-			, path.getClass());
+		super(new SerializableFileReference(path, (String) context.get(MessageContext.METADATA_CHARSET), removeOnClose), new MessageContext(context)
+						.withModificationTime(path.toFile().lastModified())
+						.withSize(path.toFile().length())
+						.withName(path.getFileName().toString())
+						.withLocation(path.toAbsolutePath().toString())
+				, path.getClass());
 	}
 
 	public static PathMessage asTemporaryMessage(Path path) {
@@ -43,6 +43,6 @@ public class PathMessage extends Message {
 	}
 
 	public static PathMessage asTemporaryMessage(Path path, String charset) {
-		return new PathMessage(path, new MessageContext(charset), true);
+		return new PathMessage(path, new MessageContext().withCharset(charset), true);
 	}
 }
