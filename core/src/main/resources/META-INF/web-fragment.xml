@@ -1,0 +1,42 @@
+<web-fragment >
+	<display-name>Frank!Framework DEFAULTS</display-name>
+
+	<!-- Welcome File List -->
+	<mime-mapping>
+		<extension>svg</extension>
+		<mime-type>image/svg+xml</mime-type>
+	</mime-mapping>
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+
+	<!-- Error pages -->
+	<error-page>
+		<exception-type>java.lang.Exception</exception-type>
+		<location>/jsp/errorPage.jsp</location>
+	</error-page>
+
+
+	<!-- this login-config might trigger application server authentication popups. -->
+	<!-- TODO: find a way to dynamically set this! -->
+	<login-config>
+		<auth-method>BASIC</auth-method>
+		<realm-name>Frank</realm-name>
+	</login-config>
+
+	<!--
+	When a security-constraint element is present Tomcat will authenticate the
+	user for all url's whereas WebSphere does this only for the url's mentioned
+	in the security constraint(s). The PublicAccess security constraint will
+	make Tomcat behave the same as WebSphere.
+	-->
+	<security-constraint>
+		<display-name>PublicAccess</display-name>
+		<web-resource-collection>
+			<web-resource-name>PublicAccessResourceCollection</web-resource-name>
+			<description>collection of url's for public access (overruled by other collections for specific url's)</description>
+			<url-pattern>/*</url-pattern>
+			<url-pattern>/iaf/api/server/health</url-pattern><!-- Required for JEE authentication -->
+		</web-resource-collection>
+	</security-constraint>
+</web-fragment>
