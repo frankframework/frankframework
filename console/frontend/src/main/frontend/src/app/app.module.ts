@@ -91,6 +91,8 @@ import { SchedulerAddComponent } from './views/scheduler/scheduler-add/scheduler
 import { SideNavigationDirective } from './components/pages/side-navigation.directive';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
+import { LoggingComponent } from './views/logging/logging.component';
+import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -120,6 +122,8 @@ appModule
   .directive('jmsSendMessage', downgradeComponent({ component: JmsSendMessageComponent }) as angular.IDirectiveFactory)
   .directive('liquibase', downgradeComponent({ component: LiquibaseComponent }) as angular.IDirectiveFactory)
   .directive('logout', downgradeComponent({ component: LogoutComponent }) as angular.IDirectiveFactory)
+  .directive('logging', downgradeComponent({ component: LoggingComponent }) as angular.IDirectiveFactory)
+  .directive('loggingManage', downgradeComponent({ component: LoggingManageComponent }) as angular.IDirectiveFactory)
   .directive('minimalizaSidebar', downgradeComponent({ component: MinimalizaSidebarComponent }) as angular.IDirectiveFactory)
   .directive('monitors', downgradeComponent({ component: MonitorsComponent }) as angular.IDirectiveFactory)
   .directive('monitorsAddEdit', downgradeComponent({ component: MonitorsAddEditComponent }) as angular.IDirectiveFactory)
@@ -178,6 +182,8 @@ appModule
     WebservicesComponent,
     MonitorsComponent,
     MonitorsAddEditComponent,
+    LoggingComponent,
+    LoggingManageComponent,
 
     // pipes
     ConfigurationFilterPipe,
