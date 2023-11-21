@@ -1,0 +1,34 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+  <div class="row">
+    <div class="col-lg-12 tabs-container">
+      <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+        <li [ngClass]="{active : selectedConfiguration == 'All'}"><a (click)="changeConfiguration('All')">All</a></li>
+        <li [ngClass]="{active : selectedConfiguration == configuration.name}" *ngFor="let configuration of configurations">
+          <a (click)="changeConfiguration(configuration.name)">{{configuration.name}}</a>
+        </li>
+      </ul>
+    </div>
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins">
+        <div class="ibox-title summary">
+          <div class="m-l-lg inline">
+            Show:
+            <div class="btn-group">
+              <button class="btn btn-sm btn-default" uib-btn-radio="true" (click)="update()">Loaded Configuration</button>
+              <button class="btn btn-sm btn-default" uib-btn-radio="false" (click)="update()">Original Configuration</button>
+            </div>
+          </div>
+          <br />
+          <div class="pull-right">
+            <button title="Copy Configuration" (click)="clipboard()" class="btn btn-default btn-xs" type="button">Copy <i class="fa fa-clipboard"></i></button>
+          </div>
+          <div class="clearfix"></div>
+          <pre appFormatCode [text]="configuration"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
