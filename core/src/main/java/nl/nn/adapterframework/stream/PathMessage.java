@@ -30,7 +30,7 @@ public class PathMessage extends Message {
 	}
 
 	private PathMessage(Path path, MessageContext context, boolean removeOnClose) {
-		super(new SerializableFileReference(path, (String) context.get(MessageContext.METADATA_CHARSET), removeOnClose), new MessageContext(context)
+		super(new SerializableFileReference(path, removeOnClose), new MessageContext(context)
 						.withModificationTime(path.toFile().lastModified())
 						.withSize(path.toFile().length())
 						.withName(path.getFileName().toString())
