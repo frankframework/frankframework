@@ -15,6 +15,9 @@ import { AuthService } from './services/auth.service';
 import { SessionService } from './services/session.service';
 import { SweetalertService } from './services/sweetalert.service';
 import { Title } from '@angular/platform-browser';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
+import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
 
 @Component({
   selector: 'app-root',
@@ -54,6 +57,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private sweetAlertService: SweetalertService,
     private appService: AppService,
     private idle: Idle,
+    private modalService: NgbModal,
     @Inject(LOCALE_ID) private locale: string
   ) {
     this.appConstants = this.appService.APP_CONSTANTS;
@@ -421,11 +425,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   openInfoModel() {
-    // this.$uibModal.open({
-    //   templateUrl: 'js/app/components/pages/information-modal/information.html',
-    //   //            size: 'sm',
-    //   controller: 'InformationCtrl',
-    // });
+    this.modalService.open(InformationModalComponent, /* { size: 'sm' } */);
   };
 
   sendFeedback(rating?: number) {
@@ -435,10 +435,7 @@ export class AppComponent implements OnInit, OnDestroy {
     $(".rating i").each(function (i, e) {
       $(e).addClass("fa-star-o").removeClass("fa-star");
     });
-    // this.$uibModal.open({
-    //   templateUrl: 'angularjs/app/components/pages/feedback-modal/feedback.html',
-    //   controller: 'FeedbackCtrl',
-    //   resolve: { rating: function () { return rating; } },
-    // });
+    const modalRef = this.modalService.open(FeedbackModalComponent);
+    modalRef.componentInstance.rating = rating;
   };
 }

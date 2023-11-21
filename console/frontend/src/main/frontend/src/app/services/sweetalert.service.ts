@@ -2,26 +2,24 @@ import { Injectable } from '@angular/core';
 import Swal, { SweetAlertOptions } from 'sweetalert2';
 import { DebugService } from './debug.service';
 
-type SweetAlertSettings = SweetAlertOptions & { callback?: (value: any) => void };
-
 /* TODO replace with Toastr where possible (warns, info, error, success) */
 @Injectable({
   providedIn: 'root'
 })
 export class SweetalertService {
-  defaultSettings: SweetAlertSettings = {
+  defaultSettings: SweetAlertOptions = {
     //			confirmButtonColor: "#449d44"
   };
 
   constructor(private Debug: DebugService) { }
 
-  defaults(title: string | SweetAlertOptions, text?: string) {
+  defaults(title: string | SweetAlertOptions, text?: string): SweetAlertOptions {
     // let args = arguments || [];
-    let options = { ...this.defaultSettings };
+    let options = this.defaultSettings;
 
     //expects (String, String) or (JsonObject, Function)
     if (typeof title == "object") {
-      options = { ...options, ...title };
+      return { ...title };
       // DEPRECATED
       // if (typeof text == "function") {
       //   options.callback = text;
@@ -45,34 +43,33 @@ export class SweetalertService {
   }
 
   Confirm(title: string | SweetAlertOptions, text?: string) { //(JsonObject, Callback)-> returns boolean
-    let options: SweetAlertSettings = {
-      title: "Are you sure?",
-      showCancelButton: true,
+    const options = {
+      ...{ title: "Are you sure?", showCancelButton: true },
+      ...this.defaults(title, text)
     };
-    options = { ...options, ...this.defaults(title, text) };
     return Swal.fire(options);
   }
 
   Info(title: string | SweetAlertOptions, text?: string) {
-    let options: SweetAlertSettings = {};
+    let options: SweetAlertOptions = {};
     options = { ...{ type: "info" }, ...this.defaults(title, text) };
     return Swal.fire(options);
   }
 
   Warning(title: string | SweetAlertOptions, text?: string) {
-    let options: SweetAlertSettings = {};
+    let options: SweetAlertOptions = {};
     options = { ...{ type: "warning" }, ...this.defaults(title, text) };
     return Swal.fire(options);
   }
 
   Error(title: string | SweetAlertOptions, text?: string) {
-    let options: SweetAlertSettings = {};
+    let options: SweetAlertOptions = {};
     options = { ...{ type: "error" }, ...this.defaults(title, text) };
     return Swal.fire(options);
   }
 
   Success(title: string | SweetAlertOptions, text?: string) {
-    let options: SweetAlertSettings = {};
+    let options: SweetAlertOptions = {};
     options = { ...{ type: "success" }, ...this.defaults(title, text) };
     return Swal.fire(options);
   }
