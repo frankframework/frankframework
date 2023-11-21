@@ -17,12 +17,9 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.commons.codec.binary.Base64OutputStream;
-import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -35,13 +32,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingException;
-import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.EnumUtils;
-import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Pipe that performs base64 encoding and decoding.
@@ -51,9 +43,8 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @version 2.0
  */
 @Category("Basic")
-@SupportsOutputStreaming
 @ElementType(ElementTypes.TRANSLATOR)
-public class Base64Pipe extends StreamingPipe {
+public class Base64Pipe extends FixedForwardPipe {
 
 	private @Getter Direction direction = Direction.ENCODE;
 	private @Getter String charset = null;
@@ -61,7 +52,7 @@ public class Base64Pipe extends StreamingPipe {
 	private @Getter int lineLength = 76;
 
 	private OutputTypes outputType = null;
-	private Boolean convertToString = false;
+	private boolean convertToString = false;
 
 	private byte[] lineSeparatorArray;
 
@@ -131,23 +122,6 @@ public class Base64Pipe extends StreamingPipe {
 		message.unscheduleFromCloseOnExitOf(session);
 		result.closeOnCloseOf(session, this);
 		return new PipeRunResult(getSuccessForward(), result);
-	}
-
-	@SuppressWarnings("resource")
-	@Override
-	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		MessageOutputStream target = getTargetStream(session);
-		boolean directionEncode = getDirection() == Direction.ENCODE;//TRUE encode - FALSE decode
-		OutputStream targetStream;
-		String outputCharset = directionEncode ? StandardCharsets.US_ASCII.name() : getCharset();
-		if (getOutputTypeEnum() == OutputTypes.STRING) {
-			targetStream = new WriterOutputStream(target.asWriter(), outputCharset != null ? outputCharset : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-		} else {
-			targetStream = target.asStream(outputCharset);
-		}
-
-		OutputStream base64 = new Base64OutputStream(targetStream, directionEncode, getLineLength(), lineSeparatorArray);
-		return new MessageOutputStream(this, base64, target, directionEncode ? getCharset() : null);
 	}
 
 	/** @ff.default ENCODE */
