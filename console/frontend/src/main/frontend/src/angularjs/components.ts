@@ -14,7 +14,7 @@ import './app/views/logging/logging.component';
 import './app/views/logging/logging-manage/logging-manage.component';
 // import './app/views/monitors/monitors-add-edit/monitors-add-edit.component';
 // import './app/views/monitors/monitors.component';
-import './app/views/notifications/notifications.component';
+// import './app/views/notifications/notifications.component';
 // import './app/views/scheduler/scheduler.component';
 // import './app/views/scheduler/scheduler-add/scheduler-add.component';
 // import './app/views/scheduler/scheduler-edit/scheduler-edit.component';

@@ -96,6 +96,7 @@ import { ConfigurationsManageDetailsComponent } from './views/configurations/con
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
+import { NotificationsComponent } from './views/notifications/notifications.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -132,6 +133,7 @@ appModule
   .directive('minimalizaSidebar', downgradeComponent({ component: MinimalizaSidebarComponent }) as angular.IDirectiveFactory)
   .directive('monitors', downgradeComponent({ component: MonitorsComponent }) as angular.IDirectiveFactory)
   .directive('monitorsAddEdit', downgradeComponent({ component: MonitorsAddEditComponent }) as angular.IDirectiveFactory)
+  .directive('notifications', downgradeComponent({ component: NotificationsComponent }) as angular.IDirectiveFactory)
   .directive('pagesFooter', downgradeComponent({ component: PagesFooterComponent }) as angular.IDirectiveFactory)
   .directive('pagesNavigation', downgradeComponent({ component: PagesNavigationComponent }) as angular.IDirectiveFactory)
   .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
@@ -209,6 +211,7 @@ appModule
     QuickSubmitFormDirective,
     FitHeightDirective,
     SideNavigationDirective,
+    NotificationsComponent,
   ],
   imports: [
     BrowserModule,
