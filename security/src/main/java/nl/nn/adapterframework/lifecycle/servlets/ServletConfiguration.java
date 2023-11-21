@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +54,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 
 	private static final char SLASH = '/';
 	private @Getter String name;
-	private @Getter List<String> securityRoles = Collections.emptyList();
+	private List<String> securityRoles = Collections.emptyList();
 	private @Getter List<String> urlMapping;
 	private @Getter @Setter int loadOnStartup = -1;
 	private @Getter @Setter boolean enabled = true;
@@ -72,6 +73,11 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 		if(accessGrantingRoles != null) {
 			this.securityRoles = Arrays.asList(accessGrantingRoles);
 		}
+	}
+
+	@Nonnull
+	public List<String> getSecurityRoles() {
+		return securityRoles;
 	}
 
 	public void setName(String servletName) {
