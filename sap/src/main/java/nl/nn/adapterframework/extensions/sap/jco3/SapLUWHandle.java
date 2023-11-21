@@ -35,7 +35,7 @@ import com.sap.conn.jco.JCoException;
 public class SapLUWHandle {
 	protected static Logger log = LogUtil.getLogger(SapLUWHandle.class);
 
-	private JCoDestination destination;
+	private final JCoDestination destination;
 	private String tid;
 	private boolean useTid=false;
 	

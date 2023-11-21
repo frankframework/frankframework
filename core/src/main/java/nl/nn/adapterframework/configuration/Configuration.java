@@ -82,7 +82,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private static final Logger applicationLog = LogUtil.getLogger("APPLICATION");
 
 	private Boolean autoStart = null;
-	private boolean enabledAutowiredPostProcessing = false;
+	private final boolean enabledAutowiredPostProcessing = false;
 
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
 	private @Getter ScheduleManager scheduleManager; //We have to manually inject the ScheduleManager bean! See refresh();
@@ -97,8 +97,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 
 	private @Getter ConfigurationException configurationException = null;
 
-	private Date statisticsMarkDateMain=new Date();
-	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
+	private final Date statisticsMarkDateMain = new Date();
+	private final Date statisticsMarkDateDetails = statisticsMarkDateMain;
 
 	public Configuration() {
 		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.

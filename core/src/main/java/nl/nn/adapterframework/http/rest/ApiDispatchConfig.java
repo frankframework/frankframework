@@ -26,8 +26,8 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 
 public class ApiDispatchConfig {
-	private String uriPattern;
-	private Map<HttpMethod, ApiListener> methods = new ConcurrentHashMap<>();
+	private final String uriPattern;
+	private final Map<HttpMethod, ApiListener> methods = new ConcurrentHashMap<>();
 
 	public ApiDispatchConfig(String uriPattern) {
 		this.uriPattern = uriPattern;

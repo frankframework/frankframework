@@ -65,7 +65,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 	private @Getter String host;
 	private @Getter int port = 993;
 
-	private Session emailSession = Session.getInstance(System.getProperties());
+	private final Session emailSession = Session.getInstance(System.getProperties());
 
 	@Override
 	public void configure() throws ConfigurationException {

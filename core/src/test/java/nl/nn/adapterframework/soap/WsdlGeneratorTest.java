@@ -22,7 +22,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 
 public class WsdlGeneratorTest {
 
-	private TestConfiguration configuration = new TestConfiguration();
+	private final TestConfiguration configuration = new TestConfiguration();
 
 	private PipeLine createPipeline() throws Exception {
 		EchoPipe pipe = new EchoPipe();

@@ -31,7 +31,7 @@ import nl.nn.adapterframework.testutil.TestConfiguration;
  * @author Niels Meijer
  */
 public class FixedQuerySenderMock extends FixedQuerySender {
-	private Map<String, ResultSet> mocks = new HashMap<>();
+	private final Map<String, ResultSet> mocks = new HashMap<>();
 
 	@Override
 	public IDbmsSupport getDbmsSupport() {

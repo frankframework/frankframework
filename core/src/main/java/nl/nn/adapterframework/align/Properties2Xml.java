@@ -37,9 +37,9 @@ import nl.nn.adapterframework.align.Properties2Xml.PropertyNode;
  */
 public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<String,String>> {
 
-	private String attributeSeparator=".";
+	private final String attributeSeparator = ".";
 //	private String indexSeparator=".";
-	private String valueSeparator=",";
+	private final String valueSeparator = ",";
 
 	private Map<String,String> data;
 

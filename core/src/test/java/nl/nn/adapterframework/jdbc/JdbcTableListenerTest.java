@@ -63,7 +63,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	 * Doing that, however, increases the amount of locks on the table. For now, the overhead of peeking some messages that do not exist is considered
 	 * less expensive than setting locks on the database to have a more secure peek.
 	 */
-	private boolean testNegativePeekWhileGet = false;
+	private final boolean testNegativePeekWhileGet = false;
 
 	@Before
 	@Override

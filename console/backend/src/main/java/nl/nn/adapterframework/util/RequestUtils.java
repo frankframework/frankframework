@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.management.web.ApiException;
 
 public abstract class RequestUtils {
-	private static Logger LOG = LogManager.getLogger(RequestUtils.class);
+	private static final Logger LOG = LogManager.getLogger(RequestUtils.class);
 
 	public static String resolveStringFromMap(MultipartBody inputDataMap, String key) throws ApiException {
 		return resolveStringFromMap(inputDataMap, key, null);

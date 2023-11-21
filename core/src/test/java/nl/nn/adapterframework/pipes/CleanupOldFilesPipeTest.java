@@ -9,7 +9,7 @@ import static org.junit.Assert.assertTrue;
 
 public class CleanupOldFilesPipeTest extends PipeTestBase<CleanupOldFilesPipe> {
 
-	private PipeLineSession session = new PipeLineSession();
+	private final PipeLineSession session = new PipeLineSession();
 
 	@Override
 	public CleanupOldFilesPipe createPipe() {

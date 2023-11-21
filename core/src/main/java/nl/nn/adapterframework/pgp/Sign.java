@@ -25,8 +25,8 @@ import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildEncryptionOutput
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
 public class Sign extends PGPAction {
-	private String sender;
-	private String[] recipients;
+	private final String sender;
+	private final String[] recipients;
 
 	public Sign(String[] publicKey, String secretKey, String secretPassword, String[] recipients, String sender) throws ConfigurationException {
 		super(publicKey, secretKey, secretPassword,recipients, sender);

@@ -29,7 +29,7 @@ import nl.nn.adapterframework.stream.Message;
  */
 class MediaTypeValidator {
 
-	private Tika tika;
+	private final Tika tika;
 
 	/**
 	 * Package default access because it specific for the conversion.

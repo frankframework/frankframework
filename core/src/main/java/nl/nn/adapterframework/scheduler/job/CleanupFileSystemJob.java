@@ -23,7 +23,7 @@ import nl.nn.adapterframework.util.DirectoryCleaner;
 
 public class CleanupFileSystemJob extends JobDef {
 
-	private List<DirectoryCleaner> directoryCleaners = new ArrayList<>();
+	private final List<DirectoryCleaner> directoryCleaners = new ArrayList<>();
 
 	@Override
 	public void execute() {

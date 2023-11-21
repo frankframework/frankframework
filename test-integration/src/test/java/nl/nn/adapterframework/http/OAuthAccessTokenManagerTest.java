@@ -25,7 +25,7 @@ public class OAuthAccessTokenManagerTest {
 	String serviceClientSecret = "testiaf-service-pwd";
 
 	private HttpSender httpSender = new HttpSender();
-	private int expiry = 60;
+	private final int expiry = 60;
 
 	@Before
 	public void setup() {

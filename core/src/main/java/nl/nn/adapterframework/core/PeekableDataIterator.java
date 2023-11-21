@@ -21,7 +21,7 @@ package nl.nn.adapterframework.core;
  */
 public class PeekableDataIterator<I> implements IDataIterator<I> {
 
-	private IDataIterator<I> target;
+	private final IDataIterator<I> target;
 	private I peeked = null;
 
 	public PeekableDataIterator(IDataIterator<I> target) {

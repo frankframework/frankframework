@@ -26,7 +26,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
 
 	private static String sourceFolderPath;
 
-	private byte[] var = "Some String you want".getBytes();
+	private final byte[] var = "Some String you want".getBytes();
 
 	@Override
 	public FilePipe createPipe() {

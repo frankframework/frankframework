@@ -71,14 +71,14 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	private @Getter boolean soap = true;
 	private @Getter String serviceNamespaceURI;
 	private SoapWrapper soapWrapper = null;
-	private String servletUrlMapping = AppConstants.getInstance().getString("servlet.SoapProviderServlet.urlMapping", "services");
+	private final String servletUrlMapping = AppConstants.getInstance().getString("servlet.SoapProviderServlet.urlMapping", "services");
 
 	/* CXF Implementation */
 	private @Getter String address;
 	private @Getter boolean mtomEnabled = false;
 	private @Getter String attachmentSessionKeys = "";
 	private @Getter String multipartXmlSessionKey = "multipartXml";
-	private List<String> attachmentSessionKeysList = new ArrayList<>();
+	private final List<String> attachmentSessionKeysList = new ArrayList<>();
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
 

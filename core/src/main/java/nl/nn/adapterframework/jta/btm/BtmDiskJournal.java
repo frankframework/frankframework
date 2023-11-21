@@ -29,6 +29,8 @@ import org.apache.logging.log4j.Logger;
 import bitronix.tm.journal.DiskJournal;
 import bitronix.tm.journal.JournalRecord;
 import bitronix.tm.utils.Uid;
+import lombok.AccessLevel;
+import lombok.Setter;
 import nl.nn.adapterframework.util.AppConstants;
 
 /**
@@ -42,12 +44,12 @@ import nl.nn.adapterframework.util.AppConstants;
  * @author Niels Meijer
  */
 public class BtmDiskJournal extends DiskJournal {
-	private Logger log = LogManager.getLogger(BtmDiskJournal.class);
+	private final Logger log = LogManager.getLogger(BtmDiskJournal.class);
 	private static final String LOG_ERR_MSG = "cannot write log, disk logger is not open";
 	private static final String FORCE_ERR_MSG = "cannot force log writing, disk logger is not open";
 	private static final String COLLECT_ERR_MSG = "cannot collect dangling records, disk logger is not open";
 	private static final AtomicInteger ERROR_COUNT = new AtomicInteger(0);
-	private static int MAX_ERROR_COUNT = AppConstants.getInstance().getInt("transactionmanager.btm.journal.maxRetries", 50);
+	private static @Setter(AccessLevel.PACKAGE) int maxErrorCount = AppConstants.getInstance().getInt("transactionmanager.btm.journal.maxRetries", 50);
 	private static final AtomicLong LAST_RECOVERY = new AtomicLong(0);
 
 	@Override
@@ -106,7 +108,7 @@ public class BtmDiskJournal extends DiskJournal {
 		int errorCount = ERROR_COUNT.incrementAndGet();
 
 		close();
-		if(errorCount > MAX_ERROR_COUNT) {
+		if(errorCount > maxErrorCount) {
 			log.warn("FileChannel exception but too many retries, aborting");
 			throw e;
 		}

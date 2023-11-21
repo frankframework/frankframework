@@ -42,8 +42,8 @@ import nl.nn.adapterframework.util.ClassUtils;
  */
 public class SenderSeries extends SenderWrapperBase {
 
-	private List<ISender> senderList = new LinkedList<>();
-	private Map<ISender, StatisticsKeeper> statisticsMap = new HashMap<>();
+	private final List<ISender> senderList = new LinkedList<>();
+	private final Map<ISender, StatisticsKeeper> statisticsMap = new HashMap<>();
 	private @Getter @Setter boolean synchronous=true;
 
 	@Override

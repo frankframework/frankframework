@@ -25,7 +25,7 @@ import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildDecryptionInputS
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
 public class Verify extends PGPAction {
-	private String[] senders;
+	private final String[] senders;
 
 	public Verify(String[] publicKey, String secretKey, String secretPassword, String[] senders) throws ConfigurationException {
 		super(publicKey, secretKey, secretPassword);

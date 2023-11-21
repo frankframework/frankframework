@@ -102,8 +102,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	private @Getter @Setter String digesterRuleFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
-	private boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
-	private boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
+	private final boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
+	private final boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		private String schema;

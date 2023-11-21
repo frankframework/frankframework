@@ -28,8 +28,8 @@ import java.util.Map;
  */
 public class CachedSideTable extends SideTable {
 
-	private static Map cache=Collections.synchronizedMap(new HashMap());
-	private String mapKey;
+	private static final Map cache = Collections.synchronizedMap(new HashMap());
+	private final String mapKey;
 
 	public CachedSideTable(String tableName, String keyColumn, String nameColumn, String sequence) {
 		super(tableName, keyColumn, nameColumn, sequence);

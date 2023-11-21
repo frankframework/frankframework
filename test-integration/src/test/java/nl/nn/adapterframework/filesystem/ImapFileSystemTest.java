@@ -8,13 +8,13 @@ import nl.nn.adapterframework.testutil.PropertyUtil;
 
 public class ImapFileSystemTest  extends MailFileSystemTestBase<Message, MimeBodyPart, ImapFileSystem>{
 
-	private String PROPERTY_FILE = "ExchangeMail.properties";
-	private int port = 993;
-	private String host = "outlook.office365.com";
+	private final String PROPERTY_FILE = "ExchangeMail.properties";
+	private final int port = 993;
+	private final String host = "outlook.office365.com";
 
-	private String username    = PropertyUtil.getProperty(PROPERTY_FILE, "username");
-	private String password    = PropertyUtil.getProperty(PROPERTY_FILE, "password");
-	private String basefolder1 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder1");
+	private final String username = PropertyUtil.getProperty(PROPERTY_FILE, "username");
+	private final String password = PropertyUtil.getProperty(PROPERTY_FILE, "password");
+	private final String basefolder1 = PropertyUtil.getProperty(PROPERTY_FILE, "basefolder1");
 
 
 	@Override

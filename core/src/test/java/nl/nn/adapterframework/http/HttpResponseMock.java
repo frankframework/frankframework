@@ -48,7 +48,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.http.mime.MultipartEntity;
 
 public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
-	private String lineSeparator = System.getProperty("line.separator");
+	private final String lineSeparator = System.getProperty("line.separator");
 
 	private HttpResponse buildResponse(InputStream content) throws UnsupportedOperationException, IOException {
 		CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);

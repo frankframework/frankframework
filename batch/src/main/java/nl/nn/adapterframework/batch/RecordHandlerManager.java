@@ -40,7 +40,7 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	private @Getter String name;
 	private @Getter boolean initial;
 
-	private Map<String,RecordHandlingFlow> flowMap = new LinkedHashMap<>();
+	private final Map<String, RecordHandlingFlow> flowMap = new LinkedHashMap<>();
 
 	@Override
 	public IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String inputFilename) {

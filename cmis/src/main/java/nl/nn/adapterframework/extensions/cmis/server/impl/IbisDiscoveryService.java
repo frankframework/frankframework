@@ -39,9 +39,9 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class IbisDiscoveryService implements DiscoveryService {
 
-	private DiscoveryService discoveryService;
-	private CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
-	private CallContext callContext;
+	private final DiscoveryService discoveryService;
+	private final CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
+	private final CallContext callContext;
 
 	public IbisDiscoveryService(DiscoveryService discoveryService, CallContext callContext) {
 		this.discoveryService = discoveryService;

@@ -7,7 +7,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class StringBuilderContentHandler extends DefaultHandler implements LexicalHandler {
 
-	private StringBuilder builder = new StringBuilder();
+	private final StringBuilder builder = new StringBuilder();
 
 
 	@Override

@@ -21,8 +21,8 @@ import nl.nn.adapterframework.stream.JsonEventHandler;
 
 public class JsonTee implements JsonEventHandler {
 
-	private JsonEventHandler first;
-	private JsonEventHandler second;
+	private final JsonEventHandler first;
+	private final JsonEventHandler second;
 
 	public JsonTee(JsonEventHandler first, JsonEventHandler second) {
 		this.first=first;

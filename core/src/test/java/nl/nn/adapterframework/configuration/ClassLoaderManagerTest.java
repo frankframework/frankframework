@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 public class ClassLoaderManagerTest extends Mockito {
 
-	private static IbisContext ibisContext = spy(new IbisContext());
+	private static final IbisContext ibisContext = spy(new IbisContext());
 	private ClassLoaderManager manager;
 
 	private static final String BASE_DIR = "/ClassLoader";

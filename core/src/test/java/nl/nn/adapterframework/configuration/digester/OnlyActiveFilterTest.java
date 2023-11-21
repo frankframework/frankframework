@@ -27,9 +27,9 @@ import nl.nn.adapterframework.xml.XmlWriter;
 
 public class OnlyActiveFilterTest {
 
-	private String messageBasicTrue="<root><sub name=\"p &amp; Q\">A &amp; B</sub><sub active=\"true\"/></root>";
-	private String messageBasicNotFalse="<root active=\"!false\" ignore=\"me\"><sub name=\"name here\">A &amp; B</sub></root>";
-	private String messageBasicFalse="<root><sub name=\"p &amp; Q\">A &amp; B</sub><sub active=\"false\"><a>a &amp; b</a></sub><sub/></root>";
+	private final String messageBasicTrue = "<root><sub name=\"p &amp; Q\">A &amp; B</sub><sub active=\"true\"/></root>";
+	private final String messageBasicNotFalse = "<root active=\"!false\" ignore=\"me\"><sub name=\"name here\">A &amp; B</sub></root>";
+	private final String messageBasicFalse = "<root><sub name=\"p &amp; Q\">A &amp; B</sub><sub active=\"false\"><a>a &amp; b</a></sub><sub/></root>";
 
 	public void testToWriter(String source, String expected) throws Exception {
 		StringWriter target = new StringWriter();

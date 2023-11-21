@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Test;
 public abstract class SelfContainedBasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends BasicFileSystemTestBase<F, FS>{
 
 //	private String testFolderPrefix = "fs_test_"+DateUtils.format(new Date(),"yyyy-MM-dd_HHmmss.SSS");
-	private String testFolderPrefix = "fs_test";
-	private String sourceOfMessages_folder=null;
+	private final String testFolderPrefix = "fs_test";
+	private final String sourceOfMessages_folder = null;
 
 	public void testFolders(){
 		String folderName = testFolderPrefix+"_testFolders";

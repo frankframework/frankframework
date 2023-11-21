@@ -41,7 +41,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 
 	public final FileSystemAction[] ACTIONS_FS_WITH_ATTACHMENTS= {FileSystemAction.LISTATTACHMENTS};
 
-	private boolean attachmentsAsSessionKeys=false;
+	private final boolean attachmentsAsSessionKeys = false;
 
 	@Override
 	public void configure() throws ConfigurationException {

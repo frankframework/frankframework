@@ -44,7 +44,7 @@ import nl.nn.adapterframework.core.INamedObject;
  *
  */
 public abstract class ClassUtils {
-	private static Logger log = LogManager.getLogger(ClassUtils.class);
+	private static final Logger log = LogManager.getLogger(ClassUtils.class);
 
 	/**
 	 * Return the context ClassLoader.

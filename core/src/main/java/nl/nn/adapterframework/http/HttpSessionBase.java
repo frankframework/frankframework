@@ -152,8 +152,8 @@ public abstract class HttpSessionBase implements ConfigurableLifecycle, HasKeyst
 	private @Getter int staleTimeout = 5000; // [ms]
 	private @Getter int connectionTimeToLive = 900; // [s]
 	private @Getter int connectionIdleTimeout = 10; // [s]
-	private HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
-	private HttpClientContext httpClientContext = HttpClientContext.create();
+	private final HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+	private final HttpClientContext httpClientContext = HttpClientContext.create();
 	private @Getter CloseableHttpClient httpClient;
 
 	/* SECURITY */

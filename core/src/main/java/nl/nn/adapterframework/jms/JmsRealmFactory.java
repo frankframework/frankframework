@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @see JmsRealm
  */
 public class JmsRealmFactory {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	private static JmsRealmFactory self = null;
 	private Map<String, JmsRealm> jmsRealms = new LinkedHashMap<String, JmsRealm>();

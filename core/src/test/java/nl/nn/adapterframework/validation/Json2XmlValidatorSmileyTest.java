@@ -21,7 +21,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class Json2XmlValidatorSmileyTest {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	public String CHARSET_UTF8="UTF-8";
 	public String charset=CHARSET_UTF8;

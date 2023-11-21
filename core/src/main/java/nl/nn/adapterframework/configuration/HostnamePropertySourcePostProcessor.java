@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.Misc;
  * @author Jaco de Groot
  */
 public class HostnamePropertySourcePostProcessor extends CustomPropertySourcePostProcessor {
-	private static String HOSTNAME_PROPERTY = "hostname";
+	private static final String HOSTNAME_PROPERTY = "hostname";
 
 	@Override
 	protected void convertProperties(Properties props) {

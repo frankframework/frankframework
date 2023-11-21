@@ -67,14 +67,14 @@ import nl.nn.adapterframework.util.ClassUtils;
 public abstract class FrankApiTestBase<M extends FrankApiBase> extends Mockito {
 	public static final String STUBBED_SPRING_BUS_CONFIGURATION = "stubbedBusApplicationContext.xml";
 
-	private Logger log = LogManager.getLogger(FrankApiTestBase.class);
+	private final Logger log = LogManager.getLogger(FrankApiTestBase.class);
 	public enum IbisRole {
 		IbisWebService, IbisObserver, IbisDataAdmin, IbisAdmin, IbisTester;
 	}
 
 	protected MockDispatcher dispatcher = new MockDispatcher();
 	protected M jaxRsResource;
-	private SecurityContext securityContext = mock(SecurityContext.class);
+	private final SecurityContext securityContext = mock(SecurityContext.class);
 	private static ApplicationContext applicationContext;
 
 	public abstract M createJaxRsResource();

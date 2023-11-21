@@ -30,7 +30,7 @@ import nl.nn.adapterframework.jms.PullingJmsListener;
 
 public class JmsListenerQueue extends HashMap<String, Object> implements Queue {
 
-	private PullingJmsListener jmsListener;
+	private final PullingJmsListener jmsListener;
 
 	public JmsListenerQueue(PullingJmsListener jmsListener) {
 		super();

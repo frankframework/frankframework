@@ -48,8 +48,8 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	private String excludeWildcard;
 	private long minStableTime = 1000;
 
-	private _FileFilter fileFilter = new _FileFilter();
-	private _DirFilter dirFilter = new _DirFilter();
+	private final _FileFilter fileFilter = new _FileFilter();
+	private final _DirFilter dirFilter = new _DirFilter();
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {

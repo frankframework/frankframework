@@ -48,11 +48,11 @@ import nl.nn.adapterframework.util.LogUtil;
 public class IdocXmlHandler extends DefaultHandler {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	private SapSystemImpl sapSystem;
+	private final SapSystemImpl sapSystem;
 	private IDocDocument doc=null;
-	private List<IDocSegment> segmentStack = new ArrayList<IDocSegment>();
+	private final List<IDocSegment> segmentStack = new ArrayList<IDocSegment>();
 	private String currentField;
-	private StringBuilder currentFieldValue=new StringBuilder();
+	private final StringBuilder currentFieldValue = new StringBuilder();
 	private boolean parsingEdiDcHeader=false;
 	private Locator locator;
 

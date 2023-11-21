@@ -32,7 +32,7 @@ import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoad
 import nl.nn.adapterframework.core.IScopeProvider;
 
 public abstract class ClassLoaderUtils {
-	private static Logger log = LogUtil.getLogger(ClassLoaderUtils.class);
+	private static final Logger log = LogUtil.getLogger(ClassLoaderUtils.class);
 	private static final String DEFAULT_ALLOWED_PROTOCOLS = AppConstants.getInstance().getString("classloader.allowed.protocols", null);
 
 	/**

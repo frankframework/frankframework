@@ -40,102 +40,102 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachChildElementPipe> {
 
-	private boolean TEST_CDATA=false;
-	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
-	private String CDATA_END=TEST_CDATA?"]]>":"";
+	private final boolean TEST_CDATA = false;
+	private final String CDATA_START = TEST_CDATA ? "<![CDATA[" : "";
+	private final String CDATA_END = TEST_CDATA ? "]]>" : "";
 
-	private String messageBasicNoNS="<root><sub>A &amp; B</sub><sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub name=\"r\">R</sub></root>";
-	private String messageBasicNoNSLong="<root><sub>A &amp; B</sub><sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub>data</sub><sub>data</sub><sub>data</sub><sub>data</sub></root>";
-	private String messageBasicNS1="<root xmlns=\"urn:test\"><sub>A &amp; B</sub><sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub name=\"r\">R</sub></root>";
-	private String messageBasicNS2="<ns:root xmlns:ns=\"urn:test\"><ns:sub>A &amp; B</ns:sub><ns:sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub><ns:sub name=\"r\">R</ns:sub></ns:root>";
-	private String messageError="<root><sub name=\"a\">B</sub><sub>error</sub><sub>tail</sub></root>";
-	private String messageDuplNamespace1="<root xmlns=\"urn:test\"><header xmlns=\"urn:header\">x</header><sub xmlns=\"urn:test\">A &amp; B</sub><sub xmlns=\"urn:test\" name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub xmlns=\"urn:test\" name=\"r\">R</sub></root>";
-	private String messageDuplNamespace2="<ns:root xmlns:ns=\"urn:test\"><header xmlns=\"urn:header\">x</header><ns:sub xmlns:ns=\"urn:test\">A &amp; B</ns:sub><ns:sub xmlns:ns=\"urn:test\" name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub><ns:sub xmlns:ns=\"urn:test\" name=\"r\">R</ns:sub></ns:root>";
-	private String messageBasicJson="<root><sub><data>{\"children\":{\"child\":\"1\"}}</data></sub><sub><data>{\"children\":{\"child\":\"2\"}}</data></sub><sub><data>{\"children\":{\"child\":\"3\"}}</data></sub></root>";
+	private final String messageBasicNoNS = "<root><sub>A &amp; B</sub><sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub><sub name=\"r\">R</sub></root>";
+	private final String messageBasicNoNSLong = "<root><sub>A &amp; B</sub><sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub><sub>data</sub><sub>data</sub><sub>data</sub><sub>data</sub></root>";
+	private final String messageBasicNS1 = "<root xmlns=\"urn:test\"><sub>A &amp; B</sub><sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub><sub name=\"r\">R</sub></root>";
+	private final String messageBasicNS2 = "<ns:root xmlns:ns=\"urn:test\"><ns:sub>A &amp; B</ns:sub><ns:sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</ns:sub><ns:sub name=\"r\">R</ns:sub></ns:root>";
+	private final String messageError = "<root><sub name=\"a\">B</sub><sub>error</sub><sub>tail</sub></root>";
+	private final String messageDuplNamespace1 = "<root xmlns=\"urn:test\"><header xmlns=\"urn:header\">x</header><sub xmlns=\"urn:test\">A &amp; B</sub><sub xmlns=\"urn:test\" name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub><sub xmlns=\"urn:test\" name=\"r\">R</sub></root>";
+	private final String messageDuplNamespace2 = "<ns:root xmlns:ns=\"urn:test\"><header xmlns=\"urn:header\">x</header><ns:sub xmlns:ns=\"urn:test\">A &amp; B</ns:sub><ns:sub xmlns:ns=\"urn:test\" name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</ns:sub><ns:sub xmlns:ns=\"urn:test\" name=\"r\">R</ns:sub></ns:root>";
+	private final String messageBasicJson = "<root><sub><data>{\"children\":{\"child\":\"1\"}}</data></sub><sub><data>{\"children\":{\"child\":\"2\"}}</data></sub><sub><data>{\"children\":{\"child\":\"3\"}}</data></sub></root>";
 
-	private String expectedBasicOnlyR="<results>\n"+
-			"<result item=\"1\">\n"+
-			"<sub name=\"r\">R</sub>\n"+
-			"</result>\n</results>";
+	private final String expectedBasicOnlyR = "<results>\n" +
+		"<result item=\"1\">\n" +
+		"<sub name=\"r\">R</sub>\n" +
+		"</result>\n</results>";
 
-	private String expectedBasicNoNS="<results>\n"+
-			"<result item=\"1\">\n"+
-			"<sub>A &amp; B</sub>\n"+
-			"</result>\n"+
-			"<result item=\"2\">\n"+
-			"<sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub>\n"+
-			"</result>\n"+
-			"<result item=\"3\">\n"+
-			"<sub name=\"r\">R</sub>\n"+
-			"</result>\n</results>";
+	private final String expectedBasicNoNS = "<results>\n" +
+		"<result item=\"1\">\n" +
+		"<sub>A &amp; B</sub>\n" +
+		"</result>\n" +
+		"<result item=\"2\">\n" +
+		"<sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub>\n" +
+		"</result>\n" +
+		"<result item=\"3\">\n" +
+		"<sub name=\"r\">R</sub>\n" +
+		"</result>\n</results>";
 
-	private String expectedBasicNoNSBlock="<results>\n"+
-			"<result item=\"1\">\n"+
-			"<block><sub>A &amp; B</sub><sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub></block>\n"+
-			"</result>\n"+
-			"<result item=\"2\">\n"+
-			"<block><sub name=\"r\">R</sub></block>\n"+
-			"</result>\n</results>";
+	private final String expectedBasicNoNSBlock = "<results>\n" +
+		"<result item=\"1\">\n" +
+		"<block><sub>A &amp; B</sub><sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub></block>\n" +
+		"</result>\n" +
+		"<result item=\"2\">\n" +
+		"<block><sub name=\"r\">R</sub></block>\n" +
+		"</result>\n</results>";
 
-	private String expectedBasicNoNSBlockSize1="<results>\n"+
-			"<result item=\"1\">\n"+
-			"<block><sub>A &amp; B</sub></block>\n"+
-			"</result>\n"+
-			"<result item=\"2\">\n"+
-			"<block><sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub></block>\n"+
-			"</result>\n"+
-			"<result item=\"3\">\n"+
-			"<block><sub name=\"r\">R</sub></block>\n"+
-			"</result>\n</results>";
+	private final String expectedBasicNoNSBlockSize1 = "<results>\n" +
+		"<result item=\"1\">\n" +
+		"<block><sub>A &amp; B</sub></block>\n" +
+		"</result>\n" +
+		"<result item=\"2\">\n" +
+		"<block><sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub></block>\n" +
+		"</result>\n" +
+		"<result item=\"3\">\n" +
+		"<block><sub name=\"r\">R</sub></block>\n" +
+		"</result>\n</results>";
 
-	private String expectedBasicNoNSFirstElement="<results>\n"+
-			"<result item=\"1\">\n"+
-			"<sub>A &amp; B</sub>\n"+
-			"</result>\n</results>";
+	private final String expectedBasicNoNSFirstElement = "<results>\n" +
+		"<result item=\"1\">\n" +
+		"<sub>A &amp; B</sub>\n" +
+		"</result>\n</results>";
 
-	private String expectedBasicNoNSFirstTwoElements="<results>\n"+
-			"<result item=\"1\">\n"+
-			"<sub>A &amp; B</sub>\n"+
-			"</result>\n"+
-			"<result item=\"2\">\n"+
-			"<sub name=\"p &amp; Q\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub>\n"+
-			"</result>\n</results>";
+	private final String expectedBasicNoNSFirstTwoElements = "<results>\n" +
+		"<result item=\"1\">\n" +
+		"<sub>A &amp; B</sub>\n" +
+		"</result>\n" +
+		"<result item=\"2\">\n" +
+		"<sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub>\n" +
+		"</result>\n</results>";
 
-	private String expectedBasicNS1="<results>\n"+
-			"<result item=\"1\">\n"+
-			"<sub xmlns=\"urn:test\">A &amp; B</sub>\n"+
-			"</result>\n"+
-			"<result item=\"2\">\n"+
-			"<sub name=\"p &amp; Q\" xmlns=\"urn:test\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub>\n"+
-			"</result>\n"+
-			"<result item=\"3\">\n"+
-			"<sub name=\"r\" xmlns=\"urn:test\">R</sub>\n"+
-			"</result>\n</results>";
+	private final String expectedBasicNS1 = "<results>\n" +
+		"<result item=\"1\">\n" +
+		"<sub xmlns=\"urn:test\">A &amp; B</sub>\n" +
+		"</result>\n" +
+		"<result item=\"2\">\n" +
+		"<sub name=\"p &amp; Q\" xmlns=\"urn:test\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub>\n" +
+		"</result>\n" +
+		"<result item=\"3\">\n" +
+		"<sub name=\"r\" xmlns=\"urn:test\">R</sub>\n" +
+		"</result>\n</results>";
 
-	private String expectedBasicNS2="<results>\n"+
-			"<result item=\"1\">\n"+
-			"<ns:sub xmlns:ns=\"urn:test\">A &amp; B</ns:sub>\n"+
-			"</result>\n"+
-			"<result item=\"2\">\n"+
-			"<ns:sub name=\"p &amp; Q\" xmlns:ns=\"urn:test\">"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub>\n"+
-			"</result>\n"+
-			"<result item=\"3\">\n"+
-			"<ns:sub name=\"r\" xmlns:ns=\"urn:test\">R</ns:sub>\n"+
-			"</result>\n</results>";
+	private final String expectedBasicNS2 = "<results>\n" +
+		"<result item=\"1\">\n" +
+		"<ns:sub xmlns:ns=\"urn:test\">A &amp; B</ns:sub>\n" +
+		"</result>\n" +
+		"<result item=\"2\">\n" +
+		"<ns:sub name=\"p &amp; Q\" xmlns:ns=\"urn:test\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</ns:sub>\n" +
+		"</result>\n" +
+		"<result item=\"3\">\n" +
+		"<ns:sub name=\"r\" xmlns:ns=\"urn:test\">R</ns:sub>\n" +
+		"</result>\n</results>";
 
-	private String expectedBasicJsonConversion="<results>\n"
-			+ "<result item=\"1\">\n"
-			+ "<data><children><child>1</child></children></data>\n"
-			+ "</result>\n"
-			+ "<result item=\"2\">\n"
-			+ "<data><children><child>2</child></children></data>\n"
-			+ "</result>\n"
-			+ "<result item=\"3\">\n"
-			+ "<data><children><child>3</child></children></data>\n"
-			+ "</result>\n"
-			+ "</results>";
+	private final String expectedBasicJsonConversion = "<results>\n"
+		+ "<result item=\"1\">\n"
+		+ "<data><children><child>1</child></children></data>\n"
+		+ "</result>\n"
+		+ "<result item=\"2\">\n"
+		+ "<data><children><child>2</child></children></data>\n"
+		+ "</result>\n"
+		+ "<result item=\"3\">\n"
+		+ "<data><children><child>3</child></children></data>\n"
+		+ "</result>\n"
+		+ "</results>";
 
-	private PipeLineSession session = new PipeLineSession();
+	private final PipeLineSession session = new PipeLineSession();
 
 	@Override
 	public ForEachChildElementPipe createPipe() {

@@ -49,9 +49,9 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 
 	private boolean writeAttributes=true;
 
-	private XmlAligner aligner;
+	private final XmlAligner aligner;
 
-	private C documentContainer;
+	private final C documentContainer;
 	Stack<String> element=new Stack<String>();
 	String topElement;
 

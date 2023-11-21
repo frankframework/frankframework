@@ -47,7 +47,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 	private String action = null;
 	List<String> allowedActions = Arrays.asList("get", "set", "create", "remove");
 	private IApiCache cache = null;
-	private int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
+	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
 	private String authenticationMethod = "header";
 
 	@Override

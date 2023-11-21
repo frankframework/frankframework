@@ -18,7 +18,7 @@ import nl.nn.adapterframework.core.IbisException;
 import nl.nn.adapterframework.management.bus.BusException;
 
 public class TestSpringBusExceptionHandler {
-	private SpringBusExceptionHandler handler = new SpringBusExceptionHandler();
+	private final SpringBusExceptionHandler handler = new SpringBusExceptionHandler();
 	public enum TestExceptionType {
 		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE, AUTHORIZATION, AUTHENTICATION, CLIENT_EXCEPTION_400, CLIENT_EXCEPTION_404
 	}
