@@ -4,6 +4,8 @@ import { AppConstants } from 'src/angularjs/app/app.module';
 import { AppService } from 'src/angularjs/app/app.service';
 import { APPCONSTANTS } from 'src/app/app.module';
 
+type CustomView = {view: string, name: string, url: string};
+
 @Component({
   selector: 'app-custom-views',
   templateUrl: './custom-views.component.html',
@@ -11,11 +13,7 @@ import { APPCONSTANTS } from 'src/app/app.module';
 })
 export class CustomViewsComponent implements OnInit {
   appConstants: AppConstants;
-  customViews: {
-    view: string,
-    name: string,
-    url: string
-  }[] = [];
+  customViews: CustomView[] = [];
 
   constructor(private appService: AppService, @Inject(APPCONSTANTS) appConstants: AppConstants) {
     this.appConstants = appConstants;
@@ -23,21 +21,16 @@ export class CustomViewsComponent implements OnInit {
 
   ngOnInit() {
     this.appService.appConstants$.pipe(first()).subscribe(() => {
-      let customViews = this.appConstants["customViews.names"];
-      if (customViews == undefined)
-        return;
-
-      if (customViews.length > 0) {
-        let views = customViews.split(",");
+      const customViews = this.appConstants["customViews.names"];
+      if (customViews && customViews.length > 0) {
+        const views = customViews.split(",");
         for (const i in views) {
-          let viewId = views[i];
-          let name = this.appConstants["customViews." + viewId + ".name"];
-          let url = this.appConstants["customViews." + viewId + ".url"];
-          if (name && url) this.customViews.push({
-            view: viewId,
-            name: name,
-            url: url
-          });
+          const view = views[i];
+          const name = this.appConstants["customViews." + viewId + ".name"];
+          const url = this.appConstants["customViews." + viewId + ".url"];
+          if (name && url){
+            this.customViews.push({view, name, url}); 
+          }
         }
       }
     });
