@@ -135,7 +135,7 @@ public class PGPPipe extends FixedForwardPipe {
 			File tempFile = FileUtils.createTempFile();
 			try (OutputStream out = Files.newOutputStream(tempFile.toPath())) {
 				pgpAction.run(message.asInputStream(), out);
-				return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath(), message.getCharset()));
+				return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
 			} catch (Exception e) {
 				Files.deleteIfExists(tempFile.toPath());
 				throw new PipeRunException(this, "Exception was thrown during PGPPipe execution.", e);

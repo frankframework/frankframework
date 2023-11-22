@@ -97,7 +97,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 					}
 				}
 			}
-			return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath(), message.getCharset()));
+			return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
 		} catch (IOException | SAXException e) {
 			throw new PipeRunException(this, "Cannot parse CSV", e);
 		}
