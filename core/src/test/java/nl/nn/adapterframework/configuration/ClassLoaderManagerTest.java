@@ -288,6 +288,6 @@ public class ClassLoaderManagerTest extends Mockito {
 	 */
 	@SuppressWarnings("deprecation")
 	private void setLocalProperty(String key, String value) {
-		appConstants.put(key, value);
+		appConstants.put(key, (Object) value);
 	}
 }
