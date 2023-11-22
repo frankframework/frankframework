@@ -96,6 +96,7 @@ import { ConfigurationsManageDetailsComponent } from './views/configurations/con
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
 import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
+import { ConnectionsComponent } from './views/connections/connections.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -113,6 +114,7 @@ appModule
   .directive('configurationsShow', downgradeComponent({ component: ConfigurationsShowComponent }) as angular.IDirectiveFactory)
   .directive('configurationsUpload', downgradeComponent({ component: ConfigurationsUploadComponent }) as angular.IDirectiveFactory)
   .directive('configurationsManageDetails', downgradeComponent({ component: ConfigurationsManageDetailsComponent }) as angular.IDirectiveFactory)
+  .directive('connections', downgradeComponent({ component: ConnectionsComponent }) as angular.IDirectiveFactory)
   .directive('environmentVariables', downgradeComponent({ component: EnvironmentVariablesComponent }) as angular.IDirectiveFactory)
   .directive('flow', downgradeComponent({ component: FlowComponent }) as angular.IDirectiveFactory)
   .directive('hamburger', downgradeComponent({ component: HamburgerComponent }) as angular.IDirectiveFactory)
@@ -191,6 +193,7 @@ appModule
     WebservicesComponent,
     MonitorsComponent,
     MonitorsAddEditComponent,
+    ConnectionsComponent,
 
     // pipes
     ConfigurationFilterPipe,

@@ -4,7 +4,7 @@ import './app/app.component';
 // import './app/views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 // import './app/views/configurations/configurations-show/configurations-show.component';
 // import './app/views/configurations/configurations-upload/configurations-upload.component';
-import './app/views/connections/connections.component';
+// import './app/views/connections/connections.component';
 import './app/views/error/error.component';
 import './app/views/iaf-update/iaf-update-status.component';
 import './app/views/liquibase/liquibase.component';
