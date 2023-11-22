@@ -15,28 +15,34 @@
  */
 package nl.nn.adapterframework.pipes;
 
+import java.io.File;
+import java.nio.file.Files;
+
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.stream.PathMessage;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 
 /**
- * Breaks up the text input in blocks of a maximum length. 
- * By default the maximum block length is 160 characters, to enable them to be send as SMS messages.
+ * Breaks up the text input in blocks of a maximum length.
+ * By default, the maximum block length is 160 characters, to enable them to be sent as SMS messages.
  */
 @ElementType(ElementTypes.TRANSLATOR)
-public class TextSplitterPipe extends StreamingPipe {
+public class TextSplitterPipe extends FixedForwardPipe {
 
 	private int maxBlockLength=160;
 	private boolean softSplit = false;
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		if (Message.isNull(message) || message.isEmpty()) {
+			return new PipeRunResult(getSuccessForward(), Message.asMessage("<text/>"));
+		}
 
 		try {
 			String[] result = new String[100];
@@ -47,20 +53,19 @@ public class TextSplitterPipe extends StreamingPipe {
 				for (p = 0; p < inputString.length() - maxBlockLength;) {
 					// find last space in msg part
 					for (s = p + maxBlockLength >= inputString.length() ? inputString.length() - 1 : p + maxBlockLength; s >= p
-							&& !Character.isWhitespace(inputString.charAt(s)) && inputString.charAt(s) != '-'; s--)
-						;
+							&& !Character.isWhitespace(inputString.charAt(s)) && inputString.charAt(s) != '-'; s--);
+
 					// now skip spaces
-					for (; s >= p && Character.isWhitespace(inputString.charAt(s)); s--)
-						;
+					for (; s >= p && Character.isWhitespace(inputString.charAt(s)); s--);
+
 					// spaces found, soft break possible
 					if (s >= p) {
 						result[o++] = inputString.substring(p, s + 1);
-						for (p = s + 1; p < inputString.length() && Character.isWhitespace(inputString.charAt(p)); p++)
-							;
+						for (p = s + 1; p < inputString.length() && Character.isWhitespace(inputString.charAt(p)); p++);
 					}
 					// no space found, soft-break not possible
 					else {
-						result[o++] = inputString.substring(p, p + maxBlockLength < inputString.length() ? p + maxBlockLength : inputString.length());
+						result[o++] = inputString.substring(p, Math.min(p + maxBlockLength, inputString.length()));
 						p += maxBlockLength;
 					}
 				}
@@ -75,14 +80,14 @@ public class TextSplitterPipe extends StreamingPipe {
 				}
 			}
 
-			try (MessageOutputStream target=getTargetStream(session)) {
-				try (SaxDocumentBuilder saxBuilder = new SaxDocumentBuilder("text", target.asContentHandler(), false)) {
-					for(int counter = 0; result[counter] != null; counter++) {
-						saxBuilder.addElement("block", result[counter]);
-					}
+			File tempFile = FileUtils.createTempFile();
+			try (SaxDocumentBuilder saxBuilder = new SaxDocumentBuilder("text", Files.newBufferedWriter(tempFile.toPath()), false)) {
+				for (int counter = 0; result[counter] != null; counter++) {
+					saxBuilder.addElement("block", result[counter]);
 				}
-				return target.getPipeRunResult();
 			}
+			return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath(), message.getCharset()));
+
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Cannot create text blocks", e);
 		}
