@@ -152,14 +152,14 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			if(soapMessage != null && !getxPathLogMap().isEmpty()) {
 				StringBuilder xPathLogKeys = new StringBuilder();
 				for (Entry<String, String> pair : getxPathLogMap().entrySet()) {
-				String sessionKey = pair.getKey();
-				String xPath = pair.getValue();
-				String result = getResultFromxPath(soapMessage, xPath);
-				if (!result.isEmpty()) {
-					messageProperties.put(sessionKey, result);
-					xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
+					String sessionKey = pair.getKey();
+					String xPath = pair.getValue();
+					String result = getResultFromxPath(soapMessage, xPath);
+					if (!result.isEmpty()) {
+						messageProperties.put(sessionKey, result);
+						xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
+					}
 				}
-			}
 				messageProperties.put("xPathLogKeys", xPathLogKeys.toString());
 			}
 		} catch (JMSException | IOException e) {
