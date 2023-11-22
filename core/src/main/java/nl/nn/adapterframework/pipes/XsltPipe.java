@@ -21,7 +21,6 @@ import org.springframework.beans.factory.InitializingBean;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -32,14 +31,10 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.ReferTo;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingException;
-import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
@@ -52,9 +47,8 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
  * @author Johan Verrips
  */
 @Category("Basic")
-@SupportsOutputStreaming
 @ElementType(ElementTypes.TRANSLATOR)
-public class XsltPipe extends StreamingPipe implements InitializingBean {
+public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 
 	private String sessionKey=null;
 
@@ -104,37 +98,20 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		super.stop();
 	}
 
-
-	@Override
-	public boolean canStreamToNextPipe() {
-		return super.canStreamToNextPipe() && StringUtils.isEmpty(getSessionKey());
-	}
-
-	@Override
-	protected boolean canProvideOutputStream() {
-		return super.canProvideOutputStream() && StringUtils.isEmpty(getSessionKey());
-	}
-
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (Message.isEmpty(input)) {
 			throw new PipeRunException(this, "got null input");
 		}
 		try {
-			IForwardTarget nextPipe;
-			if (canStreamToNextPipe()) {
-				nextPipe = getNextPipe();
-			} else {
-				nextPipe=null;
-				if (StringUtils.isNotEmpty(getSessionKey())) {
-					input.preserve();
-				}
+			if (StringUtils.isNotEmpty(getSessionKey())) {
+				input.preserve();
 			}
-			PipeRunResult prr = sender.sendMessage(input, session, nextPipe);
+			PipeRunResult prr = sender.sendMessage(input, session, null);
 			Message result = prr.getResult();
 			PipeForward forward = prr.getPipeForward();
-			if (nextPipe==null || forward.getPath()==null) {
-				forward=getSuccessForward();
+			if (forward.getPath() == null) {
+				forward = getSuccessForward();
 			}
 			if (StringUtils.isNotEmpty(getSessionKey())) {
 				session.put(getSessionKey(), result.asString());
@@ -146,23 +123,12 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		}
 	}
 
-	@Override
-	public boolean supportsOutputStreamPassThrough() {
-		return false;
-	}
-
 	/**
 	 * If true, then this pipe will process the XSLT while streaming in a different thread. Can be used to switch streaming xslt off for debugging purposes
 	 * @ff.default set by appconstant xslt.streaming.default
 	 */
 	public void setStreamingXslt(boolean streamingActive) {
 		sender.setStreamingXslt(streamingActive);
-	}
-
-
-	@Override
-	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		return sender.provideOutputStream(session, getNextPipe());
 	}
 
 	@Override
@@ -245,11 +211,12 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	public void setXsltVersion(int xsltVersion) {
 		sender.setXsltVersion(xsltVersion);
 	}
-	@ReferTo(XsltSender.class)
+
 	/**
 	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
 	 */
 	@Deprecated
+	@ReferTo(XsltSender.class)
 	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
 	public void setXslt2(boolean b) {
 		sender.setXslt2(b);
@@ -261,6 +228,7 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 	public void setSessionKey(String newSessionKey) {
 		sessionKey = newSessionKey;
 	}
+
 	@Deprecated
 	public String getSessionKey() {
 		return sessionKey;

@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
@@ -32,13 +31,12 @@ import nl.nn.adapterframework.pipes.IteratingPipe.StopReason;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.XmlUtils;
 
-public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachChildElementPipe> {
+public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
 
 	private final boolean TEST_CDATA = false;
 	private final String CDATA_START = TEST_CDATA ? "<![CDATA[" : "";
@@ -195,12 +193,6 @@ public class ForEachChildElementPipeTest extends StreamingPipeTestBase<ForEachCh
 			return super.sendMessage(message, session);
 		}
 
-	}
-
-	@Override
-	public void setUp() throws Exception {
-		assumeFalse(provideStreamForInput);
-		super.setUp();
 	}
 
 	@Test

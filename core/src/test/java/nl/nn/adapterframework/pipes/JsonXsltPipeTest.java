@@ -1,12 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import jakarta.json.Json;
 import jakarta.json.JsonStructure;
@@ -15,11 +14,10 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
-public class JsonXsltPipeTest extends StreamingPipeTestBase<JsonXsltPipe> {
+public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 
 	@Override
 	public JsonXsltPipe createPipe() {
@@ -50,7 +48,7 @@ public class JsonXsltPipeTest extends StreamingPipeTestBase<JsonXsltPipe> {
 		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
 		PipeRunResult prr = doPipe(pipe, input,session);
 		String xmlOut=prr.getResult().asString();
-		assertEquals(expectedXml,xmlOut);
+		Assertions.assertEquals(expectedXml, xmlOut);
 	}
 
 	@Test
@@ -65,21 +63,19 @@ public class JsonXsltPipeTest extends StreamingPipeTestBase<JsonXsltPipe> {
 		String expectedText="James";
 		PipeRunResult prr = doPipe(pipe, input,session);
 		String textOut=prr.getResult().asString();
-		assertEquals(expectedText,textOut);
+		Assertions.assertEquals(expectedText, textOut);
 	}
 
 
 	public static JsonStructure string2Json(String json) {
-		JsonStructure jsonStructure = Json.createReader(new StringReader(json)).read();
-		return jsonStructure;
+		return Json.createReader(new StringReader(json)).read();
 	}
 
 	public void assertJsonEqual(String description, String jsonExp, String jsonAct) {
 		JsonStructure jExp=string2Json(jsonExp);
 		log.debug("jsonAct: ["+jsonAct+"]");
 		JsonStructure jAct=string2Json(jsonAct);
-		assertEquals(description,jExp.toString(),jAct.toString());
-		//assertEquals(description,inputJson,jsonOut);
+		Assertions.assertEquals(jExp.toString(), jAct.toString(), description);
 	}
 
 
@@ -94,6 +90,6 @@ public class JsonXsltPipeTest extends StreamingPipeTestBase<JsonXsltPipe> {
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asMessage(prr.getResult()).asString();
-		assertEquals("onSample Konfabulator Widgetmain_window500500Images/Sun.pngsun1250250centerClick Here36boldtext1250100centersun1.opacity = (sun1.opacity / 100) * 90;", result.trim());
+		Assertions.assertEquals("onSample Konfabulator Widgetmain_window500500Images/Sun.pngsun1250250centerClick Here36boldtext1250100centersun1.opacity = (sun1.opacity / 100) * 90;", result.trim());
 	}
 }

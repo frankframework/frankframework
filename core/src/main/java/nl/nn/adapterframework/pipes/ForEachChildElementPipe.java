@@ -18,7 +18,6 @@ package nl.nn.adapterframework.pipes;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -50,10 +49,8 @@ import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.SaxAbortException;
 import nl.nn.adapterframework.stream.SaxTimeoutException;
-import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
@@ -85,7 +82,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
 @SupportsOutputStreaming
 public class ForEachChildElementPipe extends StringIteratorPipe implements IThreadCreator {
 
-	public final int DEFAULT_XSLT_VERSION = 1; // currently only Xalan supports XSLT Streaming
+	public static final int DEFAULT_XSLT_VERSION = 1; // currently only Xalan supports XSLT Streaming
 
 	private @Getter boolean processFile=false;
 	private @Getter String containerElement;
@@ -373,26 +370,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 				throw new SaxException(result.errorMessage,e);
 			}
 		};
-	}
-
-	@Override
-	protected boolean canProvideOutputStream() {
-		return !isProcessFile() && super.canProvideOutputStream();
-	}
-
-	@Override
-	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		HandlerRecord handlerRecord = new HandlerRecord();
-		try {
-			ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, "provideOutputStream", threadLifeCycleEventListener, txManager, session) : null;
-			MessageOutputStream target=getTargetStream(session);
-			Writer resultWriter = target.asWriter();
-			ItemCallback callback = createItemCallBack(session, getSender(), resultWriter);
-			createHandler(handlerRecord, threadConnector, null, session, callback, (resource,label)->target.closeOnClose(resource));
-			return new MessageOutputStream(this, handlerRecord.inputHandler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
-		} catch (TransformerException e) {
-			throw new StreamingException(handlerRecord.errorMessage, e);
-		}
 	}
 
 	@Override

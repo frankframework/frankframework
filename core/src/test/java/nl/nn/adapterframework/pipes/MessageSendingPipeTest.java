@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -16,12 +16,11 @@ import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.senders.EchoSender;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSendingPipe> {
+public class MessageSendingPipeTest extends PipeTestBase<MessageSendingPipe> {
 
 	@Override
 	public MessageSendingPipe createPipe() {
@@ -55,8 +54,8 @@ public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSending
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe("testMessage");
-		assertEquals("success", prr.getPipeForward().getName());
-		assertEquals("{ \"input\": \"testMessage\"}", prr.getResult().asString());
+		Assertions.assertEquals("success", prr.getPipeForward().getName());
+		Assertions.assertEquals("{ \"input\": \"testMessage\"}", prr.getResult().asString());
 	}
 
 	@Test
@@ -66,9 +65,9 @@ public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSending
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe("testMessage");
-		assertEquals("success", prr.getPipeForward().getName());
+		Assertions.assertEquals("success", prr.getPipeForward().getName());
 		String expected = "{ \"input\": \"<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>testMessage</soapenv:Body></soapenv:Envelope>\"}";
-		assertEquals(expected, prr.getResult().asString());
+		Assertions.assertEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -78,9 +77,9 @@ public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSending
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe("testMessage");
-		assertEquals("success", prr.getPipeForward().getName());
+		Assertions.assertEquals("success", prr.getPipeForward().getName());
 		String expected = "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"><soapenv:Body>{ \"input\": \"testMessage\"}</soapenv:Body></soapenv:Envelope>";
-		assertEquals(expected, prr.getResult().asString());
+		Assertions.assertEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -96,8 +95,8 @@ public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSending
 		Message input = MessageTestUtils.getMessage("/Align/Abc/abc.xml");
 		String expected =  "{ \"input\": \""+ TestFileUtils.getTestFile("/Align/Abc/abc-compact.json")+"\"}";
 		PipeRunResult prr = doPipe(input);
-		assertEquals("success", prr.getPipeForward().getName());
-		assertEquals(expected, prr.getResult().asString());
+		Assertions.assertEquals("success", prr.getPipeForward().getName());
+		Assertions.assertEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
@@ -115,7 +114,7 @@ public class MessageSendingPipeTest extends StreamingPipeTestBase<MessageSending
 		Message input = MessageTestUtils.getMessage("/Align/Abc/abc-compact.json");
 		String expected =  TestFileUtils.getTestFile("/Align/Abc/abc.xml");
 		PipeRunResult prr = doPipe(input);
-		assertEquals("success", prr.getPipeForward().getName());
+		Assertions.assertEquals("success", prr.getPipeForward().getName());
 		assertXmlEquals("response converted", expected, prr.getResult().asString(),true);
 	}
 }

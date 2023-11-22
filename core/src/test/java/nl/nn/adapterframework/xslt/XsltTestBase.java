@@ -18,14 +18,14 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
-public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPipeTestBase<P> {
+public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestBase<P> {
 
 	public static final String IDENTITY_STYLESHEET="/Xslt/identity.xslt";
 
