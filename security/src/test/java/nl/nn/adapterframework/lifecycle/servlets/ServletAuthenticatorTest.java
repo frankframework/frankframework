@@ -32,6 +32,9 @@ import nl.nn.adapterframework.lifecycle.servlets.ServletAuthenticatorTest.Spring
 @ContextConfiguration(initializers = {SpringRootInitializer.class})
 public class ServletAuthenticatorTest {
 
+	@Autowired
+	public ApplicationContext applicationContext;
+
 	public static class SpringRootInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
 		@Override
@@ -53,9 +56,6 @@ public class ServletAuthenticatorTest {
 			return true;
 		}
 	}
-
-	@Autowired
-	public ApplicationContext applicationContext;
 
 	@Test
 	public void testMultilineUrl() throws Exception {
