@@ -84,7 +84,7 @@ public class MessageBrowsingFilter {
 		}
 		if(comment != null) {
 			count++;
-			matches += (StringUtils.isNotEmpty(iterItem.getCommentString()) && iterItem.getCommentString().indexOf(comment)>-1) ? 1 : 0;
+			matches += (StringUtils.isNotEmpty(iterItem.getCommentString()) && iterItem.getCommentString().contains(comment)) ? 1 : 0;
 		}
 		if(label != null) {
 			count++;
