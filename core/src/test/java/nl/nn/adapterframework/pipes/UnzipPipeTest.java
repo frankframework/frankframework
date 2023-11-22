@@ -24,7 +24,7 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 
 	private TemporaryFolder folder;
-	private String fileSeparator = File.separator;
+	private final String fileSeparator = File.separator;
 
 	@Override
 	public void setUp() throws Exception {

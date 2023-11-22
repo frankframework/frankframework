@@ -147,9 +147,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	private TransactionDefinition txDef;
 
-	private static Set<String> checkedTables = new HashSet<>();
-	private static Set<String> checkedIndices = new HashSet<>();
-	private static Set<String> checkedSequences = new HashSet<>();
+	private static final Set<String> checkedTables = new HashSet<>();
+	private static final Set<String> checkedIndices = new HashSet<>();
+	private static final Set<String> checkedSequences = new HashSet<>();
 
 	public JdbcTransactionalStorage() {
 		super(null);

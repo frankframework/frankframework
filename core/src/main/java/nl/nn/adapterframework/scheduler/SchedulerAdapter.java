@@ -52,8 +52,8 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class SchedulerAdapter {
 	protected Logger log=LogUtil.getLogger(this);
 
-	private DecimalFormat tf=new DecimalFormat(ItemList.PRINT_FORMAT_TIME);
-	private DecimalFormat pf=new DecimalFormat(ItemList.PRINT_FORMAT_PERC);
+	private final DecimalFormat tf = new DecimalFormat(ItemList.PRINT_FORMAT_TIME);
+	private final DecimalFormat pf = new DecimalFormat(ItemList.PRINT_FORMAT_PERC);
 
 	/**
 	 * Get all jobgroups, jobs within this group, the jobdetail and the

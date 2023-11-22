@@ -43,8 +43,8 @@ public class AdapterManager extends ConfigurableLifecyleBase implements Applicat
 	private @Getter @Setter ApplicationContext applicationContext;
 	private List<? extends AdapterLifecycleWrapperBase> adapterLifecycleWrappers;
 
-	private List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<>());
-	private List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<>());
+	private final List<Runnable> startAdapterThreads = Collections.synchronizedList(new ArrayList<>());
+	private final List<Runnable> stopAdapterThreads = Collections.synchronizedList(new ArrayList<>());
 
 	private final Map<String, Adapter> adapters = new LinkedHashMap<>(); // insertion order map
 

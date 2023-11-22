@@ -35,9 +35,9 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class ContentHandlerOutputStream extends PipedOutputStream implements Thread.UncaughtExceptionHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private ContentHandler handler;
+	private final ContentHandler handler;
 
-	private ThreadConnector threadConnector;
+	private final ThreadConnector threadConnector;
 
 	private PipedInputStream pipedInputStream=new PipedInputStream();
 	private final EventConsumer pipeReader=new EventConsumer();

@@ -54,7 +54,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
  *
  */
 public class LadybugPipe extends FixedForwardPipe {
-	private static String FAILURE_FORWARD_NAME = "failure";
+	private static final String FAILURE_FORWARD_NAME = "failure";
 	private PipeForward failureForward;
 	private boolean writeToLog = false;
 	private boolean writeToSystemOut = false;
@@ -258,8 +258,8 @@ public class LadybugPipe extends FixedForwardPipe {
 }
 
 class IbisSecurityContext implements SecurityContext {
-	private PipeLineSession session;
-	private boolean checkRoles;
+	private final PipeLineSession session;
+	private final boolean checkRoles;
 
 	IbisSecurityContext(PipeLineSession session, boolean checkRoles) {
 		this.session = session;

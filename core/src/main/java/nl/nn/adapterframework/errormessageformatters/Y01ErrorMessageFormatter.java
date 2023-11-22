@@ -28,8 +28,8 @@ import nl.nn.adapterframework.util.DateUtils;
  * @author Johan Verrips IOS
  */
 public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
-	private String applicationName = AppConstants.getInstance().getProperty("application.name");
-	private String applicationVersion = AppConstants.getInstance().getProperty("application.version");
+	private final String applicationName = AppConstants.getInstance().getProperty("application.name");
+	private final String applicationVersion = AppConstants.getInstance().getProperty("application.version");
 
 	@Override
 	public Message format(String message, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {

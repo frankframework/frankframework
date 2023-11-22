@@ -43,7 +43,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 
-	private boolean suppressResultSetHoldabilityWarning = AppConstants.getInstance().getBoolean(SuppressKeys.RESULT_SET_HOLDABILITY.getKey(), false);
+	private final boolean suppressResultSetHoldabilityWarning = AppConstants.getInstance().getBoolean(SuppressKeys.RESULT_SET_HOLDABILITY.getKey(), false);
 	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	@Override

@@ -25,11 +25,11 @@ import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 public abstract class MetricsRegistryConfiguratorBase<C extends MeterRegistryConfig> {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	public static final String METRICS_EXPORT_PROPERTY_PREFIX="management.metrics.export.";
 
-	private AppConstants appConstants;
+	private final AppConstants appConstants;
 	private CredentialFactory credentialFactory;
 
 	private C config;

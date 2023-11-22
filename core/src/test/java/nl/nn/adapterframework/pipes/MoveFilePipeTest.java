@@ -28,7 +28,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
-    private String pipeForwardThen = "success";
+	private final String pipeForwardThen = "success";
 
 
     @ClassRule

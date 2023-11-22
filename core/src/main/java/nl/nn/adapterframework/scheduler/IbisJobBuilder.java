@@ -28,9 +28,9 @@ public class IbisJobBuilder {
 
 	private JobKey key;
 	private String description;
-	private Class<? extends Job> jobClass = ConfiguredJob.class;
+	private final Class<? extends Job> jobClass = ConfiguredJob.class;
 
-	private JobDataMap jobDataMap = new JobDataMap();
+	private final JobDataMap jobDataMap = new JobDataMap();
 	private JobType jobType = JobType.CONFIGURATION;
 
 	public static IbisJobBuilder newJob() {

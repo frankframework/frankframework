@@ -29,10 +29,10 @@ import nl.nn.adapterframework.util.LogUtil;
 public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	protected static Logger log = LogUtil.getLogger(TransactionConnectorCoordinator.class);
 
-	private IThreadConnectableTransactionManager<T,R> txManager;
-	private Thread parentThread;
+	private final IThreadConnectableTransactionManager<T, R> txManager;
+	private final Thread parentThread;
 
-	private static ThreadLocal<TransactionConnectorCoordinator<?,?>> coordinators=new ThreadLocal<>();
+	private static final ThreadLocal<TransactionConnectorCoordinator<?, ?>> coordinators = new ThreadLocal<>();
 
 	private T transaction;
 	private R resourceHolder;

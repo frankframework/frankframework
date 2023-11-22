@@ -27,8 +27,8 @@ import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock;
  */
 public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationContextAware {
 	private @Setter ApplicationContext applicationContext;
-	private static Map<String, ResultSet> fixedQuerySenderMocks = new HashMap<>();
-	private static Map<String, Message> fixedDirectSenderMocks = new HashMap<>();
+	private static final Map<String, ResultSet> fixedQuerySenderMocks = new HashMap<>();
+	private static final Map<String, Message> fixedDirectSenderMocks = new HashMap<>();
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {

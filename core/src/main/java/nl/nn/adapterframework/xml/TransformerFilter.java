@@ -29,7 +29,7 @@ import nl.nn.adapterframework.stream.ThreadConnector;
 
 public class TransformerFilter extends FullXmlFilter {
 
-	private TransformerHandler transformerHandler;
+	private final TransformerHandler transformerHandler;
 	private @Getter ErrorListener errorListener;
 	private ThreadConnectingFilter threadConnectingFilter;
 

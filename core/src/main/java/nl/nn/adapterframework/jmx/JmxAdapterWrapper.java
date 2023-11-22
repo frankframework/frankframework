@@ -40,7 +40,7 @@ import nl.nn.adapterframework.core.Adapter;
 public class JmxAdapterWrapper extends AdapterLifecycleWrapperBase implements InitializingBean {
 
 	private MBeanExporter mBeanManager = null;
-	private static Map<Adapter, ObjectName> registeredAdapters = new HashMap<>();
+	private static final Map<Adapter, ObjectName> registeredAdapters = new HashMap<>();
 
 	@Override
 	public void afterPropertiesSet() throws Exception {

@@ -34,7 +34,7 @@ best practices and perform security testing before releasing your application.
 | 7.0.x   | :x:                |:x:               | Jun 1, 2018      |
 | < 6.1   | :x:                |:x:               | Dec 13, 2016     |
 
-*Please always update to the latest available release. CVE's are solved on a best-effort basis, on versions not older then 1 year after the initial release date (specified in the table above). For more information see our [Security monitoring procedure](https://github.com/ibissource/iaf/wiki/Security-monitoring-procedure).
+*Please always update to the latest available release. CVE's are solved on a best-effort basis, on versions not older then 1 year after the initial release date (specified in the table above). For more information see our [Security monitoring procedure](https://github.com/frankframework/frankframework/wiki/Security-monitoring-procedure).
 
 ## Reporting a Vulnerability
 

@@ -37,7 +37,7 @@ import nl.nn.adapterframework.stream.document.IObjectBuilder;
  */
 public class StrictJsonDocumentWriter implements StrictJsonWriter {
 
-	private Stack<AutoCloseable> stack = new Stack<>();
+	private final Stack<AutoCloseable> stack = new Stack<>();
 	private final StrictCharacterStreamJsonWriterSettings settings;
 	private StrictJsonContext context = new StrictJsonContext(null, JsonContextType.TOP_LEVEL, "");
 	private State state = State.INITIAL;

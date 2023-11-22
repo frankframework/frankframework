@@ -31,8 +31,8 @@ import nl.nn.adapterframework.stream.Message;
  */
 public class PipeLineSessionDebugger implements MethodHandler {
 
-	private PipeLineSession pipeLineSession;
-	private IbisDebugger ibisDebugger;
+	private final PipeLineSession pipeLineSession;
+	private final IbisDebugger ibisDebugger;
 
 	private PipeLineSessionDebugger(PipeLineSession pipeLineSession, IbisDebugger ibisDebugger) {
 		this.pipeLineSession = pipeLineSession;

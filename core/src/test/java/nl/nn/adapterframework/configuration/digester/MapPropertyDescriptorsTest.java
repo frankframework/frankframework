@@ -29,7 +29,7 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class MapPropertyDescriptorsTest {
-	private  Logger log = LogUtil.getLogger(this);
+	private final  Logger log = LogUtil.getLogger(this);
 
 	private Iterable<String> getClassesThatImplementIConfigurable() {
 		return getClassesThatImplement(IConfigurable.class);

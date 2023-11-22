@@ -86,7 +86,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 	private static boolean enabled=true;
 
-	private AtomicInteger threadCounter = new AtomicInteger(0);
+	private final AtomicInteger threadCounter = new AtomicInteger(0);
 
 
 	@Override

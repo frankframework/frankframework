@@ -33,11 +33,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class ClobWriter extends FilterWriter {
 
-	private IDbmsSupport dbmsSupport;
-	private Object clobUpdateHandle;
-	private int clobColumn;
-	private ResultSet resultSet;
-	private XmlBuilder warnings;
+	private final IDbmsSupport dbmsSupport;
+	private final Object clobUpdateHandle;
+	private final int clobColumn;
+	private final ResultSet resultSet;
+	private final XmlBuilder warnings;
 	private boolean open;
 
 	public ClobWriter(IDbmsSupport dbmsSupport, Object clobUpdateHandle, int clobColumn, Writer clobWriter, ResultSet resultSet, XmlBuilder warnings) {

@@ -17,8 +17,8 @@ package nl.nn.adapterframework.jms;
 
 import java.util.Iterator;
 
+import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.collections.BeanMap;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.Logger;
 
@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class JmsRealm {
 	//TODO: change to J2eeRealm
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	private String realmName;
 
@@ -106,9 +106,9 @@ public class JmsRealm {
 
 	/**
 	 * copies matching properties from a JmsRealm to any other class
-	 * 
+	 *
 	 * @see JmsRealm
-	 * 
+	 *
 	 * TODO: Some amount of cleanup possible by putting JmsRealmFactory in Spring context
 	 */
 	public static void copyRealm(Object destination, String jmsRealmName) throws ConfigurationException {
@@ -122,7 +122,7 @@ public class JmsRealm {
 
 	/**
 	 * The <code>toString()</code> method retrieves its value by reflection.
-	 * 
+	 *
 	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
 	 *
 	 **/

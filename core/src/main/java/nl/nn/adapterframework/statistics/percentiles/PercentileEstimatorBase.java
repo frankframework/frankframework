@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
 public class PercentileEstimatorBase implements PercentileEstimator {
 
 	protected long[] values;
-	private int[] p;
+	private final int[] p;
 
 	public PercentileEstimatorBase(String configKey, String defaultPList, int valueArraySize) {
 		List pListBuffer = new ArrayList();

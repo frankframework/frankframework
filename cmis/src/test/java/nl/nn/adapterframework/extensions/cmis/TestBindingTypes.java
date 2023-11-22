@@ -53,8 +53,8 @@ public class TestBindingTypes extends CmisSenderTestBase {
 			+ "<relationships>    <relation>dummy</relation>  </relationships>"
 			+ "</cmis>";
 
-	private static String createActionExpectedBase64 = "ZmlsZUlucHV0LnR4dA==";
-	private static String updateActionExpectedBase64 = "aWQ=";
+	private static final String createActionExpectedBase64 = "ZmlsZUlucHV0LnR4dA==";
+	private static final String updateActionExpectedBase64 = "aWQ=";
 
 	public static Stream<Arguments> allImplementations() {
 		return Stream.of(

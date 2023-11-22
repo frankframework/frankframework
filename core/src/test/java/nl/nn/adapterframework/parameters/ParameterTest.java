@@ -1610,7 +1610,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	// see https://github.com/ibissource/iaf/issues/3232
+	// see https://github.com/frankframework/frankframework/issues/3232
 	public void testPotentialProblematicSysId() throws ConfigurationException {
 		Parameter p = new Parameter();
 		p.setName("pid");

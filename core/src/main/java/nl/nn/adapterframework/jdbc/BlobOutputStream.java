@@ -33,11 +33,11 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class BlobOutputStream extends FilterOutputStream {
 
-	private IDbmsSupport dbmsSupport;
-	private Object blobUpdateHandle;
-	private int blobColumn;
-	private ResultSet resultSet;
-	private XmlBuilder warnings;
+	private final IDbmsSupport dbmsSupport;
+	private final Object blobUpdateHandle;
+	private final int blobColumn;
+	private final ResultSet resultSet;
+	private final XmlBuilder warnings;
 	private boolean open;
 
 	public BlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, int blobColumn, OutputStream blobOutputStream, ResultSet resultSet, XmlBuilder warnings) {

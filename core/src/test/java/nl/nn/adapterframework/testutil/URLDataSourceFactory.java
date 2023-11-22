@@ -18,7 +18,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public class URLDataSourceFactory extends JndiDataSourceFactory {
-	private static Logger LOG = LogManager.getLogger(URLDataSourceFactory.class);
+	private static final Logger LOG = LogManager.getLogger(URLDataSourceFactory.class);
 
 	public static final String PRODUCT_KEY = "product";
 	public static final String TEST_PEEK_KEY = "testPeek";

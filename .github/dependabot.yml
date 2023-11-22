@@ -28,7 +28,7 @@ updates:
       - dependency-name: "com.aspose:*"
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
-      # The following versions are not available for JDK 8, see https://github.com/ibissource/iaf/issues/3503
+      # The following versions are not available for JDK 8, see https://github.com/frankframework/frankframework/issues/3503
       - dependency-name: "org.apache.activemq:activemq-*"
         versions: ["[5.17.0,)"]
       - dependency-name: "org.apache.activemq:artemis-*"
@@ -50,7 +50,7 @@ updates:
       - dependency-name: "com.aspose:*"
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
-      # The following versions are not available for JDK 8, see https://github.com/ibissource/iaf/issues/3503
+      # The following versions are not available for JDK 8, see https://github.com/frankframework/frankframework/issues/3503
       - dependency-name: "org.apache.activemq:activemq-*"
         versions: ["[5.17.0,)"]
       - dependency-name: "org.apache.activemq:artemis-*"

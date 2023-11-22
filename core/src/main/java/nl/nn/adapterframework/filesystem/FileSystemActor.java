@@ -127,7 +127,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter boolean deleteEmptyFolder;
 	private @Getter DocumentFormat outputFormat=DocumentFormat.XML;
 
-	private Set<FileSystemAction> actions = new LinkedHashSet<>(Arrays.asList(ACTIONS_BASIC));
+	private final Set<FileSystemAction> actions = new LinkedHashSet<>(Arrays.asList(ACTIONS_BASIC));
 
 	private INamedObject owner;
 	private FS fileSystem;

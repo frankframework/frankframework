@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.AppConstants;
 
 public class ConfigurationUtilsTest extends Mockito {
 
-	private ApplicationContext applicationContext = mock(ApplicationContext.class);
+	private final ApplicationContext applicationContext = mock(ApplicationContext.class);
 	private PreparedStatementMock stmt;
 
 	@BeforeAll

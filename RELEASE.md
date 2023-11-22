@@ -26,7 +26,7 @@ Release on Windows 7 behind a proxy
     - git config --global https.proxy http://[proxy-username]:[proxy-password]@[proxy-host]:[proxy-port]
     - git config --global core.autocrlf true
 - cd D:\Temp (or any other folder)
-- git clone https://github.com/ibissource/iaf.git
+- git clone https://github.com/frankframework/frankframework.git
 - git clone https://github.com/ibissource/mvn-repo.git
 - git clone https://[user]@bitbucket.org/ibissource/mvn-repo-proprietary.git
 - cd iaf

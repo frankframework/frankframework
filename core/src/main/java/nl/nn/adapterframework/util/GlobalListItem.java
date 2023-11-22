@@ -39,7 +39,7 @@ import nl.nn.adapterframework.core.INamedObject;
 public class GlobalListItem implements INamedObject {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private static Hashtable<String, GlobalListItem> items = new Hashtable<>();
+	private static final Hashtable<String, GlobalListItem> items = new Hashtable<>();
 	private String name;
 	private String aliasFor;
 

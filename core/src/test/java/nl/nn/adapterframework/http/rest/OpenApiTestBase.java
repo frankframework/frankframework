@@ -50,7 +50,7 @@ public class OpenApiTestBase extends Mockito {
 
 	private static TaskExecutor taskExecutor;
 	private Configuration configuration;
-	private ThreadLocalServlet servlets = new ThreadLocalServlet();
+	private final ThreadLocalServlet servlets = new ThreadLocalServlet();
 	protected final Logger log = LogUtil.getLogger(this);
 
 	@BeforeClass

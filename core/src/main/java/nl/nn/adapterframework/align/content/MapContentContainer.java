@@ -36,10 +36,10 @@ import nl.nn.adapterframework.util.LogUtil;
 public class MapContentContainer<V> implements DocumentContainer {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	private String attributeSeparator=".";
-	private String indexSeparator=".";
-	private static String arrayValueSeparator=",";
-	private Map<String,List<V>> data;
+	private final String attributeSeparator = ".";
+	private final String indexSeparator = ".";
+	private static final String arrayValueSeparator = ",";
+	private final Map<String, List<V>> data;
 
 	private String currentName;
 	private String currentValue;

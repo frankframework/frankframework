@@ -26,7 +26,7 @@ import nl.nn.adapterframework.core.ListenerException;
 
 public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorItem {
 
-	private Message msg;
+	private final Message msg;
 
 	public JmsMessageBrowserIteratorItem(Message msg) {
 		super();

@@ -56,8 +56,8 @@ public abstract class DigesterRuleBase extends Rule implements ApplicationContex
 	private @Setter ApplicationContext applicationContext;
 	private @Setter ConfigurationWarnings configurationWarnings;
 	private @Setter ApplicationWarnings applicationWarnings;
-	private boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", false);
-	private boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", preparse);//True when pre-parsed
+	private final boolean preparse = AppConstants.getInstance().getBoolean("configurations.preparse", false);
+	private final boolean includeLineInformation = AppConstants.getInstance().getBoolean("configuration.warnings.linenumbers", preparse);//True when pre-parsed
 
 	/**
 	 * The current adapter-instance being parsed by the digester. This is needed for the configurable suppression of deprecation-warnings.

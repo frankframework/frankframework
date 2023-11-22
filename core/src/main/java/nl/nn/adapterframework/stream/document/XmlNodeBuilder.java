@@ -22,7 +22,7 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class XmlNodeBuilder implements INodeBuilder {
 
-	private SaxElementBuilder current;
+	private final SaxElementBuilder current;
 
 	public XmlNodeBuilder(SaxElementBuilder current, String elementName) throws SAXException {
 		this.current = current.startElement(XmlUtils.cleanseElementName(elementName));

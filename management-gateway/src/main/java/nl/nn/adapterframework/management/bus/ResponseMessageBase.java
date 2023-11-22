@@ -28,8 +28,8 @@ public abstract class ResponseMessageBase<T> implements Message<T> {
 	public static final String CONTENT_DISPOSITION_KEY = "contentdisposition";
 	public static final String STATE_KEY = "state";
 
-	private T payload;
-	private Map<String, Object> headers = new HashMap<>();
+	private final T payload;
+	private final Map<String, Object> headers = new HashMap<>();
 	private MessageHeaders messageHeaders;
 
 	protected ResponseMessageBase(T payload, MimeType defaultMimeType) {

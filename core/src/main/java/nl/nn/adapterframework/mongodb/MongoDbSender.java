@@ -109,7 +109,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	private @Setter @Getter IMongoClientFactory mongoClientFactory = null; // Spring should wire this!
 
 	private MongoClient mongoClient;
-	private ConcurrentHashMap<String,MongoDatabase> mongoDatabases = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, MongoDatabase> mongoDatabases = new ConcurrentHashMap<>();
 
 	public enum MongoAction {
 		INSERTONE,

@@ -50,8 +50,8 @@ public class AuthSSLContextFactory {
 
 	protected @Setter @Getter String protocol = "TLSv1.2";
 
-	private HasKeystore keystoreOwner;
-	private HasTruststore trustoreOwner;
+	private final HasKeystore keystoreOwner;
+	private final HasTruststore trustoreOwner;
 
 	protected SSLContext sslContext = null;
 

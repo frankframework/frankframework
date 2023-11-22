@@ -33,9 +33,9 @@ import nl.nn.adapterframework.util.LogUtil;
 public class JsonEventHandlerOutputStream extends PipedOutputStream implements Thread.UncaughtExceptionHandler {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private JsonEventHandler handler;
+	private final JsonEventHandler handler;
 
-	private ThreadConnector threadConnector;
+	private final ThreadConnector threadConnector;
 
 	private PipedInputStream pipedInputStream=new PipedInputStream();
 	private final EventConsumer pipeReader=new EventConsumer();

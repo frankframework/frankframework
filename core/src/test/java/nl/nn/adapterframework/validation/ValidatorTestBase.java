@@ -77,7 +77,7 @@ public abstract class ValidatorTestBase {
 	public static final String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_COMPACT_JSON		="/Arrays/arrays-compact";
 	public static final String INPUT_FILE_SCHEMA_LOCATION_ARRAYS_FULL_JSON			="/Arrays/arrays-full";
 
-	private IScopeProvider testScopeProvider = new TestScopeProvider();
+	private final IScopeProvider testScopeProvider = new TestScopeProvider();
 
 	public void validate(String rootNamespace, String schemaLocation, String inputFile) throws Exception {
 		validate(rootNamespace, schemaLocation, false, inputFile, null);

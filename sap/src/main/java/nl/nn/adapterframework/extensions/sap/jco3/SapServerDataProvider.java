@@ -37,7 +37,7 @@ public class SapServerDataProvider implements ServerDataProvider {
 
 	private static SapServerDataProvider self=null;
 
-	private Map<String,SapListenerImpl> listeners = new LinkedHashMap<>();
+	private final Map<String, SapListenerImpl> listeners = new LinkedHashMap<>();
 
 	private SapServerDataProvider() {
 	}
