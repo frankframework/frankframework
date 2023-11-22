@@ -204,7 +204,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			content = null;
 		}
 		if (content != null) {
-			Vector<String> warnMessage = new Vector<String>();
+			Vector<String> warnMessage = new Vector<>();
 			try {
 				if (type.equals("jmsDest") || type.equals("jmsDestConf")) {
 					// AMX - receive (for jmsInboundDest)

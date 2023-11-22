@@ -893,7 +893,7 @@ public class CmisUtils {
 		CreatablePropertyTypesImpl creatablePropertyTypes = new CreatablePropertyTypesImpl();
 		Element creatablePropertyTypesXml = XmlUtils.getFirstChildTag(cmisResult, "creatablePropertyTypes");
 		if(creatablePropertyTypesXml != null) {
-			Set<PropertyType> propertyTypeSet = new TreeSet<PropertyType>();
+			Set<PropertyType> propertyTypeSet = new TreeSet<>();
 			for (Node type : XmlUtils.getChildTags(cmisResult, "type")) {
 				String value = XmlUtils.getStringValue((Element) type);
 				if(StringUtils.isNotEmpty(value))
@@ -905,7 +905,7 @@ public class CmisUtils {
 	}
 
 	private static List<BaseTypeId> xml2changesOnType(Element cmisResult) {
-		List<BaseTypeId> baseTypeIds = new ArrayList<BaseTypeId>();
+		List<BaseTypeId> baseTypeIds = new ArrayList<>();
 
 		Element changesOnType = XmlUtils.getFirstChildTag(cmisResult, "changesOnTypes");
 		if(changesOnType != null) {
@@ -935,7 +935,7 @@ public class CmisUtils {
 	}
 
 	public static List<TypeDefinitionContainer> xml2TypeDescendants(Element typeDefinitionsXml, CmisVersion cmisVersion) {
-		List<TypeDefinitionContainer> typeDefinitionList = new ArrayList<TypeDefinitionContainer>();
+		List<TypeDefinitionContainer> typeDefinitionList = new ArrayList<>();
 		Collection<Node> typeDescendantList = XmlUtils.getChildTags(typeDefinitionsXml, "typeDescendant");
 		for (Node node : typeDescendantList) {
 			Element typeDefinition = XmlUtils.getFirstChildTag((Element) node, "typeDefinition");
@@ -1100,7 +1100,7 @@ public class CmisUtils {
 		Element policyIdsElem = XmlUtils.getFirstChildTag(cmisElement, "policyIds");
 		if(policyIdsElem != null) {
 			PolicyIdListImpl policyIdList = new PolicyIdListImpl();
-			List<String> policies = new ArrayList<String>();
+			List<String> policies = new ArrayList<>();
 
 			Iterator<Node> policyIterator = XmlUtils.getChildTags(allowableActionsElem, "policyId").iterator();
 			while (policyIterator.hasNext()) {
@@ -1117,7 +1117,7 @@ public class CmisUtils {
 
 		Element relationshipsElem = XmlUtils.getFirstChildTag(cmisElement, "relationships");
 		if(relationshipsElem != null) {
-			List<ObjectData> relationships = new ArrayList<ObjectData>();
+			List<ObjectData> relationships = new ArrayList<>();
 			for (Node type : XmlUtils.getChildTags(relationshipsElem, "relation")) {
 				ObjectData data = xml2ObjectData((Element) type, null);
 				relationships.add(data);
@@ -1137,7 +1137,7 @@ public class CmisUtils {
 		objectList.setNumItems(CmisUtils.parseBigIntegerAttr(result, "numberOfItems"));
 		objectList.setHasMoreItems(CmisUtils.parseBooleanAttr(result, "hasMoreItems"));
 
-		List<ObjectData> objects = new ArrayList<ObjectData>();
+		List<ObjectData> objects = new ArrayList<>();
 
 		Element objectsElem = XmlUtils.getFirstChildTag(result, "objects");
 		for (Node type : XmlUtils.getChildTags(objectsElem, "objectData")) {
@@ -1170,7 +1170,7 @@ public class CmisUtils {
 		objectInFolderList.setNumItems(CmisUtils.parseBigIntegerAttr(result, "numberOfItems"));
 		objectInFolderList.setHasMoreItems(CmisUtils.parseBooleanAttr(result, "hasMoreItems"));
 
-		List<ObjectInFolderData> objects = new ArrayList<ObjectInFolderData>();
+		List<ObjectInFolderData> objects = new ArrayList<>();
 		Element objectsElem = XmlUtils.getFirstChildTag(result, "objects");
 		for (Node type : XmlUtils.getChildTags(objectsElem, "object")) {
 			ObjectInFolderDataImpl oifd = new ObjectInFolderDataImpl();

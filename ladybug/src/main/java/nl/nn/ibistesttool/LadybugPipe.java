@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
@@ -49,7 +49,7 @@ import nl.nn.testtool.transform.ReportXmlTransformer;
  *
  * @ff.forward success no errors and all tests passed
  * @ff.forward failure errors or failed tests
- * 
+ *
  * @author Jaco de Groot
  *
  */
@@ -62,7 +62,7 @@ public class LadybugPipe extends FixedForwardPipe {
 	private boolean enableReportGenerator = false;
 	private TestTool testTool;
 	private CrudStorage testStorage;
-	private Storage debugStorage; 
+	private Storage debugStorage;
 	private ReportXmlTransformer reportXmlTransformer;
 	private String exclude;
 	private Pattern excludeRegexPattern;
@@ -85,14 +85,14 @@ public class LadybugPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		XmlBuilder results = new XmlBuilder("Results");
 		int reportsPassed = 0;
-		
-		List<Report> reports = new ArrayList<Report>();
+
+		List<Report> reports = new ArrayList<>();
 		try {
 			List<Integer> storageIds = testStorage.getStorageIds();
 			for (Integer storageId : storageIds) {
 				Report report = testStorage.getReport(storageId);
 				String fullReportPath = (report.getPath() != null ? report.getPath() : "") + report.getName();
-				
+
 				if(excludeRegexPattern == null || !excludeRegexPattern.matcher(fullReportPath).matches()) {
 					reports.add(report);
 				}
@@ -118,14 +118,14 @@ public class LadybugPipe extends FixedForwardPipe {
 			testTool.sendReportGeneratorStatusUpdate();
 		}
 		long endTime = System.currentTimeMillis();
-		
+
 		for (Report report : reports) {
 			RunResult runResult = reportRunner.getResults().get(report.getStorageId());
 			long originalDuration = report.getEndTime() - report.getStartTime();
 			long duration = -1;
 			boolean equal = false;
 			String error = "";
-			
+
 			if (runResult.errorMessage != null) {
 				error = runResult.errorMessage;
 			} else {
@@ -135,7 +135,7 @@ public class LadybugPipe extends FixedForwardPipe {
 				} catch (StorageException e) {
 					addExceptionElement(results, e);
 				}
-				
+
 				if (runResultReport == null) {
 					error = "Result report not found. Report generator not enabled?";
 				} else {
@@ -167,7 +167,7 @@ public class LadybugPipe extends FixedForwardPipe {
 						+ (!error.isEmpty() ? ", Error=\"" + error + "\"" : ""));
 			}
 		}
-		
+
 		boolean allReportsPassed = reportsPassed == reports.size();
 		if (writeToLog || writeToSystemOut) {
 			writeToLogOrSysOut("Total=\"" + reports.size() + "\", "
@@ -224,7 +224,7 @@ public class LadybugPipe extends FixedForwardPipe {
 	public void setCheckRoles(boolean checkRoles) {
 		this.checkRoles = checkRoles;
 	}
-	
+
 	/**
 	 * Set to <code>true</code> to enable Ladybug's report generator for the duration of the scheduled report runs
 	 * then revert it to its original setting
@@ -233,7 +233,7 @@ public class LadybugPipe extends FixedForwardPipe {
 	public void setEnableReportGenerator(boolean enabled) {
 		enableReportGenerator = enabled;
 	}
-	
+
 	/** When set, reports with a full path (path + name) that matches with the specified regular expression are skipped. For example, \"/Unscheduled/.*\" or \".*SKIP\". */
 	public void setExclude(String exclude) {
 		this.exclude = exclude;

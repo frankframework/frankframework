@@ -81,7 +81,7 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 	@Override
 	public Iterable<PropertyNode> getChildrenByName(PropertyNode node, XSElementDeclaration childElementDeclaration) {
 		String name = childElementDeclaration.getName();
-		List<PropertyNode> result=new LinkedList<PropertyNode>();
+		List<PropertyNode> result=new LinkedList<>();
 		if (data.containsKey(name)) {
 			String[] values=data.get(name).split(valueSeparator);
 			for (String value:values) {

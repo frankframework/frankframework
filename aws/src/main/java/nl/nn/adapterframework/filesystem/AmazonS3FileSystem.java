@@ -586,7 +586,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	public static List<String> getAvailableRegions() {
-		List<String> availableRegions = new ArrayList<String>(Regions.values().length);
+		List<String> availableRegions = new ArrayList<>(Regions.values().length);
 		for (Regions region : Regions.values())
 			availableRegions.add(region.getName());
 

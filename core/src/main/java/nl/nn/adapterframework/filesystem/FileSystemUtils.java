@@ -184,7 +184,7 @@ public class FileSystemUtils {
 	}
 
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterable<F> iterable){
-		final DirectoryStream<F> ds = new DirectoryStream<F>() {
+		final DirectoryStream<F> ds = new DirectoryStream<>() {
 
 			@Override
 			public void close() throws IOException {
@@ -239,7 +239,7 @@ public class FileSystemUtils {
 	}
 
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator, Supplier<IOException> onClose){
-		final DirectoryStream<F> ds = new DirectoryStream<F>() {
+		final DirectoryStream<F> ds = new DirectoryStream<>() {
 
 			@Override
 			public void close() throws IOException {
