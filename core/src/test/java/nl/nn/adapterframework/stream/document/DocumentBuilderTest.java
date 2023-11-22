@@ -33,7 +33,7 @@ public class DocumentBuilderTest {
 	}
 	
 	public String getExpectedXml(String elementPrefix, String valuePrefix) {
-		return expectedXmlPref.replaceAll("pref_", elementPrefix).replaceAll("pref:", valuePrefix);
+		return expectedXmlPref.replace("pref_", elementPrefix).replace("pref:", valuePrefix);
 	}
 	
 	public void buildObject(ObjectBuilder object, String prefix) throws SAXException {

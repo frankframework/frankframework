@@ -37,12 +37,11 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import nl.nn.adapterframework.util.DbmsUtil;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import nl.nn.adapterframework.util.DbmsUtil;
 import nl.nn.adapterframework.util.StringUtil;
 
 
@@ -657,7 +656,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 					int countApos = StringUtils.countMatches(line, "'");
 					// A semicolon directly after 'END' is ignored when there is also a 'BEGIN' in the query
 					int countBegin = StringUtil.countRegex(line.toUpperCase().replaceAll("\\s+", "  "), "\\sBEGIN\\s");
-					int countEnd = StringUtil.countRegex(line.toUpperCase().replaceAll(";", "; "), "\\sEND;");
+					int countEnd = StringUtil.countRegex(line.toUpperCase().replace(";", "; "), "\\sEND;");
 					if ((countApos == 0 || (countApos & 1) == 0) && countBegin == countEnd) {
 						splittedQueries.add(line.trim());
 						i = j + 1;
