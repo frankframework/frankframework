@@ -32,10 +32,4 @@
 		<servlet-class>nl.nn.adapterframework.lifecycle.IbisApplicationServlet</servlet-class>
 		<load-on-startup>0</load-on-startup>
 	</servlet>
-
-	<!-- Error pages -->
-	<error-page>
-		<exception-type>java.lang.Exception</exception-type>
-		<location>/jsp/errorPage.jsp</location>
-	</error-page>
 </web-app>

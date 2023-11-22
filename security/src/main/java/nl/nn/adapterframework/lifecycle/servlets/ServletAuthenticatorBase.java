@@ -110,18 +110,14 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 				throw new IllegalStateException("endpoint already configured");
 			}
 
-			if(url.charAt(0) == '!') {
-				String publicUrl = url.substring(1);
+			boolean isExcludedUrl = url.charAt(0) == '!';
+			if(isExcludedUrl || config.getSecurityRoles().isEmpty()) {
+				String publicUrl = isExcludedUrl ? url.substring(1) : url;
 				log.info("registering public endpoint with url [{}]", publicUrl);
 				publicEndpoints.add(publicUrl);
 			} else {
-				if(config.getSecurityRoles().isEmpty()) {
-					log.info("registering public endpoint with url pattern [{}]", url);
-					publicEndpoints.add(url);
-				} else {
-					log.info("registering private endpoint with url pattern [{}]", url);
-					privateEndpoints.add(url);
-				}
+				log.info("registering private endpoint with url pattern [{}]", url);
+				privateEndpoints.add(url);
 			}
 		}
 	}
@@ -159,7 +155,10 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	public SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
 		try {
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
-			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
+			http
+			.headers()
+			.frameOptions()
+			.sameOrigin(); //Allow same origin iframe request
 			http.csrf().disable(); //Disable because the front-end doesn't support CSFR tokens (yet!)
 			RequestMatcher securityRequestMatcher = new URLRequestMatcher(privateEndpoints);
 			http.securityMatcher(securityRequestMatcher); //Triggers the SecurityFilterChain, also for OPTIONS requests!
