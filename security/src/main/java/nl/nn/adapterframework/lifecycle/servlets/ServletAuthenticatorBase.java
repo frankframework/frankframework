@@ -155,10 +155,7 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 	public SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
 		try {
 			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
-			http
-			.headers()
-			.frameOptions()
-			.sameOrigin(); //Allow same origin iframe request
+			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
 			http.csrf().disable(); //Disable because the front-end doesn't support CSFR tokens (yet!)
 			RequestMatcher securityRequestMatcher = new URLRequestMatcher(privateEndpoints);
 			http.securityMatcher(securityRequestMatcher); //Triggers the SecurityFilterChain, also for OPTIONS requests!
