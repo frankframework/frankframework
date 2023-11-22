@@ -21,13 +21,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import nl.nn.adapterframework.extensions.sap.SapException;
-import nl.nn.adapterframework.extensions.sap.jco3.SapSystemImpl;
-
 import org.springframework.transaction.support.ResourceHolderSupport;
 import org.springframework.util.Assert;
 
 import com.sap.conn.jco.JCoDestination;
+
+import nl.nn.adapterframework.extensions.sap.SapException;
+import nl.nn.adapterframework.extensions.sap.jco3.SapSystemImpl;
 
 /**
  * Connection holder, wrapping a Jco destination.
@@ -150,7 +150,7 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 		if (tids==null) {
 			return null;
 		}
-		return (String) tids.get(tids.size()-1);
+		return tids.get(tids.size()-1);
 	}
 
 
@@ -161,7 +161,7 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 			for (Iterator<String> itt = tids.iterator(); itt.hasNext();) {
 				String tid = itt.next();
 				try {
-					destination.confirmTID(tid);						
+					destination.confirmTID(tid);
 				} catch (Throwable t) {
 					throw new SapException("Could not confirm TID ["+tid+"]");
 				}

@@ -954,7 +954,7 @@ public class CmisUtils {
 		if(object.getProperties() != null) {
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
 			for (Iterator<Property<?>> it = object.getProperties().iterator(); it.hasNext();) {
-				Property<?> property = (Property<?>) it.next();
+				Property<?> property = it.next();
 				propertiesXml.addSubElement(CmisUtils.getPropertyXml(property));
 			}
 			cmisXml.addSubElement(propertiesXml);

@@ -73,9 +73,9 @@ public class SapSystemFactory {
 
 	public List<String> getRegisteredSapSystemsNamesAsList() {
 		Iterator<String> it = getRegisteredSapSystemNames();
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		while (it.hasNext()) {
-			result.add((String) it.next());
+			result.add(it.next());
 		}
 		return result;
 	}

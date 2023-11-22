@@ -86,7 +86,7 @@ public class IdocXmlHandler extends DefaultHandler {
 					parsingEdiDcHeader=true;
 				} else {
 					log.debug("creating segment ["+localName+"]");
-					IDocSegment parentSegment = (IDocSegment)segmentStack.get(segmentStack.size()-1);
+					IDocSegment parentSegment = segmentStack.get(segmentStack.size()-1);
 					IDocSegment segment;
 					try {
 						segment = parentSegment.addChild(localName);
@@ -158,7 +158,7 @@ public class IdocXmlHandler extends DefaultHandler {
 						throw new SAXException("could not parse header field, idoc syntax exception", e);
 					}
 				} else {
-					IDocSegment segment = (IDocSegment)segmentStack.get(segmentStack.size()-1);
+					IDocSegment segment = segmentStack.get(segmentStack.size()-1);
 					if (log.isDebugEnabled()) log.debug("setting field ["+currentField+"] to ["+value+"]");
 					try {
 						segment.setValue(currentField,value);

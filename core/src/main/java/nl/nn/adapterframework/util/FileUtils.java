@@ -503,7 +503,7 @@ public class FileUtils {
 
 		StringBuilder result = new StringBuilder();
 		for (Iterator<String> nameIterator = filenames.iterator(); nameIterator.hasNext();) {
-			String name = (String)nameIterator.next();
+			String name = nameIterator.next();
 			if (result.length() > 0)
 				result.append(seperator);
 			result.append(name);

@@ -598,7 +598,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			String destinationName = consumerInfo.getDestinationName();
 			long connectionId = consumerInfo.getConnectionID();
 			if (connectionMap.containsKey(connectionId)) {
-				String ci = (String) connectionMap.get(connectionId);
+				String ci = connectionMap.get(connectionId);
 				if (consumerMap.containsKey(destinationName)) {
 					LinkedList<String> consumers = consumerMap.get(destinationName);
 					if (!consumers.contains(ci)) {
