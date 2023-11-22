@@ -86,7 +86,7 @@ public class TextSplitterPipe extends FixedForwardPipe {
 					saxBuilder.addElement("block", result[counter]);
 				}
 			}
-			return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath(), message.getCharset()));
+			return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
 
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Cannot create text blocks", e);

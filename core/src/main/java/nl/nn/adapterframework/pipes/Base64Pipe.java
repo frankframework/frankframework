@@ -52,8 +52,6 @@ public class Base64Pipe extends FixedForwardPipe {
 	private @Getter int lineLength = 76;
 
 	private OutputTypes outputType = null;
-	private boolean convertToString = false;
-
 	private byte[] lineSeparatorArray;
 
 	public enum Direction {
@@ -81,10 +79,6 @@ public class Base64Pipe extends FixedForwardPipe {
 			} else {
 				setLineSeparatorArray(getLineSeparator());
 			}
-		}
-
-		if (dir==Direction.DECODE && convertToString) {
-			setOutputType("string");
 		}
 
 		if (getOutputTypeEnum()==null) {
@@ -127,12 +121,6 @@ public class Base64Pipe extends FixedForwardPipe {
 	/** @ff.default ENCODE */
 	public void setDirection(Direction direction) {
 		this.direction = direction;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("please specify outputType instead")
-	public void setConvert2String(boolean b) {
-		convertToString = b;
 	}
 
 	/**

@@ -20,7 +20,7 @@
 		<cxf.version>3.6.2</cxf.version>
 		<spring.version>5.3.31</spring.version>
 		<spring-security.version>5.8.8</spring-security.version>
-		<spring-integration.version>5.5.19</spring-integration.version>
+		<spring-integration.version>5.5.20</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
 		<narayana.version>5.13.1.Final</narayana.version>

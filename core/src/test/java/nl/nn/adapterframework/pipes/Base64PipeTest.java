@@ -176,9 +176,8 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	public void encodeConvert2StringTrue() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void encodeConvertStringInput() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		// Arrange
-		pipe.setConvert2String(true);
 		pipe.configure();
 		pipe.start();
 
@@ -192,9 +191,8 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	public void encodeConvert2StringFalse() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void encodeConvertBytesInput() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		// Arrange
-		pipe.setConvert2String(false);
 		pipe.configure();
 		pipe.start();
 
@@ -208,26 +206,8 @@ public class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 	}
 
 	@Test
-	public void decodeConvert2StringTrue() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
-		// Arrange
-		pipe.setConvert2String(true);
-		pipe.setDirection(Direction.DECODE);
-		pipe.configure();
-		pipe.start();
-
-		// Act
-		PipeRunResult prr = doPipe(pipe, base64Encoded, session);
-
-		// Assert
-		assertFalse(prr.getResult().isBinary());
-		String result = prr.getResult().asString();
-		assertEquals(plainText, result.trim());
-	}
-
-	@Test
 	public void decodeConvert2StringFalse() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
 		// Arrange
-		pipe.setConvert2String(false);
 		pipe.setDirection(Direction.DECODE);
 		pipe.configure();
 		pipe.start();

@@ -82,7 +82,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 			} else {
 				processSplittingLines(message, handler);
 			}
-			return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath(), message.getCharset()));
+			return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
 		} catch (Exception e) {
 			try {
 				if (tempFile != null) Files.deleteIfExists(tempFile.toPath());
