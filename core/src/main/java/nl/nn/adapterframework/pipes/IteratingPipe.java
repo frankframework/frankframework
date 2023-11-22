@@ -448,7 +448,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				ItemCallback callback = createItemCallBack(session,sender, resultWriter);
 				stopReason = iterateOverInput(input,session,threadContext, callback);
 			}
-			PipeRunResult prr = new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath(), input.getCharset()));
+			PipeRunResult prr = new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
 			if(stopReason != null) {
 				PipeForward forward = getForwards().get(stopReason.getForwardName());
 				if(forward != null) {
