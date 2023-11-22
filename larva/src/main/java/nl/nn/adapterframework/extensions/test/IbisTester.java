@@ -135,7 +135,7 @@ public class IbisTester {
 		/*
 		 * By default the ladybug AOP config is included. This gives the following error:
 		 * LinkageError: loader 'app' attempted duplicate class definition for XYZ
-		 * 
+		 *
 		 * Current default SPRING.CONFIG.LOCATIONS = spring${application.server.type}${application.server.type.custom}.xml,springIbisDebuggerAdvice.xml,springCustom.xml
 		 * Overwrite so only IBISTEST is used.
 		 */
@@ -388,7 +388,7 @@ public class IbisTester {
 	}
 
 	private static String getIsoTimeStamp() {
-		return DateUtils.formatNow();
+		return DateUtils.format();
 	}
 
 	private static String getMemoryInfo() {

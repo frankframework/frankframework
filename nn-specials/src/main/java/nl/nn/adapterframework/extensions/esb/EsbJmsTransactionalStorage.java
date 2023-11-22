@@ -164,10 +164,10 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 		parameterValues.put("fromId", AppConstants.getInstance().getProperty("instance.name", ""));
 		parameterValues.put("conversationId", 	Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());
 		parameterValues.put("messageId", 		Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());
-		parameterValues.put("timestamp", 		DateUtils.formatNow("yyyy-MM-dd'T'HH:mm:ss"));
+		parameterValues.put("timestamp", 		DateUtils.format("yyyy-MM-dd'T'HH:mm:ss"));
 		parameterValues.put("msgMessageId", 	messageId);
 		parameterValues.put("msgCorrelationId", correlationId);
-		parameterValues.put("msgTimestamp", 	DateUtils.format( receivedDate.getTime(), "yyyy-MM-dd'T'HH:mm:ss"));
+		parameterValues.put("msgTimestamp", 	DateUtils.format( receivedDate.getTime()));
 		parameterValues.put("slotId", 			getSlotId());
 		if (getType().equalsIgnoreCase("E")) {
 			parameterValues.put("errorText", comments);

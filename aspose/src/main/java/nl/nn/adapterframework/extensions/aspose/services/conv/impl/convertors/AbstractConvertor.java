@@ -136,7 +136,7 @@ abstract class AbstractConvertor implements Convertor {
 	}
 
 	protected String createErrorMsg(Exception e) {
-		String timestamp = DateUtils.formatNow();
+		String timestamp = DateUtils.format();
 		log.warn("failed to convert [{}] failed! (Timestamp: [{}])", logMethod(()-> getClass().getSimpleName()), logValue(timestamp), e);
 		return "Conversion to PDF failed due to a technical failure. Please contact functional support." +
 				"(Timestamp: " + timestamp + ")";

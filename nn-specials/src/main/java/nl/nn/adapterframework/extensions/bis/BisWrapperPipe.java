@@ -391,7 +391,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		}
 		headerFieldsElement.addSubElement(externalRefToMessageIdElement);
 		XmlBuilder timestampElement = new XmlBuilder("Timestamp");
-		timestampElement.setValue(DateUtils.formatNow("yyyy-MM-dd'T'HH:mm:ss"));
+		timestampElement.setValue(DateUtils.format("yyyy-MM-dd'T'HH:mm:ss"));
 		headerFieldsElement.addSubElement(timestampElement);
 		messageHeaderElement.addSubElement(headerFieldsElement);
 		return messageHeaderElement.toXML();

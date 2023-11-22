@@ -77,7 +77,7 @@ public class ProcessMetrics {
 		addNumberProperty(props, "totalMemory", totalMem);
 		addNumberProperty(props, "heapSize", totalMem-freeMem);
 		addNumberProperty(props, "maxMemory", maxMemory);
-		addProperty(props, "currentTime", DateUtils.formatNow());
+		addProperty(props, "currentTime", DateUtils.format());
 		return xmlh.toXML();
 	}
 

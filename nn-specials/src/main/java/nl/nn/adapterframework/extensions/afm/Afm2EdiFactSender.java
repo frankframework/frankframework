@@ -178,7 +178,7 @@ public class Afm2EdiFactSender implements ISender {
 		getTpnummer().getChars(0, getTpnummer().length(), unbRegel, 26);
 		String lPostbus = getPostbus();
 		lPostbus.getChars(0, lPostbus.length(), unbRegel, 61);
-		String dateTime = DateUtils.formatNow("yyMMddHHmm");
+		String dateTime = DateUtils.format("yyMMddHHmm");
 		dateTime.getChars(0, dateTime.length(), unbRegel, 114);
 		"0".getChars(0, "0".length(), unbRegel, 169);
 		"0".getChars(0, "0".length(), unbRegel, 205);
