@@ -22,10 +22,10 @@ import nl.nn.adapterframework.util.AppConstants;
 public class ApiCacheManager {
 
 	private static IApiCache cache = null;
-	private static AppConstants appConstants = AppConstants.getInstance();
-	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
-	private static String instanceName = appConstants.getProperty("instance.name");
-	private static String dtapStage = appConstants.getProperty("dtap.stage");
+	private static final AppConstants appConstants = AppConstants.getInstance();
+	private static final String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
+	private static final String instanceName = appConstants.getProperty("instance.name");
+	private static final String dtapStage = appConstants.getProperty("dtap.stage");
 
 	/**
 	 * Get the etagCache, defaults to EhCache when no type has been specified.

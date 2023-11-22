@@ -46,7 +46,7 @@ import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class DbmsSupportTest extends JdbcTestBase {
-	private boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
+	private final boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
 
 	@Test
 	public void testGetDbmsSupport() {
@@ -680,12 +680,12 @@ public class DbmsSupportTest extends JdbcTestBase {
 		}
 
 		@Override
-		public void initAction(Connection conn) throws Exception {
+		public void initAction(Connection conn) throws SQLException {
 			conn.setAutoCommit(false);
 		}
 
 		@Override
-		public void action(Connection conn) throws Exception {
+		public void action(Connection conn) throws SQLException {
 			try (Statement stmt2= connection.createStatement()) {
 				stmt2.setFetchSize(1);
 				try (ResultSet rs2=stmt2.executeQuery(query)) {
@@ -697,7 +697,7 @@ public class DbmsSupportTest extends JdbcTestBase {
 		}
 
 		@Override
-		public void finalizeAction(Connection conn) throws Exception {
+		public void finalizeAction(Connection conn) throws SQLException {
 			conn.rollback();
 		}
 	}

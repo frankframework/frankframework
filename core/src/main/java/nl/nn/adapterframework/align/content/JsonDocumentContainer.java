@@ -34,11 +34,11 @@ import nl.nn.adapterframework.util.LogUtil;
 public class JsonDocumentContainer extends TreeContentContainer<JsonElementContainer>{
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	private String name;
-	private boolean skipArrayElementContainers;
+	private final String name;
+	private final boolean skipArrayElementContainers;
 	private boolean skipRootElement;
-	private String attributePrefix="@";
-	private String mixedContentLabel="#text";
+	private final String attributePrefix = "@";
+	private final String mixedContentLabel = "#text";
 
 	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
 	private final int MAX_INDENT=INDENTOR.length/2;

@@ -397,7 +397,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		return messageHeaderElement.toXML();
 	}
 
-	private String prepareResult(String errorCode, String errorText, String serviceName, String actionName, String detailText) throws DomBuilderException, IOException, TransformerException {
+	private String prepareResult(String errorCode, String errorText, String serviceName, String actionName, String detailText) {
 		XmlBuilder resultElement = new XmlBuilder("Result");
 		resultElement.addAttribute("xmlns", "http://www.ing.com/CSP/XSD/General/Message_2");
 		XmlBuilder statusElement = new XmlBuilder("Status");
@@ -456,7 +456,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		return null;
 	}
 
-	private String prepareReply(String rawReply, String messageHeader, String result, boolean resultInPayload) throws DomBuilderException, IOException, TransformerException {
+	private String prepareReply(String rawReply, String messageHeader, String result, boolean resultInPayload) throws DomBuilderException, TransformerException {
 		List<String> messages = new ArrayList<>();
 		if (messageHeader != null) {
 			messages.add(messageHeader);

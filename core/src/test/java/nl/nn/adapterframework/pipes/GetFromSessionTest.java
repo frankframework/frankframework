@@ -37,7 +37,7 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 		session.put("dummyStream", new ByteArrayInputStream(DUMMY_DATA.getBytes()));
 
 		session.put("emptyMap", new HashMap<String, String>());
-		Map<String, String> map = new HashMap<String, String>();
+		Map<String, String> map = new HashMap<>();
 		map.put("key1", "value1");
 		map.put("key2", "value2");
 		session.put("map", map);

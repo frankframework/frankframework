@@ -27,7 +27,7 @@ import org.wildfly.security.password.interfaces.ClearPassword;
 
 public class WildFlyCredentials extends Credentials {
 
-	private CredentialStore cs;
+	private final CredentialStore cs;
 
 	public WildFlyCredentials(CredentialStore cs, String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		super(alias, defaultUsernameSupplier, defaultPasswordSupplier);

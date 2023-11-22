@@ -189,9 +189,6 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 		return new ZipStreamIterator(source,session);
 	}
 
-
-
-
 	/**
 	 * Session key used to store contents of each zip entry
 	 * @ff.default zipdata
@@ -215,11 +212,6 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	public void setCloseInputstreamOnExit(boolean b) {
 		closeInputstreamOnExit = b;
 	}
-	@Deprecated
-	@ConfigurationWarning("attribute 'closeStreamOnExit' has been renamed to 'closeInputstreamOnExit'")
-	public void setCloseStreamOnExit(boolean b) {
-		setCloseInputstreamOnExit(b);
-	}
 
 	/**
 	 * Charset used when reading the contents of the entry (only used if streamingContents=false)
@@ -238,7 +230,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	}
 
 	/**
-	 * If set <code>true</code>, the each entry is assumed to be the name of a file to be compressed. Otherwise, the input itself is compressed.
+	 * If set <code>true</code>, each entry is assumed to be the name of a file to be compressed. Otherwise, the input itself is compressed.
 	 * @ff.default false
 	 */
 	@Deprecated

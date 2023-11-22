@@ -31,7 +31,7 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 	private @Getter boolean errorOccurred = false;
 	private @Getter String reasons;
 	private final XmlValidatorContentHandler xmlValidatorContentHandler;
-	private XmlBuilder xmlReasons = new XmlBuilder("reasons");
+	private final XmlBuilder xmlReasons = new XmlBuilder("reasons");
 
 	public enum ReasonType {
 		WARNING,

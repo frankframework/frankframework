@@ -102,8 +102,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	private @Getter @Setter String digesterRuleFile = FrankDigesterRules.DIGESTER_RULES_FILE;
 
-	private boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
-	private boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
+	private final boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
+	private final boolean validation = AppConstants.getInstance().getBoolean("configurations.validation", true);
 
 	private class XmlErrorHandler implements ErrorHandler  {
 		private String schema;
@@ -112,15 +112,15 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 
 		@Override
-		public void warning(SAXParseException exception) throws SAXParseException {
+		public void warning(SAXParseException exception) {
 			logErrorMessage("Validation warning", exception);
 		}
 		@Override
-		public void error(SAXParseException exception) throws SAXParseException {
+		public void error(SAXParseException exception) {
 			logErrorMessage("Validation error", exception);
 		}
 		@Override
-		public void fatalError(SAXParseException exception) throws SAXParseException {
+		public void fatalError(SAXParseException exception) {
 			logErrorMessage("Fatal validation error", exception);
 		}
 

@@ -154,8 +154,8 @@ import nl.nn.adapterframework.util.XmlEncodingUtils;
  */
 public class LdapSender extends JndiBase implements ISenderWithParameters {
 
-	private String FILTER = "filterExpression";
-	private String ENTRYNAME = "entryName";
+	private final String FILTER = "filterExpression";
+	private final String ENTRYNAME = "entryName";
 
 	private @Getter int searchTimeout=20000;
 
@@ -774,7 +774,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		}
 	}
 
-	private String performOperationChallenge(String principal, PipeLineSession session, Map<String,Object> paramValueMap) throws SenderException, ParameterException {
+	private String performOperationChallenge(String principal, PipeLineSession session, Map<String,Object> paramValueMap) throws SenderException {
 		DirContext dirContext = null;
 		try{
 			// Use loopkupDirContext instead of getDirContext to prevent
@@ -1032,7 +1032,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	/**
 	 * Retrieves the DirContext from the JNDI environment and sets the <code>providerURL</code> back to <code>ldapProviderURL</code> if specified.
 	 */
-	protected synchronized DirContext loopkupDirContext(Map<String,Object> paramValueMap) throws NamingException, ParameterException {
+	protected synchronized DirContext loopkupDirContext(Map<String,Object> paramValueMap) throws NamingException {
 		DirContext dirContext;
 		if (jndiEnv==null) {
 			Hashtable<Object, Object> newJndiEnv = getJndiEnv();
@@ -1068,7 +1068,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 //		return (DirContext) dirContextTemplate.lookup(""); 	// return copy to be thread-safe
 	}
 
-	protected DirContext getDirContext(Map<String, Object> paramValueMap) throws SenderException, ParameterException {
+	protected DirContext getDirContext(Map<String, Object> paramValueMap) throws SenderException {
 		try {
 			return loopkupDirContext(paramValueMap);
 		} catch (NamingException e) {

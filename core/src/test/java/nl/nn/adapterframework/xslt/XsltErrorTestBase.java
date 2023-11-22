@@ -18,11 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.testutil.TestAppender;
@@ -231,7 +227,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 	}
 
 	@Test
-	public void notifyXalanExtensionsIllegalForSaxon() throws SenderException, TimeoutException, ConfigurationException, IOException, PipeRunException, PipeStartException {
+	public void notifyXalanExtensionsIllegalForSaxon() throws ConfigurationException {
 		setStyleSheetName("/Xslt/XalanExtension/XalanExtension.xsl");
 		setXslt2(true);
 		String errorMessage = null;

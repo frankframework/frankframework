@@ -30,7 +30,7 @@ import nl.nn.testtool.MessageCapturerImpl;
 import nl.nn.testtool.TestTool;
 
 public class MessageCapturer extends MessageCapturerImpl {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	private @Setter @Getter TestTool testTool;
 

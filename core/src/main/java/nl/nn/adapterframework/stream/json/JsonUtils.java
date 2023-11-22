@@ -30,7 +30,7 @@ import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class JsonUtils {
-	private static Logger log = LogUtil.getLogger(JsonUtils.class);
+	private static final Logger log = LogUtil.getLogger(JsonUtils.class);
 
 	public static void parseJson(String json, JsonEventHandler handler) throws SAXException {
 		parseJson(new StringReader(json),handler);

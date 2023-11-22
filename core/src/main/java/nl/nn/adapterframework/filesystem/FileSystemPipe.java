@@ -22,7 +22,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -30,7 +29,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
-import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.ReferTo;
@@ -125,7 +123,7 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		Message result;
 		try {
 			result = actor.doAction(message, pvl, session);
-		} catch (FileSystemException | TimeoutException e) {
+		} catch (FileSystemException e) {
 			Map<String, PipeForward> forwards = getForwards();
 			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME)) {
 				return new PipeRunResult(getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), e.getMessage());
@@ -214,21 +212,11 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		actor.setBase64(base64);
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'wildCard' has been renamed to 'wildcard'")
-	public void setWildCard(String wildcard) {
-		setWildcard(wildcard);
-	}
 	@ReferTo(FileSystemActor.class)
 	public void setWildcard(String wildcard) {
 		actor.setWildcard(wildcard);
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'excludeWildCard' has been renamed to 'excludeWildcard'")
-	public void setExcludeWildCard(String excludeWildcard) {
-		setExcludeWildcard(excludeWildcard);
-	}
 	@ReferTo(FileSystemActor.class)
 	public void setExcludeWildcard(String excludeWildcard) {
 		actor.setExcludeWildcard(excludeWildcard);

@@ -4,12 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-
-import javax.xml.transform.TransformerException;
-
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
@@ -49,7 +44,7 @@ public class IbmMisc {
 	/**
 	 * Should be tested in the IBM module, we just mock the result for convenience.
 	 */
-	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) throws IOException, TransformerException, SAXException {
+	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) {
 		return String.format("mockPoolProperties type [%s] jndi [%s]", providerType, jndiName);
 	}
 }

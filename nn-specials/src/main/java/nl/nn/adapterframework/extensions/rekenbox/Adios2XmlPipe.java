@@ -313,7 +313,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 		}
 	}
 
-	public String findRekenbox(PipeLineSession session) throws PipeRunException {
+	public String findRekenbox(PipeLineSession session) {
 		if(getRekenboxSessionKey() != null) {
 			return session.getString(getRekenboxSessionKey());
 		}

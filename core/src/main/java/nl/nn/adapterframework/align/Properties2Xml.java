@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.align;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -38,9 +37,9 @@ import nl.nn.adapterframework.align.Properties2Xml.PropertyNode;
  */
 public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<String,String>> {
 
-	private String attributeSeparator=".";
+	private final String attributeSeparator = ".";
 //	private String indexSeparator=".";
-	private String valueSeparator=",";
+	private final String valueSeparator = ",";
 
 	private Map<String,String> data;
 
@@ -62,7 +61,7 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 
 
 	@Override
-	public boolean hasChild(XSElementDeclaration elementDeclaration, PropertyNode node, String childName) throws SAXException {
+	public boolean hasChild(XSElementDeclaration elementDeclaration, PropertyNode node, String childName) {
 		if (data.containsKey(childName) || node !=null && node.attributes!=null && node.attributes.containsKey(childName)) {
 			return true;
 		}
@@ -80,7 +79,7 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 	}
 
 	@Override
-	public Iterable<PropertyNode> getChildrenByName(PropertyNode node, XSElementDeclaration childElementDeclaration) throws SAXException {
+	public Iterable<PropertyNode> getChildrenByName(PropertyNode node, XSElementDeclaration childElementDeclaration) {
 		String name = childElementDeclaration.getName();
 		List<PropertyNode> result=new LinkedList<PropertyNode>();
 		if (data.containsKey(name)) {
@@ -145,7 +144,7 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 		return rootNode;
 	}
 
-	public static String translate(Map<String,String> data, URL schemaURL, String rootElement, String targetNamespace) throws SAXException, IOException {
+	public static String translate(Map<String,String> data, URL schemaURL, String rootElement, String targetNamespace) throws SAXException {
 		ValidatorHandler validatorHandler = getValidatorHandler(schemaURL);
 		List<XSModel> schemaInformation = getSchemaInformation(schemaURL);
 

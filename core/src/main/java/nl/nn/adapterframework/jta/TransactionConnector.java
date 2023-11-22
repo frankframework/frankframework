@@ -39,10 +39,10 @@ import nl.nn.adapterframework.util.LogUtil;
 public class TransactionConnector<T,R> implements AutoCloseable {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private Object owner;
-	private String description;
-	private TransactionConnectorCoordinator<T,R> coordinator;
-	private Thread parentThread;
+	private final Object owner;
+	private final String description;
+	private final TransactionConnectorCoordinator<T, R> coordinator;
+	private final Thread parentThread;
 	private Thread childThread;
 	private List<ThrowingRunnable<?>> onEndChildThreadActions;
 

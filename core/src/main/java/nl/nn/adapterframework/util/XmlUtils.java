@@ -26,6 +26,7 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -74,6 +75,7 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xalan.processor.TransformerFactoryImpl;
+import org.apache.xmlbeans.GDate;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
@@ -135,7 +137,7 @@ public class XmlUtils {
 	private static Boolean autoReload = null;
 	private static Integer buffersize=null;
 
-	private static ConcurrentHashMap<String,TransformerPool> utilityTPs = new ConcurrentHashMap<String,TransformerPool>();
+	private static final ConcurrentHashMap<String, TransformerPool> utilityTPs = new ConcurrentHashMap<String, TransformerPool>();
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
 
 	public static final XMLEventFactory EVENT_FACTORY = XMLEventFactory.newFactory();
@@ -147,6 +149,12 @@ public class XmlUtils {
 		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
 
+	/**
+	 * Parses a string to a Date using XML Schema dateTime data type (GDate)
+	 */
+	public static Date parseXmlDateTime(String s) {
+		return new GDate(s).getDate();
+	}
 
 	private static TransformerPool getUtilityTransformerPool(Supplier<String> xsltSupplier, String key, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
 		//log.debug("utility transformer pool key ["+key+"] xslt ["+xslt+"]");

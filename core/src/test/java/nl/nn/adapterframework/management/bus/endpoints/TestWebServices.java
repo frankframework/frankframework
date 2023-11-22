@@ -130,7 +130,7 @@ public class TestWebServices extends BusTestBase {
 
 	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if(adapterWithRestListener != null) {
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapterWithRestListener);
 		}
@@ -154,7 +154,7 @@ public class TestWebServices extends BusTestBase {
 	}
 
 	@Test
-	public void openApiSpecNotFound() throws Exception {
+	public void openApiSpecNotFound() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.setHeader("type", "openapi");
 		request.setHeader("uri", "dummy");
@@ -193,7 +193,7 @@ public class TestWebServices extends BusTestBase {
 	}
 
 	@Test
-	public void wsdlNotFound() throws Exception {
+	public void wsdlNotFound() {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 		request.setHeader("type", "wsdl");
 		request.setHeader("adapter", adapterWithRestListener.getName());
@@ -208,7 +208,7 @@ public class TestWebServices extends BusTestBase {
 		return convertPayloadAndApplyIgnores(string);
 	}
 
-	private String convertPayloadAndApplyIgnores(String string) throws IOException {// 2023-01-19 15:54:27
+	private String convertPayloadAndApplyIgnores(String string) {// 2023-01-19 15:54:27
 		return string.replaceFirst("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}", "-timestamp-");
 	}
 

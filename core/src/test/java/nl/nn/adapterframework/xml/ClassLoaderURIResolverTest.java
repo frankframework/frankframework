@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ public class ClassLoaderURIResolverTest {
 	private final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 	private static final IScopeProvider scopeProvider = new TestScopeProvider();
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	private enum BaseType { LOCAL, BYTES, CLASSPATH, FILE_SCHEME, NULL }
 	private enum RefType  {
 		ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, CLASSPATH, FILE_SCHEME(TransformerException.class);
@@ -83,7 +82,7 @@ public class ClassLoaderURIResolverTest {
 		return scopeProvider;
 	}
 
-	private String getBase(IScopeProvider classLoaderProvider, BaseType baseType) throws ConfigurationException, IOException {
+	private String getBase(IScopeProvider classLoaderProvider, BaseType baseType) throws ConfigurationException {
 		URL result=null;
 		switch (baseType) {
 		case LOCAL:

@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
@@ -112,7 +111,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 		resourcesExists(name, getScheme());
 	}
 	public void resourcesExists(String name, String scheme) throws IOException {
-		LinkedList<String> schemes = new LinkedList<String>();
+		LinkedList<String> schemes = new LinkedList<>();
 		if(!scheme.equals("scheme"))
 			schemes.add(scheme);
 		schemes.add("file");
@@ -185,7 +184,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 
 	//Not only test through setters and getters but also properties
 	@Test
-	public void testSchemeWithClassLoaderManager() throws ConfigurationException {
+	public void testSchemeWithClassLoaderManager() {
 		URL resource = getResource("ClassLoaderTestFile.xml");
 
 		assertNotNull(resource, "resource ["+resource+"] must be found");
@@ -197,21 +196,21 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 	@Test
 	public void testReportLevelERROR() {
 		classLoader.setReportLevel("dummy");
-		assertTrue(classLoader.getReportLevel().equals(ReportLevel.ERROR));
+		assertTrue(classLoader.getReportLevel() == ReportLevel.ERROR);
 	}
 
 	// test lowercase level
 	@Test
 	public void testReportLeveldebug() {
 		classLoader.setReportLevel("debug");
-		assertTrue(classLoader.getReportLevel().equals(ReportLevel.DEBUG));
+		assertTrue(classLoader.getReportLevel() == ReportLevel.DEBUG);
 	}
 
 	// test uppercase level
 	@Test
 	public void testReportLevelDEBUG() {
 		classLoader.setReportLevel("DEBUG");
-		assertTrue(classLoader.getReportLevel().equals(ReportLevel.DEBUG));
+		assertTrue(classLoader.getReportLevel() == ReportLevel.DEBUG);
 	}
 
 	@Test
@@ -264,7 +263,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 	}
 
 	@Test
-	public void toStringTest() throws Exception {
+	public void toStringTest() {
 		String logPrefix = classLoader.getClass().getSimpleName() + "@" + Integer.toHexString(classLoader.hashCode());
 
 		//Should match DatabaseClassLoader@1234abcd[<CONFIG-NAME>]
@@ -272,7 +271,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 	}
 
 	@Test
-	public void testInvalidPath() throws Exception {
+	public void testInvalidPath() {
 		URL url = getResource("//foo/../bar.txt");
 		assertNull(url);
 	}

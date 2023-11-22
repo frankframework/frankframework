@@ -28,7 +28,7 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class ApiEhcache implements IApiCache {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	private final String KEY_CACHE_NAME="etagCacheReceiver";
 	private final String KEY_PREFIX="etag.ehcache.";

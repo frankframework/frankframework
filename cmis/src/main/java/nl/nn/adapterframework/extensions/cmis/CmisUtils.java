@@ -142,8 +142,8 @@ public class CmisUtils {
 	public static final String CMIS_BINDING_KEY = "cmisBinding";
 	public static final String CMIS_CALLCONTEXT_KEY = "cmisCallContext";
 
-	private static Logger log = LogUtil.getLogger(CmisUtils.class);
-	private static String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");
+	private static final Logger log = LogUtil.getLogger(CmisUtils.class);
+	private static final String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");
 
 	public static void populateCmisAttributes(PipeLineSession session) {
 		CallContext callContext = (CallContext) session.get(CMIS_CALLCONTEXT_KEY);
@@ -449,22 +449,22 @@ public class CmisUtils {
 		TypeDefinitionFactory factory = TypeDefinitionFactory.newInstance();
 		MutableTypeDefinition definition = null;
 
-		if(BaseTypeId.CMIS_DOCUMENT.equals(BaseTypeId.fromValue(baseTypeId))) {
+		if(BaseTypeId.CMIS_DOCUMENT == BaseTypeId.fromValue(baseTypeId)) {
 			definition = factory.createBaseDocumentTypeDefinition(cmisVersion);
 		}
-		else if(BaseTypeId.CMIS_FOLDER.equals(BaseTypeId.fromValue(baseTypeId))) {
+		else if(BaseTypeId.CMIS_FOLDER == BaseTypeId.fromValue(baseTypeId)) {
 			definition = factory.createBaseFolderTypeDefinition(cmisVersion);
 		}
-		else if(BaseTypeId.CMIS_ITEM.equals(BaseTypeId.fromValue(baseTypeId))) {
+		else if(BaseTypeId.CMIS_ITEM == BaseTypeId.fromValue(baseTypeId)) {
 			definition = factory.createBaseItemTypeDefinition(cmisVersion);
 		}
-		else if(BaseTypeId.CMIS_POLICY.equals(BaseTypeId.fromValue(baseTypeId))) {
+		else if(BaseTypeId.CMIS_POLICY == BaseTypeId.fromValue(baseTypeId)) {
 			definition = factory.createBasePolicyTypeDefinition(cmisVersion);
 		}
-		else if(BaseTypeId.CMIS_RELATIONSHIP.equals(BaseTypeId.fromValue(baseTypeId))) {
+		else if(BaseTypeId.CMIS_RELATIONSHIP == BaseTypeId.fromValue(baseTypeId)) {
 			definition = factory.createBaseRelationshipTypeDefinition(cmisVersion);
 		}
-		else if(BaseTypeId.CMIS_SECONDARY.equals(BaseTypeId.fromValue(baseTypeId))) {
+		else if(BaseTypeId.CMIS_SECONDARY == BaseTypeId.fromValue(baseTypeId)) {
 			definition = factory.createBaseSecondaryTypeDefinition(cmisVersion);
 		}
 		definition.setDescription(description);

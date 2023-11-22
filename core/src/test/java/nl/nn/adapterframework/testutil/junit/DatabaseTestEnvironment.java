@@ -34,7 +34,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	private @Getter IDbmsSupport dbmsSupport;
 	private final TransactionManagerType type;
 	private final @Getter TestConfiguration configuration;
-	private AtomicInteger connectionCount = new AtomicInteger(0);
+	private final AtomicInteger connectionCount = new AtomicInteger(0);
 
 	/**
 	 * <b>Make sure to close this!</b>

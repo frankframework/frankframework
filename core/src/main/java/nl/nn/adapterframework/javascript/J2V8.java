@@ -35,7 +35,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 	private String alias = null;
 
 	private static boolean j2v8LibraryLoaded = false;
-	private static Object j2v8Lock = new Object();
+	private static final Object j2v8Lock = new Object();
 
 	@Override
 	public void setGlobalAlias(String alias) {

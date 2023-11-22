@@ -277,7 +277,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 	private Class<?> defineClass(String name, boolean resolve) throws ClassNotFoundException {
 		if(getAllowCustomClasses()) {
 			synchronized (getClassLoadingLock(name)) {
-				String path = name.replace(".", "/")+".class";
+				String path = name.replace(".", "/").concat(".class");
 				log.trace("attempting to load custom class [{}] path [{}]", name, path);
 
 				URL url = getResource(path);
@@ -286,7 +286,7 @@ public abstract class ClassLoaderBase extends ClassLoader implements IConfigurat
 
 					try {
 						byte[] bytes = StreamUtil.streamToBytes(url.openStream());
-						Class<?> clazz = defineClass(name, bytes, 0, bytes.length);
+						Class<?> clazz = super.defineClass(name, bytes, 0, bytes.length);
 
 						if(resolve) {
 							resolveClass(clazz);

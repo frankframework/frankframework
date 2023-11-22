@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Jaco de Groot
  */
 public class NonResolvingExternalEntityResolver implements EntityResolver2 {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	@Override
 	public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {

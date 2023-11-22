@@ -31,9 +31,9 @@ public class ApiWsdlXmlValidatorMixedModeTest {
 	private static final String REQUEST_SOAP_BODY  = "GetPolicyDetails_Request";
 	private static final String RESPONSE_SOAP_BODY  = "GetPolicyDetails_Response";
 
-	private PipeLineSession session = new PipeLineSession();
+	private final PipeLineSession session = new PipeLineSession();
 
-	private TestConfiguration configuration = new TestConfiguration();
+	private final TestConfiguration configuration = new TestConfiguration();
 
 	public WsdlXmlValidator getInputValidator() throws Exception {
 		WsdlXmlValidator val = configuration.createBean(ApiWsdlXmlValidator.class);

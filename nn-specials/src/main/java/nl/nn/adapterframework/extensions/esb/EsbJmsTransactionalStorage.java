@@ -25,7 +25,6 @@ import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ListenerException;
@@ -36,7 +35,6 @@ import nl.nn.adapterframework.jms.JmsTransactionalStorage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.UUIDUtil;
@@ -161,7 +159,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 		}
 	}
 
-	private Map<String,Object> createParameterValues(String messageId, String correlationId, Date receivedDate, String comments, S message) throws JMSException, DomBuilderException, TransformerException, IOException {
+	private Map<String,Object> createParameterValues(String messageId, String correlationId, Date receivedDate, String comments, S message) throws JMSException {
 		Map<String,Object> parameterValues = new HashMap<>();
 		parameterValues.put("fromId", AppConstants.getInstance().getProperty("instance.name", ""));
 		parameterValues.put("conversationId", 	Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());

@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.stream;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -159,7 +158,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		restoreThreadContext();
 		try {
 			if (transactionConnector != null) {

@@ -476,7 +476,7 @@ public class ParameterTest {
 		p.setType(ParameterType.MAP);
 		p.configure();
 
-		Map<String, String> map = new HashMap<String, String>();
+		Map<String, String> map = new HashMap<>();
 		map.put("item", "value");
 		map.put("item2", "value2");
 		map.put("item3", "value3");
@@ -1610,7 +1610,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	// see https://github.com/ibissource/iaf/issues/3232
+	// see https://github.com/frankframework/frankframework/issues/3232
 	public void testPotentialProblematicSysId() throws ConfigurationException {
 		Parameter p = new Parameter();
 		p.setName("pid");

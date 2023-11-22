@@ -84,10 +84,10 @@ import nl.nn.adapterframework.util.StringUtil;
 public class ServletManager implements ApplicationContextAware, InitializingBean {
 
 	private ServletContext servletContext = null;
-	private List<String> registeredRoles = new ArrayList<>();
-	private Logger log = LogUtil.getLogger(this);
-	private Map<String, ServletConfiguration> servlets = new HashMap<>();
-	private Map<String, IAuthenticator> authenticators = new HashMap<>();
+	private final List<String> registeredRoles = new ArrayList<>();
+	private final Logger log = LogUtil.getLogger(this);
+	private final Map<String, ServletConfiguration> servlets = new HashMap<>();
+	private final Map<String, IAuthenticator> authenticators = new HashMap<>();
 	private @Setter ApplicationContext applicationContext;
 	private boolean allowUnsecureOptionsRequest = false;
 

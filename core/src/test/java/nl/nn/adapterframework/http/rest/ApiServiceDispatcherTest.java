@@ -19,7 +19,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 public class ApiServiceDispatcherTest {
 
 	private ApiServiceDispatcher dispatcher = null;
-	private int amount = 100;
+	private final int amount = 100;
 
 	@Before
 	public void setUp() {
@@ -32,8 +32,8 @@ public class ApiServiceDispatcherTest {
 	}
 
 	@Test
-	public void testAddManyConcurrentSimultaneousListeners() throws ListenerException, InterruptedException {
-		List<Thread> list = new ArrayList<Thread>();
+	public void testAddManyConcurrentSimultaneousListeners() throws InterruptedException {
+		List<Thread> list = new ArrayList<>();
 
 		// Spin up many simultaneous threads to 'bomb' the dispatcher with many concurrent requests
 		for (int i = 0; i < amount; i++) {
@@ -73,7 +73,7 @@ public class ApiServiceDispatcherTest {
 			listener.setName(name);
 			listener.setMethod(HttpMethod.GET);
 			listener.setUriPattern(name);
-			
+
 			try {
 				dispatcher.registerServiceClient(listener);
 			} catch (ListenerException e) {

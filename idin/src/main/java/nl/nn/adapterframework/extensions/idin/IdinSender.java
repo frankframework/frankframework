@@ -86,7 +86,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	private String serviceLogsPattern = "%Y-%M-%D\\%h%m%s.%f-%a.xml";
 
 	private String action = "DIRECTORY";
-	private List<String> actions = Arrays.asList("DIRECTORY", "RESPONSE", "AUTHENTICATE");
+	private final List<String> actions = Arrays.asList("DIRECTORY", "RESPONSE", "AUTHENTICATE");
 
 	Configuration idinConfig = null;
 	Communicator communicator = null;

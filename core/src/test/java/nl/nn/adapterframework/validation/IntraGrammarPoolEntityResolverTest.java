@@ -37,7 +37,7 @@ public class IntraGrammarPoolEntityResolverTest {
 	private static final IScopeProvider scopeProvider = new TestScopeProvider();
 	private static final List<Schema> EMPTY_SCHEMAS_LIST = Collections.emptyList();
 
-	private String publicId="fakePublicId";
+	private final String publicId = "fakePublicId";
 	public static final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
 	private XMLResourceIdentifier getXMLResourceIdentifier(String href, String namespace) {

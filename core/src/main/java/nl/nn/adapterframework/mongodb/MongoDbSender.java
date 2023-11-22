@@ -53,7 +53,6 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -110,7 +109,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	private @Setter @Getter IMongoClientFactory mongoClientFactory = null; // Spring should wire this!
 
 	private MongoClient mongoClient;
-	private ConcurrentHashMap<String,MongoDatabase> mongoDatabases = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, MongoDatabase> mongoDatabases = new ConcurrentHashMap<>();
 
 	public enum MongoAction {
 		INSERTONE,
@@ -350,7 +349,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 		return mongoDatabase.getCollection(collectionName);
 	}
 
-	protected Document getFilter(ParameterValueList pvl, Message message) throws IOException, ParameterException, IllegalArgumentException {
+	protected Document getFilter(ParameterValueList pvl, Message message) throws IOException, IllegalArgumentException {
 		String filterSpec = getParameterOverriddenAttributeValue(pvl, PARAM_FILTER, getFilter());
 		if (StringUtils.isEmpty(filterSpec)) {
 			filterSpec = Message.isEmpty(message) ? "" : message.asString();

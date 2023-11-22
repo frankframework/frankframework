@@ -30,7 +30,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 	
 	
 	@Test
-	public void testWrapCMH2() throws Exception {
+	public void testWrapCMH2() {
 		pipe.setOutputNamespace("http://nn.nl/XSD/Archiving/Document/3/GetDocumentAndAttributes/1");
 		pipe.setCmhVersion(2);
 		addParam("destination","destination-value");
@@ -56,7 +56,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 	}
 
 	@Test
-	public void testWrapFindDocumentsOK() throws Exception {
+	public void testWrapFindDocumentsOK() {
 		
 		String outputNamespace="http://nn.nl/XSD/Archiving/Document/3/GetDocumentAndAttributes/1";
 		String rootElement="GetDocumentAndAttributes_Response";
@@ -111,7 +111,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 	}
 
 	@Test
-	public void testWrapFindDocumentsWithError() throws Exception {
+	public void testWrapFindDocumentsWithError() {
 		
 		String outputNamespace="http://nn.nl/XSD/Archiving/Document/3/GetDocumentAndAttributes/1";
 		String rootElement="GetDocumentAndAttributes_Response";
@@ -166,7 +166,7 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 	}
 
 	@Test
-	public void testWithError() throws Exception {
+	public void testWithError() {
 		pipe.setOutputNamespace("http://nn.nl/XSD/Archiving/Document/3/GetDocumentAndAttributes/1");
 		pipe.setCmhVersion(2);
 		addParam("destination","destination-value");

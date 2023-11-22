@@ -78,7 +78,6 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import bitronix.tm.TransactionManagerServices;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.AdapterManager;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IListenerConnector;
@@ -98,6 +97,7 @@ import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
@@ -156,7 +156,7 @@ public class ReceiverTest {
 		return listener;
 	}
 
-	public <M> Receiver<M> setupReceiver(IListener<M> listener) throws Exception {
+	public <M> Receiver<M> setupReceiver(IListener<M> listener) {
 		@SuppressWarnings("unchecked")
 		Receiver<M> receiver = configuration.createBean(Receiver.class);
 		configuration.autowireByName(listener);
@@ -202,7 +202,7 @@ public class ReceiverTest {
 		return adapter;
 	}
 
-	public Receiver<String> setupReceiverWithMessageStoreListener(MessageStoreListener<String> listener, ITransactionalStorage<Serializable> errorStorage) throws ConfigurationException {
+	public Receiver<String> setupReceiverWithMessageStoreListener(MessageStoreListener<String> listener, ITransactionalStorage<Serializable> errorStorage) {
 		Receiver<String> receiver = configuration.createBean(Receiver.class);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
@@ -1084,5 +1084,44 @@ public class ReceiverTest {
 
 		assertEquals(RunState.STOPPED, receiver.getRunState());
 		assertEquals(RunState.STOPPED, adapter.getRunState());
+	}
+
+	@Test
+	public void testResultLargerThanMaxCommentSize() throws Exception {
+		// Arrange
+		configuration = buildNarayanaTransactionManagerConfiguration();
+		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
+		MessageStoreListener<String> listener = setupMessageStoreListener();
+		Receiver<String> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		Adapter adapter = setupAdapter(receiver);
+
+		// The actual size of a message as string can be shorter than the reported size. This could be due to incorrect
+		// cached size in metadata, or due to conversion from byte[] to String for instance.
+		// If the reported size was just above the MAXCOMMENTLEN while the actual size was below then this could cause
+		// a StringIndexOutOfBoundsException. (Issue #5752).
+		// Here we force the issue by specifically crafting such a message; in practice the difference will be less extreme.
+		Message result = new Message("a short message");
+		result.getContext().put(MessageContext.METADATA_SIZE, (long)ITransactionalStorage.MAXCOMMENTLEN + 100);
+		PipeLineResult plr = new PipeLineResult();
+		plr.setResult(result);
+		plr.setState(ExitState.SUCCESS);
+
+		doReturn(plr).when(adapter).processMessageWithExceptions(any(), any(), any());
+
+		NarayanaJtaTransactionManager transactionManager = configuration.createBean(NarayanaJtaTransactionManager.class);
+		receiver.setTxManager(transactionManager);
+
+		configuration.configure();
+		configuration.start();
+
+		waitForState(receiver, RunState.STARTED);
+
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Message message = receiver.processRequest(listener, new RawMessageWrapper<>("raw"), Message.nullMessage(), session);
+
+		// Assert
+		assertEquals(result, message);
 	}
 }

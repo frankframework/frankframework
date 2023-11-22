@@ -40,14 +40,12 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -129,7 +127,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter boolean deleteEmptyFolder;
 	private @Getter DocumentFormat outputFormat=DocumentFormat.XML;
 
-	private Set<FileSystemAction> actions = new LinkedHashSet<>(Arrays.asList(ACTIONS_BASIC));
+	private final Set<FileSystemAction> actions = new LinkedHashSet<>(Arrays.asList(ACTIONS_BASIC));
 
 	private INamedObject owner;
 	private FS fileSystem;
@@ -244,7 +242,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 //	}
 
 	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(INamedObject owner, ParameterList parameterList, FileSystemAction configuredAction, FileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
-		if (configuredAction.equals(action)) {
+		if (configuredAction == action) {
 			boolean parameter1Set = parameterList != null && parameterList.findParameter(parameter1) != null;
 			boolean parameter2Set = parameterList != null && parameterList.findParameter(parameter2) != null;
 			boolean attributeSet  = StringUtils.isNotEmpty(attributeValue);
@@ -328,7 +326,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		}
 	}
 
-	public Message doAction(@Nonnull Message input, ParameterValueList pvl, @Nonnull PipeLineSession session) throws FileSystemException, TimeoutException {
+	public Message doAction(@Nonnull Message input, ParameterValueList pvl, @Nonnull PipeLineSession session) throws FileSystemException {
 		FileSystemAction action = null;
 		try {
 			input.closeOnCloseOf(session, getClass().getSimpleName() + " of a " + fileSystem.getClass().getSimpleName()); // don't know if the input will be used
@@ -698,7 +696,7 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	/**
-	 * If set <code>true</code>, for actions {@value #ACTION_CREATE}, {@value #ACTION_MOVE}, {@value #ACTION_COPY} or {@value #ACTION_RENAME}, the destination file is overwritten if it already exists
+	 * If set <code>true</code>, for actions {@value #ACTION_CREATE}, {@value #ACTION_WRITE1}, {@value #ACTION_MOVE}, {@value #ACTION_COPY} or {@value #ACTION_RENAME}, the destination file is overwritten if it already exists
 	 * @ff.default false
 	 */
 	public void setOverwrite(boolean overwrite) {
@@ -750,11 +748,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.base64 = base64;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'wildCard' has been renamed to 'wildcard'")
-	public void setWildCard(String wildcard) {
-		setWildcard(wildcard);
-	}
 	/**
 	 * Filter of files to look for in inputFolder e.g. '*.inp'. Works with actions {@value #ACTION_MOVE}, {@value #ACTION_COPY}, {@value #ACTION_DELETE} and {@value #ACTION_LIST}
 	 */
@@ -762,11 +755,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 		this.wildcard = wildcard;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'excludeWildCard' has been renamed to 'excludeWildcard'")
-	public void setExcludeWildCard(String excludeWildcard) {
-		setExcludeWildcard(excludeWildcard);
-	}
 	/**
 	 * Filter of files to be excluded when looking in inputFolder. Works with actions {@value #ACTION_MOVE}, {@value #ACTION_COPY}, {@value #ACTION_DELETE} and {@value #ACTION_LIST}
 	 */

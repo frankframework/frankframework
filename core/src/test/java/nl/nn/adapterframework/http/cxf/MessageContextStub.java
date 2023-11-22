@@ -9,7 +9,7 @@ import javax.xml.ws.handler.MessageContext;
 
 public class MessageContextStub implements MessageContext{
 
-	private Map map = new HashMap();
+	private final Map map = new HashMap();
 	
 	@Override
 	public int size() {

@@ -38,7 +38,7 @@ public abstract class SchedulerTestBase {
 	protected TestConfiguration configuration = new TestConfiguration();
 
 	@BeforeEach
-	public void setUp() throws SchedulerException, ParseException {
+	public void setUp() throws SchedulerException {
 		schedulerHelper = configuration.createBean(SchedulerHelper.class);
 		schedulerHelper.setScheduler(StdSchedulerFactory.getDefaultScheduler());
 		schedulerHelper.getScheduler().clear();
@@ -64,7 +64,7 @@ public abstract class SchedulerTestBase {
 		return createServiceJob(name, SchedulerHelper.DEFAULT_GROUP);
 	}
 
-	protected JobDetail createServiceJob(String jobName, String groupName) throws SchedulerException, ParseException {
+	protected JobDetail createServiceJob(String jobName, String groupName) {
 		return newJob(ServiceJob.class)
 				.withIdentity(jobName, groupName)
 				.usingJobData(createServiceJobDataMap())
@@ -75,7 +75,7 @@ public abstract class SchedulerTestBase {
 		return createConfiguredJob(jobName, SchedulerHelper.DEFAULT_GROUP);
 	}
 
-	protected JobDetail createConfiguredJob(String jobName, String groupName) throws SchedulerException, ParseException {
+	protected JobDetail createConfiguredJob(String jobName, String groupName) {
 		return newJob(ConfiguredJob.class)
 				.withIdentity(jobName, groupName)
 				.usingJobData(createConfiguredJobDataMap())

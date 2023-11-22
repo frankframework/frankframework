@@ -48,7 +48,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Cache local Maven repository
       uses: actions/cache@v3
@@ -79,7 +79,7 @@ jobs:
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         jdk11: true # allows the use of the JDK11 profile, when running JDK11
-      run: ./mvnw -B -V -T1 package -Pibissource,extra-modules
+      run: ./mvnw -B -V -T1 package -Pibissource
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl

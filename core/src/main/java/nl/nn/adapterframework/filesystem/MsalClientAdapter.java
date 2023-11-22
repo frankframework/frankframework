@@ -37,6 +37,7 @@ import com.microsoft.aad.msal4j.IHttpResponse;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.http.HttpMessageEntity;
 import nl.nn.adapterframework.http.HttpResponseHandler;
 import nl.nn.adapterframework.http.HttpSenderBase;
@@ -50,8 +51,8 @@ import nl.nn.adapterframework.util.LogUtil;
  * This class ensures that Microsoft Authentication Library (MSAL) requests are sent through the configured proxy and the correct SSLSocketFactory.
  * @see ExchangeFileSystem
  *
- * @ff.protected
  */
+@Protected
 public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 	private static final String METHOD_SESSION_KEY = "HTTP_METHOD";
 	private static final String REQUEST_HEADERS_SESSION_KEY = "HTTP_REQUEST_HEADERS";
@@ -126,7 +127,7 @@ public class MsalClientAdapter extends HttpSenderBase implements IHttpClient {
 	}
 
 	@Override
-	protected Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
+	protected Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) {
 		// Parse headers to comma separated string
 		Header[] responseHeaders = responseHandler.getAllHeaders();
 		String headers = "";

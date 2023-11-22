@@ -32,8 +32,6 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 
-import nl.nn.adapterframework.util.DbmsUtil;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,11 +43,13 @@ import nl.nn.adapterframework.core.IMessageBrowser.SortOrder;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.dbms.Dbms;
+import nl.nn.adapterframework.dbms.DbmsException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentJdbcActionTester;
-import nl.nn.adapterframework.dbms.Dbms;
-import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
+import nl.nn.adapterframework.util.DbmsUtil;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Semaphore;
 
@@ -63,7 +63,7 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 	 * Doing that, however, increases the amount of locks on the table. For now, the overhead of peeking some messages that do not exist is considered
 	 * less expensive than setting locks on the database to have a more secure peek.
 	 */
-	private boolean testNegativePeekWhileGet = false;
+	private final boolean testNegativePeekWhileGet = false;
 
 	@Before
 	@Override
@@ -518,21 +518,21 @@ public class JdbcTableListenerTest extends JdbcTestBase {
 		}
 
 		@Override
-		public void initAction(Connection conn) throws Exception {
+		public void initAction(Connection conn) throws SQLException, DbmsException {
 			String rawQuery = "UPDATE " + TEST_TABLE + " SET TINT=3 WHERE TINT!=3 AND TKEY=10";
 			query = dbmsSupport.convertQuery(rawQuery, "Oracle");
 			connection.setAutoCommit(false);
 		}
 
 		@Override
-		public void action(Connection conn) throws Exception {
+		public void action(Connection conn) throws SQLException {
 			try (PreparedStatement statement = conn.prepareStatement(query)) {
 				numRowsUpdated = statement.executeUpdate();
 			}
 		}
 
 		@Override
-		public void finalizeAction(Connection conn) throws Exception {
+		public void finalizeAction(Connection conn) throws SQLException {
 			connection.commit();
 		}
 

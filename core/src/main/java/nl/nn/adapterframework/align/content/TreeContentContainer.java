@@ -22,8 +22,8 @@ import org.apache.xerces.xs.XSTypeDefinition;
 
 public abstract class TreeContentContainer<E extends ElementContainer> implements DocumentContainer {
 
-	private Stack<E> elementStack=new Stack<>();
-	private E root=createElementContainer(null, false, false, null);
+	private final Stack<E> elementStack = new Stack<>();
+	private final E root = createElementContainer(null, false, false, null);
 	private E elementContainer=root;
 
 	protected abstract E createElementContainer(String localName, boolean xmlArrayContainer, boolean repeatedElement, XSTypeDefinition typeDefinition);

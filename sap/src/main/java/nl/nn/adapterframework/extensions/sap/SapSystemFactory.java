@@ -34,10 +34,10 @@ import nl.nn.adapterframework.util.LogUtil;
  * Typical use: SapSystemFactory.getInstance().&lt;method to execute&gt;
  */
 public class SapSystemFactory {
-	private Logger log;
+	private final Logger log;
 
 	private static SapSystemFactory self = null;
-	private Hashtable<String, Object> sapSystems = new Hashtable<String, Object>();
+	private final Hashtable<String, Object> sapSystems = new Hashtable<String, Object>();
 
 	private SapSystemFactory() {
 		super();

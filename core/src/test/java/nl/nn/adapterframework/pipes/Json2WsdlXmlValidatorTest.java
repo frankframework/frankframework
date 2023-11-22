@@ -7,7 +7,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -16,20 +15,17 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
-import nl.nn.adapterframework.validation.XmlValidatorException;
 
 public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 
 	WsdlXmlValidator validator;
 
-	private PipeLineSession session = new PipeLineSession();
-	private TestConfiguration configuration = new TestConfiguration();
+	private final PipeLineSession session = new PipeLineSession();
+	private final TestConfiguration configuration = new TestConfiguration();
 
 	@Override
 	public ValidationResult validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,
-			boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons)
-			throws ConfigurationException, InstantiationException, IllegalAccessException, XmlValidatorException,
-			PipeRunException, IOException {
+			boolean ignoreUnknownNamespaces, String inputFile, String[] expectedFailureReasons) {
 		// TODO Auto-generated method stub
 		fail("method not implemented");
 		return null;

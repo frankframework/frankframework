@@ -38,7 +38,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	public static void setupAll() {
 		JWT_PROCESSOR = new DefaultJWTProcessor<>();
 		SecretKey key = new SecretKeySpec(DUMMY_SECRET.getBytes(), "HmacSHA256");
-		JWKSource<SecurityContext> immutableSecret = new ImmutableSecret<SecurityContext>(key);
+		JWKSource<SecurityContext> immutableSecret = new ImmutableSecret<>(key);
 
 		JWSKeySelector<SecurityContext> keySelector = new JWSVerificationKeySelector<>(JWSAlgorithm.HS256, immutableSecret);
 		JWT_PROCESSOR.setJWSKeySelector(keySelector);
@@ -50,13 +50,13 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	public void noSecret() throws Exception {
+	public void noSecret() {
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertThat(ex.getMessage(), Matchers.containsString("must either provide a [sharedSecret] (alias) or parameter"));
 	}
 
 	@Test
-	public void secretTooShort() throws Exception {
+	public void secretTooShort() {
 		pipe.setSharedSecret("Potato");
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertThat(ex.getMessage(), Matchers.containsString("must be at least 256 bits"));

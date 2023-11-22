@@ -30,14 +30,14 @@ import org.xml.sax.helpers.AttributesImpl;
 
 public class SkipEmptyTagsFilter extends FullXmlFilter {
 
-	private boolean attributesConsideredContent=false;
-	private List<Element> pendingElements = new ArrayList<Element>();
+	private final boolean attributesConsideredContent = false;
+	private final List<Element> pendingElements = new ArrayList<Element>();
 	private Map<String,String> pendingNamespaceMappings = new LinkedHashMap<String,String>();
 
 	private boolean nonWhitespaceCharactersSeen=false;
 	private boolean elementSkipped;
 
-	private StringBuilder pendingWhitespace = new StringBuilder();
+	private final StringBuilder pendingWhitespace = new StringBuilder();
 
 	public SkipEmptyTagsFilter(ContentHandler handler) {
 		super(handler);

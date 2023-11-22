@@ -26,8 +26,8 @@ import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class ElementPropertyResolver extends FullXmlFilter {
-	private Properties properties;
-	private StringBuilder pendingSubstBuff = new StringBuilder();
+	private final Properties properties;
+	private final StringBuilder pendingSubstBuff = new StringBuilder();
 
 	private boolean collectingBuffer;
 

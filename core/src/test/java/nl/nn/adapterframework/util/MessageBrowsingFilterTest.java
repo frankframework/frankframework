@@ -26,7 +26,7 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 	private MessageBrowsingFilter filter;
 	private JdbcTransactionalStorage storage = null;
 	private IListener<?> listener = null;
-	private String tableName="MESSAGEBROWSINGFILTERTEST";
+	private final String tableName = "MESSAGEBROWSINGFILTERTEST";
 
 	@Override
 	@Before

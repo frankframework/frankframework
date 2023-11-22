@@ -41,7 +41,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  */
 public class OAuthPreferringAuthenticationStrategy extends TargetAuthenticationStrategy {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 //	private boolean refreshTokenOn401; // retrying unchallenged request/responses might cause endless authentication loops
 

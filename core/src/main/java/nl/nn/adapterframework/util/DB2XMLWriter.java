@@ -72,7 +72,7 @@ public class DB2XMLWriter {
 	private boolean decompressBlobs=false;
 	private boolean getBlobSmart=false;
 	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private static boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
+	private static final boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
 
 	public static String getFieldType (int type) {
 		return JDBCType.valueOf(type).getName();

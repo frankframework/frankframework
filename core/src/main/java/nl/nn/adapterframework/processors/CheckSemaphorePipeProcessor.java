@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.Semaphore;
  */
 public class CheckSemaphorePipeProcessor extends PipeProcessorBase {
 
-	private Map<IPipe,Semaphore> pipeThreadCounts=new ConcurrentHashMap<>();
+	private final Map<IPipe, Semaphore> pipeThreadCounts = new ConcurrentHashMap<>();
 
 	@Override
 	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {

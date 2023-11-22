@@ -9,21 +9,6 @@
 		These actions are configured in an XML file. On the event several actions, called pipes, grouped in a pipeline, are fired.
 	</description>
 
-	<filter>
-		<filter-name>CacheControlFilter</filter-name>
-		<filter-class>nl.nn.adapterframework.http.CacheControlFilter</filter-class>
-	</filter>
-
-	<filter-mapping>
-		<filter-name>CacheControlFilter</filter-name>
-		<url-pattern>/rest/*</url-pattern>
-	</filter-mapping>
-
-	<filter-mapping>
-		<filter-name>CacheControlFilter</filter-name>
-		<url-pattern>/iaf/api/*</url-pattern>
-	</filter-mapping>
-
 	<!-- Spring Security -->
 	<filter>
 		<filter-name>springSecurityFilterChain</filter-name>
@@ -40,9 +25,6 @@
 		After loading the ROOT context with all HTTP/CXF servlets (endpoints) all servlets will be initialized.
 		IbisApplicationServlet will start the IbisContext. It must be the first servlet to start up.
 	-->
-	<listener>
-		<listener-class>nl.nn.adapterframework.lifecycle.IbisApplicationInitializer</listener-class>
-	</listener>
 	<servlet>
 		<description>Initializes the configuration</description>
 		<display-name>Ibis Application Servlet</display-name>
@@ -51,63 +33,9 @@
 		<load-on-startup>0</load-on-startup>
 	</servlet>
 
-	<!-- Welcome File List -->
-	<mime-mapping>
-		<extension>svg</extension>
-		<mime-type>image/svg+xml</mime-type>
-	</mime-mapping>
-	<welcome-file-list>
-		<welcome-file>index.html</welcome-file>
-	</welcome-file-list>
-
 	<!-- Error pages -->
 	<error-page>
 		<exception-type>java.lang.Exception</exception-type>
 		<location>/jsp/errorPage.jsp</location>
 	</error-page>
-
-
-	<!-- this login-config might trigger application server authentication popups. -->
-	<!-- TODO: find a way to dynamically set this! -->
-	<login-config>
-		<auth-method>BASIC</auth-method>
-		<realm-name>Frank</realm-name>
-	</login-config>
-
-	<!--
-	When a security-constraint element is present Tomcat will authenticate the
-	user for all url's whereas WebSphere does this only for the url's mentioned
-	in the security constraint(s). The PublicAccess security constraint will
-	make Tomcat behave the same as WebSphere.
-	-->
-	<security-constraint>
-		<display-name>PublicAccess</display-name>
-		<web-resource-collection>
-			<web-resource-name>PublicAccessResourceCollection</web-resource-name>
-			<description>collection of url's for public access (overruled by other collections for specific url's)</description>
-			<url-pattern>/*</url-pattern>
-		</web-resource-collection>
-	</security-constraint>
-
-	<!-- These roles are parsed when Spring Security is enabled and uses JEE container authorization. -->
-	<security-role>
-		<description>can call Ibis WebServices</description>
-		<role-name>IbisWebService</role-name>
-	</security-role>
-	<security-role>
-		<description>can look in configurations, statistics and log files</description>
-		<role-name>IbisObserver</role-name>
-	</security-role>
-	<security-role>
-		<description>can browse the error queue and resend or delete the messages in it, reload configurations, start and stop adapters, has all IbisObserver permissions</description>
-		<role-name>IbisDataAdmin</role-name>
-	</security-role>
-	<security-role>
-		<description>can do a full reload and has all IbisDataAdmin permissions</description>
-		<role-name>IbisAdmin</role-name>
-	</security-role>
-	<security-role>
-		<description>can execute jdbc query, send jms message and test a service, has all IbisAdmin and IbisWebService permissions</description>
-		<role-name>IbisTester</role-name>
-	</security-role>
 </web-app>

@@ -80,3 +80,5 @@ setup.sh
 .mvn/
 mvnw
 mvnw.cmd
+license-mappings.xml
+NOTICE

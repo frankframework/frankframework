@@ -1,99 +1,40 @@
-graph
-	classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;
-	style Document_GET fill:#0000,stroke:#1a9496,stroke-width:2px
-	subgraph Document_GET
-	d1e5{{Receiver<br/>ApiListener}}
-	d1e14([InputValidator<br/>XmlValidator])
-	d1e202(Create_Response_Busy<br/>XsltPipe)
-	style d1e216 stroke-dasharray: 4 4
-	d1e216(error2json<br/>JsonPipe)
-	style d1e21-ServerError stroke-dasharray: 4 4
-	d1e21-ServerError([OutputValidator<br/>XmlValidator])
-	d1e209(xml2json_busy<br/>Json2XmlValidator)
-	d1e21-READY([OutputValidator<br/>XmlValidator])
-	d1e44(Select_Document<br/>FixedQuerySender)
-	d1e56{Is_Target_MetaData_Schema_Empty<br/>XmlIf}
-	d1e118(Get_Principal<br/>GetPrincipalPipe)
-	d1e123{Check_If_Conversion_Finished<br/>XmlIf}
-	d1e130(Find_Nested_Attachments<br/>IbisLocalSender)
-	d1e142(Find_Retry_Actions<br/>FixedQuerySender)
-	d1e156(Call_DPDH<br/>IbisLocalSender)
-	d1e183(Create_Response<br/>XsltPipe)
-	d1e195(xml2json<br/>Json2XmlValidator)
-	d1e64(Magdat<br/>IbisLocalSender)
-	d1e76{Magdat_Result_Check<br/>XmlIf}
-	d1e83{Has_Security_Rules<br/>XmlIf}
-	d1e90(Extract_Security_Class_From_Metadata<br/>XsltPipe)
-	d1e97(Check_Security_Class_Against_Rules<br/>XsltPipe)
-	d1e110{Check_Security_Class_Against_Rules_Result<br/>XmlIf}
-	d1e21-NotAllowed([OutputValidator<br/>XmlValidator])
-	d1e30{{success<br/>200}}
-	d1e32{{success<br/>304}}
-	d1e34{{error<br/>400}}
-	d1e36{{error<br/>401}}
-	d1e38{{error<br/>403}}
-	d1e41{{error<br/>500}}
-	end
-	style Select_Attachments fill:#0000,stroke:#1a9496,stroke-width:2px
-	subgraph Select_Attachments
-	d1e227{{Receiver<br/>JavaListener}}
-	d1e239(Select_Attachments<br/>FixedQuerySender)
-	d1e251(Find_Nested_Attachments<br/>IbisLocalSender)
-	d1e263(Map_Attachment<br/>XsltPipe)
-	d1e236{{success}}
-	end
-	d1e5 --> |success| d1e14
-	d1e14 -. failure .-> d1e202
-	d1e14 -. parserError .-> d1e216
-	d1e14 --> |success| d1e44
-	d1e202 -. exception .-> d1e216
-	d1e202 --> |success| d1e209
-	d1e216 -. success<br/>ServerError .-> d1e21-ServerError
-	d1e216 -. failure<br/>ServerError .-> d1e21-ServerError
-	d1e21-ServerError -. failure .-> d1e202
-	d1e21-ServerError -. parserError .-> d1e202
-	d1e21-ServerError -. success<br/>ServerError .-> d1e41
-	d1e209 --> |success<br/>READY| d1e21-READY
-	d1e209 -. failure .-> d1e216
-	d1e21-READY -. failure .-> d1e202
-	d1e21-READY -. parserError .-> d1e202
-	d1e21-READY --> |success<br/>READY| d1e30
-	d1e44 --> |success| d1e56
-	d1e44 -. exception<br/>ServerError .-> d1e21-ServerError
-	d1e56 --> |then| d1e118
-	d1e56 --> |else| d1e64
-	d1e118 --> |success| d1e123
-	d1e123 --> |then| d1e130
-	d1e123 --> |else| d1e202
-	d1e130 --> |success| d1e142
-	d1e130 -. exception<br/>READY .-> d1e21-READY
-	d1e130 --> |differentAdapter| d1e227
-	d1e142 --> |success| d1e156
-	d1e142 -. exception<br/>ServerError .-> d1e21-ServerError
-	d1e156 --> |success| d1e183
-	d1e156 -. exception<br/>ServerError .-> d1e21-ServerError
-	d1e183 -. exception .-> d1e216
-	d1e183 --> |success| d1e195
-	d1e195 --> |success<br/>READY| d1e21-READY
-	d1e195 -. failure .-> d1e216
-	d1e64 --> |success| d1e76
-	d1e76 --> |then| d1e83
-	d1e76 --> |else<br/>NotAllowed| d1e21-NotAllowed
-	d1e83 --> |then| d1e90
-	d1e83 --> |else| d1e123
-	d1e90 -. exception .-> d1e216
-	d1e90 --> |success| d1e97
-	d1e97 -. exception .-> d1e216
-	d1e97 --> |success| d1e110
-	d1e110 --> |then| d1e123
-	d1e110 --> |else<br/>NotAllowed| d1e21-NotAllowed
-	d1e21-NotAllowed -. failure .-> d1e202
-	d1e21-NotAllowed -. parserError .-> d1e202
-	d1e21-NotAllowed --> |success<br/>NotAllowed| d1e38
-	d1e227 --> |success| d1e239
-	d1e239 --> |success| d1e251
-	d1e239 -. exception<br/>EXIT .-> d1e236
-	d1e251 --> |success| d1e263
-	d1e251 -. exception<br/>EXIT .-> d1e236
-	d1e251 --> |differentAdapter| d1e227
-	d1e263 --> |success<br/>EXIT| d1e236
+flowchart
+	d1e9("ApiListener"):::listener
+	d1e12("<a style='font-size:28px'>Document_GET</a>"):::normal
+	d1e46("FixedQuerySender"):::sender
+	d1e66("IbisLocalSender"):::sender
+	d1e132("IbisLocalSender"):::sender
+	d1e144("FixedQuerySender"):::sender
+	d1e158("IbisLocalSender"):::sender
+	d1e229("JavaListener"):::listener
+	d1e232("<a style='font-size:28px'>Select_Attachments</a>"):::normal
+	d1e241("FixedQuerySender"):::sender
+	d1e253("IbisLocalSender"):::sender
+	classDef normal fill:#fff,stroke-width:4px,stroke:#8bc34a;
+	classDef listener0 fill:#fff,stroke-width:4px,stroke:#fe41ff;
+	classDef listener1 fill:#fff,stroke-width:4px,stroke:#18a689;
+	classDef listener2 fill:#fff,stroke-width:4px,stroke:#18a689;
+	classDef listener3 fill:#fff,stroke-width:4px,stroke:#4150ff;
+	classDef listener4 fill:#fff,stroke-width:4px,stroke:#ffc107;
+	classDef listener5 fill:#fff,stroke-width:4px,stroke:#ff417e;
+	classDef sender0 fill:#fff,stroke-width:4px,stroke:#fe41ff;
+	classDef sender1 fill:#fff,stroke-width:4px,stroke:#8bc34a;
+	classDef sender2 fill:#fff,stroke-width:4px,stroke:#00abff;
+	classDef sender3 fill:#fff,stroke-width:4px,stroke:#4150ff;
+	classDef sender4 fill:#fff,stroke-width:4px,stroke:#ffc107;
+	classDef sender5 fill:#fff,stroke-width:4px,stroke:#ff417e;
+	classDef sender6 fill:#fff,stroke-width:4px,stroke:#8a41ff;
+	classDef sender7 fill:#fff,stroke-width:4px,stroke:#ff8741;
+	classDef sender8 fill:#fff,stroke-width:4px,stroke:#8bc34a;
+	d1e9 --> d1e12
+	d1e132 --> d1e229
+	d1e12 --> d1e46
+	d1e12 --> d1e66
+	d1e12 --> d1e132
+	d1e12 --> d1e144
+	d1e12 --> d1e158
+	d1e229 --> d1e232
+	d1e253 --> d1e229
+	d1e232 --> d1e241
+	d1e232 --> d1e253
+	linkStyle 0,1,2,3,4,5,6,7,8,9,10 stroke:#8bc34a,stroke-width:3px,fill:none;

@@ -56,7 +56,7 @@ public class RestListenerUtils {
 	}
 
 	@Deprecated
-	public static void setResponseContentType(PipeLineSession session, String contentType) throws IOException {
+	public static void setResponseContentType(PipeLineSession session, String contentType) {
 		HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
 		if (response != null) {
 			response.setContentType(contentType);

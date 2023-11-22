@@ -72,14 +72,14 @@ import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
- * 
+ *
  * Uses the SMB 2 and 3 protocol
- * 
+ *
  * Possible error codes:
  * <br/>
  * Pre-authentication information was invalid (24) / Idenitfier doesn't match expected value (906):  login information is incorrect
  * Server not found in Kerberos database (7): Verify that the hostname is the FQDN and the server is using a valid SPN.
- * 
+ *
  * @author Ali Sihab
  * @author Niels Meijer
  *
@@ -224,7 +224,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	@Override
-	public boolean exists(SmbFileRef f) throws FileSystemException {
+	public boolean exists(SmbFileRef f) {
 		return diskShare.fileExists(f.getName());
 	}
 
@@ -275,14 +275,14 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	@Override
-	public Message readFile(SmbFileRef filename, String charset) throws FileSystemException, IOException {
+	public Message readFile(SmbFileRef filename, String charset) throws FileSystemException {
 		File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
 		MessageContext context = FileSystemUtils.getContext(this, filename, charset);
 		return new Message(wrapInputStream(file), context);
 	}
 
 	@Override
-	public void deleteFile(SmbFileRef f) throws FileSystemException {
+	public void deleteFile(SmbFileRef f) {
 		diskShare.rm(f.getName());
 	}
 
@@ -345,7 +345,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		try {
 			return diskShare.folderExists(folder);
 		} catch (SMBApiException e) {
-			if(NtStatus.STATUS_OBJECT_NAME_COLLISION.equals(NtStatus.valueOf(e.getStatusCode()))) {
+			if(NtStatus.STATUS_OBJECT_NAME_COLLISION == NtStatus.valueOf(e.getStatusCode())) {
 				return false;
 			}
 			throw e;
@@ -380,7 +380,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	@Override
-	public long getFileSize(SmbFileRef f) throws FileSystemException {
+	public long getFileSize(SmbFileRef f) {
 		getFileAttributes(f);
 		return f.getAttributes().getStandardInformation().getEndOfFile();
 	}
@@ -424,7 +424,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	}
 
 	@Override
-	public Date getModificationTime(SmbFileRef f) throws FileSystemException {
+	public Date getModificationTime(SmbFileRef f) {
 		getFileAttributes(f);
 		return f.getAttributes().getBasicInformation().getChangeTime().toDate();
 	}
@@ -517,7 +517,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 							files.add(file);
 						}
 					} catch (SMBApiException e) {
-						if(NtStatus.STATUS_DELETE_PENDING.equals(NtStatus.valueOf(e.getStatusCode()))) {
+						if(NtStatus.STATUS_DELETE_PENDING == NtStatus.valueOf(e.getStatusCode())) {
 							log.debug("delete pending for file ["+ file.getName()+"]");
 						} else {
 							throw e;
@@ -555,11 +555,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		@Override
 		public void remove() {
 			SmbFileRef file = files.get(i++);
-			try {
-				deleteFile(file);
-			} catch (FileSystemException e) {
-				log.warn("unable to remove file ["+getCanonicalName(file)+"]", e);
-			}
+			deleteFile(file);
 		}
 	}
 

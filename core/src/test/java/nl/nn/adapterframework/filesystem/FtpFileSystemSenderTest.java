@@ -15,11 +15,11 @@ import nl.nn.adapterframework.testutil.junit.LocalFileServer.FileSystemType;
  */
 public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemSender, FTPFileRef, FtpFileSystem> {
 
-	private String username = "frankframework";
-	private String password = "pass_123";
-	private String host = "localhost";
+	private final String username = "frankframework";
+	private final String password = "pass_123";
+	private final String host = "localhost";
 	private int port = 21;
-	private String remoteDirectory = "/home";
+	private final String remoteDirectory = "/home";
 
 	@LocalFileSystemMock
 	private static LocalFileServer fs;

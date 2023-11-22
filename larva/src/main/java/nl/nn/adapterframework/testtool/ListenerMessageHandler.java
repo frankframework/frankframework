@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * @author Niels Meijer
  */
 public class ListenerMessageHandler<M> implements IMessageHandler<M> {
-	private static Logger log = LogUtil.getLogger(ListenerMessageHandler.class);
+	private static final Logger log = LogUtil.getLogger(ListenerMessageHandler.class);
 	private final BlockingQueue<ListenerMessage> requestMessages = new ArrayBlockingQueue<>(100);
 	private final BlockingQueue<ListenerMessage> responseMessages = new ArrayBlockingQueue<>(100);
 

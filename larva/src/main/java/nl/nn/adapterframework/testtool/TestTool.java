@@ -138,13 +138,13 @@ public class TestTool {
 		return IbisApplicationServlet.getIbisContext(application);
 	}
 
-
+	// Invoked by LarvaServlet
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, String realPath) {
-		runScenarios(application, request, out, false, realPath);
+		runScenarios(getIbisContext(application), request, out, false, realPath);
 	}
 
 	// Invoked by the IbisTester class
-	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, boolean silent, String realPath) {
+	public static void runScenarios(IbisContext ibisContext, HttpServletRequest request, Writer out, boolean silent, String realPath) {
 		String paramLogLevel = request.getParameter("loglevel");
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramExecute = request.getParameter("execute");
@@ -159,7 +159,6 @@ public class TestTool {
 			}
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
-		IbisContext ibisContext = getIbisContext(application);
 		runScenarios(ibisContext, paramLogLevel,
 				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);

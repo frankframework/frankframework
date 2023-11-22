@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -42,7 +41,6 @@ import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
-import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.management.bus.BusAware;
 import nl.nn.adapterframework.management.bus.BusException;
@@ -167,7 +165,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, PipeLineSession session, IForwardTarget next) throws JdbcException, SQLException, IOException {
+	protected PipeRunResult getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition, PipeLineSession session, IForwardTarget next) throws SQLException {
 		JsonArrayBuilder types = Json.createArrayBuilder();
 		String previousType=null;
 		JsonObjectBuilder typeBuilder=null;

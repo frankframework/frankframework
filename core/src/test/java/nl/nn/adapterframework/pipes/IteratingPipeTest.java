@@ -65,12 +65,12 @@ public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTest
 		}
 
 		@Override
-		public void closeBlock(String blockHandle, PipeLineSession session) throws SenderException {
+		public void closeBlock(String blockHandle, PipeLineSession session) {
 			resultLog.append("closeBlock\n");
 		}
 
 		@Override
-		public SenderResult sendMessage(String blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
+		public SenderResult sendMessage(String blockHandle, Message message, PipeLineSession session) throws SenderException {
 			try {
 				String result = "["+message.asString()+"]";
 				resultLog.append(result+"\n");

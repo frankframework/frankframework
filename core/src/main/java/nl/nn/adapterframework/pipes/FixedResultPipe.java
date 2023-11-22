@@ -25,7 +25,6 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -213,23 +212,11 @@ public class FixedResultPipe extends FixedForwardPipe {
 		this.substituteVars=substitute;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
-	public void setFileName(String fileName) {
-		setFilename(fileName);
-	}
-
 	/**
 	 * Name of the file containing the result message.
 	 */
 	public void setFilename(String filename) {
 		this.filename = filename;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
-	public void setFileNameSessionKey(String fileNameSessionKey) {
-		setFilenameSessionKey(fileNameSessionKey);
 	}
 
 	/**

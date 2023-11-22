@@ -436,7 +436,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
-		if (event.getSource()!=this) {
+		if (testTool != null && event.getSource()!=this) {
 			testTool.setReportGeneratorEnabled(event.isEnabled());
 		}
 	}

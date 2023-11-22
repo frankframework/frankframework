@@ -28,7 +28,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	}
 
 	@Test
-	public void downloadSingleScript() throws Exception {
+	public void downloadSingleScript() {
 		Mockito.doAnswer((i) -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
 			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
@@ -45,7 +45,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	}
 
 	@Test
-	public void downloadAllScripts() throws Exception {
+	public void downloadAllScripts() {
 		Mockito.doAnswer((i) -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
 			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
@@ -62,7 +62,7 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	}
 
 	@Test
-	public void downloadAllScriptsWithConfig() throws Exception {
+	public void downloadAllScriptsWithConfig() {
 		Mockito.doAnswer((i) -> {
 			RequestMessageBuilder inputMessage = i.getArgument(0);
 			inputMessage.addHeader(ResponseMessageBase.STATUS_KEY, 200);
@@ -79,8 +79,8 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	}
 
 	@Test
-	public void uploadScript() throws Exception {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+	public void uploadScript() {
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("dummy".getBytes()), "script.xml"));
 
@@ -101,8 +101,8 @@ public class TestShowLiquibaseScript extends FrankApiTestBase<ShowLiquibaseScrip
 	}
 
 	@Test
-	public void uploadZipWithScripts() throws Exception {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+	public void uploadZipWithScripts() {
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("dummy".getBytes()), "script.zip"));
 

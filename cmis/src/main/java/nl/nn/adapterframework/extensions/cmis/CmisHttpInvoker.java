@@ -46,7 +46,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 public class CmisHttpInvoker implements HttpInvoker {
 
-	private Logger log = LogUtil.getLogger(CmisHttpInvoker.class);
+	private final Logger log = LogUtil.getLogger(CmisHttpInvoker.class);
 
 	private CmisHttpSender sender = null;
 
