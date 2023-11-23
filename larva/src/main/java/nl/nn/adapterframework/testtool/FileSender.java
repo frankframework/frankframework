@@ -40,11 +40,11 @@ import nl.nn.adapterframework.util.Dir2Xml;
 
 /**
  * File sender for the Test Tool.
- * 
+ *
  * @author Jaco de Groot
  */
 public class FileSender implements IConfigurable {
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter String name;
 
@@ -61,7 +61,7 @@ public class FileSender implements IConfigurable {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		String scenarioDirectory = null;
+		String scenarioDirectory;
 		try {
 			URL scenarioDirectoryURL = ClassLoaderUtils.getResourceURL(this, ".");
 			scenarioDirectory = new File(scenarioDirectoryURL.toURI()).getAbsolutePath();
@@ -76,7 +76,7 @@ public class FileSender implements IConfigurable {
 	 * Send the message to the specified file. After writing the message to
 	 * file, this method will check if the file is deleted by another party
 	 * (detect reading of the file).
-	 * 
+	 *
 	 * @param message  the message to write to file
 	 */
 	public void sendMessage(String message) throws TimeoutException, SenderException {
@@ -211,7 +211,7 @@ public class FileSender implements IConfigurable {
 	public void setDeletePath(boolean deletePath) {
 		this.deletePath = deletePath;
 	}
-	
+
 	public void setCreatePath(boolean createPath) {
 		this.createPath = createPath;
 	}
