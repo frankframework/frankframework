@@ -107,7 +107,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 		String correlationId = getCorrelationId(session);
 		message = ibisDebugger.pipeLineInput(pipeLine, correlationId, message);
-		TreeSet<String> keys = new TreeSet<String>(session.keySet());
+		TreeSet<String> keys = new TreeSet<>(session.keySet());
 		Iterator<String> iterator = keys.iterator();
 		while (iterator.hasNext()) {
 			String sessionKey = iterator.next();

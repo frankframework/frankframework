@@ -436,7 +436,7 @@ public class WsdlGenerator {
 	}
 
 	public Set<IXSD> getXsds(IXmlValidator xmlValidator) throws ConfigurationException {
-		Set<IXSD> xsds = new HashSet<IXSD>();
+		Set<IXSD> xsds = new HashSet<>();
 		String inputSchema = xmlValidator.getSchema();
 		if (inputSchema != null) {
 			// In case of a WebServiceListener using soap=true it might be

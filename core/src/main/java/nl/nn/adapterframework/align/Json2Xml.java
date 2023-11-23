@@ -200,7 +200,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			if (isParentOfSingleMultipleOccurringChildElement()) {
 				if ((insertElementContainerElements || !strictSyntax) && node instanceof JsonArray) {
 					if (log.isTraceEnabled()) log.trace("parentOfSingleMultipleOccurringChildElement,JsonArray,(insertElementContainerElements || !strictSyntax)");
-					Set<String> result = new LinkedHashSet<String>();
+					Set<String> result = new LinkedHashSet<>();
 					result.addAll(getMultipleOccurringChildElements());
 					if (log.isTraceEnabled()) log.trace("isParentOfSingleMultipleOccurringChildElement, result ["+result+"]");
 					return result;
@@ -217,9 +217,9 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 			JsonObject o = (JsonObject)node;
 			if (o.isEmpty()) {
 				if (log.isTraceEnabled()) log.trace("no children");
-				return new LinkedHashSet<String>();
+				return new LinkedHashSet<>();
 			}
-			Set<String> result = new LinkedHashSet<String>();
+			Set<String> result = new LinkedHashSet<>();
 			for (String key:o.keySet()) {
 				if (!readAttributes || !key.startsWith(ATTRIBUTE_PREFIX)) {
 					result.add(key);
@@ -248,7 +248,7 @@ public class Json2Xml extends Tree2Xml<JsonValue,JsonValue> {
 				return null;
 			}
 			JsonValue child = o.get(name);
-			List<JsonValue> result = new LinkedList<JsonValue>();
+			List<JsonValue> result = new LinkedList<>();
 			if (child instanceof JsonArray) {
 				if (log.isTraceEnabled()) log.trace("child named ["+name+"] is a JsonArray, current node insertElementContainerElements ["+insertElementContainerElements+"]");
 				// if it could be necessary to insert elementContainers, we cannot return them as a list of individual elements now, because then the containing element would be duplicated

@@ -83,7 +83,7 @@ public class ProcessMetrics {
 	}
 
 	public static Map<String, String> toMap() {
-		Map<String, String> memoryStatistics = new Hashtable<String, String>(3);
+		Map<String, String> memoryStatistics = new Hashtable<>(3);
 
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();

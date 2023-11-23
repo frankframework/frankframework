@@ -174,7 +174,7 @@ public class AdapterStatistics extends BusEndpointBase {
 		@Override
 		@SuppressWarnings("unchecked")
 		public Object openGroup(Object parentData, String name, String type) {
-			List<Object> o = new LinkedList<Object>();
+			List<Object> o = new LinkedList<>();
 			((Map<String, Object>) parentData).put(type, o);
 			return o;
 		}

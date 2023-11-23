@@ -378,7 +378,7 @@ public class ImapFileSystem extends MailFileSystemBase<Message, MimeBodyPart, IM
 				return null;
 			}
 			Multipart multiPart = (Multipart) f.getContent();
-			return new Iterator<MimeBodyPart>() {
+			return new Iterator<>() {
 
 				MimeBodyPart part = null;
 				int i = 0;

@@ -39,9 +39,9 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
-import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -185,8 +185,8 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 				throw new StorageException("Invalid metadata name: " + metadataName);
 			}
 		}
-		List<String> rangeSearchValues = new ArrayList<String>();
-		List<String> regexSearchValues = new ArrayList<String>();
+		List<String> rangeSearchValues = new ArrayList<>();
+		List<String> regexSearchValues = new ArrayList<>();
 		for (int i = 0; i < searchValues.size(); i++) {
 			String searchValue = searchValues.get(i);
 			if (searchValue != null && searchValue.startsWith("<")
@@ -209,8 +209,8 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		IDbmsSupport dbmsSupport = getDbmsSupport();
 		StringBuilder query = new StringBuilder("select"
 				+ dbmsSupport.provideFirstRowsHintAfterFirstKeyword(maxNumberOfRecords)  + " * from (select ");
-		List<Object> args = new ArrayList<Object>();
-		List<Integer> argTypes = new ArrayList<Integer>();
+		List<Object> args = new ArrayList<>();
+		List<Integer> argTypes = new ArrayList<>();
 		boolean first = true;
 		for (String metadataName : metadataNames) {
 			if (first) {
@@ -329,7 +329,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 		report.setStorageId(storageId);
 		report.setName("Table " + table);
 		report.setStubStrategy("Never");
-		final List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
+		final List<Checkpoint> checkpoints = new ArrayList<>();
 		report.setCheckpoints(checkpoints);
 		StringBuilder query = new StringBuilder("select "
 				+ reportColumnNames.get(0));

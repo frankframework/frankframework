@@ -89,7 +89,7 @@ public class LdapFindMemberPipe extends LdapQueryPipeBase {
 	}
 
 	private boolean findMember(String host, int port, String dnSearchIn, boolean useSsl, String dnFind, boolean recursiveSearch) throws NamingException {
-		Hashtable<String,Object> env = new Hashtable<String,Object>();
+		Hashtable<String,Object> env = new Hashtable<>();
 		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 		String provUrl = retrieveUrl(host, port, dnSearchIn, useSsl);
 		env.put(Context.PROVIDER_URL, provUrl);

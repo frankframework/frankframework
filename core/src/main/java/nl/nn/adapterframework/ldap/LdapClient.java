@@ -169,7 +169,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 
 	@SuppressWarnings("unchecked")
 	protected Hashtable<String,Object> getJndiEnv(@SuppressWarnings("rawtypes") Set optionSet) {
-		Hashtable<String,Object> jndiEnv = new Hashtable<String,Object>();
+		Hashtable<String,Object> jndiEnv = new Hashtable<>();
 
 		//jndiEnv.put("com.sun.jndi.ldap.trace.ber", System.err);//ldap response in log for debug purposes
 		jndiEnv.put(Context.INITIAL_CONTEXT_FACTORY, DEFAULT_INITIAL_CONTEXT_FACTORY_NAME);
@@ -330,9 +330,9 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 //    }
 
     public Set<String> searchRecursivelyViaAttributes(String uid, String baseDn, String attribute) throws NamingException {
-    	Set<String> results=new LinkedHashSet<String>();
-    	Set<String> toBeSearched=new LinkedHashSet<String>();
-       	Set<String> searched=new LinkedHashSet<String>();
+    	Set<String> results=new LinkedHashSet<>();
+    	Set<String> toBeSearched=new LinkedHashSet<>();
+       	Set<String> searched=new LinkedHashSet<>();
 
        	DirContext context=getContext();
        	try {
@@ -342,7 +342,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 			toBeSearched.addAll(results);
 			while (!toBeSearched.isEmpty()) {
 		       	Set<String> searchingNow=toBeSearched;
-		       	toBeSearched=new LinkedHashSet<String>();
+		       	toBeSearched=new LinkedHashSet<>();
 		       	nestingLevel++;
 				if (log.isDebugEnabled()) log.debug("secondary lookup of memberships of ["+uid+"] nestingLevel ["+nestingLevel+"]");
 				for (String target:searchingNow) {
@@ -401,7 +401,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 				results=searchObjectForMultiValuedAttribute(context, objectDN,baseDn,attribute);
 				if (results==null) {
 					if (cacheNullResultsAsEmptySet) {
-						results=new HashSet<String>();
+						results=new HashSet<>();
 					} else {
 		    			if (log.isDebugEnabled()) log.debug("no attribute ["+attribute+"] found for object ["+objectDN+"], will not cache");
 					}
@@ -540,7 +540,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
      * Returns a Set of attribute values. The key of the attributes is ignored.
      */
     public Set<String> getAttributeSet(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
-    	Set<String> result=new LinkedHashSet<String>();
+    	Set<String> result=new LinkedHashSet<>();
     	mapMultiValuedAttribute(searchResultEnum,new ObjectCallback<Set<String>,Attribute,Object>(result) {
 
 			@Override
@@ -556,7 +556,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
      * Returns a Map of attribute values. Only the first (or maybe the last...) value of each attribute is returned.
      */
     public Map<String,String> getAttributeMap(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
-    	Map<String,String> result=new LinkedHashMap<String,String>();
+    	Map<String,String> result=new LinkedHashMap<>();
     	mapMultipleAttributes(searchResultEnum,new ObjectCallback<Map<String,String>,Attribute,Object>(result) {
 
 			@Override
@@ -572,14 +572,14 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
      * Returns a MultiMap of attribute values.
      */
     public Map<String,List<String>> getAttributeMultiMap(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
-    	Map<String,List<String>> result=new LinkedHashMap<String,List<String>>();
+    	Map<String,List<String>> result=new LinkedHashMap<>();
     	mapMultiValuedAttribute(searchResultEnum,new ObjectCallback<Map<String,List<String>>,Attribute,Object>(result) {
 
 			@Override
 			public void handle(Attribute key, Object value) {
 				List<String> list=getData().get(key.getID());
 				if (list==null) {
-					list=new LinkedList<String>();
+					list=new LinkedList<>();
 					getData().put(key.getID(), list);
 				}
 				list.add((String)value);
@@ -653,7 +653,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     	if (userDN==null || userDN.equals("") || password==null || password.equals("")) {
     		return null;
     	}
-		Hashtable<String,Object> env = new Hashtable<String,Object>();
+		Hashtable<String,Object> env = new Hashtable<>();
 		env.putAll(jndiEnv);
 		env.put("com.sun.jndi.ldap.connect.pool","false");
 		env.put(Context.SECURITY_PRINCIPAL, userDN);

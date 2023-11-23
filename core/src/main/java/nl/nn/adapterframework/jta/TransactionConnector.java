@@ -73,7 +73,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 		if (coordinator == null) {
 			return null;
 		}
-		TransactionConnector<T,R> instance = new TransactionConnector<T,R>(coordinator, owner, description);
+		TransactionConnector<T,R> instance = new TransactionConnector<>(coordinator, owner, description);
 		coordinator.registerConnector(instance);
 		return instance;
 	}
