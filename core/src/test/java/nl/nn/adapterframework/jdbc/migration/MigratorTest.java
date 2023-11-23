@@ -156,8 +156,8 @@ public class MigratorTest extends TransactionManagerTestBase {
 		sqlScript = sqlScript.replaceAll("'\\d{1,2}:[a-f0-9]{32}'", "'CHANGESET-CHECKSUM'"); //Replace the Liquibase Changeset Checksum
 
 		sqlScript = sqlScript.replaceAll("SET SEARCH_PATH TO public, \"\\$user\",\"public\";", ""); //Remove search path setting
-		sqlScript = sqlScript.replaceAll("\r\n", "\n"); //change CRLF into LF
-		sqlScript = sqlScript.replaceAll("\n\n\n", "\n"); //remove duplicate linefeeds
+		sqlScript = sqlScript.replace("\r\n", "\n"); //change CRLF into LF
+		sqlScript = sqlScript.replace("\n\n\n", "\n"); //remove duplicate linefeeds
 
 		return sqlScript.replaceAll("(LOCKEDBY = ')(.*)(WHERE)", "LOCKEDBY = 'IGNORE', LOCKGRANTED = 'IGNORE' WHERE");
 	}
