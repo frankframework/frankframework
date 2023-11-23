@@ -18,6 +18,7 @@ package nl.nn.adapterframework.util;
 import java.text.DateFormat;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -44,28 +45,40 @@ public class DateFormatUtils {
 
 
 	public static String now() {
-		return format(new Date());
+		return format(Instant.now());
 	}
 
 	@Deprecated
 	public static String now(String format) {
-		return format(new Date(), new SimpleDateFormat(format));
-	}
-
-	public static String format(long date) {
-		return format(new Date(date));
+		return format(Instant.now(), new SimpleDateFormat(format));
 	}
 
 	public static String format(Date date) {
+		return format(date.getTime());
+	}
+
+	public static String format(long date) {
 		return format(date, FULL_GENERIC_FORMATTER);
 	}
 
-	public static String format(Date date, DateFormat formatter) {
+	public static String format(Instant instant) {
+		return format(instant.toEpochMilli(), FULL_GENERIC_FORMATTER);
+	}
+
+	public static String format(long date, DateFormat formatter) {
 		return formatter.format(date);
 	}
 
+	public static String format(long date, String format) {
+		return format(date, new SimpleDateFormat(format));
+	}
+
 	public static String format(Date date, String dateFormat) {
-		return format(date, new SimpleDateFormat(dateFormat));
+		return format(date.getTime(), new SimpleDateFormat(dateFormat));
+	}
+
+	public static String format(Instant instant, DateFormat formatter) {
+		return format(instant.toEpochMilli(), formatter);
 	}
 
 	/**

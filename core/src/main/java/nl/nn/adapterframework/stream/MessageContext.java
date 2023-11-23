@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
 
-import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateFormatUtils;
 
 public class MessageContext extends LinkedHashMap<String,Object> {
@@ -104,9 +103,6 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 			put(METADATA_MODIFICATIONTIME, DateFormatUtils.format(time));
 		}
 		return this;
-	}
-	public MessageContext withModificationTime(String time) throws CalendarParserException {
-		return withModificationTime(DateFormatUtils.parseAnyDate(time));
 	}
 	public MessageContext withName(String name) {
 		put(METADATA_NAME, name);

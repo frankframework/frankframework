@@ -1,8 +1,12 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
@@ -115,5 +119,14 @@ public class DateFormatUtilsTest {
 	public void testParseAnyDate3() throws Exception {
 		Date date = DateFormatUtils.parseAnyDate("05/10/98 05:47:13");
 		assertEquals(getCorrectedDate(907566433000L), date.getTime());
+	}
+
+
+	@Test
+	public void testInstantInsteadOfDate() {
+		DateFormat format = new SimpleDateFormat(DateFormatUtils.FORMAT_GENERICDATETIME);
+		String dateString = format.format(Instant.now().toEpochMilli());
+		System.out.println(dateString);
+		assertInstanceOf(String.class, dateString);
 	}
 }

@@ -370,7 +370,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public String getLastMessageDate(String dateFormat) {
 		String result;
 		if (lastMessageDate != 0)
-			result = DateFormatUtils.format(new Date(lastMessageDate), dateFormat);
+			result = DateFormatUtils.format(lastMessageDate, dateFormat);
 		else
 			result = "-";
 		return result;
@@ -573,7 +573,7 @@ public class Adapter implements IAdapter, NamedBean {
 		return getStatsUpSince(DateFormatUtils.FORMAT_FULL_GENERIC);
 	}
 	public String getStatsUpSince(String dateFormat) {
-		return DateFormatUtils.format(new Date(statsUpSince), dateFormat);
+		return DateFormatUtils.format(statsUpSince, dateFormat);
 	}
 	public Date getStatsUpSinceDate() {
 		return new Date(statsUpSince);
@@ -689,8 +689,8 @@ public class Adapter implements IAdapter, NamedBean {
 			if (log.isDebugEnabled()) {
 				log.debug("Adapter: [{}] STAT: Pipeline finished processing message with messageId [{}] exit-state [{}] started {} finished {} total duration: {} ms",
 						getName(), messageId, result.getState(),
-						DateFormatUtils.format(new Date(startTime), DateFormatUtils.FORMAT_FULL_GENERIC),
-						DateFormatUtils.format(new Date(endTime), DateFormatUtils.FORMAT_FULL_GENERIC),
+						DateFormatUtils.format(startTime, DateFormatUtils.FORMAT_FULL_GENERIC),
+						DateFormatUtils.format(endTime, DateFormatUtils.FORMAT_FULL_GENERIC),
 						duration);
 			} else {
 				log.info("Adapter [{}] Pipeline finished processing message with messageId [{}] with exit-state [{}]", getName(), messageId, result.getState());

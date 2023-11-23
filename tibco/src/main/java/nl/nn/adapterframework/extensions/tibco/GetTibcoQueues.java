@@ -19,8 +19,8 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.time.Instant;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -372,7 +372,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		if (resolvedUrl != null) {
 			qInfosXml.addAttribute("resolvedUrl", resolvedUrl);
 		}
-		long currentTime = (new Date()).getTime();
+		Instant currentTime = Instant.now();
 		qInfosXml.addAttribute("timestamp", DateFormatUtils.format(currentTime));
 		long startTime = serverInfo.getStartTime();
 		qInfosXml.addAttribute("startTime", DateFormatUtils.format(startTime));
@@ -405,7 +405,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 							&& qInfo.getPendingMessageCount() > 0) {
 						String qfmAge;
 						if (getQueueRegex() == null || qInfo.getName().matches(getQueueRegex())) {
-							qfmAge = TibcoUtils.getQueueFirstMessageAgeAsString(jSession, qInfo.getName(), currentTime);
+							qfmAge = TibcoUtils.getQueueFirstMessageAgeAsString(jSession, qInfo.getName(), currentTime.toEpochMilli());
 						} else {
 							qfmAge = "?";
 						}

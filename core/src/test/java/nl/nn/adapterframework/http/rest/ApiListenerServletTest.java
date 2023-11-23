@@ -104,6 +104,7 @@ import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 
 @Log4j2
@@ -852,7 +853,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void apiListenerWithExplicitlyEnabledEtag() throws Exception {
 		// Arrange
 		String uri="/etag1";
-		Message repeatableMessage = new Message("{\"tralalalallala\":true}", new MessageContext().withModificationTime("2023-01-13 14:02:00"));
+		Message repeatableMessage = new Message("{\"tralalalallala\":true}", new MessageContext().withModificationTime(DateFormatUtils.parseToDate("2023-01-13 14:02:00", "yyyy-MM-dd HH:mm:ss").getTime()));
 		new ApiListenerBuilder(uri, Methods.GET)
 			.withResponseContent(repeatableMessage)
 			.setUpdateEtag(true)
