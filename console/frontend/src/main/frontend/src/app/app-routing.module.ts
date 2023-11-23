@@ -32,6 +32,7 @@ import { ConfigurationsUploadComponent } from './views/configurations/configurat
 import { ErrorComponent } from './views/error/error.component';
 import { LoadingComponent } from './views/loading/loading.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
+import { LoggingComponent } from './views/logging/logging.component';
 
 const routes: Routes = [
   /* {
@@ -118,14 +119,14 @@ const routes: Routes = [
       breadcrumbs: 'Configurations > Manage',
     },
   },
-  /* {
+  {
     path: 'logging',
     component: LoggingComponent,
     title: 'Logging',
     data: {
       breadcrumbs: 'Logging > Log Files'
     },
-  }, */
+  },
   /* {
     path: 'logging/settings',
     component: LoggingManageComponent,

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { MiscService } from 'src/angularjs/app/services/misc.service';
-import { StateParams, StateService } from "@uirouter/angularjs";
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AppService } from 'src/app/app.service';
+import { MiscService } from 'src/app/services/misc.service';
+import { LoggingService } from './logging.service';
 
 interface File {
   name: string
@@ -24,43 +25,51 @@ export class LoggingComponent implements OnInit {
   fileName: string = "";
   list: File[] = [];
 
+  @ViewChild('iframe') iframeRef!: ElementRef<HTMLIFrameElement>;
+
   constructor(
-    private apiService: ApiService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private appService: AppService,
     private miscService: MiscService,
-    private stateService: StateService,
-    private stateParams: StateParams
+    private loggingService: LoggingService
   ) { };
 
-  ngOnInit(): void {
-    //This is only false when the user opens the logging page
-    let directory = (this.stateParams['directory'] && this.stateParams['directory'].length > 0) ? this.stateParams['directory'] : false;
-    //The file param is only set when the user copy pastes an url in their browser
-    if (this.stateParams['file'] && this.stateParams['file'].length > 0) {
-      let file = this.stateParams['file'];
-      this.directory = directory;
-      this.path = directory + "/" + file;
-      this.openFile({ path: directory + "/" + file, name: file });
-    }
-    else {
-      this.openDirectory(directory);
-    }
+  ngOnInit() {
+    this.route.queryParamMap.subscribe(params => {
+      const directoryParam = params.get('directory') ?? ""
+      const fileParam = params.get('file') ?? ""
+
+      //This is only "" when the user opens the logging page
+      let directory = (directoryParam && directoryParam.length > 0) ? directoryParam : "";
+      //The file param is only set when the user copy pastes an url in their browser
+      if (fileParam && fileParam.length > 0) {
+        let file = fileParam;
+        this.directory = directory;
+        this.path = directory + "/" + file;
+        this.openFile({ path: directory + "/" + file, name: file });
+      }
+      else {
+        this.openDirectory(directory);
+      }
+    });
   };
 
   closeFile() {
     this.viewFile = false;
-    this.stateService.transitionTo('pages.logging_show', { directory: this.directory });
+    this.router.navigate(['/logging'], { queryParams: { directory: this.directory }});
   };
 
   download(file: File) {
-    let url = this.miscService.getServerPath() + "FileViewerServlet?resultType=bin&fileName=" + this.miscService.escapeURL(file.path);
+    let url = this.appService.getServerPath() + "FileViewerServlet?resultType=bin&fileName=" + this.miscService.escapeURL(file.path);
     window.open(url, "_blank");
   };
 
   open(file: File) {
     if (file.type == "directory") {
-      this.stateService.transitionTo('pages.logging_show', { directory: file.path });
+      this.router.navigate(['/logging'], { queryParams: { directory: file.path } });
     } else {
-      this.stateService.transitionTo('pages.logging_show', { directory: this.directory, file: file.name }, { notify: false, reload: false });
+      this.router.navigate(['/logging'], { queryParams: { directory: this.directory, file: file.name } });
     };
   };
 
@@ -95,7 +104,7 @@ export class LoggingComponent implements OnInit {
         break;
     };
 
-    let URL = this.miscService.getServerPath() + "FileViewerServlet?resultType=" + resultType + "&fileName=" + this.miscService.escapeURL(file.path) + params;
+    let URL = this.appService.getServerPath() + "FileViewerServlet?resultType=" + resultType + "&fileName=" + this.miscService.escapeURL(file.path) + params;
     if (resultType == "xml") {
       window.open(URL, "_blank");
       return;
@@ -104,33 +113,28 @@ export class LoggingComponent implements OnInit {
     this.viewFile = URL.length > 0;
 
     setTimeout(() => {
-      let iframe = angular.element("iframe");
+      let iframe = this.iframeRef.nativeElement;
 
-      if (iframe[0]) {
-        iframe[0].onload = () => {
-          let iframeBody = $((iframe[0] as HTMLIFrameElement).contentWindow!.document.body);
-          iframe.css({ "height": iframeBody.height()! + 50 });
+      if (iframe) {
+        iframe.onload = () => {
+          let iframeBody = $(iframe.contentWindow!.document.body);
+          $(iframe).css({ "height": iframeBody.height()! + 50 });
         };
       }
     });
   };
 
   openDirectory(directory: string) {
-    let url = "logging";
-    if (directory) {
-      url = "logging?directory=" + directory;
-    }
-
-    this.apiService.Get(url, (data) => {
+    this.loggingService.getLogging(directory).subscribe({ next: (data) => {
       this.alert = false;
       Object.assign(this, data);
       this.path = data.directory;
       if (data.count > data.list.length) {
         this.alert = "Total number of items [" + data.count + "] exceeded maximum number, only showing first [" + (data.list.length - 1) + "] items!";
       }
-    }, (data) => {
+    }, error: (data) => {
       this.alert = (data) ? data.error : "An unknown error occured!";
-    });
+    }});
   };
 
   copyToClipboard(path: string) {
