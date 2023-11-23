@@ -12,10 +12,6 @@
 	<description>The minimum dependencies required to run as a monolithic application</description>
 	<packaging>pom</packaging>
 
-	<properties>
-		<failOnMissingWebXml>false</failOnMissingWebXml>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
