@@ -48,7 +48,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 	public static final String FIXEDDATE_STUB4TESTTOOL_KEY  ="stub4testtool.fixeddate";
 
 	private String sessionKey="systemDate";
-	private String dateFormat=DateUtils.fullIsoFormat;
+	private String dateFormat=DateUtils.FORMAT_FULL_ISO;
 	private SimpleDateFormat formatter;
 	private boolean returnFixedDate=false;
 	private long sleepWhenEqualToPrevious = -1;

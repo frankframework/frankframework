@@ -270,7 +270,7 @@ public class FileSystemUtils {
 			return;
 		}
 		String srcFilename = fileSystem.getCanonicalName(file);
-		F tgtFilename = fileSystem.toFile(srcFilename+"."+DateUtils.format(lastModified, DateUtils.shortIsoFormat));
+		F tgtFilename = fileSystem.toFile(srcFilename+"."+DateUtils.format(lastModified, DateUtils.FORMAT_SHORT_ISO));
 		fileSystem.renameFile(file, tgtFilename);
 
 		if (log.isDebugEnabled()) log.debug("Deleting files in folder ["+folder+"] that have a name starting with ["+srcFilename+"] and are older than ["+rotateDays+"] days");
@@ -345,7 +345,7 @@ public class FileSystemUtils {
 				Date modificationDate = fileSystem.getModificationTime(f);
 				//add date
 				if (modificationDate != null) {
-					String date = DateUtils.format(modificationDate, DateUtils.shortIsoFormat);
+					String date = DateUtils.format(modificationDate, DateUtils.FORMAT_SHORT_ISO);
 					file.addAttribute("modificationDate", date);
 
 					// add the time

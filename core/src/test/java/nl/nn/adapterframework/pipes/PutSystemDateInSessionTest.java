@@ -153,7 +153,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
-		SimpleDateFormat format = new SimpleDateFormat(DateUtils.fullIsoFormat);
+		SimpleDateFormat format = new SimpleDateFormat(DateUtils.FORMAT_FULL_ISO);
 		Date first = format.parse(result);
 		Date second = format.parse(secondResult);
 
