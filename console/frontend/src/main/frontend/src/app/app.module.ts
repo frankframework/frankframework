@@ -98,6 +98,7 @@ import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/mon
 import { LoggingComponent } from './views/logging/logging.component';
 import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
 import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
+import { LoadingComponent } from './views/loading/loading.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
@@ -131,6 +132,7 @@ appModule
   .directive('jmsBrowseQueue', downgradeComponent({ component: JmsBrowseQueueComponent }) as angular.IDirectiveFactory)
   .directive('jmsSendMessage', downgradeComponent({ component: JmsSendMessageComponent }) as angular.IDirectiveFactory)
   .directive('liquibase', downgradeComponent({ component: LiquibaseComponent }) as angular.IDirectiveFactory)
+  .directive('loading', downgradeComponent({ component: LoadingComponent }) as angular.IDirectiveFactory)
   .directive('logout', downgradeComponent({ component: LogoutComponent }) as angular.IDirectiveFactory)
   .directive('logging', downgradeComponent({ component: LoggingComponent }) as angular.IDirectiveFactory)
   .directive('loggingManage', downgradeComponent({ component: LoggingManageComponent }) as angular.IDirectiveFactory)
@@ -197,6 +199,7 @@ appModule
     WebservicesComponent,
     MonitorsComponent,
     MonitorsAddEditComponent,
+    LoadingComponent,
     LoggingComponent,
     LoggingManageComponent,
 
