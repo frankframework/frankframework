@@ -13,7 +13,7 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 
 public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<F>> extends FileSystemActorTest<F, FS> {
 
@@ -67,7 +67,7 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 		}
 
 		for (int i=1; i<=numOfWrites-1; i++) {
-			String formattedDate = DateUtils.format(new Date(firstDate.getTime() + (millisPerDay * i)), DateUtils.shortIsoFormat);
+			String formattedDate = DateFormatUtils.format(new Date(firstDate.getTime() + (millisPerDay * i)), DateFormatUtils.FORMAT_SHORT_ISO);
 
 			String actualContentsi = readFile(null, filename+"."+formattedDate);
 			assertEquals((contents+(i-1)).trim(), actualContentsi.trim());

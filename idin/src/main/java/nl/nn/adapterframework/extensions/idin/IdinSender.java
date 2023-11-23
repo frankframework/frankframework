@@ -49,7 +49,7 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -57,7 +57,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Requires the net.bankid.merchant.library V1.06+.
  * Compile with Java 1.7+
- * 
+ *
  * @author Niels Meijer
  */
 public class IdinSender extends SenderWithParametersBase implements HasPhysicalDestination {
@@ -187,7 +187,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 						XmlBuilder countryXml = new XmlBuilder("country");
 						String country = entry.getKey();
 						countryXml.addAttribute("name", country);
-	
+
 						for(Issuer issuer : entry.getValue()) {
 							XmlBuilder issuerXml = new XmlBuilder("issuer");
 							issuerXml.setValue(issuer.getIssuerName());
@@ -210,7 +210,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 
 				XmlBuilder timestamp = new XmlBuilder("timestamp");
 				Date txDate = response.getDirectoryDateTimestamp().toGregorianCalendar().getTime();
-				timestamp.setValue(DateUtils.format(txDate, "yyyy-MM-dd HH:mm:ss.SSS"), false);
+				timestamp.setValue(DateFormatUtils.format(txDate, "yyyy-MM-dd HH:mm:ss.SSS"), false);
 				result.addSubElement(timestamp);
 			}
 
@@ -269,7 +269,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 
 				XmlBuilder timestamp = new XmlBuilder("timestamp");
 				Date txDate = response.getStatusDateTimestamp().toGregorianCalendar().getTime();
-				timestamp.setValue(DateUtils.format(txDate, "yyyy-MM-dd HH:mm:ss.SSS"), false);
+				timestamp.setValue(DateFormatUtils.format(txDate, "yyyy-MM-dd HH:mm:ss.SSS"), false);
 				result.addSubElement(timestamp);
 			}
 
@@ -334,7 +334,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 
 				XmlBuilder creationTime = new XmlBuilder("creationTime");
 				Date txDate = response.getTransactionCreateDateTimestamp().toGregorianCalendar().getTime();
-				creationTime.setValue(DateUtils.format(txDate, "yyyy-MM-dd HH:mm:ss.SSS"), false);
+				creationTime.setValue(DateFormatUtils.format(txDate, "yyyy-MM-dd HH:mm:ss.SSS"), false);
 				result.addSubElement(creationTime);
 			}
 
@@ -390,8 +390,8 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	/**
-	 * This is the contract number for iDIN the Merchant received from its Acquirer after registration, 
-	 * and is used to unambiguously identify the Merchant. This number is 10-digits long, where the 
+	 * This is the contract number for iDIN the Merchant received from its Acquirer after registration,
+	 * and is used to unambiguously identify the Merchant. This number is 10-digits long, where the
 	 * first four digits are equal to the AcquirerID.
 	 * @param merchantMerchantID The contract number for the iDIN Merchant. Leading zeros must be included
 	 */
@@ -403,11 +403,11 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	/**
-	 * The SubID that uniquely defines the name and address of the Merchant to be used for iDIN, 
-	 * if operating under different brands or trading entities. The Merchant obtains the SubID 
-	 * from its Acquirer after registration for iDIN. A Merchant can request permission from 
+	 * The SubID that uniquely defines the name and address of the Merchant to be used for iDIN,
+	 * if operating under different brands or trading entities. The Merchant obtains the SubID
+	 * from its Acquirer after registration for iDIN. A Merchant can request permission from
 	 * the Acquirer to use one or more SubIDs.
-	 * 
+	 *
 	 * @param merchantSubID Unless agreed otherwise with the Acquirer, the Merchant has to use 0 (default)!
 	 */
 	public void setMerchantSubID(int merchantSubID) {
@@ -418,9 +418,9 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	/**
-	 * The web address provided by the Merchant in the transaction request that is used to redirect the 
-	 * Consumer back to the Merchant after completing the authentication in the Issuer domain. The URL 
-	 * does not necessarily begin with http:// or https://, it can also start with an app handler 
+	 * The web address provided by the Merchant in the transaction request that is used to redirect the
+	 * Consumer back to the Merchant after completing the authentication in the Issuer domain. The URL
+	 * does not necessarily begin with http:// or https://, it can also start with an app handler
 	 * e.g. companyname-nlservice://.
 	 * @param merchantReturnUrl URL either http://..., https://... or app-hander e.g. company-service://...
 	 */
@@ -433,7 +433,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 
 
 	/**
-	 * @param acquirerDirectoryUrl The web address of the Acquirer's Routing service platform from where the 
+	 * @param acquirerDirectoryUrl The web address of the Acquirer's Routing service platform from where the
 	 * list of Issuers is retrieved (using a directory request).
 	 */
 	public void setAcquirerDirectoryUrl(String acquirerDirectoryUrl) {
@@ -444,7 +444,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	/**
-	 * @param acquirerTransactionUrl The web address of the Acquirer's Routing Service platform 
+	 * @param acquirerTransactionUrl The web address of the Acquirer's Routing Service platform
 	 * where the transactions (authentication requests) are initiated.
 	 */
 	public void setAcquirerTransactionUrl(String acquirerTransactionUrl) {
@@ -455,11 +455,11 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	/**
-	 * @param acquirerStatusUrl The web address of the Acquirer's Routing Service platform to where 
+	 * @param acquirerStatusUrl The web address of the Acquirer's Routing Service platform to where
 	 * the library sends status request messages.
 	 */
 	public void setAcquirerStatusUrl(String acquirerStatusUrl) {
-		this.acquirerStatusUrl = acquirerStatusUrl; 
+		this.acquirerStatusUrl = acquirerStatusUrl;
 	}
 	public String getAcquirerStatusUrl() {
 		return this.acquirerStatusUrl;
@@ -467,10 +467,10 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 
 
 	/**
-	 * The Java iDIN Software Library needs to access a keystore located in the Java classpath to 
+	 * The Java iDIN Software Library needs to access a keystore located in the Java classpath to
 	 * store all the required certificates
-	 * 
-	 * @param keyStoreLocation A file path and name, accessible to the library, which 
+	 *
+	 * @param keyStoreLocation A file path and name, accessible to the library, which
 	 * is the Java keystore file where the certificates are stored
 	 */
 	public void setKeyStoreLocation(String keyStoreLocation) {
@@ -506,9 +506,9 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	 * used to sign messages sent by the Merchant to the Acquirer's Routing Service platform. Its public
 	 * key is also used by the Acquirer to authenticate incoming messages from the Merchant. The
 	 * Merchant certificate must be in PKCS#12 format which has the extension .p12 or .pfx
-	 * 
+	 *
 	 * @param merchantCertificateAlias The alias assigned to the signing certificate in the keystore file.
-	 * This could be the alias you supplied explicitly when importing an existing certificate in the keystore, 
+	 * This could be the alias you supplied explicitly when importing an existing certificate in the keystore,
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
 	public void setMerchantCertificateAlias(String merchantCertificateAlias) {
@@ -540,12 +540,12 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	/**
-	 * This is the public certificate used to authenticate incoming messages from the Acquirer. The library 
-	 * only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically 
+	 * This is the public certificate used to authenticate incoming messages from the Acquirer. The library
+	 * only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
 	 * has the file extension .cer,.crt or .pem.
-	 * 
+	 *
 	 * @param acquirerCertificateAlias : The alias assigned to the Acquirer's certificate in the keystore.
-	 * This could be the alias you supplied explicitly when importing an existing certificate in the keystore, 
+	 * This could be the alias you supplied explicitly when importing an existing certificate in the keystore,
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
 	public void setAcquirerCertificateAlias(String acquirerCertificateAlias) {
@@ -556,12 +556,12 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	/**
-	 * This is the public certificate used to authenticate incoming messages from the Acquirer. The library 
-	 * only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically 
+	 * This is the public certificate used to authenticate incoming messages from the Acquirer. The library
+	 * only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
 	 * has the file extension .cer,.crt or .pem.
-	 * 
+	 *
 	 * @param acquirerAlternativeCertificateAlias : The alias assigned to the Acquirer's certificate in the keystore.
-	 * This could be the alias you supplied explicitly when importing an existing certificate in the keystore, 
+	 * This could be the alias you supplied explicitly when importing an existing certificate in the keystore,
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
 	public void setAcquirerAlternativeCertificateAlias(String acquirerAlternativeCertificateAlias) {
@@ -572,12 +572,12 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 	}
 
 	/**
-	 * This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information. 
-	 * The Merchant can then use the private key to decrypt that information. The SAML certificate must be in 
+	 * This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information.
+	 * The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
 	 * PKCS#12 format which has the extension .p12 or .pfx;
-	 * 
-	 * @param SAMLCertificateAlias The alias assigned to the SAML certificate in the keystore. 
-	 * This could  be the alias supplied explicitly when importing an existing certificate in the keystore, 
+	 *
+	 * @param SAMLCertificateAlias The alias assigned to the SAML certificate in the keystore.
+	 * This could  be the alias supplied explicitly when importing an existing certificate in the keystore,
 	 * or it could be an alias automatically assigned by the keytool application.
 	 */
 	public void setSAMLCertificateAlias(String SAMLCertificateAlias) {

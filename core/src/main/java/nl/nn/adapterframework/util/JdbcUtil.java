@@ -904,10 +904,10 @@ public class JdbcUtil {
 					statement.setBytes(parameterIndex, value.getBytes(StreamUtil.DEFAULT_CHARSET));
 					break;
 				case Types.DATE:
-					statement.setDate(parameterIndex, new java.sql.Date(DateUtils.parseAnyDate(value).getTime()));
+					statement.setDate(parameterIndex, new java.sql.Date(DateFormatUtils.parseAnyDate(value).getTime()));
 					break;
 				case Types.TIMESTAMP:
-					statement.setTimestamp(parameterIndex, new Timestamp(DateUtils.parseAnyDate(value).getTime()));
+					statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
 					break;
 				default:
 					log.warn("parameter type [" + JDBCType.valueOf(sqlTYpe).getName() + "] handled as String");

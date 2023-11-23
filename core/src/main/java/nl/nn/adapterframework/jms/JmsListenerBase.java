@@ -50,7 +50,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
@@ -187,7 +187,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				+ "] got message with JMSDeliveryMode=[" + mode
 				+ "] \n  JMSMessageID=[" + id
 				+ "] \n  JMSCorrelationID=[" + cid
-				+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent)
+				+ "] \n  Timestamp Sent=[" + DateFormatUtils.format(tsSent)
 				+ "] \n  ReplyTo=[" + ((replyTo==null)?"none" : replyTo.toString())
 				+ "] \n Message=[" + rawMessage
 				+ "]");

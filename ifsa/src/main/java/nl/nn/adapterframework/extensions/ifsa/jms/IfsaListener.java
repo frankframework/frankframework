@@ -43,7 +43,7 @@ import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
 
 public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAMessage>, IKnowsDeliveryCount<IFSAMessage> {
@@ -189,7 +189,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 					+ "] \n  ifsaGroup=["+ ifsaGroup
 					+ "] \n  ifsaOccurrence=["+ ifsaOccurrence
 					+ "] \n  ifsaVersion=["+ ifsaVersion
-					+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent)
+					+ "] \n  Timestamp Sent=[" + DateFormatUtils.format(tsSent)
 					+ "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
 					+ "] \n  MessageHeaders=["+displayHeaders(message)+"\n"
 //					+ "] \n  btcData=["+ btcData

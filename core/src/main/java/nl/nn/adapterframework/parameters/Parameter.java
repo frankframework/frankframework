@@ -58,7 +58,7 @@ import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.pipes.PutSystemDateInSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.Misc;
@@ -111,7 +111,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	public static final String TYPE_DATE_PATTERN="yyyy-MM-dd";
 	public static final String TYPE_TIME_PATTERN="HH:mm:ss";
 	public static final String TYPE_DATETIME_PATTERN="yyyy-MM-dd HH:mm:ss";
-	public static final String TYPE_TIMESTAMP_PATTERN=DateUtils.FORMAT_FULL_GENERIC;
+	public static final String TYPE_TIMESTAMP_PATTERN= DateFormatUtils.FORMAT_FULL_GENERIC;
 
 	public static final String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
 	public static final String FIXEDHOSTNAME ="MYHOST000012345";
@@ -795,7 +795,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if (rawValue instanceof Date) {
 				return rawValue;
 			}
-			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateUtils.FORMAT_GENERICDATETIME);
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_GENERICDATETIME);
 			try {
 				return df.parse(Message.asString(rawValue));
 			} catch (ParseException | IOException e) {
@@ -803,7 +803,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 		}
 		if (rawValue instanceof Date) {
-			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateUtils.FORMAT_GENERICDATETIME);
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_GENERICDATETIME);
 			return df.format(rawValue);
 		}
 		try {
@@ -858,7 +858,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 					}
 					Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
 					if (fixedDateTime == null) {
-						DateFormat df = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
+						DateFormat df = new SimpleDateFormat(DateFormatUtils.FORMAT_GENERICDATETIME);
 						try {
 							fixedDateTime = df.parse(PutSystemDateInSession.FIXEDDATETIME);
 						} catch (ParseException e) {

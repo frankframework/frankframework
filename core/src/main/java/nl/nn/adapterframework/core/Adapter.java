@@ -53,7 +53,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
@@ -365,12 +365,12 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@JmxAttribute(description = "The date/time of the last processed message")
 	public String getLastMessageDate() {
-		return getLastMessageDate(DateUtils.FORMAT_FULL_GENERIC);
+		return getLastMessageDate(DateFormatUtils.FORMAT_FULL_GENERIC);
 	}
 	public String getLastMessageDate(String dateFormat) {
 		String result;
 		if (lastMessageDate != 0)
-			result = DateUtils.format(new Date(lastMessageDate), dateFormat);
+			result = DateFormatUtils.format(new Date(lastMessageDate), dateFormat);
 		else
 			result = "-";
 		return result;
@@ -570,10 +570,10 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@JmxAttribute(description = "Up Since")
 	public String getStatsUpSince() {
-		return getStatsUpSince(DateUtils.FORMAT_FULL_GENERIC);
+		return getStatsUpSince(DateFormatUtils.FORMAT_FULL_GENERIC);
 	}
 	public String getStatsUpSince(String dateFormat) {
-		return DateUtils.format(new Date(statsUpSince), dateFormat);
+		return DateFormatUtils.format(new Date(statsUpSince), dateFormat);
 	}
 	public Date getStatsUpSinceDate() {
 		return new Date(statsUpSince);
@@ -689,8 +689,8 @@ public class Adapter implements IAdapter, NamedBean {
 			if (log.isDebugEnabled()) {
 				log.debug("Adapter: [{}] STAT: Pipeline finished processing message with messageId [{}] exit-state [{}] started {} finished {} total duration: {} ms",
 						getName(), messageId, result.getState(),
-						DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC),
-						DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC),
+						DateFormatUtils.format(new Date(startTime), DateFormatUtils.FORMAT_FULL_GENERIC),
+						DateFormatUtils.format(new Date(endTime), DateFormatUtils.FORMAT_FULL_GENERIC),
 						duration);
 			} else {
 				log.info("Adapter [{}] Pipeline finished processing message with messageId [{}] with exit-state [{}]", getName(), messageId, result.getState());

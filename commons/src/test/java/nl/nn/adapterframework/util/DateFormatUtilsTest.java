@@ -20,7 +20,7 @@ import lombok.extern.log4j.Log4j2;
  * @author Ricardo
  */
 @Log4j2
-public class DateUtilsTest {
+public class DateFormatUtilsTest {
 
 	private static final TimeZone CI_TZ = Calendar.getInstance().getTimeZone();
 	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("UTC");
@@ -58,88 +58,62 @@ public class DateUtilsTest {
 
 	@Test
 	public void testFormatLong() {
-		String date = DateUtils.format(getCorrectedDate(1380931200000L));
+		String date = DateFormatUtils.format(getCorrectedDate(1380931200000L));
 		assertEquals("2013-10-05 00:00:00.000", date);
 	}
 
 	@Test
 	public void testFormatDate() {
-		String date = DateUtils.format(getCorrectedDate(new Date(1380931200000L)));
+		String date = DateFormatUtils.format(getCorrectedDate(new Date(1380931200000L)));
 		assertEquals("2013-10-05 00:00:00.000", date);
 	}
 
 	@Test
 	public void testFormatForDateDateFormat() {
 		Date d = getCorrectedDate(new Date(1503600000));
-		String time = DateUtils.format(d, DateUtils.FORMAT_FULL_GENERIC);
+		String time = DateFormatUtils.format(d, DateFormatUtils.FORMAT_FULL_GENERIC);
 		assertEquals("1970-01-18 09:40:00.000", time);
 	}
 
 	@Test
 	public void testParseToDate() {
-		Date date = DateUtils.parseToDate("05-10-13", DateUtils.FORMAT_DATE);
+		Date date = DateFormatUtils.parseToDate("05-10-13", DateFormatUtils.FORMAT_DATE);
 		assertEquals(getCorrectedDate(1380931200000L), date.getTime());
 	}
 
 	@Test
 	public void testParseToDateFullYear() {
-		Date date = DateUtils.parseToDate("05-10-2014", DateUtils.FORMAT_DATE);
+		Date date = DateFormatUtils.parseToDate("05-10-2014", DateFormatUtils.FORMAT_DATE);
 		assertEquals(getCorrectedDate(1412467200000L), date.getTime());
 	}
 
 	@Test
 	public void unableToParseDate() {
-		Date date = DateUtils.parseToDate("05/10/98", DateUtils.FORMAT_DATE);
+		Date date = DateFormatUtils.parseToDate("05/10/98", DateFormatUtils.FORMAT_DATE);
 		assertNull(date);
 	}
 
 	@Test
 	public void unableToParseFullGenericWithoutTime() {
-		Date date = DateUtils.parseToDate("2000-01-01", DateUtils.FORMAT_FULL_GENERIC);
+		Date date = DateFormatUtils.parseToDate("2000-01-01", DateFormatUtils.FORMAT_FULL_GENERIC);
 		assertNull(date);
 	}
 
 	@Test
 	public void testParseAnyDate1() throws Exception {
-		Date date = DateUtils.parseAnyDate("12-2013-10");
+		Date date = DateFormatUtils.parseAnyDate("12-2013-10");
 		assertEquals(getCorrectedDate(1386633600000L), date.getTime());
 	}
 
 	@Test
 	public void testParseAnyDate2() throws Exception {
-		Date date = DateUtils.parseAnyDate("2013-12-10 12:41:43");
+		Date date = DateFormatUtils.parseAnyDate("2013-12-10 12:41:43");
 		assertEquals(getCorrectedDate(1386679303000L), date.getTime());
 	}
 
 	@Test
 	public void testParseAnyDate3() throws Exception {
-		Date date = DateUtils.parseAnyDate("05/10/98 05:47:13");
+		Date date = DateFormatUtils.parseAnyDate("05/10/98 05:47:13");
 		assertEquals(getCorrectedDate(907566433000L), date.getTime());
-	}
-
-	@Test
-	public void testConvertDate() throws Exception {
-		String date = DateUtils.convertDate(DateUtils.FORMAT_DATE, DateUtils.FORMAT_FULL_GENERIC, "18-03-13");
-		assertEquals("2013-03-18 00:00:00.000", date);
-	}
-
-	@Test
-	public void testChangeDateForDateYearsMonthsDays() throws Exception {
-		String date = DateUtils.changeDate("2013-10-10", 2, 3, 5);
-		assertEquals("2016-01-15", date);
-	}
-
-	@Test
-	public void testChangeDateForDateYearsMonthsDaysDateFormat() throws Exception {
-		String date = DateUtils.changeDate("10-10-13", 2, 3, 5, DateUtils.FORMAT_DATE);
-		assertEquals("15-01-16", date);
-	}
-
-	@Test
-	public void testIsSameDay() throws Exception {
-		Date d1 = DateUtils.parseAnyDate("10-10-2013");
-		Date d2 = DateUtils.parseAnyDate("2013-10-10");
-		boolean b = DateUtils.isSameDay(d1, d2);
-		assertEquals(true, b);
 	}
 }

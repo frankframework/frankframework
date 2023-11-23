@@ -71,7 +71,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 
 
@@ -723,7 +723,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 					+ "] JMSDeliveryMode=[" + message.getJMSDeliveryMode()
 					+ "] JMSMessageID=[" + message.getJMSMessageID()
 					+ "] JMSCorrelationID=[" + message.getJMSCorrelationID()
-					+ "] JMSTimestamp=[" + DateUtils.format(message.getJMSTimestamp())
+					+ "] JMSTimestamp=[" + DateFormatUtils.format(message.getJMSTimestamp())
 					+ "] JMSExpiration=[" + message.getJMSExpiration()
 					+ "] JMSPriority=[" + message.getJMSPriority()
 					+ "] JMSType=[" + message.getJMSType()

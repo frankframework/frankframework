@@ -38,7 +38,7 @@ import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 
 @Log4j2
 abstract class AbstractConvertor implements Convertor {
@@ -136,7 +136,7 @@ abstract class AbstractConvertor implements Convertor {
 	}
 
 	protected String createErrorMsg(Exception e) {
-		String timestamp = DateUtils.format();
+		String timestamp = DateFormatUtils.now();
 		log.warn("failed to convert [{}] failed! (Timestamp: [{}])", logMethod(()-> getClass().getSimpleName()), logValue(timestamp), e);
 		return "Conversion to PDF failed due to a technical failure. Please contact functional support." +
 				"(Timestamp: " + timestamp + ")";

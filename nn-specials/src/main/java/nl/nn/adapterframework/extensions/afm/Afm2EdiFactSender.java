@@ -31,7 +31,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -178,7 +178,7 @@ public class Afm2EdiFactSender implements ISender {
 		getTpnummer().getChars(0, getTpnummer().length(), unbRegel, 26);
 		String lPostbus = getPostbus();
 		lPostbus.getChars(0, lPostbus.length(), unbRegel, 61);
-		String dateTime = DateUtils.format("yyMMddHHmm");
+		String dateTime = DateFormatUtils.now("yyMMddHHmm");
 		dateTime.getChars(0, dateTime.length(), unbRegel, 114);
 		"0".getChars(0, "0".length(), unbRegel, 169);
 		"0".getChars(0, "0".length(), unbRegel, 205);
