@@ -95,8 +95,11 @@ import { ConfigurationsUploadComponent } from './views/configurations/configurat
 import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
+import { LoggingComponent } from './views/logging/logging.component';
+import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
 import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
 import { LoadingComponent } from './views/loading/loading.component';
+import { NotificationsComponent } from './views/notifications/notifications.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -131,9 +134,12 @@ appModule
   .directive('liquibase', downgradeComponent({ component: LiquibaseComponent }) as angular.IDirectiveFactory)
   .directive('loading', downgradeComponent({ component: LoadingComponent }) as angular.IDirectiveFactory)
   .directive('logout', downgradeComponent({ component: LogoutComponent }) as angular.IDirectiveFactory)
+  .directive('logging', downgradeComponent({ component: LoggingComponent }) as angular.IDirectiveFactory)
+  .directive('loggingManage', downgradeComponent({ component: LoggingManageComponent }) as angular.IDirectiveFactory)
   .directive('minimalizaSidebar', downgradeComponent({ component: MinimalizaSidebarComponent }) as angular.IDirectiveFactory)
   .directive('monitors', downgradeComponent({ component: MonitorsComponent }) as angular.IDirectiveFactory)
   .directive('monitorsAddEdit', downgradeComponent({ component: MonitorsAddEditComponent }) as angular.IDirectiveFactory)
+  .directive('notifications', downgradeComponent({ component: NotificationsComponent }) as angular.IDirectiveFactory)
   .directive('pagesFooter', downgradeComponent({ component: PagesFooterComponent }) as angular.IDirectiveFactory)
   .directive('pagesNavigation', downgradeComponent({ component: PagesNavigationComponent }) as angular.IDirectiveFactory)
   .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
@@ -194,6 +200,8 @@ appModule
     MonitorsComponent,
     MonitorsAddEditComponent,
     LoadingComponent,
+    LoggingComponent,
+    LoggingManageComponent,
 
     // pipes
     ConfigurationFilterPipe,
@@ -212,6 +220,7 @@ appModule
     QuickSubmitFormDirective,
     FitHeightDirective,
     SideNavigationDirective,
+    NotificationsComponent,
   ],
   imports: [
     BrowserModule,
