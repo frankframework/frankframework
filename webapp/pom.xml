@@ -14,7 +14,6 @@
 
 	<properties>
 		<m2eclipse.wtp.contextRoot>iaf-webapp</m2eclipse.wtp.contextRoot>
-		<failOnMissingWebXml>false</failOnMissingWebXml>
 	</properties>
 
 </project>

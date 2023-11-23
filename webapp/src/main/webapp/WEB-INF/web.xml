@@ -1,0 +1,12 @@
+<web-app xmlns="https://java.sun.com/xml/ns/javaee"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+		 version="3.0">
+	<display-name>Frank!Framework</display-name>
+
+	<description>
+		The Frank!Framework provides functionality to listen to some event (e.g. a JMS message arrival) and perform some predefined actions.
+		These actions are configured in an XML file. On the event several actions, called pipes, grouped in a pipeline, are fired.
+	</description>
+
+</web-app>
