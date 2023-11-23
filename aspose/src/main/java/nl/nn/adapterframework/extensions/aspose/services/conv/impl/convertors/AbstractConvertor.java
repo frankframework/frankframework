@@ -25,7 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -137,7 +136,7 @@ abstract class AbstractConvertor implements Convertor {
 	}
 
 	protected String createErrorMsg(Exception e) {
-		String timestamp = DateUtils.format(new Date(), "dd-MM-yyyy HH:mm:ss");
+		String timestamp = DateUtils.format();
 		log.warn("failed to convert [{}] failed! (Timestamp: [{}])", logMethod(()-> getClass().getSimpleName()), logValue(timestamp), e);
 		return "Conversion to PDF failed due to a technical failure. Please contact functional support." +
 				"(Timestamp: " + timestamp + ")";

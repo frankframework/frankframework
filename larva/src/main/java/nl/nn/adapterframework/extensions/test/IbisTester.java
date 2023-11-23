@@ -21,7 +21,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.security.AccessControlException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -136,7 +135,7 @@ public class IbisTester {
 		/*
 		 * By default the ladybug AOP config is included. This gives the following error:
 		 * LinkageError: loader 'app' attempted duplicate class definition for XYZ
-		 * 
+		 *
 		 * Current default SPRING.CONFIG.LOCATIONS = spring${application.server.type}${application.server.type.custom}.xml,springIbisDebuggerAdvice.xml,springCustom.xml
 		 * Overwrite so only IBISTEST is used.
 		 */
@@ -389,7 +388,7 @@ public class IbisTester {
 	}
 
 	private static String getIsoTimeStamp() {
-		return DateUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss.SSS");
+		return DateUtils.format();
 	}
 
 	private static String getMemoryInfo() {

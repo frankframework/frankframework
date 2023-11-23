@@ -16,8 +16,6 @@
 package nl.nn.adapterframework.extensions.afm;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -33,6 +31,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -179,8 +178,7 @@ public class Afm2EdiFactSender implements ISender {
 		getTpnummer().getChars(0, getTpnummer().length(), unbRegel, 26);
 		String lPostbus = getPostbus();
 		lPostbus.getChars(0, lPostbus.length(), unbRegel, 61);
-		SimpleDateFormat sdf = new SimpleDateFormat("yyMMddHHmm");
-		String dateTime = sdf.format(new Date());
+		String dateTime = DateUtils.format("yyMMddHHmm");
 		dateTime.getChars(0, dateTime.length(), unbRegel, 114);
 		"0".getChars(0, "0".length(), unbRegel, 169);
 		"0".getChars(0, "0".length(), unbRegel, 205);

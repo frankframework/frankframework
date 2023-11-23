@@ -531,7 +531,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		String id = rawMessage.getId();
 		assertThat(id, containsString(filename));
-		String currentDateFormatted=DateUtils.format(new Date());
+		String currentDateFormatted=DateUtils.format();
 		String timestamp=id.substring(id.length()-currentDateFormatted.length());
 		long currentDate=DateUtils.parseAnyDate(currentDateFormatted).getTime();
 		long timestampDate=DateUtils.parseAnyDate(timestamp).getTime();

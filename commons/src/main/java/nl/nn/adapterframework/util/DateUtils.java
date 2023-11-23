@@ -15,6 +15,7 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -30,44 +31,49 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class DateUtils {
-	public static final String fullIsoFormat          = "yyyy-MM-dd'T'HH:mm:sszzz";
-	public static final String shortIsoFormat         = "yyyy-MM-dd";
+	public static final String fullIsoFormat = "yyyy-MM-dd'T'HH:mm:sszzz";
+	public static final DateFormat FULL_ISO_FORMATTER = new SimpleDateFormat(fullIsoFormat);
+	public static final String shortIsoFormat = "yyyy-MM-dd";
 
-	public static final String FORMAT_FULL_GENERIC      = "yyyy-MM-dd HH:mm:ss.SSS";
-	public static final String FORMAT_MILLISECONDS	   ="######.###";
-	public static final String FORMAT_GENERICDATETIME  ="yyyy-MM-dd HH:mm:ss";
-	public static final String FORMAT_DATE             ="dd-MM-yy";
-	public static final String FORMAT_TIME_HMS         ="HH:mm:ss";
+	public static final String FORMAT_FULL_GENERIC = "yyyy-MM-dd HH:mm:ss.SSS";
+	public static final DateFormat FULL_GENERIC_FORMATTER = new SimpleDateFormat(FORMAT_FULL_GENERIC);
+	public static final String FORMAT_MILLISECONDS = "######.###";
+	public static final String FORMAT_GENERICDATETIME = "yyyy-MM-dd HH:mm:ss";
+	public static final DateFormat GENERIC_DATETIME_FORMATTER = new SimpleDateFormat(FORMAT_GENERICDATETIME);
+	public static final String FORMAT_DATE = "dd-MM-yy";
+	public static final String FORMAT_TIME_HMS = "HH:mm:ss";
 
-	public static String format(Date date, String dateFormat) {
-		SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
-		return formatter.format(date);
-	}
 
-	public static String format(long date, String dateFormat) {
-		return format(new Date(date), dateFormat);
+	public static String format() {
+		return format(new Date());
 	}
 
 	public static String format(long date) {
-		return format(new Date(date), FORMAT_FULL_GENERIC);
+		return format(new Date(date));
 	}
+
 	public static String format(Date date) {
-		return format(date, FORMAT_FULL_GENERIC);
+		return format(date, FULL_GENERIC_FORMATTER);
 	}
 
+	@Deprecated
+	public static String format(String format) {
+		return format(new Date(), new SimpleDateFormat(format));
+	}
 
-	/**
-	 * Get current date-time timestamp in ISO 8601 format.
-	 */
-	public static String getIsoTimeStamp() {
-		return format(new Date(), fullIsoFormat);
+	public static String format(Date date, DateFormat formatter) {
+		return formatter.format(date);
+	}
+
+	public static String format(Date date, String dateFormat) {
+		return format(date, new SimpleDateFormat(dateFormat));
 	}
 
 	/**
 	 * Get current date-time timestamp in generic format.
 	 */
 	public static String getTimeStamp() {
-		return format(new Date(), FORMAT_GENERICDATETIME);
+		return format(FORMAT_GENERICDATETIME);
 	}
 
 	/**
@@ -82,6 +88,7 @@ public class DateUtils {
 	/**
 	 * Parses a string to a Date using CalendarParser
 	 */
+	@Deprecated
 	public static Date parseAnyDate(String dateInAnyFormat) throws CalendarParserException {
 		Calendar c = CalendarParser.parse(dateInAnyFormat);
 		return new Date(c.getTimeInMillis());
@@ -90,9 +97,9 @@ public class DateUtils {
 	/**
 	 * Convert date format
 	 *
-	 * @param 	from	String	date format from.
-	 * @param 	to		String	date format to.
-	 * @param 	value	String	date to reformat.
+	 * @param from  String	date format from.
+	 * @param to    String	date format to.
+	 * @param value String	date to reformat.
 	 */
 	public static String convertDate(String from, String to, String value) throws ParseException {
 		log.debug("convertDate from [" + from + "] to [" + to + "] value [" + value + "]");
@@ -106,44 +113,42 @@ public class DateUtils {
 		if (tempStr.equals(value)) {
 			result = formatterTo.format(d);
 		} else {
-			log.warn("Error on validating input (" + value + ") with reverse check [" + tempStr+"]");
-			throw new ParseException("Error on validating input (" + value + ") with reverse check [" + tempStr+"]",0);
+			log.warn("Error on validating input (" + value + ") with reverse check [" + tempStr + "]");
+			throw new ParseException("Error on validating input (" + value + ") with reverse check [" + tempStr + "]", 0);
 		}
 
-		log.debug("convertDate result ["+result+"]");
+		log.debug("convertDate result [" + result + "]");
 		return result;
 	}
 
 
 	/**
-	 *
 	 * Add a number of years, months, days to a date specified in a shortIsoFormat, and return it in the same format.
 	 * Als een datum component niet aangepast hoeft te worden, moet 0 meegegeven worden.
 	 * Dus bijv: changeDate("2006-03-23", 2, 1, -4) = "2008-05-19"
 	 *
-	 * @param 	date	A String representing a date in format yyyy-MM-dd.
-	 * @param 	years
-	 * @param 	months
-	 * @param 	days
+	 * @param date   A String representing a date in format yyyy-MM-dd.
+	 * @param years
+	 * @param months
+	 * @param days
 	 */
 	public static String changeDate(String date, int years, int months, int days) throws ParseException {
 		return changeDate(date, years, months, days, "yyyy-MM-dd");
 	}
 
 	/**
-	 *
 	 * Add a number of years, months, days to a date specified in a certain format, and return it in the same format.
 	 * Als een datum component niet aangepast hoeft te worden, moet 0 meegegeven worden.
 	 * Dus bijv: changeDate("2006-03-23", 2, 1, -4) = "2008-05-19"
 	 *
-	 * @param 	date	A String representing a date in format (dateFormat).
-	 * @param 	years	int
-	 * @param 	months	int
-	 * @param 	days	int
-	 * @param 	dateFormat	A String representing the date format of date.
+	 * @param date       A String representing a date in format (dateFormat).
+	 * @param years      int
+	 * @param months     int
+	 * @param days       int
+	 * @param dateFormat A String representing the date format of date.
 	 */
 	public static String changeDate(String date, int years, int months, int days, String dateFormat) throws ParseException {
-		if (log.isDebugEnabled()) log.debug("changeDate date ["+date+"] years ["+years+"] months ["+months+"] days ["+days+"]");
+		if (log.isDebugEnabled()) log.debug("changeDate date [" + date + "] years [" + years + "] months [" + months + "] days [" + days + "]");
 		String result = "";
 
 		SimpleDateFormat df = new SimpleDateFormat(dateFormat);
@@ -155,7 +160,7 @@ public class DateUtils {
 		cal.add(Calendar.DAY_OF_MONTH, days);
 		result = df.format(cal.getTime());
 
-		log.debug("changeDate result ["+result+"]");
+		log.debug("changeDate result [" + result + "]");
 		return result;
 	}
 

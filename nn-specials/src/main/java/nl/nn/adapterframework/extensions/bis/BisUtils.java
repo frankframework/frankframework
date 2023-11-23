@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.bis;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.xml.transform.TransformerConfigurationException;
@@ -146,7 +145,7 @@ public class BisUtils {
 		}
 		headerFieldsElement.addSubElement(externalRefToMessageIdElement);
 		XmlBuilder timestampElement = new XmlBuilder("Timestamp");
-		timestampElement.setValue(DateUtils.format(new Date(), "yyyy-MM-dd'T'HH:mm:ss"));
+		timestampElement.setValue(DateUtils.format(DateUtils.fullIsoFormat));
 		headerFieldsElement.addSubElement(timestampElement);
 		messageHeaderElement.addSubElement(headerFieldsElement);
 		return messageHeaderElement.toXML();
