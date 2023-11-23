@@ -31,8 +31,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.commons.codec.binary.Base64OutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -50,7 +48,6 @@ import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
@@ -114,7 +111,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	private @Getter String inputFolder; // folder for action=list
 	private @Getter boolean createFolder; // for action create, write, move, rename and list
 
-	private @Getter Base64Pipe.Direction base64;
 	private @Getter int rotateDays=0;
 	private @Getter int rotateSize=0;
 	private @Getter boolean overwrite=false;
@@ -364,12 +360,8 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 					return Message.asMessage(FileSystemUtils.getFileInfo(fileSystem, file, getOutputFormat()));
 				}
 				case READ: {
-					F file=getFile(input, pvl);
-					Message in = fileSystem.readFile(file, getCharset());
-					if (getBase64()!=null) {
-						return Message.asMessage(new Base64InputStream(in.asInputStream(), getBase64()==Base64Pipe.Direction.ENCODE));
-					}
-					return in;
+					F file = getFile(input, pvl);
+					return fileSystem.readFile(file, getCharset());
 				}
 				case READDELETE: {
 					final F file=getFile(input, pvl);
@@ -410,9 +402,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 						}
 
 					};
-					if (getBase64()!=null) {
-						in = new Base64InputStream(in, getBase64()==Base64Pipe.Direction.ENCODE);
-					}
 					return Message.asMessage(in);
 				}
 				case LIST: {
@@ -608,9 +597,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	}
 
 	protected OutputStream augmentOutputStream(OutputStream out) {
-		if (getBase64()!=null) {
-			out = new Base64OutputStream(out, getBase64()==Base64Pipe.Direction.ENCODE);
-		}
 		if(isWriteLineSeparator()) {
 			out = new FilterOutputStream(out) {
 				boolean closed=false;
@@ -738,14 +724,6 @@ public class FileSystemActor<F, FS extends IBasicFileSystem<F>> implements IOutp
 	 */
 	public void setNumberOfBackups(int numberOfBackups) {
 		this.numberOfBackups = numberOfBackups;
-	}
-
-	/**
-	 * For actions {@value #ACTION_READ1}, {@value #ACTION_WRITE1} and {@value #ACTION_APPEND}. When set the stream is base64 encoded or decoded
-	 */
-	@Deprecated
-	public void setBase64(Base64Pipe.Direction base64) {
-		this.base64 = base64;
 	}
 
 	/**
