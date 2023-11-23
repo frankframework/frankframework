@@ -145,7 +145,7 @@ public class BisUtils {
 		}
 		headerFieldsElement.addSubElement(externalRefToMessageIdElement);
 		XmlBuilder timestampElement = new XmlBuilder("Timestamp");
-		timestampElement.setValue(DateUtils.format("yyyy-MM-dd'T'HH:mm:ss"));
+		timestampElement.setValue(DateUtils.format(DateUtils.fullIsoFormat));
 		headerFieldsElement.addSubElement(timestampElement);
 		messageHeaderElement.addSubElement(headerFieldsElement);
 		return messageHeaderElement.toXML();
