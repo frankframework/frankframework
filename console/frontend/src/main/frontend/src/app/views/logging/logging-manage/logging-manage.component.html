@@ -1,0 +1,150 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content">
+  <ngb-alert *ngIf="alert" type="danger">alert</ngb-alert>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins">
+        <div class="ibox-title">
+          <h4>Dynamic parameters</h4>
+        </div>
+        <div class="ibox-content" style="overflow: visible;">
+          <div class="row">
+            <div class="col-lg-5 col-md-12 col-md-12">
+              <div class="row">
+                <div class="col-md-8">
+                  <strong class="lh32">RootLogger Level</strong>
+                </div>
+                <div class="col-md-4">
+                  <div class="btn-group" ngbDropdown style="width: 100%;">
+                    <button type="button" class="btn btn-default" ngbDropdownToggle style="width: 100%;">
+                      {{form.loglevel}} <span class="caret"></span>
+                    </button>
+                    <ul role="menu" ngbDropdownMenu>
+                      <li *ngFor="let loglevel of form.errorLevels">
+                        <a ngbDropdownItem (click)="changeRootLoglevel(loglevel)">{{loglevel}}</a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-9">
+                  <strong class="lh32">Log Intermediary Results</strong>
+                </div>
+                <div class="col-md-3 col-xs-2">
+                  <span class="form-control m-b" style="border: none;"><input icheck type="checkbox" [(ngModel)]="form.logIntermediaryResults" /></span>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-8 col-xs-10">
+                  <strong class="lh32">Maximum Log-message Length</strong>
+                </div>
+                <div class="col-md-4">
+                  <input class="form-control m-b" name="maxMessageLength" type="text" [(ngModel)]="form.maxMessageLength" />
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-9 col-xs-10">
+                  <strong class="lh32">Enable Ladybug Debugger</strong>
+                </div>
+                <div class="col-md-3 col-xs-2">
+                  <span class="form-control m-b" style="border: none;"><input icheck type="checkbox" [(ngModel)]="form.enableDebugger" /></span>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-offset-2 col-md-10">
+                  <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
+                  <button [ladda]="updateDynamicParams" class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit(form)">Send</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins">
+        <div class="ibox-title">
+          <div class="pull-right">
+            <button (click)="reconfigure()" class="btn btn-xs pull-right btn-warning m-r-xs" type="button"><i class="fa fa-warning" aria-hidden="true"></i> <span>Reconfigure</span></button>
+          </div>
+          <h4>Log Definitions</h4>
+        </div>
+        <div class="ibox-content" *ngIf="loggers">
+          <p>Log levels can be changed to control the amount of logging of the framework and the libraries it uses. Custom Log Definitions can be removed by reconfiguring Log4J2.</p>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th style="width: 50%;">Name</th>
+                <th style="width: 20%;">Level</th>
+                <th style="width: 30%;">Appenders</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let definition of definitions; index as index">
+                <td>{{definition.name}}</td>
+                <td ngbDropdown style="width: 180px;" [ngClass]="(index > 4 && index >= (definitions.length - 5)) ? 'dropup' : ''">
+                  <button type="button" class="btn-invisible" ngbDropdownToggle>
+                    {{definition.level}} <span class="caret"></span>
+                  </button>
+                  <ul role="menu" ngbDropdownMenu="">
+                    <li *ngFor="let loglevel of errorLevels">
+                      <a ngbDropdownItem (click)="changeLoglevel(definition.name, loglevel)">{{loglevel}}</a>
+                    </li>
+                  </ul>
+                </td>
+                <td *ngIf="definition.appenders">
+                  <span *ngFor="let name of definition.appenders; let last = last">{{name}}<span *ngIf="!last">, </span></span>
+                </td>
+                <td *ngIf="!definition.appenders">RootLogger</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins">
+        <div class="ibox-title">
+          <h4>Framework Loggers</h4>
+        </div>
+        <div class="ibox-content" *ngIf="loggers">
+          <p>Each logger in the Framework uses the log level from its Log Definition or from the RootLogger log level by default. Changing the log level creates a new Log Definition for the specified package.</p>
+          <p>New Log Definitions takes precedence over the RootLogger!</p>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th style="width: 50%;">Name</th>
+                <th style="width: 50%;">Level</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let logger of loggers | keyvalue; index as index">
+                <td>{{logger.key}}</td>
+                <td ngbDropdown style="width: 180px;" [ngClass]="(index > 4 && index >= (loggersLength - 5)) ? 'dropup' : ''">
+                  <button type="button" class="btn-invisible" ngbDropdownToggle>
+                    {{logger.value}} <span class="caret"></span>
+                  </button>
+                  <ul role="menu" ngbDropdownMenu>
+                    <li *ngFor="let loglevel of errorLevels">
+                      <a ngbDropdownItem (click)="changeLoglevel(logger.key, loglevel)">{{loglevel}}</a>
+                    </li>
+                  </ul>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
