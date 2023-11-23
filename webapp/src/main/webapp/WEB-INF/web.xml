@@ -9,16 +9,4 @@
 		These actions are configured in an XML file. On the event several actions, called pipes, grouped in a pipeline, are fired.
 	</description>
 
-	<!--
-		First a 'ROOT' Spring WebApplicationContext is started. This in turn registers all dynamic servlets and IbisInitializers
-		After loading the ROOT context with all HTTP/CXF servlets (endpoints) all servlets will be initialized.
-		IbisApplicationServlet will start the IbisContext. It must be the first servlet to start up.
-	-->
-	<servlet>
-		<description>Initializes the configuration</description>
-		<display-name>Ibis Application Servlet</display-name>
-		<servlet-name>IbisApplicationServlet</servlet-name>
-		<servlet-class>nl.nn.adapterframework.lifecycle.IbisApplicationServlet</servlet-class>
-		<load-on-startup>0</load-on-startup>
-	</servlet>
 </web-app>
