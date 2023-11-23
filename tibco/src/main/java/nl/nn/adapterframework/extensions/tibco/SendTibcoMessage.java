@@ -49,6 +49,7 @@ import nl.nn.adapterframework.jms.BytesMessageInputStream;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -264,7 +265,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 					InputStream inputStream = new BytesMessageInputStream(bytesMessage);
 					result = StreamUtil.streamToString(inputStream);
 				} else {
-					throw new PipeRunException(this, "Unsupported message type received: " + rawReplyMsg.getClass().getSimpleName());
+					throw new PipeRunException(this, "Unsupported message type received: " + ClassUtils.classNameOf(rawReplyMsg));
 				}
 
 			} else {
