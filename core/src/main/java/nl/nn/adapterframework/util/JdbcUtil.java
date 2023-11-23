@@ -61,6 +61,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.dbms.DbmsException;
 import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.dbms.JdbcException;
+import nl.nn.adapterframework.jms.BytesMessageInputStream;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
