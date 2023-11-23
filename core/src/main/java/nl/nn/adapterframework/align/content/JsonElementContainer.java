@@ -179,7 +179,7 @@ public class JsonElementContainer implements ElementContainer {
 			throw new IllegalStateException("already created array for element ["+name+"]");
 		}
 		if (contentMap==null) {
-			contentMap=new LinkedHashMap<String,Object>();
+			contentMap=new LinkedHashMap<>();
 		}
 		Object current=contentMap.get(childName);
 		if (content.isRepeatedElement()) {

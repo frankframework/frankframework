@@ -51,7 +51,7 @@ public class JwtValidator<C extends SecurityContext> {
 	private @Getter ConfigurableJWTProcessor<C> jwtProcessor = null;
 
 	public JwtValidator() {
-		jwtProcessor = new DefaultJWTProcessor<C>();
+		jwtProcessor = new DefaultJWTProcessor<>();
 	}
 
 	public void init(String jwksUrl, String requiredIssuer) throws ParseException, MalformedURLException, IOException {
@@ -62,12 +62,12 @@ public class JwtValidator<C extends SecurityContext> {
 
 		// Configure the JWT processor with a key selector to feed matching public
 		// RSA keys sourced from the JWK set URL
-		JWSKeySelector<C> keySelector = new JWSVerificationKeySelector<C>(expectedJWSAlg, keySource);
+		JWSKeySelector<C> keySelector = new JWSVerificationKeySelector<>(expectedJWSAlg, keySource);
 
 		// Set up a JWT processor to parse the tokens and then check their signature
 		// and validity time window (bounded by the "iat", "nbf" and "exp" claims)
 		if (StringUtils.isNotEmpty(requiredIssuer)) {
-			DefaultJWTClaimsVerifier<C> verifier=new DefaultJWTClaimsVerifier<C>() {
+			DefaultJWTClaimsVerifier<C> verifier=new DefaultJWTClaimsVerifier<>() {
 
 				@Override
 				public void verify(JWTClaimsSet claimsSet, C context) throws BadJWTException {
@@ -89,7 +89,7 @@ public class JwtValidator<C extends SecurityContext> {
 		JWKSource<C> keySource = null;
 		if(jwksURL.getProtocol().equals("file") || jwksURL.getProtocol().equals("jar")) {
 			JWKSet set = JWKSet.load(jwksURL.openStream());
-			keySource = new ImmutableJWKSet<C>(set);
+			keySource = new ImmutableJWKSet<>(set);
 			return keySource;
 		} else {
 			// The public RSA keys to validate the signatures will be sourced from the
@@ -99,7 +99,7 @@ public class JwtValidator<C extends SecurityContext> {
 			ResourceRetriever retriever = new DefaultResourceRetriever(getConnectTimeout(), getReadTimeout());
 			//JWKSource<C> keySource = new RemoteJWKSet<C>(new URL(jwksURL),retriever);
 			// Implemented Seam for Dependency Injection of JWKSource for unit testing
-			keySource = new RemoteJWKSet<C>(jwksURL, retriever);
+			keySource = new RemoteJWKSet<>(jwksURL, retriever);
 		}
 
 		return keySource;

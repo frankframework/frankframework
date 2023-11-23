@@ -110,18 +110,14 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 				throw new IllegalStateException("endpoint already configured");
 			}
 
-			if(url.charAt(0) == '!') {
-				String publicUrl = url.substring(1);
+			boolean isExcludedUrl = url.charAt(0) == '!';
+			if(isExcludedUrl || config.getSecurityRoles().isEmpty()) {
+				String publicUrl = isExcludedUrl ? url.substring(1) : url;
 				log.info("registering public endpoint with url [{}]", publicUrl);
 				publicEndpoints.add(publicUrl);
 			} else {
-				if(config.getSecurityRoles().isEmpty()) {
-					log.info("registering public endpoint with url pattern [{}]", url);
-					publicEndpoints.add(url);
-				} else {
-					log.info("registering private endpoint with url pattern [{}]", url);
-					privateEndpoints.add(url);
-				}
+				log.info("registering private endpoint with url pattern [{}]", url);
+				privateEndpoints.add(url);
 			}
 		}
 	}

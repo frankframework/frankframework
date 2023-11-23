@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.dbms;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
 public class SqlTranslatorOracleToMsSqlTest {
 
 	private String convertQuery(String query) throws JdbcException {
@@ -12,7 +12,7 @@ public class SqlTranslatorOracleToMsSqlTest {
 
 	private String skipIrrelevantWhitespace(String query) {
 		String result = query.replaceAll(" \\(", "(");
-		result = result.replaceAll(", ", ",");
+		result = result.replace(", ", ",");
 		return result;
 	}
 

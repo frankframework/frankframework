@@ -212,7 +212,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		private int totalItems=0;
 		private boolean blockOpen=false;
 		private Object blockHandle;
-		private Vector<I> inputItems = new Vector<I>();
+		private Vector<I> inputItems = new Vector<>();
 		private Guard guard;
 		private List<ParallelSenderExecutor> executorList;
 
@@ -222,7 +222,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			this.results=out;
 			if (isParallel() && isCollectResults()) {
 				guard = new Guard();
-				executorList = new ArrayList<ParallelSenderExecutor>();
+				executorList = new ArrayList<>();
 			}
 		}
 

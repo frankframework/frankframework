@@ -51,7 +51,7 @@ public enum SoapVersion implements DocumentedEnum {
 			return AUTO;
 		}
 		if (s.startsWith("1")) {
-			return valueOf("SOAP" + s.replaceAll("\\.", ""));
+			return valueOf("SOAP" + s.replace(".", ""));
 		}
 		return valueOf(s.toUpperCase());
 	}
