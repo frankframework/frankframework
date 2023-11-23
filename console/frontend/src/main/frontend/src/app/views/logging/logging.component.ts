@@ -33,10 +33,10 @@ export class LoggingComponent implements OnInit {
 
   ngOnInit(): void {
     //This is only false when the user opens the logging page
-    var directory = (this.stateParams['directory'] && this.stateParams['directory'].length > 0) ? this.stateParams['directory'] : false;
+    let directory = (this.stateParams['directory'] && this.stateParams['directory'].length > 0) ? this.stateParams['directory'] : false;
     //The file param is only set when the user copy pastes an url in their browser
     if (this.stateParams['file'] && this.stateParams['file'].length > 0) {
-      var file = this.stateParams['file'];
+      let file = this.stateParams['file'];
       this.directory = directory;
       this.path = directory + "/" + file;
       this.openFile({ path: directory + "/" + file, name: file });
@@ -52,8 +52,7 @@ export class LoggingComponent implements OnInit {
   };
 
   download(file: File) {
-    // TODO: download
-    var url = this.miscService.getServerPath() + "FileViewerServlet?resultType=bin&fileName=" + this.miscService.escapeURL(file.path);
+    let url = this.miscService.getServerPath() + "FileViewerServlet?resultType=bin&fileName=" + this.miscService.escapeURL(file.path);
     window.open(url, "_blank");
   };
 
@@ -79,9 +78,9 @@ export class LoggingComponent implements OnInit {
   };
 
   openFile(file: { name: string, path: string }) {
-    var resultType = "";
-    var params = "";
-    var as = this.getFileType(file.name);
+    let resultType = "";
+    let params = "";
+    let as = this.getFileType(file.name);
     switch (as) {
       case "stats":
         resultType = "html";
@@ -96,7 +95,7 @@ export class LoggingComponent implements OnInit {
         break;
     };
 
-    var URL = this.miscService.getServerPath() + "FileViewerServlet?resultType=" + resultType + "&fileName=" + this.miscService.escapeURL(file.path) + params;
+    let URL = this.miscService.getServerPath() + "FileViewerServlet?resultType=" + resultType + "&fileName=" + this.miscService.escapeURL(file.path) + params;
     if (resultType == "xml") {
       window.open(URL, "_blank");
       return;
@@ -105,11 +104,11 @@ export class LoggingComponent implements OnInit {
     this.viewFile = URL.length > 0;
 
     setTimeout(() => {
-      var iframe = angular.element("iframe");
+      let iframe = angular.element("iframe");
 
       if (iframe[0]) {
         iframe[0].onload = () => {
-          var iframeBody = $((iframe[0] as HTMLIFrameElement).contentWindow!.document.body);
+          let iframeBody = $((iframe[0] as HTMLIFrameElement).contentWindow!.document.body);
           iframe.css({ "height": iframeBody.height()! + 50 });
         };
       }
@@ -117,7 +116,7 @@ export class LoggingComponent implements OnInit {
   };
 
   openDirectory(directory: string) {
-    var url = "logging";
+    let url = "logging";
     if (directory) {
       url = "logging?directory=" + directory;
     }
@@ -135,10 +134,10 @@ export class LoggingComponent implements OnInit {
   };
 
   copyToClipboard(path: string) {
-    var textToCopy = path.trim();
+    let textToCopy = path.trim();
 
     if (textToCopy) {
-      var el = document.createElement('textarea');
+      let el = document.createElement('textarea');
       el.value = textToCopy;
       el.setAttribute('readonly', '');
       el.style.position = 'absolute';

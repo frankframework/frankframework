@@ -17,7 +17,7 @@ export class LoggingManageComponent implements OnInit {
   logURL: string = "server/logging";
   updateDynamicParams: boolean = false;
   loggers: Record<string, string> = {};
-  errorLevels: string[] = ["DEBUG", "INFO", "WARN", "ERROR"];
+  errorLevels = ["DEBUG", "INFO", "WARN", "ERROR"] as const;
   form = {
     loglevel: "DEBUG",
     logIntermediaryResults: true,
@@ -34,7 +34,7 @@ export class LoggingManageComponent implements OnInit {
     private toastrService: ToastrService,
   ) { };
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.updateLogInformation();
     this.setForm();
   };
@@ -47,12 +47,12 @@ export class LoggingManageComponent implements OnInit {
   };
 
   //Root logger level
-  changeRootLoglevel(level: string) {
+  changeRootLoglevel(level: typeof this.errorLevels[number]) {
     this.form.loglevel = level;
   };
 
   //Individual level
-  changeLoglevel(logger: string, level: string) {
+  changeLoglevel(logger: string, level: typeof this.errorLevels[number]) {
     this.apiService.Put(this.logURL + "/settings", { logger: logger, level: level }, () => {
       this.toastrService.success("Updated logger [" + logger + "] to [" + level + "]");
       this.updateLogInformation();
@@ -67,7 +67,7 @@ export class LoggingManageComponent implements OnInit {
     });
   };
 
-  submit(formData: any) {
+  submit(formData: typeof this.form) {
     this.updateDynamicParams = true;
     this.apiService.Put(this.logURL, formData, () => {
       this.apiService.Get(this.logURL, (data) => {
