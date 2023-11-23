@@ -15,17 +15,17 @@
 */
 package nl.nn.adapterframework.statistics;
 
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 
 /**
  * List of statistics items that can be iterated over to show all values.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.9.9
  */
 public interface ItemList {
 
-	final String ITEM_FORMAT_TIME=DateUtils.FORMAT_MILLISECONDS;
+	final String ITEM_FORMAT_TIME= DateFormatUtils.FORMAT_MILLISECONDS;
 	final String ITEM_FORMAT_PERC="##0.0";
 
 	final String PRINT_FORMAT_COUNT="#,##0";

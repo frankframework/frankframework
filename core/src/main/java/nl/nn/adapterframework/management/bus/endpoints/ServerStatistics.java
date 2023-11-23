@@ -43,7 +43,7 @@ import nl.nn.adapterframework.management.bus.JsonResponseMessage;
 import nl.nn.adapterframework.management.bus.TopicSelector;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.Misc;
@@ -190,7 +190,7 @@ public class ServerStatistics extends BusEndpointBase {
 			}
 			configurationMessage.put("message", msg);
 			Date date = messageKeeper.getMessage(t).getMessageDate();
-			configurationMessage.put("date", DateUtils.format(date, DateUtils.FORMAT_FULL_GENERIC));
+			configurationMessage.put("date", DateFormatUtils.format(date, DateFormatUtils.FORMAT_FULL_GENERIC));
 			String level = messageKeeper.getMessage(t).getMessageLevel();
 			configurationMessage.put("level", level);
 			messages.add(configurationMessage);

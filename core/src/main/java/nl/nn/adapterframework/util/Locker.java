@@ -36,8 +36,8 @@ import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
-import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.dbms.JdbcException;
+import nl.nn.adapterframework.doc.Mandatory;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
@@ -268,7 +268,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 
 				try (ResultSet rs = stmt.executeQuery()) {
 					if (rs.next()) {
-						return "objectId ["+objectId+"] of type ["+rs.getString(1)+"]. Process locked by host ["+rs.getString(2)+"] at ["+DateUtils.format(rs.getTimestamp(3))+"] with expiry date ["+DateUtils.format(rs.getTimestamp(4))+"]";
+						return "objectId ["+objectId+"] of type ["+rs.getString(1)+"]. Process locked by host ["+rs.getString(2)+"] at ["+ DateFormatUtils.format(rs.getTimestamp(3))+"] with expiry date ["+ DateFormatUtils.format(rs.getTimestamp(4))+"]";
 					}
 					return "(no locker info found)";
 				}

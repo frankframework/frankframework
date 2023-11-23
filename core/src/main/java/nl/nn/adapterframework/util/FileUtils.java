@@ -386,7 +386,7 @@ public class FileUtils {
 
 		Date dateInFileName = date != null ? date : new Date();
 
-		String filename=filenamePrefix+DateUtils.format(dateInFileName,dateformat)+filenameSuffix;
+		String filename=filenamePrefix+ DateFormatUtils.format(dateInFileName,dateformat)+filenameSuffix;
 		File result = new File(directory+"/"+filename);
 		if (!result.exists()) {
 			long thisMorning = dateInFileName.getTime();

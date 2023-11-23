@@ -42,7 +42,7 @@ import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
@@ -388,7 +388,7 @@ public class IbisTester {
 	}
 
 	private static String getIsoTimeStamp() {
-		return DateUtils.format();
+		return DateFormatUtils.now();
 	}
 
 	private static String getMemoryInfo() {

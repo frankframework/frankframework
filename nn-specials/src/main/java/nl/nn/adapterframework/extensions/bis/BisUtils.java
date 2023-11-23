@@ -30,7 +30,7 @@ import org.xml.sax.SAXException;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
@@ -145,7 +145,7 @@ public class BisUtils {
 		}
 		headerFieldsElement.addSubElement(externalRefToMessageIdElement);
 		XmlBuilder timestampElement = new XmlBuilder("Timestamp");
-		timestampElement.setValue(DateUtils.format(DateUtils.FORMAT_FULL_ISO));
+		timestampElement.setValue(DateFormatUtils.now(DateFormatUtils.FORMAT_FULL_ISO));
 		headerFieldsElement.addSubElement(timestampElement);
 		messageHeaderElement.addSubElement(headerFieldsElement);
 		return messageHeaderElement.toXML();

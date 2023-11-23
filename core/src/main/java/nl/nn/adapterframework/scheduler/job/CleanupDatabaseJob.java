@@ -45,7 +45,7 @@ import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.JobDef;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -113,7 +113,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.setScalar(true);
 				String query = "DELETE FROM IBISLOCK WHERE EXPIRYDATE < ?";
 				qs.setQuery(query);
-				Parameter param = new Parameter("now", DateUtils.format());
+				Parameter param = new Parameter("now", DateFormatUtils.now());
 				param.setType(ParameterType.TIMESTAMP);
 				qs.addParameter(param);
 				qs.configure();
@@ -157,7 +157,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
 
-				Parameter param = new Parameter("now", DateUtils.format(date));
+				Parameter param = new Parameter("now", DateFormatUtils.format(date));
 				param.setType(ParameterType.TIMESTAMP);
 				qs.addParameter(param);
 

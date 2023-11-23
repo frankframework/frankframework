@@ -18,7 +18,7 @@ package nl.nn.adapterframework.errormessageformatters;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 /**
  * ErrorMessageFormatter for JUICE, introduced with the Y01-project.
  *
@@ -39,7 +39,7 @@ public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 				"       <messageId>" +messageId+   "</messageId>\n" +
 				"       <from>"+applicationName+ " "+applicationVersion+ "</from>\n" +
 				"       <to>JUICE</to>\n" +
-				"       <timeStamp>" + DateUtils.getTimeStamp() + "</timeStamp>\n" +
+				"       <timeStamp>" + DateFormatUtils.getTimeStamp() + "</timeStamp>\n" +
 				"       <ResponseStatus>\n" +
 				"           <statusCode>999</statusCode>\n" +
 				"           <statusType>SYSTEM</statusType>\n" +

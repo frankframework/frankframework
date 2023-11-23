@@ -29,7 +29,7 @@ import lombok.extern.log4j.Log4j2;
  * @author Johan Verrips IOS
  */
 @Log4j2
-public class DateUtils {
+public class DateFormatUtils {
 	public static final String FORMAT_FULL_ISO = "yyyy-MM-dd'T'HH:mm:sszzz";
 	public static final DateFormat FULL_ISO_FORMATTER = new SimpleDateFormat(FORMAT_FULL_ISO);
 	public static final String FORMAT_SHORT_ISO = "yyyy-MM-dd";
@@ -43,21 +43,21 @@ public class DateUtils {
 	public static final String FORMAT_TIME_HMS = "HH:mm:ss";
 
 
-	public static String format() {
+	public static String now() {
 		return format(new Date());
 	}
 
-	public static String format(long date) {
+	public static String now(long date) {
 		return format(new Date(date));
+	}
+
+	@Deprecated
+	public static String now(String format) {
+		return format(new Date(), new SimpleDateFormat(format));
 	}
 
 	public static String format(Date date) {
 		return format(date, FULL_GENERIC_FORMATTER);
-	}
-
-	@Deprecated
-	public static String format(String format) {
-		return format(new Date(), new SimpleDateFormat(format));
 	}
 
 	public static String format(Date date, DateFormat formatter) {
@@ -72,7 +72,7 @@ public class DateUtils {
 	 * Get current date-time timestamp in generic format.
 	 */
 	public static String getTimeStamp() {
-		return format(FORMAT_GENERICDATETIME);
+		return now(FORMAT_GENERICDATETIME);
 	}
 
 	/**

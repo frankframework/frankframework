@@ -38,7 +38,7 @@ import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.stream.document.INodeBuilder;
 import nl.nn.adapterframework.stream.document.ObjectBuilder;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.UUIDUtil;
@@ -266,11 +266,11 @@ public class FileSystemUtils {
 
 		Date lastModified = fileSystem.getModificationTime(file);
 		Date sysTime = new Date();
-		if (DateUtils.isSameDay(lastModified, sysTime) || lastModified.after(sysTime)) {
+		if (DateFormatUtils.isSameDay(lastModified, sysTime) || lastModified.after(sysTime)) {
 			return;
 		}
 		String srcFilename = fileSystem.getCanonicalName(file);
-		F tgtFilename = fileSystem.toFile(srcFilename+"."+DateUtils.format(lastModified, DateUtils.FORMAT_SHORT_ISO));
+		F tgtFilename = fileSystem.toFile(srcFilename+"."+ DateFormatUtils.format(lastModified, DateFormatUtils.FORMAT_SHORT_ISO));
 		fileSystem.renameFile(file, tgtFilename);
 
 		if (log.isDebugEnabled()) log.debug("Deleting files in folder ["+folder+"] that have a name starting with ["+srcFilename+"] and are older than ["+rotateDays+"] days");
@@ -345,11 +345,11 @@ public class FileSystemUtils {
 				Date modificationDate = fileSystem.getModificationTime(f);
 				//add date
 				if (modificationDate != null) {
-					String date = DateUtils.format(modificationDate, DateUtils.FORMAT_SHORT_ISO);
+					String date = DateFormatUtils.format(modificationDate, DateFormatUtils.FORMAT_SHORT_ISO);
 					file.addAttribute("modificationDate", date);
 
 					// add the time
-					String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
+					String time = DateFormatUtils.format(modificationDate, DateFormatUtils.FORMAT_TIME_HMS);
 					file.addAttribute("modificationTime", time);
 				}
 			}

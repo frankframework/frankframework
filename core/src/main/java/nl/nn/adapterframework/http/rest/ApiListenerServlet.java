@@ -64,7 +64,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.HttpUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -561,7 +561,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(!Message.isEmpty(result)) {
 					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
 					if(StringUtils.isNotEmpty(lastModified)) {
-						Date date = DateUtils.parseToDate(lastModified, DateUtils.FORMAT_FULL_GENERIC);
+						Date date = DateFormatUtils.parseToDate(lastModified, DateFormatUtils.FORMAT_FULL_GENERIC);
 						if(date != null) {
 							lastModDate = date.getTime();
 						}
