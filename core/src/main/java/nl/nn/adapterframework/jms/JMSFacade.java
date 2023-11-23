@@ -723,7 +723,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 					+ "] JMSDeliveryMode=[" + message.getJMSDeliveryMode()
 					+ "] JMSMessageID=[" + message.getJMSMessageID()
 					+ "] JMSCorrelationID=[" + message.getJMSCorrelationID()
-					+ "] JMSTimestamp=[" + DateFormatUtils.now(message.getJMSTimestamp())
+					+ "] JMSTimestamp=[" + DateFormatUtils.format(message.getJMSTimestamp())
 					+ "] JMSExpiration=[" + message.getJMSExpiration()
 					+ "] JMSPriority=[" + message.getJMSPriority()
 					+ "] JMSType=[" + message.getJMSType()

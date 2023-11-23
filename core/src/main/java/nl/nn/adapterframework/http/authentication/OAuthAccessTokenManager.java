@@ -160,7 +160,7 @@ public class OAuthAccessTokenManager {
 				accessTokenRefreshTime = -1;
 			} else {
 				accessTokenRefreshTime = System.currentTimeMillis() + (expiryMs<0 ? 500 * accessTokenLifetime : expiryMs);
-				log.debug("set accessTokenRefreshTime [{}]", ()-> DateFormatUtils.now(accessTokenRefreshTime));
+				log.debug("set accessTokenRefreshTime [{}]", ()-> DateFormatUtils.format(accessTokenRefreshTime));
 			}
 		} catch (ParseException e) {
 			throw new HttpAuthenticationException("Could not parse TokenResponse: "+httpResponse.getContent(), e);

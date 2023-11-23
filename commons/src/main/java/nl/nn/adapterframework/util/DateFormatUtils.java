@@ -47,13 +47,13 @@ public class DateFormatUtils {
 		return format(new Date());
 	}
 
-	public static String now(long date) {
-		return format(new Date(date));
-	}
-
 	@Deprecated
 	public static String now(String format) {
 		return format(new Date(), new SimpleDateFormat(format));
+	}
+
+	public static String format(long date) {
+		return format(new Date(date));
 	}
 
 	public static String format(Date date) {

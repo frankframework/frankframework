@@ -285,9 +285,9 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 //						businessProcFinishRcvd=((IFSAMessage)msg).getBusinessProcessingFinishTime();
 //					}
 					if (log.isInfoEnabled()) {
-						log.info(getLogPrefix()+"A) RequestSent   ["+ DateFormatUtils.now(tsRequestSent)   +"]");
-						log.info(getLogPrefix()+"B) ReplySent     ["+ DateFormatUtils.now(tsReplySent)     +"] diff (~queing + processing) ["+(tsReplySent-tsRequestSent)+"]");
-						log.info(getLogPrefix()+"C) ReplyReceived ["+ DateFormatUtils.now(tsReplyReceived) +"] diff (transport of reply )["+(tsReplyReceived-tsReplySent)+"]");
+						log.info(getLogPrefix()+"A) RequestSent   ["+ DateFormatUtils.format(tsRequestSent)   +"]");
+						log.info(getLogPrefix()+"B) ReplySent     ["+ DateFormatUtils.format(tsReplySent)     +"] diff (~queing + processing) ["+(tsReplySent-tsRequestSent)+"]");
+						log.info(getLogPrefix()+"C) ReplyReceived ["+ DateFormatUtils.format(tsReplyReceived) +"] diff (transport of reply )["+(tsReplyReceived-tsReplySent)+"]");
 //						log.info(getLogPrefix()+"C2) msgRcvd.businessProcStartRcvd  ["+DateUtils.format(businessProcStartRcvd) +"] ");
 //						log.info(getLogPrefix()+"D)  msgRcvd.jmsTimestamp           ["+DateUtils.format(jmsTimestampRcvd)      +"] diff ["+(jmsTimestampRcvd-businessProcStartSent)+"]");
 //						log.info(getLogPrefix()+"E)  msgRcvd.businessProcFinishRcvd ["+DateUtils.format(businessProcFinishRcvd)+"] diff ["+(businessProcFinishRcvd-jmsTimestampRcvd)+"] (=time spend on IFSA bus sending result?)");

@@ -105,7 +105,7 @@ public class TibcoLogJmsListener extends JmsListener {
 				}
 			}
 		}
-		return new Message(DateFormatUtils.now(creationTimes) + " " + severityStr + " [" + (engineName != null ? engineName : (environment + "-" + node)) + "] [" + (jobId != null ? jobId : "") + "] " + msg + " " + sb.toString());
+		return new Message(DateFormatUtils.format(creationTimes) + " " + severityStr + " [" + (engineName != null ? engineName : (environment + "-" + node)) + "] [" + (jobId != null ? jobId : "") + "] " + msg + " " + sb.toString());
 	}
 
 	private String logLevelToText(int logLevel) {

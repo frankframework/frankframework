@@ -302,9 +302,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			if (log.isInfoEnabled()) {
 				long onMessageEnd= System.currentTimeMillis();
 
-				log.info("{} A) JMSMessageTime [{}]", logPrefix, DateFormatUtils.now(jmsTimestamp));
-				log.info("{} B) onMessageStart [{}] diff (~'queing' time) [{}]", logPrefix, DateFormatUtils.now(onMessageStart), (onMessageStart-jmsTimestamp));
-				log.info("{} C) onMessageEnd   [{}] diff (process time) [{}]", logPrefix, DateFormatUtils.now(onMessageEnd), (onMessageEnd-onMessageStart));
+				log.info("{} A) JMSMessageTime [{}]", logPrefix, DateFormatUtils.format(jmsTimestamp));
+				log.info("{} B) onMessageStart [{}] diff (~'queing' time) [{}]", logPrefix, DateFormatUtils.format(onMessageStart), (onMessageStart-jmsTimestamp));
+				log.info("{} C) onMessageEnd   [{}] diff (process time) [{}]", logPrefix, DateFormatUtils.format(onMessageEnd), (onMessageEnd-onMessageStart));
 			}
 		}
 	}

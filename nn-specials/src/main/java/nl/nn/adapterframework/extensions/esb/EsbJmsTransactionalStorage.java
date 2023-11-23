@@ -167,7 +167,7 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 		parameterValues.put("timestamp", 		DateFormatUtils.now(DateFormatUtils.FORMAT_FULL_ISO));
 		parameterValues.put("msgMessageId", 	messageId);
 		parameterValues.put("msgCorrelationId", correlationId);
-		parameterValues.put("msgTimestamp", 	DateFormatUtils.now( receivedDate.getTime()));
+		parameterValues.put("msgTimestamp", 	DateFormatUtils.format( receivedDate.getTime()));
 		parameterValues.put("slotId", 			getSlotId());
 		if (getType().equalsIgnoreCase("E")) {
 			parameterValues.put("errorText", comments);
