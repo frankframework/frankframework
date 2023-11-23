@@ -98,6 +98,7 @@ import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/mon
 import { LoggingComponent } from './views/logging/logging.component';
 import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
 import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
+import { ErrorComponent } from './views/error/error.component';
 import { LoadingComponent } from './views/loading/loading.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 
@@ -118,6 +119,7 @@ appModule
   .directive('configurationsUpload', downgradeComponent({ component: ConfigurationsUploadComponent }) as angular.IDirectiveFactory)
   .directive('configurationsManageDetails', downgradeComponent({ component: ConfigurationsManageDetailsComponent }) as angular.IDirectiveFactory)
   .directive('environmentVariables', downgradeComponent({ component: EnvironmentVariablesComponent }) as angular.IDirectiveFactory)
+  .directive('error', downgradeComponent({ component: ErrorComponent }) as angular.IDirectiveFactory)
   .directive('flow', downgradeComponent({ component: FlowComponent }) as angular.IDirectiveFactory)
   .directive('hamburger', downgradeComponent({ component: HamburgerComponent }) as angular.IDirectiveFactory)
   .directive('ibisstoreSummary', downgradeComponent({ component: IbisstoreSummaryComponent }) as angular.IDirectiveFactory)
@@ -199,6 +201,7 @@ appModule
     WebservicesComponent,
     MonitorsComponent,
     MonitorsAddEditComponent,
+    ErrorComponent,
     LoadingComponent,
     LoggingComponent,
     LoggingManageComponent,
