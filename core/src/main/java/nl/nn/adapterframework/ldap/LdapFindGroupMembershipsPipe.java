@@ -68,7 +68,7 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		Map<String,Object> options=new HashMap<String,Object>();
+		Map<String,Object> options=new HashMap<>();
 		options.put("java.naming.provider.url",retrieveUrl(getHost(), getPort(), getBaseDN(), isUseSsl()));
 		options.put(Context.SECURITY_AUTHENTICATION, "simple");
 		options.put(Context.SECURITY_PRINCIPAL, cf.getUsername());

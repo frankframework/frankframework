@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -58,11 +58,9 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	@Test
 	public void testUnzippingAndCollectingResult2String() throws Exception {
 		pipe.setResultIsContent(true);
-		pipe.setConvert2String(true);
 		pipe.setZipEntryPattern("filebb.log");
 		configureAndStartPipe();
 		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.zip"));
-		assertFalse(prr.getResult().isBinary());
 		assertEquals("bbb", prr.getResult().asString());
 	}
 
@@ -87,7 +85,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		GregorianCalendar cal = new GregorianCalendar();
 		String path = prr.getResult().asString();
 		String expectedName = "blaat-"+cal.get(Calendar.YEAR)+".zip";
-		assertTrue("path ["+path+"] does not end with ["+expectedName+"]", path.endsWith(expectedName));
+		assertTrue(path.endsWith(expectedName), "path ["+path+"] does not end with ["+expectedName+"]");
 
 		try (ZipInputStream zipin = new ZipInputStream(new FileInputStream(path))) {
 			ZipEntry entry = zipin.getNextEntry();
@@ -100,7 +98,6 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	@Test
 	public void testDecompressingGz() throws Exception {
 		pipe.setResultIsContent(true);
-		pipe.setConvert2String(true);
 		pipe.setFileFormat(FileFormat.GZ);
 		configureAndStartPipe();
 		PipeRunResult prr = doPipe(TestFileUtils.getTestFilePath("/Unzip/ab.tar.gz"));
@@ -149,7 +146,6 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		String outputDir = tempFolder.toString();
 		pipe.setFilenamePattern("file.txt");
 		pipe.setZipEntryPattern("fileaa.txt");
-		pipe.setConvert2String(true);
 		pipe.setFileFormat(FileFormat.ZIP);
 		pipe.setOutputDirectory(outputDir);
 		configureAndStartPipe();
@@ -237,17 +233,6 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 		pipe.setCompress(false);
 		checkBoolean = pipe.isCompress();
-		assertEquals(false, checkBoolean);
-	}
-
-	@Test
-	public void testGetterSetterConvert2String() {
-		pipe.setConvert2String(true);
-		boolean checkBoolean = pipe.isConvert2String();
-		assertEquals(true, checkBoolean);
-
-		pipe.setConvert2String(false);
-		checkBoolean = pipe.isConvert2String();
 		assertEquals(false, checkBoolean);
 	}
 
@@ -346,7 +331,6 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 		pipe.setMessageIsContent(true);
 		pipe.setResultIsContent(true);
 		pipe.setCompress(false);
-		pipe.setConvert2String(true);
 
 		configureAndStartPipe();
 		assertNotNull(doPipe(pipe, DUMMY_STRING_SEMI_COLON, session)); // TODO should assert proper return value
@@ -369,7 +353,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	}
 
 	@Test
-	public void testCaptureUnconvertableArray() throws Exception {
+	public void testCaptureInconvertibleArray() throws Exception {
 		pipe.setMessageIsContent(true);
 
 		configureAndStartPipe();

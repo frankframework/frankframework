@@ -64,7 +64,7 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 				log.debug("no active transaction in thread [{}]", ()->Thread.currentThread().getName());
 				return null;
 			}
-			coordinator = new TransactionConnectorCoordinator<T,R>(txManager);
+			coordinator = new TransactionConnectorCoordinator<>(txManager);
 			coordinators.set(coordinator);
 		}
 		return coordinator;

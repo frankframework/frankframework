@@ -31,7 +31,7 @@ public class Dir2Map {
 	private boolean showDirectories = false;
 	private int maxItems = -1;
 	private int fileListSize = 0;
-	private List<Map<String, Object>> fileInfoList = new ArrayList<Map<String, Object>>();
+	private List<Map<String, Object>> fileInfoList = new ArrayList<>();
 
 	public Dir2Map(String directory, boolean sizeFormat, String wildcard, boolean showDirectories, int maxItems) {
 		this(new File(directory), sizeFormat, wildcard, showDirectories, maxItems);
@@ -93,7 +93,7 @@ public class Dir2Map {
 	}
 
 	private Map<String, Object> FileInfo(File file, String displayName) {
-		Map<String, Object> fileInfo = new HashMap<String, Object>(5);
+		Map<String, Object> fileInfo = new HashMap<>(5);
 
 		fileInfo.put("name", displayName);
 		fileInfo.put("path", normalizePath(file));

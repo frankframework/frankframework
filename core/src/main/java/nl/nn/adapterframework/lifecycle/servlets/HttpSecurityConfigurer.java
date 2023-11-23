@@ -15,11 +15,13 @@
 */
 package nl.nn.adapterframework.lifecycle.servlets;
 
+import java.util.EnumSet;
 import java.util.Map;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration.Dynamic;
 import javax.servlet.ServletContext;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,18 +34,19 @@ import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.filter.DelegatingFilterProxy;
 
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.lifecycle.ServletManager;
-import nl.nn.adapterframework.util.LogUtil;
 
+@Log4j2
 @Order(Ordered.LOWEST_PRECEDENCE)
 @Configuration
 @EnableWebSecurity //Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) //Enables JSR 250 (JAX-RS) annotations
 public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity>, InitializingBean {
 
-	private Logger log = LogUtil.getLogger(this);
 	private @Setter @Autowired ServletManager servletManager;
 	private @Setter @Autowired BeanFactory beanFactory;
 	private @Setter @Autowired ServletContext servletContext;
@@ -57,6 +60,11 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 		if(!(beanFactory instanceof ConfigurableListableBeanFactory)) {
 			throw new IllegalStateException("beanFactory not set or not instanceof ConfigurableListableBeanFactory");
 		}
+
+		// Add the SpringSecurity filter to enable authentication
+		Dynamic filter = servletContext.addFilter("springSecurityFilterChain", DelegatingFilterProxy.class);
+		filter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
+		servletContext.log("registered SpringSecurityFilter");
 	}
 
 	@Override

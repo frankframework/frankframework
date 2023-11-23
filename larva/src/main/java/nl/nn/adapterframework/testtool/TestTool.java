@@ -187,7 +187,7 @@ public class TestTool {
 
 		Map<String, Object> writers = null;
 		if (!silent) {
-			writers = new HashMap<String, Object>();
+			writers = new HashMap<>();
 			writers.put("out", out);
 			writers.put("htmlbuffer", new StringWriter());
 			writers.put("logbuffer", new StringWriter());
@@ -263,7 +263,7 @@ public class TestTool {
 				List<File> scenarioFiles;
 				if (paramExecute.endsWith(".properties")) {
 					debugMessage("Read one scenario", writers);
-					scenarioFiles = new ArrayList<File>();
+					scenarioFiles = new ArrayList<>();
 					scenarioFiles.add(new File(paramExecute));
 				} else {
 					debugMessage("Read all scenarios from directory '" + paramExecute + "'", writers);
@@ -991,8 +991,8 @@ public class TestTool {
 			if (!realPath.endsWith(File.separator)) {
 				realPath = realPath + File.separator;
 			}
-			Map<String, String> scenariosRoots = new HashMap<String, String>();
-			Map<String, String> scenariosRootsBroken = new HashMap<String, String>();
+			Map<String, String> scenariosRoots = new HashMap<>();
+			Map<String, String> scenariosRootsBroken = new HashMap<>();
 			int j = 1;
 			String directory = appConstants.getProperty("scenariosroot" + j + ".directory");
 			String description = appConstants.getProperty("scenariosroot" + j + ".description");
@@ -1026,7 +1026,7 @@ public class TestTool {
 				directory = appConstants.getProperty("scenariosroot" + j + ".directory");
 				description = appConstants.getProperty("scenariosroot" + j + ".description");
 			}
-			TreeSet<String> treeSet = new TreeSet<String>(new CaseInsensitiveComparator());
+			TreeSet<String> treeSet = new TreeSet<>(new CaseInsensitiveComparator());
 			treeSet.addAll(scenariosRoots.keySet());
 			Iterator<String> iterator = treeSet.iterator();
 			while (iterator.hasNext()) {
@@ -1061,7 +1061,7 @@ public class TestTool {
 	}
 
 	public static List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory, Map<String, Object> writers) {
-		List<File> scenarioFiles = new ArrayList<File>();
+		List<File> scenarioFiles = new ArrayList<>();
 		debugMessage("List all files in directory '" + scenariosDirectory + "'", writers);
 		File[] files = new File(scenariosDirectory).listFiles();
 		if (files == null) {
@@ -1185,7 +1185,7 @@ public class TestTool {
 	}
 
 	public static List<String> getSteps(Properties properties, Map<String, Object> writers) {
-		List<String> steps = new ArrayList<String>();
+		List<String> steps = new ArrayList<>();
 		int i = 1;
 		boolean lastStepFound = false;
 		while (!lastStepFound) {
@@ -2631,7 +2631,7 @@ public class TestTool {
 			case "removeKey":
 				// in case of an empty string as attribute, assume it should read the value
 				// ie: ignoreKey.identifier=value
-				attributes = new ArrayList<String>(Arrays.asList( new String[]{"key", ""}));
+				attributes = new ArrayList<>(Arrays.asList( new String[]{"key", ""}));
 				break;
 		}
 

@@ -45,11 +45,11 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 
 	private boolean frozen = false;
 
-	private final List<JCoDestination> destinations = new LinkedList<JCoDestination>();
+	private final List<JCoDestination> destinations = new LinkedList<>();
 
-	private final List<String> tids = new LinkedList<String>();
+	private final List<String> tids = new LinkedList<>();
 
-	private final Map<JCoDestination,List<String>> tidsPerDestination = new HashMap<JCoDestination,List<String>>();
+	private final Map<JCoDestination,List<String>> tidsPerDestination = new HashMap<>();
 
 
 	/**
@@ -124,7 +124,7 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 			if (destination != null) {
 				List<String> tids = this.tidsPerDestination.get(destination);
 				if (tids == null) {
-					tids = new LinkedList<String>();
+					tids = new LinkedList<>();
 					this.tidsPerDestination.put(destination, tids);
 				}
 				tids.add(tid);

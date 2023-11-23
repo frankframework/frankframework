@@ -79,11 +79,11 @@ public class XmlAligner extends XMLFilterImpl {
 
 	private @Getter @Setter Locator documentLocator;
 
-	private Stack<Set<String>> multipleOccurringElements=new Stack<Set<String>>();
+	private Stack<Set<String>> multipleOccurringElements=new Stack<>();
 	private @Getter Set<String> multipleOccurringChildElements=null;
-	private Stack<Boolean> parentOfSingleMultipleOccurringChildElements=new Stack<Boolean>();
+	private Stack<Boolean> parentOfSingleMultipleOccurringChildElements=new Stack<>();
 	private @Getter boolean parentOfSingleMultipleOccurringChildElement=false;
-	private Stack<Boolean> typeContainsWildcards=new Stack<Boolean>();
+	private Stack<Boolean> typeContainsWildcards=new Stack<>();
 	private @Getter boolean typeContainsWildcard=false;
 
 	private final char[] INDENTOR="\n                                                                                         ".toCharArray();
@@ -344,7 +344,7 @@ public class XmlAligner extends XMLFilterImpl {
 	}
 
 	protected Set<String> findMultipleOccurringChildElements(XSParticle particle) {
-		Set<String> result=new HashSet<String>();
+		Set<String> result=new HashSet<>();
 		if (particle==null) {
 			log.warn("typeDefinition particle is null, is this a problem?");
 			return result;
@@ -435,7 +435,7 @@ public class XmlAligner extends XMLFilterImpl {
 	protected static List<XSModel> getSchemaInformation(URL schemaURL) {
 		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
 		XSModel xsModel = xsLoader.loadURI(schemaURL.toExternalForm());
-		List<XSModel> schemaInformation= new LinkedList<XSModel>();
+		List<XSModel> schemaInformation= new LinkedList<>();
 		schemaInformation.add(xsModel);
 		return schemaInformation;
 	}
@@ -476,7 +476,7 @@ public class XmlAligner extends XMLFilterImpl {
 		return null;
 	}
 	protected Set<XSElementDeclaration> findElementDeclarationsForName(String namespace, String name) {
-		Set<XSElementDeclaration> result=new LinkedHashSet<XSElementDeclaration>();
+		Set<XSElementDeclaration> result=new LinkedHashSet<>();
 		if (schemaInformation==null) {
 			throw new IllegalStateException("No SchemaInformation specified, cannot find namespaces for ["+namespace+"]:["+name+"]");
 		}

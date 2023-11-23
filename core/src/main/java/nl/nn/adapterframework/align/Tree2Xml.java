@@ -80,7 +80,7 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 		String childName=childElementDeclaration.getName();
 		Iterable<N> children = getNodeChildrenByName(node, childElementDeclaration);
 		if (children==null && sp!=null && sp.hasSubstitutionsFor(getContext(), childName)) {
-			List<N> result=new LinkedList<N>();
+			List<N> result=new LinkedList<>();
 			result.add(getSubstitutedChild(node, childName));
 			return result;
 		}
@@ -126,7 +126,7 @@ public abstract class Tree2Xml<C,N> extends ToXml<C,N> {
 	}
 
 	public void setOverrideValues(Map<String, Object> overrideValues) {
-		OverridesMap<Object> overrides=new OverridesMap<Object>();
+		OverridesMap<Object> overrides=new OverridesMap<>();
 		overrides.registerSubstitutes(overrideValues);
 		setSubstitutionProvider(overrides);
 	}

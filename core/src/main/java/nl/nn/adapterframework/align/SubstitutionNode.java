@@ -48,12 +48,12 @@ public class SubstitutionNode<V> {
 			String key = elements[--index];
 			SubstitutionNode<V> parent=null;
 			if (parents==null) {
-				parents=new HashMap<String,SubstitutionNode<V>>();
+				parents=new HashMap<>();
 			} else {
 				parent = parents.get(key);
 			}
 			if (parent==null) {
-				parent=new SubstitutionNode<V>();
+				parent=new SubstitutionNode<>();
 				parents.put(key, parent);
 			}
 			parent.registerSubstitute(elements, index, value);

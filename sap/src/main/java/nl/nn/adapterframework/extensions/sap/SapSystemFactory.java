@@ -37,7 +37,7 @@ public class SapSystemFactory {
 	private final Logger log;
 
 	private static SapSystemFactory self = null;
-	private final Hashtable<String, Object> sapSystems = new Hashtable<String, Object>();
+	private final Hashtable<String, Object> sapSystems = new Hashtable<>();
 
 	private SapSystemFactory() {
 		super();
@@ -67,7 +67,7 @@ public class SapSystemFactory {
 	}
 
 	public Iterator<String> getRegisteredSapSystemNames() {
-		SortedSet<String> sortedKeys = new TreeSet<String>(sapSystems.keySet());
+		SortedSet<String> sortedKeys = new TreeSet<>(sapSystems.keySet());
 		return sortedKeys.iterator();
 	}
 
