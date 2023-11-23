@@ -13,7 +13,7 @@
 	<!-- Error pages -->
 	<error-page>
 		<exception-type>java.lang.Exception</exception-type>
-		<location>/jsp/errorPage.jsp</location>
+		<location>/iaf/jsp/errorPage.jsp</location>
 	</error-page>
 
 

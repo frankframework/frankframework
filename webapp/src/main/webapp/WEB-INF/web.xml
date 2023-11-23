@@ -9,17 +9,6 @@
 		These actions are configured in an XML file. On the event several actions, called pipes, grouped in a pipeline, are fired.
 	</description>
 
-	<!-- Spring Security -->
-	<filter>
-		<filter-name>springSecurityFilterChain</filter-name>
-		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-	</filter>
-
-	<filter-mapping>
-		<filter-name>springSecurityFilterChain</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-
 	<!--
 		First a 'ROOT' Spring WebApplicationContext is started. This in turn registers all dynamic servlets and IbisInitializers
 		After loading the ROOT context with all HTTP/CXF servlets (endpoints) all servlets will be initialized.
@@ -32,10 +21,4 @@
 		<servlet-class>nl.nn.adapterframework.lifecycle.IbisApplicationServlet</servlet-class>
 		<load-on-startup>0</load-on-startup>
 	</servlet>
-
-	<!-- Error pages -->
-	<error-page>
-		<exception-type>java.lang.Exception</exception-type>
-		<location>/jsp/errorPage.jsp</location>
-	</error-page>
 </web-app>
