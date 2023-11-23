@@ -62,6 +62,16 @@
 					<artifactId>maven-war-plugin</artifactId>
 					<configuration>
 						<failOnMissingWebXml>false</failOnMissingWebXml>
+						<packagingExcludes>.gitignore</packagingExcludes>
+						<archive>
+							<manifest>
+								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<DisableIBMJAXWSEngine>true</DisableIBMJAXWSEngine>
+								<Enable-CDI>false</Enable-CDI>
+							</manifestEntries>
+						</archive>
 					</configuration>
 				</plugin>
 			</plugins>

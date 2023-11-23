@@ -39,6 +39,7 @@ import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -51,9 +52,9 @@ import nl.nn.adapterframework.util.LogUtil;
  * 
  * @author Niels Meijer
  */
+@Log4j2
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class ContextLoaderInitializer implements WebApplicationInitializer {
-	private static final Logger LOG = LogUtil.getLogger(ContextLoaderInitializer.class);
+public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	@Override
@@ -64,10 +65,10 @@ public class ContextLoaderInitializer implements WebApplicationInitializer {
 		try {
 			WebApplicationContext wac = contextLoader.initWebApplicationContext(servletContext);
 			SpringBus bus = (SpringBus) wac.getBean("cxf");
-			LOG.info("Successfully started Frank EnvironmentContext with SpringBus [{}]", bus::getId);
+			log.info("Successfully started Frank EnvironmentContext with SpringBus [{}]", bus::getId);
 			APPLICATION_LOG.info("Successfully started Frank EnvironmentContext");
 		} catch (Exception e) {
-			LOG.fatal("IBIS ApplicationInitializer failed to initialize", e);
+			log.fatal("IBIS ApplicationInitializer failed to initialize", e);
 			APPLICATION_LOG.fatal("IBIS ApplicationInitializer failed to initialize", e);
 			throw e;
 		}
@@ -121,13 +122,13 @@ public class ContextLoaderInitializer implements WebApplicationInitializer {
 		ClassLoader classLoader = this.getClass().getClassLoader();
 		URL fileURL = classLoader.getResource(file);
 		if(fileURL == null) {
-			LOG.warn("unable to locate TestTool configuration [{}] using classloader [{}]", file, classLoader);
+			log.warn("unable to locate TestTool configuration [{}] using classloader [{}]", file, classLoader);
 		} else {
 			if(file.indexOf(":") == -1) {
 				file = ResourceUtils.CLASSPATH_URL_PREFIX+file;
 			}
 
-			LOG.info("loading TestTool configuration [{}]", file);
+			log.info("loading TestTool configuration [{}]", file);
 			springConfigurationFiles.add(file);
 		}
 
@@ -159,7 +160,7 @@ public class ContextLoaderInitializer implements WebApplicationInitializer {
 		String serverType = System.getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 		String serverCustomization = System.getProperty(AppConstants.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY,"");
 		if (autoDeterminedApplicationServerType.equals(serverType)) { //and is it the same as the automatically detected version?
-			LOG.info("property [{}] already has a default value [{}]", AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, autoDeterminedApplicationServerType);
+			log.info("property [{}] already has a default value [{}]", AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, autoDeterminedApplicationServerType);
 		}
 		else if (StringUtils.isEmpty(serverType)) { //or has it not been set?
 			APPLICATION_LOG.info("Determined ApplicationServer [{}]{}", autoDeterminedApplicationServerType, (StringUtils.isNotEmpty(serverCustomization) ? " customization ["+serverCustomization+"]":""));
