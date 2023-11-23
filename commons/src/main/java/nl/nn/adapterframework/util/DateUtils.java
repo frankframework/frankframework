@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.util;
 
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -92,76 +91,6 @@ public class DateUtils {
 	public static Date parseAnyDate(String dateInAnyFormat) throws CalendarParserException {
 		Calendar c = CalendarParser.parse(dateInAnyFormat);
 		return new Date(c.getTimeInMillis());
-	}
-
-	/**
-	 * Convert date format
-	 *
-	 * @param from  String	date format from.
-	 * @param to    String	date format to.
-	 * @param value String	date to reformat.
-	 */
-	public static String convertDate(String from, String to, String value) throws ParseException {
-		log.debug("convertDate from [" + from + "] to [" + to + "] value [" + value + "]");
-		String result = "";
-
-		SimpleDateFormat formatterFrom = new SimpleDateFormat(from);
-		SimpleDateFormat formatterTo = new SimpleDateFormat(to);
-		Date d = formatterFrom.parse(value);
-		String tempStr = formatterFrom.format(d);
-
-		if (tempStr.equals(value)) {
-			result = formatterTo.format(d);
-		} else {
-			log.warn("Error on validating input (" + value + ") with reverse check [" + tempStr + "]");
-			throw new ParseException("Error on validating input (" + value + ") with reverse check [" + tempStr + "]", 0);
-		}
-
-		log.debug("convertDate result [" + result + "]");
-		return result;
-	}
-
-
-	/**
-	 * Add a number of years, months, days to a date specified in a shortIsoFormat, and return it in the same format.
-	 * Als een datum component niet aangepast hoeft te worden, moet 0 meegegeven worden.
-	 * Dus bijv: changeDate("2006-03-23", 2, 1, -4) = "2008-05-19"
-	 *
-	 * @param date   A String representing a date in format yyyy-MM-dd.
-	 * @param years
-	 * @param months
-	 * @param days
-	 */
-	public static String changeDate(String date, int years, int months, int days) throws ParseException {
-		return changeDate(date, years, months, days, "yyyy-MM-dd");
-	}
-
-	/**
-	 * Add a number of years, months, days to a date specified in a certain format, and return it in the same format.
-	 * Als een datum component niet aangepast hoeft te worden, moet 0 meegegeven worden.
-	 * Dus bijv: changeDate("2006-03-23", 2, 1, -4) = "2008-05-19"
-	 *
-	 * @param date       A String representing a date in format (dateFormat).
-	 * @param years      int
-	 * @param months     int
-	 * @param days       int
-	 * @param dateFormat A String representing the date format of date.
-	 */
-	public static String changeDate(String date, int years, int months, int days, String dateFormat) throws ParseException {
-		if (log.isDebugEnabled()) log.debug("changeDate date [" + date + "] years [" + years + "] months [" + months + "] days [" + days + "]");
-		String result = "";
-
-		SimpleDateFormat df = new SimpleDateFormat(dateFormat);
-		Date d = df.parse(date);
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(d);
-		cal.add(Calendar.YEAR, years);
-		cal.add(Calendar.MONTH, months);
-		cal.add(Calendar.DAY_OF_MONTH, days);
-		result = df.format(cal.getTime());
-
-		log.debug("changeDate result [" + result + "]");
-		return result;
 	}
 
 	public static boolean isSameDay(Date date1, Date date2) {

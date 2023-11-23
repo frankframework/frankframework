@@ -118,24 +118,6 @@ public class DateUtilsTest {
 	}
 
 	@Test
-	public void testConvertDate() throws Exception {
-		String date = DateUtils.convertDate(DateUtils.FORMAT_DATE, DateUtils.FORMAT_FULL_GENERIC, "18-03-13");
-		assertEquals("2013-03-18 00:00:00.000", date);
-	}
-
-	@Test
-	public void testChangeDateForDateYearsMonthsDays() throws Exception {
-		String date = DateUtils.changeDate("2013-10-10", 2, 3, 5);
-		assertEquals("2016-01-15", date);
-	}
-
-	@Test
-	public void testChangeDateForDateYearsMonthsDaysDateFormat() throws Exception {
-		String date = DateUtils.changeDate("10-10-13", 2, 3, 5, DateUtils.FORMAT_DATE);
-		assertEquals("15-01-16", date);
-	}
-
-	@Test
 	public void testIsSameDay() throws Exception {
 		Date d1 = DateUtils.parseAnyDate("10-10-2013");
 		Date d2 = DateUtils.parseAnyDate("2013-10-10");
