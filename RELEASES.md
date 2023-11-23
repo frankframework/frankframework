@@ -955,7 +955,7 @@ Performance enhancements
 - Fix JDBC driver default date format to yyyy-MM-dd
 - Fix JDBC driver default timestamp format to yyyy-MM-dd HH:mm:ss
 - Bugfix in ShowIbisstoreSummary "(SQLServerException) SQLState [S00010], errorCode [195]: 'to_char' is not a recognized built-in function name." 
-- Add DllServiceDispatcher see [ibis-servicedispatcher](https://github.com/ibissource/ibis-servicedispatcher/commit/f759f897b063757bcc7a50229715035159d79dd5)
+- Add DllServiceDispatcher see [ibis-servicedispatcher](https://github.com/frankframework/servicedispatcher/commit/f759f897b063757bcc7a50229715035159d79dd5)
 - Bugfix in ShowIbisstoreSummary (caused 2014-11-26)
 - Fix connection leak in DomainTransformerPipe
 - Prevent 'sap.jcoDestination does not exist'
