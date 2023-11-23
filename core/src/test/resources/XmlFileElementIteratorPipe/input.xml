@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GetPartiesOnAgreementRLY xmlns="http://www.ibissource.org/tom">
+<GetPartiesOnAgreementRLY xmlns="http://www.frankframework.org/tom">
 	<Agreement>not this tag</Agreement>
 	<PartyAgreementRole>
 		<PartyInternalAgreementRole>

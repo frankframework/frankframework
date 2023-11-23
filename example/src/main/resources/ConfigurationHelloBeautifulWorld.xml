@@ -3,11 +3,11 @@ Download ibisdoc.xsd from the Ibis console (via /rest/webservices). You can
 refer to it directly in the xsi:noNamespaceSchemaLocation attribute but it is
 better to refer to it using Eclipse, Window, Preferences, XML, XML Catalog,
 Add..., Location: path/to/ibisdoc.xsd, Key:
-http://schemas.ibissource.org/ibisdoc.xsd, OK
+http://schemas.frankframework.org/ibisdoc.xsd, OK
 -->
 <Module
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:noNamespaceSchemaLocation="http://schemas.ibissource.org/ibisdoc.xsd"
+	xsi:noNamespaceSchemaLocation="http://schemas.frankframework.org/ibisdoc.xsd"
 	name="My first beautiful configuration"
 	>
 	<Adapter name="HelloBeautifulWorld" active="${HelloBeautifulWorld.active}">

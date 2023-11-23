@@ -2,7 +2,7 @@
 <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
 	<Header/>
 	<Body>
-		<GetPolicyDetails_Request xmlns="http://api.ibissource.org/GetPolicyDetails">
+		<GetPolicyDetails_Request xmlns="http://api.frankframework.org/GetPolicyDetails">
 			<PolicyNumber>LV07206304</PolicyNumber>
 			<VTAId>LCPM</VTAId>
 			<SAPBPId>123</SAPBPId>

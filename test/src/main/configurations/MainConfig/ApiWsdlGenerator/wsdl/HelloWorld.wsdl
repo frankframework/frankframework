@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://ibissource.org/HelloWorld/wsdl/" xmlns:ns1="http://ibissource.org/HelloWorld" targetNamespace="http://ibissource.org/HelloWorld/wsdl/">
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://frankframework.org/HelloWorld/wsdl/" xmlns:ns1="http://frankframework.org/HelloWorld" targetNamespace="http://frankframework.org/HelloWorld/wsdl/">
 	<wsdl:types>
-		<xsd:schema xmlns="http://ibissource.org/HelloWorld" elementFormDefault="qualified" targetNamespace="http://ibissource.org/HelloWorld">
+		<xsd:schema xmlns="http://frankframework.org/HelloWorld" elementFormDefault="qualified" targetNamespace="http://frankframework.org/HelloWorld">
 			<xsd:element name="HelloWorld_Request" type="xsd:anyType"/>
 			<xsd:element name="HelloWorld_Response" type="ResponseType"/>
 			<xsd:complexType name="ResponseType">

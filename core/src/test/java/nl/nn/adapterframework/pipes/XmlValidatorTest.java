@@ -472,7 +472,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	@Test //copied from iaf-test /XmlValidator/scenario05a, then simplified
 	public void testIncludeOK() throws Exception {
 		// Arrange
-		XmlValidator validator = buildXmlValidator(configuration, "http://www.ibissource.org/tom /Validation/Include/xsd/main.xsd", "GetParties");
+		XmlValidator validator = buildXmlValidator(configuration, "http://www.frankframework.org/tom /Validation/Include/xsd/main.xsd", "GetParties");
 
 		// Act
 		validator.configure();
@@ -496,7 +496,7 @@ public class XmlValidatorTest extends XmlValidatorTestBase {
 	@Test //copied from iaf-test /XmlValidator/scenario05b, then simplified
 	public void testIncludeError() throws Exception {
 		// Arrange
-		XmlValidator validator = buildXmlValidator(configuration, "http://www.ibissource.org/tom /Validation/Include/xsd/main.xsd", "GetParties");
+		XmlValidator validator = buildXmlValidator(configuration, "http://www.frankframework.org/tom /Validation/Include/xsd/main.xsd", "GetParties");
 		validator.setThrowException(false);
 
 		// Act

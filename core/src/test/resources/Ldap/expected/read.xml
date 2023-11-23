@@ -9,9 +9,9 @@
 		value="41b160f3-be5a-4389-a776-ff1de2ec91ec" />
 	<attribute name="gidNumber" value="505" />
 	<attribute name="mail"
-		value="leaadministrator@ibissource.org" />
+		value="leaadministrator@frankframework.org" />
 	<attribute name="entryDN"
-		value="cn=lea administrator,ou=groups,ou=development,dc=ibissource,dc=org" />
+		value="cn=lea administrator,ou=groups,ou=development,dc=frankframework,dc=org" />
 	<attribute name="objectClass">
 		<item value="posixGroup" />
 		<item value="top" />

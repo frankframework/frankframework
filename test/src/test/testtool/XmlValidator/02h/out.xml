@@ -1,6 +1,6 @@
 <Error>
 	<errorCode>FAILURE</errorCode>
-	<errorMessage>Validation using XmlValidator with 'http://www.ibissource.org/tom /XmlValidator/FindParty/xsd/V1.20_FindParty.xsd' failed:
+	<errorMessage>Validation using XmlValidator with 'http://www.frankframework.org/tom /XmlValidator/FindParty/xsd/V1.20_FindParty.xsd' failed:
 /: at (1,65): cvc-elt.1.a: Cannot find the declaration of element 'FindPartyREQ'.
 /FindPartyREQ: Unknown namespace 'http://www.w3.org/2001/XMLSchema-instance'</errorMessage>
 </Error>

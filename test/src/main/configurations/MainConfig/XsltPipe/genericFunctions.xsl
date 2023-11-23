@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:java="http://xml.apache.org/xslt/java"
 	xmlns:func="http://exslt.org/functions"
-	xmlns:ibisext="http://ibissource.org/ibisext"
+	xmlns:ibisext="http://frankframework.org/ibisext"
 	xmlns:cal="xalan://java.util.Calendar"
 	exclude-result-prefixes="java func ibisext cal" version="1.0">
 	
@@ -31,7 +31,7 @@
 		convertDate als functie toegevoegd.
 			Include genericFunctions in de XSL
 			en neem de namespace op in <xsl:stylesheet>:
-				xmlns:ibisext="http://ibissource.org/ibisext"
+				xmlns:ibisext="http://frankframework.org/ibisext"
 		
 		Zie voor voorbeeld example.xsl
 		
