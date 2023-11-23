@@ -74,9 +74,9 @@ import { InformationModalComponent } from './components/pages/information-modal/
 import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
 import { FlowModalComponent } from './views/status/flow/flow-modal/flow-modal.component';
 import { NgMermaidComponent } from './views/status/flow/flow-modal/ng-mermaid.component';
-import { LoggingComponent } from './views/logging/logging.component';
-import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
-import { ConnectionsComponent } from './views/connections/connections.component';
+// import { LoggingComponent } from './views/logging/logging.component';
+// import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
+// import { ConnectionsComponent } from './views/connections/connections.component';
 import { ErrorComponent } from './views/error/error.component';
 import { LoadingComponent } from './views/loading/loading.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
@@ -130,11 +130,12 @@ const windowProvider: ValueProvider = {
     WebservicesComponent,
     MonitorsComponent,
     MonitorsAddEditComponent,
-    ConnectionsComponent,
+    // ConnectionsComponent,
     ErrorComponent,
     LoadingComponent,
-    LoggingComponent,
-    LoggingManageComponent,
+    // LoggingComponent,
+    // LoggingManageComponent,
+    NotificationsComponent,
 
     // pipes
     ConfigurationFilterPipe,
@@ -157,7 +158,6 @@ const windowProvider: ValueProvider = {
     InformationModalComponent,
     FeedbackModalComponent,
     FlowModalComponent,
-    NotificationsComponent,
   ],
   imports: [
     BrowserModule,

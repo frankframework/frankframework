@@ -9,7 +9,6 @@ class NotificationsController {
 
   constructor(
     private stateParams: StateParams,
-    // private Hooks: HooksService,
     private Notification: NotificationService,
   ) { };
 

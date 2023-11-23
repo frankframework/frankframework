@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { StateParams } from '@uirouter/angularjs';
-import { Notification, NotificationService } from 'src/angularjs/app/services/notification.service';
-import { Adapter } from 'src/app/app.service';
-import { HooksService } from 'src/app/services.types';
+import { ActivatedRoute } from '@angular/router';
+import { NotificationService, Notification } from 'src/app/services/notification.service';
 
 @Component({
   selector: 'app-notifications',
@@ -20,20 +18,21 @@ export class NotificationsComponent implements OnInit {
   text: string = "";
 
   constructor(
-    private stateParams: StateParams,
-    // private hooksService: HooksService,
+    private route: ActivatedRoute,
     private notificationService: NotificationService,
   ) { };
 
   ngOnInit(): void {
-    if (this.stateParams['id'] > 0) {
-      this.notification = this.notificationService.get(this.stateParams['id']);
-      console.log("NOTIFICATION LOG:", this.notification)
-    } else {
-      this.text = ("Showing a list with all notifications!");
-    }
+    this.route.queryParamMap.subscribe(params => {
+      const id = params.get('id');
+      if (id && +id > 0) {
+        this.notification = this.notificationService.get(+id);
+        console.log("NOTIFICATION LOG:", this.notification)
+      } else {
+        this.text = ("Showing a list with all notifications!");
+      }
+    });
 
-    // TODO: HooksService not used anymore
     // this.hooksService.register("adapterUpdated:2", function (adapter: Adapter) {
     //   console.warn("What is the scope of: ", adapter);
     // });

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import * as Tinycon from 'tinycon';
 
-type Notification = {
+export type Notification = {
   icon: string,
   title: string,
   message: string | boolean,

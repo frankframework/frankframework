@@ -26,7 +26,7 @@
       *ngIf="startupError"
       class="m-sm alert alert-danger pointer"
       role="alert" type="danger"
-      uiSref="pages.errorpage"
+      routerLink="/error"
     >
       <h4>Startup error:</h4> <span [innerHtml]="startupError"></span>
     </div>

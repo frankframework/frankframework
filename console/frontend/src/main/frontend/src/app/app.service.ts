@@ -431,6 +431,10 @@ export class AppService {
     return this.http.get<ServerEnvironmentVariables>(this.absoluteApiPath + "environmentvariables");
   }
 
+  getServerHealth(){
+    return this.http.get("server/health", { responseType: 'text' });
+  }
+
   updateAdapterSummary(routeQueryParams: ParamMap, configurationName?: string) {
     var updated = (new Date().getTime());
     if (updated - 3000 < this.lastUpdated && !configurationName) { //3 seconds

@@ -1,6 +1,7 @@
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { StateService } from "@uirouter/angularjs";
+import { Router } from '@angular/router';
+import { AppService } from 'src/app/app.service';
 
 @Component({
   selector: 'app-loading',
@@ -10,20 +11,20 @@ import { StateService } from "@uirouter/angularjs";
 export class LoadingComponent implements OnInit {
 
   constructor(
-    private apiService: ApiService,
-    private stateService: StateService
+    private router: Router,
+    private appService: AppService
   ) { };
 
   ngOnInit(): void {
-    this.apiService.Get("server/health", () => {
-      this.stateService.go("pages.status");
-    }, (data, statusCode) => {
-      if (statusCode == 401) return;
-      if (data.status == "SERVICE_UNAVAILABLE") {
-        this.stateService.go("pages.status");
+    this.appService.getServerHealth().subscribe({ next: () => {
+      this.router.navigate(["/status"]);
+    }, error: (response: HttpErrorResponse) => {
+      if (response.status == 401) return;
+      if (response.statusText == "SERVICE_UNAVAILABLE") {
+        this.router.navigate(["/status"]);
       } else {
-        this.stateService.go("pages.errorpage");
+        this.router.navigate(["/error"]);
       };
-    });
+    }});
   };
 }

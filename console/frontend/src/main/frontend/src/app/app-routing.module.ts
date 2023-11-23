@@ -29,6 +29,9 @@ import { ConfigurationsShowComponent } from './views/configurations/configuratio
 import { ConfigurationsManageComponent } from './views/configurations/configurations-manage/configurations-manage.component';
 import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 import { ConfigurationsUploadComponent } from './views/configurations/configurations-upload/configurations-upload.component';
+import { ErrorComponent } from './views/error/error.component';
+import { LoadingComponent } from './views/loading/loading.component';
+import { NotificationsComponent } from './views/notifications/notifications.component';
 
 const routes: Routes = [
   /* {
@@ -75,14 +78,14 @@ const routes: Routes = [
       }
     ]
   },
-  /* {
+  {
     path: 'notifications',
     component: NotificationsComponent,
     title: 'Notifications',
     data: {
       breadcrumbs: 'Notifications'
     },
-  }, */
+  },
   {
     path: 'configurations',
     component: ConfigurationsShowComponent,
@@ -329,15 +332,19 @@ const routes: Routes = [
     component: IafUpdateStatusComponent,
     title: 'IAF Update'
   }, */
-  /* {
+  {
     path: '',
     pathMatch: 'full',
     component: LoadingComponent,
-  }, */
-  /* {
+  },
+  {
     path: 'error',
     component: ErrorComponent,
-  }, */
+    title: 'Error',
+    data: {
+      breadcrumbs: 'Error'
+    },
+  },
   {
     path: '**',
     redirectTo: 'status',

@@ -1,14 +1,19 @@
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { StateService } from "@uirouter/angularjs";
+import { Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
-import { ServerError } from 'src/angularjs/app/views/error/error.component';
 
 interface stackTrace {
   className: string
   methodName: string
   lineNumber: string
 };
+
+type ServerError = {
+  status: string,
+  error: string,
+  stackTrace: any,
+}
 
 @Component({
   selector: 'app-error',
@@ -21,40 +26,40 @@ export class ErrorComponent implements OnInit {
   stackTrace?: stackTrace[];
 
   constructor(
-    private apiService: ApiService,
-    private stateService: StateService,
+    private router: Router,
+    private http: HttpClient,
     private appService: AppService
   ) { };
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.checkState();
   };
 
   cooldown(data: ServerError) {
     this.cooldownCounter = 60;
 
-    if (data.status == "error" || data.status == "INTERNAL_SERVER_ERROR") {
+    if (data.status === "error" || data.status === "INTERNAL_SERVER_ERROR") {
       this.appService.updateStartupError(data.error);
       this.stackTrace = data.stackTrace;
 
-      var interval = setInterval(() => {
+      let interval = window.setInterval(() => {
         this.cooldownCounter--;
         if (this.cooldownCounter < 1) {
           clearInterval(interval);
           this.checkState();
         };
       }, 1000);
-    } else if (data.status == "SERVICE_UNAVAILABLE") {
-      this.stateService.go("pages.status");
+    } else if (data.status === "SERVICE_UNAVAILABLE") {
+      this.router.navigate(['/status']);
     };
   };
 
   checkState() {
-    this.apiService.Get("server/health", () => {
-      this.stateService.go("pages.status");
-      setTimeout(() => {
+    this.appService.getServerHealth().subscribe({ next: () => {
+      this.router.navigate(['/status']);
+      /* setTimeout(() => {
         window.location.reload();
-      }, 50);
-    }, (data, status, statusText) => this.cooldown({ error: data, status: statusText, stackTrace: [] }));
+      }, 50); */
+    }, error: (response: HttpErrorResponse) => this.cooldown({ error: response.error, status: response.statusText, stackTrace: [] })});
   };
 }
