@@ -141,21 +141,6 @@
 			<aop:around
 				pointcut=
 					"
-	 				execution(
-	 					*
-	 					nl.nn.adapterframework.stream.StreamingPipe.provideOutputStream(
-	 						nl.nn.adapterframework.core.PipeLineSession
-	 					)
-	 				)
-	 				and
-	 				args(session)
-	 				"
-				method="debugProvideOutputStream"
-				arg-names="session"
-			/>
-			<aop:around
-				pointcut=
-					"
 					execution(
 						*
 						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(

@@ -32,14 +32,11 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.ReferTo;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingException;
-import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -57,8 +54,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author Gerrit van Brakel
  */
 @ElementType(ElementTypes.ENDPOINT)
-@SupportsOutputStreaming
-public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends StreamingPipe implements HasPhysicalDestination {
+public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForwardPipe implements HasPhysicalDestination {
 
 	private final FileSystemActor<F, FS> actor = new FileSystemActor<>();
 	private FS fileSystem;
@@ -94,16 +90,6 @@ public abstract class FileSystemPipe<F, FS extends IBasicFileSystem<F>> extends 
 		} finally {
 			super.stop();
 		}
-	}
-
-	@Override
-	public boolean supportsOutputStreamPassThrough() {
-		return false;
-	}
-
-	@Override
-	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		return actor.provideOutputStream(session, getNextPipe());
 	}
 
 	@Override
