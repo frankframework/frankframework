@@ -58,7 +58,7 @@ public class DateFormatUtilsTest {
 
 	@Test
 	public void testFormatLong() {
-		String date = DateFormatUtils.now(getCorrectedDate(1380931200000L));
+		String date = DateFormatUtils.format(getCorrectedDate(1380931200000L));
 		assertEquals("2013-10-05 00:00:00.000", date);
 	}
 
@@ -115,13 +115,5 @@ public class DateFormatUtilsTest {
 	public void testParseAnyDate3() throws Exception {
 		Date date = DateFormatUtils.parseAnyDate("05/10/98 05:47:13");
 		assertEquals(getCorrectedDate(907566433000L), date.getTime());
-	}
-
-	@Test
-	public void testIsSameDay() throws Exception {
-		Date d1 = DateFormatUtils.parseAnyDate("10-10-2013");
-		Date d2 = DateFormatUtils.parseAnyDate("2013-10-10");
-		boolean b = DateFormatUtils.isSameDay(d1, d2);
-		assertEquals(true, b);
 	}
 }

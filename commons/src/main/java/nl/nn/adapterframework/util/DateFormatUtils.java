@@ -92,9 +92,4 @@ public class DateFormatUtils {
 		Calendar c = CalendarParser.parse(dateInAnyFormat);
 		return new Date(c.getTimeInMillis());
 	}
-
-	public static boolean isSameDay(Date date1, Date date2) {
-		return org.apache.commons.lang3.time.DateUtils.isSameDay(date1, date2);
-	}
-
 }

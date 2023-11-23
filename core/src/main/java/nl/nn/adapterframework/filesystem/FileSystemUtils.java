@@ -28,6 +28,7 @@ import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
@@ -266,7 +267,7 @@ public class FileSystemUtils {
 
 		Date lastModified = fileSystem.getModificationTime(file);
 		Date sysTime = new Date();
-		if (DateFormatUtils.isSameDay(lastModified, sysTime) || lastModified.after(sysTime)) {
+		if (DateUtils.isSameDay(lastModified, sysTime) || lastModified.after(sysTime)) {
 			return;
 		}
 		String srcFilename = fileSystem.getCanonicalName(file);
