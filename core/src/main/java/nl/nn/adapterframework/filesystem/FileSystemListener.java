@@ -240,7 +240,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		log.trace("Getting raw message from FS {}", fileSystem.getClass().getSimpleName());
 		try(Stream<F> ds = FileSystemUtils.getFilteredStream(fileSystem, getInputFolder(), getWildcard(), getExcludeWildcard())) {
 			Optional<F> fo = findFirstStableFile(ds);
-			if (!fo.isPresent()) {
+			if (fo.isEmpty()) {
 				return null;
 			}
 			F file = fo.get();
