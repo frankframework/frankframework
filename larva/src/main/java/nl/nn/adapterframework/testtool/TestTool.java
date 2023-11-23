@@ -468,8 +468,8 @@ public class TestTool {
 			Iterator<String> scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
 			Iterator<String> scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
 			while (scenariosRootDirectoriesIterator.hasNext()) {
-				String directory = (String)scenariosRootDirectoriesIterator.next();
-				String description = (String)scenariosRootDescriptionsIterator.next();
+				String directory = scenariosRootDirectoriesIterator.next();
+				String description = scenariosRootDescriptionsIterator.next();
 				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(directory) + "\"";
 				if (scenariosRootDirectory.equals(directory)) {
 					option = option + " selected";
@@ -1376,13 +1376,13 @@ public class TestTool {
 	private static int executeJmsSenderWrite(String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
-		Map<?, ?> jmsSenderInfo = (Map<?, ?>)queues.get(queueName);
+		Map<?, ?> jmsSenderInfo = queues.get(queueName);
 		JmsSender jmsSender = (JmsSender)jmsSenderInfo.get("jmsSender");
 		try {
 			String providedCorrelationId = null;
 			String useCorrelationIdFrom = (String)jmsSenderInfo.get("useCorrelationIdFrom");
 			if (useCorrelationIdFrom != null) {
-				Map<?, ?> listenerInfo = (Map<?, ?>)queues.get(useCorrelationIdFrom);
+				Map<?, ?> listenerInfo = queues.get(useCorrelationIdFrom);
 				if (listenerInfo == null) {
 					errorMessage("Could not find listener '" + useCorrelationIdFrom + "' to use correlation id from", writers);
 				} else {
@@ -2028,7 +2028,7 @@ public class TestTool {
 			Iterator<Entry<String,HashMap<String,String>>> keySpecIt = keySpecMap.entrySet().iterator();
 			while (keySpecIt.hasNext()) {
 				Entry<String,HashMap<String,String>> spec = keySpecIt.next();
-				HashMap<String, String> keyPair = (HashMap<String, String>) spec.getValue();
+				HashMap<String, String> keyPair = spec.getValue();
 
 				String key1 = keyPair.get("key1");
 				String key2 = keyPair.get("key2");
@@ -2065,8 +2065,8 @@ public class TestTool {
 		if (keySpecMap!=null) {
 			Iterator<Entry<String,HashMap<String,String>>> keySpecIt = keySpecMap.entrySet().iterator();
 			while (keySpecIt.hasNext()) {
-				Entry<String,HashMap<String,String>> spec = (Map.Entry) keySpecIt.next();
-				HashMap<String, String> keyPair = (HashMap<String, String>) spec.getValue();
+				Entry<String,HashMap<String,String>> spec = keySpecIt.next();
+				HashMap<String, String> keyPair = spec.getValue();
 
 				String key = keyPair.get("key");
 

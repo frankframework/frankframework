@@ -33,9 +33,9 @@ import org.springframework.messaging.Message;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jdbc.IDataSourceFactory;
-import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jms.JMSFacade.DestinationType;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.JmsRealm;
@@ -198,7 +198,7 @@ public class SecurityItems extends BusEndpointBase {
 				String name = iter.next();
 				ss.put("name", name);
 				try {
-					ss.put("info", (String) factoryGetSapSystemInfo.invoke(sapSystemFactory, name));
+					ss.put("info", factoryGetSapSystemInfo.invoke(sapSystemFactory, name));
 				} catch (Exception e) {
 					ss.put("info", "*** ERROR ***");
 				}
