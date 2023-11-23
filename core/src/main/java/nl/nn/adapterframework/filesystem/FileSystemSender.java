@@ -31,7 +31,6 @@ import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
@@ -185,12 +184,6 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	@ReferTo(FileSystemActor.class)
 	public void setNumberOfBackups(int numberOfBackups) {
 		actor.setNumberOfBackups(numberOfBackups);
-	}
-
-	@ReferTo(FileSystemActor.class)
-	@Deprecated
-	public void setBase64(Base64Pipe.Direction base64) {
-		actor.setBase64(base64);
 	}
 
 	@ReferTo(FileSystemActor.class)

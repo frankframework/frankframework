@@ -21,7 +21,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.security.AccessControlException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -39,11 +38,11 @@ import org.springframework.mock.web.MockServletContext;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.lifecycle.FrankApplicationInitializer;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.ProcessMetrics;
@@ -82,7 +81,7 @@ public class IbisTester {
 			boolean silent;
 			if (scenario == null) {
 				application = new MockServletContext("file:" + webAppPath, null);
-				application.setAttribute(IbisApplicationServlet.CONTEXT_KEY, ibisContext);
+				application.setAttribute(FrankApplicationInitializer.CONTEXT_KEY, ibisContext);
 				silent = false;
 			} else {
 				request.setParameter("loglevel", "scenario passed/failed");
@@ -136,7 +135,7 @@ public class IbisTester {
 		/*
 		 * By default the ladybug AOP config is included. This gives the following error:
 		 * LinkageError: loader 'app' attempted duplicate class definition for XYZ
-		 * 
+		 *
 		 * Current default SPRING.CONFIG.LOCATIONS = spring${application.server.type}${application.server.type.custom}.xml,springIbisDebuggerAdvice.xml,springCustom.xml
 		 * Overwrite so only IBISTEST is used.
 		 */
@@ -389,7 +388,7 @@ public class IbisTester {
 	}
 
 	private static String getIsoTimeStamp() {
-		return DateUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss.SSS");
+		return DateFormatUtils.now();
 	}
 
 	private static String getMemoryInfo() {

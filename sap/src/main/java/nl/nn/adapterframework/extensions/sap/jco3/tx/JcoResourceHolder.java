@@ -150,7 +150,7 @@ public class JcoResourceHolder extends ResourceHolderSupport {
 		if (tids==null) {
 			return null;
 		}
-		return (String) tids.get(tids.size()-1);
+		return tids.get(tids.size()-1);
 	}
 
 

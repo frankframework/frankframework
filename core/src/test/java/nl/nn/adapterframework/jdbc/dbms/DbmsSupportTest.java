@@ -39,7 +39,7 @@ import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.DbmsUtil;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Semaphore;
@@ -310,8 +310,8 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testJdbcSetParameter() throws Exception {
 		String number = "1234.5678";
-		String datetime = DateUtils.format(new Date(), DateUtils.FORMAT_GENERICDATETIME);
-		String date = DateUtils.format(new Date(), DateUtils.shortIsoFormat);
+		String datetime = DateFormatUtils.now(DateFormatUtils.FORMAT_GENERICDATETIME);
+		String date = DateFormatUtils.now(DateFormatUtils.FORMAT_SHORT_ISO);
 
 		assumeFalse(dbmsSupport.getDbmsName().equals("Oracle")); // This fails on Oracle, cannot set a non-integer number via setString()
 		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)";

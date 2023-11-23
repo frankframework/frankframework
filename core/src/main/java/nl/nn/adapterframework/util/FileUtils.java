@@ -386,7 +386,7 @@ public class FileUtils {
 
 		Date dateInFileName = date != null ? date : new Date();
 
-		String filename=filenamePrefix+DateUtils.format(dateInFileName,dateformat)+filenameSuffix;
+		String filename=filenamePrefix+ DateFormatUtils.format(dateInFileName,dateformat)+filenameSuffix;
 		File result = new File(directory+"/"+filename);
 		if (!result.exists()) {
 			long thisMorning = dateInFileName.getTime();
@@ -503,7 +503,7 @@ public class FileUtils {
 
 		StringBuilder result = new StringBuilder();
 		for (Iterator<String> nameIterator = filenames.iterator(); nameIterator.hasNext();) {
-			String name = (String)nameIterator.next();
+			String name = nameIterator.next();
 			if (result.length() > 0)
 				result.append(seperator);
 			result.append(name);

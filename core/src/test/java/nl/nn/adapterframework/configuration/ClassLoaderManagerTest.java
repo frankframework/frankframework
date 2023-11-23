@@ -21,8 +21,8 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
-import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.dbms.GenericDbmsSupport;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.testutil.MatchUtils;
@@ -288,6 +288,6 @@ public class ClassLoaderManagerTest extends Mockito {
 	 */
 	@SuppressWarnings("deprecation")
 	private void setLocalProperty(String key, String value) {
-		appConstants.put((Object) key, (Object) value);
+		appConstants.put(key, (Object) value);
 	}
 }

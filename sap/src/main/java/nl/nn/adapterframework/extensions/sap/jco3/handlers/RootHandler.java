@@ -44,7 +44,7 @@ public class RootHandler extends Handler {
 		} else  {
 			Iterator<JCoParameterList> iterator = parameterLists.iterator();
 			while (iterator.hasNext()) {
-				JCoParameterList jcoParameterList = (JCoParameterList)iterator.next();
+				JCoParameterList jcoParameterList = iterator.next();
 				if (jcoParameterList.getMetaData().getName().equals(localName)) {
 					childHandler = new ParameterListHandler(jcoParameterList);
 				}

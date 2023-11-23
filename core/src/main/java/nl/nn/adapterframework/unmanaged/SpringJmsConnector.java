@@ -51,7 +51,7 @@ import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.Counter;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.JtaUtil;
 
 /**
@@ -302,9 +302,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			if (log.isInfoEnabled()) {
 				long onMessageEnd= System.currentTimeMillis();
 
-				log.info("{} A) JMSMessageTime [{}]", logPrefix, DateUtils.format(jmsTimestamp));
-				log.info("{} B) onMessageStart [{}] diff (~'queing' time) [{}]", logPrefix, DateUtils.format(onMessageStart), (onMessageStart-jmsTimestamp));
-				log.info("{} C) onMessageEnd   [{}] diff (process time) [{}]", logPrefix, DateUtils.format(onMessageEnd), (onMessageEnd-onMessageStart));
+				log.info("{} A) JMSMessageTime [{}]", logPrefix, DateFormatUtils.format(jmsTimestamp));
+				log.info("{} B) onMessageStart [{}] diff (~'queing' time) [{}]", logPrefix, DateFormatUtils.format(onMessageStart), (onMessageStart-jmsTimestamp));
+				log.info("{} C) onMessageEnd   [{}] diff (process time) [{}]", logPrefix, DateFormatUtils.format(onMessageEnd), (onMessageEnd-onMessageStart));
 			}
 		}
 	}

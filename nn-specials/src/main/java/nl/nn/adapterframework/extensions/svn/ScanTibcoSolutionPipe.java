@@ -214,7 +214,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 						if (c1.size() > 1) {
 							warnMessage.add("more then one resourceName found");
 						}
-						String resourceName = (String) c1.iterator().next();
+						String resourceName = c1.iterator().next();
 						xmlStreamWriter.writeStartElement("resourceName");
 						xmlStreamWriter.writeCharacters(resourceName);
 						xmlStreamWriter.writeEndElement();
@@ -228,7 +228,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 							warnMessage
 									.add("more then one resourceJndiName found");
 						}
-						String resourceJndiName = (String) c2.iterator().next();
+						String resourceJndiName = c2.iterator().next();
 						xmlStreamWriter.writeStartElement("resourceJndiName");
 						xmlStreamWriter.writeCharacters(resourceJndiName);
 						xmlStreamWriter.writeEndElement();

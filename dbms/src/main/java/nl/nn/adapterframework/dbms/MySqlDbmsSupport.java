@@ -20,11 +20,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import nl.nn.adapterframework.util.DbmsUtil;
-
-import nl.nn.adapterframework.util.DateUtils;
-
 import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.util.DateFormatUtils;
+import nl.nn.adapterframework.util.DbmsUtil;
 
 
 /**
@@ -49,7 +48,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat(DateUtils.FORMAT_GENERICDATETIME);
+		SimpleDateFormat formatter = new SimpleDateFormat(DateFormatUtils.FORMAT_GENERICDATETIME);
 		String formattedDate = formatter.format(date);
 		return "TIMESTAMP('" + formattedDate + "')";
 	}

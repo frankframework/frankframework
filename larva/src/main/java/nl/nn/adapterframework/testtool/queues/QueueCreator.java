@@ -126,7 +126,7 @@ public class QueueCreator {
 				queues = null;
 				errorMessage("Could not find property '" + queueName + ".queue'", writers);
 			} else {
-				JmsSender jmsSender = (JmsSender)ibisContext.createBeanAutowireByName(JmsSender.class);
+				JmsSender jmsSender = ibisContext.createBeanAutowireByName(JmsSender.class);
 				jmsSender.setName("Test Tool JmsSender");
 				jmsSender.setDestinationName(queue);
 				jmsSender.setDestinationType(DestinationType.QUEUE);
@@ -250,7 +250,7 @@ public class QueueCreator {
 			while (!allFound && queues != null) {
 				preDelete = (String)properties.get(name + ".preDel" + preDeleteIndex);
 				if (preDelete != null) {
-					FixedQuerySender deleteQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+					FixedQuerySender deleteQuerySender = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 					deleteQuerySender.setName("Test Tool pre delete query sender");
 
 					try {
@@ -283,7 +283,7 @@ public class QueueCreator {
 			if (queues != null) {
 				String prePostQuery = (String)properties.get(name + ".prePostQuery");
 				if (prePostQuery != null) {
-					FixedQuerySender prePostFixedQuerySender = (FixedQuerySender)ibisContext.createBeanAutowireByName(FixedQuerySender.class);
+					FixedQuerySender prePostFixedQuerySender = ibisContext.createBeanAutowireByName(FixedQuerySender.class);
 					prePostFixedQuerySender.setName("Test Tool query sender");
 					try {
 						QueueUtils.invokeSetters(prePostFixedQuerySender, queueProperties);

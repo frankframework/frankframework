@@ -43,13 +43,13 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 
 /**
- * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link IbisApplicationServlet servlet}
+ * Creates and maintains the (Spring) Application Context. If the context is loaded through a {@link FrankApplicationInitializer servlet}
  * it will register the servlet in the context. When the Application Context is created or destroyed it will also create/destroy the servlet.
  * This ensures that the correct {@link SpringBus bus} will be used in which CXF will register it's endpoints and dispatchers.
  * <p>
  * <br/><br/>
  * <p>
- * It is important that the Application Context is created before the {@link IbisApplicationServlet servlet} initializes.
+ * It is important that the Application Context is created before the {@link FrankApplicationInitializer servlet} initializes.
  * Otherwise the servlet will register under the wrong {@link SpringBus bus}!
  * <p>
  * <br/><br/>

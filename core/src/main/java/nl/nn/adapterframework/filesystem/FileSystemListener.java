@@ -52,7 +52,7 @@ import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -359,7 +359,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				messageId = fileSystem.getName(rawMessage);
 			}
 			if (isFileTimeSensitive()) {
-				messageId += "-" + DateUtils.format(fileSystem.getModificationTime(file));
+				messageId += "-" + DateFormatUtils.format(fileSystem.getModificationTime(file));
 			}
 			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId, null, null);
 			if (attributes!=null) {
@@ -406,7 +406,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			}
 			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
 				F movedFile = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false, true);
-				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateUtils.format(getFileSystem().getModificationTime(movedFile)).replace(":", "_"));
+				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateFormatUtils.format(getFileSystem().getModificationTime(movedFile)).replace(":", "_"));
 				F renamedFile = getFileSystem().toFile(newName);
 				int i=1;
 				while(getFileSystem().exists(renamedFile)) {

@@ -62,7 +62,7 @@ import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -249,8 +249,8 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		if (resolvedUrl != null) {
 			qMessageXml.addAttribute("resolvedUrl", resolvedUrl);
 		}
-		qMessageXml.addAttribute("timestamp", DateUtils.getIsoTimeStamp());
-		qMessageXml.addAttribute("startTime", DateUtils.format(serverInfo.getStartTime(), DateUtils.fullIsoFormat));
+		qMessageXml.addAttribute("timestamp", DateFormatUtils.getTimeStamp());
+		qMessageXml.addAttribute("startTime", DateFormatUtils.format(serverInfo.getStartTime()));
 		XmlBuilder qNameXml = new XmlBuilder("qName");
 		qNameXml.setCdataValue(queueName);
 
@@ -275,7 +275,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 						qMessageId.setCdataValue(msg.getJMSMessageID());
 						qMessageXml.addSubElement(qMessageId);
 						XmlBuilder qTimestamp = new XmlBuilder("qTimestamp");
-						qTimestamp.setCdataValue(DateUtils.format(msg.getJMSTimestamp(), DateUtils.fullIsoFormat));
+						qTimestamp.setCdataValue(DateFormatUtils.format(msg.getJMSTimestamp()));
 						qMessageXml.addSubElement(qTimestamp);
 
 						StringBuilder sb = new StringBuilder("");
@@ -373,9 +373,9 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			qInfosXml.addAttribute("resolvedUrl", resolvedUrl);
 		}
 		long currentTime = (new Date()).getTime();
-		qInfosXml.addAttribute("timestamp", DateUtils.format(currentTime, DateUtils.fullIsoFormat));
+		qInfosXml.addAttribute("timestamp", DateFormatUtils.format(currentTime));
 		long startTime = serverInfo.getStartTime();
-		qInfosXml.addAttribute("startTime", DateUtils.format(startTime, DateUtils.fullIsoFormat));
+		qInfosXml.addAttribute("startTime", DateFormatUtils.format(startTime));
 		qInfosXml.addAttribute("age", Misc.getAge(startTime));
 
 		Map<String, String> aclMap = getAclMap(admin, ldapSender);
@@ -598,7 +598,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			String destinationName = consumerInfo.getDestinationName();
 			long connectionId = consumerInfo.getConnectionID();
 			if (connectionMap.containsKey(connectionId)) {
-				String ci = (String) connectionMap.get(connectionId);
+				String ci = connectionMap.get(connectionId);
 				if (consumerMap.containsKey(destinationName)) {
 					LinkedList<String> consumers = consumerMap.get(destinationName);
 					if (!consumers.contains(ci)) {
