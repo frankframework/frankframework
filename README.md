@@ -8,7 +8,7 @@ Frank!Framework
 [![Core Tests](https://github.com/frankframework/frankframework/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/frankframework/frankframework/actions?query=workflow%3A%22Java+CI+with+Maven%22+branch%3Amaster)
 [![Pull Requests](https://img.shields.io/github/commit-activity/m/frankframework/frankframework?label=Pull%20Requests)](https://github.com/frankframework/frankframework/pulls)
 [![codecov](https://codecov.io/gh/frankframework/frankframework/branch/master/graph/badge.svg)](https://codecov.io/gh/frankframework/frankframework)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/56a982cc39084043b2e283a146206ec9)](https://www.codacy.com/gh/frankframework/frankframework/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=frankframework/frankframework&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/99f16cffc31a422589303aed68e7cf98)](https://app.codacy.com/gh/frankframework/frankframework/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/frankframework/frankframework/badge)](https://www.codefactor.io/repository/github/frankframework/frankframework)
 [![total GitHub contributors](https://img.shields.io/github/contributors-anon/frankframework/frankframework.svg)](https://github.com/frankframework/frankframework/graphs/contributors)
 [![Maven Central](https://img.shields.io/maven-central/v/org.ibissource/ibis-adapterframework-parent.svg?label=Maven%20Central)](https://central.sonatype.com/search?namespace=org.ibissource&q=adapterframework)
