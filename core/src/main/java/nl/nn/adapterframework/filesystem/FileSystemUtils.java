@@ -67,7 +67,7 @@ public class FileSystemUtils {
 				fileSystem.deleteFile(destination);
 			} else {
 				if (numOfBackups>0) {
-					FileSystemUtils.rolloverByNumber((IWritableFileSystem<F>)fileSystem, destination, numOfBackups);
+					FileSystemUtils.rolloverByNumber(fileSystem, destination, numOfBackups);
 				} else {
 					throw new FileSystemException("Cannot "+action.getLabel()+" file to ["+fileSystem.getName(destination)+"]. Destination file ["+fileSystem.getCanonicalName(destination)+"] already exists.");
 				}
@@ -184,7 +184,7 @@ public class FileSystemUtils {
 	}
 
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterable<F> iterable){
-		final DirectoryStream<F> ds = new DirectoryStream<F>() {
+		final DirectoryStream<F> ds = new DirectoryStream<>() {
 
 			@Override
 			public void close() throws IOException {
@@ -239,7 +239,7 @@ public class FileSystemUtils {
 	}
 
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator, Supplier<IOException> onClose){
-		final DirectoryStream<F> ds = new DirectoryStream<F>() {
+		final DirectoryStream<F> ds = new DirectoryStream<>() {
 
 			@Override
 			public void close() throws IOException {
@@ -300,8 +300,8 @@ public class FileSystemUtils {
 		WildCardFilter excludeFilter =  StringUtils.isEmpty(excludeWildCard) ? null : new WildCardFilter(excludeWildCard);
 
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, 0),false)
-				.filter(F -> (wildcardfilter==null || wildcardfilter.accept(null, fileSystem.getName((F) F)))
-						&& (excludeFilter==null || !excludeFilter.accept(null, fileSystem.getName((F) F))))
+				.filter(F -> (wildcardfilter==null || wildcardfilter.accept(null, fileSystem.getName(F)))
+						&& (excludeFilter==null || !excludeFilter.accept(null, fileSystem.getName(F))))
 				.onClose(() -> {
 					try {
 						ds.close();

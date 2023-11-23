@@ -71,7 +71,7 @@ public class ResourceBasedMongoClientFactory extends ResourceBasedObjectFactory<
 
 	@Override
 	public List<String> getMongoClients() {
-		return new ArrayList<String>(objects.keySet());
+		return new ArrayList<>(objects.keySet());
 	}
 
 }

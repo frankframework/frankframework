@@ -162,7 +162,7 @@ public abstract class ValidatorBase extends FixedForwardPipe implements IDualMod
 
 		private @Getter @Setter String name;
 
-		private Map<String, PipeForward> forwards=new HashMap<String, PipeForward>();
+		private Map<String, PipeForward> forwards=new HashMap<>();
 
 		protected ValidatorBase owner;
 		public ResponseValidatorWrapper(ValidatorBase owner) {

@@ -423,7 +423,7 @@ public class FileUtils {
 
 		long lastChangedAllowed=minStability>0?new Date().getTime()-minStability:0;
 
-		List<File> result = new ArrayList<File>();
+		List<File> result = new ArrayList<>();
 		int count = (files == null ? 0 : files.length);
 		for (int i = 0; i < count; i++) {
 			File file = files[i];
@@ -472,7 +472,7 @@ public class FileUtils {
 
 	public static List<String> getListFromNames(String names, char seperator) {
 		StringTokenizer st = new StringTokenizer(names, "" + seperator);
-		LinkedList<String> list = new LinkedList<String>();
+		LinkedList<String> list = new LinkedList<>();
 		while (st.hasMoreTokens()) {
 			list.add(st.nextToken());
 		}
@@ -503,7 +503,7 @@ public class FileUtils {
 
 		StringBuilder result = new StringBuilder();
 		for (Iterator<String> nameIterator = filenames.iterator(); nameIterator.hasNext();) {
-			String name = (String)nameIterator.next();
+			String name = nameIterator.next();
 			if (result.length() > 0)
 				result.append(seperator);
 			result.append(name);

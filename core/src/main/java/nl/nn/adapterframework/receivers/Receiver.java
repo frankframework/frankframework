@@ -340,7 +340,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * put in the processResultCache will not be reprocessed even if it's
 	 * offered again.
 	 */
-	private final Map<String,ProcessResultCacheItem> processResultCache = new LinkedHashMap<String,ProcessResultCacheItem>() {
+	private final Map<String,ProcessResultCacheItem> processResultCache = new LinkedHashMap<>() {
 
 		@Override
 		protected boolean removeEldestEntry(Entry<String,ProcessResultCacheItem> eldest) {

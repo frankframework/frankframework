@@ -1,15 +1,27 @@
 package nl.nn.adapterframework.extensions.esb;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import java.util.Map;
+import java.util.stream.Stream;
+
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.TextMessage;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import com.mockrunner.mock.jms.MockBytesMessage;
+import com.mockrunner.mock.jms.MockTextMessage;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListenerConnector;
@@ -19,8 +31,23 @@ class EsbJmsListenerTest {
 
 	private EsbJmsListener jmsListener;
 
+	public static Stream<Arguments> testExtractMessageProperties() throws JMSException {
+		TextMessage textMessage = new MockTextMessage();
+		textMessage.setText("<test><value>someValue</value></test>");
+		textMessage.setStringProperty("ae_testKeyValue", "testValue");
+
+		BytesMessage bytesMessage = new MockBytesMessage();
+		bytesMessage.writeBytes("<test><value>someValue</value></test>".getBytes());
+		bytesMessage.setStringProperty("ae_testKeyValue", "testValue");
+		bytesMessage.reset();
+
+		return Stream.of(
+				Arguments.of(textMessage), Arguments.of(bytesMessage)
+		);
+	}
+
 	@BeforeEach
-	void setUp() throws JMSException {
+	void setUp() throws Exception {
 		jmsListener = new EsbJmsListener();
 		jmsListener.setQueueConnectionFactoryName(ConnectionFactoryFactoryMock.MOCK_CONNECTION_FACTORY_NAME);
 		jmsListener.setConnectionFactoryFactory(new ConnectionFactoryFactoryMock());
@@ -69,4 +96,19 @@ class EsbJmsListenerTest {
 		assertFalse(jmsListener.getForceMessageIdAsCorrelationId());
 	}
 
+	@ParameterizedTest
+	@MethodSource
+	public void testExtractMessageProperties(Message message) throws Exception {
+		// Arrange
+		jmsListener.setCopyAEProperties(true);
+		jmsListener.setxPathLoggingKeys("value");
+		jmsListener.configure();
+
+		// Act
+		Map<String, Object> messageProperties = jmsListener.extractMessageProperties(message);
+
+		// Assert
+		assertEquals("testValue", messageProperties.get("ae_testKeyValue"));
+		assertEquals("someValue", messageProperties.get("value"));
+	}
 }

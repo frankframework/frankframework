@@ -174,7 +174,7 @@ public abstract class ConnectedFileSystemBase<F,C> extends FileSystemBase<F> {
 
 				@Override
 				public PooledObject<C> wrap(C connection) {
-					return new DefaultPooledObject<C>(connection);
+					return new DefaultPooledObject<>(connection);
 				}
 
 				@Override

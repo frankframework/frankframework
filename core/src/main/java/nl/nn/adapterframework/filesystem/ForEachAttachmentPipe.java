@@ -166,7 +166,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	/** comma separated list of attachment properties to list */
 	public void setOnlyProperties(String onlyPropertiesList) {
 		if (onlyProperties==null) {
-			onlyProperties=new LinkedHashSet<String>();
+			onlyProperties=new LinkedHashSet<>();
 		}
 		Misc.addItemsToList(onlyProperties,onlyPropertiesList,"properties to list",false);
 	}
@@ -177,7 +177,7 @@ public class ForEachAttachmentPipe<F, A, FS extends IWithAttachments<F,A>> exten
 	/** comma separated list of attachment properties not to list. When specified, 'onlyProperties' is ignored */
 	public void setExcludeProperties(String excludePropertiesList) {
 		if (excludeProperties==null) {
-			excludeProperties=new LinkedHashSet<String>();
+			excludeProperties=new LinkedHashSet<>();
 		}
 		Misc.addItemsToList(excludeProperties,excludePropertiesList,"properties not to list",false);
 	}

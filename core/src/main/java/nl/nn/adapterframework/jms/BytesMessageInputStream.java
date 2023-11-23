@@ -21,7 +21,7 @@ import java.io.InputStream;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 
-class BytesMessageInputStream extends InputStream {
+public class BytesMessageInputStream extends InputStream {
 
 	private final BytesMessage bytesMsg;
 

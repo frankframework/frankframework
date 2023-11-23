@@ -39,8 +39,6 @@ import java.util.zip.ZipException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import nl.nn.adapterframework.dbms.JdbcException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -58,6 +56,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
 import nl.nn.adapterframework.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -226,7 +225,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 		checkIndexOnColumnPresent(connection, getKeyField());
 
-		List<String> columnListIndex01= new ArrayList<String>();
+		List<String> columnListIndex01= new ArrayList<>();
 		if (StringUtils.isNotEmpty(getTypeField())) {
 			columnListIndex01.add(getTypeField());
 		}
@@ -242,7 +241,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			checkIndexOnColumnPresent(connection, getExpiryDateField());
 		}
 
-		List<String> columnListIndex03= new ArrayList<String>();
+		List<String> columnListIndex03= new ArrayList<>();
 		if (StringUtils.isNotEmpty(getSlotIdField())) {
 			columnListIndex03.add(getSlotIdField());
 		}

@@ -15,7 +15,10 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.security.Security;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -32,8 +35,8 @@ import nl.nn.adapterframework.pgp.PGPAction;
 import nl.nn.adapterframework.pgp.Sign;
 import nl.nn.adapterframework.pgp.Verify;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingPipe;
+import nl.nn.adapterframework.stream.PathMessage;
+import nl.nn.adapterframework.util.FileUtils;
 
 /**
  * <p>Performs various PGP (Pretty Good Privacy) actions such as Encrypt, Sign, Decrypt, Verify.</p>
@@ -50,7 +53,7 @@ import nl.nn.adapterframework.stream.StreamingPipe;
  * </p>
  */
 @ElementType(ElementTypes.TRANSLATOR)
-public class PGPPipe extends StreamingPipe {
+public class PGPPipe extends FixedForwardPipe {
 
 	public enum Action {
 		/** Encrypts the given input. Requires the publicKey to be set to recipients public key, and recipients to be set to recipients email addresses. */
@@ -128,12 +131,16 @@ public class PGPPipe extends StreamingPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		try (MessageOutputStream target=getTargetStream(session)) {
-			try (OutputStream out = target.asStream()) {
+		try {
+			File tempFile = FileUtils.createTempFile();
+			try (OutputStream out = Files.newOutputStream(tempFile.toPath())) {
 				pgpAction.run(message.asInputStream(), out);
+				return new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
+			} catch (Exception e) {
+				Files.deleteIfExists(tempFile.toPath());
+				throw new PipeRunException(this, "Exception was thrown during PGPPipe execution.", e);
 			}
-			return target.getPipeRunResult();
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new PipeRunException(this, "Exception was thrown during PGPPipe execution.", e);
 		}
 	}

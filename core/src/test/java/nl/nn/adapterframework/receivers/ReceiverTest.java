@@ -1022,7 +1022,7 @@ public class ReceiverTest {
 
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 
-		List<String> warnings = (List<String>) adapter.getMessageKeeper()
+		List<String> warnings = adapter.getMessageKeeper()
 				.stream()
 				.filter((msg) -> msg instanceof MessageKeeperMessage && "WARN".equals(((MessageKeeperMessage)msg).getMessageLevel()))
 				.map(Object::toString)

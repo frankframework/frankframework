@@ -199,7 +199,7 @@ public class XmlBuilderTest {
 		XmlBuilder root = new XmlBuilder("root");
 		root.addSubElement("elementName", "elementValue");
 		String expected = "<root>\n\t<elementName>elementValue</elementName>\n</root>";
-		String actual = root.toXML().trim().replaceAll("  ", "\t").replaceAll(System.lineSeparator(), "\n");
+		String actual = root.toXML().trim().replace("  ", "\t").replaceAll(System.lineSeparator(), "\n");
 		assertEquals(expected, actual);
 	}
 

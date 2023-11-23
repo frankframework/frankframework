@@ -15,19 +15,17 @@
 */
 package nl.nn.adapterframework.lifecycle;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
 import nl.nn.adapterframework.lifecycle.servlets.SecuritySettings;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.LogUtil;
 
+@Log4j2
 @IbisInitializer
 public class VerifyServerSecurityBean implements InitializingBean {
-
-	private Logger log = LogUtil.getLogger(this);
 
 	@Autowired
 	public void setServletManager(ServletManager servletManager) {
@@ -36,6 +34,7 @@ public class VerifyServerSecurityBean implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() {
+		// If not on dtap.stage == LOC, display a console warning
 		if(!SecuritySettings.isWebSecurityEnabled()) {
 			AppConstants appConstants = AppConstants.getInstance();
 			boolean isDtapStageLoc = "LOC".equalsIgnoreCase(appConstants.getProperty("dtap.stage"));

@@ -466,7 +466,7 @@ public class IfsaFacade implements IConfigurable, HasPhysicalDestination {
 				// Handle UDZs
 				log.debug(getLogPrefix()+"add UDZ map to IFSAMessage");
 				// process the udzMap
-				Map udzObject = (Map)((IFSAMessage) msg).getOutgoingUDZObject();
+				Map udzObject = msg.getOutgoingUDZObject();
 				udzObject.putAll(udzMap);
 			}
 			String replyToQueueName="-";

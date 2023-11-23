@@ -114,7 +114,7 @@ public class DefaultIbisManager implements IbisManager {
 	 */
 	@Override
 	public void shutdown() {
-		unload((String) null);
+		unload(null);
 		IbisCacheManager.shutdown();
 	}
 

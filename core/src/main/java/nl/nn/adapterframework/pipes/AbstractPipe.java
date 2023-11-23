@@ -265,7 +265,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	@Override
 	public Map<String, PipeForward> getForwards(){
-		Map<String, PipeForward> forwards = new Hashtable<String, PipeForward>(pipeForwards);
+		Map<String, PipeForward> forwards = new Hashtable<>(pipeForwards);
 		PipeLine pipeline = getPipeLine();
 		if (pipeline==null) {
 			return null;

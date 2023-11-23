@@ -31,8 +31,8 @@ import org.xml.sax.helpers.AttributesImpl;
 public class SkipEmptyTagsFilter extends FullXmlFilter {
 
 	private final boolean attributesConsideredContent = false;
-	private final List<Element> pendingElements = new ArrayList<Element>();
-	private Map<String,String> pendingNamespaceMappings = new LinkedHashMap<String,String>();
+	private final List<Element> pendingElements = new ArrayList<>();
+	private Map<String,String> pendingNamespaceMappings = new LinkedHashMap<>();
 
 	private boolean nonWhitespaceCharactersSeen=false;
 	private boolean elementSkipped;
@@ -72,7 +72,7 @@ public class SkipEmptyTagsFilter extends FullXmlFilter {
 			e.qName=qName;
 			e.atts=new AttributesImpl(atts);
 			e.namespaceMappings=pendingNamespaceMappings;
-			pendingNamespaceMappings=new LinkedHashMap<String,String>();
+			pendingNamespaceMappings=new LinkedHashMap<>();
 			pendingElements.add(e);
 			e.comments=new StringWriter();
 		}

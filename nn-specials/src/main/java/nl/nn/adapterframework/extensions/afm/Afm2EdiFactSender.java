@@ -266,7 +266,7 @@ public class Afm2EdiFactSender implements ISender {
 							NodeList aSubList = aNode.getChildNodes();
 							regelTeller = HandleSubList(aSubList, aRes, regelTeller);
 						} else {
-							if (labelNaam.indexOf(VERWERKTAG) > -1) {
+							if (labelNaam.contains(VERWERKTAG)) {
 								//Verwerktags niet in edifact zetten
 							} else {
 								lHlp = "LBW" + labelNaam.substring(3);

@@ -31,7 +31,7 @@ public class MockIbisManager extends DefaultIbisManager implements ApplicationCo
 
 	@Override
 	public void shutdown() {
-		unload((String) null);
+		unload(null);
 	}
 
 }
