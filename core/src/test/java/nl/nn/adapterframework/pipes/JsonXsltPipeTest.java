@@ -1,10 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import jakarta.json.Json;
@@ -48,7 +49,7 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
 		PipeRunResult prr = doPipe(pipe, input,session);
 		String xmlOut=prr.getResult().asString();
-		Assertions.assertEquals(expectedXml, xmlOut);
+		assertEquals(expectedXml, xmlOut);
 	}
 
 	@Test
@@ -63,7 +64,7 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		String expectedText="James";
 		PipeRunResult prr = doPipe(pipe, input,session);
 		String textOut=prr.getResult().asString();
-		Assertions.assertEquals(expectedText, textOut);
+		assertEquals(expectedText, textOut);
 	}
 
 
@@ -75,7 +76,7 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		JsonStructure jExp=string2Json(jsonExp);
 		log.debug("jsonAct: ["+jsonAct+"]");
 		JsonStructure jAct=string2Json(jsonAct);
-		Assertions.assertEquals(jExp.toString(), jAct.toString(), description);
+		assertEquals(jExp.toString(), jAct.toString(), description);
 	}
 
 
@@ -90,6 +91,6 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String result = Message.asMessage(prr.getResult()).asString();
-		Assertions.assertEquals("onSample Konfabulator Widgetmain_window500500Images/Sun.pngsun1250250centerClick Here36boldtext1250100centersun1.opacity = (sun1.opacity / 100) * 90;", result.trim());
+		assertEquals("onSample Konfabulator Widgetmain_window500500Images/Sun.pngsun1250250centerClick Here36boldtext1250100centersun1.opacity = (sun1.opacity / 100) * 90;", result.trim());
 	}
 }
