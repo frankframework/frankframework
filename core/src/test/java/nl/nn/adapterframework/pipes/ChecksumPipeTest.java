@@ -12,10 +12,9 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.ChecksumPipe.ChecksumGenerator;
 import nl.nn.adapterframework.pipes.ChecksumPipe.ChecksumType;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-public class ChecksumPipeTest extends StreamingPipeTestBase<ChecksumPipe> {
+public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 
 	@Override
 	public ChecksumPipe createPipe() {

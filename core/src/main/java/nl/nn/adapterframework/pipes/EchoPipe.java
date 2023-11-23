@@ -20,31 +20,21 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingException;
-import nl.nn.adapterframework.stream.StreamingPipe;
 
 /**
  * Returns simply the input message.
  *
- * @author  Gerrit van Brakel
- * @since   4.2
+ * @author Gerrit van Brakel
+ * @since 4.2
  */
 @Category("Basic")
-@SupportsOutputStreaming
 @ElementType(ElementTypes.TRANSLATOR)
-public class EchoPipe extends StreamingPipe {
+public class EchoPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) {
-		return new PipeRunResult(getSuccessForward(),message);
-	}
-
-	@Override
-	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		return MessageOutputStream.getTargetStream(this, session, getNextPipe());
+		return new PipeRunResult(getSuccessForward(), message);
 	}
 
 }
