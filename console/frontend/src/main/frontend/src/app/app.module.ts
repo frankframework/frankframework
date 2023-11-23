@@ -72,6 +72,8 @@ import { WithJavaListenerPipe } from './pipes/with-java-listener.pipe';
 import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
 import { InformationModalComponent } from './components/pages/information-modal/information-modal.component';
 import { FeedbackModalComponent } from './components/pages/feedback-modal/feedback-modal.component';
+import { FlowModalComponent } from './views/status/flow/flow-modal/flow-modal.component';
+import { NgMermaidComponent } from './views/status/flow/flow-modal/ng-mermaid.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -143,6 +145,7 @@ const windowProvider: ValueProvider = {
     WithJavaListenerPipe,
     InformationModalComponent,
     FeedbackModalComponent,
+    FlowModalComponent,
   ],
   imports: [
     BrowserModule,
@@ -153,7 +156,8 @@ const windowProvider: ValueProvider = {
     AppRoutingModule,
     NgIdleModule.forRoot(),
     NgChartsModule.forRoot(),
-    DataTablesModule
+    DataTablesModule,
+    NgMermaidComponent
   ],
   providers: [
     windowProvider,

@@ -3,6 +3,8 @@ import { Component, Input, OnInit } from '@angular/core';
 import { StatusService } from '../status.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { Adapter, AppService } from 'src/app/app.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { FlowModalComponent } from './flow-modal/flow-modal.component';
 
 @Component({
   selector: 'app-flow',
@@ -23,7 +25,8 @@ export class FlowComponent implements OnInit {
   constructor(
     private appService: AppService,
     private Misc: MiscService,
-    private statusService: StatusService
+    private statusService: StatusService,
+    private modalService: NgbModal,
   ) {}
 
   ngOnInit() {
@@ -47,17 +50,9 @@ export class FlowComponent implements OnInit {
 
 	openFlowModal(xhr?: HttpResponse<string>) {
     this.flowModalLadda = true;
-    // TODO modal
-    /* $uibModal.open({
-      templateUrl: 'js/app/views/status/flow/flow-modal/flow-modal.html',
-      windowClass: 'mermaidFlow',
-      resolve: {
-        xhr: function () {
-          return xhr;
-        }
-      },
-      controller: 'FlowDiagramModalCtrl'
-    }); */
+    const modalRef = this.modalService.open(FlowModalComponent, { windowClass: 'mermaidFlow' });
+    modalRef.componentInstance.flow = xhr?.body;
+    modalRef.componentInstance.adapterName = this.adapter.name;
     setTimeout( () => { this.flowModalLadda = false; }, 1000);
   }
 
