@@ -207,7 +207,7 @@ public class AppConstantsTest {
 
 		@Override
 		public Enumeration<URL> getResources(String name) throws IOException {
-			Vector<URL> urls = new Vector<URL>();
+			Vector<URL> urls = new Vector<>();
 			String nameToUse = name;
 
 			URL file = getParent().getResource("AppConstants/"+nameToUse);

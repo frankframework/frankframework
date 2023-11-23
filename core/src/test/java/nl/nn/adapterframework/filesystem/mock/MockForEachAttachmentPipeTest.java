@@ -14,7 +14,7 @@ public class MockForEachAttachmentPipeTest extends ForEachAttachmentPipeTest <Fo
 
 	@Override
 	public ForEachAttachmentPipe<MockFileWithAttachments, MockAttachment, MockFileSystemWithAttachments> createForEachAttachmentPipe() {
-		ForEachAttachmentPipe<MockFileWithAttachments, MockAttachment, MockFileSystemWithAttachments> pipe= new ForEachAttachmentPipe<MockFileWithAttachments, MockAttachment, MockFileSystemWithAttachments>();
+		ForEachAttachmentPipe<MockFileWithAttachments, MockAttachment, MockFileSystemWithAttachments> pipe= new ForEachAttachmentPipe<>();
 		pipe.setFileSystem(((MockFileSystemWithAttachmentsTestHelper)helper).getFileSystem());
 		return pipe;
 	}

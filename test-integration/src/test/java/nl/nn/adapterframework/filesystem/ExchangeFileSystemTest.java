@@ -47,7 +47,7 @@ public class ExchangeFileSystemTest extends MailFileSystemTestBase<ExchangeMessa
 	}
 
 
-	public ExchangeMailListener getConfiguredListener(String sourceFolder, String inProcessFolder) throws Exception {
+	public ExchangeMailListener getConfiguredListener(String sourceFolder, String inProcessFolder) {
 		ExchangeMailListener listener = new ExchangeMailListener();
 		autowireByName(listener);
 		if (StringUtils.isNotEmpty(url)) listener.setUrl(url);

@@ -17,7 +17,6 @@ package nl.nn.adapterframework.testtool;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -124,7 +123,7 @@ public class FileSender implements IConfigurable {
 		}
 	}
 
-	public String getMessage() throws IOException {
+	public String getMessage() {
 		Dir2Xml dx=new Dir2Xml();
 		dx.setPath(file.getAbsolutePath());
 		return dx.getRecursiveDirList();

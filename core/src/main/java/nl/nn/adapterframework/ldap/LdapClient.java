@@ -49,7 +49,6 @@ import org.apache.logging.log4j.Logger;
 import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
@@ -147,13 +146,13 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		}
     }
 
-	public void open() throws SenderException {
+	public void open() {
 		if (attributeCache!=null) {
 			attributeCache.open();
 		}
 	}
 
-	public void close() throws SenderException {
+	public void close() {
 		if (attributeCache!=null) {
 			attributeCache.close();
 		}

@@ -22,6 +22,7 @@ import org.springframework.transaction.TransactionDefinition;
 
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.TransactionAttribute;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jdbc.dbms.ConcurrentManagedTransactionTester;
@@ -391,18 +392,18 @@ public class LockerTest extends TransactionManagerTestBase {
 		}
 
 		@Override
-		public void initAction() throws Exception {
+		public void initAction() throws SQLException {
 			super.initAction();
 			conn = getConnection();
 		}
 
 		@Override
-		public void action() throws Exception {
+		public void action() throws SQLException, JdbcException {
 			executeTranslatedQuery(conn, "INSERT INTO IBISLOCK (OBJECTID) VALUES('myLocker')", QueryType.OTHER);
 		}
 
 		@Override
-		public void finalizeAction() throws Exception {
+		public void finalizeAction() throws SQLException {
 			try {
 				if (conn!=null) {
 					conn.close();

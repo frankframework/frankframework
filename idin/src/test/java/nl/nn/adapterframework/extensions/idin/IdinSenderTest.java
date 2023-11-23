@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.extensions.idin;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -47,7 +46,7 @@ public class IdinSenderTest extends Mockito {
 		return getIssuers("NL");
 	}
 	private List<Issuer> getIssuers(String country) {
-		List<Issuer> issuers = new ArrayList<Issuer>();
+		List<Issuer> issuers = new ArrayList<>();
 		for(int i = 0; i < 10; i++) {
 			Issuer issuer = mock(Issuer.class);
 			issuer.setIssuerCountry(country);
@@ -58,7 +57,7 @@ public class IdinSenderTest extends Mockito {
 		return issuers;
 	}
 	private Map<String, List<Issuer>> getIssuersByCountry() {
-		Map<String, List<Issuer>> countryMap = new HashMap<String, List<Issuer>>();
+		Map<String, List<Issuer>> countryMap = new HashMap<>();
 		List<String> countries = Arrays.asList("NL", "BE", "GB", "DE", "ES");
 		for(String country : countries) {
 			countryMap.put(country, getIssuers(country));
@@ -76,7 +75,7 @@ public class IdinSenderTest extends Mockito {
 	}
 
 	@Before
-	public void initializeIdinSender() throws FileNotFoundException, ParserConfigurationException, SAXException, IOException {
+	public void initializeIdinSender() throws ParserConfigurationException, SAXException, IOException {
 		URL expectedUrl = ClassLoaderUtils.getResourceURL("bankid-config.xml");
 		Configuration.defaultInstance().Load(expectedUrl.openStream());
 		Communicator communicator = mock(Communicator.class);
@@ -96,7 +95,7 @@ public class IdinSenderTest extends Mockito {
 
 	@Ignore
 	@Test
-	public void randomMessage() throws SenderException, TimeoutException, SAXException, IOException {
+	public void randomMessage() throws SenderException, TimeoutException, IOException {
 		String message = "<test><woop>1</woop></test>";
 		PipeLineSession session = null;
 		String result = sender.sendMessageOrThrow(new Message(message), session).asString();

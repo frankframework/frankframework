@@ -36,7 +36,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IMessageBrowser;
@@ -473,32 +472,14 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		this.name = name;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'inputDirectory' has been replaced by 'inputFolder'")
-	public void setInputDirectory(String inputDirectory) {
-		setInputFolder(inputDirectory);
-	}
-
 	/** Folder that is scanned for files. If not set, the root is scanned */
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'outputDirectory' has been replaced by 'inProcessFolder'")
-	public void setOutputDirectory(String outputDirectory) {
-		setInProcessFolder(outputDirectory);
-	}
-
 	/** Folder where files are stored <i>while</i> being processed */
 	public void setInProcessFolder(String inProcessFolder) {
 		this.inProcessFolder = inProcessFolder;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("attribute 'processedDirectory' has been replaced by 'processedFolder'")
-	public void setProcessedDirectory(String processedDirectory) {
-		setProcessedFolder(processedDirectory);
 	}
 
 	/** Folder where files are stored <i>after</i> being processed */
@@ -527,12 +508,6 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	 */
 	public void setCreateFolders(boolean createFolders) {
 		this.createFolders = createFolders;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("attribute 'createInputDirectory' has been replaced by 'createFolders'")
-	public void setCreateInputDirectory(boolean createInputDirectory) {
-		setCreateFolders(createInputDirectory);
 	}
 
 	/**
@@ -599,21 +574,11 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		this.disableMessageBrowsers = disableMessageBrowsers;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'wildCard' has been renamed to 'wildcard'")
-	public void setWildCard(String wildcard) {
-		setWildcard(wildcard);
-	}
 	/** Filter of files to look for in inputFolder e.g. '*.inp'. */
 	public void setWildcard(String wildcard) {
 		this.wildcard = wildcard;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'excludeWildCard' has been renamed to 'excludeWildcard'")
-	public void setExcludeWildCard(String excludeWildcard) {
-		setExcludeWildcard(excludeWildcard);
-	}
 	/** Filter of files to be excluded when looking in inputFolder. */
 	public void setExcludeWildcard(String excludeWildcard) {
 		this.excludeWildcard = excludeWildcard;

@@ -1,0 +1,384 @@
+<root xmlns:mermaid="mm:mermaid">
+	<!--Receivers-->
+	<nl.nn.adapterframework.http.rest.ApiListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>0</mermaid:modifier>
+	</nl.nn.adapterframework.http.rest.ApiListener>
+	<nl.nn.adapterframework.http.HttpListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>0</mermaid:modifier>
+	</nl.nn.adapterframework.http.HttpListener>
+	<nl.nn.adapterframework.http.RestListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>0</mermaid:modifier>
+	</nl.nn.adapterframework.http.RestListener>
+	<nl.nn.adapterframework.http.WebServiceListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>0</mermaid:modifier>
+	</nl.nn.adapterframework.http.WebServiceListener>
+	<nl.nn.adapterframework.extensions.cmis.CmisEventListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>0</mermaid:modifier>
+	</nl.nn.adapterframework.extensions.cmis.CmisEventListener>
+
+	<nl.nn.adapterframework.jms.PullingJmsListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>1</mermaid:modifier>
+	</nl.nn.adapterframework.jms.PullingJmsListener>
+	<nl.nn.adapterframework.extensions.esb.EsbJmsListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>1</mermaid:modifier>
+	</nl.nn.adapterframework.extensions.esb.EsbJmsListener>
+	<nl.nn.adapterframework.extensions.fxf.FxfListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>1</mermaid:modifier>
+	</nl.nn.adapterframework.extensions.fxf.FxfListener>
+	<nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>1</mermaid:modifier>
+	</nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsListener>
+	<nl.nn.adapterframework.jms.JmsListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>1</mermaid:modifier>
+	</nl.nn.adapterframework.jms.JmsListener>
+	<nl.nn.adapterframework.jms.PushingJmsListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>1</mermaid:modifier>
+	</nl.nn.adapterframework.jms.PushingJmsListener>
+	<nl.nn.adapterframework.extensions.tibco.TibcoListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>1</mermaid:modifier>
+	</nl.nn.adapterframework.extensions.tibco.TibcoListener>
+	<nl.nn.adapterframework.extensions.tibco.TibcoLogJmsListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>1</mermaid:modifier>
+	</nl.nn.adapterframework.extensions.tibco.TibcoLogJmsListener>
+	<nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>1</mermaid:modifier>
+	</nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener>
+	<nl.nn.adapterframework.extensions.ifsa.jms.PullingIfsaProviderListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>1</mermaid:modifier>
+	</nl.nn.adapterframework.extensions.ifsa.jms.PullingIfsaProviderListener>
+	<nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>1</mermaid:modifier>
+	</nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener>
+	<nl.nn.adapterframework.extensions.mqtt.MqttListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>1</mermaid:modifier>
+	</nl.nn.adapterframework.extensions.mqtt.MqttListener>
+
+	<nl.nn.adapterframework.jdbc.JdbcListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>2</mermaid:modifier>
+	</nl.nn.adapterframework.jdbc.JdbcListener>
+	<nl.nn.adapterframework.jdbc.JdbcTableListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>2</mermaid:modifier>
+	</nl.nn.adapterframework.jdbc.JdbcTableListener>
+	<nl.nn.adapterframework.jdbc.MessageStoreListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>2</mermaid:modifier>
+	</nl.nn.adapterframework.jdbc.MessageStoreListener>
+	<nl.nn.adapterframework.jdbc.SimpleJdbcListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>2</mermaid:modifier>
+	</nl.nn.adapterframework.jdbc.SimpleJdbcListener>
+
+	<nl.nn.adapterframework.receivers.DirectoryListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>3</mermaid:modifier>
+	</nl.nn.adapterframework.receivers.DirectoryListener>
+	<nl.nn.adapterframework.receivers.ExchangeMailListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>3</mermaid:modifier>
+	</nl.nn.adapterframework.receivers.ExchangeMailListener>
+	<nl.nn.adapterframework.receivers.ImapListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>3</mermaid:modifier>
+	</nl.nn.adapterframework.receivers.ImapListener>
+	<nl.nn.adapterframework.receivers.Samba2Listener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>3</mermaid:modifier>
+	</nl.nn.adapterframework.receivers.Samba2Listener>
+	<nl.nn.adapterframework.receivers.SambaListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>3</mermaid:modifier>
+	</nl.nn.adapterframework.receivers.SambaListener>
+
+	<nl.nn.adapterframework.receivers.JavaListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>4</mermaid:modifier>
+	</nl.nn.adapterframework.receivers.JavaListener>
+
+	<nl.nn.adapterframework.extensions.sap.SapListener>
+		<mermaid:type>listener</mermaid:type>
+		<mermaid:modifier>5</mermaid:modifier>
+	</nl.nn.adapterframework.extensions.sap.SapListener>
+
+
+
+
+
+	<!--Pipes, validators and wrappers-->
+	<!--Endpoints-->
+	<nl.nn.adapterframework.pipes.CleanupOldFilesPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.pipes.CleanupOldFilesPipe>
+	<nl.nn.adapterframework.extensions.coolgen.CoolGenWrapperPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.extensions.coolgen.CoolGenWrapperPipe>
+	<nl.nn.adapterframework.pipes.CredentialCheckingPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.pipes.CredentialCheckingPipe>
+	<nl.nn.adapterframework.filesystem.FileSystemPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.filesystem.FileSystemPipe>
+	<nl.nn.adapterframework.extensions.tibco.GetTibcoQueues><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.extensions.tibco.GetTibcoQueues>
+	<nl.nn.ibistesttool.LadybugPipe><mermaid:type>endpoint</mermaid:type></nl.nn.ibistesttool.LadybugPipe>
+	<nl.nn.adapterframework.pipes.LarvaPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.pipes.LarvaPipe>
+	<nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe>
+	<nl.nn.adapterframework.ldap.LdapFindMemberPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.ldap.LdapFindMemberPipe>
+	<nl.nn.adapterframework.pipes.FilePipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.pipes.FilePipe>
+	<nl.nn.adapterframework.pipes.LocalFileSystemPipe>
+		<mermaid:type>endpoint</mermaid:type>
+		<mermaid:attribute name="action"/>
+	</nl.nn.adapterframework.pipes.LocalFileSystemPipe>
+	<nl.nn.adapterframework.pipes.MailSenderPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.pipes.MailSenderPipe>
+	<nl.nn.adapterframework.extensions.rekenbox.RekenBoxCaller><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.extensions.rekenbox.RekenBoxCaller>
+	<nl.nn.adapterframework.pipes.Samba1Pipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.pipes.Samba1Pipe>
+	<nl.nn.adapterframework.pipes.Samba2Pipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.pipes.Samba2Pipe>
+	<nl.nn.adapterframework.extensions.svn.ScanTibcoSolutionPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.extensions.svn.ScanTibcoSolutionPipe>
+	<nl.nn.adapterframework.extensions.tibco.SendTibcoMessage><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.extensions.tibco.SendTibcoMessage>
+	<nl.nn.adapterframework.pipes.SenderPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.pipes.SenderPipe>
+	<nl.nn.adapterframework.pipes.GenericMessageSendingPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.pipes.GenericMessageSendingPipe>
+
+	<!--Validator-->
+	<nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator>
+		<mermaid:type>validator</mermaid:type>
+		<mermaid:attribute name="schema"/>
+		<mermaid:attribute name="schemaLocation"/>
+		<mermaid:attribute name="wsdl"/>
+	</nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator>
+	<nl.nn.adapterframework.extensions.esb.EsbSoapValidator>
+		<mermaid:type>validator</mermaid:type>
+		<mermaid:attribute name="schema"/>
+		<mermaid:attribute name="schemaLocation"/>
+		<mermaid:attribute name="wsdl"/>
+	</nl.nn.adapterframework.extensions.esb.EsbSoapValidator>
+	<nl.nn.adapterframework.extensions.fxf.FxfXmlValidator>
+		<mermaid:type>validator</mermaid:type>
+		<mermaid:attribute name="direction"/>
+		<mermaid:attribute name="wsdl"/>
+	</nl.nn.adapterframework.extensions.fxf.FxfXmlValidator>
+	<nl.nn.adapterframework.pipes.Json2XmlValidator>
+		<mermaid:type>validator</mermaid:type>
+		<mermaid:attribute name="outputFormat"/>
+		<mermaid:attribute name="responseRoot"/>
+	</nl.nn.adapterframework.pipes.Json2XmlValidator>
+	<nl.nn.adapterframework.pipes.JsonWellFormedChecker><mermaid:type>validator</mermaid:type></nl.nn.adapterframework.pipes.JsonWellFormedChecker>
+	<nl.nn.adapterframework.soap.SoapValidator>
+		<mermaid:type>validator</mermaid:type>
+		<mermaid:attribute name="schema"/>
+		<mermaid:attribute name="schemaLocation"/>
+	</nl.nn.adapterframework.soap.SoapValidator>
+	<nl.nn.adapterframework.pipes.WsdlXmlValidator>
+		<mermaid:type>validator</mermaid:type>
+		<mermaid:attribute name="schema"/>
+		<mermaid:attribute name="schemaLocation"/>
+		<mermaid:attribute name="wsdl"/>
+	</nl.nn.adapterframework.pipes.WsdlXmlValidator>
+	<nl.nn.adapterframework.pipes.XmlValidator>
+		<mermaid:type>validator</mermaid:type>
+		<mermaid:attribute name="schema"/>
+		<mermaid:attribute name="schemaLocation"/>
+	</nl.nn.adapterframework.pipes.XmlValidator>
+	<nl.nn.adapterframework.pipes.XmlWellFormedChecker><mermaid:type>validator</mermaid:type></nl.nn.adapterframework.pipes.XmlWellFormedChecker>
+
+	<!--wrapper-->
+	<nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe>
+		<mermaid:type>wrapper</mermaid:type>
+		<mermaid:attribute name="direction"/>
+	</nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe>
+	<nl.nn.adapterframework.extensions.esb.DirectWrapperPipe><mermaid:type>wrapper</mermaid:type></nl.nn.adapterframework.extensions.esb.DirectWrapperPipe>
+	<nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe>
+		<mermaid:type>wrapper</mermaid:type>
+		<mermaid:attribute name="direction"/>
+	</nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe>
+	<nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe>
+		<mermaid:type>wrapper</mermaid:type>
+		<mermaid:attribute name="direction"/>
+	</nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe>
+	<nl.nn.adapterframework.soap.SoapWrapperPipe>
+		<mermaid:type>wrapper</mermaid:type>
+		<mermaid:attribute name="direction"/>
+	</nl.nn.adapterframework.soap.SoapWrapperPipe>
+
+	<!--Translator-->
+	<nl.nn.adapterframework.extensions.rekenbox.Adios2XmlPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.extensions.rekenbox.Adios2XmlPipe>
+	<nl.nn.adapterframework.extensions.aspose.pipe.AmountOfPagesPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.extensions.aspose.pipe.AmountOfPagesPipe>
+	<nl.nn.adapterframework.extensions.api.ApiStreamPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.extensions.api.ApiStreamPipe>
+	<nl.nn.adapterframework.pipes.Base64Pipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.Base64Pipe>
+	<nl.nn.adapterframework.jdbc.BatchBlobTransformerPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.jdbc.BatchBlobTransformerPipe>
+	<nl.nn.adapterframework.jdbc.BatchClobTransformerPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.jdbc.BatchClobTransformerPipe>
+	<nl.nn.adapterframework.batch.BatchFileTransformerPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.batch.BatchFileTransformerPipe>
+	<nl.nn.adapterframework.pipes.BytesOutputPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.BytesOutputPipe>
+	<nl.nn.adapterframework.pipes.ChecksumPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.ChecksumPipe>
+	<nl.nn.adapterframework.pipes.CompressPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.CompressPipe>
+	<nl.nn.adapterframework.pipes.CrlPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.CrlPipe>
+	<nl.nn.adapterframework.pipes.CsvParserPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.CsvParserPipe>
+	<nl.nn.adapterframework.pipes.DomainTransformerPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.DomainTransformerPipe>
+	<nl.nn.adapterframework.pipes.EchoPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.EchoPipe>
+	<nl.nn.adapterframework.pipes.EscapePipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.EscapePipe>
+	<nl.nn.adapterframework.pipes.FixedResultPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.FixedResultPipe>
+	<nl.nn.adapterframework.pipes.HashPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.HashPipe>
+	<nl.nn.adapterframework.pipes.JsonPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.JsonPipe>
+	<nl.nn.adapterframework.pipes.JsonXsltPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.JsonXsltPipe>
+	<nl.nn.adapterframework.extensions.rekenbox.LabelFormat><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.extensions.rekenbox.LabelFormat>
+	<nl.nn.adapterframework.pipes.PGPPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.PGPPipe>
+	<nl.nn.adapterframework.pipes.PasswordGeneratorPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.PasswordGeneratorPipe>
+	<nl.nn.adapterframework.pipes.PasswordHashPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.PasswordHashPipe>
+	<nl.nn.adapterframework.extensions.aspose.pipe.PdfPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.extensions.aspose.pipe.PdfPipe>
+	<nl.nn.adapterframework.pipes.ReplacerPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.ReplacerPipe>
+	<nl.nn.adapterframework.pipes.SignaturePipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.SignaturePipe>
+	<nl.nn.adapterframework.pipes.SizePipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.SizePipe>
+	<nl.nn.adapterframework.pipes.SkipPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.SkipPipe>
+	<nl.nn.adapterframework.batch.StreamTransformerPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.batch.StreamTransformerPipe>
+	<nl.nn.adapterframework.pipes.Text2XmlPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.Text2XmlPipe>
+	<nl.nn.adapterframework.pipes.TextSplitterPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.TextSplitterPipe>
+	<nl.nn.adapterframework.pipes.UUIDGeneratorPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.UUIDGeneratorPipe>
+	<nl.nn.adapterframework.pipes.UnzipPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.UnzipPipe>
+	<nl.nn.adapterframework.pipes.WsdlGeneratorPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.WsdlGeneratorPipe>
+	<nl.nn.adapterframework.pipes.XQueryPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.XQueryPipe>
+	<nl.nn.adapterframework.pipes.XmlBuilderPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.pipes.XmlBuilderPipe>
+	<nl.nn.adapterframework.pipes.XsltPipe>
+		<mermaid:type>translator</mermaid:type>
+		<mermaid:attribute name="styleSheetNameSessionKey" text="xsl name sessionKey: "/>
+		<mermaid:attribute name="xpathExpression"/>
+		<mermaid:attribute name="styleSheetName"/>
+	</nl.nn.adapterframework.pipes.XsltPipe>
+	<nl.nn.adapterframework.compression.ZipWriterPipe><mermaid:type>translator</mermaid:type></nl.nn.adapterframework.compression.ZipWriterPipe>
+
+	<!--Splitter-->
+	<nl.nn.adapterframework.jdbc.BlobLineIteratingPipe><mermaid:type>splitter</mermaid:type></nl.nn.adapterframework.jdbc.BlobLineIteratingPipe>
+	<nl.nn.adapterframework.jdbc.ClobLineIteratingPipe><mermaid:type>splitter</mermaid:type></nl.nn.adapterframework.jdbc.ClobLineIteratingPipe>
+	<nl.nn.adapterframework.filesystem.ForEachAttachmentPipe><mermaid:type>splitter</mermaid:type></nl.nn.adapterframework.filesystem.ForEachAttachmentPipe>
+	<nl.nn.adapterframework.pipes.ForEachChildElementPipe><mermaid:type>splitter</mermaid:type></nl.nn.adapterframework.pipes.ForEachChildElementPipe>
+	<nl.nn.adapterframework.jdbc.ResultSetIteratingPipe><mermaid:type>splitter</mermaid:type></nl.nn.adapterframework.jdbc.ResultSetIteratingPipe>
+	<nl.nn.adapterframework.pipes.StreamLineIteratorPipe><mermaid:type>splitter</mermaid:type></nl.nn.adapterframework.pipes.StreamLineIteratorPipe>
+	<nl.nn.adapterframework.pipes.StringIteratorPipe><mermaid:type>splitter</mermaid:type></nl.nn.adapterframework.pipes.StringIteratorPipe>
+	<nl.nn.adapterframework.compression.ZipIteratorPipe><mermaid:type>splitter</mermaid:type></nl.nn.adapterframework.compression.ZipIteratorPipe>
+
+	<!--Router-->
+	<nl.nn.adapterframework.pipes.CompareIntegerPipe><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.CompareIntegerPipe>
+	<nl.nn.adapterframework.pipes.CompareStringPipe><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.CompareStringPipe>
+	<nl.nn.adapterframework.pipes.CounterSwitchPipe><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.CounterSwitchPipe>
+	<nl.nn.adapterframework.pipes.DelayPipe><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.DelayPipe>
+	<nl.nn.adapterframework.pipes.IfMultipart><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.IfMultipart>
+	<nl.nn.adapterframework.pipes.IsUserInRolePipe><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.IsUserInRolePipe>
+	<nl.nn.adapterframework.pipes.IsXmlIfPipe><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.IsXmlIfPipe>
+	<nl.nn.adapterframework.pipes.XmlIf><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.XmlIf>
+	<nl.nn.adapterframework.pipes.XmlSwitch>
+		<mermaid:type>router</mermaid:type>
+		<mermaid:attribute name="xpathExpression"/>
+		<mermaid:attribute name="styleSheetName"/>
+	</nl.nn.adapterframework.pipes.XmlSwitch>
+
+	<!--Session-->
+	<nl.nn.adapterframework.http.rest.ApiPrincipalPipe><mermaid:type>session</mermaid:type></nl.nn.adapterframework.http.rest.ApiPrincipalPipe>
+	<nl.nn.adapterframework.pipes.EtagHandlerPipe><mermaid:type>session</mermaid:type></nl.nn.adapterframework.pipes.EtagHandlerPipe>
+	<nl.nn.adapterframework.pipes.GetFromSession><mermaid:type>session</mermaid:type></nl.nn.adapterframework.pipes.GetFromSession>
+	<nl.nn.adapterframework.pipes.GetLtpaTokenPipe><mermaid:type>session</mermaid:type></nl.nn.adapterframework.pipes.GetLtpaTokenPipe>
+	<nl.nn.adapterframework.pipes.GetPrincipalPipe><mermaid:type>session</mermaid:type></nl.nn.adapterframework.pipes.GetPrincipalPipe>
+	<nl.nn.adapterframework.pipes.IncreaseIntegerPipe><mermaid:type>session</mermaid:type></nl.nn.adapterframework.pipes.IncreaseIntegerPipe>
+	<nl.nn.adapterframework.pipes.PutInSession><mermaid:type>session</mermaid:type></nl.nn.adapterframework.pipes.PutInSession>
+	<nl.nn.adapterframework.pipes.PutParametersInSession><mermaid:type>session</mermaid:type></nl.nn.adapterframework.pipes.PutParametersInSession>
+	<nl.nn.adapterframework.pipes.PutSystemDateInSession><mermaid:type>session</mermaid:type></nl.nn.adapterframework.pipes.PutSystemDateInSession>
+	<nl.nn.adapterframework.pipes.RemoveFromSession><mermaid:type>session</mermaid:type></nl.nn.adapterframework.pipes.RemoveFromSession>
+
+	<!--ErrorHandling-->
+	<nl.nn.adapterframework.pipes.ExceptionPipe><mermaid:type>errorhandling</mermaid:type></nl.nn.adapterframework.pipes.ExceptionPipe>
+
+
+
+
+
+	<!--Senders-->
+	<!--HTTP-->
+	<nl.nn.adapterframework.http.HttpSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>0</mermaid:modifier></nl.nn.adapterframework.http.HttpSender>
+	<nl.nn.adapterframework.http.MultipartHttpSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>0</mermaid:modifier></nl.nn.adapterframework.http.MultipartHttpSender>
+	<nl.nn.adapterframework.http.WebServiceNtlmSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>0</mermaid:modifier></nl.nn.adapterframework.http.WebServiceNtlmSender>
+	<nl.nn.adapterframework.http.WebServiceSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>0</mermaid:modifier></nl.nn.adapterframework.http.WebServiceSender>
+	<nl.nn.adapterframework.extensions.akamai.NetStorageSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>0</mermaid:modifier></nl.nn.adapterframework.extensions.akamai.NetStorageSender>
+
+	<!--JMS-->
+	<nl.nn.adapterframework.jms.JmsSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>1</mermaid:modifier></nl.nn.adapterframework.jms.JmsSender>
+	<nl.nn.adapterframework.extensions.esb.EsbJmsSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>1</mermaid:modifier></nl.nn.adapterframework.extensions.esb.EsbJmsSender>
+	<nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>1</mermaid:modifier></nl.nn.adapterframework.extensions.ifsa.IfsaRequesterSender>
+	<nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>1</mermaid:modifier></nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsSender>
+	<nl.nn.adapterframework.extensions.ibm.IMSSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>1</mermaid:modifier></nl.nn.adapterframework.extensions.ibm.IMSSender>
+	<nl.nn.adapterframework.extensions.ibm.MQSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>1</mermaid:modifier></nl.nn.adapterframework.extensions.ibm.MQSender>
+	<nl.nn.adapterframework.extensions.tibco.TibcoSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>1</mermaid:modifier></nl.nn.adapterframework.extensions.tibco.TibcoSender>
+	<nl.nn.adapterframework.extensions.mqtt.MqttSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>1</mermaid:modifier></nl.nn.adapterframework.extensions.mqtt.MqttSender>
+
+	<!--JDBC-->
+	<nl.nn.adapterframework.jdbc.FixedQuerySender><mermaid:type>database</mermaid:type><mermaid:modifier>2</mermaid:modifier></nl.nn.adapterframework.jdbc.FixedQuerySender>
+	<nl.nn.adapterframework.jdbc.DirectQuerySender><mermaid:type>database</mermaid:type><mermaid:modifier>2</mermaid:modifier></nl.nn.adapterframework.jdbc.DirectQuerySender>
+	<nl.nn.adapterframework.jdbc.XmlQuerySender><mermaid:type>database</mermaid:type><mermaid:modifier>2</mermaid:modifier></nl.nn.adapterframework.jdbc.XmlQuerySender>
+	<nl.nn.adapterframework.jdbc.MessageStoreSender><mermaid:type>database</mermaid:type><mermaid:modifier>2</mermaid:modifier></nl.nn.adapterframework.jdbc.MessageStoreSender>
+	<nl.nn.adapterframework.jdbc.ResultSet2FileSender><mermaid:type>database</mermaid:type><mermaid:modifier>2</mermaid:modifier></nl.nn.adapterframework.jdbc.ResultSet2FileSender>
+	<nl.nn.adapterframework.jms.XmlJmsBrowserSender><mermaid:type>database</mermaid:type><mermaid:modifier>2</mermaid:modifier></nl.nn.adapterframework.jms.XmlJmsBrowserSender>
+
+	<!--Filesystem-->
+	<nl.nn.adapterframework.senders.AmazonS3Sender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>3</mermaid:modifier></nl.nn.adapterframework.senders.AmazonS3Sender>
+	<nl.nn.adapterframework.filesystem.FileSystemSenderWithAttachments><mermaid:type>endpoint</mermaid:type><mermaid:modifier>3</mermaid:modifier></nl.nn.adapterframework.filesystem.FileSystemSenderWithAttachments>
+	<nl.nn.adapterframework.senders.ExchangeFolderSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>3</mermaid:modifier></nl.nn.adapterframework.senders.ExchangeFolderSender>
+	<nl.nn.adapterframework.senders.FtpFileSystemSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>3</mermaid:modifier></nl.nn.adapterframework.senders.FtpFileSystemSender>
+	<nl.nn.adapterframework.senders.LocalFileSystemSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>3</mermaid:modifier></nl.nn.adapterframework.senders.LocalFileSystemSender>
+	<nl.nn.adapterframework.senders.SambaSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>3</mermaid:modifier></nl.nn.adapterframework.senders.SambaSender>
+	<nl.nn.adapterframework.senders.Samba1Sender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>3</mermaid:modifier></nl.nn.adapterframework.senders.Samba1Sender>
+	<nl.nn.adapterframework.senders.Samba2Sender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>3</mermaid:modifier></nl.nn.adapterframework.senders.Samba2Sender>
+
+	<!--Frank -->
+	<nl.nn.adapterframework.senders.IbisJavaSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>4</mermaid:modifier></nl.nn.adapterframework.senders.IbisJavaSender>
+	<nl.nn.adapterframework.senders.IbisLocalSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>4</mermaid:modifier></nl.nn.adapterframework.senders.IbisLocalSender>
+	<nl.nn.adapterframework.http.IbisWebServiceSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>4</mermaid:modifier></nl.nn.adapterframework.http.IbisWebServiceSender>
+
+	<!--SAP-->
+	<nl.nn.adapterframework.extensions.sap.IdocSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>5</mermaid:modifier></nl.nn.adapterframework.extensions.sap.IdocSender>
+	<nl.nn.adapterframework.extensions.sap.SapSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>5</mermaid:modifier></nl.nn.adapterframework.extensions.sap.SapSender>
+
+	<!--Mail-->
+	<nl.nn.adapterframework.senders.MailSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>6</mermaid:modifier></nl.nn.adapterframework.senders.MailSender>
+	<nl.nn.adapterframework.senders.SendGridSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>6</mermaid:modifier></nl.nn.adapterframework.senders.SendGridSender>
+	<nl.nn.adapterframework.senders.ImapSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>6</mermaid:modifier></nl.nn.adapterframework.senders.ImapSender>
+
+	<!--Frank utility-->
+	<nl.nn.adapterframework.senders.CommandSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.CommandSender>
+	<nl.nn.adapterframework.senders.DelaySender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.DelaySender>
+	<nl.nn.adapterframework.senders.EchoSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.EchoSender>
+	<nl.nn.adapterframework.senders.FixedResultSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.FixedResultSender>
+	<nl.nn.adapterframework.senders.JavascriptSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.JavascriptSender>
+	<nl.nn.adapterframework.senders.JsonXsltSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.JsonXsltSender>
+	<nl.nn.adapterframework.senders.LogSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.LogSender>
+	<nl.nn.adapterframework.senders.ParallelSenders><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.ParallelSenders>
+	<nl.nn.adapterframework.senders.ReloadSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.ReloadSender>
+	<nl.nn.adapterframework.scheduler.SchedulerSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.scheduler.SchedulerSender>
+	<nl.nn.adapterframework.senders.SenderSeries><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.SenderSeries>
+	<nl.nn.adapterframework.senders.SenderWrapper><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.SenderWrapper>
+	<nl.nn.adapterframework.senders.ShadowSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.ShadowSender>
+	<nl.nn.adapterframework.senders.XmlValidatorSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.XmlValidatorSender>
+	<nl.nn.adapterframework.senders.XsltSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>7</mermaid:modifier></nl.nn.adapterframework.senders.XsltSender>
+	<nl.nn.adapterframework.compression.ZipWriterSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>2</mermaid:modifier></nl.nn.adapterframework.compression.ZipWriterSender>
+
+	<!--other-->
+	<nl.nn.adapterframework.extensions.cmis.CmisSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>8</mermaid:modifier></nl.nn.adapterframework.extensions.cmis.CmisSender>
+	<nl.nn.adapterframework.extensions.idin.IdinSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>8</mermaid:modifier></nl.nn.adapterframework.extensions.idin.IdinSender>
+	<nl.nn.adapterframework.ldap.LdapSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>8</mermaid:modifier></nl.nn.adapterframework.ldap.LdapSender>
+	<nl.nn.adapterframework.mongodb.MongoDbSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>8</mermaid:modifier></nl.nn.adapterframework.mongodb.MongoDbSender>
+	<nl.nn.adapterframework.xcom.XComSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>8</mermaid:modifier></nl.nn.adapterframework.xcom.XComSender>
+	<nl.nn.adapterframework.extensions.xfb.XfbSender><mermaid:type>endpoint</mermaid:type><mermaid:modifier>8</mermaid:modifier></nl.nn.adapterframework.extensions.xfb.XfbSender>
+
+
+
+
+
+	<!--styling by element name-->
+	<exit><mermaid:type>endpoint</mermaid:type></exit>
+	<receiver><mermaid:type>endpoint</mermaid:type></receiver>
+	<listener><mermaid:type>endpoint</mermaid:type></listener>
+</root>

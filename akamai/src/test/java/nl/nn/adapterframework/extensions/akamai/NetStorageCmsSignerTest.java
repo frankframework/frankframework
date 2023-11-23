@@ -46,7 +46,7 @@ public class NetStorageCmsSignerTest {
 	}
 
 	@Test
-	public void netStorageUtilsComputeSignHeader() throws URISyntaxException {
+	public void netStorageUtilsComputeSignHeader() {
 		//Validate hash compute method
 		byte[] data = "myDummyString".getBytes();
 		byte[] binaryData = NetStorageUtils.computeKeyedHash(data, "accessToken", KeyedHashAlgorithm.HMACSHA256);

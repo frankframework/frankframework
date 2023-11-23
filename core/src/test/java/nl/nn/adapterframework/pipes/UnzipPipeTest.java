@@ -201,7 +201,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 	}
 
 	@Test
-	public void testNullDirectory() throws Exception {
+	public void testNullDirectory() {
 		pipe.setDirectory(null);
 		pipe.setDirectorySessionKey(null);
 

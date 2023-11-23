@@ -35,7 +35,7 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 	}
 
 	@Test
-	public void testNoHeaderNoFieldNames() throws Exception {
+	public void testNoHeaderNoFieldNames() {
 		pipe.setFileContainsHeader(false);
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configurePipe);

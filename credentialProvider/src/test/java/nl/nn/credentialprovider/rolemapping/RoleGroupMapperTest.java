@@ -88,7 +88,7 @@ public class RoleGroupMapperTest {
 	}
 
 	@AfterAll
-	public static void tearDown() throws Exception {
+	public static void tearDown() {
 		if(inMemoryDirectoryServer != null) {
 			inMemoryDirectoryServer.shutDown(true);
 		}
@@ -102,7 +102,7 @@ public class RoleGroupMapperTest {
 	}
 
 	@Test
-	public void testNoExistingResource() throws LifecycleException {
+	public void testNoExistingResource() {
 
 		RoleToGroupMappingJndiRealm realm = setupRoleToGroupMappingJndiRealm(null, "classpath:conf/tomcat-role-group-mapping1.xml");
 

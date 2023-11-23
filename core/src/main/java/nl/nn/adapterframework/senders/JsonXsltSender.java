@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.io.IOException;
 import java.util.function.BiConsumer;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -78,7 +77,7 @@ public class JsonXsltSender extends XsltSender {
 			ContentHandler handler = createHandler(null, threadConnector, session, poolToUse, target);
 			JsonEventHandler jsonEventHandler = new JsonXslt3XmlHandler(handler);
 			return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
-		} catch (SenderException | ConfigurationException | IOException e) {
+		} catch (SenderException | ConfigurationException e) {
 			throw new StreamingException(e);
 		}
 	}

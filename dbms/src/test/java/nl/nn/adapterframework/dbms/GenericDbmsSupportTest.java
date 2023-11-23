@@ -1,6 +1,5 @@
 package nl.nn.adapterframework.dbms;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -11,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class GenericDbmsSupportTest {
 
 	@Test
-	public void testSplitQuery() throws JdbcException, SQLException {
+	public void testSplitQuery() {
 		String query1 = "select count(*) from ibisstore;";
 		String query2 = "delete from temp where tvarchar='t;st';";
 		String query3 = "update temp set tvarchar='new' where tvarchar2='old';";

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden
+   Copyright 2019-2020 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 
 /**
- * Start the Framework with a servlet so `application startup order` can be used.
+ * To be removed, IbisContext should be directly wired under the EnvironmentContext.
  * 
  * @author Niels Meijer
  */
@@ -79,14 +79,9 @@ public class IbisApplicationServlet extends HttpServlet {
 		ibisContext.setParentContext(parentContext);
 		ibisContext.init();
 
-		Exception startupException = ibisContext.getStartupException();
-		if(startupException != null) { //Check if there are any problems initializing Spring
-			APPLICATION_LOG.fatal("IbisApplicationServlet finished without successfully initializing: "+ClassUtils.classNameOf(ibisContext), startupException);
-		}
-
 		// save the IbisContext in the ServletContext
 		servletContext.setAttribute(CONTEXT_KEY, ibisContext);
-		LOG.debug("stored IbisContext [" + ClassUtils.nameOf(ibisContext) + "]["+ ibisContext + "] in ServletContext under key ["+ CONTEXT_KEY + "]");
+		LOG.debug("stored IbisContext [{}][{}] in ServletContext under key [{}]", ClassUtils.nameOf(ibisContext), ibisContext, CONTEXT_KEY);
 		APPLICATION_LOG.info("Initialized {}", ClassUtils.classNameOf(this));
 	}
 

@@ -142,7 +142,7 @@ public abstract class CmisHttpSender extends HttpSenderBase {
 	}
 
 	@Override
-	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException {
+	public Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws IOException {
 		int responseCode = -1;
 		try {
 			StatusLine statusline = responseHandler.getStatusLine();

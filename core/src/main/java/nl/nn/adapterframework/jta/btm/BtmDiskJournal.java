@@ -36,7 +36,7 @@ import nl.nn.adapterframework.util.AppConstants;
  * Since it's not possible to change the current transaction, the most we can do is attempt to
  * retry the log/force actions and hope we don't break the tx-log even further.
  *
- * @see <a href="https://github.com/ibissource/iaf/issues/4615">IbisSource issue</a>
+ * @see <a href="https://github.com/frankframework/frankframework/issues/4615">IbisSource issue</a>
  * @see <a href="https://github.com/bitronix/btm/issues/45">BTM issue</a>
  *
  * @author Niels Meijer

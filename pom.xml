@@ -11,14 +11,14 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>11</maven.compiler.target>
 		<maven.compiler.source>11</maven.compiler.source>
-		<log4j2.version>2.21.1</log4j2.version>
+		<log4j2.version>2.22.0</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
-		<jackson.version>2.15.3</jackson.version>
+		<jackson.version>2.16.0</jackson.version>
 		<cxf.version>3.6.2</cxf.version>
-		<spring.version>5.3.30</spring.version>
+		<spring.version>5.3.31</spring.version>
 		<spring-security.version>5.8.8</spring-security.version>
 		<spring-integration.version>5.5.19</spring-integration.version>
 
@@ -33,14 +33,14 @@
 
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.2.224</h2.driver.version>
-		<db2.driver.version>11.5.8.0</db2.driver.version>
+		<db2.driver.version>11.5.9.0</db2.driver.version>
 		<oracle.driver.version>23.3.0.23.09</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>12.4.2.jre11</mssql.driver.version>
 		<mysql.driver.version>8.2.0</mysql.driver.version>
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
 		<mariadb.driver.version>3.3.0</mariadb.driver.version>
-		<postgresql.driver.version>42.6.0</postgresql.driver.version>
+		<postgresql.driver.version>42.7.0</postgresql.driver.version>
 		<mongodb.driver.version>4.11.1</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
@@ -126,7 +126,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>3.25.0</version>
+				<version>3.25.1</version>
 			</dependency>
 			<dependency>
 				<groupId>io.netty</groupId>
@@ -178,11 +178,6 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-sap</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-adapterframework-coolgen</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -276,6 +271,11 @@
 			<dependency>
 				<groupId>org.ibissource</groupId>
 				<artifactId>nn-specials</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ibissource</groupId>
+				<artifactId>ibis-adapterframework-batch</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -484,6 +484,10 @@
 						<groupId>asm</groupId>
 						<artifactId>asm</artifactId>
 					</exclusion>
+					<exclusion>
+						<groupId>commons-collections</groupId>
+						<artifactId>commons-collections</artifactId>
+					</exclusion>
 				</exclusions>
 			</dependency>
 			<dependency>
@@ -505,6 +509,11 @@
 				<groupId>commons-codec</groupId>
 				<artifactId>commons-codec</artifactId>
 				<version>1.16.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-collections4</artifactId>
+				<version>4.4</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-net</groupId>
@@ -569,6 +578,27 @@
 	<build>
 		<defaultGoal>install</defaultGoal>
 		<plugins>
+			<!-- Execute org.jasig.maven:notice-maven-plugin:generate in order to (re)generate a NOTICE file -->
+			<plugin>
+				<groupId>org.jasig.maven</groupId>
+				<artifactId>notice-maven-plugin</artifactId>
+				<version>2.0.0</version>
+				<configuration>
+					<excludedModules>
+						<excludedModule>ibis-adapterframework-ifsa</excludedModule>
+						<excludedModule>ibis-adapterframework-sap</excludedModule>
+						<excludedModule>ibis-adapterframework-tibco</excludedModule>
+						<excludedModule>ibis-adapterframework-idin</excludedModule>
+					</excludedModules>
+					<noticeMessage>{0} - using: {1}</noticeMessage>
+					<excludeOptional>true</excludeOptional>
+					<generateChildNotices>false</generateChildNotices>
+					<includeChildDependencies>true</includeChildDependencies>
+					<licenseMapping>
+						<param>license-mappings.xml</param>
+					</licenseMapping>
+				</configuration>
+			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
@@ -1066,7 +1096,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>3.4.5</version>
+				<version>3.5.0</version>
 				<reportSets>
 					<reportSet>
 						<reports>
@@ -1103,9 +1133,9 @@
 	</reporting>
 
 	<scm>
-		<url>https://github.com/ibissource/iaf</url>
-		<connection>scm:git:https://github.com/ibissource/iaf.git</connection>
-		<developerConnection>scm:git:https://github.com/ibissource/iaf.git</developerConnection>
+		<url>https://github.com/frankframework/frankframework</url>
+		<connection>scm:git:https://github.com/frankframework/frankframework.git</connection>
+		<developerConnection>scm:git:https://github.com/frankframework/frankframework.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
 
@@ -1206,7 +1236,7 @@
 				</property>
 			</activation>
 			<modules>
-				<module>iaf-commons</module>
+				<module>commons</module>
 				<module>security</module>
 				<module>credentialProvider</module>
 				<module>management-gateway</module>
@@ -1219,6 +1249,7 @@
 
 				<module>akamai</module>
 				<module>aws</module>
+				<module>batch</module>
 				<module>cmis</module>
 				<module>aspose</module>
 				<module>nn-specials</module>
@@ -1249,7 +1280,6 @@
 				</property>
 			</activation>
 			<modules>
-				<module>coolgen</module>
 				<module>ifsa</module>
 				<module>sap</module>
 				<module>tibco</module>

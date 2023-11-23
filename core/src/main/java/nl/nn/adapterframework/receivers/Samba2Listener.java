@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.receivers;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 import nl.nn.adapterframework.filesystem.smb.SambaFileSystemDelegator;
@@ -28,10 +27,4 @@ public class Samba2Listener extends FileSystemListener<SmbFileRef, Samba2FileSys
 		return new Samba2FileSystem();
 	}
 
-	@Override
-	@Deprecated
-	@ConfigurationWarning("please use domainName instead")
-	public void setDomain(String domain) {
-		getFileSystem().setDomainName(domain);
-	}
 }

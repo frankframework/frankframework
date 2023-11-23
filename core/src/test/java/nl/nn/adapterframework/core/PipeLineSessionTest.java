@@ -147,7 +147,7 @@ public class PipeLineSessionTest {
 	}
 
 	@Test
-	public void testGetString() throws Exception {
+	public void testGetString() {
 		String message1 = session.getString("key1");
 		String message2 = session.getString("key2");
 		String message3 = session.getString("key3");

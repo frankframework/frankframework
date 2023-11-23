@@ -140,6 +140,7 @@ public class SenderSeries extends SenderWrapperBase {
 	protected Iterable<ISender> getSenders() {
 		return senderList;
 	}
+
 	protected StatisticsKeeper getStatisticsKeeper(ISender sender) {
 		return statisticsMap.get(sender);
 	}

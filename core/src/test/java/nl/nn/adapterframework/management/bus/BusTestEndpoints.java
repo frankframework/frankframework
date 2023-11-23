@@ -35,7 +35,7 @@ public class BusTestEndpoints {
 	@RolesAllowed({"IbisAdmin", "IbisTester"})
 	public Message<String> handleIbisAction(Message<?> message) {
 		String isAdmin = ""+BusMessageUtils.hasAnyRole("IbisTester");
-		return new GenericMessage<String>(isAdmin);
+		return new GenericMessage<>(isAdmin);
 	}
 
 	//Test exceptions

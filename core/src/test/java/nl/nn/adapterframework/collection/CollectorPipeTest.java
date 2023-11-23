@@ -19,7 +19,7 @@ public class CollectorPipeTest extends PipeTestBase<CollectorPipeBase<TestCollec
 
 	@Override
 	public CollectorPipeBase<TestCollector, TestCollectorPart> createPipe() throws ConfigurationException {
-		return new CollectorPipeBase<TestCollector, TestCollectorPart>() {
+		return new CollectorPipeBase<>() {
 
 			@Override
 			protected TestCollector createCollector(Message input, PipeLineSession session) throws CollectionException {

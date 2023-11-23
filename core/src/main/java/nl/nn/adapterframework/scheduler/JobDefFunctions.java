@@ -47,9 +47,9 @@ public enum JobDefFunctions implements DocumentedEnum {
 	/**
 	 * Should never return NULL
 	 */
-	private @Getter Class<? extends IJob> jobClass = null;
+	private final @Getter Class<? extends IJob> jobClass;
 
-	private JobDefFunctions(Class<? extends IJob> jobClass) {
+	JobDefFunctions(Class<? extends IJob> jobClass) {
 		this.jobClass = jobClass;
 	}
 
@@ -58,11 +58,10 @@ public enum JobDefFunctions implements DocumentedEnum {
 	}
 
 	public boolean isEqualToAtLeastOneOf(JobDefFunctions... functions) {
-		boolean equals = false;
 		for (JobDefFunctions func : functions) {
-			if(super.equals(func))
-				equals = true;
+			if(this == func)
+				return true;
 		}
-		return equals;
+		return false;
 	}
 }

@@ -14,7 +14,7 @@ public class MockFileSystemListenerTest extends FileSystemListenerExtraTest <Moc
 
 	@Override
 	public FileSystemListener<MockFile, MockFileSystem<MockFile>> createFileSystemListener() {
-		FileSystemListener<MockFile,MockFileSystem<MockFile>> result=new FileSystemListener<MockFile,MockFileSystem<MockFile>>(){
+		FileSystemListener<MockFile,MockFileSystem<MockFile>> result=new FileSystemListener<>(){
 
 			@Override
 			protected MockFileSystem<MockFile> createFileSystem() {

@@ -15,6 +15,10 @@
  */
 package nl.nn.adapterframework.extensions.ifsa;
 
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.naming.NamingException;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jms.JmsException;
@@ -23,10 +27,6 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.util.AppConstants;
-
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.naming.NamingException;
 
 /**
  * Extension of JmsSender which only adds parameters to simulate IFSA.
@@ -251,7 +251,7 @@ public class IfsaSimulatorJmsSender extends JmsSender {
 		}
 	}
 
-	public Destination getDestination() throws NamingException, JMSException, JmsException  {
+	public Destination getDestination() throws JmsException  {
     	if (getMessageType().equalsIgnoreCase(RR_REPLY) && getDestinationName()==null) {
  			return null;
     	} else {

@@ -48,7 +48,7 @@ public class XsltSenderParameterNamespaceAwarenessTest extends SenderTestBase<Xs
 		String expectedResult = TestFileUtils.getTestFile(expectedFile);
 
 		sender.setStyleSheetName("/Xslt/3205/xslt.xslt");
-		sender.setNamespaceAware(senderNamespaceAware);
+		sender.setRemoveNamespaces(!senderNamespaceAware);
 		Parameter param = new Parameter();
 		param.setName("getPartiesOnAgreementRLY");
 		param.setValue(paramContents);

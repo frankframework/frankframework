@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,7 +20,7 @@ public class FileSystemCredentialFactoryTest {
 	private FileSystemCredentialFactory credentialFactory;
 
 	@BeforeEach
-	public void setup() throws IOException {
+	public void setup() {
 		String url = this.getClass().getResource("/secrets").toExternalForm();
 		Path root =  Paths.get(url.substring(url.indexOf(":/")+2));
 		assumeTrue(Files.exists(root));

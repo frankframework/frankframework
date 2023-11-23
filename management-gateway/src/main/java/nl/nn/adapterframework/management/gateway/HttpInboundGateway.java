@@ -169,12 +169,12 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 	}
 
 	@Override
-	public void init(WebSecurity builder) throws Exception {
+	public void init(WebSecurity builder) {
 		// Nothing to init
 	}
 
 	@Override
-	public void configure(WebSecurity builder) throws Exception {
+	public void configure(WebSecurity builder) {
 		builder.addSecurityFilterChainBuilder(this::createSecurityFilterChain);
 	}
 

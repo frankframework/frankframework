@@ -255,13 +255,6 @@ public class XsltPipe extends StreamingPipe implements InitializingBean {
 		sender.setXslt2(b);
 	}
 
-	@ReferTo(XsltSender.class)
-	@Deprecated
-	@ConfigurationWarning("please use attribute 'removeNamespaces' instead")
-	public void setNamespaceAware(boolean b) {
-		sender.setNamespaceAware(b);
-	}
-
 	@Deprecated
 	@ConfigurationWarning("Please use 'storeResultInSessionKey' with preserveInput=true")
 	/** If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result */

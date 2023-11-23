@@ -187,12 +187,12 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 			MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 			ContentHandler handler = createHandler(null, threadConnector, session, poolToUse, target);
 			return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
-		} catch (SenderException | ConfigurationException | IOException | TransformerException | SAXException e) {
+		} catch (SenderException | ConfigurationException | IOException | TransformerException e) {
 			throw new StreamingException(e);
 		}
 	}
 
-	protected boolean isDisableOutputEscaping(TransformerPool poolToUse) throws TransformerException, IOException, SAXException {
+	protected boolean isDisableOutputEscaping(TransformerPool poolToUse) throws TransformerException, IOException {
 		Boolean disableOutputEscaping = getDisableOutputEscaping();
 		if (log.isTraceEnabled()) log.trace("Configured disableOutputEscaping ["+disableOutputEscaping+"]");
 		if (disableOutputEscaping == null) {
@@ -206,7 +206,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		return disableOutputEscaping;
 	}
 
-	protected TransformerPool getTransformerPoolToUse(PipeLineSession session) throws SenderException, IOException, ConfigurationException {
+	protected TransformerPool getTransformerPoolToUse(PipeLineSession session) throws SenderException, ConfigurationException {
 		TransformerPool poolToUse = transformerPool;
 		if(StringUtils.isNotEmpty(styleSheetNameSessionKey)) {
 			String styleSheetNameToUse = session.getString(styleSheetNameSessionKey);
@@ -421,12 +421,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 */
 	public void setIndentXml(Boolean b) {
 		indentXml = b;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("please use attribute 'removeNamespaces' instead")
-	public void setNamespaceAware(boolean b) {
-		setRemoveNamespaces(!b);
 	}
 
 	/**

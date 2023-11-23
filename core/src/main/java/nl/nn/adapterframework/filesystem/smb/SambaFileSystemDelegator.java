@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.filesystem.smb;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem.Samba2AuthType;
@@ -54,11 +53,6 @@ public interface SambaFileSystemDelegator {
 		getFileSystem().setPassword(passwd);
 	}
 
-	/** DEPRECATED */ // cannot use deprecated tag because of Spring AnnotationUtils.
-	@ConfigurationWarning("please use domainName instead")
-	default void setDomain(String domain) {
-		getFileSystem().setDomainName(domain);
-	}
 	/** domain, in case the user account is bound to a domain */
 	default void setDomainName(String domain) {
 		getFileSystem().setDomainName(domain);

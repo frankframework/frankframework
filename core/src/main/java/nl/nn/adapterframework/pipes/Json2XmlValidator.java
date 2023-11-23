@@ -102,7 +102,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		}
 	}
 
-	public DocumentFormat getOutputFormat(PipeLineSession session, boolean responseMode) throws PipeRunException {
+	public DocumentFormat getOutputFormat(PipeLineSession session, boolean responseMode) {
 		DocumentFormat format=null;
 		if (StringUtils.isNotEmpty(getOutputFormatSessionKey())) {
 			String outputFormat = session.getString(getOutputFormatSessionKey());

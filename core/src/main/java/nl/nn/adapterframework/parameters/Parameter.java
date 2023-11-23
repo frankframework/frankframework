@@ -369,7 +369,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 		return defaultValueMethodsList;
 	}
 
-	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws ParameterException, TransformerException, IOException {
+	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
 		pool.transform(xmlSource,transformResult, pvl);
@@ -700,7 +700,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 					}
 					Message finalRequestMessage = requestMessage;
 					LOG.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> finalRequestMessage);
-					result = DateUtils.parseXmlDateTime(requestMessage.asString());
+					result = XmlUtils.parseXmlDateTime(requestMessage.asString());
 					break;
 				}
 				case NUMBER: {
@@ -1034,11 +1034,6 @@ public class Parameter implements IConfigurable, IWithParameters {
 	/** Default username that is used when a <code>pattern</code> containing {username} is specified */
 	public void setUsername(String string) {
 		username = string;
-	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute username instead")
-	public void setUserName(String username) {
-		setUsername(username);
 	}
 
 	/** Default password that is used when a <code>pattern</code> containing {password} is specified */

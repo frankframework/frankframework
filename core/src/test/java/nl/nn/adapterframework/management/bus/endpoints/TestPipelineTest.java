@@ -40,7 +40,7 @@ public class TestPipelineTest extends BusTestBase {
 
 	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if(adapter != null) {
 			adapter.stopRunning();
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
@@ -48,7 +48,7 @@ public class TestPipelineTest extends BusTestBase {
 		super.tearDown();
 	}
 
-	protected Adapter registerTestPipelineAdapter(Configuration configuration) throws Exception {
+	protected Adapter registerTestPipelineAdapter(Configuration configuration) {
 		Adapter adapter = new TestPipelineSessionAdapter();
 		SpringUtils.autowireByName(configuration, adapter);
 		adapter.setName(TEST_PIPELINE_ADAPER_NAME);
@@ -79,7 +79,7 @@ public class TestPipelineTest extends BusTestBase {
 	}
 
 	@Test
-	public void testCreateContextWithXmlDeclarationAndProcessingInstruction() throws Exception {
+	public void testCreateContextWithXmlDeclarationAndProcessingInstruction() {
 		TestPipeline tp = new TestPipeline();
 		String input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 				+ "<?ibiscontext key1=whitespace is allowed ?>\n"
@@ -90,7 +90,7 @@ public class TestPipelineTest extends BusTestBase {
 	}
 
 	@Test
-	public void testInvalidXml() throws Exception {
+	public void testInvalidXml() {
 		TestPipeline tp = new TestPipeline();
 		String input = "<?ibiscontext key1=whitespace is allowed ?>\n"
 				+ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" //Declaration must be on the first line of the document
@@ -110,7 +110,7 @@ public class TestPipelineTest extends BusTestBase {
 	}
 
 	@Test
-	public void testTwoProcessingInstructions() throws Exception {
+	public void testTwoProcessingInstructions() {
 		TestPipeline tp = new TestPipeline();
 		String input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
 				+ "<?ibiscontext key1=whitespace is allowed ?>\n"
@@ -123,7 +123,7 @@ public class TestPipelineTest extends BusTestBase {
 	}
 
 	@Test
-	public void testCreateContextMessageInbetweenProcessingInstructions() throws Exception {
+	public void testCreateContextMessageInbetweenProcessingInstructions() {
 		TestPipeline tp = new TestPipeline();
 		String input = "<?ibiscontext key1=whitespace is allowed ?> <test/> <?ibiscontext key2=whitespace is allowed ?>";
 		Map<String, String> context = tp.getSessionKeysFromPayload(input);

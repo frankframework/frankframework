@@ -17,7 +17,7 @@ public class MockFileWithAttachments extends MockFile {
 	
 	public void addAttachment(MockAttachment attachment) {
 		if (attachments==null) {
-			attachments=new LinkedList<MockAttachment>();
+			attachments=new LinkedList<>();
 		}
 		attachments.add(attachment);
 	}

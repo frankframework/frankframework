@@ -19,6 +19,12 @@
 			<type>pom</type>
 		</dependency>
 
+		<!-- redefined so transient dependencies are version locked -->
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-core</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-akamai</artifactId>
@@ -34,6 +40,10 @@
 		<dependency>
 			<groupId>org.ibissource</groupId>
 			<artifactId>nn-specials</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-batch</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -57,10 +67,6 @@
 				<dependency>
 					<groupId>org.ibissource</groupId>
 					<artifactId>ibis-adapterframework-idin</artifactId>
-				</dependency>
-				<dependency>
-					<groupId>org.ibissource</groupId>
-					<artifactId>ibis-adapterframework-coolgen</artifactId>
 				</dependency>
 				<dependency>
 					<groupId>org.ibissource</groupId>

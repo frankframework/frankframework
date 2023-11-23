@@ -367,7 +367,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 	}
 
 	private void addLikeExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
-			String column, String searchValue) throws StorageException {
+			String column, String searchValue) {
 		if (searchValue.startsWith("~") && searchValue.contains("*")) {
 			addExpression(query, "lower(" + column + ") like lower(?)");
 		} else if (searchValue.startsWith("~")) {
@@ -387,7 +387,7 @@ public class Storage extends JdbcFacade implements LogStorage, CrudStorage {
 	}
 
 	private void addFixedStringExpression(StringBuilder query, List<Object> args, List<Integer> argTypes,
-			String column, String searchValue) throws StorageException {
+			String column, String searchValue) {
 		String[] svs = searchValue.split(",");
 		String questionMarks= "";
 		for (int i = 0; i < svs.length; i++) {
