@@ -9,8 +9,8 @@ USER jboss
 COPY target/dependencies/*.jar /opt/jboss/wildfly/standalone/lib/ext/
 COPY target/dependencies/*.rar /opt/jboss/wildfly/standalone/deployments/
 COPY target/dependencies/secrets /opt/frank/secrets
-COPY src/scripts/ /scripts/
 COPY src/configuration/ /opt/jboss/wildfly/standalone/configuration/
+COPY src/scripts/ /scripts/
 
 RUN /scripts/createCredentialStore.sh
 RUN python /scripts/configureModules.py

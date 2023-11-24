@@ -14,13 +14,13 @@ FROM ${REGISTRY}/jboss-eap-7/${JBOSS_VARIANT}:${JBOSS_VERSION}
 RUN mkdir $JBOSS_HOME/standalone/data
 
 # chown is needed because otherwise permissions of the directory conflict with JBoss, resulting in WFLYSRV0126
-COPY --from=jboss-base --chown=jboss:jboss $JBOSS_HOME/standalone/data/CS.jceks $JBOSS_HOME/standalone/data/CS.jceks
+COPY --chown=jboss:jboss --from=jboss-base $JBOSS_HOME/standalone/data/CS.jceks $JBOSS_HOME/standalone/data/CS.jceks
 COPY target/dependencies/*.jar $JBOSS_HOME/standalone/lib/ext/
 COPY target/dependencies/*.rar $JBOSS_HOME/standalone/deployments
-COPY src/scripts/configureModules.sh /scripts/configureModules.sh
 COPY src/configuration/ $JBOSS_HOME/standalone/configuration/
+COPY src/scripts/ /scripts/
 
-RUN python3 /scripts/configureModules.sh
+RUN python3 /scripts/configureModules.py
 
 COPY target/dependencies/frank /opt/frank
 COPY target/dependencies/ibis-adapterframework-test.war $JBOSS_HOME/standalone/deployments/iaf-test.war

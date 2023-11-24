@@ -5,9 +5,7 @@ set -e
 export JAVA_OPTS="$JAVA_OPTS \
 	-XX:HeapDumpPath=/usr/local/tomcat/logs \
 	-XX:+HeapDumpOnOutOfMemoryError \
-	-XX:+UseSerialGC \
-	-XX:+UseParallelGC \
-	-XX:+USeParNewGC \
-	-XX:+UseG1GC"
+	-XX:+UnlockExperimentalVMOptions \
+	-XX:+UseZGC"
 
 exec "$@"

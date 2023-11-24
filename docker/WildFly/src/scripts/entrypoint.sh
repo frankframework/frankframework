@@ -7,9 +7,7 @@ export JBOSS_JAVA_SIZING="-Xms64m -Xmx${JAVA_MAX_MEM:-512M} -XX:MetaspaceSize=51
 export JAVA_OPTS="$JAVA_OPTS \
 	-XX:HeapDumpPath=/opt/jboss/wildfly/standalone/log/ \
 	-XX:+HeapDumpOnOutOfMemoryError \
-	-XX:+UseSerialGC \
-	-XX:+UseParallelGC \
-	-XX:+USeParNewGC \
-	-XX:+UseG1GC"
+	-XX:+UnlockExperimentalVMOptions \
+	-XX:+UseZGC"
 
 exec "$@"
