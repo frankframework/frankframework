@@ -6,8 +6,6 @@ export JBOSS_JAVA_SIZING="-Xms64m -Xmx${JAVA_MAX_MEM:-512M} -XX:MetaspaceSize=51
 # Append HeapDump and GC properties to existing JAVA_OPTS
 export JAVA_OPTS="$JAVA_OPTS \
 	-XX:HeapDumpPath=/opt/jboss/wildfly/standalone/log/ \
-	-XX:+HeapDumpOnOutOfMemoryError \
-	-XX:+UnlockExperimentalVMOptions \
-	-XX:+UseZGC"
+	-XX:+HeapDumpOnOutOfMemoryError"
 
 exec "$@"
