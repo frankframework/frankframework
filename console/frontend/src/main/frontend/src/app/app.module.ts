@@ -102,6 +102,7 @@ import { ConnectionsComponent } from './views/connections/connections.component'
 import { ErrorComponent } from './views/error/error.component';
 import { LoadingComponent } from './views/loading/loading.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
+import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
 
@@ -124,6 +125,7 @@ appModule
   .directive('error', downgradeComponent({ component: ErrorComponent }) as angular.IDirectiveFactory)
   .directive('flow', downgradeComponent({ component: FlowComponent }) as angular.IDirectiveFactory)
   .directive('hamburger', downgradeComponent({ component: HamburgerComponent }) as angular.IDirectiveFactory)
+  .directive('iafUpdateStatus', downgradeComponent({ component: IafUpdateComponent }) as angular.IDirectiveFactory)
   .directive('ibisstoreSummary', downgradeComponent({ component: IbisstoreSummaryComponent }) as angular.IDirectiveFactory)
   .directive('inlineStore', downgradeComponent({ component: InlinestoreComponent }) as angular.IDirectiveFactory)
   .directive('iframeCustomView', downgradeComponent({ component: IframeCustomViewComponent }) as angular.IDirectiveFactory)
@@ -208,6 +210,7 @@ appModule
     LoadingComponent,
     LoggingComponent,
     LoggingManageComponent,
+    IafUpdateComponent,
 
     // pipes
     ConfigurationFilterPipe,
