@@ -1,6 +1,18 @@
+import { HttpClient } from '@angular/common/http';
 import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
-import { ApiService } from 'src/angularjs/app/services/api.service';
 import { DataTableDirective } from 'angular-datatables';
+import { ADTSettings } from 'angular-datatables/src/models/settings';
+import { AppService } from 'src/app/app.service';
+
+type Connections = {
+  data: {
+    domain: string,
+    destination: string,
+    adapterName: string,
+    componentName: string,
+    direction: string
+  }[]
+}
 
 @Component({
   selector: 'app-connections',
@@ -10,10 +22,11 @@ import { DataTableDirective } from 'angular-datatables';
 export class ConnectionsComponent implements OnInit, AfterViewInit {
   @ViewChild(DataTableDirective, { static: false })
   datatableElement: DataTableDirective | undefined;
-  dtOptions: DataTables.Settings = {};
+  dtOptions: ADTSettings = {};
 
   constructor(
-    private apiService: ApiService
+    private http: HttpClient,
+    private appService: AppService
   ) { };
 
   ngOnInit(): void {
@@ -28,12 +41,14 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
         { "data": "destination" },
         { "data": "direction" }
       ],
-      ajax: (data: any, callback: any, settings: any) => {
-        this.apiService.Get("connections", function (response) {
-          response.draw = data.draw;
-          response.recordsTotal = response.data.length;
-          response.recordsFiltered = response.data.length;
-          callback(response);
+      ajax: (data: Record<any, any>, callback, settings) => {
+        this.http.get<Connections>(this.appService.absoluteApiPath + "connections").subscribe((response) => {
+          callback({
+            ...response,
+            draw: data['draw'],
+            recordsTotal: response.data.length,
+            recordsFiltered: response.data.length
+           });
         });
       },
       initComplete: () => {

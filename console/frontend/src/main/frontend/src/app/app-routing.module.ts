@@ -35,6 +35,7 @@ import { NotificationsComponent } from './views/notifications/notifications.comp
 import { LoggingComponent } from './views/logging/logging.component';
 import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
 import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
+import { ConnectionsComponent } from './views/connections/connections.component';
 
 const routes: Routes = [
   /* {
@@ -233,14 +234,14 @@ const routes: Routes = [
       breadcrumbs: 'Security Items'
     }
   },
-  /* {
+  {
     path: 'connections',
     component: ConnectionsComponent,
     title: 'Connection Overview',
     data: {
       breadcrumbs: 'Connection Overview'
     }
-  }, */
+  },
   {
     path: 'inlinestores/overview',
     component: InlinestoreComponent,
