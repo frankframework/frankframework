@@ -75,7 +75,7 @@ import { FeedbackModalComponent } from './components/pages/feedback-modal/feedba
 import { FlowModalComponent } from './views/status/flow/flow-modal/flow-modal.component';
 import { NgMermaidComponent } from './views/status/flow/flow-modal/ng-mermaid.component';
 import { LoggingComponent } from './views/logging/logging.component';
-// import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
+import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
 // import { ConnectionsComponent } from './views/connections/connections.component';
 import { ErrorComponent } from './views/error/error.component';
 import { LoadingComponent } from './views/loading/loading.component';
@@ -134,7 +134,7 @@ const windowProvider: ValueProvider = {
     ErrorComponent,
     LoadingComponent,
     LoggingComponent,
-    // LoggingManageComponent,
+    LoggingManageComponent,
     NotificationsComponent,
 
     // pipes

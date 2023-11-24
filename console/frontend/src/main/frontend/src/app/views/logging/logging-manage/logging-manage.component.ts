@@ -1,12 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiService } from 'src/angularjs/app/services/api.service';
-import { ToastrService } from 'src/angularjs/app/services/toastr.service';
-
-interface Definition {
-  name: string
-  level: string
-  appenders: string[]
-}
+import { ErrorLevels, LogInformation, LoggingService, LoggingSettings, errorLevelsConst } from '../logging.service';
+import { SweetalertService } from 'src/app/services/sweetalert.service';
 
 @Component({
   selector: 'app-logging-manage',
@@ -17,21 +11,21 @@ export class LoggingManageComponent implements OnInit {
   logURL: string = "server/logging";
   updateDynamicParams: boolean = false;
   loggers: Record<string, string> = {};
-  errorLevels = ["DEBUG", "INFO", "WARN", "ERROR"] as const;
-  form = {
+  errorLevels: ErrorLevels = errorLevelsConst;
+  form: LoggingSettings = {
     loglevel: "DEBUG",
     logIntermediaryResults: true,
     maxMessageLength: -1,
-    errorLevels: this.errorLevels,
+    errorLevels: errorLevelsConst,
     enableDebugger: true,
   };
   loggersLength: number = 0;
-  definitions: Definition[] = [];
+  definitions: LogInformation['definitions'] = [];
   alert: boolean | string = false;
 
   constructor(
-    private apiService: ApiService,
-    private toastrService: ToastrService,
+    private loggingService: LoggingService,
+    private sweetalertService: SweetalertService
   ) { };
 
   ngOnInit() {
@@ -40,7 +34,7 @@ export class LoggingManageComponent implements OnInit {
   };
 
   setForm() {
-    this.apiService.Get(this.logURL, (data) => {
+    this.loggingService.getLoggingSettings().subscribe((data) => {
       this.form = data;
       this.errorLevels = data.errorLevels;
     });
@@ -53,44 +47,44 @@ export class LoggingManageComponent implements OnInit {
 
   //Individual level
   changeLoglevel(logger: string, level: typeof this.errorLevels[number]) {
-    this.apiService.Put(this.logURL + "/settings", { logger: logger, level: level }, () => {
-      this.toastrService.success("Updated logger [" + logger + "] to [" + level + "]");
+    this.loggingService.putLoggingSettingsChange({ logger: logger, level: level }).subscribe(() => {
+      this.sweetalertService.Success("Updated logger [" + logger + "] to [" + level + "]");
       this.updateLogInformation();
     });
   };
 
   //Reconfigure Log4j2
   reconfigure() {
-    this.apiService.Put(this.logURL + "/settings", { reconfigure: true }, () => {
-      this.toastrService.success("Reconfigured log definitions!");
+    this.loggingService.putLoggingSettingsChange({ reconfigure: true }).subscribe(() => {
+      this.sweetalertService.Success("Reconfigured log definitions!");
       this.updateLogInformation();
     });
   };
 
   submit(formData: typeof this.form) {
     this.updateDynamicParams = true;
-    this.apiService.Put(this.logURL, formData, () => {
-      this.apiService.Get(this.logURL, (data) => {
+    this.loggingService.putLoggingSettings(formData).subscribe({ next: () => {
+      this.loggingService.getLoggingSettings().subscribe((data) => {
         this.form = data;
         this.updateDynamicParams = false;
-        this.toastrService.success("Successfully updated log configuration!");
+        this.sweetalertService.Success("Successfully updated log configuration!");
         this.updateLogInformation();
       });
-    }, () => {
+    }, error: () => {
       this.updateDynamicParams = false;
-    });
+    }});
   };
 
   updateLogInformation() {
-    this.apiService.Get(this.logURL + "/settings", (data) => {
+    this.loggingService.getLoggingSettingsLogInformation().subscribe({ next: (data) => {
       this.loggers = data.loggers;
       this.loggersLength = Object.keys(data.loggers).length;
       this.definitions = data.definitions;
       console.log("DEFINITIONS:", data.definitions)
 
-    }, function (data) {
+    }, error: (data) => {
       console.error(data);
-    });
+    }});
   };
 
   reset() {

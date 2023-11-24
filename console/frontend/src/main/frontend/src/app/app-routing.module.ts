@@ -33,6 +33,7 @@ import { ErrorComponent } from './views/error/error.component';
 import { LoadingComponent } from './views/loading/loading.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { LoggingComponent } from './views/logging/logging.component';
+import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
 
 const routes: Routes = [
   /* {
@@ -127,14 +128,14 @@ const routes: Routes = [
       breadcrumbs: 'Logging > Log Files'
     },
   },
-  /* {
+  {
     path: 'logging/settings',
     component: LoggingManageComponent,
     title: 'Logging',
     data: {
       breadcrumbs: 'Logging > Log Settings'
     },
-  }, */
+  },
   {
     path: 'jms/send-message',
     component: JmsSendMessageComponent,

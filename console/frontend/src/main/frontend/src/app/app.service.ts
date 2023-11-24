@@ -432,7 +432,7 @@ export class AppService {
   }
 
   getServerHealth(){
-    return this.http.get("server/health", { responseType: 'text' });
+    return this.http.get(this.absoluteApiPath +"server/health", { responseType: 'text' });
   }
 
   updateAdapterSummary(routeQueryParams: ParamMap, configurationName?: string) {

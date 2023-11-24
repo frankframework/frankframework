@@ -2,15 +2,8 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
-import { LoggingService } from './logging.service';
-
-interface File {
-  name: string
-  type: string
-  path: string
-  size: string
-  lastModified: string
-}
+import { LoggingService, LoggingFile } from './logging.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-logging',
@@ -18,12 +11,12 @@ interface File {
   styleUrls: ['./logging.component.scss']
 })
 export class LoggingComponent implements OnInit {
-  viewFile: boolean = false;
+  viewFile: boolean | SafeResourceUrl = false;
   alert: boolean | string = false;
   directory: string = "";
   path: string = "";
   fileName: string = "";
-  list: File[] = [];
+  list: LoggingFile[] = [];
 
   @ViewChild('iframe') iframeRef!: ElementRef<HTMLIFrameElement>;
 
@@ -32,7 +25,8 @@ export class LoggingComponent implements OnInit {
     private router: Router,
     private appService: AppService,
     private miscService: MiscService,
-    private loggingService: LoggingService
+    private loggingService: LoggingService,
+    private sanitizer: DomSanitizer,
   ) { };
 
   ngOnInit() {
@@ -60,12 +54,12 @@ export class LoggingComponent implements OnInit {
     this.router.navigate(['/logging'], { queryParams: { directory: this.directory }});
   };
 
-  download(file: File) {
+  download(file: LoggingFile) {
     let url = this.appService.getServerPath() + "FileViewerServlet?resultType=bin&fileName=" + this.miscService.escapeURL(file.path);
     window.open(url, "_blank");
   };
 
-  open(file: File) {
+  open(file: LoggingFile) {
     if (file.type == "directory") {
       this.router.navigate(['/logging'], { queryParams: { directory: file.path } });
     } else {
@@ -110,7 +104,7 @@ export class LoggingComponent implements OnInit {
       return;
     };
 
-    this.viewFile = URL.length > 0;
+    this.viewFile = this.sanitizer.bypassSecurityTrustResourceUrl(URL);
 
     setTimeout(() => {
       let iframe = this.iframeRef.nativeElement;
