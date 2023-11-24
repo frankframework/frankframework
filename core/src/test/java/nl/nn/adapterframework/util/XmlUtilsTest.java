@@ -47,11 +47,6 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	private static final TimeZone CI_TZ = Calendar.getInstance().getTimeZone();
 	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("UTC");
 
-	public void testRemoveNamespaces(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws SAXException, TransformerException, IOException, ConfigurationException {
-		testXslt(XmlUtils.makeRemoveNamespacesXslt(omitXmlDeclaration, indent), input, expected);
-		testTransformerPool(XmlUtils.getRemoveNamespacesTransformerPool(omitXmlDeclaration, indent), input, expected);
-	}
-
 	public void testGetRootNamespace(String input, String expected) throws SAXException, TransformerException, IOException, ConfigurationException {
 		testXslt(XmlUtils.makeGetRootNamespaceXslt(), input, expected);
 		testTransformerPool(XmlUtils.getGetRootNamespaceTransformerPool(), input, expected);
@@ -77,15 +72,6 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 //		testTransformerPool(XmlUtils.getRemoveUnusedNamespacesXslt2TransformerPool(omitXmlDeclaration, indent),input,expected);
 	}
 
-
-	@Test
-	public void testRemoveNamespaces() throws SAXException, TransformerException, IOException, ConfigurationException {
-		String lineSeparator = System.getProperty("line.separator");
-		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>", false, false);
-		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + lineSeparator + "<root>" + lineSeparator + "   <a>a</a>" + lineSeparator + "   <b/>" + lineSeparator + "   <c/>" + lineSeparator + "</root>", false, true);
-		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>", "<root><a>a</a><b/><c/></root>", true, false);
-		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>", "<root>" + lineSeparator + "   <a>a</a>" + lineSeparator + "   <b/>" + lineSeparator + "   <c/>" + lineSeparator + "</root>", true, true);
-	}
 
 	@Test
 	public void testGetRootNamespace() throws SAXException, TransformerException, IOException, ConfigurationException {
