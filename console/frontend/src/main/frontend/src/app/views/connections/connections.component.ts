@@ -21,7 +21,7 @@ type Connections = {
 })
 export class ConnectionsComponent implements OnInit, AfterViewInit {
   @ViewChild(DataTableDirective, { static: false })
-  datatableElement: DataTableDirective | undefined;
+  datatableElement!: DataTableDirective;
   dtOptions: ADTSettings = {};
 
   constructor(
@@ -52,7 +52,7 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
         });
       },
       initComplete: () => {
-        this.datatableElement!.dtInstance.then((dtInstance: DataTables.Api) => {
+        this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
           dtInstance.columns([2, 4]).every(function () {
             const column = this;
 
@@ -77,7 +77,7 @@ export class ConnectionsComponent implements OnInit, AfterViewInit {
   };
 
   ngAfterViewInit(): void {
-    this.datatableElement!.dtInstance.then((dtInstance: DataTables.Api) => {
+    this.datatableElement.dtInstance.then((dtInstance: DataTables.Api) => {
       dtInstance.columns([0, 1, 3]).every(function () {
         const column = this;
 

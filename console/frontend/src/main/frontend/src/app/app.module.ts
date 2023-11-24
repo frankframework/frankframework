@@ -82,6 +82,7 @@ import { LoadingComponent } from './views/loading/loading.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
 import { MarkDownPipe } from './pipes/mark-down.pipe';
+import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -139,6 +140,7 @@ const windowProvider: ValueProvider = {
     LoggingManageComponent,
     NotificationsComponent,
     IafUpdateComponent,
+    TestPipelineComponent,
 
     //modals
     InformationModalComponent,
