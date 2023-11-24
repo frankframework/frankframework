@@ -80,6 +80,7 @@ import { LoggingManageComponent } from './views/logging/logging-manage/logging-m
 import { ErrorComponent } from './views/error/error.component';
 import { LoadingComponent } from './views/loading/loading.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
+import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -136,6 +137,7 @@ const windowProvider: ValueProvider = {
     LoggingComponent,
     LoggingManageComponent,
     NotificationsComponent,
+    IafUpdateComponent,
 
     // pipes
     ConfigurationFilterPipe,
