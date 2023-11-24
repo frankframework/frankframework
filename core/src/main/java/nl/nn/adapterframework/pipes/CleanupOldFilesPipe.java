@@ -16,13 +16,18 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.File;
-import java.io.FileFilter;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+
+import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Supplier;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -48,8 +53,8 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 	private String excludeWildcard;
 	private long minStableTime = 1000;
 
-	private final _FileFilter fileFilter = new _FileFilter();
-	private final _DirFilter dirFilter = new _DirFilter();
+	private final FileFilter fileFilter = new FileFilter();
+	private final DirFilter dirFilter = new DirFilter();
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
@@ -64,19 +69,19 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 					if (StringUtils.isEmpty(message.asString())) {
 						throw new PipeRunException(this, "input empty, but should contain filename to delete");
 					}
-					File in = new File(message.asString());
+					File in = new File(Objects.requireNonNull(message.asString()));
 					filename = in.getName();
 				}
 			}
 
 			List<File> delFiles = getFilesForDeletion(filename);
-			if (delFiles != null && !delFiles.isEmpty()) {
-				for (Iterator<File> fileIt = delFiles.iterator(); fileIt.hasNext();) {
-					File file = fileIt.next();
-					if (file.delete()) {
+			if (!delFiles.isEmpty()) {
+				for (File file : delFiles) {
+					try {
+						Files.delete(file.toPath());
 						log.info("deleted file [{}]", file::getAbsolutePath);
-					} else {
-						log.warn("could not delete file [{}]", file::getAbsolutePath);
+					} catch (IOException e) {
+						log.warn("could not delete file [{}]", (Supplier<?>) file::getAbsolutePath, e);
 					}
 				}
 			} else {
@@ -97,6 +102,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	private List<File> getFilesForDeletion(String filename) {
 		File file = new File(filename);
 		if (file.exists()) {
@@ -110,7 +116,7 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			}
 			return result;
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 	private void getFilesForDeletion(List<File> result, File directory) {
@@ -119,56 +125,60 @@ public class CleanupOldFilesPipe extends FixedForwardPipe {
 			//WildCardFilter filter = new WildCardFilter(getWildcard());
 			//files = directory.listFiles(filter);
 			files=FileUtils.getFiles(directory.getPath(), getWildcard(), getExcludeWildcard(), getMinStableTime());
-			for (int i = 0; i < files.length; i++) {
-				if (getLastModifiedDelta() < 0 || FileUtils.getLastModifiedDelta(files[i]) > getLastModifiedDelta()) {
-					result.add(files[i]);
+			for (File file : files) {
+				if (getLastModifiedDelta() < 0 || FileUtils.getLastModifiedDelta(file) > getLastModifiedDelta()) {
+					result.add(file);
 				}
 			}
 		} else {
 			files = directory.listFiles(fileFilter);
-			result.addAll(Arrays.asList(files));
+			if (files != null) {
+				result.addAll(Arrays.asList(files));
+			}
 		}
 
 		if (isSubdirectories()) {
 			files = directory.listFiles(dirFilter);
-			for (int i = 0; i < files.length; i++) {
-				getFilesForDeletion(result, files[i]);
+			if (files != null) {
+				for (File file : files) {
+					getFilesForDeletion(result, file);
+				}
 			}
 		}
 	}
 
 	private void deleteEmptySubdirectories(File directory, int level) {
-		if (directory.isDirectory()) {
-			File[] dirs = directory.listFiles(dirFilter);
-			for (int i = 0; i < dirs.length; i++) {
-				deleteEmptySubdirectories(dirs[i], level+1);
-			}
-			if (level>0 && directory.list().length==0) {
-				if (directory.delete()) {
-					log.info("deleted empty directory [{}]", directory::getAbsolutePath);
-				} else {
-					log.warn("could not delete empty directory [{}]", directory::getAbsolutePath);
-				}
-			}
-		} else {
+		if (!directory.isDirectory()) {
 			log.warn("file [{}] is not a directory, cannot delete subdirectories", directory::getAbsolutePath);
+			return;
+		}
+		File[] dirs = directory.listFiles(dirFilter);
+		if (dirs != null) {
+			for (File dir : dirs) {
+				deleteEmptySubdirectories(dir, level + 1);
+			}
+		}
+		String[] entries = directory.list();
+		if (level>0 && (entries == null || entries.length==0)) {
+			try {
+				Files.delete(directory.toPath());
+				log.info("deleted empty directory [{}]", directory::getAbsolutePath);
+			} catch (IOException e) {
+				log.warn("could not delete empty directory [{}]", (Supplier<?>) directory::getAbsolutePath, e);
+
+			}
 		}
 	}
 
-	private class _FileFilter implements FileFilter {
+	private class FileFilter implements java.io.FileFilter {
 		@Override
 		public boolean accept(File file) {
-			if (file.isFile()) {
-				if (getLastModifiedDelta() < 0
-						|| FileUtils.getLastModifiedDelta(file) > getLastModifiedDelta()) {
-					return true;
-				}
-			}
-			return false;
+			return file.isFile() && (getLastModifiedDelta() < 0
+					|| FileUtils.getLastModifiedDelta(file) > getLastModifiedDelta());
 		}
 	}
 
-	private class _DirFilter implements FileFilter {
+	private static class DirFilter implements java.io.FileFilter {
 		@Override
 		public boolean accept(File file) {
 			return file.isDirectory();
