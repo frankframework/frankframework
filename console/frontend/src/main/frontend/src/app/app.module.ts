@@ -81,6 +81,7 @@ import { ErrorComponent } from './views/error/error.component';
 import { LoadingComponent } from './views/loading/loading.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
+import { MarkDownPipe } from './pipes/mark-down.pipe';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -160,6 +161,7 @@ const windowProvider: ValueProvider = {
     InformationModalComponent,
     FeedbackModalComponent,
     FlowModalComponent,
+    MarkDownPipe,
   ],
   imports: [
     BrowserModule,

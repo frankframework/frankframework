@@ -1,11 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { SessionService } from 'src/angularjs/app/services/session.service';
-
-interface Release {
-  name: string
-  html_url: string
-  created_at: string
-}
+import { Router } from '@angular/router';
+import { IAFRelease } from 'src/app/app.service';
+import { SessionService } from 'src/app/services/session.service';
 
 @Component({
   selector: 'app-iaf-update',
@@ -13,14 +9,10 @@ interface Release {
   styleUrls: ['./iaf-update.component.scss']
 })
 export class IafUpdateComponent implements OnInit {
-  release: Release = {
-    name: "",
-    html_url: "",
-    created_at: ""
-  };
+  release?: IAFRelease;
 
   constructor(
-    // TODO: private $location: angular.ILocationService,
+    private router: Router,
     private sessionService: SessionService,
   ) { };
 
@@ -28,7 +20,7 @@ export class IafUpdateComponent implements OnInit {
     this.release = this.sessionService.get("IAF-Release");
 
     if (this.release == undefined) {
-      // TODO: this.$location.path("status");;
+      this.router.navigate(['/status']);
     }
   };
 }

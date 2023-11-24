@@ -34,6 +34,7 @@ import { LoadingComponent } from './views/loading/loading.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { LoggingComponent } from './views/logging/logging.component';
 import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
+import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
 
 const routes: Routes = [
   /* {
@@ -329,11 +330,14 @@ const routes: Routes = [
     templateUrl: "js/app/views/empty/empty_page.html",
     title: 'Empty Page'
   }, */
-  /* {
+  {
     path: 'iaf-update',
-    component: IafUpdateStatusComponent,
-    title: 'IAF Update'
-  }, */
+    component: IafUpdateComponent,
+    title: 'IAF Update',
+    data: {
+      breadcrumbs: 'IAF Update'
+    },
+  },
   {
     path: '',
     pathMatch: 'full',
