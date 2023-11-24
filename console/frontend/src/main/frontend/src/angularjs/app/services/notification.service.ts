@@ -2,7 +2,7 @@ import * as Tinycon from 'tinycon';
 import { appModule } from "../app.module";
 import { Subject } from 'rxjs';
 
-type Notification = {
+export type Notification = {
   icon: string,
   title: string,
   message: string | boolean,
@@ -18,7 +18,7 @@ export class NotificationService {
   count: number = 0;
   onCountUpdate$ = this.onCountUpdateSource.asObservable();
 
-  constructor(private $rootScope: angular.IRootScopeService, private $timeout: angular.ITimeoutService){
+  constructor(private $rootScope: angular.IRootScopeService, private $timeout: angular.ITimeoutService) {
     Tinycon.setOptions({
       background: '#f03d25'
     });
@@ -46,7 +46,7 @@ export class NotificationService {
       if (notification.id == id) {
         if (notification.fn) {
           this.$timeout(() => {
-            if(typeof notification.fn === 'function')
+            if (typeof notification.fn === 'function')
               notification.fn.apply(this, [notification]);
           }, 50);
         }

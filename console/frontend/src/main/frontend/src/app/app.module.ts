@@ -95,7 +95,13 @@ import { ConfigurationsUploadComponent } from './views/configurations/configurat
 import { ConfigurationsManageDetailsComponent } from './views/configurations/configurations-manage/configurations-manage-details/configurations-manage-details.component';
 import { MonitorsComponent } from './views/monitors/monitors.component';
 import { MonitorsAddEditComponent } from './views/monitors/monitors-add-edit/monitors-add-edit.component';
+import { LoggingComponent } from './views/logging/logging.component';
+import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
 import { FormatCodeDirective } from './views/configurations/configurations-show/format-code.directive';
+import { ConnectionsComponent } from './views/connections/connections.component';
+import { ErrorComponent } from './views/error/error.component';
+import { LoadingComponent } from './views/loading/loading.component';
+import { NotificationsComponent } from './views/notifications/notifications.component';
 import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
 
 export const APPCONSTANTS = new InjectionToken<AppConstants>('app.appConstants');
@@ -114,7 +120,9 @@ appModule
   .directive('configurationsShow', downgradeComponent({ component: ConfigurationsShowComponent }) as angular.IDirectiveFactory)
   .directive('configurationsUpload', downgradeComponent({ component: ConfigurationsUploadComponent }) as angular.IDirectiveFactory)
   .directive('configurationsManageDetails', downgradeComponent({ component: ConfigurationsManageDetailsComponent }) as angular.IDirectiveFactory)
+  .directive('connections', downgradeComponent({ component: ConnectionsComponent }) as angular.IDirectiveFactory)
   .directive('environmentVariables', downgradeComponent({ component: EnvironmentVariablesComponent }) as angular.IDirectiveFactory)
+  .directive('error', downgradeComponent({ component: ErrorComponent }) as angular.IDirectiveFactory)
   .directive('flow', downgradeComponent({ component: FlowComponent }) as angular.IDirectiveFactory)
   .directive('hamburger', downgradeComponent({ component: HamburgerComponent }) as angular.IDirectiveFactory)
   .directive('iafUpdateStatus', downgradeComponent({ component: IafUpdateComponent }) as angular.IDirectiveFactory)
@@ -130,10 +138,14 @@ appModule
   .directive('jmsBrowseQueue', downgradeComponent({ component: JmsBrowseQueueComponent }) as angular.IDirectiveFactory)
   .directive('jmsSendMessage', downgradeComponent({ component: JmsSendMessageComponent }) as angular.IDirectiveFactory)
   .directive('liquibase', downgradeComponent({ component: LiquibaseComponent }) as angular.IDirectiveFactory)
+  .directive('loading', downgradeComponent({ component: LoadingComponent }) as angular.IDirectiveFactory)
   .directive('logout', downgradeComponent({ component: LogoutComponent }) as angular.IDirectiveFactory)
+  .directive('logging', downgradeComponent({ component: LoggingComponent }) as angular.IDirectiveFactory)
+  .directive('loggingManage', downgradeComponent({ component: LoggingManageComponent }) as angular.IDirectiveFactory)
   .directive('minimalizaSidebar', downgradeComponent({ component: MinimalizaSidebarComponent }) as angular.IDirectiveFactory)
   .directive('monitors', downgradeComponent({ component: MonitorsComponent }) as angular.IDirectiveFactory)
   .directive('monitorsAddEdit', downgradeComponent({ component: MonitorsAddEditComponent }) as angular.IDirectiveFactory)
+  .directive('notifications', downgradeComponent({ component: NotificationsComponent }) as angular.IDirectiveFactory)
   .directive('pagesFooter', downgradeComponent({ component: PagesFooterComponent }) as angular.IDirectiveFactory)
   .directive('pagesNavigation', downgradeComponent({ component: PagesNavigationComponent }) as angular.IDirectiveFactory)
   .directive('pagesTopinfobar', downgradeComponent({ component: PagesTopinfobarComponent }) as angular.IDirectiveFactory)
@@ -193,6 +205,11 @@ appModule
     WebservicesComponent,
     MonitorsComponent,
     MonitorsAddEditComponent,
+    ConnectionsComponent,
+    ErrorComponent,
+    LoadingComponent,
+    LoggingComponent,
+    LoggingManageComponent,
     IafUpdateComponent,
 
     // pipes
@@ -212,6 +229,7 @@ appModule
     QuickSubmitFormDirective,
     FitHeightDirective,
     SideNavigationDirective,
+    NotificationsComponent,
   ],
   imports: [
     BrowserModule,
