@@ -234,6 +234,11 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		handler = new OnlyActiveFilter(handler, appConstants);
 		handler = new ElementPropertyResolver(handler, appConstants);
 
+		String rewriteLegacyClassNames = appConstants.getProperty("migration.rewrite.legacyClassNames", "false");
+		if (rewriteLegacyClassNames.equalsIgnoreCase("true") || rewriteLegacyClassNames.equalsIgnoreCase("!false")) {
+			handler = new ClassNameRewriter(handler);
+		}
+
 		XmlWriter originalConfigWriter = new XmlWriter();
 		handler = new XmlTee(handler, originalConfigWriter);
 
