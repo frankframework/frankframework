@@ -52,6 +52,7 @@ import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StringUtil;
+import nl.nn.adapterframework.util.XmlException;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.validation.AbstractXmlValidator.ValidationResult;
 import nl.nn.adapterframework.validation.RootValidations;
@@ -208,7 +209,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 					if (isProduceNamespacelessXml()) {
 						try {
 							result.setResult(XmlUtils.removeNamespaces(result.getResult().asString()));
-						} catch (IOException e) {
+						} catch (IOException | XmlException e) {
 							throw new PipeRunException(this, "Cannot remove namespaces",e);
 						}
 					}

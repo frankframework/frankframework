@@ -33,6 +33,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.XmlException;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -130,7 +131,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setRemoveRequestNamespaces(boolean) removeRequestNamespaces}</td><td>when set <code>true</code> namespaces (and prefixes) in the request are removed (this functionality will be used during migration from IFSA to TIBCO)</td><td>false</td></tr>
  * <tr><td>{@link #setLayByNamespace(boolean) layByNamespace}</td><td>when <code>true</code>, the namespace of the request is laid by and afterwards added to the reply (this functionality will be used during migration from IFSA to TIBCO)</td><td><code>false</code></td></tr>
  * <tr><td>{@link #setErrorCodeSessionKey(String) errorCodeSessionKey}</td><td>key of session variable to store error code in (if an error occurs)</td><td>bisErrorCode</td></tr>
- * <tr><td>{@link #setErrorTextSessionKey(String) errorTextSessionKey}</td><td>key of session variable to store error text in (if an error occurs). If not specified, the following error text is derived from the error code: 
+ * <tr><td>{@link #setErrorTextSessionKey(String) errorTextSessionKey}</td><td>key of session variable to store error text in (if an error occurs). If not specified, the following error text is derived from the error code:
  *   <table border="1">
  *   <tr><th>errorCode</th><th>errorText</th></tr>
  *   <tr><td>ERR6002</td><td>Service Interface Request Time Out</td></tr>
@@ -143,7 +144,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setServiceName(String) serviceName}</td><td>name of the service; used in the error reply</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setActionName(String) actionName}</td><td>name of the operation; used in the error reply</td><td>&nbsp;</td></tr>
  * </p>
- * 
+ *
  * @author  Peter Leeuwenburgh
  * @deprecated Please use JmsListener combined with BisWrapperPipe
  */
@@ -190,7 +191,7 @@ public class BisJmsListener extends JmsListener {
 	}
 
 	@Override
-	public Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
+	public Message extractMessageBody(Message message, Map<String,Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException, XmlException {
 		context.put(MESSAGETEXT_KEY, message);
 		log.debug("extract messageBody from message [" + message + "]");
 		String messageBody = requestTp.transform(message.asSource());

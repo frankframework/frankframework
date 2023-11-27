@@ -26,7 +26,6 @@ import java.util.Vector;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,7 +39,8 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.XmlException;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -70,18 +70,14 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 			xmlStreamWriter.writeEndDocument();
 			xmlStreamWriter.flush();
 			xmlStreamWriter.close();
-		} catch (XMLStreamException e) {
-			throw new PipeRunException(this, "XMLStreamException", e);
-		} catch (DomBuilderException e) {
-			throw new PipeRunException(this, "DomBuilderException", e);
-		} catch (XPathExpressionException e) {
-			throw new PipeRunException(this, "XPathExpressionException", e);
+		} catch (Exception e) {
+			throw new PipeRunException(this, ClassUtils.classNameOf(e), e);
 		}
 
 		return new PipeRunResult(getSuccessForward(), stringWriter.getBuffer().toString());
 	}
 
-	public void process(XMLStreamWriter xmlStreamWriter, String cUrl, int cLevel) throws XMLStreamException, DomBuilderException, XPathExpressionException {
+	public void process(XMLStreamWriter xmlStreamWriter, String cUrl, int cLevel) throws XMLStreamException, XmlException {
 		String html;
 		try {
 			html = getHtml(cUrl);

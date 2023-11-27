@@ -5,7 +5,7 @@
 		<artifactId>ibis-adapterframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
-	
+
 	<artifactId>ibis-adapterframework-ear</artifactId>
 	<name>Ibis AdapterFramework ear</name>
 	<packaging>ear</packaging>
