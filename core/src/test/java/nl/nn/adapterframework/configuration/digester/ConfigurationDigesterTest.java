@@ -20,6 +20,7 @@ import org.xml.sax.SAXParseException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
@@ -74,7 +75,7 @@ public class ConfigurationDigesterTest {
 		MatchUtils.assertXmlEquals(storedExpected, storedResult);
 
 		loadedConfigWriter = new XmlWriter();
-		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 		digester.parseAndResolveEntitiesAndProperties(loadedConfigWriter, configuration, resource, properties);
 		String stubbedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationStubbed.xml");
 		MatchUtils.assertXmlEquals(stubbedExpected, loadedConfigWriter.toString());
