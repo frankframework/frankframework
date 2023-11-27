@@ -122,7 +122,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 					Message xsltResult = XmlUtils.removeNamespaces(message);
 					pipeLineSession.put("originalMessageWithoutNamespaces", xsltResult);
 				} catch (XmlException e) {
-					throw new PipeRunException(pipe,"caught XmlException", e);
+					throw new PipeRunException(pipe, "caught XmlException", e);
 				}
 			} else {
 				log.warn("original message is not well-formed");

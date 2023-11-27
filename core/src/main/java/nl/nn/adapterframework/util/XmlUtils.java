@@ -1412,7 +1412,6 @@ public class XmlUtils {
 		try {
 			XmlWriter xmlWriter = new XmlWriter();
 			ContentHandler handler = new NamespaceRemovingFilter(xmlWriter);
-			input.preserve();
 			parseXml(input.asInputSource(), handler);
 			return Message.asMessage(xmlWriter.toString());
 		} catch (Exception e) {
