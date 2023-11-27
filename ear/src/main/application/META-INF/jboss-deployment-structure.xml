@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+	<deployment/>
+	<sub-deployment name="adapterframework.war">
+		<dependencies>
+			<module name="javax.jws.api" export="true"/>	<!-- java.lang.NoClassDefFoundError: javax/jws/WebService -->
+			<module name="javax.jms.api" export="true"/>
+			<module name="module.frankframework.resources" /> 	<!--  -->
+		</dependencies>
+		<exclude-subsystems>
+			<subsystem name="webservices" />	<!-- To avoid apache CXF conflict -->
+			<subsystem name="logging" />
+		</exclude-subsystems>
+	</sub-deployment>
+</jboss-deployment-structure>
