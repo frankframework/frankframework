@@ -38,6 +38,13 @@
 		<security:logout />
 	</http>
 
+	<beans:bean id="httpFirewall" class="org.springframework.security.web.firewall.StrictHttpFirewall">
+		<beans:property name="allowSemicolon" value="true"/>
+		<beans:property name="allowUrlEncodedPercent" value="true"/>
+	</beans:bean>
+
+	<http-firewall ref="httpFirewall" />
+
 	<!-- When using JEE the container authenticates clients (401) we therefore only have to authorize them. If not authorized, return a 403. -->
 	<beans:bean id="403EntryPoint" class="org.springframework.security.web.authentication.Http403ForbiddenEntryPoint" />
 
