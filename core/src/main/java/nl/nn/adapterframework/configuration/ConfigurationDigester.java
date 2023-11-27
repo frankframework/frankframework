@@ -290,6 +290,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		String property = properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
 		boolean asBoolean = Boolean.parseBoolean(property);
 		System.err.println("Resolved property value [" + ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY + "]=[" + property + "]; property present in properties? [" + properties.containsKey(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY) + "]; as Boolean value: [" + asBoolean + "]");
+		System.err.println("raw property dump of properties in [" + properties.getClass().getCanonicalName() + "]:");
+		properties.list(System.err);
 
 		if (asBoolean) {
 			Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT);

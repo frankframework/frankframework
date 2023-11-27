@@ -88,7 +88,12 @@ public class PropertyLoader extends Properties {
 
 	@Override
 	public String getProperty(String key) {
-		return getResolvedProperty(key);
+		String resolvedProperty = getResolvedProperty(key);
+		// Some brute-force debugging
+		if (key.equals("stub4testtool.configuration")) {
+			System.err.println("Checking Property [" + key + "] in PropertyLoader, present: " + containsKey(key) + ", raw value: [" + super.getProperty(key) + "], resolvedProperty: [" + resolvedProperty + "]");
+		}
+		return resolvedProperty;
 	}
 
 	public String getUnresolvedProperty(String key) {
