@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import Swal, { SweetAlertOptions } from 'sweetalert2';
 import { DebugService } from './debug.service';
 
-/* TODO replace with Toastr where possible (warns, info, error, success) */
 @Injectable({
   providedIn: 'root'
 })
