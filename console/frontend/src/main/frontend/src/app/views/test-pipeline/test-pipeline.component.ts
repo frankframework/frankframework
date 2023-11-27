@@ -4,17 +4,11 @@ import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 
 type FormSessionKey = {
-  name?: string,
-  value?: string
-}
-
-type SessionKey = {
-  index: number,
-  key: string,
+  name: string,
   value: string
 }
 
-type PipelineState = {
+type AlertState = {
   type: string,
   message: string
 }
@@ -33,7 +27,7 @@ type PipelineResult = {
 export class TestPipelineComponent implements OnInit {
   configurations: Configuration[] = [];
   adapters: Record<string, Adapter> = {};
-  state: PipelineState[] = [];
+  state: AlertState[] = [];
   file: File | null = null;
   selectedConfiguration = "";
   processingMessage = false;
@@ -62,11 +56,11 @@ export class TestPipelineComponent implements OnInit {
 
     this.adapters = this.appService.adapters;
     this.appService.adapters$.subscribe(() => { this.adapters = this.appService.adapters; });
-  };
+  }
 
   addNote(type: string, message: string, removeQueue?: boolean) {
     this.state.push({ type: type, message: message });
-  };
+  }
 
   updateSessionKeys(sessionKey: FormSessionKey){
     if (sessionKey.name && sessionKey.name != "" && sessionKey.value && sessionKey.value != ""){
@@ -84,7 +78,7 @@ export class TestPipelineComponent implements OnInit {
 
   updateFile(file: File | null) {
     this.file = file;
-  };
+  }
 
   submit(event: SubmitEvent) {
     event.preventDefault();

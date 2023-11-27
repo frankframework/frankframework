@@ -83,12 +83,12 @@ import { NotificationsComponent } from './views/notifications/notifications.comp
 import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
 import { MarkDownPipe } from './pipes/mark-down.pipe';
 import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.component';
+import { TestServiceListenerComponent } from './views/test-service-listener/test-service-listener.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
   useValue: window
 }
-
 
 @NgModule({
   declarations: [
@@ -141,6 +141,7 @@ const windowProvider: ValueProvider = {
     NotificationsComponent,
     IafUpdateComponent,
     TestPipelineComponent,
+    TestServiceListenerComponent,
 
     //modals
     InformationModalComponent,

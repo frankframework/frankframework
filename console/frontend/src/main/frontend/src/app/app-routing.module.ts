@@ -37,6 +37,7 @@ import { LoggingManageComponent } from './views/logging/logging-manage/logging-m
 import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
 import { ConnectionsComponent } from './views/connections/connections.component';
 import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.component';
+import { TestServiceListenerComponent } from './views/test-service-listener/test-service-listener.component';
 
 const routes: Routes = [
   /* {
@@ -163,14 +164,14 @@ const routes: Routes = [
       breadcrumbs: 'Testing > Test a PipeLine'
     }
   },
-  /* {
-    path: 'test-serviceListener',
+  {
+    path: 'test-service-listener',
     component: TestServiceListenerComponent,
     title: 'Test a ServiceListener',
     data: {
       breadcrumbs: 'Testing > Test a ServiceListener'
     }
-  }, */
+  },
   {
     path: 'webservices',
     component: WebservicesComponent,
