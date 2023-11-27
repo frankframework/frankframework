@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Adapter, AppService, Configuration } from 'src/app/app.service';
+import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 
 type FormSessionKey = {
   name?: string,
@@ -12,6 +14,17 @@ type SessionKey = {
   value: string
 }
 
+type PipelineState = {
+  type: string,
+  message: string
+}
+
+type PipelineResult = {
+  state: string,
+  result: string,
+  message: string
+}
+
 @Component({
   selector: 'app-test-pipeline',
   templateUrl: './test-pipeline.component.html',
@@ -20,23 +33,26 @@ type SessionKey = {
 export class TestPipelineComponent implements OnInit {
   configurations: Configuration[] = [];
   adapters: Record<string, Adapter> = {};
-  state: { type: string, message: string }[] = [];
+  state: PipelineState[] = [];
   file: File | null = null;
   selectedConfiguration = "";
   processingMessage = false;
-  sessionKeyIndex = 1;
-  sessionKeyIndices = [this.sessionKeyIndex];
-  sessionKeys = [] as SessionKey[];
   result = "";
+
+  formSessionKeys: FormSessionKey[] = [
+    { name: "", value: "" }
+  ];
 
   form = {
     adapter: "",
-    sessionKeys: [] as FormSessionKey[],
     encoding: "",
     message: ""
   }
 
+  @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;
+
   constructor(
+    private http: HttpClient,
     private appService: AppService
   ){ }
 
@@ -46,43 +62,23 @@ export class TestPipelineComponent implements OnInit {
 
     this.adapters = this.appService.adapters;
     this.appService.adapters$.subscribe(() => { this.adapters = this.appService.adapters; });
-
-
   };
 
   addNote(type: string, message: string, removeQueue?: boolean) {
     this.state.push({ type: type, message: message });
   };
 
-  initSessionKeys(){
-    for(const index in this.sessionKeyIndices){
-      this.form.sessionKeys[index] = {};
-    }
-  }
-
-  updateSessionKeys(sessionKey: FormSessionKey, index: number) {
-    let sessionKeyIndex = this.sessionKeys.findIndex(f => f.index === index); // find by index
-    if (sessionKeyIndex >= 0) {
-      if (sessionKey.name == "" && sessionKey.value == "") { // remove row if row is empty
-        this.sessionKeys.splice(sessionKeyIndex, 1);
-        this.sessionKeyIndices.splice(sessionKeyIndex, 1);
-      } else { // update existing key value pair
-        this.sessionKeys[sessionKeyIndex].key = sessionKey.name!;
-        this.sessionKeys[sessionKeyIndex].value = sessionKey.value!;
-      }
-      this.state = [];
-    } else if (sessionKey.name && sessionKey.name != "" && sessionKey.value && sessionKey.value != "") {
-      let keyIndex = this.sessionKeys.findIndex(f => f.key === sessionKey.name);	// find by key
-      // add new key
-      if (keyIndex < 0) {
-        this.sessionKeyIndex += 1;
-        this.sessionKeyIndices.push(this.sessionKeyIndex);
-        this.sessionKeys.push({ index: index, key: sessionKey.name, value: sessionKey.value });
-        this.state = [];
-      } else { // key with the same name already exists show warning
+  updateSessionKeys(sessionKey: FormSessionKey){
+    if (sessionKey.name && sessionKey.name != "" && sessionKey.value && sessionKey.value != ""){
+      const keyIndex = this.formSessionKeys.slice(0, -1).findIndex(f => f.name === sessionKey.name);
+      if(keyIndex > -1){
         if (this.state.findIndex(f => f.message === "Session keys cannot have the same name!") < 0) //avoid adding it more than once
           this.addNote("warning", "Session keys cannot have the same name!");
+        return;
       }
+
+      this.formSessionKeys.push({ name: "", value: "" });
+      this.state = [];
     }
   }
 
@@ -116,10 +112,11 @@ export class TestPipelineComponent implements OnInit {
     if (this.file)
       fd.append("file", this.file, this.file.name);
 
-    if (this.sessionKeys.length > 0) {
-      let incompleteKeyIndex = this.sessionKeys.findIndex(f => (f.key === "" || f.value === ""));
+    if (this.formSessionKeys.length > 1) {
+      this.formSessionKeys.pop();
+      const incompleteKeyIndex = this.formSessionKeys.findIndex(f => (f.name === "" || f.value === ""));
       if (incompleteKeyIndex < 0) {
-        fd.append("sessionKeys", JSON.stringify(this.sessionKeys));
+        fd.append("sessionKeys", JSON.stringify(this.formSessionKeys));
       } else {
         this.addNote("warning", "Please make sure all sessionkeys have name and value!");
         return;
@@ -127,22 +124,22 @@ export class TestPipelineComponent implements OnInit {
     }
 
     this.processingMessage = true;
-    Api.Post("test-pipeline", fd, function (returnData) {
+    this.http.post<PipelineResult>(this.appService.absoluteApiPath + "test-pipeline", fd).subscribe({ next: (returnData) => {
       let warnLevel = "success";
       if (returnData.state == "ERROR") warnLevel = "danger";
       this.addNote(warnLevel, returnData.state);
       this.result = (returnData.result);
       this.processingMessage = false;
       if (this.file != null) {
-        angular.element(".form-file")[0].value = null;
+        this.formFile.reset();
         this.file = null;
-        formData.message = returnData.message;
+        this.form.message = returnData.message;
       }
-    }, function (errorData) {
+    }, error: (errorData) => {
       let error = (errorData && errorData.error) ? errorData.error : "An error occured!";
       this.result = "";
       this.addNote("warning", error);
       this.processingMessage = false;
-    });
+    }});
   }
 }

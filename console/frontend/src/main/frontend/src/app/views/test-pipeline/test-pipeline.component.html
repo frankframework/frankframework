@@ -26,21 +26,15 @@
                 </select>
               </div>
             </div>
-
-            <div
-              class="row form-group test-pipeline-session-keys"
-              *ngFor="let order of sessionKeyIndices; index as $index"
-              ng-init="form.sessionKeys[$index] = {};"
-            >
+            <div class="row form-group test-pipeline-session-keys" *ngFor="let test of formSessionKeys; index as $index">
               <label class="col-sm-3 control-label label-height-30"><span *ngIf="$index==0">Session Key</span> </label>
               <div class="col-sm-4">
-                <input class="form-control" (blur)="updateSessionKeys(form.sessionKeys[$index], order)"
-                  name="sessionKey" placeholder="Name" type="text" [(ngModel)]="form.sessionKeys[$index].name" />
+                <input class="form-control" (blur)="updateSessionKeys(test)" name="sessionKey{{$index}}"
+                  placeholder="Name" type="text" [(ngModel)]="test.name" />
               </div>
               <div class="col-sm-5">
-                <input class="form-control" (blur)="updateSessionKeys(form.sessionKeys[$index], order)"
-                  name="sessionKeyValue" placeholder="Value" type="text"
-                  [(ngModel)]="form.sessionKeys[$index].value" />
+                <input class="form-control" (blur)="updateSessionKeys(test)" name="sessionKeyValue{{$index}}"
+                  placeholder="Value" type="text" [(ngModel)]="test.value" />
               </div>
             </div>
             <div class="row form-group">

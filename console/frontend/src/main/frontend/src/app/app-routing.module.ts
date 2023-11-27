@@ -36,6 +36,7 @@ import { LoggingComponent } from './views/logging/logging.component';
 import { LoggingManageComponent } from './views/logging/logging-manage/logging-manage.component';
 import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
 import { ConnectionsComponent } from './views/connections/connections.component';
+import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.component';
 
 const routes: Routes = [
   /* {
@@ -154,14 +155,14 @@ const routes: Routes = [
       breadcrumbs: 'JMS > Browse Queue'
     }
   },
-  /* {
-    path: "/test-pipeline",
+  {
+    path: "test-pipeline",
     component: TestPipelineComponent,
     title: 'Test a PipeLine',
     data: {
       breadcrumbs: 'Testing > Test a PipeLine'
     }
-  }, */
+  },
   /* {
     path: 'test-serviceListener',
     component: TestServiceListenerComponent,
