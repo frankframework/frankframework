@@ -68,6 +68,7 @@ public class PropertyLoader extends Properties {
 		try {
 			String result = System.getenv().get(key);
 			if (result != null) {
+				LOG.trace("Get key [" +  key + "] from System Properties, value: [" + result + "]");
 				return result;
 			}
 		} catch (Throwable e) {
