@@ -56,7 +56,6 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.dbms.DbmsException;
 import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.doc.SupportsOutputStreaming;
-import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -65,7 +64,6 @@ import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DB2DocumentWriter;
@@ -614,77 +612,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command", e);
 		}
 		return new Message(clobWriter.getWarnings().toXML());
-	}
-
-	protected boolean canProvideOutputStream() {
-		return false; // FixedQuerySender returns true for updateBlob and updateClob
-	}
-
-	@Override
-	public boolean supportsOutputStreamPassThrough() {
-		return false;
-	}
-
-	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
-		if (!canProvideOutputStream()) {
-			return null;
-		}
-		return TransactionConnectorCoordinator.doInUnsuspendedTransationContext(()-> {
-			final Connection connection;
-			QueryExecutionContext queryExecutionContext;
-			try {
-				connection = getConnectionWithTimeout(getTimeout());
-				queryExecutionContext = getQueryExecutionContext(connection, null);
-			} catch (JdbcException | SQLException | SenderException | TimeoutException e) {
-				throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
-			}
-			try {
-				PreparedStatement statement=queryExecutionContext.getStatement();
-				if (queryExecutionContext.getParameterList() != null) {
-					JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), Message.nullMessage(), session);
-				}
-				if (queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB) {
-					BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
-					TransactionConnectorCoordinator.onEndChildThread(()-> {
-						blobOutputStream.close();
-						connection.close();
-						log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
-					});
-					return new MessageOutputStream(this, blobOutputStream, next) {
-						// perform close() on MessageOutputStream.close(), necessary when no TransactionConnector available for onEndThread()
-						@Override
-						public void afterClose() throws SQLException {
-							if (!connection.isClosed()) {
-								connection.close();
-							}
-							log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
-						}
-					};
-				}
-				if (queryExecutionContext.getQueryType()==QueryType.UPDATECLOB) {
-					ClobWriter clobWriter = getClobWriter(statement, getClobColumn());
-					TransactionConnectorCoordinator.onEndChildThread(()-> {
-						clobWriter.close();
-						connection.close();
-						log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
-					});
-					return new MessageOutputStream(this, clobWriter, next) {
-						// perform close() on MessageOutputStream.close(), necessary when no TransactionConnector available for onEndThread()
-						@Override
-						public void afterClose() throws SQLException {
-							if (!connection.isClosed()) {
-								connection.close();
-							}
-							log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
-						}
-					};
-				}
-				throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
-			} catch (JdbcException | SQLException | ParameterException e) {
-				throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
-			}
-		});
 	}
 
 	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, PipeLineSession session, IForwardTarget next) throws SenderException{

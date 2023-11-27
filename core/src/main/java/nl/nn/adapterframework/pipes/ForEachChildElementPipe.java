@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -304,7 +303,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		private TransformerErrorListener transformerErrorListener=null;
 	}
 
-	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, Message input, PipeLineSession session, ItemCallback callback, BiConsumer<AutoCloseable,String> closeOnCloseRegister) throws TransformerConfigurationException {
+	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, Message input, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
 		result.itemHandler = new ItemCallbackCallingHandler(callback);
 		result.inputHandler=result.itemHandler;
 
@@ -313,7 +312,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			String targetElementString = StringUtils.isNotEmpty(getTargetElement()) ? "filter to targetElement '"+getTargetElement()+"'" :null;
 			String xpathString = getExtractElementsTp()!=null ? "filter XPath '"+getElementXPathExpression()+"'": null;
 			String label = "XML after preprocessing: " + StringUtil.concat(", ",containerElementString, targetElementString, xpathString);
-			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler, closeOnCloseRegister);
+			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler);
 		}
 
 		if (isRemoveNamespaces()) {
@@ -399,7 +398,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		SenderException mainException = null;
 		try (ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
 			try {
-				createHandler(handlerRecord, threadConnector, input, session, callback, closeables::put);
+				createHandler(handlerRecord, threadConnector, input, session, callback);
 			} catch (TransformerException e) {
 				throw new SenderException(handlerRecord.errorMessage, e);
 			}

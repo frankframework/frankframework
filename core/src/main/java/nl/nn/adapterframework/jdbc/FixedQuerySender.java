@@ -22,9 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
@@ -62,14 +60,6 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	protected String getQuery(Message message) {
 		return getQuery();
 	}
-
-	@Override
-	protected boolean canProvideOutputStream() {
-		return (getQueryTypeEnum()==QueryType.UPDATECLOB && StringUtils.isEmpty(getClobSessionKey()) ||
-				getQueryTypeEnum()==QueryType.UPDATEBLOB && StringUtils.isEmpty(getBlobSessionKey()))
-				&& (getParameterList()==null || !getParameterList().isInputValueOrContextRequiredForResolution());
-	}
-
 
 	@Override
 	public QueryExecutionContext openBlock(PipeLineSession session) throws SenderException, TimeoutException {
@@ -110,17 +100,6 @@ public class FixedQuerySender extends JdbcQuerySenderBase<QueryExecutionContext>
 	// implements IBlockEnabledSender.sendMessage()
 	public SenderResult sendMessage(QueryExecutionContext blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		return new SenderResult(executeStatementSet(blockHandle, message, session, null).getResult());
-	}
-
-	@Override
-	// implements IStreamingSender.sendMessage()
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		QueryExecutionContext blockHandle = openBlock(session);
-		try {
-			return executeStatementSet(blockHandle, message, session, next);
-		} finally {
-			closeBlock(blockHandle, session);
-		}
 	}
 
 	/** The SQL query text to be excecuted each time sendMessage() is called

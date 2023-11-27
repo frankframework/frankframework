@@ -4,12 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringReader;
 
-import jakarta.json.Json;
-import jakarta.json.JsonStructure;
-
 import org.junit.jupiter.api.Test;
 
-import nl.nn.adapterframework.core.PipeRunResult;
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
@@ -30,8 +29,8 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("inputfile ["+input+"]");
 		String expectedJson=TestFileUtils.getTestFile("/Xslt3/orgchart.json");
 		Message message = new Message(input);
-		PipeRunResult prr = sender.sendMessage(message, session, null);
-		String jsonOut=prr.getResult().asString();
+		SenderResult senderResult = sender.sendMessage(message, session);
+		String jsonOut=senderResult.getResult().asString();
 		assertJsonEqual(expectedJson,jsonOut, null);
 	}
 
@@ -45,8 +44,8 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("inputfile ["+input+"]");
 		Message message = new Message(input);
 		String expectedXml=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
-		PipeRunResult result = sender.sendMessage(message, session, null);
-		String xmlOut=result.getResult().asString();
+		SenderResult senderResult = sender.sendMessage(message, session);
+		String xmlOut=senderResult.getResult().asString();
 		assertEquals(expectedXml,xmlOut);
 	}
 
@@ -61,8 +60,8 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("inputfile ["+input+"]");
 		Message message = new Message(input);
 		String expectedText="James";
-		PipeRunResult result = sender.sendMessage(message, session, null);
-		String textOut=result.getResult().asString();
+		SenderResult senderResult = sender.sendMessage(message, session);
+		String textOut=senderResult.getResult().asString();
 		assertEquals(expectedText,textOut);
 	}
 

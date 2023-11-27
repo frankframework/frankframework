@@ -15,27 +15,21 @@
 */
 package nl.nn.adapterframework.senders;
 
-import java.util.function.BiConsumer;
-
-import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.stream.JsonEventHandler;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.ThreadConnector;
-import nl.nn.adapterframework.stream.xml.JsonXslt3XmlHandler;
 import nl.nn.adapterframework.stream.xml.JsonXslt3XmlReader;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.XmlJsonWriter;
@@ -65,42 +59,27 @@ public class JsonXsltSender extends XsltSender {
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
-		if (!canProvideOutputStream()) {
-			log.debug("sender [{}] cannot provide outputstream", () -> getName());
-			return null;
+	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, File tempFile) throws StreamingException {
+		if (!isJsonResult()) {
+			return super.createHandler(input, threadConnector, session, poolToUse, handler, tempFile);
 		}
-		ThreadConnector threadConnector = getStreamingXslt() ? new ThreadConnector(this, "provideOutputStream", threadLifeCycleEventListener, txManager, session) : null;
-		MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
 		try {
-			TransformerPool poolToUse = getTransformerPoolToUse(session);
-			ContentHandler handler = createHandler(null, threadConnector, session, poolToUse, target);
-			JsonEventHandler jsonEventHandler = new JsonXslt3XmlHandler(handler);
-			return new MessageOutputStream(this, jsonEventHandler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
-		} catch (SenderException | ConfigurationException e) {
+			XmlJsonWriter xjw = new XmlJsonWriter(Files.newBufferedWriter(tempFile.toPath()));
+			handler = super.createHandler(input, threadConnector, session, poolToUse, xjw, tempFile);
+			if (getXmlDebugger() != null) {
+				handler = getXmlDebugger().inspectXml(session, "output XML to be converted to JSON", handler);
+			}
+			return handler;
+		} catch (IOException e) {
 			throw new StreamingException(e);
 		}
 	}
 
-	@Override
-	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, MessageOutputStream target) throws StreamingException {
-		if (!isJsonResult()) {
-			return super.createHandler(input, threadConnector, session, poolToUse, target);
-		}
-		XmlJsonWriter xjw = new XmlJsonWriter(target.asWriter());
-		MessageOutputStream prev = new MessageOutputStream(this,xjw,target,threadLifeCycleEventListener, txManager, session, null);
-		ContentHandler handler = super.createHandler(input, threadConnector, session, poolToUse, prev);
-		if (getXmlDebugger()!=null) {
-			handler = getXmlDebugger().inspectXml(session, "output XML to be converted to JSON", handler, (resource,label)->target.closeOnClose(resource));
-		}
-		return handler;
-	}
-
 
 	@Override
-	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler, BiConsumer<AutoCloseable,String> closeOnCloseRegister) throws ParserConfigurationException, SAXException {
+	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler) {
 		if (getXmlDebugger()!=null) {
-			handler = getXmlDebugger().inspectXml(session, "input JSON converted to XML", handler, closeOnCloseRegister);
+			handler = getXmlDebugger().inspectXml(session, "input JSON converted to XML", handler);
 		}
 		return new JsonXslt3XmlReader(handler);
 	}
