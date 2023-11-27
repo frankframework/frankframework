@@ -22,8 +22,7 @@ USER tomcat
 # Copy environment configuration
 COPY --chown=tomcat src/scripts/ /scripts/
 RUN cat /scripts/catalinaAdditional.properties >> /usr/local/tomcat/conf/catalina.properties  && \
-    rm -f /scripts/catalinaAdditional.properties && \
-    chmod +x /scripts/entrypoint.sh
+    rm -f /scripts/catalinaAdditional.properties
 
 # Copy JDBC and JMS drivers
 COPY --chown=tomcat target/dependencies/*.jar /usr/local/tomcat/lib/
