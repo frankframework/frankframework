@@ -250,9 +250,9 @@ public class PropertyLoader extends Properties {
 	 */
 	public boolean getBoolean(String key, boolean dfault) {
 		String ob = this.getResolvedProperty(key);
-		if (ob == null)return dfault;
+		if (ob == null) return dfault;
 
-		return ob.equalsIgnoreCase("true");
+		return ob.equalsIgnoreCase("true") || ob.equalsIgnoreCase("!false");
 	}
 
 	/**

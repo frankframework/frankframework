@@ -53,6 +53,7 @@ import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.PropertyLoader;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -221,21 +222,21 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * Performs an Identity-transform, which resolves entities with content from files found on the ClassPath.
 	 * Resolve all non-attribute properties
 	 */
-	public void parseAndResolveEntitiesAndProperties(ContentHandler digester, Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, TransformerConfigurationException {
+	public void parseAndResolveEntitiesAndProperties(ContentHandler digester, Configuration configuration, Resource resource, PropertyLoader properties) throws IOException, SAXException, TransformerConfigurationException {
 		ContentHandler handler;
 
 		XmlWriter loadedHiddenWriter = new XmlWriter();
 		handler = new PrettyPrintFilter(loadedHiddenWriter);
-		handler = new AttributePropertyResolver(handler, appConstants, getPropsToHide(appConstants));
+		handler = new AttributePropertyResolver(handler, properties, getPropsToHide(properties));
 		handler = new XmlTee(digester, handler);
 
-		handler = getStub4TesttoolContentHandler(handler, appConstants);
+		handler = getStub4TesttoolContentHandler(handler, properties);
 		handler = getConfigurationCanonicalizer(handler);
-		handler = new OnlyActiveFilter(handler, appConstants);
-		handler = new ElementPropertyResolver(handler, appConstants);
+		handler = new OnlyActiveFilter(handler, properties);
+		handler = new ElementPropertyResolver(handler, properties);
 
-		String rewriteLegacyClassNames = appConstants.getProperty("migration.rewrite.legacyClassNames", "false");
-		if (rewriteLegacyClassNames.equalsIgnoreCase("true") || rewriteLegacyClassNames.equalsIgnoreCase("!false")) {
+		boolean rewriteLegacyClassNames = properties.getBoolean("migration.rewrite.legacyClassNames", false);
+		if (rewriteLegacyClassNames) {
 			handler = new ClassNameRewriter(handler);
 		}
 

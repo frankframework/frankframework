@@ -25,6 +25,7 @@ import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.PropertyLoader;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
@@ -54,7 +55,7 @@ public class ConfigurationDigesterTest {
 		ConfigurationDigester digester = new ConfigurationDigester();
 		digester.setConfigurationWarnings( new ConfigurationWarnings() );
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
-		Properties properties = new Properties();
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
 		properties.setProperty("HelloWorld.active", "false");
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
 		properties.setProperty("digester.property", "[ >\"< ]"); // new style non-escaped property values
@@ -132,7 +133,7 @@ public class ConfigurationDigesterTest {
 
 		XmlUtils.parseXml(originalConfiguration, filter);
 
-		String actual = new String(target.toString());
+		String actual = target.toString();
 
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
 		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
@@ -174,13 +175,13 @@ public class ConfigurationDigesterTest {
 
 		XmlUtils.parseXml(originalConfiguration, filter);
 
-		String actual = new String(target.toString());
+		String actual = target.toString();
 
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
 		MatchUtils.assertXmlEquals(null, expectedConfiguration, actual, false, true);
 	}
 
-	private class XmlErrorHandler implements ErrorHandler {
+	private static class XmlErrorHandler implements ErrorHandler {
 		@Override
 		public void warning(SAXParseException exception) {
 			System.err.println("Warning at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());

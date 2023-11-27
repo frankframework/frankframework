@@ -24,6 +24,10 @@ import nl.nn.adapterframework.xml.WritableAttributes;
 
 public class ClassNameRewriter extends FullXmlFilter {
 
+	public static final String LEGACY_PACKAGE_NAME = "nl.nn.adapterframework.";
+	public static final String ORG_FRANKFRAMEWORK_PACKAGE_NAME = "org.frankframework.";
+	public static final String CLASS_NAME_ATTRIBUTE = "className";
+
 	public ClassNameRewriter(ContentHandler handler) {
 		super(handler);
 	}
@@ -31,10 +35,10 @@ public class ClassNameRewriter extends FullXmlFilter {
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		WritableAttributes writableAttributes = new WritableAttributes(attributes);
-		String className = writableAttributes.getValue("className");
+		String className = writableAttributes.getValue(CLASS_NAME_ATTRIBUTE);
 		if (className != null) {
-			if (className.startsWith("nl.nn.adapterframework.")) {
-				writableAttributes.setValue("className", className.replace("nl.nn.adapterframework.", "org.frankframework."));
+			if (className.startsWith(LEGACY_PACKAGE_NAME)) {
+				writableAttributes.setValue(CLASS_NAME_ATTRIBUTE, className.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME));
 			}
 		}
 		super.startElement(uri, localName, qName, writableAttributes);
