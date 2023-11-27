@@ -11,8 +11,6 @@ import { DataTablesModule } from 'angular-datatables';
 
 import { AppRoutingModule } from './app-routing.module';
 
-import '../angularjs/main';
-
 import { AppComponent } from './app.component';
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 import { PagesNavigationComponent } from './components/pages/pages-navigation/pages-navigation.component';

@@ -9,7 +9,7 @@ import './app/app.component';
 // import './app/views/error/error.component';
 // import './app/views/liquibase/liquibase.component';
 // import './app/views/loading/loading.component';
-import './app/views/login/login.component';
+// import './app/views/login/login.component';
 // import './app/views/logging/logging.component';
 // import './app/views/logging/logging-manage/logging-manage.component';
 // import './app/views/monitors/monitors-add-edit/monitors-add-edit.component';
