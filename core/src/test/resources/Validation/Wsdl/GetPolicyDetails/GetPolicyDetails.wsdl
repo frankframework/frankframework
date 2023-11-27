@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1/wsdl/" xmlns:ns1="http://ibissource.org/XSD/Generic/MessageHeader/2" xmlns:ns2="http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1" targetNamespace="http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1/wsdl/">
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1/wsdl/" xmlns:ns1="http://frankframework.org/XSD/Generic/MessageHeader/2" xmlns:ns2="http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1" targetNamespace="http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1/wsdl/">
 	<wsdl:types>
-		<xsd:schema xmlns="http://ibissource.org/XSD/Generic/MessageHeader/2" targetNamespace="http://ibissource.org/XSD/Generic/MessageHeader/2" attributeFormDefault="unqualified" elementFormDefault="qualified">
+		<xsd:schema xmlns="http://frankframework.org/XSD/Generic/MessageHeader/2" targetNamespace="http://frankframework.org/XSD/Generic/MessageHeader/2" attributeFormDefault="unqualified" elementFormDefault="qualified">
 			<xsd:element name="MessageHeader" type="MessageHeaderType"/>
 			<xsd:element name="Result" type="ResultType"/>
 			<xsd:complexType name="MessageHeaderType">
@@ -184,8 +184,8 @@
 				</xsd:restriction>
 			</xsd:simpleType>
 		</xsd:schema>
-		<xsd:schema xmlns="http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1" xmlns:cmh="http://ibissource.org/XSD/Generic/MessageHeader/2" targetNamespace="http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1" attributeFormDefault="unqualified" elementFormDefault="qualified">
-			<xsd:import namespace="http://ibissource.org/XSD/Generic/MessageHeader/2"/>
+		<xsd:schema xmlns="http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1" xmlns:cmh="http://frankframework.org/XSD/Generic/MessageHeader/2" targetNamespace="http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1" attributeFormDefault="unqualified" elementFormDefault="qualified">
+			<xsd:import namespace="http://frankframework.org/XSD/Generic/MessageHeader/2"/>
 			<xsd:element name="GetPolicyDetails_Request" type="RequestType"/>
 			<xsd:element name="GetPolicyDetails_Response" type="ResponseType"/>
 			<xsd:complexType name="RequestType">

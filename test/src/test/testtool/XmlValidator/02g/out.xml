@@ -1,4 +1,4 @@
-<FindPartyREQ xmlns="http://www.ibissource.org/tom" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<FindPartyREQ xmlns="http://www.frankframework.org/tom" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<Selection24>
 		<PartyType>01</PartyType>
 		<Use>99</Use>

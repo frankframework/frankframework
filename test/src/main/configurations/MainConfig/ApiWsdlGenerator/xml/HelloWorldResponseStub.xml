@@ -1,4 +1,4 @@
-<HelloWorld_Response xmlns="http://ibissource.org/HelloWorld">
+<HelloWorld_Response xmlns="http://frankframework.org/HelloWorld">
 	<Body>
 		<Text1>Hello</Text1>
 		<Text2>to</Text2>

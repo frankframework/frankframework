@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema targetNamespace="http://www.ibissource.org/tom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tom="http://www.ibissource.org/tom" elementFormDefault="qualified" tom:agent="TOM" tom:package="com.ibissource.tom">
+<xsd:schema targetNamespace="http://www.frankframework.org/tom" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tom="http://www.frankframework.org/tom" elementFormDefault="qualified" tom:agent="TOM" tom:package="com.frankframework.tom">
 	<!--******************************************TOM Agreement SimpleTypes**********************************-->
 	<xsd:simpleType name="AgreementStatus">
 		<xsd:restriction base="xsd:nonNegativeInteger">

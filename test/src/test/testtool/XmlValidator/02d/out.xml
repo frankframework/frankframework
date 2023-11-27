@@ -1,6 +1,6 @@
 <Error>
   <errorCode>FAILURE</errorCode>
-  <errorMessage>Validation using XmlValidator with 'http://www.ibissource.org/bik /XmlValidator/GetData/XSD_GetData_v1.1_r1.1.xsd' failed:
+  <errorMessage>Validation using XmlValidator with 'http://www.frankframework.org/bik /XmlValidator/GetData/XSD_GetData_v1.1_r1.1.xsd' failed:
 /: at (1,62): cvc-elt.1.a: Cannot find the declaration of element 'GetData2REQ'.
 /: Illegal element 'GetData2REQ'. Element(s) 'GetDataREQ' expected.
 /: Element(s) 'GetDataREQ' not found</errorMessage>

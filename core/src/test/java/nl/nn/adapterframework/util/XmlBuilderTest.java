@@ -84,9 +84,9 @@ public class XmlBuilderTest {
 		XmlBuilder schema = new XmlBuilder("schema");
 		schema.addAttribute("xmlns", "http://www.w3.org/2001/XMLSchema");
 		schema.addAttribute("targetNamespace",
-				"http://schemas.ibissource.org/Adapter.xsd");
+				"http://schemas.frankframework.org/Adapter.xsd");
 		schema.addAttribute("xmlns:tns",
-				"http://schemas.ibissource.org/Adapter.xsd");
+				"http://schemas.frankframework.org/Adapter.xsd");
 		schema.addAttribute("elementFormDefault", "qualified");
 		XmlBuilder complexType = new XmlBuilder("complexType");
 		complexType.addAttribute("name", "IOS-AdapteringType");
@@ -99,7 +99,7 @@ public class XmlBuilderTest {
 		schema.addSubElement(complexType);
 
 		StringBuilder sb = new StringBuilder(
-				"<schema xmlns=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.ibissource.org/Adapter.xsd\" xmlns:tns=\"http://schemas.ibissource.org/Adapter.xsd\" elementFormDefault=\"qualified\">");
+				"<schema xmlns=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.frankframework.org/Adapter.xsd\" xmlns:tns=\"http://schemas.frankframework.org/Adapter.xsd\" elementFormDefault=\"qualified\">");
 		sb.append("<complexType name=\"IOS-AdapteringType\">");
 		sb.append("<sequence>");
 		sb.append("<element name=\"adapter\" type=\"tns:adapterType\"/>");
@@ -117,9 +117,9 @@ public class XmlBuilderTest {
 		XmlBuilder schema = new XmlBuilder("schema");
 		schema.addAttribute("xmlns", "http://www.w3.org/2001/XMLSchema");
 		schema.addAttribute("targetNamespace",
-				"http://schemas.ibissource.org/Adapter.xsd");
+				"http://schemas.frankframework.org/Adapter.xsd");
 		schema.addAttribute("xmlns:tns",
-				"http://schemas.ibissource.org/Adapter.xsd");
+				"http://schemas.frankframework.org/Adapter.xsd");
 		schema.addAttribute("elementFormDefault", "qualified");
 		XmlBuilder complexType = new XmlBuilder("complexType");
 		schema.addSubElement(complexType);
@@ -132,7 +132,7 @@ public class XmlBuilderTest {
 		element.addAttribute("type", "tns:adapterType");
 
 		StringBuilder sb = new StringBuilder(
-				"<schema xmlns=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.ibissource.org/Adapter.xsd\" xmlns:tns=\"http://schemas.ibissource.org/Adapter.xsd\" elementFormDefault=\"qualified\">");
+				"<schema xmlns=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.frankframework.org/Adapter.xsd\" xmlns:tns=\"http://schemas.frankframework.org/Adapter.xsd\" elementFormDefault=\"qualified\">");
 		sb.append("<complexType name=\"IOS-AdapteringType\">");
 		sb.append("<sequence>");
 		sb.append("<element name=\"adapter\" type=\"tns:adapterType\"/>");

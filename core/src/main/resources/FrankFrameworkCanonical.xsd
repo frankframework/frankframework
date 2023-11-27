@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" 
-targetNamespace="http://schemas.ibissource.org/frankconfig.xsd" xmlns="http://schemas.ibissource.org/frankconfig.xsd" >
+targetNamespace="http://schemas.frankframework.org/frankconfig.xsd" xmlns="http://schemas.frankframework.org/frankconfig.xsd" >
 	<xsd:element name="IOS-Adaptering" type="ConfigurationType"/>
 	<xsd:element name="configuration" type="ConfigurationType"/>
 	<xsd:element name="Configuration" type="ConfigurationType"/>

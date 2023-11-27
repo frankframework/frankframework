@@ -1,4 +1,4 @@
-<CalculationResponse xmlns="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
+<CalculationResponse xmlns="http://www.frankframework.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
 	<SystemCode>L76HB000</SystemCode>
 	<CalculationData>1:RS_INFO;835:ILIAS;645:ANP_VRH_3;</CalculationData>
 </CalculationResponse>
