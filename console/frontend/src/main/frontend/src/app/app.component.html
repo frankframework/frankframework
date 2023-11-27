@@ -1,6 +1,5 @@
-<!-- TODO <toaster-container toaster-options="{'time-out':5500, 'close-button': true, 'prevent-duplicates':true}"></toaster-container> -->
 <!-- Wrapper-->
-<div id="wrapper">
+<div id="wrapper" *ngIf="!isLoginView; else loginWrapper">
   <!-- Navigation -->
   <app-pages-navigation (onOpenInfo)="openInfoModel()" (onOpenFeedback)="sendFeedback()"></app-pages-navigation>
 
@@ -42,3 +41,6 @@
 
 </div>
 <!-- End wrapper-->
+<ng-template #loginWrapper>
+  <router-outlet></router-outlet>
+</ng-template>

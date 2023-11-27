@@ -38,13 +38,14 @@ import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
 import { ConnectionsComponent } from './views/connections/connections.component';
 import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.component';
 import { TestServiceListenerComponent } from './views/test-service-listener/test-service-listener.component';
+import { LoginComponent } from './views/login/login.component';
 
 const routes: Routes = [
-  /* {
+  {
     path: 'login',
     component: LoginComponent,
     title: 'Login'
-  }, */
+  },
   {
     path: 'logout',
     component: LogoutComponent,

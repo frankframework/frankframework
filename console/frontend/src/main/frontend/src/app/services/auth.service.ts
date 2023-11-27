@@ -4,6 +4,7 @@ import { MiscService } from './misc.service';
 import { Base64Service } from './base64.service';
 import { AppConstants, AppService } from '../app.service';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -52,9 +53,9 @@ export class AuthService {
     }
   }
 
-  logout(): void {
+  logout(): Observable<Object> {
     sessionStorage.clear();
     // TODO this.$http.defaults.headers!.common['Authorization'] = null;
-    this.http.get(this.appService.getServerPath() + "iaf/api/logout");
+    return this.http.get(this.appService.getServerPath() + "iaf/api/logout");
   }
 }

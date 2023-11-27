@@ -37,6 +37,7 @@ export class AppComponent implements OnInit, OnDestroy {
   userName?: string;
   appConstants: AppConstants;
   routeData: Data = {};
+  isLoginView: boolean = false;
 
   private urlHash$!: Observable<string | null>;
   private routeQueryParams: ParamMap = convertToParamMap({});
@@ -83,8 +84,10 @@ export class AppComponent implements OnInit, OnDestroy {
     ).subscribe((e) => {
       const childRoute = this.route.children.pop()!;
       if (this.router.url === '/login') {
+        this.isLoginView = true;
         this.renderer.addClass(document.body, 'gray-bg');
       } else {
+        this.isLoginView = false;
         this.renderer.removeClass(document.body, 'gray-bg');
       };
       this.routeQueryParams = childRoute.snapshot.paramMap;
