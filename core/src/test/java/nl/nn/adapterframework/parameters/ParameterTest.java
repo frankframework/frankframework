@@ -1094,7 +1094,7 @@ public class ParameterTest {
 			assertEquals("2001-12-17", formattedDate);
 
 		} finally {
-			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
