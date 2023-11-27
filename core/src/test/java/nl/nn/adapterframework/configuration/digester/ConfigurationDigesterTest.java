@@ -11,6 +11,12 @@ import java.util.Properties;
 
 import javax.xml.validation.ValidatorHandler;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -35,6 +41,28 @@ public class ConfigurationDigesterTest {
 
 	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
 	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
+
+
+	private Level originalLevel;
+	@BeforeEach
+	public void setup() {
+		Logger logger = LogManager.getLogger(PropertyLoader.class);
+		originalLevel = logger.getLevel();
+		setLogLevel(logger, Level.TRACE);
+	}
+
+	@AfterEach
+	public void tearDown() {
+		Logger logger = LogManager.getLogger(PropertyLoader.class);
+		setLogLevel(logger, originalLevel);
+	}
+
+	private static void setLogLevel(Logger logger, Level level) {
+		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+		org.apache.logging.log4j.core.config.Configuration conf = ctx.getConfiguration();
+		conf.getLoggerConfig(logger.getName()).setLevel(level);
+		ctx.updateLoggers(conf);
+	}
 
 	@Test
 	public void testNewCanonicalizer() throws Exception {
