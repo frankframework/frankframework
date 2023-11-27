@@ -42,6 +42,7 @@ import org.xml.sax.XMLReader;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.digester.FrankDigesterRules;
 import nl.nn.adapterframework.configuration.digester.IncludeFilter;
 import nl.nn.adapterframework.configuration.filters.ElementRoleFilter;
@@ -93,8 +94,8 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @author Johan Verrips
  * @see Configuration
  */
+@Log4j2
 public class ConfigurationDigester implements ApplicationContextAware {
-	private final Logger log = LogUtil.getLogger(ConfigurationDigester.class);
 	private final Logger configLogger = LogUtil.getLogger("CONFIG");
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Setter ConfigurationWarnings configurationWarnings;
@@ -285,7 +286,12 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * If stubbing is disabled, the input ContentHandler is returned as-is
 	 */
 	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, Properties properties) throws IOException, TransformerConfigurationException {
-		if (Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false"))) {
+		// brute-force debugging
+		String property = properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+		boolean asBoolean = Boolean.parseBoolean(property);
+		log.warn("Resolved property value [" + ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY + "]=[" + property + "]; property present in properties? [" + properties.containsKey(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY) + "]; as Boolean value: [" + asBoolean + "]");
+
+		if (asBoolean) {
 			Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT);
 			TransformerPool tp = TransformerPool.getInstance(xslt);
 
