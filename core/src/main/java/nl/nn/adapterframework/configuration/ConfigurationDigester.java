@@ -285,15 +285,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * Get the contenthandler to stub configurations
 	 * If stubbing is disabled, the input ContentHandler is returned as-is
 	 */
-	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, Properties properties) throws IOException, TransformerConfigurationException {
-		// brute-force debugging
-		String property = properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
-		boolean asBoolean = Boolean.parseBoolean(property);
-		System.err.println("Resolved property value [" + ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY + "]=[" + property + "]; property present in properties? [" + properties.containsKey(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY) + "]; as Boolean value: [" + asBoolean + "]");
-		System.err.println("raw property dump of properties in [" + properties.getClass().getCanonicalName() + "]:");
-		properties.list(System.err);
-
-		if (asBoolean) {
+	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, PropertyLoader properties) throws IOException, TransformerConfigurationException {
+		if (properties.getBoolean(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, false)) {
 			Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT);
 			TransformerPool tp = TransformerPool.getInstance(xslt);
 

@@ -68,7 +68,7 @@ public class PropertyLoader extends Properties {
 		try {
 			String result = System.getenv().get(key);
 			if (result != null) {
-				LOG.trace("Get key [" +  key + "] from System Environment, value: [" + result + "]");
+				LOG.trace("Get key [{}] from System Environment, value: [{}]", key, result);
 				return result;
 			}
 		} catch (Throwable e) {
@@ -76,7 +76,7 @@ public class PropertyLoader extends Properties {
 		}
 		try {
 			String result = System.getProperty(key);
-			LOG.trace("Get key [" +  key + "] from System Properties, value: [" + result + "]");
+			LOG.trace("Get key [{}] from System Properties, value: [{}]", key, result);
 			return result;
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
 			LOG.warn("unable to read system property [{}]: {}", ()->key, e::getMessage);
@@ -91,12 +91,7 @@ public class PropertyLoader extends Properties {
 
 	@Override
 	public String getProperty(String key) {
-		String resolvedProperty = getResolvedProperty(key);
-		// Some brute-force debugging
-		if (key.equals("stub4testtool.configuration")) {
-			System.err.println("Checking Property [" + key + "] in PropertyLoader, present: " + containsKey(key) + ", raw value: [" + super.getProperty(key) + "], resolvedProperty: [" + resolvedProperty + "]");
-		}
-		return resolvedProperty;
+		return getResolvedProperty(key);
 	}
 
 	public String getUnresolvedProperty(String key) {
@@ -121,7 +116,7 @@ public class PropertyLoader extends Properties {
 					return value;
 				}
 				String result = StringResolver.substVars(value, this);
-				if (LOG.isTraceEnabled() /* && !value.equals(result) */) {
+				if (LOG.isTraceEnabled() && !value.equals(result)) {
 					LOG.trace("resolved key [{}], value [{}] to [{}]", key, value, result);
 				}
 				return result;
