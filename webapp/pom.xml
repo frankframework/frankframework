@@ -52,11 +52,6 @@
 			<artifactId>ibis-adapterframework-cmis</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-aspose</artifactId>
-			<scope>runtime</scope>
-		</dependency>
 
 		<!-- jboss-logging is required for Narayana -->
 		<dependency>
