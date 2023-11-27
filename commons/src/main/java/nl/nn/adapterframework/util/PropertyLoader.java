@@ -68,14 +68,16 @@ public class PropertyLoader extends Properties {
 		try {
 			String result = System.getenv().get(key);
 			if (result != null) {
-				LOG.trace("Get key [" +  key + "] from System Properties, value: [" + result + "]");
+				LOG.trace("Get key [" +  key + "] from System Environment, value: [" + result + "]");
 				return result;
 			}
 		} catch (Throwable e) {
 			LOG.warn("unable to read environment variable [{}]: {}", ()->key, e::getMessage);
 		}
 		try {
-			return System.getProperty(key);
+			String result = System.getProperty(key);
+			LOG.trace("Get key [" +  key + "] from System Properties, value: [" + result + "]");
+			return result;
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
 			LOG.warn("unable to read system property [{}]: {}", ()->key, e::getMessage);
 			return null;
@@ -119,12 +121,12 @@ public class PropertyLoader extends Properties {
 					return value;
 				}
 				String result = StringResolver.substVars(value, this);
-				if (LOG.isTraceEnabled() && !value.equals(result)) {
+				if (LOG.isTraceEnabled() /* && !value.equals(result) */) {
 					LOG.trace("resolved key [{}], value [{}] to [{}]", key, value, result);
 				}
 				return result;
 			} catch (IllegalArgumentException e) {
-				LOG.error("bad option value [{}]", value, e);
+				LOG.error("bad option value [{}] for key [{}]", value, key, e);
 				return value;
 			}
 		} else {
