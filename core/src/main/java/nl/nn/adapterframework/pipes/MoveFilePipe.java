@@ -124,9 +124,9 @@ public class MoveFilePipe extends FixedForwardPipe {
 				if (count==0) {
 					log.info("no files with wildcard [{}] found in directory [{}]", wc, srcFile.getAbsolutePath());
 				}
-				for (int i = 0; i < count; i++) {
-					dstFile = new File(getMove2dir(), retrieveDestinationChild(srcFiles[i].getName()));
-					moveFile(session, srcFiles[i], dstFile);
+				for (File file : srcFiles) {
+					dstFile = new File(getMove2dir(), retrieveDestinationChild(file.getName()));
+					moveFile(session, file, dstFile);
 				}
 			}
 		} catch (IOException e) {
