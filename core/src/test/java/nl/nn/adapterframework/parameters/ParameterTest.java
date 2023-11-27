@@ -1143,7 +1143,7 @@ public class ParameterTest {
 			String formattedDate = sdf.format(resultDate);
 			assertEquals("1996-02-24", formattedDate);
 		} finally {
-			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1171,7 +1171,7 @@ public class ParameterTest {
 			String formattedExpected = sdf.format(date);
 			assertEquals(formattedExpected, formattedDate);
 		} finally {
-			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
