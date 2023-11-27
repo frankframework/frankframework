@@ -53,36 +53,78 @@ public class ConfigurationDigesterTest {
 	//The new configuration parser returns the configuration with all property not yet resolved
 	@Test
 	public void testNewConfigurationPreParser() throws Exception {
+		// Arrange
 		ConfigurationDigester digester = new ConfigurationDigester();
 		digester.setConfigurationWarnings( new ConfigurationWarnings() );
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
 		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
 		properties.setProperty("HelloWorld.active", "false");
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
-		properties.setProperty("digester.property", "[ >\"< ]"); // new style non-escaped property values
-		properties.setProperty("secret", "GEHEIM");
-		properties.setProperty("properties.hide", "secret");
+
 		Configuration configuration = new TestConfiguration();
 
+		// Act
 		XmlWriter loadedConfigWriter = new XmlWriter();
 		digester.parseAndResolveEntitiesAndProperties(loadedConfigWriter, configuration, resource, properties);
 		String result = loadedConfigWriter.toString();
+
+		// Assert
 		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationUnresolved.xml");
 		MatchUtils.assertXmlEquals(expected, result);
 
 		String storedResult = configuration.getLoadedConfiguration();
 		String storedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationResolvedAndHidden.xml");
 		MatchUtils.assertXmlEquals(storedExpected, storedResult);
-
-		loadedConfigWriter = new XmlWriter();
-		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		digester.parseAndResolveEntitiesAndProperties(loadedConfigWriter, configuration, resource, properties);
-		String stubbedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationStubbed.xml");
-		MatchUtils.assertXmlEquals(stubbedExpected, loadedConfigWriter.toString());
-
 	}
 
+	@Test
+	public void testStubbing4TestTool() throws Exception {
+		// Arrange
+		ConfigurationDigester digester = new ConfigurationDigester();
+		digester.setConfigurationWarnings( new ConfigurationWarnings() );
+		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
+		properties.setProperty("HelloWorld.active", "false");
+		properties.setProperty("HelloBeautifulWorld.active", "!false");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 
+		Configuration configuration = new TestConfiguration();
+
+		// Act
+		XmlWriter loadedConfigWriter = new XmlWriter();
+		digester.parseAndResolveEntitiesAndProperties(loadedConfigWriter, configuration, resource, properties);
+		String result = loadedConfigWriter.toString();
+
+		// Assert
+		String stubbedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationStubbed.xml");
+		MatchUtils.assertXmlEquals(stubbedExpected, result);
+	}
+
+	@Test
+	public void testLegacyClassNameRewriter() throws Exception {
+		// Arrange
+		ConfigurationDigester digester = new ConfigurationDigester();
+		digester.setConfigurationWarnings( new ConfigurationWarnings() );
+		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration2.xml");
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
+		properties.setProperty("HelloWorld.active", "true");
+		properties.setProperty("HelloOtherWorld.active", "true");
+
+		Configuration configuration = new TestConfiguration();
+
+		// Act
+		XmlWriter loadedConfigWriter = new XmlWriter();
+		digester.parseAndResolveEntitiesAndProperties(loadedConfigWriter, configuration, resource, properties);
+		String result = loadedConfigWriter.toString();
+
+		// Assert
+		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationUnresolved2.xml");
+		MatchUtils.assertXmlEquals(expected, result);
+
+		String storedResult = configuration.getLoadedConfiguration();
+		String storedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationResolvedAndHidden2.xml");
+		MatchUtils.assertXmlEquals(storedExpected, storedResult);
+	}
 
 	@Test
 	public void simpleXsdWithDefaultAndFixedAttributed() throws Exception {

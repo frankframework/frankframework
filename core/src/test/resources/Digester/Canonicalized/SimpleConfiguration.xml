@@ -5,7 +5,7 @@
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
 			<exit path="EXIT" state="success"/>
-			<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResult" returnString="Hello World">
+			<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="Hello World">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

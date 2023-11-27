@@ -1,0 +1,29 @@
+<!--
+Download ibisdoc.xsd from the Ibis console (via /rest/webservices). You can
+refer to it directly in the xsi:noNamespaceSchemaLocation attribute but it is
+better to refer to it using Eclipse, Window, Preferences, XML, XML Catalog,
+Add..., Location: path/to/ibisdoc.xsd, Key:
+http://schemas.ibissource.org/ibisdoc.xsd, OK
+-->
+<root
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://schemas.ibissource.org/ibisdoc.xsd"
+	>
+	<Adapter name="HelloOtherWorld" active="${HelloOtherWorld.active}">
+		<Receiver
+			name="HelloOtherWorld"
+			>
+			<listener name="HelloOtherWorld" className="nl.nn.adapterframework.receivers.JavaListener" />
+		</Receiver>
+		<Pipeline firstPipe="HelloOtherWorld">
+			<!-- First test config to use name attribute instead of path attribute for Exit. Keep path attribute in other configs for now so backports to 7.7 for issues that need it are easier -->
+			<Exit name="EXIT" state="success"/>
+			<FixedResultPipe
+				name="HelloOtherWorld"
+				returnString="Hello Other World ${digester.property} [${secret}] &lt;@quot;&gt;"
+				>
+				<Forward name="success" path="EXIT"/>
+			</FixedResultPipe>
+		</Pipeline>
+	</Adapter>
+</root>

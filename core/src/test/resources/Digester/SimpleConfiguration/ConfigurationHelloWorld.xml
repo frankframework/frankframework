@@ -12,7 +12,7 @@
 			</exits>
 			<pipe
 				name="HelloWorld"
-				className="nl.nn.adapterframework.pipes.FixedResult"
+				className="nl.nn.adapterframework.pipes.FixedResultPipe"
 				returnString="Hello World"
 				>
 				<forward name="success" path="EXIT"/>
@@ -46,7 +46,7 @@
 				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
 				<sender className="nl.nn.adapterframework.senders.FixedResultSender"
 					returnString="Hello, Universe! ${digester.property} [${secret}] &lt;@quot;&gt;" />
-				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" 
+				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
 					slotId="${instance.name}/HelloUniverse_Out" />
 				<forward name="success" path="EXIT" />
 			</pipe>
