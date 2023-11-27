@@ -658,7 +658,7 @@ public class FileUtils {
 	}
 
 	public static boolean readAllowed(String rules, String fileName, Authenticator authenticator) {
-		List<String> rulesList = Arrays.asList(rules.split("\\|"));
+		String[] rulesList = rules.split("\\|");
 		for (String rule: rulesList) {
 			List<String> parts = Arrays.asList(rule.trim().split("\\s+"));
 			if (parts.size() != 3) {
