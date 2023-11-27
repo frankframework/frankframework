@@ -38,8 +38,8 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -53,8 +53,8 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  *
  * @author John Dekker
  */
+@Log4j2
 public class FileUtils {
-	static Logger log = LogUtil.getLogger(FileUtils.class);
 	protected static final String WEEKLY_ROLLING_FILENAME_DATE_FORMAT = "YYYY'W'ww";
 	protected static final String DAILY_ROLLING_FILENAME_DATE_FORMAT = "yyyy-MM-dd";
 
@@ -372,9 +372,9 @@ public class FileUtils {
 
 	protected static File getRollingFile(String directory, String filenamePrefix, String dateformat, String filenameSuffix, int retentionDays, Date date) {
 
-		final long millisPerDay=24*60*60*1000;
+		final long millisPerDay = 24 * 60 * 60 * 1000L;
 
-		if (directory==null) {
+		if (directory == null) {
 			return null;
 		}
 

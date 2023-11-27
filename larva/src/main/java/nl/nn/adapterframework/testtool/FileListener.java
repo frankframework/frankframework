@@ -44,11 +44,15 @@ public class FileListener implements IConfigurable, AutoCloseable {
 	private @Getter @Setter String name;
 
 	private String filename;
-	private String filename2;
+	@Getter private String filename2;
 	private String directory;
 	private String wildcard;
 	private long waitBeforeRead = -1;
-	private long timeOut = 3000;
+	/**
+	 * -- GETTER --
+	 *  Get the timeout in milliseconds waiting for creation of the file.
+	 */
+	@Getter private long timeOut = 3000;
 	private long interval = 100;
 
 	@Override
@@ -110,7 +114,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 		} else {
 			file = new File(filename);
 		}
-		if (filename2 != null) {
+		if (file != null && filename2 != null) {
 			try {
 				File file2 = new File(filename2);
 				boolean equal = FileUtils.isFileBinaryEqual(file, file2);
@@ -175,10 +179,6 @@ public class FileListener implements IConfigurable, AutoCloseable {
 		this.filename2 = filename2;
 	}
 
-	public String getFilename2() {
-		return filename2;
-	}
-
 	/**
 	 * Set the directory to read the file from.
 	 */
@@ -204,17 +204,10 @@ public class FileListener implements IConfigurable, AutoCloseable {
 	}
 
 	/**
-	 * Set the time out in milliseconds waiting for creation of the file.
+	 * Set the timeout in milliseconds waiting for creation of the file.
 	 */
 	public void setTimeOut(long timeOut) {
 		this.timeOut = timeOut;
-	}
-
-	/**
-	 * Get the time out in milliseconds waiting for creation of the file.
-	 */
-	public long getTimeOut() {
-		return timeOut;
 	}
 
 	/**
