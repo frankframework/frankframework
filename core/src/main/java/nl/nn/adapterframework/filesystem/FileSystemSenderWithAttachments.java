@@ -24,10 +24,9 @@ import org.apache.commons.codec.binary.Base64InputStream;
 
 import microsoft.exchange.webservices.data.property.complex.FileAttachment;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.stream.Message;
@@ -50,9 +49,9 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 	}
 
 	@Override
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		if (getAction()!=FileSystemAction.LISTATTACHMENTS) {
-			return super.sendMessage(message, session, next);
+			return super.sendMessage(message, session);
 		} else {
 
 			IBasicFileSystem<F> ifs = getFileSystem();
@@ -94,7 +93,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IWithAttachments<F
 				log.error("unable to list all attachments", e);
 				throw new SenderException(e);
 			}
-			return new PipeRunResult(null, attachments.toString());
+			return new SenderResult(Message.asMessage(attachments.toString()));
 		}
 	}
 

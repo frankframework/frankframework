@@ -105,17 +105,6 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 		return new SenderResult(sendMessageOnConnection(blockHandle, message, session, null).getResult());
 	}
 
-	@Override
-	// implements IStreamingSender.sendMessage()
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		Connection blockHandle = openBlock(session);
-		try {
-			return sendMessageOnConnection(blockHandle, message, session, next);
-		} finally {
-			closeBlock(blockHandle, session);
-		}
-	}
-
 	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
 		try {
 			QueryExecutionContext queryExecutionContext = prepareStatementSet(connection, message);
