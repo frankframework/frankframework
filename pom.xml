@@ -7,7 +7,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>7.8.4</revision>
+		<revision>7.8.5-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
@@ -836,7 +836,7 @@
 		<url>https://github.com/ibissource/iaf</url>
 		<connection>scm:git:https://github.com/ibissource/iaf.git</connection>
 		<developerConnection>scm:git:https://github.com/ibissource/iaf.git</developerConnection>
-		<tag>v7.8.4</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<profiles>
