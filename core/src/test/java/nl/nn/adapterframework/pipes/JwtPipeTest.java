@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -38,7 +38,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	public static void setupAll() {
 		JWT_PROCESSOR = new DefaultJWTProcessor<>();
 		SecretKey key = new SecretKeySpec(DUMMY_SECRET.getBytes(), "HmacSHA256");
-		JWKSource<SecurityContext> immutableSecret = new ImmutableSecret<SecurityContext>(key);
+		JWKSource<SecurityContext> immutableSecret = new ImmutableSecret<>(key);
 
 		JWSKeySelector<SecurityContext> keySelector = new JWSVerificationKeySelector<>(JWSAlgorithm.HS256, immutableSecret);
 		JWT_PROCESSOR.setJWSKeySelector(keySelector);
@@ -50,16 +50,47 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	public void noSecret() throws Exception {
+	public void noSecret() {
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertThat(ex.getMessage(), Matchers.containsString("must either provide a [sharedSecret] (alias) or parameter"));
 	}
 
 	@Test
-	public void secretTooShort() throws Exception {
+	public void secretTooShortShouldThrow() {
 		pipe.setSharedSecret("Potato");
 		ConfigurationException ex = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertThat(ex.getMessage(), Matchers.containsString("must be at least 256 bits"));
+	}
+
+	@Test
+	public void secretTooShortShouldBePadded() throws Exception {
+		pipe.setJwtAllowWeakSecrets(true);
+		pipe.setSharedSecret("Potato");
+		configureAndStartPipe();
+		String jwt1 = doPipe(DUMMY_INPUT).getResult().asString();
+
+		pipe.setSharedSecret("Potato\0\0\0\0");
+		configureAndStartPipe();
+		String jwt2 = doPipe(DUMMY_INPUT).getResult().asString();
+		assertEquals(jwt1, jwt2);
+	}
+
+	@Test
+	public void secretPaddedIsTheSame() throws Exception {
+		// Run with secret, 32 chars long (OK)
+		pipe.setSharedSecret(DUMMY_SECRET);
+		configureAndStartPipe();
+		String jwt1 = doPipe(DUMMY_INPUT).getResult().asString();
+		assertThat(jwt1, Matchers.startsWith("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."));
+
+		// Run with padded secret, 34 chars long (OK)
+		pipe.setSharedSecret(DUMMY_SECRET + "\0\0");
+		configureAndStartPipe();
+		String jwt2 = doPipe(DUMMY_INPUT).getResult().asString();
+
+		// Assert
+		assertThat(jwt2, Matchers.startsWith("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."));
+		assertEquals(jwt1, jwt2);
 	}
 
 	@Test
