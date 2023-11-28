@@ -367,7 +367,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							txStatus = null;
 						}
 					}
-					if (!messageHandled && inProcessStateManager!=null) {
+
+					if (!messageHandled && inProcessStateManager != null) {
 						txStatus = receiver.isTransacted() || receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED ? txManager.getTransaction(txNew) : null;
 						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
 						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;

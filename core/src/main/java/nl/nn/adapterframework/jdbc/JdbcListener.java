@@ -282,7 +282,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			} else {
 				message = new Message(key);
 			}
-			// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
+			log.debug("building wrapper for key [{}], message [{}]", key, message);
 			String messageId = getColumnValueOrDefault(rs, getMessageIdField(), key);
 			String correlationId = getColumnValueOrDefault(rs, getCorrelationIdField(), messageId);
 			MessageWrapper<M> mw = new MessageWrapper<>(message, messageId, correlationId);
@@ -415,7 +415,10 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 
-	/** Primary key field of the table, used to identify messages. For optimal performance, there should be an index on this field. */
+	/**
+	 * Primary key field of the table, used to identify and differentiate messages.
+	 * <b>NB: there should be an index on this field!</b>
+	 */
 	public void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}
@@ -437,7 +440,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	/**
-	 * Field containing the message Id
+	 * Field containing the <code>messageId</code>.
+	 * <b>NB: If this column is not set the default (primary key) {@link #setKeyField(String) keyField} will be used as messageId!</b>
 	 * @ff.default <i>same as keyField</i>
 	 */
 	public void setMessageIdField(String fieldname) {
@@ -445,7 +449,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	/**
-	 * Field containing the correlationId
+	 * Field containing the <code>correlationId</code>.
+	 * <b>NB: If this column is not set, the <code>messageId</code> and <code>correlationId</code> will be the same!</b>
 	 * @ff.default <i>same as messageIdField</i>
 	 */
 	public void setCorrelationIdField(String fieldname) {
