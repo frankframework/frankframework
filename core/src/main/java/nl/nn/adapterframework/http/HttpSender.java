@@ -30,7 +30,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -82,7 +81,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Sender for the HTTP protocol using {@link nl.nn.adapterframework.http.HttpSenderBase.HttpMethod HttpMethod}. By default, any response code outside the 2xx or 3xx range
  * is considered an error and the <code>exception</code> forward of the SenderPipe is followed if present and if there
  * is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...)
- * are returned by this sender so they are available to the SenderPipe.
+ * are returned by this sender, so they are available to the SenderPipe.
  *
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this:
@@ -111,7 +110,6 @@ public class HttpSender extends HttpSenderBase {
 	@Deprecated private @Getter String storeResultAsStreamInSessionKey;
 	@Deprecated private @Getter String storeResultAsByteArrayInSessionKey;
 
-	private @Getter boolean base64=false;
 	private @Getter boolean streamResultToServlet=false;
 
 	private @Getter boolean paramsInUrl=true;
@@ -462,8 +460,6 @@ public class HttpSender extends HttpSenderBase {
 				} catch (IOException e) {
 					throw new SenderException("cannot find filename to stream result to", e);
 				}
-			} else if (isBase64()) { //This should be removed in a future iteration
-				return getResponseBodyAsBase64(responseMessage.asInputStream());
 			} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
 				session.put(getStoreResultAsStreamInSessionKey(), responseMessage.asInputStream());
 				return Message.nullMessage();
@@ -497,11 +493,6 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		return responseHandler.getResponseMessage();
-	}
-
-	public Message getResponseBodyAsBase64(InputStream is) {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"base64 encodes response body");
-		return new Message( new Base64InputStream(is, true) );
 	}
 
 	/**
@@ -612,16 +603,6 @@ public class HttpSender extends HttpSenderBase {
 	@ConfigurationWarning("no longer required to store the result as a byte array in the PipeLineSession, the sender can return binary data")
 	public void setStoreResultAsByteArrayInSessionKey(String storeResultAsByteArrayInSessionKey) {
 		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
-	}
-
-	/**
-	 * If true, the result is Base64 encoded
-	 * @ff.default false
-	 */
-	@Deprecated
-	@ConfigurationWarning("use Base64Pipe instead")
-	public void setBase64(boolean b) {
-		base64 = b;
 	}
 
 	/**
