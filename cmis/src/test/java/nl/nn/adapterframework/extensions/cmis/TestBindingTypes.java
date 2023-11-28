@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -53,27 +52,27 @@ public class TestBindingTypes extends CmisSenderTestBase {
 			+ "<relationships>    <relation>dummy</relation>  </relationships>"
 			+ "</cmis>";
 
-	private static final String createActionExpectedBase64 = "ZmlsZUlucHV0LnR4dA==";
-	private static final String updateActionExpectedBase64 = "aWQ=";
+	private static final String createActionExpected = "fileInput.txt";
+	private static final String updateActionExpected = "id";
 
 	public static Stream<Arguments> allImplementations() {
 		return Stream.of(
-				Arguments.of(BindingTypes.ATOMPUB, CmisAction.CREATE, INPUT, createActionExpectedBase64),
+				Arguments.of(BindingTypes.ATOMPUB, CmisAction.CREATE, INPUT, createActionExpected),
 				Arguments.of(BindingTypes.ATOMPUB, CmisAction.GET, INPUT, "dummy_stream"),
 				Arguments.of(BindingTypes.ATOMPUB, CmisAction.FIND, FIND_INPUT, FIND_RESULT),
-				Arguments.of(BindingTypes.ATOMPUB, CmisAction.UPDATE, INPUT, updateActionExpectedBase64),
+				Arguments.of(BindingTypes.ATOMPUB, CmisAction.UPDATE, INPUT, updateActionExpected),
 				Arguments.of(BindingTypes.ATOMPUB, CmisAction.FETCH, INPUT, FETCH_RESULT),
 
-				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.CREATE, INPUT, createActionExpectedBase64),
+				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.CREATE, INPUT, createActionExpected),
 				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.GET, INPUT, "dummy_stream"),
 				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.FIND, FIND_INPUT, FIND_RESULT),
-				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.UPDATE, INPUT, updateActionExpectedBase64),
+				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.UPDATE, INPUT, updateActionExpected),
 				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.FETCH, INPUT, FETCH_RESULT),
 
-				Arguments.of(BindingTypes.BROWSER, CmisAction.CREATE, INPUT, createActionExpectedBase64),
+				Arguments.of(BindingTypes.BROWSER, CmisAction.CREATE, INPUT, createActionExpected),
 				Arguments.of(BindingTypes.BROWSER, CmisAction.GET, INPUT, "dummy_stream"),
 				Arguments.of(BindingTypes.BROWSER, CmisAction.FIND, FIND_INPUT, FIND_RESULT),
-				Arguments.of(BindingTypes.BROWSER, CmisAction.UPDATE, INPUT, updateActionExpectedBase64),
+				Arguments.of(BindingTypes.BROWSER, CmisAction.UPDATE, INPUT, updateActionExpected),
 				Arguments.of(BindingTypes.BROWSER, CmisAction.FETCH, INPUT, FETCH_RESULT)
 		);
 	}
@@ -81,11 +80,10 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	@Override
 	public CmisSender createSender() throws Exception {
 		CmisSender sender = super.createSender();
-		sender.setFileContentSessionKey("fileContent");
-		sender.setFileNameSessionKey("my-file");
+		sender.setFileSessionKey("fileContent");
+		sender.setFilenameSessionKey("my-file");
 
-		byte[] base64 = Base64.encodeBase64("dummy data".getBytes());
-		session.put("fileContent", new String(base64));
+		session.put("fileContent", "dummy data");
 		HttpServletResponse response = mock(HttpServletResponse.class);
 		session.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 
@@ -108,12 +106,10 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	@ParameterizedTest(name = "{0} - {1}")
 	@MethodSource("allImplementations")
 	public void sendMessage(BindingTypes bindingType, CmisAction action, String input, String expectedResult) throws Exception {
-
 		if(action == CmisAction.GET) {
-			sender.setFileContentSessionKey("");
-			sender.setFileNameSessionKey("");
+			sender.setFileSessionKey("");
+			sender.setFilenameSessionKey("");
 		}
-
 		configure(bindingType, action);
 
 		String actualResult = sender.sendMessageOrThrow(Message.asMessage(input), session).asString();
@@ -124,11 +120,10 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	@MethodSource("allImplementations")
 	public void sendMessageWithContentStream(BindingTypes bindingType, CmisAction action, String input, String expectedResult) throws Exception {
 		if(action != CmisAction.GET) return;
-
 		configure(bindingType, action);
 
 		assertTrue(Message.isEmpty(sender.sendMessageOrThrow(Message.asMessage(input), session)));
-		String base64 = (String) session.get("fileContent");
-		TestAssertions.assertEqualsIgnoreRNTSpace(Base64.encodeBase64String(expectedResult.getBytes()), base64);
+		Message message = (Message) session.get("fileContent");
+		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, message.asString());
 	}
 }
