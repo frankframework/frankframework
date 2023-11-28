@@ -63,7 +63,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 public class JwtPipe extends FixedForwardPipe {
 	private static final String SHARED_SECRET_PARAMETER_NAME = "sharedSecret";
 
-	private @Setter(AccessLevel.PACKAGE) boolean jwtAllowWeakSecrets = AppConstants.getInstance().getBoolean("application.security.jwt.allow.weak.secrets", false);
+	private @Setter(AccessLevel.PACKAGE) boolean jwtAllowWeakSecrets = AppConstants.getInstance().getBoolean("application.security.jwt.allowWeakSecrets", false);
 
 	private JWSHeader jwtHeader;
 	private JWSSigner globalSigner;

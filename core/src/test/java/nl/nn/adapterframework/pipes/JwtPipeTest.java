@@ -63,7 +63,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	}
 
 	@Test
-	public void secretTooShortShouldIsPadded() throws Exception {
+	public void secretTooShortShouldBePadded() throws Exception {
 		pipe.setJwtAllowWeakSecrets(true);
 		pipe.setSharedSecret("Potato");
 		configureAndStartPipe();
