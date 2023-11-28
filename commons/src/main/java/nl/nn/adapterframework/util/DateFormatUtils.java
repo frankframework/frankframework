@@ -31,6 +31,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class DateFormatUtils {
 	public static final String FORMAT_FULL_ISO = "yyyy-MM-dd'T'HH:mm:sszzz";
+	public static final String FORMAT_FULL_ISO_TIMESTAMP_NO_TZ = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	public static final DateFormat FULL_ISO_FORMATTER = new SimpleDateFormat(FORMAT_FULL_ISO);
 	public static final String FORMAT_SHORT_ISO = "yyyy-MM-dd";
 
@@ -54,6 +55,10 @@ public class DateFormatUtils {
 
 	public static String format(long date) {
 		return format(new Date(date));
+	}
+
+	public static String format(long date, String format) {
+		return format(new Date(date), format);
 	}
 
 	public static String format(Date date) {
@@ -89,7 +94,7 @@ public class DateFormatUtils {
 	 */
 	@Deprecated
 	public static Date parseAnyDate(String dateInAnyFormat) throws CalendarParserException {
-		Calendar c = CalendarParser.parse(dateInAnyFormat);
+		Calendar c = CalendarParser.parse(dateInAnyFormat.replace('T', ' ')); // "Parse any format" doesn't parse ISO dates with a 'T' between date and time.
 		return new Date(c.getTimeInMillis());
 	}
 }
