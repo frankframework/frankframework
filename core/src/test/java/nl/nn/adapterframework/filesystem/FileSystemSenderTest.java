@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.Writer;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,9 +21,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
-import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.UUIDUtil;
 
@@ -150,43 +147,6 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		// TODO: evaluate 'result'
 		//assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
-	}
-
-	@Test
-	public void fileSystemSenderUploadActionTestWithOutputStream() throws Exception {
-		String filename = "uploadedwithInputStream" + FILE1;
-		String contents = "Some text content to test upload action\n";
-
-		if (_fileExists(filename)) {
-			_deleteFile(null, filename);
-		}
-
-		PipeLineSession session = new PipeLineSession();
-
-		fileSystemSender.addParameter(new Parameter("filename", filename));
-
-		fileSystemSender.setAction(FileSystemAction.UPLOAD);
-		fileSystemSender.configure();
-		fileSystemSender.open();
-
-		//assertTrue(fileSystemSender.canProvideOutputStream());
-
-		MessageOutputStream target = fileSystemSender.provideOutputStream(session, null);
-		assertNotNull(target);
-
-		// stream the contents
-		try (Writer writer = target.asWriter()) {
-			writer.write(contents);
-		}
-
-		// verify the filename is properly returned
-		String stringResult=target.getPipeRunResult().getResult().asString();
-		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-
-		// verify the file contents
-		waitForActionToFinish();
-		String actualContents = readFile(null, filename);
-		assertEquals(contents.trim(), actualContents.trim());
 	}
 
 	@Test

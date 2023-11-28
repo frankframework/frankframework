@@ -76,7 +76,6 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	private TransformerPool soapHeaderTp = null;
 	private TransformerPool soapBodyTp = null;
-	private TransformerPool removeOutputNamespacesTp = null;
 	private TransformerPool removeUnusedOutputNamespacesTp = null;
 	private TransformerPool outputNamespaceTp = null;
 	private TransformerPool rootTp = null;
@@ -106,9 +105,6 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		}
 		if (StringUtils.isNotEmpty(getSoapBodyStyleSheet())) {
 			soapBodyTp = TransformerPool.configureStyleSheetTransformer(this, getSoapBodyStyleSheet(), 0);
-		}
-		if (isRemoveOutputNamespaces()) {
-			removeOutputNamespacesTp = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
 		}
 		if (isRemoveUnusedOutputNamespaces() && !isRemoveOutputNamespaces()) {
 			removeUnusedOutputNamespacesTp = XmlUtils.getRemoveUnusedNamespacesXslt2TransformerPool(true, false);
@@ -142,13 +138,6 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				throw new PipeStartException("cannot start SOAP Body TransformerPool", e);
 			}
 		}
-		if (removeOutputNamespacesTp != null) {
-			try {
-				removeOutputNamespacesTp.open();
-			} catch (Exception e) {
-				throw new PipeStartException("cannot start Remove Output Namespaces TransformerPool", e);
-			}
-		}
 		if (removeUnusedOutputNamespacesTp != null) {
 			try {
 				removeUnusedOutputNamespacesTp.open();
@@ -180,9 +169,6 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		}
 		if (soapBodyTp != null) {
 			soapBodyTp.close();
-		}
-		if (removeOutputNamespacesTp != null) {
-			removeOutputNamespacesTp.close();
 		}
 		if (removeUnusedOutputNamespacesTp != null) {
 			removeUnusedOutputNamespacesTp.close();
@@ -238,8 +224,8 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 					String soapHeader = soapWrapper.getHeader(message, session);
 					session.put(getSoapHeaderSessionKey(), soapHeader);
 				}
-				if (removeOutputNamespacesTp != null) {
-					result = new Message(removeOutputNamespacesTp.transform(result.asSource()));
+				if (isRemoveOutputNamespaces()) {
+					result = XmlUtils.removeNamespaces(result);
 				}
 				if (removeUnusedOutputNamespacesTp != null) {
 					result = new Message(removeUnusedOutputNamespacesTp.transform(result.asSource()));

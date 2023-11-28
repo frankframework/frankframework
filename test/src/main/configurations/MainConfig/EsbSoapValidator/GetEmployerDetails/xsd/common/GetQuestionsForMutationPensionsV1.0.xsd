@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:agm="http://www.ibissource.org/agm" xmlns:lpa="http://www.ibissource.org/lpa" xmlns:sfun="http://www.ibissource.org/sfun" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-	<xsd:import namespace="http://www.ibissource.org/agm" schemaLocation="EmployeeBenefitsAgreementsTypesV1.0.xsd"/>
-	<xsd:import namespace="http://www.ibissource.org/lpa" schemaLocation="LifePensionAdministrationV1.0.xsd"/>
-	<xsd:import namespace="http://www.ibissource.org/sfun" schemaLocation="InvestmentAccounts_V1.0.xsd"/>
+<xsd:schema xmlns:agm="http://www.frankframework.org/agm" xmlns:lpa="http://www.frankframework.org/lpa" xmlns:sfun="http://www.frankframework.org/sfun" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<xsd:import namespace="http://www.frankframework.org/agm" schemaLocation="EmployeeBenefitsAgreementsTypesV1.0.xsd"/>
+	<xsd:import namespace="http://www.frankframework.org/lpa" schemaLocation="LifePensionAdministrationV1.0.xsd"/>
+	<xsd:import namespace="http://www.frankframework.org/sfun" schemaLocation="InvestmentAccounts_V1.0.xsd"/>
 	<xsd:include schemaLocation="ProcesItemsV10.xsd"/>
 	<!--****************************************************************************************************************-->
 	<!--*************************** agm Service Elements ***********************************************************-->

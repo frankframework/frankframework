@@ -26,6 +26,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.doc.Protected;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.soap.SoapWrapper;
@@ -171,6 +172,15 @@ public class WebServiceSender extends HttpSender {
 	 */
 	public void setSoap(boolean b) {
 		soap = b;
+	}
+
+	/**
+	 * Hide this property from being set. SOAP should always be POST
+	 */
+	@Protected
+	@Override
+	public void setMethodType(HttpMethod method) {
+		super.setMethodType(method);
 	}
 
 	@Deprecated

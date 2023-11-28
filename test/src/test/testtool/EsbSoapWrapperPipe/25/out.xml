@@ -8,7 +8,7 @@
       <Timestamp>2012-02-28T14:07:43</Timestamp>
    </HeaderFields>
 </MessageHeader></soapenv:Header><soapenv:Body><CalculationRequest xmlns:SOAPENV="http://schemas.xmlsoap.org/soap/envelope/"
-                    xmlns="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
+                    xmlns="http://www.frankframework.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
    <Result xmlns="http://www.ing.com/CSP/xsd/general/message_2">
       <Status>ERROR</Status>
       <ErrorList>

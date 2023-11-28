@@ -1352,7 +1352,7 @@
 					<plugin>
 						<groupId>org.ibissource</groupId>
 						<artifactId>frank-doc-plugin</artifactId>
-						<version>0.2</version>
+						<version>0.3</version>
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>

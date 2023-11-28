@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	version="1.0" xmlns:tom="http://www.ibissource.org/tom">
+	version="1.0" xmlns:tom="http://www.frankframework.org/tom">
 	<xsl:output method="xml" encoding="UTF-8" indent="yes" />
 	<xsl:variable name="codeLookup" select="document('Domains.xml')" />
 
