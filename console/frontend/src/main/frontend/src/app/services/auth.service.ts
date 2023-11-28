@@ -29,7 +29,6 @@ export class AuthService {
     if (username != "anonymous") {
       this.authToken = this.Base64.encode(username + ':' + password);
       sessionStorage.setItem('authToken', this.authToken);
-      // TODO this.$http.defaults.headers!.common['Authorization'] = 'Basic ' + this.authToken;
     }
     let location = sessionStorage.getItem('location') || "status";
     let absUrl = window.location.href.split("login")[0];
@@ -38,9 +37,8 @@ export class AuthService {
   }
 
   loggedin(): void {
-    let token = sessionStorage.getItem('authToken');
+    let token = this.getAuthToken();
     if (token != null && token != "null") {
-      // TODO this.$http.defaults.headers!.common['Authorization'] = 'Basic ' + token;
       if (this.router.url.indexOf("login") >= 0)
         this.router.navigateByUrl(sessionStorage.getItem('location') || "status");
     }
@@ -55,7 +53,10 @@ export class AuthService {
 
   logout(): Observable<Object> {
     sessionStorage.clear();
-    // TODO this.$http.defaults.headers!.common['Authorization'] = null;
     return this.http.get(this.appService.getServerPath() + "iaf/api/logout");
+  }
+
+  getAuthToken(): string | null {
+    return sessionStorage.getItem('authToken');
   }
 }

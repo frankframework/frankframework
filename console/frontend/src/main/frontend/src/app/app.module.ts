@@ -83,6 +83,7 @@ import { MarkDownPipe } from './pipes/mark-down.pipe';
 import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.component';
 import { TestServiceListenerComponent } from './views/test-service-listener/test-service-listener.component';
 import { LoginComponent } from './views/login/login.component';
+import { httpInterceptorProviders } from './http-interceptors';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -182,7 +183,8 @@ const windowProvider: ValueProvider = {
   ],
   providers: [
     windowProvider,
-    { provide: TitleStrategy, useClass: PagesTitleStrategy }
+    { provide: TitleStrategy, useClass: PagesTitleStrategy },
+    httpInterceptorProviders
   ],
   bootstrap: [AppComponent]
 })
