@@ -19,9 +19,11 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.xml.FullXmlFilter;
 import nl.nn.adapterframework.xml.WritableAttributes;
 
+@Log4j2
 public class ClassNameRewriter extends FullXmlFilter {
 
 	public static final String LEGACY_PACKAGE_NAME = "nl.nn.adapterframework.";
@@ -36,11 +38,32 @@ public class ClassNameRewriter extends FullXmlFilter {
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		WritableAttributes writableAttributes = new WritableAttributes(attributes);
 		String className = writableAttributes.getValue(CLASS_NAME_ATTRIBUTE);
-		if (className != null) {
-			if (className.startsWith(LEGACY_PACKAGE_NAME)) {
-				writableAttributes.setValue(CLASS_NAME_ATTRIBUTE, className.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME));
-			}
+		if (className != null && (className.startsWith(LEGACY_PACKAGE_NAME))) {
+			writableAttributes.setValue(CLASS_NAME_ATTRIBUTE, rewriteClassName(className));
 		}
 		super.startElement(uri, localName, qName, writableAttributes);
+	}
+
+	private static String rewriteClassName(final String originalClassName) {
+		final String newClassName = originalClassName.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME);
+		if (canLoadClass(newClassName)) {
+			log.debug("Replaced classname [{}] in configuration with classname [{}]", originalClassName, newClassName);
+			return newClassName;
+		}
+		if (!canLoadClass(originalClassName)) {
+			log.warn("Cannot load class [{}] from configuration. Please check if this was a deprecated class removed in this release, or if it's a custom class that needs to be reworked.", originalClassName);
+		} else {
+			log.debug("Cannot load a class named [{}], will build configuration with original classname [{}]", newClassName, originalClassName);
+		}
+		return originalClassName;
+	}
+
+	private static boolean canLoadClass(String className) {
+		try {
+			ClassNameRewriter.class.getClassLoader().loadClass(className);
+			return true;
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
 	}
 }

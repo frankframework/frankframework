@@ -3,14 +3,14 @@
 		<receiver name="HelloWorld" >
 			<listener
 					name="HelloWorld"
-					className="org.frankframework.receivers.JavaListener"
+					className="org.frankframework.testdummies.TestDummyListener"
 			/>
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
 			<exit path="EXIT" state="success"/>
 			<pipe
 					name="HelloWorld"
-					className="org.frankframework.pipes.FixedResultPipe"
+					className="org.frankframework.testdummies.TestDummyPipe"
 					returnString="Hello World"
 			>
 				<forward name="success" path="EXIT"/>
@@ -19,7 +19,7 @@
 	</adapter>
 	<adapter name="HelloOtherWorld">
 		<receiver name="HelloOtherWorld">
-			<listener name="HelloOtherWorld" className="org.frankframework.receivers.JavaListener"/>
+			<listener name="HelloOtherWorld" className="org.frankframework.testdummies.TestDummyListener"/>
 		</receiver>
 		<pipeline firstPipe="HelloOtherWorld">
 			<exit name="EXIT" state="success"/>

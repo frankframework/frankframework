@@ -96,6 +96,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  */
 @Log4j2
 public class ConfigurationDigester implements ApplicationContextAware {
+	public static final String MIGRATION_REWRITE_LEGACY_CLASS_NAMES_KEY = "migration.rewriteLegacyClassNames";
 	private final Logger configLogger = LogUtil.getLogger("CONFIG");
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Setter ConfigurationWarnings configurationWarnings;
@@ -236,7 +237,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		handler = new OnlyActiveFilter(handler, properties);
 		handler = new ElementPropertyResolver(handler, properties);
 
-		boolean rewriteLegacyClassNames = properties.getBoolean("migration.rewrite.legacyClassNames", false);
+		boolean rewriteLegacyClassNames = properties.getBoolean(MIGRATION_REWRITE_LEGACY_CLASS_NAMES_KEY, false);
 		if (rewriteLegacyClassNames) {
 			handler = new ClassNameRewriter(handler);
 		}

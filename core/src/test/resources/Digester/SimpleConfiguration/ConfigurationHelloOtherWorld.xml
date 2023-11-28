@@ -13,7 +13,7 @@ http://schemas.ibissource.org/ibisdoc.xsd, OK
 		<Receiver
 			name="HelloOtherWorld"
 			>
-			<listener name="HelloOtherWorld" className="nl.nn.adapterframework.receivers.JavaListener" />
+			<listener name="HelloOtherWorld" className="nl.nn.adapterframework.testdummies.TestDummyListener" />
 		</Receiver>
 		<Pipeline firstPipe="HelloOtherWorld">
 			<!-- First test config to use name attribute instead of path attribute for Exit. Keep path attribute in other configs for now so backports to 7.7 for issues that need it are easier -->
