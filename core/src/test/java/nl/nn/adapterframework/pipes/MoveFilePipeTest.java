@@ -28,7 +28,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
-    private String pipeForwardThen = "success";
+	private final String pipeForwardThen = "success";
 
 
     @ClassRule
@@ -123,7 +123,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.setDirectory(sourceFolderPath);
         pipe.setFilename("toAppend2.txt");
         pipe.setMove2fileSessionKey("a");
-        session.put("a", (String) "toBeAppended.txt");
+        session.put("a", "toBeAppended.txt");
         pipe.setAppend(true);
         pipe.configure();
         pipe.start();
@@ -211,7 +211,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
         pipe.setMove2dir(destFolderPath);
         pipe.setDirectory(sourceFolderPath);
         pipe.setWildcardSessionKey("a");
-        session.put("a", (String) "*.txt");
+        session.put("a", "*.txt");
         pipe.configure();
         pipe.start();
         PipeRunResult res = doPipe(pipe, "sd", session);

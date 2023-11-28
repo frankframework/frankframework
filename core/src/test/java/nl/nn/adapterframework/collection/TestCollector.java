@@ -11,7 +11,7 @@ import nl.nn.adapterframework.stream.Message;
 public class TestCollector implements ICollector<TestCollectorPart> {
 
 	boolean open=true;
-	private StringWriter input = new StringWriter();
+	private final StringWriter input = new StringWriter();
 
 	public String getInput() {
 		return input.toString();

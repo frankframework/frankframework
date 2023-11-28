@@ -30,9 +30,9 @@ public class WsdlXmlValidatorMixedModeTest {
 	private static final String REQUEST_SOAP_BODY  = "GetPolicyDetails_Request";
 	private static final String RESPONSE_SOAP_BODY  = "GetPolicyDetails_Response";
 
-	private PipeLineSession session = new PipeLineSession();
+	private final PipeLineSession session = new PipeLineSession();
 
-	private TestConfiguration configuration = new TestConfiguration();
+	private final TestConfiguration configuration = new TestConfiguration();
 
 	public WsdlXmlValidator getInputValidator() throws Exception {
 		WsdlXmlValidator val = configuration.createBean(WsdlXmlValidator.class);
@@ -40,7 +40,7 @@ public class WsdlXmlValidatorMixedModeTest {
 		val.setWsdl(WSDL);
 		val.setSoapBody(REQUEST_SOAP_BODY);
 		val.setThrowException(true);
-		val.setSchemaLocation("http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://api.ibissource.org/GetPolicyDetails schema2");
+		val.setSchemaLocation("http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://api.frankframework.org/GetPolicyDetails schema2");
 		val.registerForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
@@ -52,7 +52,7 @@ public class WsdlXmlValidatorMixedModeTest {
 		val.setWsdl(WSDL);
 		val.setSoapBody(RESPONSE_SOAP_BODY);
 		val.setThrowException(true);
-		val.setSchemaLocation("http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://api.ibissource.org/GetPolicyDetails schema2");
+		val.setSchemaLocation("http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://api.frankframework.org/GetPolicyDetails schema2");
 		val.registerForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
@@ -65,7 +65,7 @@ public class WsdlXmlValidatorMixedModeTest {
 		val.setSoapBody(REQUEST_SOAP_BODY);
 		val.setOutputSoapBody(RESPONSE_SOAP_BODY);
 		val.setThrowException(true);
-		val.setSchemaLocation("http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://api.ibissource.org/GetPolicyDetails schema2");
+		val.setSchemaLocation("http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://api.frankframework.org/GetPolicyDetails schema2");
 		val.registerForward(new PipeForward("success", null));
 		val.configure();
 		val.getResponseValidator().configure();

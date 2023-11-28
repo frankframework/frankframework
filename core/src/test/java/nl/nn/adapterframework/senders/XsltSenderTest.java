@@ -24,12 +24,12 @@ import nl.nn.adapterframework.util.TransformerPoolNamespaceUnawarenessTest;
 
 public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
-	private String NAMESPACE_UNAWARENESS_STYLESHEET = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_STYLESHEET;
-	private String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_XPATH;
-	private String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolNamespaceUnawarenessTest.NAMESPACED_INPUT_MESSAGE;
-	private String NAMESPACE_UNAWARE_EXPECTED_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_INSENSITIVE_RESULT;
-	private String NAMESPACE_COMPLIANT_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_COMPLIANT_RESULT;
-	private String NAMESPACE_UNAWARE_EXPECTED_FIRST_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_INSENSITIVE_FIRST_RESULT;
+	private final String NAMESPACE_UNAWARENESS_STYLESHEET = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_STYLESHEET;
+	private final String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_XPATH;
+	private final String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolNamespaceUnawarenessTest.NAMESPACED_INPUT_MESSAGE;
+	private final String NAMESPACE_UNAWARE_EXPECTED_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_INSENSITIVE_RESULT;
+	private final String NAMESPACE_COMPLIANT_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_COMPLIANT_RESULT;
+	private final String NAMESPACE_UNAWARE_EXPECTED_FIRST_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_INSENSITIVE_FIRST_RESULT;
 
 
 	@Override
@@ -314,7 +314,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setIndentXml(true);
 		sender.setOutputType(OutputType.TEXT);
 		sender.setOmitXmlDeclaration(true);
-		sender.setNamespaceAware(namespaceAware);
+		sender.setRemoveNamespaces(!namespaceAware);
 		sender.configure();
 		sender.open();
 		Message input=new Message(NAMESPACE_UNAWARENESS_INPUT);

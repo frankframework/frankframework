@@ -58,7 +58,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * Set of regex strings to hide locally, meaning for specific threads/adapters.
 	 * This is required to be set for each thread individually.
 	 */
-	private static ThreadLocal<Set<String>> threadLocalReplace = new ThreadLocal<>();
+	private static final ThreadLocal<Set<String>> threadLocalReplace = new ThreadLocal<>();
 
 	/**
 	 * Set of regex strings to hide globally, meaning for every thread/adapter.

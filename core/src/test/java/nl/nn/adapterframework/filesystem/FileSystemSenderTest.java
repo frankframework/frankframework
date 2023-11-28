@@ -13,7 +13,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Writer;
 
-import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,6 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
@@ -211,28 +209,6 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		assertEquals(contents.trim(), result.asString().trim(), "result should be base64 of file content");
 	}
 
-	@Test
-	public void fileSystemSenderDownloadActionBase64Test() throws Exception {
-		String filename = "sender" + FILE1;
-		String contents = "Tekst om te lezen";
-
-		createFile(null, filename, contents);
-		waitForActionToFinish();
-
-		fileSystemSender.setAction(FileSystemAction.DOWNLOAD);
-		fileSystemSender.configure();
-		fileSystemSender.setBase64(Base64Pipe.Direction.ENCODE);
-		fileSystemSender.open();
-
-		PipeLineSession session = new PipeLineSession();
-		Message message=new Message(filename);
-		Message result = fileSystemSender.sendMessageOrThrow(message, session);
-
-		String contentsBase64 = Base64.encodeBase64String(contents.getBytes());
-		// test
-		assertEquals(contentsBase64.trim(), result.asString().trim(), "result should be base64 of file content");
-	}
-
 	public void fileSystemSenderMoveActionTest(String folder1, String folder2, boolean folderShouldExist, boolean setCreateFolderAttribute) throws Exception {
 		String filename = "sendermove" + FILE1;
 		String contents = "Tekst om te lezen";
@@ -262,8 +238,6 @@ public abstract class FileSystemSenderTest<FSS extends FileSystemSender<F, FS>, 
 		Message message=new Message(filename);
 		Message result = fileSystemSender.sendMessageOrThrow(message, session);
 
-		// test
-		// result should be name of the moved file
 		assertNotNull(result);
 
 		// TODO: result should point to new location of file

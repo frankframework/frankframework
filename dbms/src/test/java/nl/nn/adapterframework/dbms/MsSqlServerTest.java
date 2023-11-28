@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MsSqlServerTest {
 
-	private String selectQuery = "select * from ibisstore";
+	private final String selectQuery = "select * from ibisstore";
 
 	public MsSqlServerDbmsSupport createDbmsSupport() {
 		return new MsSqlServerDbmsSupport();

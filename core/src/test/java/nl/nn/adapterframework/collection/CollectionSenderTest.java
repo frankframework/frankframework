@@ -13,7 +13,7 @@ class CollectionSenderTest extends SenderTestBase<CollectorSenderBase<TestCollec
 
 	@Override
 	public CollectorSenderBase<TestCollector, TestCollectorPart> createSender() {
-		return new CollectorSenderBase<TestCollector, TestCollectorPart>() {
+		return new CollectorSenderBase<>() {
 			@Override
 			protected Collection<TestCollector, TestCollectorPart> getCollection(PipeLineSession session) {
 				return new Collection<>(collector);

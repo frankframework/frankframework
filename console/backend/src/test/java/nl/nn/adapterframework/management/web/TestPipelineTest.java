@@ -43,7 +43,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 	public void testMessage() {
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new StringAttachment("adapter", "HelloWorld"));
 		attachments.add(new StringAttachment("message", "<dummy-message/>"));
@@ -57,7 +57,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 	public void testFileMessage() {
 		doAnswer(new DefaultSuccessAnswer()).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new StringAttachment("adapter", "HelloWorld"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("<dummy-message/>".getBytes()), "my-file.xml"));
@@ -74,7 +74,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 
 		URL zip = TestPipelineTest.class.getResource("/TestPipeline/temp.zip");
 
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new StringAttachment("adapter", "HelloWorld"));
 		attachments.add(new FileAttachment("file", zip.openStream(), "archive.zip"));
@@ -89,7 +89,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 	public void testPipelineBinaryResponse() {
 		doAnswer((e)->{return new BinaryResponseMessage("dummy data".getBytes());}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new StringAttachment("adapter", "HelloWorld"));
 		attachments.add(new StringAttachment("message", "<dummy-message/>"));
@@ -103,7 +103,7 @@ public class TestPipelineTest extends FrankApiTestBase<TestPipeline>{
 	public void testPipelineUnknownResponse() {
 		doAnswer((e)->{return new GenericMessage<>(123L);}).when(jaxRsResource).sendSyncMessage(any(RequestMessageBuilder.class));
 
-		List<Attachment> attachments = new ArrayList<Attachment>();
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("configuration", "TestConfiguration"));
 		attachments.add(new StringAttachment("adapter", "HelloWorld"));
 		attachments.add(new StringAttachment("message", "<dummy-message/>"));

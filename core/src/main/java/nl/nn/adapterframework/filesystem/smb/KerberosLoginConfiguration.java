@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class KerberosLoginConfiguration extends Configuration {
 
 	private static final Logger logger = LogUtil.getLogger(KerberosLoginConfiguration.class);
-	private Map<String, String> loginModuleOptions = new HashMap<>();
+	private final Map<String, String> loginModuleOptions = new HashMap<>();
 
 	private static final String IBM_LOGIN_MODULE_CLASSNAME = "com.ibm.security.auth.module.Krb5LoginModule";
 	private static final String ORACLE_LOGIN_MODULE_CLASSNAME = "com.sun.security.auth.module.Krb5LoginModule";

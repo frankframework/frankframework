@@ -15,7 +15,7 @@ import nl.nn.adapterframework.jdbc.IDataSourceFactory;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public class DataSourceFactoryMock implements IDataSourceFactory {
-	private Map<String, DataSource> objects = new ConcurrentHashMap<>();
+	private final Map<String, DataSource> objects = new ConcurrentHashMap<>();
 
 	public DataSourceFactoryMock() {
 		DataSource ds = Mockito.mock(DataSource.class);

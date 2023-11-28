@@ -18,6 +18,9 @@ package nl.nn.adapterframework.testtool;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import org.springframework.context.ApplicationContext;
 
@@ -28,6 +31,7 @@ import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.util.FileUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * File listener for the Test Tool.
@@ -40,11 +44,15 @@ public class FileListener implements IConfigurable, AutoCloseable {
 	private @Getter @Setter String name;
 
 	private String filename;
-	private String filename2;
+	@Getter private String filename2;
 	private String directory;
 	private String wildcard;
 	private long waitBeforeRead = -1;
-	private long timeOut = 3000;
+	/**
+	 * -- GETTER --
+	 *  Get the timeout in milliseconds waiting for creation of the file.
+	 */
+	@Getter private long timeOut = 3000;
 	private long interval = 100;
 
 	@Override
@@ -89,7 +97,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 	 * @return The message read from the specified file
 	 */
 	public String getMessage() throws TimeoutException, ListenerException {
-		String result = null;
+		String result;
 		if (waitBeforeRead != -1) {
 			try {
 				Thread.sleep(waitBeforeRead);
@@ -106,7 +114,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 		} else {
 			file = new File(filename);
 		}
-		if (filename2 != null) {
+		if (file != null && filename2 != null) {
 			try {
 				File file2 = new File(filename2);
 				boolean equal = FileUtils.isFileBinaryEqual(file, file2);
@@ -133,34 +141,21 @@ public class FileListener implements IConfigurable, AutoCloseable {
 			}
 			if (file != null && file.exists()) {
 				StringBuilder stringBuffer = new StringBuilder();
-				FileInputStream fileInputStream = null;
-				try {
-					fileInputStream = new FileInputStream(file);
-				} catch(IOException e) {
-					throw new ListenerException("Exception opening file '" + file.getAbsolutePath() + "': " + e.getMessage(), e);
-				}
-				byte[] buffer = new byte[1024];
-				try {
+				try (InputStream fileInputStream = new FileInputStream(file)) {
+					byte[] buffer = new byte[StreamUtil.BUFFERSIZE];
 					int length = fileInputStream.read(buffer);
 					while (length != -1) {
-						stringBuffer.append(new String(buffer, 0, length, "UTF-8"));
+						stringBuffer.append(new String(buffer, 0, length, StandardCharsets.UTF_8));
 						length = fileInputStream.read(buffer);
 					}
 				} catch(IOException e) {
-					try {
-						fileInputStream.close();
-					} catch(Exception e2) {
-					}
 					throw new ListenerException("Exception reading file '" + file.getAbsolutePath() + "': " + e.getMessage(), e);
 				}
-				try {
-					fileInputStream.close();
-				} catch(IOException e) {
-					throw new ListenerException("Exception closing file '" + file.getAbsolutePath() + "': " + e.getMessage(), e);
-				}
 				result = stringBuffer.toString();
-				if (!file.delete()) {
-					throw new ListenerException("Could not delete file '" + file.getAbsolutePath() + "'.");
+				try {
+					Files.delete(file.toPath());
+				} catch (IOException e) {
+					throw new ListenerException("Could not delete file '" + file.getAbsolutePath() + "'.", e);
 				}
 			} else {
 				throw new TimeoutException("Time out waiting for file.");
@@ -182,10 +177,6 @@ public class FileListener implements IConfigurable, AutoCloseable {
 	 */
 	public void setFilename2(String filename2) {
 		this.filename2 = filename2;
-	}
-
-	public String getFilename2() {
-		return filename2;
 	}
 
 	/**
@@ -213,17 +204,10 @@ public class FileListener implements IConfigurable, AutoCloseable {
 	}
 
 	/**
-	 * Set the time out in milliseconds waiting for creation of the file.
+	 * Set the timeout in milliseconds waiting for creation of the file.
 	 */
 	public void setTimeOut(long timeOut) {
 		this.timeOut = timeOut;
-	}
-
-	/**
-	 * Get the time out in milliseconds waiting for creation of the file.
-	 */
-	public long getTimeOut() {
-		return timeOut;
 	}
 
 	/**

@@ -16,10 +16,8 @@
 package nl.nn.adapterframework.extensions.cmis.servlets;
 
 import java.util.HashMap;
-import javax.servlet.ServletContext;
 
-import nl.nn.adapterframework.lifecycle.IbisInitializer;
-import nl.nn.adapterframework.util.LogUtil;
+import javax.servlet.ServletContext;
 
 import org.apache.chemistry.opencmis.commons.impl.ClassLoaderUtil;
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
@@ -29,9 +27,12 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.context.ServletContextAware;
 
+import nl.nn.adapterframework.lifecycle.IbisInitializer;
+import nl.nn.adapterframework.util.LogUtil;
+
 /**
  * Autowires the CMIS RepositoryConnectorFactory
- * 
+ *
  * @author Niels Meijer
  *
  */
@@ -58,7 +59,7 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 	public void afterPropertiesSet() throws Exception {
 		if (factory == null && servletContext != null) {
 			factory = createServiceFactory();
-			factory.init(new HashMap<String, String>());
+			factory.init(new HashMap<>());
 			String key = CmisRepositoryContextListener.SERVICES_FACTORY;
 			servletContext.setAttribute(key, factory);
 

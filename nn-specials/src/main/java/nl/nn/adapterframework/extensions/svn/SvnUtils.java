@@ -17,8 +17,6 @@ package nl.nn.adapterframework.extensions.svn;
 
 import java.io.IOException;
 
-import javax.xml.xpath.XPathExpressionException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -28,8 +26,8 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.XmlException;
 import nl.nn.adapterframework.util.XmlUtils;
 /**
  * Some utilities for working with SVN.
@@ -39,7 +37,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class SvnUtils {
 	protected static Logger log = LogUtil.getLogger(SvnUtils.class);
 
-	public static String getLogReport(String urlString) throws DomBuilderException, XPathExpressionException, ConfigurationException, SenderException, TimeoutException, IOException {
+	public static String getLogReport(String urlString) throws ConfigurationException, SenderException, TimeoutException, IOException, XmlException {
 		String head = getHeadHtml(urlString);
 		String etag = XmlUtils.evaluateXPathNodeSetFirstElement(head,
 				"headers/header[lower-case(@name)='etag']");

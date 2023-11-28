@@ -61,7 +61,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 
 	protected Logger migrationLog = LogUtil.getLogger("liquibase.migrationLog");
 	private Contexts contexts;
-	private LabelExpression labelExpression = new LabelExpression();
+	private final LabelExpression labelExpression = new LabelExpression();
 
 	@Override
 	public Resource getChangeLog() {

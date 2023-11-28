@@ -556,7 +556,7 @@ public abstract class MailSenderTestBase<S extends MailSenderBase> extends Sende
 		ExecutorService service = Executors.newFixedThreadPool(10);
 		Collection<Future<Session>> futures = new ArrayList<>(threads);
 		for (int t = 0; t < threads; ++t) {
-			Callable<Session> task = new Callable<Session>() {
+			Callable<Session> task = new Callable<>() {
 				@Override
 				public Session call() throws Exception {
 					ISenderWithParameters sender2 = createSender();

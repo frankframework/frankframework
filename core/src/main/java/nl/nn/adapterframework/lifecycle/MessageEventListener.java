@@ -27,7 +27,7 @@ import nl.nn.adapterframework.util.MessageKeeper;
 public class MessageEventListener implements ApplicationListener<ApplicationMessageEvent> {
 	private static final int MESSAGEKEEPER_SIZE = 10;
 
-	private Map<String, MessageKeeper> messageKeepers = new HashMap<>();
+	private final Map<String, MessageKeeper> messageKeepers = new HashMap<>();
 
 	public MessageEventListener() {
 		globalLog().setMaxSize(MESSAGEKEEPER_SIZE * 2);

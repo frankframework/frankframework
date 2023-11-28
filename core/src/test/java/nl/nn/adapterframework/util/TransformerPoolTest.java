@@ -17,13 +17,13 @@ import nl.nn.adapterframework.core.Resource;
 public class TransformerPoolTest {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private String xml = "<root><message authAliasTest=\"false\">hello</message></root>";
-	private String xpath = "root/message";
-	private String expectedXpath = "hello";
+	private final String xml = "<root><message authAliasTest=\"false\">hello</message></root>";
+	private final String xpath = "root/message";
+	private final String expectedXpath = "hello";
 
-	private String stylesheetURL = "xml/xsl/authAlias.xsl";
+	private final String stylesheetURL = "xml/xsl/authAlias.xsl";
 
-	private String transformURL = "Xslt/xslWithTransformRootTag.xslt";
+	private final String transformURL = "Xslt/xslWithTransformRootTag.xslt";
 
 	@Test
 	public void plainXPath() throws Exception {

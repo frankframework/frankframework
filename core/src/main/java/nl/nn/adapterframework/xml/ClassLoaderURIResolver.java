@@ -39,8 +39,8 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class ClassLoaderURIResolver implements URIResolver {
 	protected Logger log = LogUtil.getLogger(this);
-	private IScopeProvider scopeProvider;
-	private List<String> allowedProtocols = ClassLoaderUtils.getAllowedProtocols();
+	private final IScopeProvider scopeProvider;
+	private final List<String> allowedProtocols = ClassLoaderUtils.getAllowedProtocols();
 
 	public ClassLoaderURIResolver(IScopeProvider scopeProvider) {
 		if (log.isTraceEnabled()) log.trace("ClassLoaderURIResolver init with scopeProvider ["+scopeProvider+"]");

@@ -46,15 +46,10 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 import javax.servlet.http.HttpServletResponse;
-
-import nl.nn.adapterframework.dbms.IDbmsSupport;
-import nl.nn.adapterframework.dbms.DbmsException;
-import nl.nn.adapterframework.dbms.JdbcException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.ParameterList;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -63,7 +58,13 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.dbms.DbmsException;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.JdbcException;
+import nl.nn.adapterframework.jms.BytesMessageInputStream;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
+import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
@@ -421,12 +422,21 @@ public class JdbcUtil {
 			}
 			String rawMessage;
 			if (objectOK) {
+				// TODO: Direct handling of JMS messages in here should be removed. I do not expect any current instances to actually store unwrapped JMS Messages?
 				if (result instanceof MessageWrapper) {
 					rawMessage = ((MessageWrapper) result).getMessage().asString();
 				} else if (result instanceof TextMessage) {
 					try {
 						rawMessage = ((TextMessage) result).getText();
 					} catch (JMSException e) {
+						throw new JdbcException(e);
+					}
+				} else if (result instanceof BytesMessage) {
+					try {
+						BytesMessage bytesMessage = (BytesMessage) result;
+						InputStream input = new BytesMessageInputStream(bytesMessage);
+						rawMessage = StreamUtil.streamToString(input);
+					} catch (IOException e) {
 						throw new JdbcException(e);
 					}
 				} else {
@@ -894,10 +904,10 @@ public class JdbcUtil {
 					statement.setBytes(parameterIndex, value.getBytes(StreamUtil.DEFAULT_CHARSET));
 					break;
 				case Types.DATE:
-					statement.setDate(parameterIndex, new java.sql.Date(DateUtils.parseAnyDate(value).getTime()));
+					statement.setDate(parameterIndex, new java.sql.Date(DateFormatUtils.parseAnyDate(value).getTime()));
 					break;
 				case Types.TIMESTAMP:
-					statement.setTimestamp(parameterIndex, new Timestamp(DateUtils.parseAnyDate(value).getTime()));
+					statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
 					break;
 				default:
 					log.warn("parameter type [" + JDBCType.valueOf(sqlTYpe).getName() + "] handled as String");

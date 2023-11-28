@@ -21,7 +21,7 @@ import nl.nn.adapterframework.stream.JsonEventHandler;
 
 public class JsonNodeBuilder implements INodeBuilder {
 
-	private JsonEventHandler handler;
+	private final JsonEventHandler handler;
 
 	public JsonNodeBuilder(JsonEventHandler handler) {
 		this.handler = handler;

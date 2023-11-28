@@ -15,7 +15,6 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Date;
 
-import org.apache.commons.codec.binary.Base64;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
@@ -29,7 +28,6 @@ import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
-import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
@@ -59,7 +57,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		autowireByName(fileSystem);
 		fileSystem.configure();
 		fileSystem.open();
-		actor = new FileSystemActor<F, FS>();
+		actor = new FileSystemActor<>();
 		result = null;
 	}
 
@@ -278,7 +276,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorListActionTestInFolderWithWildCard() throws Exception {
-		actor.setWildCard("*d0*");
+		actor.setWildcard("*d0*");
 		_createFolder("folder");
 		fileSystemActorListActionTest("folder",5,1);
 	}
@@ -292,7 +290,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 
 	@Test
 	public void fileSystemActorListActionTestInFolderWithBothWildCardAndExcludeWildCard() throws Exception {
-		actor.setWildCard("*.txt");
+		actor.setWildcard("*.txt");
 		actor.setExcludeWildcard("*ted1*");
 		_createFolder("folder");
 		fileSystemActorListActionTest("folder",5,4);
@@ -304,7 +302,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String filename2 = filename+".xml";
 		String contents = "regeltje tekst";
 
-		actor.setWildCard("*.xml");
+		actor.setWildcard("*.xml");
 		actor.setAction(FileSystemAction.LIST);
 		actor.configure(fileSystem,null,owner);
 		actor.open();
@@ -361,7 +359,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		String filename2 = filename+".xml";
 		String contents = "regeltje tekst";
 
-		actor.setWildCard("*.xml");
+		actor.setWildcard("*.xml");
 		actor.setExcludeWildcard("*.oud.xml");
 		actor.setAction(FileSystemAction.LIST);
 		actor.configure(fileSystem,null,owner);
@@ -774,91 +772,6 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		fileSystemActorWriteActionWriteLineSeparatorMessageContents(true, true);
 	}
 
-	public void fileSystemActorWriteActionBase64Encode(boolean viaOutputStream, boolean expectStreamable) throws Exception {
-		String filename = "base64Encoding" + FILE1;
-		String contents = "Some text content to test write action base64Encoding enabled";
-		String expected = new String(Base64.encodeBase64(contents.getBytes(), true));
-		String expectedFSize="1 kB";
-
-		if (_fileExists(filename)) {
-			_deleteFile(null, filename);
-		}
-
-		ParameterList params = new ParameterList();
-
-		actor.setBase64(Base64Pipe.Direction.ENCODE);
-		actor.setAction(FileSystemAction.WRITE);
-		actor.setFilename(filename);
-		params.configure();
-		actor.configure(fileSystem,params,owner);
-		actor.open();
-
-		Message message = new Message(contents);
-		ParameterValueList pvl = params.getValues(message, session);
-		result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
-		waitForActionToFinish();
-
-		String stringResult=Message.asString(result);
-		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-		TestAssertions.assertXpathValueEquals(expectedFSize, stringResult, "file/@fSize");
-
-		String actualContents = readFile(null, filename);
-
-		assertEquals(expected, actualContents);
-	}
-
-	@Test
-	public void fileSystemActorWriteActionBase64Encode() throws Exception {
-		fileSystemActorWriteActionBase64Encode(false, true);
-	}
-
-	@Test
-	public void fileSystemActorWriteActionBase64EncodeStreaming() throws Exception {
-		fileSystemActorWriteActionBase64Encode(true, true);
-	}
-
-	public void fileSystemActorWriteActionBase64Decode(boolean viaOutputStream, boolean expectStreamable) throws Exception {
-		String filename = "base64Decoding" + FILE1;
-		String expected = "Some text content to test write action base64Decoding enabled";
-		String contents = new String(Base64.encodeBase64(expected.getBytes(), true));
-		String expectedFSize="1 kB";
-
-		if (_fileExists(filename)) {
-			_deleteFile(null, filename);
-		}
-
-		ParameterList params = new ParameterList();
-
-		actor.setBase64(Base64Pipe.Direction.DECODE);
-		actor.setAction(FileSystemAction.WRITE);
-		actor.setFilename(filename);
-		params.configure();
-		actor.configure(fileSystem,params,owner);
-		actor.open();
-
-		Message message = new Message(contents);
-		ParameterValueList pvl = params.getValues(message, session);
-		result = doAction(message, pvl, session, viaOutputStream, expectStreamable);
-		waitForActionToFinish();
-
-		String stringResult=Message.asString(result);
-		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-		TestAssertions.assertXpathValueEquals(expectedFSize, stringResult, "file/@fSize");
-
-		String actualContents = readFile(null, filename);
-
-		assertEquals(expected, actualContents);
-	}
-
-	@Test
-	public void fileSystemActorWriteActionBase64Decode() throws Exception {
-		fileSystemActorWriteActionBase64Decode(false, true);
-	}
-
-	@Test
-	public void fileSystemActorWriteActionBase64DecodeStreaming() throws Exception {
-		fileSystemActorWriteActionBase64Decode(true, true);
-	}
 	@Test
 	public void fileSystemActorWriteActionTestWithByteArrayAndContentsViaAlternativeParameter() throws Exception {
 		String filename = "uploadedwithByteArray" + FILE1;
@@ -1139,7 +1052,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		actor.setAction(FileSystemAction.MOVE);
-		actor.setWildCard("tobemoved*");
+		actor.setWildcard("tobemoved*");
 		actor.setInputFolder(srcFolderName);
 		ParameterList params = new ParameterList();
 		params.add(new Parameter("destination", destFolderName));
@@ -1653,7 +1566,7 @@ public abstract class FileSystemActorTest<F, FS extends IWritableFileSystem<F>> 
 		waitForActionToFinish();
 
 		actor.setAction(FileSystemAction.DELETE);
-		actor.setWildCard("tobedeleted*");
+		actor.setWildcard("tobedeleted*");
 		actor.setInputFolder(srcFolderName);
 		actor.configure(fileSystem,null,owner);
 		actor.open();

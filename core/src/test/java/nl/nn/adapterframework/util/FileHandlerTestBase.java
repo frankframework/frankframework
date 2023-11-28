@@ -33,12 +33,12 @@ import nl.nn.adapterframework.testutil.TestFileUtils;
 public abstract class FileHandlerTestBase {
 
 	public static String BASEDIR = "/FileHandler/";
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	public @Rule TemporaryFolder tempFolder = new TemporaryFolder();
 
 	private IFileHandler handler;
-	private PipeLineSession session = new PipeLineSession();
+	private final PipeLineSession session = new PipeLineSession();
 	public String charset = "UTF-8";
 
 	protected abstract IFileHandler createFileHandler() throws IllegalAccessException, InstantiationException;

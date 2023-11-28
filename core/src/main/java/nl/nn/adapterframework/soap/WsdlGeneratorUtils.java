@@ -100,7 +100,7 @@ public abstract class WsdlGeneratorUtils {
 	}
 
 	static String validUri(String uri) {
-		return uri == null ? null : uri.replaceAll(" ", "_");
+		return uri == null ? null : uri.replace(" ", "_");
 	}
 
 	// Check if the adapter has WebServiceListener with an InputValidator OR 

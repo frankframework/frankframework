@@ -45,7 +45,7 @@
 			</pipeline>
 		</adapter>
 	</module>
-	<root xsi:noNamespaceSchemaLocation="http://schemas.ibissource.org/ibisdoc.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<root xsi:noNamespaceSchemaLocation="http://schemas.frankframework.org/ibisdoc.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 		<Adapter name="Adapter3">
 			<Receiver name="HelloBeautifulWorld">
 				<JavaListener name="HelloBeautifulWorld"/>

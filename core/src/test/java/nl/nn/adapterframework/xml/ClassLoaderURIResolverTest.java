@@ -36,7 +36,7 @@ public class ClassLoaderURIResolverTest {
 	private final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 	private static final IScopeProvider scopeProvider = new TestScopeProvider();
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	private enum BaseType { LOCAL, BYTES, CLASSPATH, FILE_SCHEME, NULL }
 	private enum RefType  {
 		ROOT, ABS_PATH, DOTDOT, SAME_FOLDER, OVERRIDABLE, CLASSPATH, FILE_SCHEME(TransformerException.class);
@@ -69,9 +69,9 @@ public class ClassLoaderURIResolverTest {
 		Source source = resolver.resolve(ref, base);
 		assertNotNull(source);
 		if (expected!=null) {
-			assertEquals(expected, XmlUtils.source2String(source, false), "BaseType ["+baseType+"] refType ["+refType+"]");
+			assertEquals(expected, XmlUtils.source2String(source), "BaseType ["+baseType+"] refType ["+refType+"]");
 		} else {
-			assertNotNull(XmlUtils.source2String(source, false), "BaseType ["+baseType+"] refType ["+refType+"]");
+			assertNotNull(XmlUtils.source2String(source), "BaseType ["+baseType+"] refType ["+refType+"]");
 		}
 	}
 

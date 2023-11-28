@@ -16,13 +16,14 @@
 package nl.nn.adapterframework.extensions.tibco;
 
 import java.io.IOException;
+import java.io.InputStream;
 
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
-//import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -34,21 +35,24 @@ import com.tibco.tibjms.admin.QueueInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;
 import com.tibco.tibjms.admin.TibjmsAdminException;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.ParameterException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.doc.DocumentedEnum;
 import nl.nn.adapterframework.doc.EnumLabel;
+import nl.nn.adapterframework.jms.BytesMessageInputStream;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.pipes.TimeoutGuardPipe;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 
 /**
@@ -253,8 +257,16 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				if (rawReplyMsg == null) {
 					throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeout_work + "] ms");
 				}
-				TextMessage replyMsg = (TextMessage) rawReplyMsg;
-				result = replyMsg.getText();
+				if (rawReplyMsg instanceof TextMessage) {
+					TextMessage replyMsg = (TextMessage) rawReplyMsg;
+					result = replyMsg.getText();
+				} else if (rawReplyMsg instanceof BytesMessage) {
+					BytesMessage bytesMessage = (BytesMessage) rawReplyMsg;
+					InputStream inputStream = new BytesMessageInputStream(bytesMessage);
+					result = StreamUtil.streamToString(inputStream);
+				} else {
+					throw new PipeRunException(this, "Unsupported message type received: " + ClassUtils.classNameOf(rawReplyMsg));
+				}
 
 			} else {
 				result = msg.getJMSMessageID();

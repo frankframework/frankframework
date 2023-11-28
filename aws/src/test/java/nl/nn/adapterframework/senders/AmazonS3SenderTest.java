@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class AmazonS3SenderTest extends FileSystemSenderTest<AmazonS3Sender, S3Object, AmazonS3FileSystem> {
 
-	private int waitMilis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
+	private final int waitMilis = PropertyUtil.getProperty("AmazonS3.properties", "waitTimeout", 50);
 
 	{
 		setWaitMillis(waitMilis);

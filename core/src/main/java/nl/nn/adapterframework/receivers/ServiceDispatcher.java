@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class ServiceDispatcher  {
 	protected Logger log = LogUtil.getLogger(this);
 
-	private ConcurrentSkipListMap<String, ServiceClient> registeredListeners = new ConcurrentSkipListMap<>();
+	private final ConcurrentSkipListMap<String, ServiceClient> registeredListeners = new ConcurrentSkipListMap<>();
 	private static ServiceDispatcher self = null;
 
 	/**

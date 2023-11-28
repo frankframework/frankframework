@@ -25,7 +25,7 @@ import com.sap.conn.jco.JCoRecord;
  */
 public class RecordHandler extends Handler {
 
-	private JCoRecord record;
+	private final JCoRecord record;
 
 	public RecordHandler(JCoRecord record) {
 		super();

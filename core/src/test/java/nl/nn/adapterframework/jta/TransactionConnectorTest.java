@@ -216,7 +216,7 @@ public class TransactionConnectorTest extends TransactionManagerTestBase {
 
 	public void displayTransaction() throws SystemException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
 		if (txManager instanceof IThreadConnectableTransactionManager) {
-			IThreadConnectableTransactionManager tctm = (IThreadConnectableTransactionManager)txManager;
+			IThreadConnectableTransactionManager tctm = txManager;
 			Object transaction = tctm.getCurrentTransaction();
 			if (transaction instanceof JtaTransactionObject) {
 				UserTransaction ut =((JtaTransactionObject)transaction).getUserTransaction();

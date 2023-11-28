@@ -38,10 +38,10 @@ public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 
 	protected @Getter String bucketName = PropertyUtil.getProperty("AmazonS3.properties", "bucketName");
 
-	private Regions clientRegion = Regions.EU_WEST_1;
+	private final Regions clientRegion = Regions.EU_WEST_1;
 	public static final int S3_PORT = 19090;
-	private String serviceEndpoint = "http://localhost:"+S3_PORT;
-	private boolean runLocalStub = StringUtils.isBlank(accessKey) && StringUtils.isBlank(secretKey);
+	private final String serviceEndpoint = "http://localhost:" + S3_PORT;
+	private final boolean runLocalStub = StringUtils.isBlank(accessKey) && StringUtils.isBlank(secretKey);
 
 	private @Getter AmazonS3 s3Client;
 

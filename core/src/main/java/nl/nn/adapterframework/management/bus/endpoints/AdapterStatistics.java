@@ -40,7 +40,7 @@ import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.ScalarMetricBase;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)
@@ -160,7 +160,7 @@ public class AdapterStatistics extends BusEndpointBase {
 		public void handleScalar(Object data, String scalarName, Date value) {
 			String result;
 			if (value!=null) {
-				result = DateUtils.format(value, DateUtils.FORMAT_FULL_GENERIC);
+				result = DateFormatUtils.format(value, DateFormatUtils.FORMAT_FULL_GENERIC);
 			} else {
 				result = "-";
 			}
@@ -174,7 +174,7 @@ public class AdapterStatistics extends BusEndpointBase {
 		@Override
 		@SuppressWarnings("unchecked")
 		public Object openGroup(Object parentData, String name, String type) {
-			List<Object> o = new LinkedList<Object>();
+			List<Object> o = new LinkedList<>();
 			((Map<String, Object>) parentData).put(type, o);
 			return o;
 		}

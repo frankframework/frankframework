@@ -52,20 +52,20 @@ import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.pipes.Json2XmlValidator;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * This class registers dispatches requests to the proper registered ApiListeners.
  * The dispatcher does not handle nor does it process messages!
- * 
+ *
  * @author Niels Meijer
  *
  */
 public class ApiServiceDispatcher {
 
-	private Logger log = LogUtil.getLogger(this);
-	private ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<>(new ApiUriComparator());
+	private final Logger log = LogUtil.getLogger(this);
+	private final ConcurrentSkipListMap<String, ApiDispatchConfig> patternClients = new ConcurrentSkipListMap<>(new ApiUriComparator());
 	private static ApiServiceDispatcher self = null;
 
 	public static synchronized ApiServiceDispatcher getInstance() {
@@ -178,7 +178,7 @@ public class ApiServiceDispatcher {
 		String environment = AppConstants.getInstance().getString("dtap.stage", "LOC");
 		JsonObjectBuilder info = Json.createObjectBuilder();
 		info.add("title", instanceName);
-		info.add("description", "OpenApi auto-generated at "+DateUtils.getTimeStamp()+" for "+instanceName+" ("+environment+")");
+		info.add("description", "OpenApi auto-generated at "+ DateFormatUtils.getTimeStamp()+" for "+instanceName+" ("+environment+")");
 		info.add("version", "unknown");
 		root.add("info", info);
 		root.add("servers", mapServers(endpoint));

@@ -1,1 +1,1 @@
-<WebServiceListerSenderREQ xmlns="urn:ws:serviceNamespaceURI" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www.ibissource.org/namespace1" xmlns:ns2="http://www.ibissource.org/namespace2"/>
+<WebServiceListerSenderREQ xmlns="urn:ws:serviceNamespaceURI" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www.frankframework.org/namespace1" xmlns:ns2="http://www.frankframework.org/namespace2"/>

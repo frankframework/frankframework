@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 public class CmisHttpInvokerTest {
 
-	private BindingSession session = mock(BindingSession.class);
+	private final BindingSession session = mock(BindingSession.class);
 
 	@BeforeEach
 	public void setup() {

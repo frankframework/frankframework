@@ -38,7 +38,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	public static void setupAll() {
 		JWT_PROCESSOR = new DefaultJWTProcessor<>();
 		SecretKey key = new SecretKeySpec(DUMMY_SECRET.getBytes(), "HmacSHA256");
-		JWKSource<SecurityContext> immutableSecret = new ImmutableSecret<SecurityContext>(key);
+		JWKSource<SecurityContext> immutableSecret = new ImmutableSecret<>(key);
 
 		JWSKeySelector<SecurityContext> keySelector = new JWSVerificationKeySelector<>(JWSAlgorithm.HS256, immutableSecret);
 		JWT_PROCESSOR.setJWSKeySelector(keySelector);

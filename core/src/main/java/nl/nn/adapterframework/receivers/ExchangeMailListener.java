@@ -52,18 +52,6 @@ public class ExchangeMailListener extends MailListener<ExchangeMessageReference,
 		return new ExchangeFileSystem();
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'outputFolder' has been replaced by 'processedFolder'")
-	public void setOutputFolder(String outputFolder) {
-		setProcessedFolder(outputFolder);
-	}
-
-	@Deprecated
-	@ConfigurationWarning("attribute 'tempFolder' has been replaced by 'inProcessFolder'")
-	public void setTempFolder(String tempFolder) {
-		setInProcessFolder(tempFolder);
-	}
-
 	@ReferTo(ExchangeFileSystem.class)
 	public void setMailAddress(String mailAddress) {
 		getFileSystem().setMailAddress(mailAddress);
@@ -137,11 +125,7 @@ public class ExchangeMailListener extends MailListener<ExchangeMessageReference,
 	public void setProxyUsername(String proxyUsername) {
 		getFileSystem().setProxyUsername(proxyUsername);
 	}
-	@Deprecated
-	@ConfigurationWarning("Please use \"proxyUsername\" instead")
-	public void setProxyUserName(String proxyUsername) {
-		setProxyUsername(proxyUsername);
-	}
+
 	@ReferTo(ExchangeFileSystem.class)
 	public void setProxyPassword(String proxyPassword) {
 		getFileSystem().setProxyPassword(proxyPassword);

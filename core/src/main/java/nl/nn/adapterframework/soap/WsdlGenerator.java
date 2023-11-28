@@ -47,7 +47,7 @@ import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.validation.IXSD;
@@ -306,7 +306,7 @@ public class WsdlGenerator {
 			wsdlSoapPrefix = WSDL_SOAP12_NAMESPACE_PREFIX;
 		}
 		if (StringUtils.isEmpty(getDocumentation())) {
-			documentation = "Generated" + (generationInfo != null ? " " + generationInfo : "") + " as " + getFilename() + WSDL_EXTENSION + " on " + DateUtils.getTimeStamp() + ".";
+			documentation = "Generated" + (generationInfo != null ? " " + generationInfo : "") + " as " + getFilename() + WSDL_EXTENSION + " on " + DateFormatUtils.getTimeStamp() + ".";
 		}
 		if (inputValidator.getDocumentation() != null) {
 			documentation = documentation + inputValidator.getDocumentation();
@@ -436,7 +436,7 @@ public class WsdlGenerator {
 	}
 
 	public Set<IXSD> getXsds(IXmlValidator xmlValidator) throws ConfigurationException {
-		Set<IXSD> xsds = new HashSet<IXSD>();
+		Set<IXSD> xsds = new HashSet<>();
 		String inputSchema = xmlValidator.getSchema();
 		if (inputSchema != null) {
 			// In case of a WebServiceListener using soap=true it might be

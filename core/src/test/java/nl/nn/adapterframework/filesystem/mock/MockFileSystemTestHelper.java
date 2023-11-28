@@ -41,7 +41,7 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 		if (folderName==null) {
 			return fileSystem.getFiles().containsKey(filename);
 		}
-		MockFolder folder = (MockFolder)fileSystem.getFolders().get(folderName);
+		MockFolder folder = fileSystem.getFolders().get(folderName);
 		return folder!=null && folder.getFiles().containsKey(filename);
 	}
 

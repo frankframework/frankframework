@@ -37,9 +37,9 @@ import nl.nn.adapterframework.align.Properties2Xml.PropertyNode;
  */
 public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<String,String>> {
 
-	private String attributeSeparator=".";
+	private final String attributeSeparator = ".";
 //	private String indexSeparator=".";
-	private String valueSeparator=",";
+	private final String valueSeparator = ",";
 
 	private Map<String,String> data;
 
@@ -81,7 +81,7 @@ public class Properties2Xml extends Map2Xml<String,String,PropertyNode,Map<Strin
 	@Override
 	public Iterable<PropertyNode> getChildrenByName(PropertyNode node, XSElementDeclaration childElementDeclaration) {
 		String name = childElementDeclaration.getName();
-		List<PropertyNode> result=new LinkedList<PropertyNode>();
+		List<PropertyNode> result=new LinkedList<>();
 		if (data.containsKey(name)) {
 			String[] values=data.get(name).split(valueSeparator);
 			for (String value:values) {

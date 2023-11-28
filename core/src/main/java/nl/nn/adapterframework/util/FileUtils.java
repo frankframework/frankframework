@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -35,11 +34,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -53,8 +53,8 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  *
  * @author John Dekker
  */
+@Log4j2
 public class FileUtils {
-	static Logger log = LogUtil.getLogger(FileUtils.class);
 	protected static final String WEEKLY_ROLLING_FILENAME_DATE_FORMAT = "YYYY'W'ww";
 	protected static final String DAILY_ROLLING_FILENAME_DATE_FORMAT = "yyyy-MM-dd";
 
@@ -104,9 +104,8 @@ public class FileUtils {
 
 		// resolve the parameters
 		ParameterValueList pvl = pl.getValues(null, session);
-		String filename = pvl.get("__filename").getValue().toString();
 
-		return filename;
+		return pvl.get("__filename").getValue().toString();
 	}
 
 	public static String getFilename(ParameterList definedParameters, PipeLineSession session, File originalFile, String filenamePattern) throws ParameterException {
@@ -226,32 +225,29 @@ public class FileUtils {
 		while (errCount++ < nrRetries) {
 			boolean success = copyFile(orgFile, destFile, true);
 
-			if (! success) {
-				Thread.sleep(waitTime);
-			}
-			else {
+			if (success) {
 				return destFile.getAbsolutePath();
 			}
+
+			Thread.sleep(waitTime);
 		}
 		return null;
 	}
 
 	public static boolean copyFile(File orgFile, File destFile, boolean append) {
 		try {
-			FileInputStream fis = new FileInputStream(orgFile);
-			FileOutputStream fos = new FileOutputStream(destFile, append);
-			byte[] buf = new byte[1024];
-			int len;
-			while ((len = fis.read(buf)) > 0) {
-				fos.write(buf, 0, len);
+			byte[] buf = new byte[StreamUtil.BUFFERSIZE];
+			try (FileInputStream fis = new FileInputStream(orgFile); FileOutputStream fos = new FileOutputStream(destFile, append)) {
+				int len;
+				while ((len = fis.read(buf)) > 0) {
+					fos.write(buf, 0, len);
+				}
 			}
-			fis.close();
-			fos.close();
+			return true;
 		} catch (IOException e) {
-			log.warn("Could not copy file ["+orgFile.getPath()+"] to ["+destFile.getPath()+"]", e);
+			log.warn("Could not copy file [{}] to [{}]", orgFile.getPath(), destFile.getPath(), e);
 			return false;
 		}
-		return true;
 	}
 
 	/**
@@ -283,9 +279,7 @@ public class FileUtils {
 			File file = new File(directory);
 			if (!file.isAbsolute()) {
 				String absPath = new File("").getAbsolutePath();
-				if(absPath != null) {
-					file = new File(absPath, directory);
-				}
+				file = new File(absPath, directory);
 			}
 			if(!file.exists()) {
 				file.mkdirs();
@@ -378,16 +372,16 @@ public class FileUtils {
 
 	protected static File getRollingFile(String directory, String filenamePrefix, String dateformat, String filenameSuffix, int retentionDays, Date date) {
 
-		final long millisPerDay=24*60*60*1000;
+		final long millisPerDay = 24 * 60 * 60 * 1000L;
 
-		if (directory==null) {
+		if (directory == null) {
 			return null;
 		}
 
 		Date dateInFileName = date != null ? date : new Date();
 
-		String filename=filenamePrefix+DateUtils.format(dateInFileName,dateformat)+filenameSuffix;
-		File result = new File(directory+"/"+filename);
+		String filename=filenamePrefix+ DateFormatUtils.format(dateInFileName,dateformat)+filenameSuffix;
+		File result = new File(directory, filename);
 		if (!result.exists()) {
 			long thisMorning = dateInFileName.getTime();
 
@@ -423,7 +417,7 @@ public class FileUtils {
 
 		long lastChangedAllowed=minStability>0?new Date().getTime()-minStability:0;
 
-		List<File> result = new ArrayList<File>();
+		List<File> result = new ArrayList<>();
 		int count = (files == null ? 0 : files.length);
 		for (int i = 0; i < count; i++) {
 			File file = files[i];
@@ -438,15 +432,18 @@ public class FileUtils {
 			}
 			result.add(file);
 		}
-		Collections.sort(result, new FileComparator());
+		result.sort(new FileComparator());
 		return result.toArray(new File[0]);
 	}
 
+	@Nullable
 	public static File getFirstFile(File directory) {
 		String[] fileNames = directory.list();
-
-		for (int i = 0; i < fileNames.length; i++) {
-			File file = new File(directory, fileNames[i]);
+		if (fileNames == null) {
+			return null;
+		}
+		for (String fileName : fileNames) {
+			File file = new File(directory, fileName);
 			if (file.isFile()) {
 				return file;
 			}
@@ -456,15 +453,16 @@ public class FileUtils {
 	public static File getFirstFile(String directory, long minStability) {
 		File dir = new File(directory);
 		String[] fileNames = dir.list();
+		if (fileNames == null) {
+			return null;
+		}
 
-		long lastChangedAllowed=minStability>0?new Date().getTime()-minStability:0;
+		long lastChangedAllowed = minStability > 0 ? System.currentTimeMillis() - minStability : 0;
 
-		for (int i = 0; i < fileNames.length; i++) {
-			File file = new File(directory, fileNames[i]);
-			if (file.isFile()) {
-				if (minStability>0 && file.lastModified()<=lastChangedAllowed) {
+		for (String fileName : fileNames) {
+			File file = new File(directory, fileName);
+			if (file.isFile() && (minStability > 0 && file.lastModified() <= lastChangedAllowed)) {
 					return file;
-				}
 			}
 		}
 		return null;
@@ -472,7 +470,7 @@ public class FileUtils {
 
 	public static List<String> getListFromNames(String names, char seperator) {
 		StringTokenizer st = new StringTokenizer(names, "" + seperator);
-		LinkedList<String> list = new LinkedList<String>();
+		LinkedList<String> list = new LinkedList<>();
 		while (st.hasMoreTokens()) {
 			list.add(st.nextToken());
 		}
@@ -486,26 +484,24 @@ public class FileUtils {
 		return Arrays.asList(names);
 	}
 
-	public static String getNamesFromArray(String[] names, char seperator) {
+	public static String getNamesFromArray(@Nonnull String[] names, char separator) {
 		StringBuilder result = new StringBuilder();
-		for (int i = 0; i < names.length; i++) {
-			String name = names[i];
+		for (String name : names) {
 			if (result.length() > 0)
-				result.append(seperator);
+				result.append(separator);
 			result.append(name);
 		}
 		return result.toString();
 	}
 
-	public static String getNamesFromList(List<String> filenames, char seperator) {
+	public static String getNamesFromList(List<String> filenames, char separator) {
 		if (filenames == null)
 			return "";
 
 		StringBuilder result = new StringBuilder();
-		for (Iterator<String> nameIterator = filenames.iterator(); nameIterator.hasNext();) {
-			String name = (String)nameIterator.next();
+		for (String name : filenames) {
 			if (result.length() > 0)
-				result.append(seperator);
+				result.append(separator);
 			result.append(name);
 		}
 		return result.toString();
@@ -522,7 +518,7 @@ public class FileUtils {
 
 	public static void align(StringBuilder result, String val, int length, boolean leftAlign, char fillchar) {
 		if (val.length() > length) {
-			result.append(val.substring(0, length));
+			result.append(val, 0, length);
 		} else if (val.length() == length) {
 			result.append(val);
 		} else {
@@ -586,8 +582,8 @@ public class FileUtils {
 			}
 			File tmpFile = File.createTempFile("ibis", null, file);
 			try {
-				tmpFile.delete();
-			} catch (Throwable t) {
+				Files.delete(tmpFile.toPath());
+			} catch (Exception t) {
 				log.warn("Exception while deleting temporary file [" + tmpFile.getName() + "] in directory [" + directory + "]",t);
 			}
 			return true;
@@ -600,7 +596,7 @@ public class FileUtils {
 		}
 	}
 
-	static public String encodeFileName(String fileName) {
+	public static String encodeFileName(String fileName) {
 		String mark = "-_.+=";
 		StringBuilder encodedFileName = new StringBuilder();
 		int len = fileName.length();
@@ -662,7 +658,7 @@ public class FileUtils {
 	}
 
 	public static boolean readAllowed(String rules, String fileName, Authenticator authenticator) {
-		List<String> rulesList = Arrays.asList(rules.split("\\|"));
+		String[] rulesList = rules.split("\\|");
 		for (String rule: rulesList) {
 			List<String> parts = Arrays.asList(rule.trim().split("\\s+"));
 			if (parts.size() != 3) {
@@ -716,51 +712,36 @@ public class FileUtils {
 
 	public static boolean isFileBinaryEqual(File first, File second)
 			throws IOException {
-		boolean retval = false;
 
-		if ((first.exists()) && (second.exists()) && (first.isFile())
-				&& (second.isFile())) {
-			if (first.getCanonicalPath().equals(second.getCanonicalPath())) {
-				retval = true;
-			} else {
-				FileInputStream firstInput = null;
-				FileInputStream secondInput = null;
-				BufferedInputStream bufFirstInput = null;
-				BufferedInputStream bufSecondInput = null;
+		if ((!first.exists()) || (!second.exists()) || (!first.isFile())
+				|| (!second.isFile())) {
+			return false;
+		}
+		if (first.length() != second.length()) {
+			return false;
+		}
+		if (first.getCanonicalPath().equals(second.getCanonicalPath())) {
+			return true;
+		}
 
-				try {
-					firstInput = new FileInputStream(first);
-					secondInput = new FileInputStream(second);
-					bufFirstInput = new BufferedInputStream(firstInput);
-					bufSecondInput = new BufferedInputStream(secondInput);
+		try (InputStream bufFirstInput = new BufferedInputStream(new FileInputStream(first));
+			 InputStream bufSecondInput = new BufferedInputStream(new FileInputStream(second))) {
 
-					int firstByte;
-					int secondByte;
-
-					while (true) {
-						firstByte = bufFirstInput.read();
-						secondByte = bufSecondInput.read();
-						if (firstByte != secondByte) {
-							break;
-						}
-						if ((firstByte < 0) && (secondByte < 0)) {
-							retval = true;
-							break;
-						}
-					}
-				} finally {
-					try {
-						if (bufFirstInput != null) {
-							bufFirstInput.close();
-						}
-					} finally {
-						if (bufSecondInput != null) {
-							bufSecondInput.close();
-						}
-					}
+			boolean retval;
+			while (true) {
+				int firstByte = bufFirstInput.read();
+				int secondByte = bufSecondInput.read();
+				if (firstByte != secondByte) {
+					retval = false;
+					break;
+				}
+				// End of file, must be end of both files.
+				if (firstByte < 0) {
+					retval = true;
+					break;
 				}
 			}
+			return retval;
 		}
-		return retval;
 	}
 }

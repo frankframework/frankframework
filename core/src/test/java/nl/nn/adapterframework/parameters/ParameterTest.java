@@ -43,7 +43,7 @@ import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class ParameterTest {
@@ -476,7 +476,7 @@ public class ParameterTest {
 		p.setType(ParameterType.MAP);
 		p.configure();
 
-		Map<String, String> map = new HashMap<String, String>();
+		Map<String, String> map = new HashMap<>();
 		map.put("item", "value");
 		map.put("item2", "value2");
 		map.put("item3", "value3");
@@ -957,7 +957,7 @@ public class ParameterTest {
 		Object result = parameter.getValue(alreadyResolvedParameters, message, null, true);
 		assertThat(result,instanceOf(Date.class));
 
-		assertEquals(expected,DateUtils.format((Date)result));
+		assertEquals(expected, DateFormatUtils.format((Date)result));
 
 	}
 	@Test
@@ -1241,7 +1241,7 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof String);
 
-			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate.substring(0, 10), ((String)result).substring(0, 10));
 
@@ -1342,7 +1342,7 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof Date);
 
-			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, sdf.format(result));
 
 		} finally {
@@ -1368,7 +1368,7 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof Date);
 
-			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, sdf.format(result));
 
 		} finally {
@@ -1395,7 +1395,7 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof Date);
 
-			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, sdf.format(result));
 
 		} finally {
@@ -1421,7 +1421,7 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); //Should return PutSystemDateInSession.FIXEDDATETIME
 			assertTrue(result instanceof Date);
 
-			SimpleDateFormat sdf = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, sdf.format(result));
 
 		} finally {
@@ -1610,7 +1610,7 @@ public class ParameterTest {
 	}
 
 	@Test
-	// see https://github.com/ibissource/iaf/issues/3232
+	// see https://github.com/frankframework/frankframework/issues/3232
 	public void testPotentialProblematicSysId() throws ConfigurationException {
 		Parameter p = new Parameter();
 		p.setName("pid");

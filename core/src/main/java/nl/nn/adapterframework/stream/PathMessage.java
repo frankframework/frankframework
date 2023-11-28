@@ -31,14 +31,15 @@ public class PathMessage extends Message {
 
 	private PathMessage(Path path, MessageContext context, boolean removeOnClose) {
 		super(new SerializableFileReference(path, removeOnClose), new MessageContext(context)
-				.withModificationTime(path.toFile().lastModified())
-				.withSize(path.toFile().length())
-				.withName(path.getFileName().toString())
-				.withLocation(path.toAbsolutePath().toString())
-			, path.getClass());
+						.withModificationTime(path.toFile().lastModified())
+						.withSize(path.toFile().length())
+						.withName(path.getFileName().toString())
+						.withLocation(path.toAbsolutePath().toString())
+				, path.getClass());
 	}
 
 	public static PathMessage asTemporaryMessage(Path path) {
 		return new PathMessage(path, new MessageContext(), true);
 	}
+
 }

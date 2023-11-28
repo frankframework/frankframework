@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
@@ -75,12 +74,6 @@ public class ExecuteQueryJob extends JobDef {
 	 */
 	public void setQuery(String query) {
 		this.query = query;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("Please configure a datasourceName instead")
-	public void setJmsRealm(String jmsRealm) {
-		this.jmsRealm = jmsRealm;
 	}
 
 	/**

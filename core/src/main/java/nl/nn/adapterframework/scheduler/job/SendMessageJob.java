@@ -22,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
@@ -81,12 +80,6 @@ public class SendMessageJob extends JobDef {
 	 */
 	public void setJavaListener(String javaListener) {
 		this.javaListener = javaListener;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("Please use attribute javaListener instead")
-	public void setReceiverName(String receiverName) {
-		setJavaListener(receiverName); //For backwards compatibility
 	}
 
 	/** message to be sent into the pipeline */

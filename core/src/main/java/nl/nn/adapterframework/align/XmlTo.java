@@ -49,10 +49,10 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 
 	private boolean writeAttributes=true;
 
-	private XmlAligner aligner;
+	private final XmlAligner aligner;
 
-	private C documentContainer;
-	Stack<String> element=new Stack<String>();
+	private final C documentContainer;
+	Stack<String> element=new Stack<>();
 	String topElement;
 
 	public XmlTo(XmlAligner aligner, C documentContainer) {
@@ -176,7 +176,7 @@ public class XmlTo<C extends DocumentContainer> extends XMLFilterImpl {
 
 		// create the parser, setup the chain
 		XmlAligner aligner = new XmlAligner(validatorHandler);
-		XmlTo<DocumentContainer> xml2object = new XmlTo<DocumentContainer>(aligner, documentContainer);
+		XmlTo<DocumentContainer> xml2object = new XmlTo<>(aligner, documentContainer);
 		aligner.setContentHandler(xml2object);
 
 		return validatorHandler;

@@ -46,7 +46,7 @@ public class IdinSenderTest extends Mockito {
 		return getIssuers("NL");
 	}
 	private List<Issuer> getIssuers(String country) {
-		List<Issuer> issuers = new ArrayList<Issuer>();
+		List<Issuer> issuers = new ArrayList<>();
 		for(int i = 0; i < 10; i++) {
 			Issuer issuer = mock(Issuer.class);
 			issuer.setIssuerCountry(country);
@@ -57,7 +57,7 @@ public class IdinSenderTest extends Mockito {
 		return issuers;
 	}
 	private Map<String, List<Issuer>> getIssuersByCountry() {
-		Map<String, List<Issuer>> countryMap = new HashMap<String, List<Issuer>>();
+		Map<String, List<Issuer>> countryMap = new HashMap<>();
 		List<String> countries = Arrays.asList("NL", "BE", "GB", "DE", "ES");
 		for(String country : countries) {
 			countryMap.put(country, getIssuers(country));

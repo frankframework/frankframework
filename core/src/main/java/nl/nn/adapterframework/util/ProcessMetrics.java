@@ -15,13 +15,12 @@
 */
 package nl.nn.adapterframework.util;
 
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
 
 /**
  * Utility class to report process parameters like memory usage as an xml-element.
- * 
+ *
  * @since 4.2
  */
 public class ProcessMetrics {
@@ -78,12 +77,12 @@ public class ProcessMetrics {
 		addNumberProperty(props, "totalMemory", totalMem);
 		addNumberProperty(props, "heapSize", totalMem-freeMem);
 		addNumberProperty(props, "maxMemory", maxMemory);
-		addProperty(props, "currentTime", DateUtils.format(new Date(),DateUtils.FORMAT_FULL_GENERIC));
+		addProperty(props, "currentTime", DateFormatUtils.now());
 		return xmlh.toXML();
 	}
 
 	public static Map<String, String> toMap() {
-		Map<String, String> memoryStatistics = new Hashtable<String, String>(3);
+		Map<String, String> memoryStatistics = new Hashtable<>(3);
 
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();

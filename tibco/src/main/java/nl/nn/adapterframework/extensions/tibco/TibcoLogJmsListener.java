@@ -33,7 +33,7 @@ import com.tibco.tibjms.TibjmsMapMessage;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 
 public class TibcoLogJmsListener extends JmsListener {
 
@@ -105,7 +105,7 @@ public class TibcoLogJmsListener extends JmsListener {
 				}
 			}
 		}
-		return new Message(DateUtils.format(creationTimes) + " " + severityStr + " [" + (engineName != null ? engineName : (environment + "-" + node)) + "] [" + (jobId != null ? jobId : "") + "] " + msg + " " + sb.toString());
+		return new Message(DateFormatUtils.format(creationTimes) + " " + severityStr + " [" + (engineName != null ? engineName : (environment + "-" + node)) + "] [" + (jobId != null ? jobId : "") + "] " + msg + " " + sb.toString());
 	}
 
 	private String logLevelToText(int logLevel) {

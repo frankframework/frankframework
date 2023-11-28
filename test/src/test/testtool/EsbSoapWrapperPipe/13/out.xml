@@ -27,7 +27,7 @@
   </soapenv:Header>
   <soapenv:Body>
     <CalculationRequest xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                    xmlns="http://www.ibissource.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
+                    xmlns="http://www.frankframework.org/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
       <SystemCode>L76HB000</SystemCode>
       <CalculationData>1:RS_INFO;835:ILIAS;645:ANP_VRH_3;</CalculationData>
       <Result xmlns="http://nn.nl/XSD/Generic/MessageHeader/1">

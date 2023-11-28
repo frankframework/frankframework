@@ -20,8 +20,8 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 
 	WsdlXmlValidator validator;
 
-	private PipeLineSession session = new PipeLineSession();
-	private TestConfiguration configuration = new TestConfiguration();
+	private final PipeLineSession session = new PipeLineSession();
+	private final TestConfiguration configuration = new TestConfiguration();
 
 	@Override
 	public ValidationResult validate(String rootElement, String rootNamespace, String schemaLocation, boolean addNamespaceToSchema,

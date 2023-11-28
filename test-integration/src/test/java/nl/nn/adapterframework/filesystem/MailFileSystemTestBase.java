@@ -71,7 +71,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 	public void testNormalMessageSubject() throws Exception {
 		M emailMessage = getFirstFileFromFolder(null);
 		String subject = fileSystem.getSubject(emailMessage);
-		String expected = "Re: [ibissource/iaf] Ladybug randomly stops report generation (#875)";
+		String expected = "Re: [frankframework/frankframework] Ladybug randomly stops report generation (#875)";
 		assertEquals(expected,subject);
 	}
 
@@ -109,7 +109,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
 		List<String> adresses = (List<String>)properties.get(IMailFileSystem.TO_RECEPIENTS_KEY);
 		String address = adresses.get(0);
-		String expected = "ibissource/iaf <iaf@noreply.github.com>";
+		String expected = "frankframework/frankframework <iaf@noreply.github.com>";
 		assertEquals(expected, address);
 	}
 
@@ -127,7 +127,7 @@ public abstract class MailFileSystemTestBase<M,A,FS extends IMailFileSystem<M, A
 		M emailMessage = getFirstFileFromFolder(null);
 		Map<String,Object> properties = fileSystem.getAdditionalFileProperties(emailMessage);
 		String bestReplyAddress = (String)properties.get(IMailFileSystem.BEST_REPLY_ADDRESS_KEY);
-		String expected = "ibissource/iaf <reply+AA72C6GJP3QDZ2ZAJ4NOTZN5QBAH3EVBNHHCM2YM5Q@reply.github.com>";
+		String expected = "frankframework/frankframework <reply+AA72C6GJP3QDZ2ZAJ4NOTZN5QBAH3EVBNHHCM2YM5Q@reply.github.com>";
 		assertEquals(expected, bestReplyAddress);
 	}
 

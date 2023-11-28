@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.dbms;
 
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SqlTranslatorOracleToH2Test {
 
@@ -15,8 +15,8 @@ public class SqlTranslatorOracleToH2Test {
 
 	private String skipIrrelevantWhitespace(String query) {
 		String result = query.replaceAll(" \\(", "(");
-		result = result.replaceAll(", ", ",");
-		result = result.replaceAll(" ;", ";");
+		result = result.replace(", ", ",");
+		result = result.replace(" ;", ";");
 		result = result.replaceAll(" =", "=");
 		result = result.replaceAll("= ", "=");
 		result = result.replaceAll("[\\t ]+", " ");

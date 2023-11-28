@@ -20,8 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Cache<K,V,E extends Exception> {
 
-	private Map<K,CacheEntry<V>> delegate;
-	private int timeToLiveMillis;
+	private final Map<K, CacheEntry<V>> delegate;
+	private final int timeToLiveMillis;
 
 	public Cache(int timeToLiveMillis) {
 		this.timeToLiveMillis = timeToLiveMillis;

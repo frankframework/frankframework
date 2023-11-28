@@ -44,7 +44,7 @@ public class CommandSender extends SenderWithParametersBase {
 	private String command;
 	private int timeOut = 0;
 	private boolean commandWithArguments = false;
-	private boolean synchronous=true;
+	private final boolean synchronous = true;
 
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {

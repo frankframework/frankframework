@@ -125,7 +125,7 @@ public class XmlSwitch extends AbstractPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward="";
-		PipeForward pipeForward = null;
+		PipeForward pipeForward;
 		if(StringUtils.isNotEmpty(getForwardNameSessionKey())) {
 			forward = session.getString(getForwardNameSessionKey());
 		} else if(!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getSessionKey())) {

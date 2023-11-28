@@ -34,10 +34,10 @@ import nl.nn.adapterframework.util.LogUtil;
  * Typical use: SapSystemFactory.getInstance().&lt;method to execute&gt;
  */
 public class SapSystemFactory {
-	private Logger log;
+	private final Logger log;
 
 	private static SapSystemFactory self = null;
-	private Hashtable<String, Object> sapSystems = new Hashtable<String, Object>();
+	private final Hashtable<String, Object> sapSystems = new Hashtable<>();
 
 	private SapSystemFactory() {
 		super();
@@ -67,15 +67,15 @@ public class SapSystemFactory {
 	}
 
 	public Iterator<String> getRegisteredSapSystemNames() {
-		SortedSet<String> sortedKeys = new TreeSet<String>(sapSystems.keySet());
+		SortedSet<String> sortedKeys = new TreeSet<>(sapSystems.keySet());
 		return sortedKeys.iterator();
 	}
 
 	public List<String> getRegisteredSapSystemsNamesAsList() {
 		Iterator<String> it = getRegisteredSapSystemNames();
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		while (it.hasNext()) {
-			result.add((String) it.next());
+			result.add(it.next());
 		}
 		return result;
 	}

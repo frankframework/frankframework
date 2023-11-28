@@ -124,7 +124,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 			int lastIndex = elements.size() - 1;
-			String lastElement = (String) elements.get(lastIndex);
+			String lastElement = elements.get(lastIndex);
 			if (!lastElement.equals(localName)) {
 				throw new SAXException("expected end element [" + lastElement + "] but got end element [" + localName + "]");
 			}
@@ -168,7 +168,7 @@ public class XmlFileElementIteratorPipe extends IteratingPipe<String> {
 		private String elementsToString() {
 			String chain = null;
 			for (Iterator<String> it = elements.iterator(); it.hasNext();) {
-				String element = (String) it.next();
+				String element = it.next();
 				if (chain == null) {
 					chain = element;
 				} else {

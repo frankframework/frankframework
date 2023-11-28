@@ -28,6 +28,7 @@ import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
@@ -38,7 +39,7 @@ import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.stream.document.INodeBuilder;
 import nl.nn.adapterframework.stream.document.ObjectBuilder;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.UUIDUtil;
@@ -67,7 +68,7 @@ public class FileSystemUtils {
 				fileSystem.deleteFile(destination);
 			} else {
 				if (numOfBackups>0) {
-					FileSystemUtils.rolloverByNumber((IWritableFileSystem<F>)fileSystem, destination, numOfBackups);
+					FileSystemUtils.rolloverByNumber(fileSystem, destination, numOfBackups);
 				} else {
 					throw new FileSystemException("Cannot "+action.getLabel()+" file to ["+fileSystem.getName(destination)+"]. Destination file ["+fileSystem.getCanonicalName(destination)+"] already exists.");
 				}
@@ -184,7 +185,7 @@ public class FileSystemUtils {
 	}
 
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterable<F> iterable){
-		final DirectoryStream<F> ds = new DirectoryStream<F>() {
+		final DirectoryStream<F> ds = new DirectoryStream<>() {
 
 			@Override
 			public void close() throws IOException {
@@ -239,7 +240,7 @@ public class FileSystemUtils {
 	}
 
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator, Supplier<IOException> onClose){
-		final DirectoryStream<F> ds = new DirectoryStream<F>() {
+		final DirectoryStream<F> ds = new DirectoryStream<>() {
 
 			@Override
 			public void close() throws IOException {
@@ -270,7 +271,7 @@ public class FileSystemUtils {
 			return;
 		}
 		String srcFilename = fileSystem.getCanonicalName(file);
-		F tgtFilename = fileSystem.toFile(srcFilename+"."+DateUtils.format(lastModified, DateUtils.shortIsoFormat));
+		F tgtFilename = fileSystem.toFile(srcFilename+"."+ DateFormatUtils.format(lastModified, DateFormatUtils.FORMAT_SHORT_ISO));
 		fileSystem.renameFile(file, tgtFilename);
 
 		if (log.isDebugEnabled()) log.debug("Deleting files in folder ["+folder+"] that have a name starting with ["+srcFilename+"] and are older than ["+rotateDays+"] days");
@@ -300,8 +301,8 @@ public class FileSystemUtils {
 		WildCardFilter excludeFilter =  StringUtils.isEmpty(excludeWildCard) ? null : new WildCardFilter(excludeWildCard);
 
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(it, 0),false)
-				.filter(F -> (wildcardfilter==null || wildcardfilter.accept(null, fileSystem.getName((F) F)))
-						&& (excludeFilter==null || !excludeFilter.accept(null, fileSystem.getName((F) F))))
+				.filter(F -> (wildcardfilter==null || wildcardfilter.accept(null, fileSystem.getName(F)))
+						&& (excludeFilter==null || !excludeFilter.accept(null, fileSystem.getName(F))))
 				.onClose(() -> {
 					try {
 						ds.close();
@@ -345,11 +346,11 @@ public class FileSystemUtils {
 				Date modificationDate = fileSystem.getModificationTime(f);
 				//add date
 				if (modificationDate != null) {
-					String date = DateUtils.format(modificationDate, DateUtils.shortIsoFormat);
+					String date = DateFormatUtils.format(modificationDate, DateFormatUtils.FORMAT_SHORT_ISO);
 					file.addAttribute("modificationDate", date);
 
 					// add the time
-					String time = DateUtils.format(modificationDate, DateUtils.FORMAT_TIME_HMS);
+					String time = DateFormatUtils.format(modificationDate, DateFormatUtils.FORMAT_TIME_HMS);
 					file.addAttribute("modificationTime", time);
 				}
 			}

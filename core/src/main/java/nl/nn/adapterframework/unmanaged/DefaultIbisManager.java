@@ -52,7 +52,7 @@ public class DefaultIbisManager implements IbisManager {
 	protected Logger secLog = LogUtil.getLogger("SEC");
 
 	private IbisContext ibisContext;
-	private List<Configuration> configurations = new ArrayList<>();
+	private final List<Configuration> configurations = new ArrayList<>();
 	private ApplicationEventPublisher applicationEventPublisher;
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -114,7 +114,7 @@ public class DefaultIbisManager implements IbisManager {
 	 */
 	@Override
 	public void shutdown() {
-		unload((String) null);
+		unload(null);
 		IbisCacheManager.shutdown();
 	}
 

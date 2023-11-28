@@ -21,8 +21,8 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
-import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.dbms.GenericDbmsSupport;
+import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsRealm;
 import nl.nn.adapterframework.jms.JmsRealmFactory;
 import nl.nn.adapterframework.testutil.MatchUtils;
@@ -31,7 +31,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 public class ClassLoaderManagerTest extends Mockito {
 
-	private static IbisContext ibisContext = spy(new IbisContext());
+	private static final IbisContext ibisContext = spy(new IbisContext());
 	private ClassLoaderManager manager;
 
 	private static final String BASE_DIR = "/ClassLoader";
@@ -288,6 +288,6 @@ public class ClassLoaderManagerTest extends Mockito {
 	 */
 	@SuppressWarnings("deprecation")
 	private void setLocalProperty(String key, String value) {
-		appConstants.put((Object) key, (Object) value);
+		appConstants.put(key, (Object) value);
 	}
 }

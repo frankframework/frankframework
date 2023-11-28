@@ -111,7 +111,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase
 		resourcesExists(name, getScheme());
 	}
 	public void resourcesExists(String name, String scheme) throws IOException {
-		LinkedList<String> schemes = new LinkedList<String>();
+		LinkedList<String> schemes = new LinkedList<>();
 		if(!scheme.equals("scheme"))
 			schemes.add(scheme);
 		schemes.add("file");

@@ -45,8 +45,8 @@ public class ClassLoaderManager {
 	private static final Logger LOG = LogUtil.getLogger(ClassLoaderManager.class);
 	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
-	private Map<String, ClassLoader> classLoaders = new TreeMap<>();
-	private ClassLoader classPathClassLoader = Thread.currentThread().getContextClassLoader();
+	private final Map<String, ClassLoader> classLoaders = new TreeMap<>();
+	private final ClassLoader classPathClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private IbisContext ibisContext;
 

@@ -34,7 +34,7 @@ import com.sap.conn.jco.ext.Environment;
  * @since   5.0
  */
 public class SapSystemDataProvider implements DestinationDataProvider {
-	private static Logger log = LogUtil.getLogger(SapSystemDataProvider.class);
+	private static final Logger log = LogUtil.getLogger(SapSystemDataProvider.class);
 	private static SapSystemDataProvider self = null;
 	private DestinationDataEventListener destinationDataEventListener;
 

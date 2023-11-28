@@ -29,10 +29,10 @@ import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.MessageBrowsingFilter;
 
 public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTestBase {
-	private String PROPERTY_FILE = "ExchangeMailListener.properties";
+	private final String PROPERTY_FILE = "ExchangeMailListener.properties";
 
-	private String ndrMessageId = PropertyUtil.getProperty(PROPERTY_FILE, "ndrMessageId");
-	private String mainFrom = PropertyUtil.getProperty(PROPERTY_FILE, "mainFrom");
+	private final String ndrMessageId = PropertyUtil.getProperty(PROPERTY_FILE, "ndrMessageId");
+	private final String mainFrom = PropertyUtil.getProperty(PROPERTY_FILE, "mainFrom");
 
 	protected String mailaddress;
 	protected String mailaddress_fancy;
@@ -43,7 +43,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 
 	protected String recipient;
 
-	private String testProperties="ExchangeMail.properties";
+	private final String testProperties = "ExchangeMail.properties";
 
 	protected String basefolder1;
 	protected String basefolder2;
@@ -270,7 +270,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.setFilter("NDR");
 		configureAndOpen(targetFolder,null);
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
@@ -316,7 +316,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.setFilter("NDR");
 		configureAndOpen(targetFolder,null);
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
@@ -368,7 +368,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.setFilter("NDR");
 		configureAndOpen(targetFolder,null);
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
@@ -420,7 +420,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.setFilter("NDR");
 		configureAndOpen(targetFolder,null);
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage);
@@ -457,7 +457,7 @@ public abstract class ExchangeMailListenerTestBase extends HelperedFileSystemTes
 		mailListener.setCreateFolders(true);
 		configureAndOpen(targetFolder,null);
 
-		Map<String,Object> threadContext=new HashMap<String,Object>();
+		Map<String,Object> threadContext=new HashMap<>();
 
 		ExchangeMessageReference rawMessage = mailListener.getRawMessage(threadContext);
 		assertNull(rawMessage);

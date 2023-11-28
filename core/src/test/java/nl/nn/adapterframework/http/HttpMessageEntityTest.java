@@ -124,7 +124,7 @@ public class HttpMessageEntityTest {
 	public void testMessageWithCharsetButContentEncodingSetToNull() throws Exception {
 		Message message = new Message(repeatableMessage.asByteArray(), "UTF-8");
 		HttpMessageEntity entity = new HttpMessageEntity(message, ContentType.parse("text/plain"));
-		entity.setContentEncoding((String)null);
+		entity.setContentEncoding((String) null);
 		assertNull(entity.getContentEncoding(), "should not be set");
 
 		assertEquals("text/plain", entity.getContentType().getValue());

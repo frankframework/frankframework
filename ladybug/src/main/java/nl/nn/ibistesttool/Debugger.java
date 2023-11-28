@@ -321,7 +321,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public List<String> getStubStrategies() {
-		List<String> stubStrategies = new ArrayList<String>();
+		List<String> stubStrategies = new ArrayList<>();
 		stubStrategies.add(STUB_STRATEGY_STUB_ALL_SENDERS);
 		stubStrategies.add(TestTool.STUB_STRATEGY_NEVER);
 		stubStrategies.add(TestTool.STUB_STRATEGY_ALWAYS);
@@ -436,7 +436,7 @@ public class Debugger implements IbisDebugger, nl.nn.testtool.Debugger, Applicat
 
 	@Override
 	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
-		if (event.getSource()!=this) {
+		if (testTool != null && event.getSource()!=this) {
 			testTool.setReportGeneratorEnabled(event.isEnabled());
 		}
 	}

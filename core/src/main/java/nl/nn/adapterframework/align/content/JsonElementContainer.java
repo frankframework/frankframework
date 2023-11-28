@@ -42,14 +42,14 @@ import nl.nn.adapterframework.util.LogUtil;
 public class JsonElementContainer implements ElementContainer {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	private String name;
-	private boolean xmlArrayContainer;
-	private boolean repeatedElement;
-	private boolean skipArrayElementContainers;
+	private final String name;
+	private final boolean xmlArrayContainer;
+	private final boolean repeatedElement;
+	private final boolean skipArrayElementContainers;
 	private boolean nil=false;
 	private ScalarType type=ScalarType.UNKNOWN;
-	private String attributePrefix;
-	private String mixedContentLabel;
+	private final String attributePrefix;
+	private final String mixedContentLabel;
 
 	public String stringContent;
 	private Map<String,Object> contentMap;
@@ -179,7 +179,7 @@ public class JsonElementContainer implements ElementContainer {
 			throw new IllegalStateException("already created array for element ["+name+"]");
 		}
 		if (contentMap==null) {
-			contentMap=new LinkedHashMap<String,Object>();
+			contentMap=new LinkedHashMap<>();
 		}
 		Object current=contentMap.get(childName);
 		if (content.isRepeatedElement()) {

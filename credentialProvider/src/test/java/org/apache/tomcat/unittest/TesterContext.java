@@ -73,7 +73,7 @@ public class TesterContext implements Context {
 
 	private static final Log log = LogFactory.getLog(TesterContext.class);
 
-	private Map<String, String> roleMappings = new HashMap<>();
+	private final Map<String, String> roleMappings = new HashMap<>();
 
 	public Map<String, String> getRoleMapping() {
 		return roleMappings;
@@ -93,7 +93,7 @@ public class TesterContext implements Context {
 		roleMappings.put(role, link);
 	}
 
-	private List<String> securityRoles = new ArrayList<>();
+	private final List<String> securityRoles = new ArrayList<>();
 
 	@Override
 	public void addSecurityRole(String role) {
@@ -115,7 +115,7 @@ public class TesterContext implements Context {
 		securityRoles.remove(role);
 	}
 
-	private List<SecurityConstraint> securityConstraints = new ArrayList<>();
+	private final List<SecurityConstraint> securityConstraints = new ArrayList<>();
 
 	@Override
 	public void addConstraint(SecurityConstraint constraint) {

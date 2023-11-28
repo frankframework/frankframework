@@ -322,7 +322,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/preflight/";
 		new ApiListenerBuilder(uri, Methods.GET).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Access-Control-Request-Headers", "Message-Id,CustomHeader");
 		Response result = service(createRequest(uri, Methods.OPTIONS, null, headers));
 		assertEquals(200, result.getStatus());
@@ -340,8 +340,8 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/not-preflight/";
 		new ApiListenerBuilder(uri, Methods.POST).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
-		headers.put("origin", "https://ibissource.org");
+		Map<String, String> headers = new HashMap<>();
+		headers.put("origin", "https://frankframework.org");
 		headers.put("Access-Control-Request-Headers", "Message-Id,CustomHeader");
 		Response result = service(createRequest(uri, Methods.POST, "data", headers));
 		assertEquals(200, result.getStatus());
@@ -480,7 +480,7 @@ public class ApiListenerServletTest extends Mockito {
 		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON)
 			.build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/xml");
 		MockHttpServletRequest request = createRequest(uri, Methods.POST, "{}", headers);
 
@@ -497,7 +497,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/ApiListenerAllow/";
 		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
 		Response result = service(createRequest(uri, Methods.POST, "{}", headers));
 		assertEquals(200, result.getStatus());
@@ -512,7 +512,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/listenerDoesNotAcceptContentType";
 		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.XML, null).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		Response result = service(createRequest(uri, Methods.POST, "{}", headers));
@@ -525,7 +525,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/listenerLovesContentTypeJSON";
 		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.JSON, MediaTypes.JSON).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json; charset=UTF-8");
 		Response result = service(createRequest(uri, Methods.POST, "{}", headers));
@@ -769,7 +769,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/queryParamTest";
 		new ApiListenerBuilder(uri, Methods.GET).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		Response result = service(createRequest(uri+"?name=JOHN-DOE&GENDER=MALE", Methods.GET, null, headers));
@@ -786,7 +786,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/queryParamTestWithListsItems";
 		new ApiListenerBuilder(uri, Methods.GET).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		Response result = service(createRequest(uri+"?transport=car&transport=bike&transport=moped&maxSpeed=60", Methods.GET, null, headers));
@@ -804,7 +804,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/dynamic/";
 		new ApiListenerBuilder(uri+"{poef}", Methods.GET).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		Response result = service(createRequest(uri+"tralala", Methods.GET, null, headers));
@@ -820,7 +820,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri="/dynamic/";
 		new ApiListenerBuilder(uri+"*", Methods.GET).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		Response result = service(createRequest(uri+"tralala", Methods.GET, null, headers));
@@ -838,7 +838,7 @@ public class ApiListenerServletTest extends Mockito {
 			.withExitCode(234)
 			.build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 		Response result = service(createRequest(uri, Methods.GET, null, headers));
@@ -858,7 +858,7 @@ public class ApiListenerServletTest extends Mockito {
 			.setUpdateEtag(true)
 			.build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 
@@ -884,7 +884,7 @@ public class ApiListenerServletTest extends Mockito {
 			.withResponseContent(repeatableMessage)
 			.build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Accept", "application/json");
 		headers.put("content-type", "application/json");
 
@@ -911,7 +911,7 @@ public class ApiListenerServletTest extends Mockito {
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("if-none-match", "my-etag-value");
 
 		// Act
@@ -934,7 +934,7 @@ public class ApiListenerServletTest extends Mockito {
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("if-none-match", "my-etag-value7");
 
 		// Act
@@ -954,7 +954,7 @@ public class ApiListenerServletTest extends Mockito {
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("if-match", "my-etag-value");
 		Response result = service(createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers));
 
@@ -971,7 +971,7 @@ public class ApiListenerServletTest extends Mockito {
 		String etagCacheKey = ApiCacheManager.buildCacheKey(uri);
 		ApiCacheManager.getInstance().put(etagCacheKey, "my-etag-value");
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("if-match", "my-etag-value2");
 		Response result = service(createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers));
 
@@ -986,7 +986,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri = "/cookie";
 		new ApiListenerBuilder(uri, Methods.POST, AuthMethods.COOKIE).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		Response result = service(createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers));
 
 		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
@@ -1000,7 +1000,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri = "/cookie";
 		new ApiListenerBuilder(uri, Methods.POST, AuthMethods.COOKIE).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		MockHttpServletRequest request = createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers);
 		Cookie cookies = new Cookie("authenticationToken", "myToken");
 		request.setCookies(cookies);
@@ -1022,7 +1022,7 @@ public class ApiListenerServletTest extends Mockito {
 		assertTrue(principal.isLoggedIn(), "principal is not logged in? ttl expired?");
 		ApiCacheManager.getInstance().put(authToken, principal);
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		MockHttpServletRequest request = createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers);
 		Cookie cookies = new Cookie("authenticationToken", authToken);
 		request.setCookies(cookies);
@@ -1043,7 +1043,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri = "/cookie";
 		new ApiListenerBuilder(uri, Methods.POST, AuthMethods.HEADER).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Authorization", "blalablaaaa");
 		Response result = service(createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers));
 
@@ -1063,7 +1063,7 @@ public class ApiListenerServletTest extends Mockito {
 		assertTrue(principal.isLoggedIn(), "principal is not logged in? ttl expired?");
 		ApiCacheManager.getInstance().put(authToken, principal);
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Authorization", authToken);
 		Response result = service(createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers));
 
@@ -1081,7 +1081,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri = "/authRole2";
 		new ApiListenerBuilder(uri, Methods.POST, AuthMethods.AUTHROLE).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Authorization", "am9objpkb2U=");
 		MockHttpServletRequest request = createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers);
 		request.setAuthType("BASIC_AUTH");
@@ -1101,7 +1101,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri = "/authRole2";
 		new ApiListenerBuilder(uri, Methods.POST, AuthMethods.AUTHROLE).build();
 
-		Map<String, String> headers = new HashMap<String, String>();
+		Map<String, String> headers = new HashMap<>();
 		headers.put("Authorization", "am9objpkb2U=");
 		MockHttpServletRequest request = createRequest(uri, Methods.POST, "{\"tralalalallala\":true}", headers);
 		request.setAuthType("BASIC_AUTH");

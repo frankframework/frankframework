@@ -24,11 +24,11 @@ import nl.nn.adapterframework.stream.document.DocumentFormat;
 
 public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 
-	private String host="localhost";
-	private String user="testiaf_user";
-	private String password="testiaf_user00";
-	private String database="testdb";
-	private String collection="Students";
+	private final String host = "localhost";
+	private final String user = "testiaf_user";
+	private final String password = "testiaf_user00";
+	private final String database = "testdb";
+	private final String collection = "Students";
 
 	private JndiMongoClientFactory mongoClientFactory;
 

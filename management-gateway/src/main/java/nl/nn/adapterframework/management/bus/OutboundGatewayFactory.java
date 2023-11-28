@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public class OutboundGatewayFactory<T> implements InitializingBean, ApplicationContextAware, FactoryBean<OutboundGateway<T>> {
 
-	private Logger log = LogManager.getLogger(this);
+	private final Logger log = LogManager.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
 	private OutboundGateway<T> gateway;
 

@@ -1,4 +1,4 @@
-<context name="dc=ibissource,dc=org">
+<context name="dc=frankframework,dc=org">
 	<context name="ou=development">
 		<context name="ou=groups">
 			<context name="cn=Application Developer">
@@ -7,15 +7,15 @@
 						<item value="testdeveloper" />
 						<item value="developer" />
 						<item value="slcdeveloper" />
-						<item value="developer-email@ibissource.org" />
-						<item value="devldapuser@ibissource.org" />
+						<item value="developer-email@frankframework.org" />
+						<item value="devldapuser@frankframework.org" />
 						<item value="sandboxdeveloper" />
-						<item value="admintest-developer@ibissource.org" />
+						<item value="admintest-developer@frankframework.org" />
 					</attribute>
 					<attribute name="entryUUID" value="695e99bf-8d9a-4b83-8b64-79b06fe7b09e" />
 					<attribute name="gidNumber" value="506" />
 					<attribute name="entryDN"
-						value="cn=application developer,ou=groups,ou=development,dc=ibissource,dc=org" />
+						value="cn=application developer,ou=groups,ou=development,dc=frankframework,dc=org" />
 					<attribute name="objectClass">
 						<item value="posixGroup" />
 						<item value="top" />
@@ -40,7 +40,7 @@
 					<attribute name="entryUUID" value="0e87629b-218b-4f22-b539-763e9546cdb2" />
 					<attribute name="gidNumber" value="505" />
 					<attribute name="entryDN"
-						value="cn=lea administrator,ou=groups,ou=development,dc=ibissource,dc=org" />
+						value="cn=lea administrator,ou=groups,ou=development,dc=frankframework,dc=org" />
 					<attribute name="objectClass">
 						<item value="posixGroup" />
 						<item value="top" />
@@ -67,7 +67,7 @@
 					<attribute name="entryUUID" value="433d4e3c-a57f-45e2-9c15-36b77b8a8b0c" />
 					<attribute name="gidNumber" value="509" />
 					<attribute name="entryDN"
-						value="cn=realm administrator,ou=groups,ou=development,dc=ibissource,dc=org" />
+						value="cn=realm administrator,ou=groups,ou=development,dc=frankframework,dc=org" />
 					<attribute name="objectClass">
 						<item value="posixGroup" />
 						<item value="top" />
@@ -91,7 +91,7 @@
 					<attribute name="entryUUID" value="28a2d2f4-0229-4fff-bfef-ca2dc6853eeb" />
 					<attribute name="gidNumber" value="508" />
 					<attribute name="entryDN"
-						value="cn=sea administrator,ou=groups,ou=development,dc=ibissource,dc=org" />
+						value="cn=sea administrator,ou=groups,ou=development,dc=frankframework,dc=org" />
 					<attribute name="objectClass">
 						<item value="posixGroup" />
 						<item value="top" />
@@ -109,7 +109,7 @@
 				<attribute name="ou" value="groups" />
 				<attribute name="entryUUID" value="527e4de6-46b4-4860-aeaf-2729dbf948dd" />
 				<attribute name="entryDN"
-					value="ou=groups,ou=development,dc=ibissource,dc=org" />
+					value="ou=groups,ou=development,dc=frankframework,dc=org" />
 				<attribute name="objectClass">
 					<item value="organizationalUnit" />
 					<item value="top" />
@@ -128,7 +128,7 @@
 					<attribute name="displayName" value="0bd6b800ec046191473a61b9b9584c48" />
 					<attribute name="givenName" value="Daybreak" />
 					<attribute name="entryDN"
-						value="cn=daybreak admin,ou=people,ou=development,dc=ibissource,dc=org" />
+						value="cn=daybreak admin,ou=people,ou=development,dc=frankframework,dc=org" />
 					<attribute name="modifyTimestamp" value="20180105122739.307Z" />
 					<attribute name="objectClass">
 						<item value="inetOrgPerson" />
@@ -139,7 +139,7 @@
 					<attribute name="createTimestamp" value="20180105122739.307Z" />
 					<attribute name="subschemaSubentry" value="cn=schema" />
 					<attribute name="uid" value="daybreakadmin" />
-					<attribute name="mail" value="daybreakadmin@ibissource.org" />
+					<attribute name="mail" value="daybreakadmin@frankframework.org" />
 					<attribute name="uidNumber" value="1119" />
 					<attribute name="cn" value="Daybreak Admin" />
 					<attribute name="changetype" value="add" />
@@ -159,7 +159,7 @@
 					<attribute name="displayName" value="2ccd88620d9d3fb3ee8ee839c806fb73" />
 					<attribute name="givenName" value="SLC" />
 					<attribute name="entryDN"
-						value="cn=slc operator,ou=people,ou=development,dc=ibissource,dc=org" />
+						value="cn=slc operator,ou=people,ou=development,dc=frankframework,dc=org" />
 					<attribute name="modifyTimestamp" value="20180105122739.307Z" />
 					<attribute name="objectClass">
 						<item value="inetOrgPerson" />
@@ -170,7 +170,7 @@
 					<attribute name="createTimestamp" value="20180105122739.307Z" />
 					<attribute name="subschemaSubentry" value="cn=schema" />
 					<attribute name="uid" value="slcoperator" />
-					<attribute name="mail" value="slcoperator@ibissource.org" />
+					<attribute name="mail" value="slcoperator@frankframework.org" />
 					<attribute name="uidNumber" value="1118" />
 					<attribute name="cn" value="SLC Operator" />
 					<attribute name="changetype" value="add" />
@@ -187,7 +187,7 @@
 				<attribute name="ou" value="people" />
 				<attribute name="entryUUID" value="f3569c7e-b8d2-482c-ac3c-aab91faa6275" />
 				<attribute name="entryDN"
-					value="ou=people,ou=development,dc=ibissource,dc=org" />
+					value="ou=people,ou=development,dc=frankframework,dc=org" />
 				<attribute name="objectClass">
 					<item value="organizationalUnit" />
 					<item value="top" />
@@ -203,7 +203,7 @@
 		<attributes>
 			<attribute name="ou" value="development" />
 			<attribute name="entryUUID" value="284b15a9-c5da-4aa4-9bca-e8114cc2f5bc" />
-			<attribute name="entryDN" value="ou=development,dc=ibissource,dc=org" />
+			<attribute name="entryDN" value="ou=development,dc=frankframework,dc=org" />
 			<attribute name="objectClass" value="organizationalUnit" />
 			<attribute name="changetype" value="add" />
 			<attribute name="modifyTimestamp" value="20180105122739.304Z" />
@@ -215,7 +215,7 @@
 	</context>
 	<attributes>
 		<attribute name="entryUUID" value="b08198a1-46da-4959-b175-5bf101d00117" />
-		<attribute name="entryDN" value="dc=ibissource,dc=org" />
+		<attribute name="entryDN" value="dc=frankframework,dc=org" />
 		<attribute name="objectClass">
 			<item value="top" />
 			<item value="domain" />
@@ -225,6 +225,6 @@
 		<attribute name="creatorsName" value="cn=Internal Root User" />
 		<attribute name="createTimestamp" value="20180105122739.289Z" />
 		<attribute name="subschemaSubentry" value="cn=schema" />
-		<attribute name="dc" value="ibissource" />
+		<attribute name="dc" value="frankframework" />
 	</attributes>
 </context>

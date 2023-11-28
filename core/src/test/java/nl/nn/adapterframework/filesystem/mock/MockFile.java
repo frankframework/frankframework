@@ -90,7 +90,7 @@ public class MockFile {
 
 	public void addProperty(String key, Object value) {
 		if(additionalProperties == null) {
-			additionalProperties=new LinkedHashMap<String,Object>();
+			additionalProperties=new LinkedHashMap<>();
 		}
 		additionalProperties.put(key, value);
 	}

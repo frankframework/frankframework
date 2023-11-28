@@ -11,7 +11,7 @@ import nl.nn.adapterframework.testutil.ConcurrentActionTester;
 
 public abstract class ConcurrentManagedTransactionTester extends ConcurrentActionTester {
 
-	private PlatformTransactionManager txManager;
+	private final PlatformTransactionManager txManager;
 	private IbisTransaction mainItx;
 
 	public ConcurrentManagedTransactionTester(PlatformTransactionManager txManager) {

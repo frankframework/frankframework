@@ -19,7 +19,7 @@ import org.springframework.context.ApplicationEvent;
 
 public class DebuggerStatusChangedEvent extends ApplicationEvent {
 
-	private boolean enabled;
+	private final boolean enabled;
 
 	public DebuggerStatusChangedEvent(Object source, boolean enabled) {
 		super(source);

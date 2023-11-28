@@ -19,12 +19,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.nn.adapterframework.extensions.cmis.CmisUtils;
-import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
-import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
-import nl.nn.adapterframework.util.XmlBuilder;
-import nl.nn.adapterframework.util.XmlUtils;
-
 import org.apache.chemistry.opencmis.commons.data.ExtensionsData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
@@ -35,16 +29,22 @@ import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import nl.nn.adapterframework.extensions.cmis.CmisUtils;
+import nl.nn.adapterframework.extensions.cmis.server.CmisEvent;
+import nl.nn.adapterframework.extensions.cmis.server.CmisEventDispatcher;
+import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlUtils;
+
 /**
  * Wrapper that delegates when a matching CmisEvent is present.
- * 
+ *
  * @author Niels
  */
 public class IbisRepositoryService implements RepositoryService {
 
-	private RepositoryService repositoryService;
-	private CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
-	private CallContext callContext;
+	private final RepositoryService repositoryService;
+	private final CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
+	private final CallContext callContext;
 
 	public IbisRepositoryService(RepositoryService repositoryService, CallContext callContext) {
 		this.repositoryService = repositoryService;
@@ -72,7 +72,7 @@ public class IbisRepositoryService implements RepositoryService {
 			Element cmisResult = eventDispatcher.trigger(CmisEvent.GET_REPOSITORIES, cmisXml.toXML(), callContext);
 			Element repositories = XmlUtils.getFirstChildTag(cmisResult, "repositories");
 
-			List<RepositoryInfo> repositoryInfoList = new ArrayList<RepositoryInfo>();
+			List<RepositoryInfo> repositoryInfoList = new ArrayList<>();
 			for(Node node : XmlUtils.getChildTags(repositories, "repository")) {
 				repositoryInfoList.add(CmisUtils.xml2repositoryInfo((Element) node));
 			}
@@ -100,13 +100,13 @@ public class IbisRepositoryService implements RepositoryService {
 	}
 
 	@Override
-	public TypeDefinitionList getTypeChildren(String repositoryId, String typeId, Boolean includePropertyDefinitions, 
+	public TypeDefinitionList getTypeChildren(String repositoryId, String typeId, Boolean includePropertyDefinitions,
 			BigInteger maxItems, BigInteger skipCount, ExtensionsData extension) {
 		return repositoryService.getTypeChildren(repositoryId, typeId, includePropertyDefinitions, maxItems, skipCount, extension);
 	}
 
 	@Override
-	public List<TypeDefinitionContainer> getTypeDescendants(String repositoryId, String typeId, BigInteger depth, 
+	public List<TypeDefinitionContainer> getTypeDescendants(String repositoryId, String typeId, BigInteger depth,
 			Boolean includePropertyDefinitions, ExtensionsData extension) {
 
 		if(!eventDispatcher.contains(CmisEvent.GET_TYPE_DESCENDANTS)) {

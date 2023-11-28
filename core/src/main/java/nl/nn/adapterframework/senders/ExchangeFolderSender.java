@@ -105,11 +105,7 @@ public class ExchangeFolderSender extends FileSystemSender<ExchangeMessageRefere
 	public void setProxyUsername(String proxyUsername) {
 		getFileSystem().setProxyUsername(proxyUsername);
 	}
-	@Deprecated
-	@ConfigurationWarning("Please use \"proxyUsername\" instead")
-	public void setProxyUserName(String proxyUsername) {
-		setProxyUsername(proxyUsername);
-	}
+
 	@ReferTo(ExchangeFileSystem.class)
 	public void setProxyPassword(String proxyPassword) {
 		getFileSystem().setProxyPassword(proxyPassword);
