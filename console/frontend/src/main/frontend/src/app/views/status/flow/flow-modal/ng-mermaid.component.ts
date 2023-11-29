@@ -28,16 +28,15 @@ export class NgMermaidComponent implements OnInit, OnChanges {
   timeout?: number;
 
   test = `graph
-          classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;
-          d225e2{{Receiver<br/>JavaListener}}
-          d225e4{{Receiver<br/>ApiListener}}
-          d225e6{{Receiver<br/>JavaListener}}
-          d225e9(HelloBeautifulWorld<br/>FixedResultPipe)
-          d225e11{{success}}
-          d225e2 --> |success| d225e9
-          d225e4 --> |success| d225e9
-          d225e6 --> |success| d225e9
-          d225e9 --> |success|`
+	classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;
+	d225e2{{Receiver<br/>JavaListener}}
+	d225e4{{Receiver<br/>ApiListener}}
+	d225e6{{Receiver<br/>JavaListener}}
+	d225e9(HelloBeautifulWorld<br/>FixedResultPipe)
+	d225e11{{success}}
+	d225e2 --> |success| d225e9
+	d225e4 --> |success| d225e9
+	d225e6 --> |success| d225e9`
 
   private element = this.elRef.nativeElement;
 

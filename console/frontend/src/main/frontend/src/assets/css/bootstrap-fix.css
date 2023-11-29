@@ -9,3 +9,37 @@
 .modal.fade .modal-dialog {
   transform: none;
 }
+
+app-toasts-container {
+  padding: 1rem !important;
+  right: 0 !important;
+  top: 0 !important;
+  position: fixed !important;
+  z-index: 1200;
+}
+
+.toast {
+  background-color: #1ab394;
+  color: #fff;
+  font-size: 14px;
+}
+
+.toast .toast-body .title {
+  font-weight: bold;
+}
+
+.toast-success {
+  background-color: #1ab394;
+}
+
+.toast-error {
+  background-color: #ed5565;
+}
+
+.toast-info {
+  background-color: #23c6c8;
+}
+
+.toast-warning {
+  background-color: #f8ac59;
+}

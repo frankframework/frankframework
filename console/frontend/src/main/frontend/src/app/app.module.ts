@@ -84,6 +84,7 @@ import { TestPipelineComponent } from './views/test-pipeline/test-pipeline.compo
 import { TestServiceListenerComponent } from './views/test-service-listener/test-service-listener.component';
 import { LoginComponent } from './views/login/login.component';
 import { httpInterceptorProviders } from './http-interceptors';
+import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -143,6 +144,7 @@ const windowProvider: ValueProvider = {
     TestPipelineComponent,
     TestServiceListenerComponent,
     LoginComponent,
+    ToastsContainerComponent,
 
     //modals
     InformationModalComponent,

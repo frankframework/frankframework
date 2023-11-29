@@ -6,7 +6,7 @@ export type ToastObject = {
   body ?: string,
   timeout ?: number,
   bodyOutputType ?: string,
-  clickHandler ?: (_: any, isCloseButton: boolean) => boolean,
+  clickHandler?: (_: any, isCloseButton: boolean) => boolean,
   showCloseButton ?: boolean,
   uid ?: number,
   onHideCallback ?: () => void
