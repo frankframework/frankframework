@@ -531,10 +531,10 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		String id = rawMessage.getId();
 		assertThat(id, containsString(filename));
-		String currentDateFormatted=DateUtils.format(new Date());
+		String currentDateFormatted=DateUtils.format(new Date(), DateUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ);
 		String timestamp=id.substring(id.length()-currentDateFormatted.length());
-		long currentDate=DateUtils.parseAnyDate(currentDateFormatted).getTime();
-		long timestampDate=DateUtils.parseAnyDate(timestamp).getTime();
+		long currentDate=DateUtils.parseToDate(currentDateFormatted, DateUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ).getTime();
+		long timestampDate=DateUtils.parseToDate(timestamp, DateUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ).getTime();
 		assertTrue(Math.abs(timestampDate-currentDate)<7300000); // less then two hours in milliseconds.
 	}
 

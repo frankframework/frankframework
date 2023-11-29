@@ -67,7 +67,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F> {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	public static final String ORIGINAL_FILENAME_KEY = "originalFilename";
@@ -360,7 +360,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				messageId = fileSystem.getName(rawMessage);
 			}
 			if (isFileTimeSensitive()) {
-				messageId += "-" + DateUtils.format(fileSystem.getModificationTime(file));
+				messageId += "-" + DateUtils.format(fileSystem.getModificationTime(file), DateUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ);
 			}
 			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId, null, null);
 			if (attributes!=null) {
@@ -407,7 +407,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			}
 			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
 				F movedFile = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false, true);
-				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateUtils.format(getFileSystem().getModificationTime(movedFile)).replace(":", "_"));
+				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateUtils.format(getFileSystem().getModificationTime(movedFile), DateUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ).replace(":", "_"));
 				F renamedFile = getFileSystem().toFile(newName);
 				int i=1;
 				while(getFileSystem().exists(renamedFile)) {

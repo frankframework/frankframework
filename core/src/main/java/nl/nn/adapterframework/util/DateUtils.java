@@ -26,12 +26,13 @@ import org.apache.xmlbeans.GDate;
 
 /**
  * Utilities for formatting and parsing dates.
- * 
+ *
  * @author Johan Verrips IOS
  */
 public class DateUtils {
 	protected static Logger log = LogUtil.getLogger(DateUtils.class);
 
+	public static final String FORMAT_FULL_ISO_TIMESTAMP_NO_TZ = "yyyy-MM-dd'T'HH:mm:ss.SSS";
 	public static final String fullIsoFormat          = "yyyy-MM-dd'T'HH:mm:sszzz";
 	public static final String shortIsoFormat         = "yyyy-MM-dd";
 
@@ -99,7 +100,7 @@ public class DateUtils {
 
 	/**
 	 * Convert date format
-	 * 
+	 *
 	 * @param 	from	String	date format from.
 	 * @param 	to		String	date format to.
 	 * @param 	value	String	date to reformat.
@@ -126,11 +127,11 @@ public class DateUtils {
 
 
 	/**
-	 * 
+	 *
 	 * Add a number of years, months, days to a date specified in a shortIsoFormat, and return it in the same format.
 	 * Als een datum component niet aangepast hoeft te worden, moet 0 meegegeven worden.
 	 * Dus bijv: changeDate("2006-03-23", 2, 1, -4) = "2008-05-19"
-	 * 
+	 *
 	 * @param 	date	A String representing a date in format yyyy-MM-dd.
 	 * @param 	years
 	 * @param 	months
@@ -141,11 +142,11 @@ public class DateUtils {
 	}
 
 	/**
-	 * 
+	 *
 	 * Add a number of years, months, days to a date specified in a certain format, and return it in the same format.
 	 * Als een datum component niet aangepast hoeft te worden, moet 0 meegegeven worden.
 	 * Dus bijv: changeDate("2006-03-23", 2, 1, -4) = "2008-05-19"
-	 * 
+	 *
 	 * @param 	date	A String representing a date in format (dateFormat).
 	 * @param 	years	int
 	 * @param 	months	int
