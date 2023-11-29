@@ -39,7 +39,7 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 		session.put("ContentStream", "text");
 
 		String result = sendMessage("<cmis><id>testId</id><properties><property name=\"cmis:name\">dummy</property></properties><versioningState>NONE</versioningState><contentStream filename=\"file.txt\" length=\"4\" mimeType=\"text/plain\"></contentStream></cmis>").asString();
-		TestAssertions.assertEqualsIgnoreCRLF("<cmis>\n\t<id>dummy</id>\n</cmis>", result);
+		TestAssertions.assertEqualsIgnoreCRLF("<cmis>\n\t<id>ZHVtbXk=</id>\n</cmis>", result);
 	}
 
 	@Test
@@ -52,6 +52,6 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 		session.put("ContentStream", "text");
 
 		String result = sendMessage("<cmis><id>testId</id></cmis>").asString();
-		TestAssertions.assertEqualsIgnoreCRLF("<cmis>\n\t<id>testId</id>\n\t<contentStream length=\"12\" mimeType=\"text/xml\"/>\n</cmis>", result);
+		TestAssertions.assertEqualsIgnoreCRLF("<cmis>\n\t<id>dGVzdElk</id>\n\t<contentStream length=\"12\" mimeType=\"text/xml\"/>\n</cmis>", result);
 	}
 }

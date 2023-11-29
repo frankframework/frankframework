@@ -20,6 +20,7 @@ import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.PropertyType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.commons.codec.binary.Base64;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -52,10 +53,10 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 
 	@Override
 	public String getId() {
-		return objectId;
+		return Base64.encodeBase64String(objectId.getBytes());
 	}
 	public String getObjectId() {
-		return objectId;
+		return Base64.encodeBase64String(objectId.getBytes());
 	}
 
 	@Override

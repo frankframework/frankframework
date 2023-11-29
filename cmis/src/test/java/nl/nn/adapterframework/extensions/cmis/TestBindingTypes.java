@@ -52,27 +52,27 @@ public class TestBindingTypes extends CmisSenderTestBase {
 			+ "<relationships>    <relation>dummy</relation>  </relationships>"
 			+ "</cmis>";
 
-	private static final String createActionExpected = "fileInput.txt";
-	private static final String updateActionExpected = "id";
+	private static final String createActionExpectedBase64 = "ZmlsZUlucHV0LnR4dA==";
+	private static final String updateActionExpectedBase64 = "aWQ=";
 
 	public static Stream<Arguments> allImplementations() {
 		return Stream.of(
-				Arguments.of(BindingTypes.ATOMPUB, CmisAction.CREATE, INPUT, createActionExpected),
+				Arguments.of(BindingTypes.ATOMPUB, CmisAction.CREATE, INPUT, createActionExpectedBase64),
 				Arguments.of(BindingTypes.ATOMPUB, CmisAction.GET, INPUT, "dummy_stream"),
 				Arguments.of(BindingTypes.ATOMPUB, CmisAction.FIND, FIND_INPUT, FIND_RESULT),
-				Arguments.of(BindingTypes.ATOMPUB, CmisAction.UPDATE, INPUT, updateActionExpected),
+				Arguments.of(BindingTypes.ATOMPUB, CmisAction.UPDATE, INPUT, updateActionExpectedBase64),
 				Arguments.of(BindingTypes.ATOMPUB, CmisAction.FETCH, INPUT, FETCH_RESULT),
 
-				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.CREATE, INPUT, createActionExpected),
+				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.CREATE, INPUT, createActionExpectedBase64),
 				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.GET, INPUT, "dummy_stream"),
 				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.FIND, FIND_INPUT, FIND_RESULT),
-				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.UPDATE, INPUT, updateActionExpected),
+				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.UPDATE, INPUT, updateActionExpectedBase64),
 				Arguments.of(BindingTypes.WEBSERVICES, CmisAction.FETCH, INPUT, FETCH_RESULT),
 
-				Arguments.of(BindingTypes.BROWSER, CmisAction.CREATE, INPUT, createActionExpected),
+				Arguments.of(BindingTypes.BROWSER, CmisAction.CREATE, INPUT, createActionExpectedBase64),
 				Arguments.of(BindingTypes.BROWSER, CmisAction.GET, INPUT, "dummy_stream"),
 				Arguments.of(BindingTypes.BROWSER, CmisAction.FIND, FIND_INPUT, FIND_RESULT),
-				Arguments.of(BindingTypes.BROWSER, CmisAction.UPDATE, INPUT, updateActionExpected),
+				Arguments.of(BindingTypes.BROWSER, CmisAction.UPDATE, INPUT, updateActionExpectedBase64),
 				Arguments.of(BindingTypes.BROWSER, CmisAction.FETCH, INPUT, FETCH_RESULT)
 		);
 	}
