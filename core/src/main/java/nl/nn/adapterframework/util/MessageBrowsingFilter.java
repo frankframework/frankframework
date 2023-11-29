@@ -84,7 +84,7 @@ public class MessageBrowsingFilter {
 		}
 		if(comment != null) {
 			count++;
-			matches += (StringUtils.isNotEmpty(iterItem.getCommentString()) && iterItem.getCommentString().indexOf(comment)>-1) ? 1 : 0;
+			matches += (StringUtils.isNotEmpty(iterItem.getCommentString()) && iterItem.getCommentString().contains(comment)) ? 1 : 0;
 		}
 		if(label != null) {
 			count++;
@@ -175,7 +175,7 @@ public class MessageBrowsingFilter {
 	public void setStartDateMask(String startDateMask) {
 		if(!StringUtils.isEmpty(startDateMask)) {
 			try {
-				startDate = DateUtils.parseAnyDate(startDateMask);
+				startDate = DateFormatUtils.parseAnyDate(startDateMask);
 			}
 			catch(CalendarParserException ex) {
 				throw new IllegalStateException("could not parse date from ["+startDateMask+"]", ex);
@@ -186,7 +186,7 @@ public class MessageBrowsingFilter {
 	public void setEndDateMask(String endDateMask) {
 		if(!StringUtils.isEmpty(endDateMask)) {
 			try {
-				endDate = DateUtils.parseAnyDate(endDateMask);
+				endDate = DateFormatUtils.parseAnyDate(endDateMask);
 			}
 			catch(CalendarParserException ex) {
 				throw new IllegalStateException("could not parse date from ["+endDateMask+"]", ex);

@@ -9,9 +9,9 @@ import nl.nn.adapterframework.senders.SftpFileSystemSender;
 
 public class SftpFileSystemSenderTest extends FileSystemSenderTest<SftpFileSystemSender, SftpFileRef, SftpFileSystem> {
 
-	private String username = "frankframework";
-	private String password = "pass_123";
-	private String host = "localhost";
+	private final String username = "frankframework";
+	private final String password = "pass_123";
+	private final String host = "localhost";
 	private int port = 22;
 	private String remoteDirectory = "/home/frankframework/sftp";
 

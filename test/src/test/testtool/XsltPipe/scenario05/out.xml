@@ -1,4 +1,4 @@
-<request xmlns="http://www.ibissource.org/tom" action="copyNamespace">
+<request xmlns="http://www.frankframework.org/tom" action="copyNamespace">
   <Agreement>
     <InternalExternalIndicator>01</InternalExternalIndicator>
     <InternalAgreement>

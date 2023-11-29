@@ -18,11 +18,9 @@ package nl.nn.adapterframework.pipes;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -50,10 +48,8 @@ import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.SaxAbortException;
 import nl.nn.adapterframework.stream.SaxTimeoutException;
-import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.util.AppConstants;
@@ -85,7 +81,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
 @SupportsOutputStreaming
 public class ForEachChildElementPipe extends StringIteratorPipe implements IThreadCreator {
 
-	public final int DEFAULT_XSLT_VERSION = 1; // currently only Xalan supports XSLT Streaming
+	public static final int DEFAULT_XSLT_VERSION = 1; // currently only Xalan supports XSLT Streaming
 
 	private @Getter boolean processFile=false;
 	private @Getter String containerElement;
@@ -195,7 +191,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			super.endDocument();
 			try {
 				callback.endIterating();
-			} catch (SenderException | TimeoutException | IOException e) {
+			} catch (SenderException | IOException | TimeoutException e) {
 				throw new SaxException(e);
 			}
 		}
@@ -307,7 +303,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		private TransformerErrorListener transformerErrorListener=null;
 	}
 
-	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, Message input, PipeLineSession session, ItemCallback callback, BiConsumer<AutoCloseable,String> closeOnCloseRegister) throws TransformerConfigurationException {
+	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, Message input, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
 		result.itemHandler = new ItemCallbackCallingHandler(callback);
 		result.inputHandler=result.itemHandler;
 
@@ -316,7 +312,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			String targetElementString = StringUtils.isNotEmpty(getTargetElement()) ? "filter to targetElement '"+getTargetElement()+"'" :null;
 			String xpathString = getExtractElementsTp()!=null ? "filter XPath '"+getElementXPathExpression()+"'": null;
 			String label = "XML after preprocessing: " + StringUtil.concat(", ",containerElementString, targetElementString, xpathString);
-			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler, closeOnCloseRegister);
+			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler);
 		}
 
 		if (isRemoveNamespaces()) {
@@ -376,26 +372,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	@Override
-	protected boolean canProvideOutputStream() {
-		return !isProcessFile() && super.canProvideOutputStream();
-	}
-
-	@Override
-	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		HandlerRecord handlerRecord = new HandlerRecord();
-		try {
-			ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, "provideOutputStream", threadLifeCycleEventListener, txManager, session) : null;
-			MessageOutputStream target=getTargetStream(session);
-			Writer resultWriter = target.asWriter();
-			ItemCallback callback = createItemCallBack(session, getSender(), resultWriter);
-			createHandler(handlerRecord, threadConnector, null, session, callback, (resource,label)->target.closeOnClose(resource));
-			return new MessageOutputStream(this, handlerRecord.inputHandler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
-		} catch (TransformerException e) {
-			throw new StreamingException(handlerRecord.errorMessage, e);
-		}
-	}
-
-	@Override
 	protected StopReason iterateOverInput(Message input, PipeLineSession session, Map<String,Object> threadContext, ItemCallback callback) throws SenderException, TimeoutException {
 		InputSource src;
 		if (isProcessFile()) {
@@ -422,7 +398,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		SenderException mainException = null;
 		try (ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
 			try {
-				createHandler(handlerRecord, threadConnector, input, session, callback, closeables::put);
+				createHandler(handlerRecord, threadConnector, input, session, callback);
 			} catch (TransformerException e) {
 				throw new SenderException(handlerRecord.errorMessage, e);
 			}
@@ -448,8 +424,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 					}
 				}
 			}
-		} catch (IOException e) {
-			mainException = new SenderException(e);
 		} finally {
 			for(Entry<AutoCloseable,String> entry:closeables.entrySet()) {
 				String label = entry.getValue();

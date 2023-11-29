@@ -21,7 +21,7 @@ import nl.nn.adapterframework.validation.xsd.ResourceXsd;
 
 public class XSDTest {
 
-	private IScopeProvider scopeProvider = new TestScopeProvider();
+	private final IScopeProvider scopeProvider = new TestScopeProvider();
 
 	@Test
 	public void xsdName() throws Exception {

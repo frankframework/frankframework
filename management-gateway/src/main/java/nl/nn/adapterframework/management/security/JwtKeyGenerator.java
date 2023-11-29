@@ -50,6 +50,8 @@ import nl.nn.adapterframework.util.Environment;
 import nl.nn.adapterframework.util.UUIDUtil;
 
 public class JwtKeyGenerator implements InitializingBean {
+	public static final Curve JWT_DEFAULT_CURVE = Curve.P_384;
+	public static final JWSAlgorithm JWT_DEFAULT_SIGNING_ALGORITHM = JWSAlgorithm.ES384;
 	private final Logger log = LogManager.getLogger(JwtKeyGenerator.class);
 	private JWSSigner signer;
 	private @Getter String publicJwkSet;
@@ -58,7 +60,7 @@ public class JwtKeyGenerator implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() {
 		try {
-			ECKey key = new ECKeyGenerator(Curve.SECP256K1).keyIDFromThumbprint(true).generate();
+			ECKey key = new ECKeyGenerator(JWT_DEFAULT_CURVE).keyIDFromThumbprint(true).generate();
 
 			String version = Environment.getModuleVersion("iaf-management-gateway");
 			log.info("initializing JWT KeyGenerator version [{}]", version);
@@ -66,7 +68,7 @@ public class JwtKeyGenerator implements InitializingBean {
 
 			// Store the public key
 			ECPrivateKey privateKey = key.toECPrivateKey();
-			signer = new ECDSASigner(privateKey, Curve.SECP256K1);
+			signer = new ECDSASigner(privateKey, JWT_DEFAULT_CURVE);
 			JWKSet set = new JWKSet(key.toPublicJWK());
 			publicJwkSet = set.toString();
 		} catch (JOSEException e) {
@@ -75,7 +77,7 @@ public class JwtKeyGenerator implements InitializingBean {
 	}
 
 	private void generateJWSHeader(ECKey key, String version) {
-		jwtHeader = new JWSHeader.Builder(JWSAlgorithm.ES256K)
+		jwtHeader = new JWSHeader.Builder(JWT_DEFAULT_SIGNING_ALGORITHM)
 				.type(JOSEObjectType.JWT)
 				.customParam("version", version)
 				.keyID(key.getKeyID()).build();
@@ -129,7 +131,7 @@ public class JwtKeyGenerator implements InitializingBean {
 		try {
 			signedJWT.sign(signer);
 		} catch (JOSEException e) {
-			throw new AuthenticationServiceException("unable to sing JWT using ["+signer+"]", e);
+			throw new AuthenticationServiceException("unable to sign JWT using [" + signer + "]", e);
 		}
 
 		String jwt = signedJWT.serialize();

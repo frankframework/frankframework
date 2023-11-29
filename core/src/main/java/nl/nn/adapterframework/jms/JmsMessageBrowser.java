@@ -35,7 +35,7 @@ import nl.nn.adapterframework.core.IMessageBrowser;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.ListenerException;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.StringUtil;
 
 /**
@@ -76,10 +76,10 @@ public abstract class JmsMessageBrowser<M, J extends javax.jms.Message> extends 
 	public IMessageBrowsingIterator getIterator(Date startTime, Date endTime, SortOrder order) throws ListenerException {
 		String selector=getSelector();
 		if (startTime!=null) {
-			selector= StringUtil.concatStrings(selector, " AND ", "JMSTimestamp >= "+DateUtils.format(startTime));
+			selector= StringUtil.concatStrings(selector, " AND ", "JMSTimestamp >= "+ DateFormatUtils.format(startTime));
 		}
 		if (endTime!=null) {
-			selector= StringUtil.concatStrings(selector, " AND ", "JMSTimestamp < "+DateUtils.format(endTime));
+			selector= StringUtil.concatStrings(selector, " AND ", "JMSTimestamp < "+ DateFormatUtils.format(endTime));
 		}
 		try {
 			return new JmsQueueBrowserIterator(this,(Queue)getDestination(),selector);

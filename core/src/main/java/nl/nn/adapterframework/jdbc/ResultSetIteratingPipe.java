@@ -20,6 +20,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import nl.nn.adapterframework.dbms.JdbcException;
+
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
@@ -27,7 +29,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -41,7 +43,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  */
 public class ResultSetIteratingPipe extends JdbcIteratingPipeBase {
 
-	private boolean suppressResultSetHoldabilityWarning = AppConstants.getInstance().getBoolean(SuppressKeys.RESULT_SET_HOLDABILITY.getKey(), false);
+	private final boolean suppressResultSetHoldabilityWarning = AppConstants.getInstance().getBoolean(SuppressKeys.RESULT_SET_HOLDABILITY.getKey(), false);
 	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
 	@Override

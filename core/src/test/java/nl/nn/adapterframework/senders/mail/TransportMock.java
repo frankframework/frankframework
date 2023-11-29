@@ -8,7 +8,7 @@ import jakarta.mail.Transport;
 import jakarta.mail.URLName;
 
 public class TransportMock extends Transport {
-	private Session session;
+	private final Session session;
 
 	public TransportMock(Session session, URLName urlname) {
 		super(session, urlname);

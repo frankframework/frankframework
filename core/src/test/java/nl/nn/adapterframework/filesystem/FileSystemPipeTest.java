@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Writer;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +25,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -161,49 +159,6 @@ public abstract class FileSystemPipeTest<FSP extends FileSystemPipe<F, FS>, F, F
 		//assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
 	}
-
-	@Test
-	public void fileSystemPipeUploadActionTestWithOutputStream() throws Exception {
-		String filename = "uploadedwithOutputStream" + FILE1;
-		String contents = "Some text content to test upload action\n";
-
-		if (_fileExists(filename)) {
-			_deleteFile(null, filename);
-		}
-
-		//InputStream stream = new ByteArrayInputStream(contents.getBytes("UTF-8"));
-		PipeLineSession session = new PipeLineSession();
-		//session.put("uploadActionTarget", stream);
-
-		fileSystemPipe.setStreamingActive(true);
-		fileSystemPipe.addParameter(new Parameter("filename", filename));
-		fileSystemPipe.setAction(FileSystemAction.UPLOAD);
-		fileSystemPipe.configure();
-		fileSystemPipe.start();
-
-		//assertTrue(fileSystemPipe.canProvideOutputStream());
-
-		MessageOutputStream target = fileSystemPipe.provideOutputStream(session, null);
-
-		// stream the contents
-		try (Writer writer = target.asWriter()) {
-			writer.write(contents);
-		}
-
-		// verify the filename is properly returned
-		String stringResult=target.getPipeRunResult().getResult().asString();
-		TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-
-		// verify the file contents
-		waitForActionToFinish();
-		String actualContents = readFile(null, filename);
-		assertEquals(contents,actualContents);
-
-		PipeForward forward = target.getForward();
-		assertNotNull(forward);
-		assertEquals("success", forward.getName());
-	}
-
 
 	@Test
 	public void fileSystemPipeDownloadActionTest() throws Exception {

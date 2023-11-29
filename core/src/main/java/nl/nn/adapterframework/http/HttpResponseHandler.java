@@ -35,7 +35,7 @@ import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class HttpResponseHandler {
-	private HttpResponse httpResponse;
+	private final HttpResponse httpResponse;
 	private HttpEntity httpEntity;
 	private Message responseMessage = null;
 

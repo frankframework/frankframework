@@ -132,22 +132,6 @@ final String value = getValue(key, source1)
 					   .orElse("default");
 ```
 
-With Java8 this can be written as:
-```java
-Optional<String> getValue(String key, Collection<String> source) { ... }
-Optional<String> alternativeProvider(String key) { ... }
-
-final String value = getValue(key, source1)
-					.map(Optional::of)
-					.orElseGet(()-> getValue(key, soure2))
-					.map(Optional::of)
-					.orElseGet(()-> alternativeProvider(key))
-					.orElse("default");
-```
-Which to me doesn't have the same readability, because it is not as compact and you have
-to mentally skip over the lines `.map(Optional::of)` every time.
-
-
 __NOTE:__   
 In my experience, it does take some getting used to to read code with streams or optionals!
 

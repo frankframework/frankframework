@@ -53,7 +53,7 @@ import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
@@ -365,12 +365,12 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@JmxAttribute(description = "The date/time of the last processed message")
 	public String getLastMessageDate() {
-		return getLastMessageDate(DateUtils.FORMAT_FULL_GENERIC);
+		return getLastMessageDate(DateFormatUtils.FORMAT_FULL_GENERIC);
 	}
 	public String getLastMessageDate(String dateFormat) {
 		String result;
 		if (lastMessageDate != 0)
-			result = DateUtils.format(new Date(lastMessageDate), dateFormat);
+			result = DateFormatUtils.format(new Date(lastMessageDate), dateFormat);
 		else
 			result = "-";
 		return result;
@@ -570,10 +570,10 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@JmxAttribute(description = "Up Since")
 	public String getStatsUpSince() {
-		return getStatsUpSince(DateUtils.FORMAT_FULL_GENERIC);
+		return getStatsUpSince(DateFormatUtils.FORMAT_FULL_GENERIC);
 	}
 	public String getStatsUpSince(String dateFormat) {
-		return DateUtils.format(new Date(statsUpSince), dateFormat);
+		return DateFormatUtils.format(new Date(statsUpSince), dateFormat);
 	}
 	public Date getStatsUpSinceDate() {
 		return new Date(statsUpSince);
@@ -592,7 +592,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
 		try {
-			try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(this, messageId, pipeLineSession)) {
+			try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession)) {
 				PipeLineResult result = new PipeLineResult();
 				boolean success = false;
 				try {
@@ -681,16 +681,16 @@ public class Adapter implements IAdapter, NamedBean {
 			long duration = endTime - startTime;
 			//reset the InProcess fields, and increase processedMessagesCount
 			decNumOfMessagesInProcess(duration, processingSuccess);
-			ThreadContext.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, result.getState().name());
+			ThreadContext.put(LogUtil.MDC_EXIT_STATE_KEY, result.getState().name());
 			if (result.getExitCode()!=0) {
-				ThreadContext.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, Integer.toString(result.getExitCode()));
+				ThreadContext.put(LogUtil.MDC_EXIT_CODE_KEY, Integer.toString(result.getExitCode()));
 			}
 			ThreadContext.put("pipeline.duration", msgLogHumanReadable ? Misc.getAge(startTime) : Long.toString(duration));
 			if (log.isDebugEnabled()) {
 				log.debug("Adapter: [{}] STAT: Pipeline finished processing message with messageId [{}] exit-state [{}] started {} finished {} total duration: {} ms",
 						getName(), messageId, result.getState(),
-						DateUtils.format(new Date(startTime), DateUtils.FORMAT_FULL_GENERIC),
-						DateUtils.format(new Date(endTime), DateUtils.FORMAT_FULL_GENERIC),
+						DateFormatUtils.format(new Date(startTime), DateFormatUtils.FORMAT_FULL_GENERIC),
+						DateFormatUtils.format(new Date(endTime), DateFormatUtils.FORMAT_FULL_GENERIC),
 						duration);
 			} else {
 				log.info("Adapter [{}] Pipeline finished processing message with messageId [{}] with exit-state [{}]", getName(), messageId, result.getState());
@@ -1051,7 +1051,7 @@ public class Adapter implements IAdapter, NamedBean {
 	 * Defines behaviour for logging messages. Configuration is done in the MSG appender in log4j4ibis.properties.
 	 * @ff.default <code>INFO, unless overridden by property msg.log.level.default</code>
 	 */
-	public void setMsgLogLevel(MessageLogLevel level) throws ConfigurationException {
+	public void setMsgLogLevel(MessageLogLevel level) {
 		msgLogLevel = level.getEffectiveLevel();
 	}
 

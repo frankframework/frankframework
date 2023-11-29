@@ -156,13 +156,13 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		if (files==null) {
 			throw new FileSystemException("files in folder ["+folderName+"] is null");
 		}
-		List<M> fileList = new ArrayList<M>();
+		List<M> fileList = new ArrayList<>();
 		fileList.addAll((Collection<? extends M>) files.values());
 		return FileSystemUtils.getDirectoryStream(fileList.iterator());
 	}
 
 	@Override
-	public boolean exists(M f) throws FileSystemException {
+	public boolean exists(M f) {
 		checkOpen();
 		return f.getOwner()!=null
 				&& (f.getOwner().getFiles().containsKey(f.getName())
@@ -170,14 +170,14 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public OutputStream createFile(MockFile f) throws FileSystemException, IOException {
+	public OutputStream createFile(MockFile f) throws IOException {
 		checkOpen();
 		f.getOwner().getFiles().put(f.getName(), f);
 		return f.getOutputStream(true);
 	}
 
 	@Override
-	public OutputStream appendFile(MockFile f) throws FileSystemException, IOException {
+	public OutputStream appendFile(MockFile f) throws IOException {
 		checkOpen();
 		if (f.getOwner()!=null && f.getOwner().getFiles().containsKey(f.getName())) {
 			f=f.getOwner().getFiles().get(f.getName()); // append to existing file
@@ -189,7 +189,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public Message readFile(MockFile f, String charset) throws FileSystemException, IOException {
+	public Message readFile(MockFile f, String charset) throws FileSystemException {
 		checkOpenAndExists(f);
 		return new Message(f.getInputStream(), charset);
 	}
@@ -248,7 +248,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		M fileDuplicate = (M)new MockFile(f.getName(), destFolder);
 		fileDuplicate.setContents(Arrays.copyOf(f.getContents(),f.getContents().length));
 		if (f.getAdditionalProperties()!=null) {
-			Map<String,Object> propDup = new HashMap<String,Object>();
+			Map<String,Object> propDup = new HashMap<>();
 			propDup.putAll(f.getAdditionalProperties());
 			fileDuplicate.setAdditionalProperties(propDup);
 		}
@@ -272,18 +272,18 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public String getParentFolder(M f) throws FileSystemException {
+	public String getParentFolder(M f) {
 		return f.getOwner().getName();
 	}
 
 	@Override
-	public String getCanonicalName(M f) throws FileSystemException {
+	public String getCanonicalName(M f) {
 		//checkOpenAndExists(null,f); // cannot check this anymore, canonical name is now used in error messages
 		return f.getOwner().getName()+"/"+f.getName();
 	}
 
 	@Override
-	public Date getModificationTime(M f) throws FileSystemException {
+	public Date getModificationTime(M f) {
 //		checkOpenAndExists(f);
 		return f.getLastModified();
 	}

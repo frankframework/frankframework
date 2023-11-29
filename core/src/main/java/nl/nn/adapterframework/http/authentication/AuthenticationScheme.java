@@ -29,7 +29,7 @@ public enum AuthenticationScheme {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String schemeName;
-	private Class<? extends AuthSchemeBase> schemeClass;
+	private final Class<? extends AuthSchemeBase> schemeClass;
 
 	private AuthenticationScheme(Class<? extends AuthSchemeBase> schemeClass) {
 		this.schemeClass = schemeClass;

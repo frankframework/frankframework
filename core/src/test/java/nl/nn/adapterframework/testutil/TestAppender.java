@@ -29,7 +29,6 @@ import org.apache.logging.log4j.core.appender.AbstractAppender;
 
 import nl.nn.adapterframework.logging.IbisPatternLayout;
 import nl.nn.adapterframework.logging.IbisThreadFilter;
-import nl.nn.adapterframework.logging.IbisXmlLayout;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class TestAppender extends AbstractAppender {
@@ -53,11 +52,6 @@ public class TestAppender extends AbstractAppender {
 		//Default pattern: %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{2} - %m%n
 		public B useIbisPatternLayout(String pattern) {
 			IbisPatternLayout layout = IbisPatternLayout.createLayout(pattern, getConfiguration(), null, true, false, false);
-			return setLayout(layout);
-		}
-
-		public B useIbisXmlLayout() {
-			IbisXmlLayout layout = IbisXmlLayout.createLayout(getConfiguration(), null, false);
 			return setLayout(layout);
 		}
 

@@ -75,7 +75,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 	}
 
 	@Test
-	public void checkFilePathWithBasePath() throws Exception {
+	public void checkFilePathWithBasePath() {
 		String fileNameWithBasePath = "ClassLoader/fileOnlyOnZipClassPath.xml";
 
 		URL url = getResource(fileNameWithBasePath); //This ClassLoader doesn't have a BasePath so we need to append it

@@ -1,16 +1,13 @@
 package nl.nn.adapterframework.util;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.IMessageBrowser.HideMethod;
@@ -40,25 +37,25 @@ public class MiscTest {
 	 * Method: toFileSize(String value, long defaultValue)
 	 */
 	@Test
-	public void testToFileSizeForValueDefaultValue() throws Exception {
+	public void testToFileSizeForValueDefaultValue() {
 		long res = Misc.toFileSize("14GB", 20);
 		assertEquals("15032385536", Long.toString(res));
 	}
 
 	@Test
-	public void testNegativeToFileSize() throws Exception {
+	public void testNegativeToFileSize() {
 		String size = Misc.toFileSize(-1);
 		assertEquals("-1", size);
 	}
 
 	@Test
-	public void testToFileSize1024() throws Exception {
+	public void testToFileSize1024() {
 		String size = Misc.toFileSize(1024);
 		assertEquals("1KB", size);
 	}
 
 	@Test
-	public void testNegativeToFileSize512MB() throws Exception {
+	public void testNegativeToFileSize512MB() {
 		String size = Misc.toFileSize(1024*1024*5);
 		assertEquals("5MB", size);
 	}
@@ -90,7 +87,7 @@ public class MiscTest {
 	 * collectionDescription, boolean lowercase)
 	 */
 	@Test
-	public void testAddItemsToList() throws Exception {
+	public void testAddItemsToList() {
 		List<String> stringCollection = new ArrayList<>();
 		String list = "a,b,C";
 		String collectionDescription = "First 3 letters of the alphabet";
@@ -107,7 +104,7 @@ public class MiscTest {
 	 * Method: getFileSystemTotalSpace()
 	 */
 	@Test
-	public void testGetFileSystemTotalSpace() throws Exception {
+	public void testGetFileSystemTotalSpace() {
 		assertFalse(Misc.getFileSystemTotalSpace().isEmpty());
 	}
 
@@ -115,7 +112,7 @@ public class MiscTest {
 	 * Method: getFileSystemFreeSpace()
 	 */
 	@Test
-	public void testGetFileSystemFreeSpace() throws Exception {
+	public void testGetFileSystemFreeSpace() {
 		assertFalse(Misc.getFileSystemFreeSpace().isEmpty());
 	}
 
@@ -123,7 +120,7 @@ public class MiscTest {
 	 * Method: getAge(long value)
 	 */
 	@Test
-	public void testGetAge() throws Exception {
+	public void testGetAge() {
 		assertFalse(Misc.getAge(1).isEmpty());
 	}
 
@@ -131,7 +128,7 @@ public class MiscTest {
 	 * Method: getDurationInMs(long value)
 	 */
 	@Test
-	public void testGetDurationInMs() throws Exception {
+	public void testGetDurationInMs() {
 		assertFalse(Misc.getDurationInMs(14).isEmpty());
 	}
 
@@ -139,7 +136,7 @@ public class MiscTest {
 	 * Method: parseAge(String value, long defaultValue)
 	 */
 	@Test
-	public void testParseAge() throws Exception {
+	public void testParseAge() {
 		long res = Misc.parseAge("2D", 100);
 		assertEquals(172800000, res);
 	}
@@ -149,7 +146,7 @@ public class MiscTest {
 	 * hideMethod)
 	 */
 	@Test
-	public void testCleanseMessage() throws Exception {
+	public void testCleanseMessage() {
 		String s = "Donald Duck 23  Hey hey  14  Wooo";
 		String regex = "\\d";
 		String res = Misc.cleanseMessage(s, regex, HideMethod.ALL);
@@ -248,21 +245,4 @@ public class MiscTest {
 		assertEquals(expected, Misc.insertAuthorityInUrlString(url, null, username, password));
 	}
 
-	@Test
-	public void testIbmDescriptorResources() throws Exception {
-		String descriptorPath = Misc.getApplicationDeploymentDescriptorPath();
-		assertThat(descriptorPath, Matchers.endsWith("META-INF"));
-		String applBindings = Misc.getDeployedApplicationBindings();
-		assertNotNull(applBindings);
-		String deploymentDescriptor = Misc.getApplicationDeploymentDescriptor();
-		assertNotNull(deploymentDescriptor);
-	}
-
-	@Test
-	public void testIbmConfigurationResources() throws Exception {
-		String configurationResources = Misc.getConfigurationResources();
-		assertThat(configurationResources, Matchers.startsWith("<dummy xml=\"file\" />"));
-		String server = Misc.getConfigurationServer();
-		assertThat(server, Matchers.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
-	}
 }

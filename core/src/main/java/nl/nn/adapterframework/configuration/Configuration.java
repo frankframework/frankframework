@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -57,9 +57,7 @@ import nl.nn.adapterframework.scheduler.job.Job;
 import nl.nn.adapterframework.statistics.HasStatistics.Action;
 import nl.nn.adapterframework.statistics.MetricsInitializer;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.statistics.StatisticsKeeperLogger;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.ClassUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunState;
@@ -84,7 +82,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private static final Logger applicationLog = LogUtil.getLogger("APPLICATION");
 
 	private Boolean autoStart = null;
-	private boolean enabledAutowiredPostProcessing = false;
+	private final boolean enabledAutowiredPostProcessing = false;
 
 	private @Getter @Setter AdapterManager adapterManager; //We have to manually inject the AdapterManager bean! See refresh();
 	private @Getter ScheduleManager scheduleManager; //We have to manually inject the ScheduleManager bean! See refresh();
@@ -95,13 +93,12 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	private @Getter IbisManager ibisManager;
 	private @Getter String originalConfiguration;
 	private @Getter String loadedConfiguration;
-	private StatisticsKeeperIterationHandler statisticsHandler = null;
 	private @Getter boolean configured = false;
 
 	private @Getter ConfigurationException configurationException = null;
 
-	private Date statisticsMarkDateMain=new Date();
-	private Date statisticsMarkDateDetails=statisticsMarkDateMain;
+	private final Date statisticsMarkDateMain = new Date();
+	private final Date statisticsMarkDateDetails = statisticsMarkDateMain;
 
 	public Configuration() {
 		setConfigLocation(SpringContextScope.CONFIGURATION.getContextFile()); //Don't call the super(..), it will trigger a refresh.
@@ -121,28 +118,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 		} finally {
 			hski.end(root);
 		}
-	}
-
-	public void dumpStatistics(Action action) {
-		Date now = new Date();
-		boolean showDetails=(action == Action.FULL || action == Action.MARK_FULL);
-		try {
-			if (statisticsHandler==null) {
-				statisticsHandler =new StatisticsKeeperLogger();
-				statisticsHandler.configure();
-			}
-
-			forEachStatisticsKeeper(statisticsHandler, now, statisticsMarkDateMain, showDetails ?statisticsMarkDateDetails : null, action, AppConstants.getInstance().getString("instance.name",""), "instance");
-		} catch (Exception e) {
-			log.error("dumpStatistics() caught exception", e);
-		}
-		if (action==Action.MARK_MAIN || action==Action.MARK_FULL) {
-				statisticsMarkDateMain=now;
-		}
-		if (action==Action.MARK_FULL) {
-				statisticsMarkDateDetails=now;
-		}
-
 	}
 
 	public void initMetrics() throws ConfigurationException {
@@ -464,12 +439,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements ICo
 	@Deprecated // deprecated to force use of Scheduler element
 	public void registerScheduledJob(IJob jobdef) {
 		scheduleManager.registerScheduledJob(jobdef);
-	}
-
-	public void registerStatisticsHandler(StatisticsKeeperIterationHandler handler) throws ConfigurationException {
-		log.debug("registerStatisticsHandler() registering [{}]", ()->ClassUtils.nameOf(handler));
-		statisticsHandler=handler;
-		handler.configure();
 	}
 
 	/**

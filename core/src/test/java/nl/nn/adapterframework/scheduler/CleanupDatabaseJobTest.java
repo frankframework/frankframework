@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.scheduler;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -10,15 +11,17 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Date;
 
+import nl.nn.adapterframework.util.DbmsUtil;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcTestBase;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
+import nl.nn.adapterframework.dbms.Dbms;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob;
@@ -32,13 +35,17 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 	private CleanupDatabaseJob jobDef;
 	private JdbcTransactionalStorage<Serializable> storage;
 	private final String cleanupJobName="CleanupDB";
-	private final String tableName="IBISLOCK";
+	private final String txStorageTableName="NOT_IBISLOCK_TABLE";
 
 	@Override
 	@Before
 	public void setup() throws Exception {
 		super.setup();
-		System.setProperty("tableName", tableName);
+
+		System.setProperty("tableName", "IBISLOCK"); //Lock table must exist
+		runMigrator(TEST_CHANGESET_PATH);
+
+		System.setProperty("tableName", txStorageTableName); //Actual JdbcTXStorage table
 		runMigrator(TEST_CHANGESET_PATH);
 
 		//noinspection unchecked
@@ -46,8 +53,8 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		storage.setName("test-cleanupDB");
 		storage.setType("A");
 		storage.setSlotId("dummySlotId");
-		storage.setTableName(tableName);
-		storage.setSequenceName("SEQ_"+tableName);
+		storage.setTableName(txStorageTableName);
+		storage.setSequenceName("SEQ_"+txStorageTableName);
 		storage.setDatasourceName(getDataSourceName());
 
 		if (getConfiguration().getScheduledJob("MockJob") == null) {
@@ -99,10 +106,10 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		// set max rows to 0
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "0");
 
-		jobDef.beforeExecuteJob();
+		assertTrue(jobDef.beforeExecuteJob());
 		jobDef.execute();
 
-		assertEquals(0, getCount(tableName));
+		assertEquals(0, getCount());
 	}
 
 	@Test
@@ -112,13 +119,10 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 
 		prepareInsertQuery(5);
 
-		// check insertion
-		assertEquals(5, getCount(tableName));
-
-		jobDef.beforeExecuteJob();
+		assertTrue(jobDef.beforeExecuteJob());
 		jobDef.execute();
 
-		assertEquals(0, getCount(tableName));
+		assertEquals(0, getCount());
 	}
 
 	private void prepareInsertQuery(int numRows) throws Exception {
@@ -147,7 +151,7 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 			sb.append(") SELECT * FROM valuesTable");
 		}
 
-		String query ="INSERT INTO "+tableName+" (" +
+		String query ="INSERT INTO "+txStorageTableName+" (" +
 				(dbmsSupport.autoIncrementKeyMustBeInserted() ? storage.getKeyField()+"," : "")
 				+ storage.getTypeField() + ","
 				+ storage.getSlotIdField() + ","
@@ -163,11 +167,18 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 		try(Connection connection = getConnection()) {
 			JdbcUtil.executeStatement(connection, query);
 		}
+
+		// check insertion
+		assertEquals(numRows, getCount());
+	}
+
+	private int getCount() throws SQLException, JdbcException {
+		return getCount(txStorageTableName);
 	}
 
 	private int getCount(String tableName) throws SQLException, JdbcException {
 		try(Connection connection = getConnection()) {
-			return JdbcUtil.executeIntQuery(connection, "SELECT count(*) from "+tableName);
+			return DbmsUtil.executeIntQuery(connection, "SELECT count(*) from "+tableName);
 		}
 	}
 
@@ -178,19 +189,13 @@ public class CleanupDatabaseJobTest extends JdbcTestBase {
 
 		prepareInsertQuery(5);
 
-		int rowCount = getCount(tableName);
-
-		// check insertion
-		assertEquals(5, rowCount);
 		// to clean up 1 by 1
 		AppConstants.getInstance().setProperty("cleanup.database.maxrows", "1");
 
-		jobDef.beforeExecuteJob();
+		assertTrue(jobDef.beforeExecuteJob());
 		jobDef.execute();
 
-		int numRows = getCount(tableName);
-
-		assertEquals(0, numRows);
+		assertEquals(0, getCount());
 	}
 }
 

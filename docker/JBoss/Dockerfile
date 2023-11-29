@@ -1,40 +1,30 @@
-ARG JBOSS_VERSION=7.3.0-centos
-FROM daggerok/jboss-eap-7.3:${JBOSS_VERSION} AS jboss-eap-with-python
+ARG REGISTRY=private.docker.nexus.frankframework.org
+ARG JBOSS_VARIANT=eap74-openjdk11-openshift-rhel8
+ARG JBOSS_BASE_VERSION=7.4.0
+ARG JBOSS_VERSION=7.4.13-7
+FROM ${REGISTRY}/jboss-eap-7/${JBOSS_VARIANT}:${JBOSS_BASE_VERSION} AS jboss-base
 
-USER root
-RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* &&\
-	sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-* &&\
-	yum install -y --nogpgcheck python36-3.6.8-38.module_el8.5.0+895+a459eca8 &&\
-	yum clean all
-RUN mkdir /home/jboss/jboss-eap-7.3/standalone/data
-RUN chown jboss:jboss /home/jboss/jboss-eap-7.3/standalone/data
-USER jboss
+COPY src/scripts/createCredentialStore.sh /scripts/createCredentialStore.sh
+COPY target/dependencies/secrets/ /opt/frank/secrets/
 
-# Create credential store in separate image
-FROM jboss-eap-with-python AS jboss-iaf-test-CredentialStoreCreator
-COPY src/configuration/createCS.sh /home/createCS.sh
-COPY target/dependencies/secrets /opt/frank/secrets
+RUN /scripts/createCredentialStore.sh
 
-RUN /home/createCS.sh
+FROM ${REGISTRY}/jboss-eap-7/${JBOSS_VARIANT}:${JBOSS_VERSION}
 
-FROM jboss-eap-with-python
-# Copy dependencies
-COPY target/dependencies/*.jar /home/jboss/jboss-eap-7.3/standalone/lib/ext/
-COPY target/dependencies/*.rar /home/jboss/jboss-eap-7.3/standalone/deployments/
+RUN mkdir $JBOSS_HOME/standalone/data
 
-# Copy in standalone-configuration.xml
-COPY src/configuration/standalone.xml /home/jboss/jboss-eap-7.3/standalone/configuration/standalone.xml
-
-# Copy in the created credential store
 # chown is needed because otherwise permissions of the directory conflict with JBoss, resulting in WFLYSRV0126
-COPY --from=jboss-iaf-test-CredentialStoreCreator --chown=jboss:jboss /home/jboss/jboss-eap-7.3/standalone/data/CS.jceks /home/jboss/jboss-eap-7.3/standalone/data/CS.jceks
+COPY --chown=jboss:jboss --from=jboss-base $JBOSS_HOME/standalone/data/CS.jceks $JBOSS_HOME/standalone/data/CS.jceks
+# use * when copying into existing folders
+COPY target/dependencies/*.jar $JBOSS_HOME/standalone/lib/ext/
+COPY target/dependencies/*.rar $JBOSS_HOME/standalone/deployments/
+COPY src/configuration/* $JBOSS_HOME/standalone/configuration/
+COPY src/scripts/ /scripts/
 
-# Copy configuration script for modules
-COPY src/configuration/configuration.py /home/configuration.py
-RUN python3 /home/configuration.py
+RUN python3 /scripts/configureModules.py
 
-# Add test scenarios explictly for easy CI
-COPY target/dependencies/frank /opt/frank
+COPY target/dependencies/frank/ /opt/frank/
+COPY target/dependencies/ibis-adapterframework-test.war $JBOSS_HOME/standalone/deployments/iaf-test.war
 
-# Copy war
-COPY target/dependencies/ibis-adapterframework-test.war /home/jboss/jboss-eap-7.3/standalone/deployments/iaf-test.war
+ENTRYPOINT ["/scripts/entrypoint.sh"]
+CMD ["/opt/eap/bin/openshift-launch.sh"]

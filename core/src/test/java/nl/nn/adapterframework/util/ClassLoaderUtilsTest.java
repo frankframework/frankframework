@@ -41,32 +41,32 @@ public class ClassLoaderUtilsTest {
 	}
 
 	@Test
-	public void getResourceURL() throws URISyntaxException, IOException {
+	public void getResourceURL() {
 		URL baseUrl = contextClassLoader.getResource(fileName);
 
 		assertEquals(baseUrl.getFile(), ClassLoaderUtils.getResourceURL(fileName).getFile());
 	}
 
 	@Test
-	public void getResourceURLAndValidateContentsO() throws URISyntaxException, IOException {
+	public void getResourceURLAndValidateContentsO() throws IOException {
 		URL url = ClassLoaderUtils.getResourceURL(fileName);
 		assertEquals(fileContent, StreamUtil.streamToString(url.openStream()).trim());
 	}
 
 	@Test
-	public void getResourceURLAndValidateContentsC1() throws URISyntaxException, IOException {
+	public void getResourceURLAndValidateContentsC1() throws IOException {
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, fileName);
 		assertEquals(fileContent, StreamUtil.streamToString(url.openStream()).trim());
 	}
 
 	@Test
-	public void getResourceURLAndValidateContentsC2() throws URISyntaxException, IOException {
+	public void getResourceURLAndValidateContentsC2() throws IOException {
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, fileName);
 		assertEquals(fileContent, StreamUtil.streamToString(url.openStream()).trim());
 	}
 
 	@Test
-	public void getResourceURLfromExternalFile() throws URISyntaxException, IOException {
+	public void getResourceURLfromExternalFile() throws URISyntaxException {
 		URL url = ClassLoaderUtils.getResourceURL(fileName);
 		String fullPath = url.toURI().toString();
 
@@ -75,7 +75,7 @@ public class ClassLoaderUtilsTest {
 	}
 
 	@Test
-	public void getResourceURLfromExternalFileError() throws URISyntaxException, IOException {
+	public void getResourceURLfromExternalFileError() throws URISyntaxException {
 		URL url = ClassLoaderUtils.getResourceURL(fileName);
 		String fullPath = url.toURI().toString();
 
@@ -83,83 +83,83 @@ public class ClassLoaderUtilsTest {
 	}
 
 	@Test
-	public void getResourceURLnoFileError() throws URISyntaxException, IOException {
+	public void getResourceURLnoFileError() {
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, "apple.pie.with.raisins");
 
 		assertNull(url);
 	}
 
 	@Test
-	public void getResourceURLnoExternalFileErrorC1() throws URISyntaxException, IOException {
+	public void getResourceURLnoExternalFileErrorC1() {
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, "apple.pie.with.raisins", "file");
 
 		assertNull(url);
 	}
 
 	@Test
-	public void getResourceURLnoExternalFileErrorC2() throws URISyntaxException, IOException {
+	public void getResourceURLnoExternalFileErrorC2() {
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, "file://potato.ext", "file");
 
 		assertEquals("", url.getFile()); //returns an empty string if one does not exist
 	}
 
 	@Test
-	public void getResourceURLfromHttpProtocolNotAllowed1() throws URISyntaxException, IOException {
+	public void getResourceURLfromHttpProtocolNotAllowed1() {
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, "http://potato.ext", "");
 
 		assertNull(url);
 	}
 
 	@Test
-	public void getResourceURLfromHttpProtocolNotAllowed2() throws URISyntaxException, IOException {
+	public void getResourceURLfromHttpProtocolNotAllowed2() {
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, "http://potato.ext", "file");
 
 		assertNull(url);
 	}
 
 	@Test
-	public void getResourceURLfromHttpProtocolNotAllowed3() throws URISyntaxException, IOException {
+	public void getResourceURLfromHttpProtocolNotAllowed3() {
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, "http://potato.ext", "file,thing");
 
 		assertNull(url);
 	}
 
 	@Test
-	public void getResourceURLfromHttpProtocolNotAllowed4() throws URISyntaxException, IOException {
+	public void getResourceURLfromHttpProtocolNotAllowed4() {
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, "http://localhost/potato.ext", "file,thing");
 
 		assertNull(url);
 	}
 
 	@Test
-	public void getResourceURLfromHttpProtocolNotAllowed5() throws URISyntaxException, IOException {
+	public void getResourceURLfromHttpProtocolNotAllowed5() {
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, "http://localhost/potato.ext", "https");
 
 		assertNull(url);
 	}
 
 	@Test
-	public void getResourceURLfromHttpProtocolAllowed1() throws URISyntaxException, IOException {
+	public void getResourceURLfromHttpProtocolAllowed1() {
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, "http://localhost/potato.ext", "http");
 
 		assertNotNull(url);
 	}
 
 	@Test
-	public void getResourceURLnullClassLoader1() throws URISyntaxException, IOException {
+	public void getResourceURLnullClassLoader1() throws IOException {
 		URL url = ClassLoaderUtils.getResourceURL(nullScopeProvider, fileName);
 		assertEquals(fileContent, StreamUtil.streamToString(url.openStream()).trim());
 	}
 
 	@Test
-	public void getResourceURLnullClassLoaderNonExistingFile() throws URISyntaxException, IOException {
+	public void getResourceURLnullClassLoaderNonExistingFile() {
 		URL url = ClassLoaderUtils.getResourceURL(nullScopeProvider, "apple.pie.with.raisins");
 
 		assertNull(url);
 	}
 
 	@Test
-	public void getResourceURLnullClassLoaderWithExternalFile() throws URISyntaxException, IOException {
+	public void getResourceURLnullClassLoaderWithExternalFile() {
 		URL url = ClassLoaderUtils.getResourceURL(nullScopeProvider, "file://potato.ext", "file");
 
 		assertNotNull(url);
@@ -222,7 +222,7 @@ public class ClassLoaderUtilsTest {
 	}
 
 	@Test
-	public void localClassLoader6UrlWithFileSchemeButNotAllowed() throws Exception {
+	public void localClassLoader6UrlWithFileSchemeButNotAllowed() {
 		String resource="/ClassLoader/ClassLoaderTestFile";
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, resource);
 		String resourceAsFileUrl=url.toExternalForm();

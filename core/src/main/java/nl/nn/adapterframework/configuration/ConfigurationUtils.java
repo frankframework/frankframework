@@ -52,8 +52,8 @@ import nl.nn.adapterframework.configuration.classloaders.DirectoryClassLoader;
 import nl.nn.adapterframework.configuration.classloaders.IConfigurationClassLoader;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
-import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 import nl.nn.adapterframework.lifecycle.ApplicationMessageEvent;
 import nl.nn.adapterframework.util.AppConstants;
@@ -97,7 +97,7 @@ public class ConfigurationUtils {
 	public static String getConfigurationFile(ClassLoader classLoader, String currentConfigurationName) {
 		String configFileKey = "configurations." + currentConfigurationName + ".configurationFile";
 		String configurationFile = AppConstants.getInstance(classLoader).getProperty(configFileKey);
-		if (StringUtils.isEmpty(configurationFile) && classLoader != null) {
+		if (StringUtils.isEmpty(configurationFile)) {
 			configurationFile = AppConstants.getInstance(classLoader.getParent()).getProperty(configFileKey);
 		}
 		if (StringUtils.isEmpty(configurationFile)) {
@@ -194,7 +194,7 @@ public class ConfigurationUtils {
 
 			Map<String, Object> configuration = new HashMap<>(5);
 			byte[] jarBytes = rs.getBytes(1);
-			if(jarBytes == null) return null;
+			if (jarBytes == null) return null;
 
 			configuration.put("CONFIG", jarBytes);
 			configuration.put("VERSION", rs.getString(2));
@@ -228,7 +228,7 @@ public class ConfigurationUtils {
 						String configName = ConfigurationUtils.addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
 						result.put(configName, "loaded");
 					} catch (ConfigurationException e) {
-						log.error("an error occured while trying to store new configuration using datasource ["+datasource+"]", e);
+						log.error("an error occurred while trying to store new configuration using datasource ["+datasource+"]", e);
 						result.put(entryName, e.getMessage());
 					}
 				}
@@ -347,26 +347,28 @@ public class ConfigurationUtils {
 		try {
 			qs.open();
 			conn = qs.getConnection();
-			int updated = 0;
+			int updated;
 
 			String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
-			PreparedStatement selectStmt = conn.prepareStatement(selectQuery);
-			selectStmt.setString(1, name);
-			selectStmt.setString(2, version);
-			try (ResultSet rs = selectStmt.executeQuery()) {
-				if(rs.next()) {
-					String query = "UPDATE IBISCONFIG SET ACTIVECONFIG="+booleanValueFalse+" WHERE NAME=?";
+			try (PreparedStatement selectStmt = conn.prepareStatement(selectQuery)) {
+				selectStmt.setString(1, name);
+				selectStmt.setString(2, version);
+				try (ResultSet rs = selectStmt.executeQuery()) {
+					if (rs.next()) {
+						String query = "UPDATE IBISCONFIG SET ACTIVECONFIG=" + booleanValueFalse + " WHERE NAME=?";
 
-					PreparedStatement stmt = conn.prepareStatement(query);
-					stmt.setString(1, name);
-					updated = stmt.executeUpdate();
-
-					if(updated > 0) {
-						String query2 = "UPDATE IBISCONFIG SET ACTIVECONFIG="+booleanValueTrue+" WHERE NAME=? AND VERSION=?";
-						PreparedStatement stmt2 = conn.prepareStatement(query2);
-						stmt2.setString(1, name);
-						stmt2.setString(2, version);
-						return (stmt2.executeUpdate() > 0) ? true : false;
+						try (PreparedStatement stmt = conn.prepareStatement(query)) {
+							stmt.setString(1, name);
+							updated = stmt.executeUpdate();
+						}
+						if (updated > 0) {
+							String query2 = "UPDATE IBISCONFIG SET ACTIVECONFIG=" + booleanValueTrue + " WHERE NAME=? AND VERSION=?";
+							try (PreparedStatement stmt2 = conn.prepareStatement(query2)) {
+								stmt2.setString(1, name);
+								stmt2.setString(2, version);
+								return stmt2.executeUpdate() > 0;
+							}
+						}
 					}
 				}
 			}
@@ -396,17 +398,19 @@ public class ConfigurationUtils {
 			try (Connection conn = qs.getConnection()) {
 
 				String selectQuery = "SELECT NAME FROM IBISCONFIG WHERE NAME=? AND VERSION=?";
-				PreparedStatement selectStmt = conn.prepareStatement(selectQuery);
-				selectStmt.setString(1, name);
-				selectStmt.setString(2, version);
-				try (ResultSet rs = selectStmt.executeQuery()) {
-					if(rs.next()) {
-						String query = "UPDATE IBISCONFIG SET AUTORELOAD="+qs.getDbmsSupport().getBooleanValue(booleanValue)+" WHERE NAME=? AND VERSION=?";
+				try (PreparedStatement selectStmt = conn.prepareStatement(selectQuery)) {
+					selectStmt.setString(1, name);
+					selectStmt.setString(2, version);
+					try (ResultSet rs = selectStmt.executeQuery()) {
+						if (rs.next()) {
+							String query = "UPDATE IBISCONFIG SET AUTORELOAD=" + qs.getDbmsSupport().getBooleanValue(booleanValue) + " WHERE NAME=? AND VERSION=?";
 
-						PreparedStatement stmt = conn.prepareStatement(query);
-						stmt.setString(1, name);
-						stmt.setString(2, version);
-						return stmt.executeUpdate() > 0;
+							try (PreparedStatement stmt = conn.prepareStatement(query)) {
+								stmt.setString(1, name);
+								stmt.setString(2, version);
+								return stmt.executeUpdate() > 0;
+							}
+						}
 					}
 				}
 			}

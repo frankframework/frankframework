@@ -36,10 +36,10 @@ import nl.nn.adapterframework.util.LogUtil;
 public class MapContentContainer<V> implements DocumentContainer {
 	protected Logger log = LogUtil.getLogger(this.getClass());
 
-	private String attributeSeparator=".";
-	private String indexSeparator=".";
-	private static String arrayValueSeparator=",";
-	private Map<String,List<V>> data;
+	private final String attributeSeparator = ".";
+	private final String indexSeparator = ".";
+	private static final String arrayValueSeparator = ",";
+	private final Map<String, List<V>> data;
 
 	private String currentName;
 	private String currentValue;
@@ -78,7 +78,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 		if (value!=null || isNull || type==ScalarType.STRING) {
 			List<V> entry=data.get(name);
 			if (entry==null) {
-				entry=new ArrayList<V>();
+				entry=new ArrayList<>();
 				data.put(name, entry);
 			}
 			if (value==null && !isNull && type==ScalarType.STRING) {
@@ -145,7 +145,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 	}
 
 	public Map<String,V> flattenedVertical() {
-		Map<String,V> result = new LinkedHashMap<String,V>();
+		Map<String,V> result = new LinkedHashMap<>();
 
 		for(String key:data.keySet()) {
 			List<V> entry=data.get(key);
@@ -157,7 +157,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 	}
 
 	public Map<String,String> flattenedHorizontal() {
-		Map<String,String> result = new LinkedHashMap<String,String>();
+		Map<String,String> result = new LinkedHashMap<>();
 
 		for(String key:data.keySet()) {
 			List<V> entry=data.get(key);
@@ -187,7 +187,7 @@ public class MapContentContainer<V> implements DocumentContainer {
 //		
 //	}
 	public static Map<String,List<String>> unflatten(Map<String,String> map) {
-		Map<String,List<String>> result=new LinkedHashMap<String,List<String>>();
+		Map<String,List<String>> result=new LinkedHashMap<>();
 		for (String key:map.keySet()) {
 			String value=map.get(key);
 			result.put(key, Arrays.asList(value.split(arrayValueSeparator,-1)));

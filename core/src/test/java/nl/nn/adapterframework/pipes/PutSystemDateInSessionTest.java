@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -13,7 +14,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 
 public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSession>{
 
@@ -23,7 +24,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testConfigureNullDateFormat() throws Exception {
+	public void testConfigureNullDateFormat() {
 		pipe.setDateFormat(null);
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
@@ -31,7 +32,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testConfigureNullSessionKey() throws Exception {
+	public void testConfigureNullSessionKey() {
 		pipe.setSessionKey(null);
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
@@ -42,7 +43,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	public void testFixedDateTimeFormatInvalid() throws Exception {
 		configureAndStartPipe();
 		pipe.setReturnFixedDate(true);
-		pipe.setDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
+		pipe.setDateFormat(DateFormatUtils.FORMAT_GENERICDATETIME);
 		pipe.setSessionKey("first");
 		session.put("stub4testtool.fixeddate", "22331");
 
@@ -65,8 +66,8 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String result = (String) session.get("first");
 
-		SimpleDateFormat parser = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
-		SimpleDateFormat formatter = new SimpleDateFormat(DateUtils.fullIsoFormat);
+		DateFormat parser = DateFormatUtils.GENERIC_DATETIME_FORMATTER;
+		DateFormat formatter = DateFormatUtils.FULL_ISO_FORMATTER;
 
 		Date date = parser.parse(fixedDate);
 		assertEquals(formatter.format(date), result);
@@ -85,7 +86,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	@Test
 	public void testReturnFixedDate() throws Exception {
 		pipe.setSessionKey("first");
-		pipe.setDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
+		pipe.setDateFormat(DateFormatUtils.FORMAT_GENERICDATETIME);
 		configureAndStartPipe();
 		// TODO : this field must be set before configure
 		// but setting stub mod from AppConstants does not work
@@ -99,7 +100,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
-		SimpleDateFormat formatter = new SimpleDateFormat(PutSystemDateInSession.FORMAT_FIXEDDATETIME);
+		DateFormat formatter = DateFormatUtils.GENERIC_DATETIME_FORMATTER;
 		Date first = formatter.parse(result);
 		Date second = formatter.parse(secondResult);
 
@@ -109,7 +110,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testConfigureIsReturnFixedDatewithoutStub() throws Exception {
+	public void testConfigureIsReturnFixedDatewithoutStub() {
 		pipe.setSessionKey("dummy");
 		pipe.setReturnFixedDate(true);
 
@@ -130,7 +131,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	}
 
 	@Test
-	public void testConfigureInvalidDateFormat() throws Exception {
+	public void testConfigureInvalidDateFormat() {
 		pipe.setDateFormat("test");
 		pipe.setSessionKey("dummy");
 
@@ -152,7 +153,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
-		SimpleDateFormat format = new SimpleDateFormat(DateUtils.fullIsoFormat);
+		SimpleDateFormat format = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_ISO);
 		Date first = format.parse(result);
 		Date second = format.parse(secondResult);
 

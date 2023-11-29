@@ -40,7 +40,7 @@ import nl.nn.adapterframework.util.LogUtil;
  */
 public class LiquibaseResourceAccessor implements ResourceAccessor {
 
-	private Resource resource;
+	private final Resource resource;
 
 	public LiquibaseResourceAccessor(Resource resource) {
 		this.resource = resource;

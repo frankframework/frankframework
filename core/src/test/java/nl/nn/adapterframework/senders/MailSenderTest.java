@@ -21,7 +21,7 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 			protected Session createSession() throws SenderException {
 				try {
 					mailSession = super.createSession();
-					Provider provider = new Provider(Type.TRANSPORT, "smtp", TransportMock.class.getCanonicalName(), "IbisSource.org", "1.0");
+					Provider provider = new Provider(Type.TRANSPORT, "smtp", TransportMock.class.getCanonicalName(), "frankframework.org", "1.0");
 					mailSession.setProvider(provider);
 
 					return mailSession;

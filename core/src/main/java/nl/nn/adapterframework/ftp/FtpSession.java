@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.LogUtil;
  *
  * @author John Dekker
  */
-public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
+public abstract class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 	private static final Logger LOG = LogUtil.getLogger(FtpSession.class);
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -185,7 +185,7 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		LOG.debug("Command [{}] returned {}", () -> cmd, ftpClient::getReplyString);
 	}
 
-	private FTPClient createFTPClient() throws GeneralSecurityException, IOException {
+	private FTPClient createFTPClient() throws IOException, GeneralSecurityException {
 		FtpType transport = getFtpType();
 		Proxy proxy = getProxy();
 		if (transport == FtpType.FTP) {

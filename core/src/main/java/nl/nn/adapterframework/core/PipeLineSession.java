@@ -38,7 +38,7 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 
 
 /**
@@ -211,7 +211,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if(tsReceived instanceof Date) {
 			return (Date) tsReceived;
 		} else if(tsReceived instanceof String) {
-			return DateUtils.parseToDate((String) tsReceived, DateUtils.FORMAT_FULL_GENERIC);
+			return DateFormatUtils.parseToDate((String) tsReceived, DateFormatUtils.FORMAT_FULL_GENERIC);
 		}
 		return null;
 	}
@@ -225,7 +225,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if(tsSent instanceof Date) {
 			return (Date) tsSent;
 		} else if(tsSent instanceof String) {
-			return DateUtils.parseToDate((String) tsSent, DateUtils.FORMAT_FULL_GENERIC);
+			return DateFormatUtils.parseToDate((String) tsSent, DateFormatUtils.FORMAT_FULL_GENERIC);
 		}
 		return null;
 	}
@@ -244,9 +244,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		if (tsReceived == null) {
 			tsReceived = new Date();
 		}
-		map.put(TS_RECEIVED_KEY, DateUtils.format(tsReceived, DateUtils.FORMAT_FULL_GENERIC));
+		map.put(TS_RECEIVED_KEY, DateFormatUtils.format(tsReceived, DateFormatUtils.FORMAT_FULL_GENERIC));
 		if (tsSent != null) {
-			map.put(TS_SENT_KEY, DateUtils.format(tsSent, DateUtils.FORMAT_FULL_GENERIC));
+			map.put(TS_SENT_KEY, DateFormatUtils.format(tsSent, DateFormatUtils.FORMAT_FULL_GENERIC));
 		}
 	}
 

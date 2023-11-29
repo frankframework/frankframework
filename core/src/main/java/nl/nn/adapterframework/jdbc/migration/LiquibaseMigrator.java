@@ -46,7 +46,7 @@ import liquibase.resource.ResourceAccessor;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.classloaders.ClassLoaderBase;
 import nl.nn.adapterframework.core.Resource;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -61,7 +61,7 @@ public class LiquibaseMigrator extends DatabaseMigratorBase {
 
 	protected Logger migrationLog = LogUtil.getLogger("liquibase.migrationLog");
 	private Contexts contexts;
-	private LabelExpression labelExpression = new LabelExpression();
+	private final LabelExpression labelExpression = new LabelExpression();
 
 	@Override
 	public Resource getChangeLog() {

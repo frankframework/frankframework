@@ -1,0 +1,45 @@
+flowchart
+	d2e2("<b>testtool-HelloLines</b><br/>JavaListener"):::normal
+	d2e4("<b>ApiListener</b><br/>ApiListener"):::normal
+	d2e6("<b>testtool-HelloLines-1</b><br/>JavaListener"):::normal
+	d2e8("<b>WebServiceListener</b><br/>WebServiceListener"):::normal
+	d2e10("<b>testtool-HelloLines-2</b><br/>JavaListener"):::normal
+	d2e15("<b>ValidateInput</b><br/>SoapValidator"):::normal
+	d2e66("<b>Create example plain text message</b><br/>FixedResultPipe"):::errorOutline
+	d2e71("<b>Transform plain text message to XML</b><br/>Text2XmlPipe"):::errorOutline
+	d2e75("<b>Add position to elements</b><br/>XsltPipe"):::errorOutline
+	d2e79("<b>Transform XML message to JSON message</b><br/>Json2XmlValidator"):::errorOutline
+	d2e23("<b>Remove namespaces</b><br/>XsltPipe"):::normal
+	d2e27("<b>Only one line?</b><br/>XmlSwitch"):::normal
+	d2e33("<b>Call HelloWorld</b><br/>IbisLocalSender"):::normal
+	d2e39("<b>Transform result to XML</b><br/>Text2XmlPipe"):::normal
+	d2e51("<b>Add documentation</b><br/>XsltPipe"):::normal
+	d2e22-READY("<b>OutputWrapper</b><br/>SoapWrapperPipe"):::normal
+	d2e14("<b>SUCCESS</b>"):::normal
+	d2e43("<b>Call HelloWorld for every line</b><br/>IbisLocalSender"):::normal
+	d2e21("<b>InputWrapper</b><br/>SoapWrapperPipe"):::normal
+	classDef normal fill:#fff,stroke-width:4px,stroke:#8bc34a;
+	classDef errorOutline fill:#fff,stroke-width:4px,stroke:#ec4758;
+	d2e2 --> |success| d2e15
+	d2e4 --> |success| d2e15
+	d2e6 --> |success| d2e15
+	d2e8 --> |success| d2e15
+	d2e10 --> |success| d2e15
+	d2e15 --> |failure| d2e66
+	d2e15 --> |parserError| d2e71
+	d2e15 --> |success| d2e21
+	d2e66 --> |success| d2e71
+	d2e71 --> |success| d2e75
+	d2e75 --> |success| d2e79
+	d2e79 --> |success| d2e23
+	d2e23 --> |success| d2e27
+	d2e27 --> |true| d2e33
+	d2e27 --> |false| d2e43
+	d2e33 --> |success| d2e39
+	d2e39 --> |success| d2e51
+	d2e51 --> |success| d2e22-READY
+	d2e22-READY --> |success| d2e14
+	d2e43 --> |success| d2e51
+	d2e21 --> |success| d2e23
+	linkStyle 0,1,2,3,4,7,12,13,14,15,16,17,18,19,20 stroke:#8bc34a,stroke-width:3px,fill:none;
+	linkStyle 5,6,8,9,10,11 stroke:#ec4758,stroke-width:3px,fill:none;

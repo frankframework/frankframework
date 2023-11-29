@@ -574,7 +574,7 @@ public class HttpSender extends HttpSenderBase {
 	@Deprecated
 	public void setParamsInUrl(boolean b) {
 		if(!b) {
-			if(!postType.equals(PostType.MTOM) && !postType.equals(PostType.FORMDATA)) { //Don't override if another type has explicitly been set
+			if(postType != PostType.MTOM && postType != PostType.FORMDATA) { //Don't override if another type has explicitly been set
 				postType = PostType.URLENCODED;
 				ConfigurationWarnings.add(this, log, "attribute [paramsInUrl] is deprecated: please use postType='URLENCODED' instead", SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 			} else {
@@ -639,7 +639,7 @@ public class HttpSender extends HttpSenderBase {
 	 * @ff.default false
 	 */
 	public void setMultipart(boolean b) {
-		if(b && !postType.equals(PostType.MTOM)) {
+		if(b && postType != PostType.MTOM) {
 			postType = PostType.FORMDATA;
 		}
 	}

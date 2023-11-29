@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -48,7 +48,7 @@ import lombok.Getter;
 import nl.nn.adapterframework.http.mime.MultipartEntity;
 
 public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
-	private String lineSeparator = System.getProperty("line.separator");
+	private final String lineSeparator = System.getProperty("line.separator");
 
 	private HttpResponse buildResponse(InputStream content) throws UnsupportedOperationException, IOException {
 		CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);
@@ -230,6 +230,6 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	private String getBoundary(String contentType) {
 		String boundary = contentType.substring(contentType.indexOf("boundary=")+9);
 		boundary = boundary.substring(0, boundary.indexOf(";"));
-		return boundary.replaceAll("\"", "");
+		return boundary.replace("\"", "");
 	}
 }

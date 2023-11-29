@@ -15,8 +15,10 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +49,9 @@ import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingException;
+import nl.nn.adapterframework.stream.PathMessage;
 import nl.nn.adapterframework.util.ClassUtils;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.Guard;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -123,8 +125,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 	private Semaphore childThreadSemaphore=null;
 
-	private boolean stopForwardConfigured = false;
-
 	protected enum StopReason {
 		MAX_ITEMS_REACHED(MAX_ITEMS_REACHED_FORWARD),
 		STOP_CONDITION_MET(STOP_CONDITION_MET_FORWARD);
@@ -155,7 +155,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		if (getMaxChildThreads()>0) {
 			childThreadSemaphore=new Semaphore(getMaxChildThreads());
 		}
-		stopForwardConfigured = getForwards()!=null && (getForwards().get(StopReason.MAX_ITEMS_REACHED.getForwardName())!=null || getForwards().get(StopReason.STOP_CONDITION_MET.getForwardName())!=null);
 	}
 
 	protected IDataIterator<I> getIterator(Message input, PipeLineSession session, Map<String,Object> threadContext) throws SenderException {
@@ -181,7 +180,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			callback.startIterating(); // perform startIterating even when it=null, to avoid empty result
 			if (it!=null) {
 				try {
-
 					boolean keepGoing = true;
 					while (keepGoing && (it.hasNext())) {
 						if (Thread.currentThread().isInterrupted()) {
@@ -214,7 +212,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		private int totalItems=0;
 		private boolean blockOpen=false;
 		private Object blockHandle;
-		private Vector<I> inputItems = new Vector<I>();
+		private Vector<I> inputItems = new Vector<>();
 		private Guard guard;
 		private List<ParallelSenderExecutor> executorList;
 
@@ -224,7 +222,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			this.results=out;
 			if (isParallel() && isCollectResults()) {
 				guard = new Guard();
-				executorList = new ArrayList<ParallelSenderExecutor>();
+				executorList = new ArrayList<>();
 			}
 		}
 
@@ -237,7 +235,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				blockOpen=true;
 			}
 		}
-		public void endIterating() throws SenderException, TimeoutException, IOException {
+		public void endIterating() throws SenderException, IOException, TimeoutException {
 			if (blockOpen && sender instanceof IBlockEnabledSender<?>) {
 				((IBlockEnabledSender)sender).closeBlock(blockHandle, session);
 			}
@@ -248,7 +246,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				results.append("<results count=\""+getCount()+"\"/>");
 			}
 		}
-		public void startBlock() throws SenderException, TimeoutException, IOException {
+		public void startBlock() throws SenderException, TimeoutException {
 			if (!isParallel() && !blockOpen && sender instanceof IBlockEnabledSender<?>) {
 				blockHandle = ((IBlockEnabledSender)sender).openBlock(session);
 				blockOpen=true;
@@ -257,7 +255,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		/**
 		 * @return true when looping should continue, false when stop is required.
 		 */
-		public boolean endBlock() throws SenderException, TimeoutException, IOException {
+		public boolean endBlock() throws SenderException {
 			if (!isParallel() && sender instanceof IBlockEnabledSender<?>) {
 				((IBlockEnabledSender)sender).closeBlock(blockHandle, session);
 				blockOpen=false;
@@ -409,7 +407,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			results.append(itemResult).append("\n");
 		}
 
-		public void waitForResults() throws SenderException, IOException {
+		public void waitForResults() throws SenderException {
 			if (isParallel()) {
 				try {
 					guard.waitForAllResources();
@@ -429,7 +427,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						}
 						addResult(count, pse.getRequest(), itemResult);
 					}
-				} catch (InterruptedException e) {
+				} catch (InterruptedException | IOException e) {
 					throw new SenderException("was interrupted",e);
 				}
 			}
@@ -441,31 +439,16 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	@Override
-	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		log.debug("pipe [{}] has no implementation to provide an outputstream", () -> getName());
-		return null; // ancestor MessageSendingPipe forwards provideOutputStream to sender, which is not correct for IteratingPipe
-	}
-
-	@Override
-	protected boolean canStreamToNextPipe() {
-		if(stopForwardConfigured) { // streaming is not possible since the forward is not known before hand
-			return false;
-		}
-		return !isCollectResults() // when collectResults is false, streaming is not necessary or useful
-				&& StringUtils.isEmpty(getItemNoSessionKey())
-				&& super.canStreamToNextPipe();
-	}
-
-	@Override
 	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeoutException, IOException {
 		// sendResult has a messageID for async senders, the result for sync senders
-		StopReason stopReason = null;
-		try (MessageOutputStream target=getTargetStream(session)) {
-			try (Writer resultWriter = target.asWriter()) {
+		StopReason stopReason;
+		File tempFile = FileUtils.createTempFile();
+		try {
+			try (Writer resultWriter = Files.newBufferedWriter(tempFile.toPath())) {
 				ItemCallback callback = createItemCallBack(session,sender, resultWriter);
 				stopReason = iterateOverInput(input,session,threadContext, callback);
 			}
-			PipeRunResult prr = target.getPipeRunResult();
+			PipeRunResult prr = new PipeRunResult(getSuccessForward(), PathMessage.asTemporaryMessage(tempFile.toPath()));
 			if(stopReason != null) {
 				PipeForward forward = getForwards().get(stopReason.getForwardName());
 				if(forward != null) {

@@ -27,8 +27,8 @@ import java.net.URL;
  */
 public class URLResource extends Resource {
 
-	private URL url;
-	private String systemId;
+	private final URL url;
+	private final String systemId;
 
 	protected URLResource(IScopeProvider scopeProvider, URL url, String systemId) {
 		super(scopeProvider);

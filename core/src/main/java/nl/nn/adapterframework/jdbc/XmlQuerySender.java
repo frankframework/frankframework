@@ -42,8 +42,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.StringUtil;
@@ -170,7 +170,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			} else if (type.equalsIgnoreCase(TYPE_XMLDATETIME)) {
 				java.util.Date nDate;
 				try {
-					nDate = DateUtils.parseXmlDateTime(value);
+					nDate = XmlUtils.parseXmlDateTime(value);
 				} catch (Exception e) {
 					throw new SenderException(getLogPrefix() + "got exception parsing value [" + value + "] from xml dateTime to Date", e);
 				}

@@ -11,7 +11,7 @@ import nl.nn.adapterframework.pipes.UUIDGeneratorPipe.Type;
 
 public class UUIDGeneratorPipeTest extends PipeTestBase<UUIDGeneratorPipe> {
 
-	private Object input = new Object();
+	private final Object input = new Object();
 
 	@Override
 	public UUIDGeneratorPipe createPipe() {

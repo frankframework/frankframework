@@ -31,9 +31,9 @@ import nl.nn.adapterframework.xml.XmlWriter;
 
 public class XmlWriterTest {
 
-	private boolean TEST_CDATA=true;
-	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
-	private String CDATA_END=TEST_CDATA?"]]>":"";
+	private final boolean TEST_CDATA = true;
+	private final String CDATA_START = TEST_CDATA ? "<![CDATA[" : "";
+	private final String CDATA_END = TEST_CDATA ? "]]>" : "";
 
 	protected String testString="<root><sub name=\"P &amp; Q €\">abc&amp;€</sub><sub>"+CDATA_START+"<a>a&amp;b€</a>"+CDATA_END+"</sub><!--this is comment--></root>";
 	

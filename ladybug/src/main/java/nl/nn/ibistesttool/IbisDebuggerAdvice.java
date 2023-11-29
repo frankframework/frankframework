@@ -20,7 +20,6 @@ import java.io.Writer;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -58,7 +57,6 @@ import nl.nn.adapterframework.processors.InputOutputPipeProcessor;
 import nl.nn.adapterframework.senders.ParallelSenderExecutor;
 import nl.nn.adapterframework.senders.SenderWrapperBase;
 import nl.nn.adapterframework.stream.IOutputStreamingSupport;
-import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.ThreadConnector;
@@ -86,7 +84,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 	private static boolean enabled=true;
 
-	private AtomicInteger threadCounter = new AtomicInteger(0);
+	private final AtomicInteger threadCounter = new AtomicInteger(0);
 
 
 	@Override
@@ -107,7 +105,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		}
 		String correlationId = getCorrelationId(session);
 		message = ibisDebugger.pipeLineInput(pipeLine, correlationId, message);
-		TreeSet<String> keys = new TreeSet<String>(session.keySet());
+		TreeSet<String> keys = new TreeSet<>(session.keySet());
 		Iterator<String> iterator = keys.iterator();
 		while (iterator.hasNext()) {
 			String sessionKey = iterator.next();
@@ -298,13 +296,6 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	/**
-	 * Provides advice for {@link IStreamingSender#sendMessage(Message message, PipeLineSession session, IForwardTarget next)}
-	 */
-	public PipeRunResult debugStreamingSenderInputOutputAbort(ProceedingJoinPoint proceedingJoinPoint, Message message, PipeLineSession session, IForwardTarget next) throws Throwable {
-		return debugSenderInputOutputAbort(proceedingJoinPoint, message, session, 0, SenderReturnType.PIPERUNRESULT);
-	}
-
-	/**
 	 * Provides advice for {@link IOutputStreamingSupport#provideOutputStream(PipeLineSession session, IForwardTarget next)}
 	 */
 	public MessageOutputStream debugProvideOutputStream(ProceedingJoinPoint proceedingJoinPoint, PipeLineSession session) throws Throwable {
@@ -350,7 +341,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	@Override
-	public ContentHandler inspectXml(PipeLineSession session, String label, ContentHandler contentHandler, BiConsumer<AutoCloseable,String> closeOnCloseRegister) {
+	public ContentHandler inspectXml(PipeLineSession session, String label, ContentHandler contentHandler) {
 		if (!isEnabled()) {
 			return contentHandler;
 		}
@@ -358,7 +349,6 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		WriterPlaceHolder writerPlaceHolder = ibisDebugger.showValue(correlationId, label, new WriterPlaceHolder());
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
-			closeOnCloseRegister.accept(writer, "debugger for inspectXml labeled ["+label+"]");
 			XmlWriter xmlWriter = new XmlWriter(StreamCaptureUtils.limitSize(writer, writerPlaceHolder.getSizeLimit()), true);
 			contentHandler = new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
 		}

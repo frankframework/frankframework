@@ -17,8 +17,8 @@ package nl.nn.adapterframework.xml;
 
 public class PrefixMapping {
 
-	private String prefix;
-	private String uri;
+	private final String prefix;
+	private final String uri;
 
 	public PrefixMapping(String prefix, String uri) {
 		this.prefix = prefix;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,8 +59,6 @@ public class Misc {
 	private static Long messageSizeWarnByDefault = null;
 	public static final String LINE_SEPARATOR = System.lineSeparator();
 
-	private static int maximumTransactionTimeout=-1;
-
 	public static String insertAuthorityInUrlString(String url, String authAlias, String username, String password) {
 		if (StringUtils.isNotEmpty(authAlias) || StringUtils.isNotEmpty(username) || StringUtils.isNotEmpty(password)) {
 			CredentialFactory cf = new CredentialFactory(authAlias, username, password);
@@ -101,85 +99,6 @@ public class Misc {
 			localHost="unknown ("+uhe.getMessage()+")";
 		}
 		return localHost;
-	}
-
-	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
-	public static String getApplicationDeploymentDescriptorPath() throws IOException {
-		try {
-			return (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getApplicationDeploymentDescriptorPath").invoke(null);
-		} catch (Exception e) {
-			if("WAS".equals(AppConstants.getInstance().getString(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY, ""))) {
-				throw new IOException(e);
-			}
-			log.debug("Caught NoClassDefFoundError for getApplicationDeploymentDescriptorPath, just not on Websphere Application Server", e);
-			return null;
-		}
-	}
-
-	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
-	public static String getDeployedApplicationBindings() throws IOException {
-		String addp = getApplicationDeploymentDescriptorPath();
-		if (addp==null) {
-			log.debug("applicationDeploymentDescriptorPath not found");
-			return null;
-		}
-		String appBndFile = addp + File.separator + "ibm-application-bnd.xmi";
-		log.debug("deployedApplicationBindingsFile [" + appBndFile + "]");
-		return StreamUtil.fileToString(appBndFile);
-	}
-
-	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
-	public static String getApplicationDeploymentDescriptor() throws IOException {
-		String addp = getApplicationDeploymentDescriptorPath();
-		if (addp==null) {
-			log.debug("applicationDeploymentDescriptorPath not found");
-			return null;
-		}
-		String appFile = addp + File.separator + "application.xml";
-		log.debug("applicationDeploymentDescriptorFile [" + appFile + "]");
-		return StreamUtil.fileToString(appFile);
-	}
-
-	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
-	public static String getConfigurationResources() {
-		try {
-			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationResourcePath").invoke(null);
-			return StreamUtil.fileToString(path);
-		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConfigurationResources, just not on Websphere Application Server", e);
-			return null;
-		}
-	}
-
-	// IBM specific methods using reflection so no dependency on the iaf-ibm module is required.
-	public static String getConfigurationServer() throws IOException {
-		try {
-			String path = (String) Class.forName("nl.nn.adapterframework.util.IbmMisc").getMethod("getConfigurationServerPath").invoke(null);
-			return StreamUtil.fileToString(path);
-		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConfigurationServer, just not on Websphere Application Server ({}): {}", () -> e.getClass().getName(), () -> e.getMessage());
-			return null;
-		}
-	}
-
-	public static String getConnectionPoolProperties(String confResString, String providerType, String jndiName) {
-		try {
-			Class<?>[] args_types = new Class<?>[3];
-			args_types[0] = String.class;
-			args_types[1] = String.class;
-			args_types[2] = String.class;
-			Object[] args = new Object[3];
-			args[0] = confResString;
-			args[1] = providerType;
-			args[2] = jndiName;
-			return (String) Class
-					.forName("nl.nn.adapterframework.util.IbmMisc")
-					.getMethod("getConnectionPoolProperties", args_types)
-					.invoke(null, args);
-		} catch (Exception e) {
-			log.debug("Caught NoClassDefFoundError for getConnectionPoolProperties, just not on Websphere Application Server", e);
-			return null;
-		}
 	}
 
 	/**
@@ -351,72 +270,6 @@ public class Misc {
 			}
 		}
 		return new File(dirName);
-	}
-
-	public static Integer getTotalTransactionLifetimeTimeout() {
-		String confSrvString = null;
-		try {
-			confSrvString = getConfigurationServer();
-		} catch (Exception e) {
-			log.warn("Exception getting configurationServer",e);
-		}
-		return getTotalTransactionLifetimeTimeout(confSrvString);
-	}
-
-	public static Integer getTotalTransactionLifetimeTimeout(String configServerXml){
-		if (configServerXml==null) {
-			return null;
-		}
-		try {
-			String confSrvString = XmlUtils.removeNamespaces(configServerXml);
-			confSrvString = XmlUtils.removeNamespaces(confSrvString);
-			String xPath = "Server/components/services/@totalTranLifetimeTimeout";
-			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xPath));
-			String ttlt = tp.transform(confSrvString, null);
-			if(ttlt != null) {
-				return Integer.valueOf(ttlt);
-			}
-		} catch(Exception e) {
-			log.warn("Exception getting totalTransactionLifetimeTimeout",e);
-		}
-		return null;
-	}
-
-	public static int getMaximumTransactionTimeout() {
-		if (maximumTransactionTimeout<0) {
-			Integer transactionTimeout=0;
-			try {
-				String confSrvString = null;
-				try {
-					confSrvString = getConfigurationServer();
-				} catch (Exception e) {
-					log.warn("Exception getting configurationServer ({}): {}", e.getClass().getName(), e.getMessage());
-				}
-				transactionTimeout=getMaximumTransactionTimeout(confSrvString);
-			} finally {
-				maximumTransactionTimeout=transactionTimeout!=null ? transactionTimeout : 0;
-			}
-		}
-		return maximumTransactionTimeout;
-	}
-
-	public static Integer getMaximumTransactionTimeout(String configServerXml) {
-		if (configServerXml==null) {
-			return null;
-		}
-		try {
-			String confSrvString = XmlUtils.removeNamespaces(configServerXml);
-			confSrvString = XmlUtils.removeNamespaces(confSrvString);
-			String xPath = "Server/components/services/@propogatedOrBMTTranLifetimeTimeout";
-			TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(xPath));
-			String mtt = tp.transform(confSrvString, null);
-			if(StringUtils.isNotEmpty(mtt)) {
-				return Integer.valueOf(mtt);
-			}
-		} catch(Exception e) {
-			log.warn("Exception getting maximumTransactionTimeout",e);
-		}
-		return null;
 	}
 
 	public static String getAge(long value) {

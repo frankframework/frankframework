@@ -24,14 +24,13 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class JndiContextPrefixFactory implements InitializingBean {
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	private String jndiContextPrefix = null;
 
 	private enum ContextPrefix {
 		JBOSS("java:/"),
 		TIBCOAMX("java:"), // no slash?
 		TOMCAT(JndiLocatorSupport.CONTAINER_PREFIX),
-		WAS(""), //for now only use direct, aka global, JNDI lookups. See https://www.ibm.com/support/pages/javaxnamingnamingexception-name-compenvjdbc-not-found-context-java
 		DEFAULT(JndiLocatorSupport.CONTAINER_PREFIX);
 
 		private String prefix = "";

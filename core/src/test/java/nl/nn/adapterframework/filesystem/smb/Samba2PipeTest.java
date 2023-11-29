@@ -4,25 +4,25 @@ import org.junit.jupiter.api.BeforeEach;
 
 import nl.nn.adapterframework.filesystem.FileSystemPipeTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
-import nl.nn.adapterframework.filesystem.LocalFileServer;
-import nl.nn.adapterframework.filesystem.LocalFileServer.FileSystemType;
-import nl.nn.adapterframework.filesystem.LocalFileSystemMock;
 import nl.nn.adapterframework.filesystem.LocalFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem.Samba2AuthType;
 import nl.nn.adapterframework.pipes.Samba2Pipe;
+import nl.nn.adapterframework.testutil.junit.LocalFileServer;
+import nl.nn.adapterframework.testutil.junit.LocalFileSystemMock;
+import nl.nn.adapterframework.testutil.junit.LocalFileServer.FileSystemType;
 
 public class Samba2PipeTest extends FileSystemPipeTest<Samba2Pipe, SmbFileRef, Samba2FileSystem> {
 
-	private String username = "frankframework";
-	private String password = "pass_123";
-	private String host = "localhost";
+	private final String username = "frankframework";
+	private final String password = "pass_123";
+	private final String host = "localhost";
 	private int port = 445;
 
-	private String shareName = "home";
-	private String kdc = "localhost";
-	private String realm = "DUMMYDOMAIN.NL";
-	private String domain = "dummyDomain.nl";
+	private final String shareName = "home";
+	private final String kdc = "localhost";
+	private final String realm = "DUMMYDOMAIN.NL";
+	private final String domain = "dummyDomain.nl";
 
 	@LocalFileSystemMock
 	private static LocalFileServer fs;

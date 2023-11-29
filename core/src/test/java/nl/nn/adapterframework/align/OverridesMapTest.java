@@ -10,8 +10,8 @@ public class OverridesMapTest {
 	private OverridesMap<String> map;
 
 	@BeforeEach
-	public void setUp() throws Exception {
-		map = new OverridesMap<String>();
+	public void setUp() {
+		map = new OverridesMap<>();
 	}
 
 	AlignmentContext parse(String path) {

@@ -26,7 +26,7 @@ import nl.nn.adapterframework.core.ListenerException;
 
 public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorItem {
 
-	private Message msg;
+	private final Message msg;
 
 	public JmsMessageBrowserIteratorItem(Message msg) {
 		super();
@@ -126,6 +126,9 @@ public class JmsMessageBrowserIteratorItem implements IMessageBrowsingIteratorIt
 	}
 
 	public String getText() throws ListenerException {
+		if (!(msg instanceof TextMessage)) {
+			return "<binary data>";
+		}
 		try {
 			return ((TextMessage)msg).getText();
 		} catch (JMSException e) {

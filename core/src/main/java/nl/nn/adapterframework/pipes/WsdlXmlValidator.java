@@ -464,8 +464,8 @@ class ClassLoaderWSDLLocator implements WSDLLocator, IScopeProvider {
 }
 
 class SchemaLocation implements Comparable<SchemaLocation> {
-	private String namespace;
-	private String schema;
+	private final String namespace;
+	private final String schema;
 	private String schemaFormatted;
 
 	SchemaLocation(String namespace, String schema) {

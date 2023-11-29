@@ -25,10 +25,10 @@ import name.neuhalfen.projects.crypto.bouncycastle.openpgp.BuildEncryptionOutput
 import nl.nn.adapterframework.configuration.ConfigurationException;
 
 public class Encrypt extends PGPAction {
-	private String[] recipients;
+	private final String[] recipients;
 
 	public Encrypt(String[] publicKey, String[] recipients) throws ConfigurationException {
-		super(publicKey, null, null, (Object[]) recipients);
+		super(publicKey, null, null, recipients);
 
 		if (publicKey == null || publicKey.length != 1)
 			throw new ConfigurationException("With encryption action, there should be only one public key.");

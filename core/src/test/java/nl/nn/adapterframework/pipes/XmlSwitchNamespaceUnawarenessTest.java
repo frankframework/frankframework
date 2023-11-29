@@ -14,12 +14,12 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 	public String NAMESPACE_UNAWARE_XSLT1_RESULT_7_0= "1";
 	public String NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678= "1";
 
-	private String namespaceUnaware_Xslt1_result = NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678;
+	private final String namespaceUnaware_Xslt1_result = NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678;
 
 	public String XSLT2_XPATH_RESULT_7_0= "NF";
 	public String XSLT2_XPATH_RESULT_7_5678= "1";
 
-	private String xslt2_XPath_result = XSLT2_XPATH_RESULT_7_5678;
+	private final String xslt2_XPath_result = XSLT2_XPATH_RESULT_7_5678;
 
 	@Override
 	public XmlSwitch createPipe() {

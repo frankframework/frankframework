@@ -10,7 +10,7 @@ import nl.nn.adapterframework.lifecycle.ApplicationMessageEvent;
 import nl.nn.adapterframework.util.MessageKeeperMessage;
 
 public class ConfigurationMessageEventListener implements ApplicationListener<ApplicationMessageEvent> {
-	private List<MessageKeeperMessage> configurationMessages = new ArrayList<>();
+	private final List<MessageKeeperMessage> configurationMessages = new ArrayList<>();
 
 	@Override
 	public void onApplicationEvent(ApplicationMessageEvent event) {

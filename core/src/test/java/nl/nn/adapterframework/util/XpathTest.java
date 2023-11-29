@@ -15,42 +15,42 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 public class XpathTest extends FunctionalTransformerPoolTestBase {
 
-	private String inputMessageWithNs="<root xmlns=\"urn:rootnamespace/\"><body xmlns=\"urn:bodynamespace/\"><item>1</item><item>2</item></body></root>";
-	private String inputMessageWithoutNs="<root><body><item>1</item><item>2</item></body></root>";
-	private String inputMessageMultipleChildren=
-			"<root>" +
-				"<subDirectory>" +
-					"<directoryUrl>aa</directoryUrl>" +
-					"<orgUnitId>ab</orgUnitId>" +
-				"</subDirectory>" +
-				"<subDirectory>" +
-					"<directoryUrl>ba</directoryUrl>" +
-					"<orgUnitId>bb</orgUnitId>" +
-				"</subDirectory>" +
-				"<subDirectory>" +
-					"<directoryUrl>ca</directoryUrl>" +
-					"<orgUnitId>cb</orgUnitId>" +
-				"</subDirectory>" +
-				"<subDirectory>" +
-					"<directoryUrl>da</directoryUrl>" +
-					"<orgUnitId>db</orgUnitId>" +
-				"</subDirectory>" +
-				"<subDirectory>" +
-					"<directoryUrl>ea</directoryUrl>" +
-					"<orgUnitId>eb</orgUnitId>" +
-				"</subDirectory>" +
-				"<subDirectory>" +
-					"<directoryUrl>fa</directoryUrl>" +
-					"<orgUnitId>fb</orgUnitId>" +
-				"</subDirectory>" +
-				"<subDirectory>" +
-					"<directoryUrl>ga</directoryUrl>" +
-					"<orgUnitId>gb</orgUnitId>" +
-				"</subDirectory>" +
-				"<subDirectory>" +
-					"<directoryUrl>ha</directoryUrl>" +
-					"<orgUnitId>hb</orgUnitId>" +
-				"</subDirectory>" +
+	private final String inputMessageWithNs = "<root xmlns=\"urn:rootnamespace/\"><body xmlns=\"urn:bodynamespace/\"><item>1</item><item>2</item></body></root>";
+	private final String inputMessageWithoutNs = "<root><body><item>1</item><item>2</item></body></root>";
+	private final String inputMessageMultipleChildren =
+		"<root>" +
+			"<subDirectory>" +
+			"<directoryUrl>aa</directoryUrl>" +
+			"<orgUnitId>ab</orgUnitId>" +
+			"</subDirectory>" +
+			"<subDirectory>" +
+			"<directoryUrl>ba</directoryUrl>" +
+			"<orgUnitId>bb</orgUnitId>" +
+			"</subDirectory>" +
+			"<subDirectory>" +
+			"<directoryUrl>ca</directoryUrl>" +
+			"<orgUnitId>cb</orgUnitId>" +
+			"</subDirectory>" +
+			"<subDirectory>" +
+			"<directoryUrl>da</directoryUrl>" +
+			"<orgUnitId>db</orgUnitId>" +
+			"</subDirectory>" +
+			"<subDirectory>" +
+			"<directoryUrl>ea</directoryUrl>" +
+			"<orgUnitId>eb</orgUnitId>" +
+			"</subDirectory>" +
+			"<subDirectory>" +
+			"<directoryUrl>fa</directoryUrl>" +
+			"<orgUnitId>fb</orgUnitId>" +
+			"</subDirectory>" +
+			"<subDirectory>" +
+			"<directoryUrl>ga</directoryUrl>" +
+			"<orgUnitId>gb</orgUnitId>" +
+			"</subDirectory>" +
+			"<subDirectory>" +
+			"<directoryUrl>ha</directoryUrl>" +
+			"<orgUnitId>hb</orgUnitId>" +
+			"</subDirectory>" +
 			"</root>";
 
 	public void xpathTest(String input, String xpath, String expected) throws ConfigurationException, DomBuilderException, TransformerException, IOException, SAXException {

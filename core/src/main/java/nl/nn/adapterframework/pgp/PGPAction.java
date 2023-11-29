@@ -44,8 +44,8 @@ public abstract class PGPAction implements IScopeProvider {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	protected InMemoryKeyring keyringConfig;
-	private String[] publicKeys;
-	private String secretKey, secretPassword;
+	private final String[] publicKeys;
+	private final String secretKey, secretPassword;
 
 	/**
 	 * A general constructor. It checks if any of the vars are null.

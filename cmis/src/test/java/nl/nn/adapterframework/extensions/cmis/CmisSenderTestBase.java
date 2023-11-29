@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.extensions.cmis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -35,6 +35,7 @@ import org.apache.chemistry.opencmis.client.runtime.util.EmptyItemIterable;
 import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.junit.jupiter.api.Disabled;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -111,7 +112,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 		doAnswer(cmisObject).when(cmisSession).createDocument(anyMap(), any(), any(), any());
 
 //		FIND
-		ItemIterable<QueryResult> query = new EmptyItemIterable<QueryResult>();
+		ItemIterable<QueryResult> query = new EmptyItemIterable<>();
 		doReturn(query).when(cmisSession).query(anyString(), anyBoolean(), any());
 
 		doReturn(new ContentStreamMock()).when(cmisSession).getContentStream(any(), any(), any(), any());
@@ -122,6 +123,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 	}
 
 	@Override
+	@Disabled
 	public void testIfToStringWorks() {
 		// Disable this test, the CmisSender is tested in other classes.
 	}

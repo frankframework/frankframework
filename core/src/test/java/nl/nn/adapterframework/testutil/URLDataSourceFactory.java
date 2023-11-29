@@ -18,7 +18,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public class URLDataSourceFactory extends JndiDataSourceFactory {
-	private static Logger LOG = LogManager.getLogger(URLDataSourceFactory.class);
+	private static final Logger LOG = LogManager.getLogger(URLDataSourceFactory.class);
 
 	public static final String PRODUCT_KEY = "product";
 	public static final String TEST_PEEK_KEY = "testPeek";
@@ -31,7 +31,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 			{ "DB2",        "jdbc:db2://localhost:50000/testiaf", "testiaf_user", "testiaf_user00", false, "com.ibm.db2.jcc.DB2XADataSource" },
 			{ "Oracle",     "jdbc:oracle:thin:@localhost:1521:XE", 			"testiaf_user", "testiaf_user00", false, "oracle.jdbc.xa.client.OracleXADataSource" },
 			{ "MS_SQL",     "jdbc:sqlserver://localhost:1433;database=testiaf;lockTimeout=10000", 	"testiaf_user", "testiaf_user00", false, "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" },
-			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver=1&pinGlobalTxToPhysicalConnection=true&serverTimezone=Europe/Amsterdam", "testiaf_user", "testiaf_user00", true, "com.mysql.cj.jdbc.MysqlXADataSource" },
+			{ "MySQL",      "jdbc:mysql://localhost:3307/testiaf?sslMode=DISABLED&disableMariaDbDriver=1&pinGlobalTxToPhysicalConnection=true&serverTimezone=Europe/Amsterdam&allowPublicKeyRetrieval=true", "testiaf_user", "testiaf_user00", true, "com.mysql.cj.jdbc.MysqlXADataSource" },
 			{ "MariaDB",    "jdbc:mariadb://localhost:3306/testiaf?pinGlobalTxToPhysicalConnection=true", 				"testiaf_user", "testiaf_user00", false, "org.mariadb.jdbc.MariaDbDataSource" }, // can have only one entry per product key
 			{ "PostgreSQL", "jdbc:postgresql://localhost:5432/testiaf", 			"testiaf_user", "testiaf_user00", true, "org.postgresql.xa.PGXADataSource" }
 		};
@@ -101,7 +101,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 	}
 
 	@Override //fail fast
-	public DataSource get(String jndiName, Properties jndiEnvironment) throws NamingException {
+	public DataSource get(String jndiName, Properties jndiEnvironment) {
 		if(!availableDataSources.contains(jndiName)) {
 			throw new IllegalStateException("jndi ["+jndiName+"] not configured in test environment");
 		}
@@ -123,8 +123,6 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 				try {
 					DataSource ds = createDataSource(product, url, userId, password, testPeek, xaImplClassName);
 					return namedDataSource(ds, product, testPeek);
-				} catch (NamingException e) {
-					throw e;
 				} catch (Exception e) {
 					NamingException ne = new NamingException("cannot lookup datasource");
 					ne.initCause(e);

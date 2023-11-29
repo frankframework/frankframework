@@ -79,7 +79,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	public DirectoryStream<Path> listFiles(String folder) throws FileSystemException {
 		final Path dir = toFile(folder);
 
-		DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<Path>() {
+		DirectoryStream.Filter<Path> filter = new DirectoryStream.Filter<>() {
 			@Override
 			public boolean accept(Path file) throws IOException {
 				return !Files.isDirectory(file);
@@ -108,7 +108,7 @@ public class LocalFileSystem extends FileSystemBase<Path> implements IWritableFi
 	}
 
 	@Override
-	public Message readFile(Path f, String charset) throws IOException, FileSystemException {
+	public Message readFile(Path f, String charset) throws FileSystemException {
 		return new PathMessage(f, FileSystemUtils.getContext(this, f, charset));
 	}
 

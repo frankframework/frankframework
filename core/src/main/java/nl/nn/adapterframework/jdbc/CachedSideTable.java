@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.jdbc;
 
+import nl.nn.adapterframework.dbms.JdbcException;
+
 import java.sql.Connection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,12 +24,12 @@ import java.util.Map;
 
 /**
  * @author  Gerrit van Brakel
- * @since  
+ * @since
  */
 public class CachedSideTable extends SideTable {
 
-	private static Map cache=Collections.synchronizedMap(new HashMap());
-	private String mapKey;
+	private static final Map cache = Collections.synchronizedMap(new HashMap());
+	private final String mapKey;
 
 	public CachedSideTable(String tableName, String keyColumn, String nameColumn, String sequence) {
 		super(tableName, keyColumn, nameColumn, sequence);

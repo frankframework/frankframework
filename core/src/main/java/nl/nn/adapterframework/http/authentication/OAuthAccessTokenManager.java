@@ -59,7 +59,7 @@ import com.nimbusds.oauth2.sdk.token.AccessToken;
 import nl.nn.adapterframework.http.HttpSessionBase;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringUtil;
@@ -68,12 +68,12 @@ public class OAuthAccessTokenManager {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private URI tokenEndpoint;
-	private Scope scope;
-	private CredentialFactory clientCredentialFactory;
-	private boolean useClientCredentialsGrant;
-	private HttpSessionBase httpSession;
-	private int expiryMs;
-	private boolean authenticatedTokenRequest; // if set true, clientId and clientSecret will be added as Basic Authentication header, instead of as request parameters
+	private final Scope scope;
+	private final CredentialFactory clientCredentialFactory;
+	private final boolean useClientCredentialsGrant;
+	private final HttpSessionBase httpSession;
+	private final int expiryMs;
+	private final boolean authenticatedTokenRequest; // if set true, clientId and clientSecret will be added as Basic Authentication header, instead of as request parameters
 
 	private AccessToken accessToken;
 	private long accessTokenRefreshTime;
@@ -160,7 +160,7 @@ public class OAuthAccessTokenManager {
 				accessTokenRefreshTime = -1;
 			} else {
 				accessTokenRefreshTime = System.currentTimeMillis() + (expiryMs<0 ? 500 * accessTokenLifetime : expiryMs);
-				log.debug("set accessTokenRefreshTime [{}]", ()->DateUtils.format(accessTokenRefreshTime));
+				log.debug("set accessTokenRefreshTime [{}]", ()-> DateFormatUtils.format(accessTokenRefreshTime));
 			}
 		} catch (ParseException e) {
 			throw new HttpAuthenticationException("Could not parse TokenResponse: "+httpResponse.getContent(), e);

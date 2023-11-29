@@ -35,10 +35,10 @@ import nl.nn.adapterframework.util.LogUtil;
  * @see JmsRealm
  */
 public class JmsRealmFactory {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	private static JmsRealmFactory self = null;
-	private Map<String, JmsRealm> jmsRealms = new LinkedHashMap<String, JmsRealm>();
+	private Map<String, JmsRealm> jmsRealms = new LinkedHashMap<>();
 
 	/**
 	 * Private constructor to prevent breaking of the singleton pattern
@@ -62,7 +62,7 @@ public class JmsRealmFactory {
 	 * Test method to cleanup the static references
 	 */
 	public void clear() {
-		jmsRealms = new LinkedHashMap<String, JmsRealm>();
+		jmsRealms = new LinkedHashMap<>();
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class JmsRealmFactory {
 	}
 
 	public List<String> getConnectionFactoryNames() {
-		List<String> list = new ArrayList<String>();
+		List<String> list = new ArrayList<>();
 		for (JmsRealm jmsRealm: jmsRealms.values()) {
 			String connectionFactory = jmsRealm.retrieveConnectionFactoryName();
 			if(StringUtils.isNotEmpty(connectionFactory)) {
@@ -100,7 +100,7 @@ public class JmsRealmFactory {
 	 */
 	public List<String> getRegisteredRealmNamesAsList() {
 		Iterator<String> it = getRegisteredRealmNames();
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		while (it.hasNext()) {
 			result.add(it.next());
 		}

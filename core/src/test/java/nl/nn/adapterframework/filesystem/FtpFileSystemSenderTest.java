@@ -2,9 +2,11 @@ package nl.nn.adapterframework.filesystem;
 
 import org.junit.jupiter.api.BeforeEach;
 
-import nl.nn.adapterframework.filesystem.LocalFileServer.FileSystemType;
 import nl.nn.adapterframework.ftp.FTPFileRef;
 import nl.nn.adapterframework.senders.FtpFileSystemSender;
+import nl.nn.adapterframework.testutil.junit.LocalFileServer;
+import nl.nn.adapterframework.testutil.junit.LocalFileSystemMock;
+import nl.nn.adapterframework.testutil.junit.LocalFileServer.FileSystemType;
 
 /**
  * This test class is created to test both FtpFileSystem and FtpFileSystemSender classes.
@@ -13,11 +15,11 @@ import nl.nn.adapterframework.senders.FtpFileSystemSender;
  */
 public class FtpFileSystemSenderTest extends FileSystemSenderTest<FtpFileSystemSender, FTPFileRef, FtpFileSystem> {
 
-	private String username = "frankframework";
-	private String password = "pass_123";
-	private String host = "localhost";
+	private final String username = "frankframework";
+	private final String password = "pass_123";
+	private final String host = "localhost";
 	private int port = 21;
-	private String remoteDirectory = "/home";
+	private final String remoteDirectory = "/home";
 
 	@LocalFileSystemMock
 	private static LocalFileServer fs;

@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.management.security;
 
+import static nl.nn.adapterframework.management.security.JwtKeyGenerator.JWT_DEFAULT_SIGNING_ALGORITHM;
+
 import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
@@ -38,7 +40,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
 import com.nimbusds.jose.proc.BadJOSEException;
@@ -59,7 +60,7 @@ public class JwtSecurityFilter implements Filter, InitializingBean { //OncePerRe
 	@Value("${management.gateway.http.jwks.endpoint}")
 	private @Setter String jwksEndpoint;
 
-	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
+	private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -134,7 +135,7 @@ public class JwtSecurityFilter implements Filter, InitializingBean { //OncePerRe
 		URL url = new URL(jwksEndpoint);
 		JWKSource<SecurityContext> keySource = JWKSourceBuilder.create(url).cacheForever().build();
 		jwtProcessor = new DefaultJWTProcessor<>();
-		JWSKeySelector<SecurityContext> keySelector = new JWSVerificationKeySelector<>(JWSAlgorithm.ES256K, keySource);
+		JWSKeySelector<SecurityContext> keySelector = new JWSVerificationKeySelector<>(JWT_DEFAULT_SIGNING_ALGORITHM, keySource);
 		jwtProcessor.setJWSKeySelector(keySelector);
 	}
 }

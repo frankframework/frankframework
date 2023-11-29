@@ -115,7 +115,6 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 
 	private TransformerPool transformerPoolExtractSoapBody;  // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 	private TransformerPool transformerPoolGetRootNamespace; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
-	private TransformerPool transformerPoolRemoveNamespaces; // only used in getMessageToValidate(), TODO: avoid setting it up when not necessary
 
 	protected ConfigurationException configurationException;
 
@@ -153,7 +152,6 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 				}
 
 				transformerPoolGetRootNamespace = XmlUtils.getGetRootNamespaceTransformerPool();
-				transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true, false);
 			}
 
 			if (!isForwardFailureToSuccess() && !isThrowException() && findForward("failure") == null) {
@@ -315,7 +313,7 @@ public class XmlValidator extends ValidatorBase implements SchemasProvider, HasS
 					if (StringUtils.isNotEmpty(inputRootNs) && StringUtils.isEmpty(getSchemaLocation())) {
 						log.debug("remove namespaces from extracted SOAP body");
 						try {
-							input = transformerPoolRemoveNamespaces.transform(input, null, true);
+							input = XmlUtils.removeNamespaces(input);
 						} catch (Exception e) {
 							throw new PipeRunException(this, "cannot remove namespaces", e);
 						}

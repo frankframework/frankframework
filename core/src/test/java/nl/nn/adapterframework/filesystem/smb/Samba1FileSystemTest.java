@@ -5,21 +5,21 @@ import org.junit.jupiter.api.BeforeEach;
 import jcifs.smb.SmbFile;
 import nl.nn.adapterframework.filesystem.FileSystemTest;
 import nl.nn.adapterframework.filesystem.IFileSystemTestHelper;
-import nl.nn.adapterframework.filesystem.LocalFileServer;
-import nl.nn.adapterframework.filesystem.LocalFileSystemMock;
 import nl.nn.adapterframework.filesystem.LocalFileSystemTestHelper;
 import nl.nn.adapterframework.filesystem.Samba1FileSystem;
-import nl.nn.adapterframework.filesystem.LocalFileServer.FileSystemType;
+import nl.nn.adapterframework.testutil.junit.LocalFileServer;
+import nl.nn.adapterframework.testutil.junit.LocalFileSystemMock;
+import nl.nn.adapterframework.testutil.junit.LocalFileServer.FileSystemType;
 
 public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSystem> {
 
-	private String username = "frankframework";
-	private String password = "pass_123";
-	private String host = "localhost";
+	private final String username = "frankframework";
+	private final String password = "pass_123";
+	private final String host = "localhost";
 	private int port = 445;
 
-	private String shareName = "home";
-	private String domain = "dummyDomain.NL";
+	private final String shareName = "home";
+	private final String domain = "dummyDomain.NL";
 
 	@LocalFileSystemMock
 	private static LocalFileServer fs;

@@ -30,21 +30,21 @@ public class CmisSenderTest {
 	private int length1=0;
 	private int length2=0;
 
-	private String testProperties="CmisSender.properties";
+	private final String testProperties = "CmisSender.properties";
 	private Properties properties;
 
-	private int numParallel=5; // not used for ramp up test
+	private final int numParallel = 5; // not used for ramp up test
 
-	private int numCycles=10;
-	private int maxConnections=20;
-	private int numSenders=2;
+	private final int numCycles = 10;
+	private final int maxConnections = 20;
+	private final int numSenders = 2;
 
-	private boolean testViaHttpSender=false;
+	private final boolean testViaHttpSender = false;
 
-	private int threadCount[] = {  1,  5, 10, 15, 20, 25, 30 };
+	private final int threadCount[] = {1, 5, 10, 15, 20, 25, 30};
 
-	private StringBuilder results=new StringBuilder();
-	private String separator="\t";
+	private final StringBuilder results = new StringBuilder();
+	private final String separator = "\t";
 
 
 
@@ -81,7 +81,7 @@ public class CmisSenderTest {
 		// nothing
 	}
 
-	public CmisSender createCmisSender(int i) throws Exception {
+	public CmisSender createCmisSender(int i) {
 		CmisSender sender = new CmisSender();
 		sender.setName("CmisSender "+i);
 		sender.setUrl(url);
@@ -96,7 +96,7 @@ public class CmisSenderTest {
 		return sender;
 	}
 
-	public HttpSender createHttpSender(int i) throws Exception {
+	public HttpSender createHttpSender(int i) {
 		HttpSender sender = new HttpSender();
 		sender.setName("HttpSender "+i);
 		String fullUrl=url+"/"+repo+"/root?objectId="+id1+"&cmisselector=content";
@@ -119,7 +119,7 @@ public class CmisSenderTest {
 		testGet(0);
 	}
 
-	public void testGet(int i) throws Exception {
+	public void testGet(int i) {
 		String id=id1;
 //		int expectedLength=length1;
 		String result;
@@ -157,7 +157,7 @@ public class CmisSenderTest {
     public void testParallel(int numParallel) throws Exception {
     	System.out.println("start testing with ["+numParallel+"] threads...");
 		long t0=System.currentTimeMillis();
-    	ArrayList<CmisSenderTester> threads = new ArrayList<CmisSenderTester>();
+    	ArrayList<CmisSenderTester> threads = new ArrayList<>();
 		for (int i=0;i<numParallel;i++) {
 			threads.add(new CmisSenderTester());
 		}

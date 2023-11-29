@@ -237,7 +237,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	private Session globalSession;
 
-	private CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
+	private final CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
 
 	//TODO remove this when fileContentSessionKey gets removed
 	private @Getter boolean convert2Base64 = false;
@@ -493,7 +493,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		String fileName = session.getString(getParameterOverriddenAttributeValue(pvl, "filenameSessionKey", getFilenameSessionKey()));
 
 		String mediaType;
-		Map<String, Object> props = new HashMap<String, Object>();
+		Map<String, Object> props = new HashMap<>();
 		Element cmisElement;
 		try {
 			if (XmlUtils.isWellFormed(message, "cmis")) {
@@ -799,7 +799,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 				break;
 
 			case UPDATE_PROPERTIES:
-				Map<String, Object> propss = new HashMap<String, Object>();
+				Map<String, Object> propss = new HashMap<>();
 				Element propertiesElements = XmlUtils.getFirstChildTag(requestElement, "properties");
 				if (propertiesElements != null) {
 					processProperties(propertiesElements, propss);
@@ -934,7 +934,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	private SenderResult sendMessageForActionUpdate(Session cmisSession, Message message) throws SenderException{
 		String objectId = null;
-		Map<String, Object> props = new HashMap<String, Object>();
+		Map<String, Object> props = new HashMap<>();
 		Element cmisElement;
 		try {
 			if (XmlUtils.isWellFormed(message, "cmis")) {

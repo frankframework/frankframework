@@ -26,10 +26,10 @@ import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>> implements IMessageBrowsingIterator {
 
-	private FS fileSystem;
-	private DirectoryStream<F> directoryStream;
-	private Iterator<F> iterator;
-	private String messageIdPropertyKey;
+	private final FS fileSystem;
+	private final DirectoryStream<F> directoryStream;
+	private final Iterator<F> iterator;
+	private final String messageIdPropertyKey;
 
 	public FileSystemMessageBrowsingIterator(FS fileSystem, String folder, String messageIdPropertyKey) throws FileSystemException {
 		this.fileSystem = fileSystem;

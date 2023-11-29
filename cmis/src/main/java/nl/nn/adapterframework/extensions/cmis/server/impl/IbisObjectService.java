@@ -61,10 +61,10 @@ import org.w3c.dom.Node;
  */
 public class IbisObjectService implements ObjectService {
 
-	private ObjectService objectService;
-	private Logger log = LogUtil.getLogger(this);
-	private CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
-	private CallContext callContext;
+	private final ObjectService objectService;
+	private final Logger log = LogUtil.getLogger(this);
+	private final CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
+	private final CallContext callContext;
 
 	public IbisObjectService(ObjectService objectService, CallContext callContext) {
 		this.objectService = objectService;

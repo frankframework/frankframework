@@ -9,7 +9,6 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.channels.FileChannel;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -29,12 +28,13 @@ import bitronix.tm.TransactionManagerServices;
 import bitronix.tm.journal.DiskJournal;
 import bitronix.tm.journal.Journal;
 import bitronix.tm.journal.TransactionLogAppender;
-import nl.nn.adapterframework.jdbc.JdbcException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.DbmsUtil;
 
 public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase {
 
@@ -74,7 +74,7 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 	private int getNumberOfLines() throws JdbcException, SQLException {
 		String preparedQuery = dbmsSupport.prepareQueryTextForNonLockingRead(SELECT_QUERY);
 		try (Connection connection = createNonTransactionalConnection()) {
-			return JdbcUtil.executeIntQuery(connection, preparedQuery);
+			return DbmsUtil.executeIntQuery(connection, preparedQuery);
 		}
 	}
 
@@ -121,7 +121,7 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 		assumeTrue(getTransactionManagerType().equals(TransactionManagerType.BTM));
 		assertEquals(0, getNumberOfLines()); // Ensure that the table is empty
 
-		setMaxErrorCount(5);
+		BtmDiskJournal.setMaxErrorCount(5);
 		try {
 			// Arrange
 			for (int i = 0; i < 5; i++) {
@@ -137,7 +137,7 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 			assertEquals(6, getNumberOfLines()); // Assert no new changes
 		} finally {
 			int maxRetries = AppConstants.getInstance().getInt("transactionmanager.btm.journal.maxRetries", 500);
-			setMaxErrorCount(maxRetries);
+			BtmDiskJournal.setMaxErrorCount(maxRetries);
 		}
 	}
 
@@ -169,23 +169,9 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 			assertTrue(txStatus.isCompleted());
 			assertFalse(txManagedConnection.isClosed());
 
-			JdbcException ex = assertThrows(JdbcException.class, () -> JdbcUtil.executeIntQuery(txManagedConnection, SELECT_QUERY));
+			JdbcException ex = assertThrows(JdbcException.class, () -> DbmsUtil.executeIntQuery(txManagedConnection, SELECT_QUERY));
 			assertThat(ex.getMessage(), Matchers.endsWith("connection handle already closed")); // But the connection handle apparently is !?
 		}
-	}
-
-	// Change final static MAX_ERROR_COUNT
-	private void setMaxErrorCount(int errorCount) throws Exception {
-		BtmDiskJournal journal = new BtmDiskJournal();
-		Field transactionLogAppenderField = BtmDiskJournal.class.getDeclaredField("MAX_ERROR_COUNT");
-		transactionLogAppenderField.setAccessible(true);
-
-
-		Field modifiersField = Field.class.getDeclaredField("modifiers");
-		modifiersField.setAccessible(true);
-		modifiersField.setInt(transactionLogAppenderField, transactionLogAppenderField.getModifiers() & ~Modifier.FINAL);
-
-		transactionLogAppenderField.setInt(journal, errorCount);
 	}
 
 	private void closeDiskJournal() throws Exception {

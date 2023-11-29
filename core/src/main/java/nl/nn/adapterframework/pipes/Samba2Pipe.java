@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 import nl.nn.adapterframework.filesystem.smb.SambaFileSystemDelegator;
@@ -27,10 +26,4 @@ public class Samba2Pipe extends FileSystemPipe<SmbFileRef, Samba2FileSystem> imp
 		setFileSystem(new Samba2FileSystem());
 	}
 
-	@Override
-	@Deprecated
-	@ConfigurationWarning("please use domainName instead")
-	public void setDomain(String domain) {
-		getFileSystem().setDomainName(domain);
-	}
 }

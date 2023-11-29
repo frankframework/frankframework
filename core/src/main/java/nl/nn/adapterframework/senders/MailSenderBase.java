@@ -84,7 +84,7 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 	private @Getter String bounceAddress;
 	private @Getter String domainWhitelist;
 
-	private ArrayList<String> allowedDomains = new ArrayList<>();
+	private final ArrayList<String> allowedDomains = new ArrayList<>();
 
 	protected abstract String sendEmail(MailSessionBase mailSession) throws SenderException;
 
@@ -419,38 +419,14 @@ public abstract class MailSenderBase extends SenderWithParametersBase {
 		this.password = password;
 	}
 
-	/** alias used to obtain credentials for authentication to smtphost */
-	@Deprecated
-	public void setSmtpAuthAlias(String smtpAuthAlias) {
-		setAuthAlias(smtpAuthAlias);
-	}
-
-	/** userId on the smtphost */
-	@Deprecated
-	public void setSmtpUserid(String smtpUserId) {
-		setUserId(smtpUserId);
-	}
-
-	/** password of userid on the smtphost */
-	@Deprecated
-	public void setSmtpPassword(String smtpPassword) {
-		setPassword(smtpPassword);
-	}
-
-
-
 	/**
-	 * Set the default for Subject>
-	 */
-	/** value of the subject: header if not specified in message itself */
+	 * Set the default value of the subject: header, if not specified in message itself */
 	public void setDefaultSubject(String defaultSubject) {
 		this.defaultSubject = defaultSubject;
 	}
 
 	/**
-	 * Set the default for From
-	 */
-	/** value of the from: header if not specified in message itself */
+	 * Set the default from: header, if not specified in message itself */
 	public void setDefaultFrom(String defaultFrom) {
 		this.defaultFrom = defaultFrom;
 	}

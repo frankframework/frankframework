@@ -20,7 +20,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 public class NamespaceRemovingFilter extends FullXmlFilter {
-//	Logger log = LogUtil.getLogger(this.getClass());
 
 	public NamespaceRemovingFilter(ContentHandler handler) {
 		super(handler);
@@ -28,25 +27,22 @@ public class NamespaceRemovingFilter extends FullXmlFilter {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
-//		log.debug("startElement("+uri+","+localName+","+qName+")");
 		super.startElement("", localName, localName, new NamespaceRemovingAttributesWrapper(atts));
 	}
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		//log.debug("endElement("+uri+","+localName+","+qName+")");
 		super.endElement("", localName, localName);
 	}
 
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
-		//log.debug("startPrefixMapping("+prefix+","+uri+")");
+		// No-op
 	}
 
 	@Override
 	public void endPrefixMapping(String prefix) throws SAXException {
-		//log.debug("endPrefixMapping("+prefix+")");
+		// No-op
 	}
-
 }
 

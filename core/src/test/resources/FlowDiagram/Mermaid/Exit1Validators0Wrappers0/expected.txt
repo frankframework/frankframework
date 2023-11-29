@@ -1,0 +1,28 @@
+flowchart
+	d2e2("<b>testtool-HelloLines</b><br/>JavaListener"):::normal
+	d2e4("<b>ApiListener</b><br/>ApiListener"):::normal
+	d2e6("<b>testtool-HelloLines-1</b><br/>JavaListener"):::normal
+	d2e8("<b>WebServiceListener</b><br/>WebServiceListener"):::normal
+	d2e10("<b>testtool-HelloLines-2</b><br/>JavaListener"):::normal
+	d2e15("<b>Remove namespaces</b><br/>XsltPipe"):::normal
+	d2e19("<b>Only one line?</b><br/>XmlSwitch"):::normal
+	d2e25("<b>Call HelloWorld</b><br/>IbisLocalSender"):::normal
+	d2e31("<b>Transform result to XML</b><br/>Text2XmlPipe"):::normal
+	d2e43("<b>Add documentation</b><br/>XsltPipe"):::normal
+	d2e14("<b>SUCCESS</b>"):::normal
+	d2e35("<b>Call HelloWorld for every line</b><br/>IbisLocalSender"):::normal
+	classDef normal fill:#fff,stroke-width:4px,stroke:#8bc34a;
+	classDef errorOutline fill:#fff,stroke-width:4px,stroke:#ec4758;
+	d2e2 --> |success| d2e15
+	d2e4 --> |success| d2e15
+	d2e6 --> |success| d2e15
+	d2e8 --> |success| d2e15
+	d2e10 --> |success| d2e15
+	d2e15 --> |success| d2e19
+	d2e19 --> |true| d2e25
+	d2e19 --> |false| d2e35
+	d2e25 --> |success| d2e31
+	d2e31 --> |success| d2e43
+	d2e43 --> |success| d2e14
+	d2e35 --> |success| d2e43
+	linkStyle 0,1,2,3,4,5,6,7,8,9,10,11 stroke:#8bc34a,stroke-width:3px,fill:none;

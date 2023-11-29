@@ -35,7 +35,7 @@ public class FileUtilsTest {
 	public static String testFolderPath;
 
 	@BeforeAll
-	public static void setUpTest() throws IOException {
+	public static void setUpTest() {
 		testFolderPath = testFolder.toString();
 	}
 
@@ -176,27 +176,27 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testGetListFromNamesForNames() throws Exception {
+	public void testGetListFromNamesForNames() {
 		List<String> list = FileUtils.getListFromNames("abc.txt,test.txt,jkl.txt", ',');
 		assertEquals("[abc.txt, test.txt, jkl.txt]", list.toString());
 	}
 
 	@Test
-	public void testGetListFromNamesNames() throws Exception {
+	public void testGetListFromNamesNames() {
 		String[] names = {"abc.txt", "test.txt", "jkl.txt"};
 		List<String> list = FileUtils.getListFromNames(names);
 		assertEquals("[abc.txt, test.txt, jkl.txt]", list.toString());
 	}
 
 	@Test
-	public void testGetNamesFromArray() throws Exception {
+	public void testGetNamesFromArray() {
 		String[] names = {"abc.txt", "test.txt", "jkl.txt"};
 		String res = FileUtils.getNamesFromArray(names, ',');
 		assertEquals("abc.txt,test.txt,jkl.txt", res);
 	}
 
 	@Test
-	public void testGetNamesFromList() throws Exception {
+	public void testGetNamesFromList() {
 		String[] names = {"abc.txt", "test.txt", "jkl.txt"};
 		List<String> list = FileUtils.getListFromNames(names);
 		String res = FileUtils.getNamesFromList(list, '*');
@@ -204,7 +204,7 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testAlignForValLengthLeftAlignFillchar() throws Exception {
+	public void testAlignForValLengthLeftAlignFillchar() {
 		String s = "test";
 		String res1 = FileUtils.align(s, 10, true, 'b');
 		String res2 = FileUtils.align(s, 2, true, 'b');
@@ -215,7 +215,7 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testAlignForValLengthRightAlignFillchar() throws Exception {
+	public void testAlignForValLengthRightAlignFillchar() {
 		String s = "test";
 		String res1 = FileUtils.align(s, 10, false, 'c');
 		String res2 = FileUtils.align(s, 2, false, 'c');
@@ -226,37 +226,37 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testGetFilledArray() throws Exception {
+	public void testGetFilledArray() {
 		char[] arr = FileUtils.getFilledArray(5, 'a');
 		assertEquals("aaaaa", new String(arr));
 	}
 
 	@Test
-	public void testGetFileNameExtension() throws Exception {
+	public void testGetFileNameExtension() {
 		String ext = FileUtils.getFileNameExtension("file.blaaaathowdiaa");
 		assertEquals("blaaaathowdiaa", ext);
 	}
 
 	@Test
-	public void testGetFileNameWithoutExtension() throws Exception {
+	public void testGetFileNameWithoutExtension() {
 		String ext = FileUtils.getFileNameExtension("file-blaaaathowdiaa");
 		assertNull(ext);
 	}
 
 	@Test
-	public void testGetBaseName() throws Exception {
+	public void testGetBaseName() {
 		String name = FileUtils.getBaseName("file.blaaaathowdiaa");
 		assertEquals("file", name);
 	}
 
 	@Test
-	public void testGetBaseNameWithoutExtension() throws Exception {
+	public void testGetBaseNameWithoutExtension() {
 		String name = FileUtils.getBaseName("file-blaaaathowdiaa");
 		assertNull(name);
 	}
 
 	@Test
-	public void testExtensionEqualsIgnoreCase() throws Exception {
+	public void testExtensionEqualsIgnoreCase() {
 		assertTrue(FileUtils.extensionEqualsIgnoreCase("a.txT", "txt"));
 		assertFalse(FileUtils.extensionEqualsIgnoreCase("b.ABT", "txt"));
 	}
@@ -271,7 +271,7 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testEncodeFileName() throws Exception {
+	public void testEncodeFileName() {
 		assertEquals("_ab__5__c.txt", FileUtils.encodeFileName(" ab&@5*(c.txt"));
 	}
 
@@ -298,37 +298,37 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testWeeklyRollingFilenameForTheLastWeekOfOldYear() throws Exception {
+	public void testWeeklyRollingFilenameForTheLastWeekOfOldYear() {
 		// The Last week of old year
 		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2020, 11, 31).getName()));
 	}
 
 	@Test
-	public void testWeeklyRollingFilenameForTheWeekBeforeTheLastWeekOfOldYear() throws Exception {
+	public void testWeeklyRollingFilenameForTheWeekBeforeTheLastWeekOfOldYear() {
 		// The week before the last week of old year
 		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2020, 11, 25).getName()));
 	}
 
 	@Test
-	public void testWeeklyRollingFilenameForTheLastDayOfTheWeekBeforeTheLastWeekOfOldYear() throws Exception {
+	public void testWeeklyRollingFilenameForTheLastDayOfTheWeekBeforeTheLastWeekOfOldYear() {
 		// The last day of the week before the last week of old year
 		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2020, 11, 27).getName()));
 	}
 
 	@Test
-	public void testWeeklyRollingFilenameForFewDaysOfTheNewYearFromTheLastWeekOfOldYear() throws Exception {
+	public void testWeeklyRollingFilenameForFewDaysOfTheNewYearFromTheLastWeekOfOldYear() {
 		// Few days of the new year which are also in the last week of the old year
 		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2021, 0, 3).getName()));
 	}
 
 	@Test
-	public void testWeeklyRollingFilenameForTheFirstDayOfTheNewYear() throws Exception {
+	public void testWeeklyRollingFilenameForTheFirstDayOfTheNewYear() {
 		// The first day of the first week of the new year
 		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2021, 0, 4).getName()));
 	}
 
 	@Test
-	public void testWeeklyRollingFilenameForAdayFromTheSecondWeekOfTheNewYear() throws Exception {
+	public void testWeeklyRollingFilenameForAdayFromTheSecondWeekOfTheNewYear() {
 		// The first day of the first week of the new year
 		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2021, 0, 11).getName()));
 	}

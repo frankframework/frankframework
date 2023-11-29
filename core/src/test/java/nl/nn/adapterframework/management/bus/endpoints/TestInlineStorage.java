@@ -83,7 +83,7 @@ public class TestInlineStorage extends BusTestBase {
 
 	@AfterEach
 	@Override
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		if(adapter != null) {
 			getConfiguration().getAdapterManager().unRegisterAdapter(adapter);
 		}
@@ -117,7 +117,7 @@ public class TestInlineStorage extends BusTestBase {
 		}
 
 		@Override
-		public RawMessageWrapper<String> changeProcessState(RawMessageWrapper<String> message, ProcessState toState, String reason) throws ListenerException {
+		public RawMessageWrapper<String> changeProcessState(RawMessageWrapper<String> message, ProcessState toState, String reason) {
 			return message;
 		}
 

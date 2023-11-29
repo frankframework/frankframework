@@ -83,9 +83,20 @@ public class InputOutputPipeProcessor extends PipeProcessorBase {
 					log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with contents of sessionKey [{}]", owner::getName, pe::getName, pe::getGetInputFromSessionKey);
 					message.closeOnCloseOf(pipeLineSession, owner);
 					if (!pipeLineSession.containsKey(pe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pe.getEmptyInputReplacement())) {
-						throw new PipeRunException(pe, "getInputFromSessionKey ["+pe.getGetInputFromSessionKey()+"] is not present in session");
+						boolean throwOnMissingSessionKey;
+						if (pipe instanceof FixedForwardPipe) {
+							FixedForwardPipe ffp = (FixedForwardPipe) pipe;
+							throwOnMissingSessionKey = !(ffp.getGetInputFromSessionKey().equals(ffp.getOnlyIfSessionKey()));
+						} else {
+							throwOnMissingSessionKey = true;
+						}
+
+						if (throwOnMissingSessionKey) {
+							throw new PipeRunException(pe, "getInputFromSessionKey ["+pe.getGetInputFromSessionKey()+"] is not present in session");
+						}
+					} else {
+						message = pipeLineSession.getMessage(pe.getGetInputFromSessionKey());
 					}
-					message=Message.asMessage(pipeLineSession.get(pe.getGetInputFromSessionKey()));
 				}
 				if (StringUtils.isNotEmpty(pe.getGetInputFromFixedValue())) {
 					log.debug("Pipeline of adapter [{}] replacing input for pipe [{}] with fixed value [{}]", owner::getName, pe::getName, pe::getGetInputFromFixedValue);

@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 
 import javax.jms.JMSException;
 
+import nl.nn.adapterframework.dbms.JdbcException;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;

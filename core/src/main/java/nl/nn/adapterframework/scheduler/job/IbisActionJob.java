@@ -79,11 +79,6 @@ public class IbisActionJob extends JobDef {
 		this.jobAction = action;
 	}
 
-	@Deprecated
-	public void setFunction(Action function) {
-		setAction(function);
-	}
-
 	/** Configuration on which job operates */
 	public void setConfigurationName(String configurationName) {
 		this.configurationName = configurationName;

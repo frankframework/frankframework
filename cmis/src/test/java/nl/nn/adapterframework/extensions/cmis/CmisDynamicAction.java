@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.extensions.cmis;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.extensions.cmis.CmisSender.CmisAction;
 import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;

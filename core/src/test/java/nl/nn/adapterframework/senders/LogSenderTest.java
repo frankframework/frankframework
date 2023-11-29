@@ -46,7 +46,7 @@ public class LogSenderTest extends SenderTestBase<LogSender> {
 	}
 
 	@Test
-	public void faultyLogLevel() throws Exception {
+	public void faultyLogLevel() {
 		sender.setLogLevel("appelflap");
 		assertThrows(IllegalArgumentException.class, sender::configure);
 	}

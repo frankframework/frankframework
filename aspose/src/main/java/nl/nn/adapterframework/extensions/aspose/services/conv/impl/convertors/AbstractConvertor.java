@@ -15,57 +15,55 @@
 */
 package nl.nn.adapterframework.extensions.aspose.services.conv.impl.convertors;
 
+import static nl.nn.adapterframework.functional.FunctionalUtil.logMethod;
+import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
+
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 
 import com.aspose.pdf.Document;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.extensions.aspose.ConversionOption;
+import nl.nn.adapterframework.extensions.aspose.services.conv.CisConfiguration;
 import nl.nn.adapterframework.extensions.aspose.services.conv.CisConversionResult;
 import nl.nn.adapterframework.extensions.aspose.services.util.ConvertorUtil;
-import nl.nn.adapterframework.extensions.aspose.services.util.FileUtil;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.DateFormatUtils;
 
+@Log4j2
 abstract class AbstractConvertor implements Convertor {
 
-	private static final Logger LOGGER = LogUtil.getLogger(AbstractConvertor.class);
-	private List<MediaType> supportedMediaTypes;
+	private final Set<MediaType> supportedMediaTypes;
 	protected CisConfiguration configuration;
-	private static AtomicInteger atomicCount = new AtomicInteger(1);
+
+	protected AbstractConvertor(CisConfiguration configuration, Set<MediaType> mediaTypes) {
+		this.configuration = configuration;
+		this.supportedMediaTypes = Collections.unmodifiableSet(mediaTypes);
+	}
 
 	protected AbstractConvertor(CisConfiguration configuration, MediaType... args) {
-		this.configuration = configuration;
-		supportedMediaTypes = Arrays.asList(args);
+		this(configuration, new HashSet<>(Arrays.asList(args)));
 	}
 
 	protected abstract void convert(MediaType mediaType, Message file, CisConversionResult builder, String charset) throws Exception;
 
 	@Override
-	public List<MediaType> getSupportedMediaTypes() {
+	public Set<MediaType> getSupportedMediaTypes() {
 		return supportedMediaTypes;
 	}
 
 	private void checkForSupportedMediaType(MediaType mediaType) {
-		boolean supported = false;
-		for (MediaType mediaTypeSupported : getSupportedMediaTypes()) {
-			if (mediaTypeSupported.equals(mediaType)) {
-				supported = true;
-				break;
-			}
-		}
+		boolean supported = getSupportedMediaTypes().contains(mediaType);
 
 		// Create informative message.
 		if (!supported) {
@@ -89,7 +87,6 @@ abstract class AbstractConvertor implements Convertor {
 			builder.append("')");
 			throw new IllegalArgumentException(builder.toString());
 		}
-
 	}
 
 	/**
@@ -101,7 +98,7 @@ abstract class AbstractConvertor implements Convertor {
 		checkForSupportedMediaType(mediaType);
 
 		CisConversionResult result = new CisConversionResult();
-		File resultFile = null;
+		File resultFile;
 		try {
 			resultFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), "pdf");
 			result.setConversionOption(conversionOption);
@@ -110,15 +107,15 @@ abstract class AbstractConvertor implements Convertor {
 			result.setPdfResultFile(resultFile);
 			result.setResultFilePath(resultFile.getAbsolutePath());
 
-			LOGGER.debug("Convert to file... {}", filename);
+			log.debug("Convert to file [{}]", filename);
 			convert(mediaType, message, result, charset);
-			LOGGER.debug("Convert to file finished. {}", filename);
+			log.debug("Convert to file finished. [{}]", filename);
 
 		} catch (Exception e) {
 			if (isPasswordException(e)) {
 				result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
 			} else {
-				result.setFailureReason(createTechnishefoutMsg(e));
+				result.setFailureReason(createErrorMsg(e));
 			}
 			// Clear the file to state that the conversion has failed.
 			result.setPdfResultFile(null);
@@ -129,7 +126,7 @@ abstract class AbstractConvertor implements Convertor {
 	protected int getNumberOfPages(File file) throws IOException {
 		int result = 0;
 		if(file != null) {
-			try (InputStream inStream = new FileInputStream(file)) {
+			try (InputStream inStream = Files.newInputStream(file.toPath())) {
 				Document doc = new Document(inStream);
 				result = doc.getPages().size();
 			}
@@ -138,34 +135,25 @@ abstract class AbstractConvertor implements Convertor {
 		return result;
 	}
 
-	protected String createTechnishefoutMsg(Exception e) {
-		String tijdstip = DateUtils.format(new Date(), "dd-MM-yyyy HH:mm:ss");
-		LOGGER.warn("Conversion in " + this.getClass().getSimpleName() + " failed! (Tijdstip: " + tijdstip + ")", e);
-		StringBuilder msg = new StringBuilder();
-		msg.append("Het omzetten naar pdf is mislukt door een technische fout. Neem contact op met de functioneel beheerder.");
-		msg.append("(Tijdstip: ");
-		msg.append(tijdstip);
-		msg.append(")");
-		return msg.toString();
+	protected String createErrorMsg(Exception e) {
+		String timestamp = DateFormatUtils.now();
+		log.warn("failed to convert [{}] failed! (Timestamp: [{}])", logMethod(()-> getClass().getSimpleName()), logValue(timestamp), e);
+		return "Conversion to PDF failed due to a technical failure. Please contact functional support." +
+				"(Timestamp: " + timestamp + ")";
 	}
 
 	protected void deleteFile(File file) throws IOException {
-		FileUtil.deleteFile(file);
-	}
+		// Delete always the temporary file if it exists.
+		if (file != null && Files.exists(file.toPath(), LinkOption.NOFOLLOW_LINKS)) {
+			try {
+				Files.delete(file.toPath());
+			} catch (IOException e) {
+				log.warn("failed to delete file [{}]", file, e);
+				throw new IOException("Deleting file [" + file + "] failed!", e);
+			}
+		}
 
-	/**
-	 * Create a unique file in the pdfOutputLocation with the given extension
-	 */
-	protected File getUniqueFile() {
-
-		SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
-		int count = atomicCount.addAndGet(1);
-
-		String fileNamePdf = String.format("conv_%s_%s_%05d%s", this.getClass().getSimpleName(),
-				format.format(new Date()), count, ".bin");
-		return new File(configuration.getPdfOutputLocation(), fileNamePdf);
 	}
 
 	protected abstract boolean isPasswordException(Exception e);
-
 }

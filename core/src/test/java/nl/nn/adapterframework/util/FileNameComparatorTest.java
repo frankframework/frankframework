@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class FileNameComparatorTest {
 
 	@Test
-	public void testComparator() throws Exception {
+	public void testComparator() {
 		List<File> list = new ArrayList<>();
 		list.add(new File("test.txt"));
 		list.add(new File("teSt.txt"));
@@ -53,7 +53,7 @@ public class FileNameComparatorTest {
 	 * Method: skipWhitespace(String s, int start)
 	 */
 	@Test
-	public void testSkipWhitespace() throws Exception {
+	public void testSkipWhitespace() {
 		int i = FileNameComparator.skipWhitespace("   file.txt", 0);
 		assertEquals(3, i);
 	}
@@ -62,7 +62,7 @@ public class FileNameComparatorTest {
 	 * Method: compareStringsNaturalOrder(String s0, String s1, boolean caseSensitive)
 	 */
 	@Test
-	public void testCompareStringsNaturalOrder() throws Exception {
+	public void testCompareStringsNaturalOrder() {
 		String s1 = "file1.txt";
 		String s2 = "File2.txt";
 		String s4 = "file2.txt";
@@ -74,7 +74,7 @@ public class FileNameComparatorTest {
 	 * Method: compareFilenames(File f0, File f1)
 	 */
 	@Test
-	public void testCompareFilenames() throws Exception {
+	public void testCompareFilenames() {
 		File f1 = new File("first.txt");
 		File f2 = new File("second.txt");
 		File f3 = new File("first.txt");
@@ -89,7 +89,7 @@ public class FileNameComparatorTest {
 	}
 
 	@Test
-	public void testEndingWithNumber() throws Exception {
+	public void testEndingWithNumber() {
 		List<File> list = new ArrayList<>();
 		list.add(new File("ibis_xml.log.1"));
 		list.add(new File("ibis_xml.log.2"));

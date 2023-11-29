@@ -50,8 +50,8 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	protected final Logger log = LogManager.getLogger(this);
 
-	private Set<String> publicEndpoints = new HashSet<>();
-	private Set<String> privateEndpoints = new HashSet<>();
+	private final Set<String> publicEndpoints = new HashSet<>();
+	private final Set<String> privateEndpoints = new HashSet<>();
 	private @Getter ApplicationContext applicationContext;
 	private @Getter Set<String> securityRoles = new HashSet<>();
 	private Properties applicationConstants = null;
@@ -80,26 +80,39 @@ public abstract class ServletAuthenticatorBase implements IAuthenticator, Applic
 
 	@Override
 	public final void registerServlet(ServletConfiguration config) {
-		addEndpoints(config.getUrlMapping());
+		addEndpoints(config);
 		addSecurityRoles(config.getSecurityRoles());
 	}
 
+	/**
+	 * For SpringSecurity we MUST register all (required) roles when Anonymous authentication is used.
+	 * The SecurityRoles may be used in the implementing class to configure Spring Security with.
+	 * 
+	 * See {@link #configureHttpSecurity(HttpSecurity)} for the configuring process.
+	 */
 	private void addSecurityRoles(List<String> securityRoles) {
-		if(securityRoles == null || securityRoles.isEmpty()) {
+		if(securityRoles.isEmpty()) {
 			this.securityRoles.addAll(DEFAULT_IBIS_ROLES);
 		} else {
 			this.securityRoles.addAll(securityRoles);
 		}
 	}
 
-	private void addEndpoints(List<String> urlMappings) {
-		for(String url : urlMappings) {
+	/**
+	 * We need to make a distinct difference between public and private endpoints as on public endpoints
+	 * you don't want Spring Security to trigger the pre-authentication filters/providers.
+	 * 
+	 * See {@link #configureHttpSecurity(HttpSecurity)} for the configuring process.
+	 */
+	private void addEndpoints(ServletConfiguration config) {
+		for(String url : config.getUrlMapping()) {
 			if(publicEndpoints.contains(url) || privateEndpoints.contains(url)) {
 				throw new IllegalStateException("endpoint already configured");
 			}
 
-			if(url.charAt(0) == '!') {
-				String publicUrl = url.substring(1);
+			boolean isExcludedUrl = url.charAt(0) == '!';
+			if(isExcludedUrl || config.getSecurityRoles().isEmpty()) {
+				String publicUrl = isExcludedUrl ? url.substring(1) : url;
 				log.info("registering public endpoint with url [{}]", publicUrl);
 				publicEndpoints.add(publicUrl);
 			} else {

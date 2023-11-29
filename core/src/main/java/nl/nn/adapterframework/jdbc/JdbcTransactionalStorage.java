@@ -55,7 +55,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TransactionAttribute;
 import nl.nn.adapterframework.core.TransactionAttributes;
-import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -145,9 +146,9 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	private TransactionDefinition txDef;
 
-	private static Set<String> checkedTables = new HashSet<>();
-	private static Set<String> checkedIndices = new HashSet<>();
-	private static Set<String> checkedSequences = new HashSet<>();
+	private static final Set<String> checkedTables = new HashSet<>();
+	private static final Set<String> checkedIndices = new HashSet<>();
+	private static final Set<String> checkedSequences = new HashSet<>();
 
 	public JdbcTransactionalStorage() {
 		super(null);
@@ -224,7 +225,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 		checkIndexOnColumnPresent(connection, getKeyField());
 
-		List<String> columnListIndex01= new ArrayList<String>();
+		List<String> columnListIndex01= new ArrayList<>();
 		if (StringUtils.isNotEmpty(getTypeField())) {
 			columnListIndex01.add(getTypeField());
 		}
@@ -240,7 +241,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			checkIndexOnColumnPresent(connection, getExpiryDateField());
 		}
 
-		List<String> columnListIndex03= new ArrayList<String>();
+		List<String> columnListIndex03= new ArrayList<>();
 		if (StringUtils.isNotEmpty(getSlotIdField())) {
 			columnListIndex03.add(getSlotIdField());
 		}

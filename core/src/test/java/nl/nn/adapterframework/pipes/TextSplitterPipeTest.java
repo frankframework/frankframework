@@ -1,10 +1,16 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.stream.Message;
 
 
 /**
@@ -14,23 +20,33 @@ import nl.nn.adapterframework.core.PipeRunResult;
  */
 public class TextSplitterPipeTest extends PipeTestBase<TextSplitterPipe> {
 
+	@BeforeEach
+	public void setUp() throws Exception {
+		super.setUp();
+		pipe.configure();
+		pipe.start();
+	}
+
 	@Override
 	public TextSplitterPipe createPipe() {
 		return new TextSplitterPipe();
 	}
 
-
 	@Test
-	public void testConfigure() throws Exception {
-		pipe.configure();
+	void testEmptyOrNullInput() throws PipeRunException, IOException {
+		PipeRunResult prr = doPipe("");
+		assertEquals("<text/>", prr.getResult().asString());
+
+		prr = doPipe(Message.nullMessage());
+		assertEquals("<text/>", prr.getResult().asString());
+
+		prr = doPipe(Message.asMessage(""));
+		assertEquals("<text/>", prr.getResult().asString());
 	}
 
 	@Test
 	public void testShortMessage() throws Exception {
-		pipe.configure();
-		pipe.start();
-		
-		String message ="This is a short message that can be sent in a single SMS message";
+		String message = "This is a short message that can be sent in a single SMS message";
 		String expected = "<text><block>This is a short message that can be sent in a single SMS message</block></text>";
 		PipeRunResult prr = doPipe(message);
 		assertEquals(expected, prr.getResult().asString());
@@ -39,26 +55,21 @@ public class TextSplitterPipeTest extends PipeTestBase<TextSplitterPipe> {
 	@Test
 	public void testLongMessageSoftSplit() throws Exception {
 		pipe.setSoftSplit(true);
-		pipe.configure();
-		pipe.start();
-		
-		String messagepart1 ="This is a long message that that will be split up one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen";
-		String messagepart2 ="eighteen nineteen twenty";
-		String message= messagepart1+ " " +messagepart2;
-		String expected = "<text><block>"+messagepart1+"</block><block>"+messagepart2+"</block></text>";
+
+		String messagePart1 = "This is a long message that that will be split up one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen";
+		String messagePart2 = "eighteen nineteen twenty";
+		String message = messagePart1 + " " + messagePart2;
+		String expected = "<text><block>" + messagePart1 + "</block><block>" + messagePart2 + "</block></text>";
 		PipeRunResult prr = doPipe(message);
 		assertEquals(expected, prr.getResult().asString());
 	}
 
 	@Test
 	public void testLongMessageHardSplit() throws Exception {
-		pipe.configure();
-		pipe.start();
-		
-		String messagepart1 ="This is a long message that that will be split up one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eig";
-		String messagepart2 ="hteen nineteen twenty";
-		String message= messagepart1 +messagepart2;
-		String expected = "<text><block>"+messagepart1+"</block><block>"+messagepart2+"</block></text>";
+		String messagePart1 = "This is a long message that that will be split up one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eig";
+		String messagePart2 = "hteen nineteen twenty";
+		String message = messagePart1 + messagePart2;
+		String expected = "<text><block>" + messagePart1 + "</block><block>" + messagePart2 + "</block></text>";
 		PipeRunResult prr = doPipe(message);
 		assertEquals(expected, prr.getResult().asString());
 	}

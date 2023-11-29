@@ -37,6 +37,7 @@ public class BtmJtaTransactionManager extends StatusRecordingTransactionManager 
 	protected BitronixTransactionManager createTransactionManager() {
 		Configuration configuration = TransactionManagerServices.getConfiguration();
 		configuration.setServerId(getUid());
+		configuration.setJdbcProxyFactoryClass("bitronix.tm.resource.jdbc.proxy.JdbcJavaProxyFactory");
 		return TransactionManagerServices.getTransactionManager();
 	}
 

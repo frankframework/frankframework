@@ -25,7 +25,7 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.classloaders.DatabaseClassLoader;
 import nl.nn.adapterframework.jdbc.migration.DatabaseMigratorBase;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.NameComparatorBase;
 import nl.nn.adapterframework.util.RunState;
 
@@ -91,7 +91,7 @@ public class ConfigurationDTO {
 
 	public void setDatabaseAttributes(String filename, Date creationDate, String user, Boolean active, Boolean autoreload) {
 		this.filename = filename;
-		this.created = DateUtils.format(creationDate, DateUtils.FORMAT_GENERICDATETIME);
+		this.created = DateFormatUtils.format(creationDate, DateFormatUtils.FORMAT_GENERICDATETIME);
 		this.user = user;
 		this.active = active;
 		this.autoreload = autoreload;

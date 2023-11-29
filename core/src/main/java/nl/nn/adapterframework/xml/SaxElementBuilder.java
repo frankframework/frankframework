@@ -59,7 +59,7 @@ public class SaxElementBuilder implements AutoCloseable {
 		this(elementName, handler, null);
 	}
 
-	private SaxElementBuilder(String elementName, ContentHandler handler, SaxElementBuilder parent) throws SAXException {
+	private SaxElementBuilder(String elementName, ContentHandler handler, SaxElementBuilder parent) {
 		this.handler = handler;
 		this.elementName = elementName;
 		this.parent = parent;

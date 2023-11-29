@@ -7,7 +7,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import org.hamcrest.core.StringContains;
@@ -17,18 +16,16 @@ import org.junit.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
+import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.StreamingPipe;
-import nl.nn.adapterframework.stream.StreamingPipeTestBase;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
-public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPipeTestBase<P> {
+public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestBase<P> {
 
 	public static final String IDENTITY_STYLESHEET="/Xslt/identity.xslt";
 
@@ -123,7 +120,7 @@ public abstract class XsltTestBase<P extends StreamingPipe> extends StreamingPip
 	 * Beware, this test could fail when run multi threaded
 	 */
 	@Test
-	public void testConfigWarnings() throws ConfigurationException, PipeStartException, IOException, PipeRunException {
+	public void testConfigWarnings() throws ConfigurationException {
 		ConfigurationWarnings warnings = getConfigurationWarnings();
 		String styleSheetName=  "/Xslt3/orgchart.xslt";
 		setStyleSheetName(styleSheetName);

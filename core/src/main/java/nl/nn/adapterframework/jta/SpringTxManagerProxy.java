@@ -42,7 +42,7 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	private IThreadConnectableTransactionManager<Object,Object> threadConnectableProxy;
 	private @Getter @Setter PlatformTransactionManager realTxManager;
 
-	private boolean trace=false;
+	private final boolean trace = false;
 
 	/**
 	 * @param txOption e.q. TransactionDefinition.PROPAGATION_REQUIRES_NEW

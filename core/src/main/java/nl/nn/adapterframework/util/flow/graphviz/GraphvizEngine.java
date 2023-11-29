@@ -22,8 +22,8 @@ import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.extensions.javascript.JavascriptEngine;
-import nl.nn.adapterframework.extensions.javascript.JavascriptException;
+import nl.nn.adapterframework.javascript.JavascriptEngine;
+import nl.nn.adapterframework.javascript.JavascriptException;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -46,7 +46,7 @@ public class GraphvizEngine {
 	private String fileFormat = AppConstants.getInstance().getProperty("graphviz.js.format", "SVG");
 
 	// Available JS Engines. Lower index has priority.
-	private static final String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.extensions.javascript.J2V8").split(",");
+	private static final String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "nl.nn.adapterframework.javascript.J2V8").split(",");
 
 	private Options defaultOptions = null;
 
@@ -124,7 +124,7 @@ public class GraphvizEngine {
 	}
 
 	private String jsEscape(String js) {
-		return js.replaceAll("\n", " ").replaceAll("\r", "").replace("\\", "\\\\").replace("'", "\\'");
+		return js.replace("\n", " ").replace("\r", "").replace("\\", "\\\\").replace("'", "\\'");
 	}
 
 	private String getVizJsSource(String version) throws IOException {

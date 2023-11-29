@@ -28,13 +28,13 @@
 			</pipe-->
 			<!-- schemaLocation -->
 			<pipe name="schemaLocation" className="nl.nn.adapterframework.pipes.XmlValidator"
-				schemaLocation="http://www.ibissource.org/bik /XmlValidator/GetData/XSD_GetData_v1.1_r1.1.xsd"
+				schemaLocation="http://www.frankframework.org/bik /XmlValidator/GetData/XSD_GetData_v1.1_r1.1.xsd"
 				root="GetDataREQ">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- schemaLocation2 -->
 			<pipe name="schemaLocation2" className="nl.nn.adapterframework.pipes.XmlValidator"
-				schemaLocation="http://www.ibissource.org/tom /XmlValidator/FindParty/xsd/V1.20_FindParty.xsd"
+				schemaLocation="http://www.frankframework.org/tom /XmlValidator/FindParty/xsd/V1.20_FindParty.xsd"
 				root="FindPartyREQ">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -59,7 +59,7 @@
 			</pipe>
 			<!-- gpoai -->
 			<pipe name="gpoai" className="nl.nn.adapterframework.pipes.XmlValidator"
-				schemaLocation="http://www.ibissource.org/tom /XmlValidator/GPOAI/GetPartiesOnAgreementInsurance/xsd/GetPartiesOnAgreementInsurance_v1.xsd"
+				schemaLocation="http://www.frankframework.org/tom /XmlValidator/GPOAI/GetPartiesOnAgreementInsurance/xsd/GetPartiesOnAgreementInsurance_v1.xsd"
 				root="GetPartiesOnAgreementInsuranceREQ" addNamespaceToSchema="true">
 				<forward name="success" path="EXIT" />
 			</pipe>

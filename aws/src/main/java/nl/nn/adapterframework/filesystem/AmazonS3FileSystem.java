@@ -248,7 +248,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public boolean exists(S3Object f) throws FileSystemException {
+	public boolean exists(S3Object f) {
 		return s3Client.doesObjectExist(bucketName, f.getKey());
 	}
 
@@ -297,7 +297,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	 * Further, failure to close this stream can cause the request pool to become blocked. 
 	 */
 	@Override
-	public Message readFile(S3Object file, String charset) throws FileSystemException, IOException {
+	public Message readFile(S3Object file, String charset) throws FileSystemException {
 		try {
 			if(file.getObjectContent() == null) { // We have a reference but not an actual object representing the S3 bucket.
 				file = s3Client.getObject(bucketName, file.getKey()); // Fetch a new copy
@@ -426,24 +426,24 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	@Override
-	public String getParentFolder(S3Object f) throws FileSystemException {
+	public String getParentFolder(S3Object f) {
 		int lastSlashPos = f.getKey().lastIndexOf('/');
 		return lastSlashPos > 1 ? f.getKey().substring(0, lastSlashPos) : null;
 	}
 
 	@Override
-	public String getCanonicalName(S3Object f) throws FileSystemException {
+	public String getCanonicalName(S3Object f) {
 		return f.getBucketName() + BUCKET_OBJECT_SEPARATOR + f.getKey();
 	}
 
 	@Override
-	public long getFileSize(S3Object f) throws FileSystemException {
+	public long getFileSize(S3Object f) {
 		updateFileAttributes(f);
 		return f.getObjectMetadata().getContentLength();
 	}
 
 	@Override
-	public Date getModificationTime(S3Object f) throws FileSystemException {
+	public Date getModificationTime(S3Object f) {
 		updateFileAttributes(f);
 		return f.getObjectMetadata().getLastModified();
 	}
@@ -586,7 +586,7 @@ public class AmazonS3FileSystem extends FileSystemBase<S3Object> implements IWri
 	}
 
 	public static List<String> getAvailableRegions() {
-		List<String> availableRegions = new ArrayList<String>(Regions.values().length);
+		List<String> availableRegions = new ArrayList<>(Regions.values().length);
 		for (Regions region : Regions.values())
 			availableRegions.add(region.getName());
 

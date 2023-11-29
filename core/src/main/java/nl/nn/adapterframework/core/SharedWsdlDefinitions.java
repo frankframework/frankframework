@@ -28,7 +28,7 @@ import nl.nn.adapterframework.functional.ThrowingFunction;
  */
 public class SharedWsdlDefinitions {
 
-	private Map<String, Definition> resources = new HashMap<>();
+	private final Map<String, Definition> resources = new HashMap<>();
 
 	public synchronized Definition getOrCompute(String name, ThrowingFunction<String, Definition, ConfigurationException> creator) throws ConfigurationException {
 		Definition result = resources.get(name);

@@ -21,7 +21,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class IbisContextRunnable implements Runnable {
 	private static final int IBIS_INIT_EXCEPTION_TIMEOUT = 60*1000;
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	private IbisContext ibisContext;
 
 	public IbisContextRunnable(IbisContext ibisContext) {

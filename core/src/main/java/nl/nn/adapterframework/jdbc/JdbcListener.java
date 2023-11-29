@@ -39,6 +39,8 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.dbms.DbmsException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -377,7 +379,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return false;
 	}
 
-	protected String convertQuery(String query) throws JdbcException, SQLException {
+	protected String convertQuery(String query) throws SQLException, DbmsException {
 		if (StringUtils.isEmpty(getSqlDialect())) {
 			return query;
 		}

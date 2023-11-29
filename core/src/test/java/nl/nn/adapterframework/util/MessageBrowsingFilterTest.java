@@ -14,9 +14,9 @@ import org.junit.Test;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
+import nl.nn.adapterframework.dbms.Dbms;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
-import nl.nn.adapterframework.jdbc.dbms.Dbms;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -26,7 +26,7 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 	private MessageBrowsingFilter filter;
 	private JdbcTransactionalStorage storage = null;
 	private IListener<?> listener = null;
-	private String tableName="MESSAGEBROWSINGFILTERTEST";
+	private final String tableName = "MESSAGEBROWSINGFILTERTEST";
 
 	@Override
 	@Before
@@ -80,20 +80,20 @@ public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 
 		if(dbmsSupport.getDbms() == Dbms.ORACLE) {
 			sb.append(" WITH valuesTable AS ("
-					+ "SELECT 1,'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
-					+ "SELECT 2,'L','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
-					+ "SELECT 3,'M','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
-					+ "SELECT 4,'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
-					+ "SELECT 5,'L','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
-					+ "SELECT 6,'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL) SELECT * FROM valuesTable");
+					+ "SELECT 1,'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
+					+ "SELECT 2,'L','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
+					+ "SELECT 3,'M','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
+					+ "SELECT 4,'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
+					+ "SELECT 5,'L','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL UNION ALL "
+					+ "SELECT 6,'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments',"+dbmsSupport.getDatetimeLiteral(date)+",'label' FROM DUAL) SELECT * FROM valuesTable");
 		} else {
 			sb.append(" VALUES"
-					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "1," : "")+"'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
-					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "2," : "")+"'L','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
-					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "3," : "")+"'M','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
-					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "4," : "")+"'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
-					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "5," : "")+"'L','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
-					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "6," : "")+"'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments','2021-07-13 11:04:19.860','label')");
+					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "1," : "")+"'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
+					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "2," : "")+"'L','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
+					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "3," : "")+"'M','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
+					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "4," : "")+"'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:08:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
+					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "5," : "")+"'L','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments','2021-07-13 11:04:19.860','label'),"
+					+ "("+(dbmsSupport.autoIncrementKeyMustBeInserted() ? "6," : "")+"'E','MessageBrowsingFilter','localhost','messageId','correlationId',"+dbmsSupport.getDatetimeLiteral(DateFormatUtils.parseAnyDate("2021-07-13 11:04:19.860"))+",'comments','2021-07-13 11:04:19.860','label')");
 		}
 
 		try(Connection connection = getConnection()) {

@@ -33,7 +33,7 @@ import nl.nn.testtool.filter.Views;
  * @author Jaco de Groot
  */
 public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, ApplicationEventPublisherAware {
-	private AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private ApplicationEventPublisher applicationEventPublisher;
 
 	@Override

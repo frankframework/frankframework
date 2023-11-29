@@ -111,15 +111,15 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	private @Getter String logIntermediaryResults = null;
 	private @Getter String hideRegex = null;
 
-	private Map<String, PipeForward> pipeForwards = new HashMap<>();
-	private ParameterList parameterList = new ParameterList();
+	private final Map<String, PipeForward> pipeForwards = new HashMap<>();
+	private final ParameterList parameterList = new ParameterList();
 	protected boolean parameterNamesMustBeUnique;
 	private @Setter EventPublisher eventPublisher=null;
 
 	private @Getter @Setter PipeLine pipeLine;
 
-	private DummyNamedObject inSizeStatDummyObject;
-	private DummyNamedObject outSizeStatDummyObject;
+	private final DummyNamedObject inSizeStatDummyObject;
+	private final DummyNamedObject outSizeStatDummyObject;
 
 	public AbstractPipe() {
 		inSizeStatDummyObject = new DummyNamedObject();
@@ -265,7 +265,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 
 	@Override
 	public Map<String, PipeForward> getForwards(){
-		Map<String, PipeForward> forwards = new Hashtable<String, PipeForward>(pipeForwards);
+		Map<String, PipeForward> forwards = new Hashtable<>(pipeForwards);
 		PipeLine pipeline = getPipeLine();
 		if (pipeline==null) {
 			return null;

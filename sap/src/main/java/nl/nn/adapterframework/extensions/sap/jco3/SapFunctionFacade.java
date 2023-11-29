@@ -139,7 +139,7 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade {
 					inputOrOutputParameterList.setValue(fieldIndex-1,message);
 				}
 			} else {
-				List<JCoParameterList> parameterLists = new ArrayList<JCoParameterList>();
+				List<JCoParameterList> parameterLists = new ArrayList<>();
 				if (inputOrOutputParameterList != null) {
 					parameterLists.add(inputOrOutputParameterList);
 				}

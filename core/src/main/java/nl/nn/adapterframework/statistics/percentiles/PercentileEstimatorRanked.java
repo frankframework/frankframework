@@ -23,7 +23,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class PercentileEstimatorRanked extends PercentileEstimatorBase {
 
-	private long[] ranks;
+	private final long[] ranks;
 	private int local_count;
 
 	public PercentileEstimatorRanked(String configKey, String defaultPList, int arraySize) {

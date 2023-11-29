@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -160,7 +161,7 @@ public class MessageOutputStream implements AutoCloseable {
 	/**
 	 * can be overridden in descender classes to release resources, after the chain has been closed.
 	 */
-	public void afterClose() throws Exception {
+	public void afterClose() throws SQLException {
 		// can be overridden when necessary
 	}
 
@@ -303,7 +304,7 @@ public class MessageOutputStream implements AutoCloseable {
 		return null;
 	}
 
-	public JsonEventHandler asJsonEventHandler() throws StreamingException {
+	public JsonEventHandler asJsonEventHandler() {
 		if (requestStream instanceof JsonEventHandler) {
 			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"returning JsonEventHandler as JsonEventHandler");
 			return (JsonEventHandler) requestStream;
@@ -422,9 +423,6 @@ public class MessageOutputStream implements AutoCloseable {
 		IOutputStreamingSupport nextProvider=null;
 		if (next instanceof IOutputStreamingSupport) {
 			nextProvider = (IOutputStreamingSupport)next;
-			if (next instanceof StreamingPipe && !((StreamingPipe)next).isStreamingActive()) {
-				nextProvider=null;
-			}
 		}
 		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(session, null);
 		if (target!=null) {

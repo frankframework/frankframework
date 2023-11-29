@@ -77,7 +77,7 @@ public class BusTestBase {
 	}
 
 	@AfterEach
-	public void tearDown() throws Exception {
+	public void tearDown() {
 		getConfiguration().close();
 	}
 

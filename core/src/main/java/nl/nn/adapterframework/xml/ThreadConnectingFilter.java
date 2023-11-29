@@ -22,7 +22,7 @@ import nl.nn.adapterframework.stream.ThreadConnector;
 
 public class ThreadConnectingFilter extends ExceptionCatchingFilter {
 
-	private ThreadConnector threadConnector;
+	private final ThreadConnector threadConnector;
 
 	public ThreadConnectingFilter(ThreadConnector threadConnector, ContentHandler handler) {
 		super(handler);

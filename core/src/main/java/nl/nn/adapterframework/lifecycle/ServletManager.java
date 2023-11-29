@@ -84,15 +84,19 @@ import nl.nn.adapterframework.util.StringUtil;
 public class ServletManager implements ApplicationContextAware, InitializingBean {
 
 	private ServletContext servletContext = null;
-	private List<String> registeredRoles = new ArrayList<>();
-	private Logger log = LogUtil.getLogger(this);
-	private Map<String, ServletConfiguration> servlets = new HashMap<>();
-	private Map<String, IAuthenticator> authenticators = new HashMap<>();
+	private final List<String> registeredRoles = new ArrayList<>();
+	private final Logger log = LogUtil.getLogger(this);
+	private final Map<String, ServletConfiguration> servlets = new HashMap<>();
+	private final Map<String, IAuthenticator> authenticators = new HashMap<>();
 	private @Setter ApplicationContext applicationContext;
 	private boolean allowUnsecureOptionsRequest = false;
 
 	protected ServletContext getServletContext() {
 		return servletContext;
+	}
+
+	public List<String> getDeclaredRoles() {
+		return Collections.unmodifiableList(registeredRoles);
 	}
 
 	public ServletManager(ServletContext servletContext) {
@@ -169,7 +173,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	 * Register a new role
 	 * @param roleNames String or multiple strings of roleNames to register
 	 */
-	public void declareRoles(String... roleNames) {
+	public void declareRoles(List<String> roleNames) {
 		for (String role : roleNames) {
 			if(StringUtils.isNotEmpty(role) && !registeredRoles.contains(role)) {
 				registeredRoles.add(role);
@@ -210,6 +214,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 		serv.setLoadOnStartup(config.getLoadOnStartup());
 		serv.addMapping(getEndpoints(config.getUrlMapping()));
+		declareRoles(config.getSecurityRoles());
 		serv.setServletSecurity(getServletSecurity(config));
 
 		if(!config.getInitParameters().isEmpty()) {
@@ -248,9 +253,9 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 
 	private ServletSecurityElement getServletSecurity(ServletConfiguration config) {
 		String[] roles = new String[0];
-		if(config.isAuthenticationEnabled() && authenticators.get(config.getAuthenticatorName()) instanceof JeeAuthenticator) {// Only add roles when using  Container Based Authentication
+		if(config.isAuthenticationEnabled() && authenticators.get(config.getAuthenticatorName()) instanceof JeeAuthenticator) {
+			// Only set roles when using Container Based Authentication, else let Spring handle it.
 			roles = config.getSecurityRoles().toArray(new String[0]);
-			declareRoles(roles);
 		}
 		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(config.getTransportGuarantee(), roles);
 

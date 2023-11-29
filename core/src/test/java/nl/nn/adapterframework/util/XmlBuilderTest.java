@@ -2,8 +2,6 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
-
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,13 +14,13 @@ public class XmlBuilderTest {
 	private final String XML_RENDERED_UNICODE_CHARACTERS = "¿#16; aâΔع你好ಡತ";
 
 	@BeforeEach
-	public void initXMLUnit() throws IOException {
+	public void initXMLUnit() {
 		XMLUnit.setIgnoreWhitespace(true);
 		XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
 	}
 
 	@Test
-	public void test() throws Exception {
+	public void test() {
 		XmlBuilder summaryXML = new XmlBuilder("summary");
 		XmlBuilder adapterStateXML = new XmlBuilder("adapterState");
 		adapterStateXML.addAttribute("started", 9);
@@ -82,13 +80,13 @@ public class XmlBuilderTest {
 	}
 
 	@Test
-	public void test2() throws Exception {
+	public void test2() {
 		XmlBuilder schema = new XmlBuilder("schema");
 		schema.addAttribute("xmlns", "http://www.w3.org/2001/XMLSchema");
 		schema.addAttribute("targetNamespace",
-				"http://schemas.ibissource.org/Adapter.xsd");
+				"http://schemas.frankframework.org/Adapter.xsd");
 		schema.addAttribute("xmlns:tns",
-				"http://schemas.ibissource.org/Adapter.xsd");
+				"http://schemas.frankframework.org/Adapter.xsd");
 		schema.addAttribute("elementFormDefault", "qualified");
 		XmlBuilder complexType = new XmlBuilder("complexType");
 		complexType.addAttribute("name", "IOS-AdapteringType");
@@ -101,7 +99,7 @@ public class XmlBuilderTest {
 		schema.addSubElement(complexType);
 
 		StringBuilder sb = new StringBuilder(
-				"<schema xmlns=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.ibissource.org/Adapter.xsd\" xmlns:tns=\"http://schemas.ibissource.org/Adapter.xsd\" elementFormDefault=\"qualified\">");
+				"<schema xmlns=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.frankframework.org/Adapter.xsd\" xmlns:tns=\"http://schemas.frankframework.org/Adapter.xsd\" elementFormDefault=\"qualified\">");
 		sb.append("<complexType name=\"IOS-AdapteringType\">");
 		sb.append("<sequence>");
 		sb.append("<element name=\"adapter\" type=\"tns:adapterType\"/>");
@@ -115,13 +113,13 @@ public class XmlBuilderTest {
 	@Test
 	// test3 equals test2 except that 'addSubElement' is done directly after
 	// creating instead of at the end.
-	public void test3() throws Exception {
+	public void test3() {
 		XmlBuilder schema = new XmlBuilder("schema");
 		schema.addAttribute("xmlns", "http://www.w3.org/2001/XMLSchema");
 		schema.addAttribute("targetNamespace",
-				"http://schemas.ibissource.org/Adapter.xsd");
+				"http://schemas.frankframework.org/Adapter.xsd");
 		schema.addAttribute("xmlns:tns",
-				"http://schemas.ibissource.org/Adapter.xsd");
+				"http://schemas.frankframework.org/Adapter.xsd");
 		schema.addAttribute("elementFormDefault", "qualified");
 		XmlBuilder complexType = new XmlBuilder("complexType");
 		schema.addSubElement(complexType);
@@ -134,7 +132,7 @@ public class XmlBuilderTest {
 		element.addAttribute("type", "tns:adapterType");
 
 		StringBuilder sb = new StringBuilder(
-				"<schema xmlns=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.ibissource.org/Adapter.xsd\" xmlns:tns=\"http://schemas.ibissource.org/Adapter.xsd\" elementFormDefault=\"qualified\">");
+				"<schema xmlns=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://schemas.frankframework.org/Adapter.xsd\" xmlns:tns=\"http://schemas.frankframework.org/Adapter.xsd\" elementFormDefault=\"qualified\">");
 		sb.append("<complexType name=\"IOS-AdapteringType\">");
 		sb.append("<sequence>");
 		sb.append("<element name=\"adapter\" type=\"tns:adapterType\"/>");
@@ -201,7 +199,7 @@ public class XmlBuilderTest {
 		XmlBuilder root = new XmlBuilder("root");
 		root.addSubElement("elementName", "elementValue");
 		String expected = "<root>\n\t<elementName>elementValue</elementName>\n</root>";
-		String actual = root.toXML().trim().replaceAll("  ", "\t").replaceAll(System.lineSeparator(), "\n");
+		String actual = root.toXML().trim().replace("  ", "\t").replaceAll(System.lineSeparator(), "\n");
 		assertEquals(expected, actual);
 	}
 

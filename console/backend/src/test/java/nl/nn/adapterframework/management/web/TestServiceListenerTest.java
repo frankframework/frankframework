@@ -26,8 +26,8 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 	}
 
 	@Test
-	public void testWrongEncoding() throws Exception {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+	public void testWrongEncoding() {
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("service", "dummyService123"));
 		attachments.add(new StringAttachment("encoding", "fakeEncoding"));
 		attachments.add(new StringAttachment("message", "inputMessage"));
@@ -37,8 +37,8 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 	}
 
 	@Test
-	public void testFileWrongEncoding() throws Exception {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+	public void testFileWrongEncoding() {
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("service", "dummyService123"));
 		attachments.add(new StringAttachment("encoding", "fakeEncoding"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("inputMessage".getBytes()), "script.xml"));
@@ -48,8 +48,8 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 	}
 
 	@Test
-	public void testMessageServiceListeners() throws Exception {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+	public void testMessageServiceListeners() {
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("service", "dummyService123"));
 		attachments.add(new StringAttachment("message", "inputMessage"));
 
@@ -68,8 +68,8 @@ public class TestServiceListenerTest extends FrankApiTestBase<TestServiceListene
 	}
 
 	@Test
-	public void testFileServiceListeners() throws Exception {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+	public void testFileServiceListeners() {
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("service", "dummyService123"));
 		attachments.add(new FileAttachment("file", new ByteArrayInputStream("inputMessage".getBytes()), "script.xml"));
 

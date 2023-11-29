@@ -79,7 +79,7 @@ public class IbisContext extends IbisApplicationContext {
 	private @Getter IbisManager ibisManager;
 	private FlowDiagramManager flowDiagramManager;
 	private ClassLoaderManager classLoaderManager = null;
-	private static List<String> loadingConfigs = new ArrayList<>();
+	private static final List<String> loadingConfigs = new ArrayList<>();
 
 	private Thread ibisContextReconnectThread = null;
 
