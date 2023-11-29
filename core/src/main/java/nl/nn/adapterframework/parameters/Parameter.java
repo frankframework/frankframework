@@ -42,7 +42,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -67,6 +66,7 @@ import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
+import nl.nn.adapterframework.util.XmlException;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -147,7 +147,6 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	private @Getter DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
-	private TransformerPool transformerPoolRemoveNamespaces;
 	private TransformerPool tpDynamicSessionKey = null;
 	protected ParameterList paramList = null;
 	private boolean configured = false;
@@ -292,9 +291,6 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if (paramList != null && StringUtils.isEmpty(getPattern())) {
 				throw new ConfigurationException("Parameter [" + getName() + "] can only have parameters itself if a styleSheetName, xpathExpression or pattern is specified");
 			}
-		}
-		if (isRemoveNamespaces()) {
-			transformerPoolRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,false);
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
 			tpDynamicSessionKey = TransformerPool.configureTransformer(this, getNamespaceDefs(), getSessionKeyXPath(), null, OutputType.TEXT,false,null);
@@ -492,8 +488,9 @@ public class Parameter implements IConfigurable, IWithParameters {
 					}
 				}
 				if (source!=null) {
-					if (transformerPoolRemoveNamespaces != null) {
-						String rnResult = transformerPoolRemoveNamespaces.transform(source);
+					if (isRemoveNamespaces()) {
+						// TODO: There should be a more efficient way to do this
+						String rnResult = XmlUtils.removeNamespaces(XmlUtils.source2String(source));
 						source = XmlUtils.stringToSource(rnResult);
 					}
 					ParameterValueList pvl = paramList==null ? null : paramList.getValues(message, session, namespaceAware);
@@ -646,8 +643,8 @@ public class Parameter implements IConfigurable, IWithParameters {
 			switch(getType()) {
 				case NODE:
 					try {
-						if (transformerPoolRemoveNamespaces != null) {
-							requestMessage = new Message(transformerPoolRemoveNamespaces.transform(requestMessage, null));
+						if (isRemoveNamespaces()) {
+							requestMessage = XmlUtils.removeNamespaces(requestMessage);
 						}
 						if(requestObject instanceof Document) {
 							return ((Document)requestObject).getDocumentElement();
@@ -658,14 +655,14 @@ public class Parameter implements IConfigurable, IWithParameters {
 						result = XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware).getDocumentElement();
 						final Object finalResult = result;
 						LOG.debug("final result [{}][{}]", ()->finalResult.getClass().getName(), ()-> finalResult);
-					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
+					} catch (DomBuilderException | IOException | XmlException e) {
 						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML nodeset",e);
 					}
 					break;
 				case DOMDOC:
 					try {
-						if (transformerPoolRemoveNamespaces != null) {
-							requestMessage = new Message(transformerPoolRemoveNamespaces.transform(requestMessage, null));
+						if (isRemoveNamespaces()) {
+							requestMessage = XmlUtils.removeNamespaces(requestMessage);
 						}
 						if(requestObject instanceof Document) {
 							return requestObject;
@@ -673,7 +670,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 						result = XmlUtils.buildDomDocument(requestMessage.asInputSource(), namespaceAware);
 						final Object finalResult = result;
 						LOG.debug("final result [{}][{}]", ()->finalResult.getClass().getName(), ()-> finalResult);
-					} catch (DomBuilderException | TransformerException | IOException | SAXException e) {
+					} catch (DomBuilderException | IOException | XmlException e) {
 						throw new ParameterException("Parameter ["+getName()+"] could not parse result ["+requestMessage+"] to XML document",e);
 					}
 					break;

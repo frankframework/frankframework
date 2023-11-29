@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:sfun="http://www.ibissource.org/sfun" xmlns:lpa="http://www.ibissource.org/lpa" xmlns:icd="http://www.ibissource.org/icd" xmlns:tom="http://www.ibissource.org/tom" xmlns:agm="http://www.ibissource.org/agm" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns1="http://www.ibissource.org/em" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns="http://nn.nl/XSD/PensionsCorporate/Employer/EmployerBACO/1/GetEmployerDetails/1" targetNamespace="http://nn.nl/XSD/PensionsCorporate/Employer/EmployerBACO/1/GetEmployerDetails/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+<xsd:schema xmlns:sfun="http://www.frankframework.org/sfun" xmlns:lpa="http://www.frankframework.org/lpa" xmlns:icd="http://www.frankframework.org/icd" xmlns:tom="http://www.frankframework.org/tom" xmlns:agm="http://www.frankframework.org/agm" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns1="http://www.frankframework.org/em" xmlns:cmh="http://nn.nl/XSD/Generic/MessageHeader/1" xmlns="http://nn.nl/XSD/PensionsCorporate/Employer/EmployerBACO/1/GetEmployerDetails/1" targetNamespace="http://nn.nl/XSD/PensionsCorporate/Employer/EmployerBACO/1/GetEmployerDetails/1" elementFormDefault="qualified" attributeFormDefault="unqualified">
 	<xsd:import namespace="http://nn.nl/XSD/Generic/MessageHeader/1" schemaLocation="../common/CommonMessageHeader.xsd"/>
-	<xsd:import namespace="http://www.ibissource.org/lpa" schemaLocation="../common/LifePensionAdministrationV1.0.xsd"/>
-	<xsd:import namespace="http://www.ibissource.org/em" schemaLocation="../common/EmploymentTypesV1.1.xsd"/>
-	<xsd:import namespace="http://www.ibissource.org/agm" schemaLocation="../common/EmployeeBenefitsAgreementsTypesV1.0.xsd"/>
-	<xsd:import namespace="http://www.ibissource.org/sfun" schemaLocation="../common/InvestmentAccounts_V1.0.xsd"/>
-	<xsd:import namespace="http://www.ibissource.org/tom" schemaLocation="../common/V1.10TOMWrapper.xsd"/>
+	<xsd:import namespace="http://www.frankframework.org/lpa" schemaLocation="../common/LifePensionAdministrationV1.0.xsd"/>
+	<xsd:import namespace="http://www.frankframework.org/em" schemaLocation="../common/EmploymentTypesV1.1.xsd"/>
+	<xsd:import namespace="http://www.frankframework.org/agm" schemaLocation="../common/EmployeeBenefitsAgreementsTypesV1.0.xsd"/>
+	<xsd:import namespace="http://www.frankframework.org/sfun" schemaLocation="../common/InvestmentAccounts_V1.0.xsd"/>
+	<xsd:import namespace="http://www.frankframework.org/tom" schemaLocation="../common/V1.10TOMWrapper.xsd"/>
 	<xsd:include schemaLocation="../common/ProcesItemsV10.xsd"/>
 	<!--****************************************************************************************************************-->
 	<!--*************************** Service Elements ***********************************************************-->

@@ -75,7 +75,7 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
-import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.lifecycle.FrankApplicationInitializer;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.FileMessage;
@@ -135,7 +135,7 @@ public class TestTool {
 	}
 
 	private static IbisContext getIbisContext(ServletContext application) {
-		return IbisApplicationServlet.getIbisContext(application);
+		return FrankApplicationInitializer.getIbisContext(application);
 	}
 
 	// Invoked by LarvaServlet

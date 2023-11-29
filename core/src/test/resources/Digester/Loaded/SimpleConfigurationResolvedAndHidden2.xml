@@ -1,0 +1,31 @@
+<configuration name="SimpleConfiguration">
+	<adapter name="HelloWorld">
+		<receiver name="HelloWorld" >
+			<listener
+					name="HelloWorld"
+					className="org.frankframework.testdummies.TestDummyListener"
+			/>
+		</receiver>
+		<pipeline firstPipe="HelloWorld">
+			<exit path="EXIT" state="success"/>
+			<pipe
+					name="HelloWorld"
+					className="org.frankframework.testdummies.TestDummyPipe"
+					returnString="Hello World"
+			>
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+	<adapter name="HelloOtherWorld">
+		<receiver name="HelloOtherWorld">
+			<listener name="HelloOtherWorld" className="org.frankframework.testdummies.TestDummyListener"/>
+		</receiver>
+		<pipeline firstPipe="HelloOtherWorld">
+			<exit name="EXIT" state="success"/>
+			<pipe name="HelloOtherWorld" returnString="Hello Other World [ &gt;&quot;&lt; ] [******] &lt;@quot;&gt;" className="nl.nn.adapterframework.pipes.FixedResultPipe">
+				<forward name="success" path="EXIT"/>
+			</pipe>
+		</pipeline>
+	</adapter>
+</configuration>

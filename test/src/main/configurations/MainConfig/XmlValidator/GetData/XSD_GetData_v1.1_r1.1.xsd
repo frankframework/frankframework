@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:bik="http://www.ibissource.org/bik" targetNamespace="http://www.ibissource.org/bik" elementFormDefault="qualified" attributeFormDefault="unqualified" bik:agent="BIK" bik:package="com.ibissource.bik">
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:bik="http://www.frankframework.org/bik" targetNamespace="http://www.frankframework.org/bik" elementFormDefault="qualified" attributeFormDefault="unqualified" bik:agent="BIK" bik:package="com.frankframework.bik">
 	<xsd:include schemaLocation="XSD_Simple_Types_c0.8.xsd"/>
 	<xsd:element name="GetDataREQ" type="bik:GetDataREQType"/>
 	<xsd:complexType name="GetDataREQType">

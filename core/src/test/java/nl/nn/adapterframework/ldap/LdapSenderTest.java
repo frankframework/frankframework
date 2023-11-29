@@ -35,7 +35,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	InMemoryDirectoryServer inMemoryDirectoryServer = null;
-	String baseDNs = "dc=ibissource,dc=org";
+	String baseDNs = "dc=frankframework,dc=org";
 
 	@Override
 	public LdapSender createSender() throws Exception {
@@ -94,7 +94,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 		String result = sendMessage("cn=LEA Administrator,ou=groups,ou=development," + baseDNs).asString();
 
-		TestAssertions.assertEqualsIgnoreCRLF("<attributes>\n\t<attribute name=\"mail\" value=\"leaadministrator@ibissource.org\"/>\n\t<attribute name=\"gidNumber\" value=\"505\"/>\n</attributes>\n", result);
+		TestAssertions.assertEqualsIgnoreCRLF("<attributes>\n\t<attribute name=\"mail\" value=\"leaadministrator@frankframework.org\"/>\n\t<attribute name=\"gidNumber\" value=\"505\"/>\n</attributes>\n", result);
 	}
 
 	@Test
@@ -118,7 +118,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sendMessage("<attributes><attribute name=\"mail\"><value>info@ibissource.org</value></attribute></attributes>").asString();
+		String result = sendMessage("<attributes><attribute name=\"mail\"><value>info@frankframework.org</value></attribute></attributes>").asString();
 
 		assertEquals("<LdapResult>Success</LdapResult>", result);
 		compareXML("Ldap/expected/updateAttribute.xml", getTree());
@@ -147,7 +147,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sendMessage("<attributes><attribute name=\"mail\"><value>leaadministrator@ibissource.org</value></attribute></attributes>").asString();
+		String result = sendMessage("<attributes><attribute name=\"mail\"><value>leaadministrator@frankframework.org</value></attribute></attributes>").asString();
 
 		assertEquals("<LdapResult>Success</LdapResult>", result);
 		compareXML("Ldap/expected/delete.xml", getTree());

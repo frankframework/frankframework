@@ -141,38 +141,6 @@
 			<aop:around
 				pointcut=
 					"
-	 				execution(
-	 					*
-	 					nl.nn.adapterframework.stream.StreamingPipe.provideOutputStream(
-	 						nl.nn.adapterframework.core.PipeLineSession
-	 					)
-	 				)
-	 				and
-	 				args(session)
-	 				"
-				method="debugProvideOutputStream"
-				arg-names="session"
-			/>
-			<aop:around
-				pointcut=
-					"
-					execution(
-						*
-						nl.nn.adapterframework.stream.IStreamingSender.sendMessage(
-							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.PipeLineSession,
-							nl.nn.adapterframework.core.IForwardTarget
-						)
-					)
-					and
-					args(message, session, next)
-					"
-				method="debugStreamingSenderInputOutputAbort"
-				arg-names="message, session, next"
-			/>
-			<aop:around
-				pointcut=
-					"
 					execution(
 						*
 						nl.nn.adapterframework.processors.CacheSenderWrapperProcessor.sendMessage(

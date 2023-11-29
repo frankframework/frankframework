@@ -342,7 +342,7 @@ public class ApiListenerServletTest extends Mockito {
 		new ApiListenerBuilder(uri, Methods.POST).build();
 
 		Map<String, String> headers = new HashMap<>();
-		headers.put("origin", "https://ibissource.org");
+		headers.put("origin", "https://frankframework.org");
 		headers.put("Access-Control-Request-Headers", "Message-Id,CustomHeader");
 		Response result = service(createRequest(uri, Methods.POST, "data", headers));
 		assertEquals(200, result.getStatus());

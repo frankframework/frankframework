@@ -37,22 +37,22 @@ public class DatabaseClassLoader extends JarBytesClassLoader {
 
 	@Override
 	protected Map<String, byte[]> loadResources() throws ClassLoaderException {
-		Map<String, Object> configuration = null;
+		Map<String, Object> loadedConfiguration;
 		try { //Make sure there's a database present
 			ApplicationContext ac = getIbisContext().getIbisManager().getApplicationContext();
-			configuration = ConfigurationUtils.getActiveConfigFromDatabase(ac, getConfigurationName(), datasourceName);
+			loadedConfiguration = ConfigurationUtils.getActiveConfigFromDatabase(ac, getConfigurationName(), datasourceName);
 		}
 		catch (Throwable t) {
 			//Make the error a little bit more IBIS-developer intuitive
 			throw new ClassLoaderException(getErrorMessage(), t);
 		}
 
-		if (configuration == null) {
+		if (loadedConfiguration == null) {
 			throw new ClassLoaderException(getErrorMessage());
 		} else {
-			byte[] jarBytes = (byte[]) configuration.get("CONFIG");
-			configuration.remove("CONFIG");
-			this.configuration = configuration;
+			byte[] jarBytes = (byte[]) loadedConfiguration.get("CONFIG");
+			loadedConfiguration.remove("CONFIG");
+			this.configuration = loadedConfiguration;
 			return readResources(jarBytes);
 		}
 	}

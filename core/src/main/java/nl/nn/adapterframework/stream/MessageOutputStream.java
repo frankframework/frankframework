@@ -423,9 +423,6 @@ public class MessageOutputStream implements AutoCloseable {
 		IOutputStreamingSupport nextProvider=null;
 		if (next instanceof IOutputStreamingSupport) {
 			nextProvider = (IOutputStreamingSupport)next;
-			if (next instanceof StreamingPipe && !((StreamingPipe)next).isStreamingActive()) {
-				nextProvider=null;
-			}
 		}
 		MessageOutputStream target = nextProvider==null ? null : nextProvider.provideOutputStream(session, null);
 		if (target!=null) {

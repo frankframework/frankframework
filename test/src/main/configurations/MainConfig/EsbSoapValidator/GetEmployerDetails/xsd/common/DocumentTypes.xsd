@@ -1,4 +1,4 @@
-<xsd:schema xmlns:doc="http://www.ibissource.org/doc" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.ibissource.org/doc" elementFormDefault="qualified" doc:agent="doc" doc:package="com.ibissource.doc">
+<xsd:schema xmlns:doc="http://www.frankframework.org/doc" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.frankframework.org/doc" elementFormDefault="qualified" doc:agent="doc" doc:package="com.frankframework.doc">
 	<xsd:complexType name="Document">
 		<xsd:all>
 			<xsd:element name="DocumentType" type="doc:DocumentType"/>

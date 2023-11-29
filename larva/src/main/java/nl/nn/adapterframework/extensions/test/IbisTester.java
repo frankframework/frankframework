@@ -38,7 +38,7 @@ import org.springframework.mock.web.MockServletContext;
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.IbisContext;
 import nl.nn.adapterframework.core.Adapter;
-import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.lifecycle.FrankApplicationInitializer;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.util.AppConstants;
@@ -81,7 +81,7 @@ public class IbisTester {
 			boolean silent;
 			if (scenario == null) {
 				application = new MockServletContext("file:" + webAppPath, null);
-				application.setAttribute(IbisApplicationServlet.CONTEXT_KEY, ibisContext);
+				application.setAttribute(FrankApplicationInitializer.CONTEXT_KEY, ibisContext);
 				silent = false;
 			} else {
 				request.setParameter("loglevel", "scenario passed/failed");

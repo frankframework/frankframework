@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.StringWriter;
 import java.net.URL;
-import java.util.Properties;
 
 import javax.xml.validation.ValidatorHandler;
 
@@ -20,18 +19,19 @@ import org.xml.sax.SAXParseException;
 
 import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationDigester;
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.Resource;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.util.PropertyLoader;
 import nl.nn.adapterframework.util.XmlUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
 public class ConfigurationDigesterTest {
 	private static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
 
-	private static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
 	private static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
 
 	@Test
@@ -51,36 +51,78 @@ public class ConfigurationDigesterTest {
 	//The new configuration parser returns the configuration with all property not yet resolved
 	@Test
 	public void testNewConfigurationPreParser() throws Exception {
+		// Arrange
 		ConfigurationDigester digester = new ConfigurationDigester();
 		digester.setConfigurationWarnings( new ConfigurationWarnings() );
 		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
-		Properties properties = new Properties();
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
 		properties.setProperty("HelloWorld.active", "false");
 		properties.setProperty("HelloBeautifulWorld.active", "!false");
-		properties.setProperty("digester.property", "[ >\"< ]"); // new style non-escaped property values
-		properties.setProperty("secret", "GEHEIM");
-		properties.setProperty("properties.hide", "secret");
+
 		Configuration configuration = new TestConfiguration();
 
+		// Act
 		XmlWriter loadedConfigWriter = new XmlWriter();
 		digester.parseAndResolveEntitiesAndProperties(loadedConfigWriter, configuration, resource, properties);
 		String result = loadedConfigWriter.toString();
+
+		// Assert
 		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationUnresolved.xml");
 		MatchUtils.assertXmlEquals(expected, result);
 
 		String storedResult = configuration.getLoadedConfiguration();
 		String storedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationResolvedAndHidden.xml");
 		MatchUtils.assertXmlEquals(storedExpected, storedResult);
-
-		loadedConfigWriter = new XmlWriter();
-		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		digester.parseAndResolveEntitiesAndProperties(loadedConfigWriter, configuration, resource, properties);
-		String stubbedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationStubbed.xml");
-		MatchUtils.assertXmlEquals(stubbedExpected, loadedConfigWriter.toString());
-
 	}
 
+	@Test
+	public void testStubbing4TestTool() throws Exception {
+		// Arrange
+		ConfigurationDigester digester = new ConfigurationDigester();
+		digester.setConfigurationWarnings( new ConfigurationWarnings() );
+		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration.xml");
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
+		properties.setProperty("HelloWorld.active", "false");
+		properties.setProperty("HelloBeautifulWorld.active", "!false");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 
+		Configuration configuration = new TestConfiguration();
+
+		// Act
+		XmlWriter loadedConfigWriter = new XmlWriter();
+		digester.parseAndResolveEntitiesAndProperties(loadedConfigWriter, configuration, resource, properties);
+		String result = loadedConfigWriter.toString();
+
+		// Assert
+		String stubbedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationStubbed.xml");
+		MatchUtils.assertXmlEquals(stubbedExpected, result);
+	}
+
+	@Test
+	public void testLegacyClassNameRewriter() throws Exception {
+		// Arrange
+		ConfigurationDigester digester = new ConfigurationDigester();
+		digester.setConfigurationWarnings( new ConfigurationWarnings() );
+		Resource resource = Resource.getResource("/Digester/SimpleConfiguration/Configuration2.xml");
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
+		properties.setProperty("HelloWorld.active", "true");
+		properties.setProperty("HelloOtherWorld.active", "true");
+
+		Configuration configuration = new TestConfiguration();
+
+		// Act
+		XmlWriter loadedConfigWriter = new XmlWriter();
+		digester.parseAndResolveEntitiesAndProperties(loadedConfigWriter, configuration, resource, properties);
+		String result = loadedConfigWriter.toString();
+
+		// Assert
+		String expected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationUnresolved2.xml");
+		MatchUtils.assertXmlEquals(expected, result);
+
+		String storedResult = configuration.getLoadedConfiguration();
+		String storedExpected = TestFileUtils.getTestFile("/Digester/Loaded/SimpleConfigurationResolvedAndHidden2.xml");
+		MatchUtils.assertXmlEquals(storedExpected, storedResult);
+	}
 
 	@Test
 	public void simpleXsdWithDefaultAndFixedAttributed() throws Exception {
@@ -121,8 +163,8 @@ public class ConfigurationDigesterTest {
 		StringWriter target = new StringWriter();
 		XmlWriter xmlWriter = new XmlWriter(target);
 
-		Properties properties = new Properties();
-		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 		properties.setProperty(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(false));
 
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
@@ -132,7 +174,7 @@ public class ConfigurationDigesterTest {
 
 		XmlUtils.parseXml(originalConfiguration, filter);
 
-		String actual = new String(target.toString());
+		String actual = target.toString();
 
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
 		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
@@ -163,8 +205,8 @@ public class ConfigurationDigesterTest {
 			}
 		};
 
-		Properties properties = new Properties();
-		properties.setProperty(STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 		properties.setProperty(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(false));
 
 		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
@@ -174,13 +216,13 @@ public class ConfigurationDigesterTest {
 
 		XmlUtils.parseXml(originalConfiguration, filter);
 
-		String actual = new String(target.toString());
+		String actual = target.toString();
 
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
 		MatchUtils.assertXmlEquals(null, expectedConfiguration, actual, false, true);
 	}
 
-	private class XmlErrorHandler implements ErrorHandler {
+	private static class XmlErrorHandler implements ErrorHandler {
 		@Override
 		public void warning(SAXParseException exception) {
 			System.err.println("Warning at line,column ["+exception.getLineNumber()+","+exception.getColumnNumber()+"]: " + exception.getMessage());

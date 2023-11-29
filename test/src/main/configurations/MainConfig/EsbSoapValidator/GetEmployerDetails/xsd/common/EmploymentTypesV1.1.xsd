@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:em="http://www.ibissource.org/em" targetNamespace="http://www.ibissource.org/em" elementFormDefault="qualified" em:agent="em" em:package="com.ibissource.em">
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:em="http://www.frankframework.org/em" targetNamespace="http://www.frankframework.org/em" elementFormDefault="qualified" em:agent="em" em:package="com.frankframework.em">
 	<xsd:annotation>
 		<xsd:documentation>Exchange model Employee Benefits, Employment</xsd:documentation>
 		<xsd:appinfo>V1.1</xsd:appinfo>

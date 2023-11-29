@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
-# Append HeapDump property to existing JAVA_OPTS
-export JAVA_OPTS="$JAVA_OPTS -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/usr/local/tomcat/logs"
+# Append HeapDump and GC properties to existing JAVA_OPTS
+export JAVA_OPTS="$JAVA_OPTS \
+	-XX:HeapDumpPath=/usr/local/tomcat/logs \
+	-XX:+HeapDumpOnOutOfMemoryError \
+	-XX:+UseParallelGC"
 
 exec "$@"

@@ -1,4 +1,4 @@
-<GetData2REQ xmlns="http://www.ibissource.org/bik">
+<GetData2REQ xmlns="http://www.frankframework.org/bik">
 	<Organisation>
 		<organisationalId>aaaaaaaaaa</organisationalId>
 	</Organisation>

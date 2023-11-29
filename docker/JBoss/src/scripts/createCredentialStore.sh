@@ -8,22 +8,22 @@ SECRETS_PASSWORD=secret
 
 SOURCE_PATH="/opt/frank/secrets"
 
-$SECRETS_TOOL credential-store --create --location $SECRETS_LOCATION --password $SECRETS_PASSWORD
+$SECRETS_TOOL credential-store --create --location "$SECRETS_LOCATION" --password "$SECRETS_PASSWORD"
 
 add_alias() {
 	name=$1
 	file=$SOURCE_PATH/$2
-	if [ -f $file ]
+	if [ -f "$file" ]
 	then
-		$SECRETS_TOOL credential-store --location $SECRETS_LOCATION --password $SECRETS_PASSWORD --add "$name" --secret "$(cat "$file")"
+		$SECRETS_TOOL credential-store --location "$SECRETS_LOCATION" --password "$SECRETS_PASSWORD" --add "$name" --secret "$(cat "$file")"
 	fi
 }
 
 cd $SOURCE_PATH || return
 for alias in *
 do
-	if [ -d $alias ] 
-	then 
+	if [ -d "$alias" ]
+	then
 		add_alias "$alias/username" "$alias/username"
 		add_alias "$alias"          "$alias/password"
 	else

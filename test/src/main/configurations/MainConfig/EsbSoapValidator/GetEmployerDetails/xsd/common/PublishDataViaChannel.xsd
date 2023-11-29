@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:pbl="http://www.ibissource.org/pbl">
-	<xsd:import namespace="http://www.ibissource.org/pbl" schemaLocation="PublishDataTypes.xsd"/>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:pbl="http://www.frankframework.org/pbl">
+	<xsd:import namespace="http://www.frankframework.org/pbl" schemaLocation="PublishDataTypes.xsd"/>
 	<xsd:element name="PublishDataViaChannelREQ" type="PublishDataViaChannelREQ"/>
 	<!-- REQUEST -->
 	<xsd:complexType name="PublishDataViaChannelREQ">

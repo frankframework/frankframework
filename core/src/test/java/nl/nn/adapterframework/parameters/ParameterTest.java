@@ -1094,7 +1094,7 @@ public class ParameterTest {
 			assertEquals("2001-12-17", formattedDate);
 
 		} finally {
-			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1143,7 +1143,7 @@ public class ParameterTest {
 			String formattedDate = sdf.format(resultDate);
 			assertEquals("1996-02-24", formattedDate);
 		} finally {
-			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1171,7 +1171,7 @@ public class ParameterTest {
 			String formattedExpected = sdf.format(date);
 			assertEquals(formattedExpected, formattedDate);
 		} finally {
-			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY,"false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1221,7 +1221,7 @@ public class ParameterTest {
 			assertEquals(expectedDate, formattedDate);
 
 		} finally {
-			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1246,7 +1246,7 @@ public class ParameterTest {
 			assertEquals(expectedDate.substring(0, 10), ((String)result).substring(0, 10));
 
 		} finally {
-			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1271,7 +1271,7 @@ public class ParameterTest {
 			assertEquals(expectedDate.substring(0, 10), ((String)result).substring(0, 10));
 
 		} finally {
-			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1295,7 +1295,7 @@ public class ParameterTest {
 			assertEquals(expectedDate, result);
 
 		} finally {
-			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1319,7 +1319,7 @@ public class ParameterTest {
 			assertEquals(expectedDate, result);
 
 		} finally {
-			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1346,7 +1346,7 @@ public class ParameterTest {
 			assertEquals(expectedDate, sdf.format(result));
 
 		} finally {
-			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1372,7 +1372,7 @@ public class ParameterTest {
 			assertEquals(expectedDate, sdf.format(result));
 
 		} finally {
-			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1399,7 +1399,7 @@ public class ParameterTest {
 			assertEquals(expectedDate, sdf.format(result));
 
 		} finally {
-			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1425,7 +1425,7 @@ public class ParameterTest {
 			assertEquals(expectedDate, sdf.format(result));
 
 		} finally {
-			System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false");
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 

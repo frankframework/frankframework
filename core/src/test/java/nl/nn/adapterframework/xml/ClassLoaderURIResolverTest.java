@@ -69,9 +69,9 @@ public class ClassLoaderURIResolverTest {
 		Source source = resolver.resolve(ref, base);
 		assertNotNull(source);
 		if (expected!=null) {
-			assertEquals(expected, XmlUtils.source2String(source, false), "BaseType ["+baseType+"] refType ["+refType+"]");
+			assertEquals(expected, XmlUtils.source2String(source), "BaseType ["+baseType+"] refType ["+refType+"]");
 		} else {
-			assertNotNull(XmlUtils.source2String(source, false), "BaseType ["+baseType+"] refType ["+refType+"]");
+			assertNotNull(XmlUtils.source2String(source), "BaseType ["+baseType+"] refType ["+refType+"]");
 		}
 	}
 

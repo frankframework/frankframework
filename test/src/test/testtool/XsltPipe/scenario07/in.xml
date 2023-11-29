@@ -1,4 +1,4 @@
-<request xmlns="http://www.ibissource.org/tom" action="namespaceAware">
+<request xmlns="http://www.frankframework.org/tom" action="namespaceAware">
 	<ReturnCode>1</ReturnCode>
 	<NumberOfParties>1</NumberOfParties>
 	<Party>

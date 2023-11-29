@@ -3,11 +3,10 @@ package nl.nn.adapterframework.xslt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
@@ -19,12 +18,12 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
+import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.testutil.TestAppender;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTestBase<P> {
+public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends XsltTestBase<P> {
 
 	protected TestAppender testAppender;
 	private ErrorOutputStream errorOutputStream;
@@ -40,11 +39,11 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		return 1;
 	}
 
-	private class ErrorOutputStream extends OutputStream {
+	private static class ErrorOutputStream extends OutputStream {
 		private StringBuilder line = new StringBuilder();
 
 		@Override
-		public void write(int b) throws IOException {
+		public void write(int b) {
 			line.append((char) b);
 		}
 
@@ -54,7 +53,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		}
 
 		public boolean isEmpty() {
-			return toString().length() == 0;
+			return toString().isEmpty();
 		}
 	}
 
@@ -82,7 +81,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 			// Xslt processing should not log to stderr
 			System.setErr(prevStdErr);
 			System.err.println("ErrorStream:"+errorOutputStream);
-			assertThat(errorOutputStream.toString(), isEmptyString());
+			assertEquals("", errorOutputStream.toString());
 		}
 		super.tearDown();
 	}
@@ -110,7 +109,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		setXslt2(true);
 		pipe.configure();
 		pipe.start();
-		checkTestAppender(getMultiplicity()*1,"is included or imported more than once");
+		checkTestAppender(getMultiplicity(),"is included or imported more than once");
 	}
 
 	public void duplicateImportErrorProcessing(boolean xslt2) throws Exception {
@@ -164,7 +163,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
 			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream=new ErrorOutputStream();
+			errorOutputStream= new ErrorOutputStream();
 		}
 	}
 
@@ -192,7 +191,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
 			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream=new ErrorOutputStream();
+			errorOutputStream= new ErrorOutputStream();
 		}
 	}
 
@@ -261,7 +260,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
 			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream=new ErrorOutputStream();
+			errorOutputStream= new ErrorOutputStream();
 		}
 	}
 
@@ -284,7 +283,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
 			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream=new ErrorOutputStream();
+			errorOutputStream= new ErrorOutputStream();
 		}
 	}
 
@@ -307,7 +306,7 @@ public abstract class XsltErrorTestBase<P extends StreamingPipe> extends XsltTes
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
 			System.out.println("Clearing ErrorStream, as I am currently unable to catch it");
-			errorOutputStream=new ErrorOutputStream();
+			errorOutputStream= new ErrorOutputStream();
 		}
 	}
 }

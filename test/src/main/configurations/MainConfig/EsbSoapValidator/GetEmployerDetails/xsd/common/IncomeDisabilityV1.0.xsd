@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ig="http://www.ibissource.org/ig" targetNamespace="http://www.ibissource.org/ig" elementFormDefault="qualified" ig:agent="ig" ig:package="com.ibissource.ig">
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ig="http://www.frankframework.org/ig" targetNamespace="http://www.frankframework.org/ig" elementFormDefault="qualified" ig:agent="ig" ig:package="com.frankframework.ig">
 	<xsd:annotation>
 		<xsd:documentation>Exchange model General Insurance, Income (Disability)</xsd:documentation>
 		<xsd:appinfo>V0.1</xsd:appinfo>
