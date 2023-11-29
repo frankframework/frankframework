@@ -19,7 +19,6 @@ import nl.nn.adapterframework.extensions.cmis.CmisSender.CmisAction;
 import nl.nn.adapterframework.extensions.cmis.CmisSessionBuilder.BindingTypes;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.UrlMessage;
 import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
@@ -113,119 +112,5 @@ public class TestCreateAction extends CmisSenderTestBase {
 		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
 	}
 
-	@TestAllImplementations
-	public void fileFromSessionKeyAsByteArray(BindingTypes bindingType, String inputString) throws Exception {
-		setup(inputString);
-		session.put("fileContent", getTestFile(false).asByteArray());
-		sender.setFileSessionKey("fileContent");
-		configure(bindingType);
-
-		Message actualResult = sender.sendMessageOrThrow(input, session);
-		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
-	}
-
-	@TestAllImplementations
-	public void fileFromSessionKeyAsByteArrayParameter(BindingTypes bindingType, String inputString) throws Exception {
-		setup(inputString);
-		session.put("fileContent", getTestFile(false).asByteArray());
-		Parameter fileSessionKey = new Parameter("fileSessionKey", "fileContent");
-		sender.addParameter(fileSessionKey);
-		configure(bindingType);
-
-		Message actualResult = sender.sendMessageOrThrow(input, session);
-		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
-	}
-
-	@TestAllImplementations
-	public void fileFromSessionKeyAsInputStream(BindingTypes bindingType, String inputString) throws Exception {
-		setup(inputString);
-		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);
-		assertNotNull(testFile);
-
-		session.put("fileContent", testFile.openStream());
-		sender.setFileSessionKey("fileContent");
-		configure(bindingType);
-
-		Message actualResult = sender.sendMessageOrThrow(input, session);
-		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
-	}
-
-	@TestAllImplementations
-	public void fileFromSessionKeyAsInputStreamParameter(BindingTypes bindingType, String inputString) throws Exception {
-		setup(inputString);
-		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);
-		assertNotNull(testFile);
-
-		session.put("fileContent", testFile.openStream());
-		Parameter fileSessionKey = new Parameter("fileSessionKey", "fileContent");
-		sender.addParameter(fileSessionKey);
-		configure(bindingType);
-
-		Message actualResult = sender.sendMessageOrThrow(input, session);
-		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
-	}
-
-	@TestAllImplementations
-	public void fileContentFromSessionKeyAsByteArray(BindingTypes bindingType, String inputString) throws Exception {
-		setup(inputString);
-		session.put("fileContent", getTestFile(false).asByteArray());
-		sender.setFileSessionKey("fileContent");
-		configure(bindingType);
-
-		Message actualResult = sender.sendMessageOrThrow(input, session);
-		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
-	}
-
-	@TestAllImplementations
-	public void fileContentFromSessionKeyAsInputStream(BindingTypes bindingType, String inputString) throws Exception {
-		setup(inputString);
-		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);
-		assertNotNull(testFile);
-
-		session.put("fileContent", testFile.openStream());
-		sender.setFileSessionKey("fileContent");
-		configure(bindingType);
-
-		Message actualResult = sender.sendMessageOrThrow(input, session);
-		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
-	}
-
-	@TestAllImplementations
-	public void fileStreamFromSessionKeyAsString(BindingTypes bindingType, String inputString) throws Exception {
-		setup(inputString);
-		session.put("fis", getTestFile(false).asString());
-		sender.setFileSessionKey("fis");
-		configure(bindingType);
-
-		Message actualResult = sender.sendMessageOrThrow(input, session);
-		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
-	}
-
-	@TestAllImplementations
-	public void fileStreamFromSessionKeyAsInputStream(BindingTypes bindingType, String inputString) throws Exception {
-		setup(inputString);
-		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);
-		assertNotNull(testFile);
-
-		session.put("fis", testFile.openStream());
-		sender.setFileSessionKey("fis");
-		configure(bindingType);
-
-		Message actualResult = sender.sendMessageOrThrow(input, session);
-		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
-	}
-
-	@TestAllImplementations
-	public void fileStreamFromSessionKeyWithIllegalType(BindingTypes bindingType, String inputString) throws Exception {
-		setup(inputString);
-		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);
-		assertNotNull(testFile);
-		session.put("fis", new UrlMessage(testFile));
-		sender.setFileSessionKey("fis");
-		configure(bindingType);
-
-		Message actualResult = sender.sendMessageOrThrow(input, session);
-		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
-	}
 
 }

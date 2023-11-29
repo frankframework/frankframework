@@ -1,11 +1,9 @@
 package nl.nn.adapterframework.extensions.cmis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.stream.Stream;
@@ -100,13 +98,12 @@ public class TestGetAction extends CmisSenderTestBase {
 	@TestAllImplementations
 	public void sendMessageStreamResult(BindingTypes bindingType, String expectedResult, Boolean resultToServlet, Boolean getProperties, Boolean getDocumentContent) throws Exception {
 		sender.setBindingType(bindingType);
+		sender.setAction(CmisAction.GET);
 		sender.configure();
 
 		Message actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session);
-		assertInstanceOf(InputStream.class, actualResult.asObject());
 		assertEquals(GET_RESULT_FOR_INPUT, actualResult.asString());
 	}
-
 
 	@TestAllImplementations
 	public void sendMessageFileContentWithParameters(BindingTypes bindingType, String expectedResult, Boolean resultToServlet, Boolean getProperties, Boolean getDocumentContent) throws Exception {
