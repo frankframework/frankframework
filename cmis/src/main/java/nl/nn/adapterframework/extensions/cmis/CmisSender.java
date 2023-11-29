@@ -1024,18 +1024,18 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		defaultMediaType = string;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Please return document content (as sender output) to the listener, ensure the pipeline exit is able to return data")
 	/**
 	 * (Only used when <code>action</code>=<code>get</code>). If true, the content of the document is streamed to the HttpServletResponse object of the restservicedispatcher
 	 * @ff.default false
 	 */
+	@Deprecated
+	@ConfigurationWarning("Please return document content (as sender output) to the listener, ensure the pipeline exit is able to return data")
 	public void setStreamResultToServlet(boolean b) {
 		streamResultToServlet = b;
 	}
 
 	/**
-	 * (Only used when <code>action</code>=<code>get</code>). If true, the content of the document is streamed to <code>FileSessionKey</code> and all document properties are put in the result as a xml string
+	 * (Only used when <code>action</code>=<code>get</code>). If true, the content of the document is put to <code>FileSessionKey</code> and all document properties are put in the result as a xml string
 	 * @ff.default false
 	 */
 	public void setGetProperties(boolean b) {

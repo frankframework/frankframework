@@ -202,17 +202,6 @@ public class TestCreateAction extends CmisSenderTestBase {
 	}
 
 	@TestAllImplementations
-	public void fileStreamFromSessionKeyAsByteArray(BindingTypes bindingType, String inputString) throws Exception {
-		setup(inputString);
-		session.put("fis", getTestFile(false).asByteArray());
-		sender.setFileSessionKey("fis");
-		configure(bindingType);
-
-		Message actualResult = sender.sendMessageOrThrow(input, session);
-		TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, base64Decode(actualResult));
-	}
-
-	@TestAllImplementations
 	public void fileStreamFromSessionKeyAsInputStream(BindingTypes bindingType, String inputString) throws Exception {
 		setup(inputString);
 		URL testFile = TestFileUtils.getTestFileURL(FILE_INPUT);

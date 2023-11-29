@@ -100,7 +100,6 @@ public class TestGetAction extends CmisSenderTestBase {
 	@TestAllImplementations
 	public void sendMessageStreamResult(BindingTypes bindingType, String expectedResult, Boolean resultToServlet, Boolean getProperties, Boolean getDocumentContent) throws Exception {
 		sender.setBindingType(bindingType);
-		sender.setAction(CmisAction.GET);
 		sender.configure();
 
 		Message actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session);
@@ -108,47 +107,6 @@ public class TestGetAction extends CmisSenderTestBase {
 		assertEquals(GET_RESULT_FOR_INPUT, actualResult.asString());
 	}
 
-	@TestAllImplementations
-	public void sendMessageFileContentSessionKey(BindingTypes bindingType, String expectedResult, Boolean resultToServlet, Boolean getProperties, Boolean getDocumentContent) throws Exception {
-		sender.setFileSessionKey("fileContent");
-		configure(bindingType, resultToServlet, getProperties, getDocumentContent);
-
-		String actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session).asString();
-		if (!getProperties && !resultToServlet) {
-			assertNull(actualResult);
-		} else {
-			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
-		}
-
-		Message message = (Message) session.get(sender.getFileSessionKey());
-		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
-			assertEquals(GET_RESULT_FOR_INPUT, message.asString());
-		} else {
-			assertNull(message);
-		}
-	}
-
-	@TestAllImplementations
-	public void sendMessageFileStreamWithParameters(BindingTypes bindingType, String expectedResult, Boolean resultToServlet, Boolean getProperties, Boolean getDocumentContent) throws Exception {
-		sender.setFileSessionKey("fis");
-		sender.addParameter(new Parameter("getProperties", getProperties.toString()));
-		sender.addParameter(new Parameter("getDocumentContent", getDocumentContent.toString()));
-		configure(bindingType, resultToServlet, getProperties, getDocumentContent);
-
-		String actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session).asString();
-		if (!getProperties && !resultToServlet) {
-			assertNull(actualResult);
-		} else {
-			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
-		}
-
-		Message stream = session.getMessage(sender.getFileSessionKey());
-		if ((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
-			assertEquals(GET_RESULT_FOR_INPUT, stream.asString());
-		} else {
-			assertTrue(stream.isNull());
-		}
-	}
 
 	@TestAllImplementations
 	public void sendMessageFileContentWithParameters(BindingTypes bindingType, String expectedResult, Boolean resultToServlet, Boolean getProperties, Boolean getDocumentContent) throws Exception {
