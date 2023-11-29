@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from "@angular/core";
+import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
 import mermaid from 'mermaid';
 
 type CSSRuleExtended = CSSRule & { selectorText: string };
@@ -12,7 +12,9 @@ type CSSRuleExtended = CSSRule & { selectorText: string };
   ],
   template: `<div>
       <!-- <div *ngIf="!mermaiderror" class="{{is_mermaid}}" [innerHtml]="model"></div> -->
-      <div *ngIf="!mermaiderror" class="{{is_mermaid}}">{{test}}</div>
+      <div *ngIf="!mermaiderror">
+        <pre class="{{is_mermaid}}" #test>{{test}}</pre>
+      </div>
       <span *ngIf="mermaiderror" [innerHtml]="mermaiderror"></span>
     </div>`
 })
@@ -27,16 +29,14 @@ export class NgMermaidComponent implements OnInit, OnChanges {
   mermaiderror?: string;
   timeout?: number;
 
-  test = `graph
-	classDef default fill:#fff,stroke:#1a9496,stroke-width:2px;
-	d225e2{{Receiver<br/>JavaListener}}
-	d225e4{{Receiver<br/>ApiListener}}
-	d225e6{{Receiver<br/>JavaListener}}
-	d225e9(HelloBeautifulWorld<br/>FixedResultPipe)
-	d225e11{{success}}
-	d225e2 --> |success| d225e9
-	d225e4 --> |success| d225e9
-	d225e6 --> |success| d225e9`
+  test = `flowchart LR
+
+A[Hard] -->|Text| B(Round)
+B --> C{Decision}
+C -->|One| D[Result 1]
+C -->|Two| E[Result 2]`
+
+  @ViewChild('test') testEl!: ElementRef<HTMLPreElement>;
 
   private element = this.elRef.nativeElement;
 
@@ -66,8 +66,9 @@ export class NgMermaidComponent implements OnInit, OnChanges {
         this.timeout = window.setTimeout(() => {
           this.mermaiderror = '';
           try {
+            this.testEl.nativeElement.innerHTML=this.test;
             debugger;
-            mermaid.init(this.element);
+            mermaid.init(this.testEl.nativeElement);
             this.nmInitCallback.emit();
           } catch (e) {
             if(e instanceof Error){
