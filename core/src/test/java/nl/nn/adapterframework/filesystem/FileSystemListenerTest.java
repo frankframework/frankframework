@@ -535,7 +535,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String timestamp=id.substring(id.length()-currentDateFormatted.length());
 		long currentDate=DateUtils.parseToDate(currentDateFormatted, DateUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ).getTime();
 		long timestampDate=DateUtils.parseToDate(timestamp, DateUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ).getTime();
-		assertTrue(Math.abs(timestampDate-currentDate)<7300000); // less then two hours in milliseconds.
+		assertTrue(Math.abs(timestampDate-currentDate)<7300000); // less than two hours in milliseconds.
 	}
 
 	@Test
