@@ -15,8 +15,7 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     const authToken = this.authService.getAuthToken();
 
-    // TODO only for api requests
-    if(!authToken && !req.url.startsWith(this.appService.absoluteApiPath)){
+    if (!authToken || !req.url.startsWith(this.appService.absoluteApiPath)){
       return next.handle(req);
     }
 
