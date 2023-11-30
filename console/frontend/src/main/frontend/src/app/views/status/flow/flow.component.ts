@@ -43,7 +43,7 @@ export class FlowComponent implements OnInit {
         }
       } else { //If non successfull response, force no-image-available
         this.flow.image = true;
-        this.flow.url = 'images/no_image_available.svg'
+        this.flow.url = 'assets/images/no_image_available.svg'
       }
     });
   }
