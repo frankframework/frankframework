@@ -67,7 +67,7 @@ public abstract class FileSystemActorExtraTest<F,FS extends IWritableFileSystem<
 		}
 
 		for (int i=1; i<=numOfWrites-1; i++) {
-			String formattedDate = DateFormatUtils.format(firstDate.getTime() + (millisPerDay * i), DateFormatUtils.FORMAT_SHORT_ISO);
+			String formattedDate = DateFormatUtils.format(firstDate.getTime() + (millisPerDay * i), DateFormatUtils.ISO_DATE_FORMATTER);
 
 			String actualContentsi = readFile(null, filename+"."+formattedDate);
 			assertEquals((contents+(i-1)).trim(), actualContentsi.trim());

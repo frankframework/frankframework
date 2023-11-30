@@ -139,7 +139,7 @@ public class SchedulerAdapter {
 				for (int t=0; t<jobMessageKeeper.size(); t++) {
 					XmlBuilder jobMessage=new XmlBuilder("jobMessage");
 					jobMessage.setValue(jobMessageKeeper.getMessage(t).getMessageText(),true);
-					jobMessage.addAttribute("date", DateFormatUtils.format(jobMessageKeeper.getMessage(t).getMessageDate(), DateFormatUtils.FORMAT_FULL_GENERIC));
+					jobMessage.addAttribute("date", DateFormatUtils.format(jobMessageKeeper.getMessage(t).getMessageDate(), DateFormatUtils.FULL_GENERIC_FORMATTER));
 					jobMessage.addAttribute("level", jobMessageKeeper.getMessage(t).getMessageLevel());
 					jobMessages.addSubElement(jobMessage);
 				}
@@ -197,7 +197,7 @@ public class SchedulerAdapter {
 			try {
 				Date runningSince = smd.getRunningSince();
 
-				xbRoot.addAttribute("runningSince", (null == runningSince ? "unknown" : DateFormatUtils.format(runningSince, DateFormatUtils.FORMAT_GENERICDATETIME)));
+				xbRoot.addAttribute("runningSince", (null == runningSince ? "unknown" : DateFormatUtils.format(runningSince, DateFormatUtils.GENERIC_DATETIME_FORMATTER)));
 			} catch (Exception e) {
 				log.debug(e);
 			}
@@ -292,9 +292,9 @@ public class SchedulerAdapter {
 
 	private String convertDate(Date date) {
 		try {
-			return (null == date ? "" : DateFormatUtils.format(date, DateFormatUtils.FORMAT_GENERICDATETIME));
+			return (null == date ? "" : DateFormatUtils.format(date, DateFormatUtils.GENERIC_DATETIME_FORMATTER));
 		} catch (Exception e) {
-			log.debug("cannot convert date ["+date+"] to format ["+ DateFormatUtils.FORMAT_GENERICDATETIME+"]", e);
+			log.debug("cannot convert date [{}] to format [{}]", date, DateFormatUtils.FORMAT_DATETIME_GENERIC, e);
 			return "";
 		}
 	}

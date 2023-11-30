@@ -15,6 +15,8 @@
 */
 package nl.nn.adapterframework.extensions.idin;
 
+import static nl.nn.adapterframework.util.DateFormatUtils.FULL_GENERIC_FORMATTER;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -210,7 +212,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 
 				XmlBuilder timestamp = new XmlBuilder("timestamp");
 				Date txDate = response.getDirectoryDateTimestamp().toGregorianCalendar().getTime();
-				timestamp.setValue(DateFormatUtils.format(txDate, "yyyy-MM-dd HH:mm:ss.SSS"), false);
+				timestamp.setValue(DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER), false);
 				result.addSubElement(timestamp);
 			}
 
@@ -269,7 +271,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 
 				XmlBuilder timestamp = new XmlBuilder("timestamp");
 				Date txDate = response.getStatusDateTimestamp().toGregorianCalendar().getTime();
-				timestamp.setValue(DateFormatUtils.format(txDate, "yyyy-MM-dd HH:mm:ss.SSS"), false);
+				timestamp.setValue(DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER), false);
 				result.addSubElement(timestamp);
 			}
 
@@ -334,7 +336,7 @@ public class IdinSender extends SenderWithParametersBase implements HasPhysicalD
 
 				XmlBuilder creationTime = new XmlBuilder("creationTime");
 				Date txDate = response.getTransactionCreateDateTimestamp().toGregorianCalendar().getTime();
-				creationTime.setValue(DateFormatUtils.format(txDate, "yyyy-MM-dd HH:mm:ss.SSS"), false);
+				creationTime.setValue(DateFormatUtils.format(txDate, FULL_GENERIC_FORMATTER), false);
 				result.addSubElement(creationTime);
 			}
 

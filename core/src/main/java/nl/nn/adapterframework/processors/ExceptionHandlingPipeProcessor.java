@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.processors;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipe;
@@ -39,10 +39,10 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 			Map<String, PipeForward> forwards = pipe.getForwards();
 			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME) && !(pipe instanceof ExceptionPipe)) {
 
-				Date tsReceivedDate = pipeLineSession.getTsReceived();
+				Instant tsReceivedDate = pipeLineSession.getTsReceived();
 				long tsReceivedLong = 0L;
 				if(tsReceivedDate != null) {
-					tsReceivedLong = tsReceivedDate.getTime();
+					tsReceivedLong = tsReceivedDate.toEpochMilli();
 				}
 
 				ErrorMessageFormatter emf = new ErrorMessageFormatter();

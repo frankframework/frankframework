@@ -853,7 +853,7 @@ public class ApiListenerServletTest extends Mockito {
 	public void apiListenerWithExplicitlyEnabledEtag() throws Exception {
 		// Arrange
 		String uri="/etag1";
-		Message repeatableMessage = new Message("{\"tralalalallala\":true}", new MessageContext().withModificationTime(DateFormatUtils.parseToDate("2023-01-13 14:02:00", "yyyy-MM-dd HH:mm:ss").getTime()));
+		Message repeatableMessage = new Message("{\"tralalalallala\":true}", new MessageContext().withModificationTime(DateFormatUtils.parseToInstant("2023-01-13 14:02:00", DateFormatUtils.GENERIC_DATETIME_FORMATTER)));
 		new ApiListenerBuilder(uri, Methods.GET)
 			.withResponseContent(repeatableMessage)
 			.setUpdateEtag(true)

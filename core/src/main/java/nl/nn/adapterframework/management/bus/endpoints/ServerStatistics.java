@@ -190,7 +190,7 @@ public class ServerStatistics extends BusEndpointBase {
 			}
 			configurationMessage.put("message", msg);
 			Date date = messageKeeper.getMessage(t).getMessageDate();
-			configurationMessage.put("date", DateFormatUtils.format(date, DateFormatUtils.FORMAT_FULL_GENERIC));
+			configurationMessage.put("date", DateFormatUtils.format(date, DateFormatUtils.FULL_GENERIC_FORMATTER));
 			String level = messageKeeper.getMessage(t).getMessageLevel();
 			configurationMessage.put("level", level);
 			messages.add(configurationMessage);

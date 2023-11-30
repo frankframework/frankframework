@@ -16,7 +16,7 @@
 package nl.nn.adapterframework.core;
 
 import java.security.Principal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -202,30 +202,30 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return Message.nullMessage();
 	}
 
-	public Date getTsReceived() {
+	public Instant getTsReceived() {
 		return getTsReceived(this);
 	}
 
-	public static Date getTsReceived(Map<String, Object> context) {
+	public static Instant getTsReceived(Map<String, Object> context) {
 		Object tsReceived = context.get(PipeLineSession.TS_RECEIVED_KEY);
-		if(tsReceived instanceof Date) {
-			return (Date) tsReceived;
+		if(tsReceived instanceof Instant) {
+			return (Instant) tsReceived;
 		} else if(tsReceived instanceof String) {
-			return DateFormatUtils.parseToDate((String) tsReceived, DateFormatUtils.FORMAT_FULL_GENERIC);
+			return DateFormatUtils.parseToInstant((String) tsReceived, DateFormatUtils.FULL_GENERIC_FORMATTER);
 		}
 		return null;
 	}
 
-	public Date getTsSent() {
+	public Instant getTsSent() {
 		return getTsSent(this);
 	}
 
-	public static Date getTsSent(Map<String, Object> context) {
+	public static Instant getTsSent(Map<String, Object> context) {
 		Object tsSent = context.get(PipeLineSession.TS_SENT_KEY);
-		if(tsSent instanceof Date) {
-			return (Date) tsSent;
+		if(tsSent instanceof Instant) {
+			return (Instant) tsSent;
 		} else if(tsSent instanceof String) {
-			return DateFormatUtils.parseToDate((String) tsSent, DateFormatUtils.FORMAT_FULL_GENERIC);
+			return DateFormatUtils.parseToInstant((String) tsSent, DateFormatUtils.FULL_GENERIC_FORMATTER);
 		}
 		return null;
 	}
@@ -234,7 +234,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Convenience method to set required parameters from listeners. Will not update messageId and
 	 * correlationId when NULL. Will use current date-time for TS-Received if null.
 	 */
-	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId, @Nullable Date tsReceived, @Nullable Date tsSent) {
+	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId, @Nullable Instant tsReceived, @Nullable Instant tsSent) {
 		if (messageId != null) {
 			map.put(MESSAGE_ID_KEY, messageId);
 		}
@@ -242,11 +242,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			map.put(CORRELATION_ID_KEY, correlationId);
 		}
 		if (tsReceived == null) {
-			tsReceived = new Date();
+			tsReceived = Instant.now();
 		}
-		map.put(TS_RECEIVED_KEY, DateFormatUtils.format(tsReceived, DateFormatUtils.FORMAT_FULL_GENERIC));
+		map.put(TS_RECEIVED_KEY, DateFormatUtils.format(tsReceived, DateFormatUtils.FULL_GENERIC_FORMATTER));
 		if (tsSent != null) {
-			map.put(TS_SENT_KEY, DateFormatUtils.format(tsSent, DateFormatUtils.FORMAT_FULL_GENERIC));
+			map.put(TS_SENT_KEY, DateFormatUtils.format(tsSent, DateFormatUtils.FULL_GENERIC_FORMATTER));
 		}
 	}
 

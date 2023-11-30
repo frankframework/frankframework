@@ -359,7 +359,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				messageId = fs.getName(rawMessage);
 			}
 			if (isFileTimeSensitive()) {
-				messageId += "-" + DateFormatUtils.format(fs.getModificationTime(rawMessage), DateFormatUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ);
+				messageId += "-" + DateFormatUtils.format(fs.getModificationTime(rawMessage), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER);
 			}
 			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId, null, null);
 			if (attributes!=null) {
@@ -406,7 +406,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			}
 			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
 				F movedFile = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false, true);
-				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateFormatUtils.format(getFileSystem().getModificationTime(movedFile), DateFormatUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ).replace(":", "_"));
+				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateFormatUtils.format(getFileSystem().getModificationTime(movedFile), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER).replace(":", "_"));
 				F renamedFile = getFileSystem().toFile(newName);
 				int i=1;
 				while(getFileSystem().exists(renamedFile)) {

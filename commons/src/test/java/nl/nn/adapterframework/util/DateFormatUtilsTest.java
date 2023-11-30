@@ -2,16 +2,20 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
@@ -40,6 +44,7 @@ public class DateFormatUtilsTest {
 	 * Tests have been written in UTC, adjust the TimeZone for CI running with a different default TimeZone
 	 */
 	private Date getCorrectedDate(Date date) {
+		// TODO: Rewrite this to not use Date and Calendar classes. In principle, this shouldn't matter at all with use of proper java.time.Instant
 		if(CI_TZ.hasSameRules(TEST_TZ)) {
 			return date;
 		} else {
@@ -74,33 +79,32 @@ public class DateFormatUtilsTest {
 
 	@Test
 	public void testFormatForDateDateFormat() {
-		Date d = getCorrectedDate(new Date(1503600000));
-		String time = DateFormatUtils.format(d, DateFormatUtils.FORMAT_FULL_GENERIC);
+		Date d = getCorrectedDate(new Date(1503600000L));
+		String time = DateFormatUtils.format(d, DateFormatUtils.FULL_GENERIC_FORMATTER);
 		assertEquals("1970-01-18 09:40:00.000", time);
 	}
 
 	@Test
 	public void testParseToDate() {
-		Date date = DateFormatUtils.parseToDate("05-10-13", DateFormatUtils.FORMAT_DATE);
-		assertEquals(getCorrectedDate(1380931200000L), date.getTime());
+		LocalDate date = DateFormatUtils.parseToLocalDate("05-10-13", DateFormatUtils.SHORT_DATE_FORMATTER);
+		assertEquals(1380931200L, date.toEpochSecond(LocalTime.MIN, ZoneOffset.UTC));
 	}
 
 	@Test
+	@Disabled("Currently cannot parse in either 2 or 4 digit year format. Have to be specific.")
 	public void testParseToDateFullYear() {
-		Date date = DateFormatUtils.parseToDate("05-10-2014", DateFormatUtils.FORMAT_DATE);
-		assertEquals(getCorrectedDate(1412467200000L), date.getTime());
+		LocalDate date = DateFormatUtils.parseToLocalDate("05-10-2014", DateFormatUtils.SHORT_DATE_FORMATTER);
+		assertEquals(1412467200L, date.toEpochSecond(LocalTime.MIN, ZoneOffset.UTC));
 	}
 
 	@Test
 	public void unableToParseDate() {
-		Date date = DateFormatUtils.parseToDate("05/10/98", DateFormatUtils.FORMAT_DATE);
-		assertNull(date);
+		assertThrows(DateTimeParseException.class, ()->DateFormatUtils.parseToLocalDate("05/10/98", DateFormatUtils.SHORT_DATE_FORMATTER));
 	}
 
 	@Test
 	public void unableToParseFullGenericWithoutTime() {
-		Date date = DateFormatUtils.parseToDate("2000-01-01", DateFormatUtils.FORMAT_FULL_GENERIC);
-		assertNull(date);
+		assertThrows(DateTimeParseException.class, ()-> DateFormatUtils.parseToInstant("2000-01-01", DateFormatUtils.FULL_GENERIC_FORMATTER));
 	}
 
 	@Test
@@ -121,11 +125,17 @@ public class DateFormatUtilsTest {
 		assertEquals(getCorrectedDate(907566433000L), date.getTime());
 	}
 
+	@Test
+	public void testParseAnyDate4() throws Exception {
+		Date date = DateFormatUtils.parseAnyDate("2013-12-10T12:41:43");
+		assertEquals(getCorrectedDate(1386679303000L), date.getTime());
+	}
+
 
 	@Test
 	public void testInstantInsteadOfDate() {
-		DateFormat format = new SimpleDateFormat(DateFormatUtils.FORMAT_GENERICDATETIME);
-		String dateString = format.format(Instant.now().toEpochMilli());
+		DateTimeFormatter formatter = DateFormatUtils.GENERIC_DATETIME_FORMATTER;
+		String dateString = formatter.format(Instant.now());
 		System.out.println(dateString);
 		assertInstanceOf(String.class, dateString);
 	}

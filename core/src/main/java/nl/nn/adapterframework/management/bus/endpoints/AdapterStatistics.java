@@ -160,7 +160,7 @@ public class AdapterStatistics extends BusEndpointBase {
 		public void handleScalar(Object data, String scalarName, Date value) {
 			String result;
 			if (value!=null) {
-				result = DateFormatUtils.format(value, DateFormatUtils.FORMAT_FULL_GENERIC);
+				result = DateFormatUtils.format(value, DateFormatUtils.FULL_GENERIC_FORMATTER);
 			} else {
 				result = "-";
 			}

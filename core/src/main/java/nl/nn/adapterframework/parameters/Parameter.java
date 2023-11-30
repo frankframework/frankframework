@@ -792,7 +792,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if (rawValue instanceof Date) {
 				return rawValue;
 			}
-			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_GENERICDATETIME);
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
 			try {
 				return df.parse(Message.asString(rawValue));
 			} catch (ParseException | IOException e) {
@@ -800,7 +800,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 		}
 		if (rawValue instanceof Date) {
-			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_GENERICDATETIME);
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
 			return df.format(rawValue);
 		}
 		try {
@@ -855,7 +855,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 					}
 					Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
 					if (fixedDateTime == null) {
-						DateFormat df = new SimpleDateFormat(DateFormatUtils.FORMAT_GENERICDATETIME);
+						DateFormat df = new SimpleDateFormat(DateFormatUtils.FORMAT_DATETIME_GENERIC);
 						try {
 							fixedDateTime = df.parse(PutSystemDateInSession.FIXEDDATETIME);
 						} catch (ParseException e) {
