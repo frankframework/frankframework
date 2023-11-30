@@ -63,7 +63,7 @@ public class HttpSenderResultTest extends Mockito {
 		when(statusLine.getStatusCode()).thenReturn(200);
 		when(httpResponse.getStatusLine()).thenReturn(statusLine);
 
-		if(contentType != null) {
+		if (contentType != null) {
 			Header contentTypeHeader = new BasicHeader("Content-Type", contentType);
 			when(httpEntity.getContentType()).thenReturn(contentTypeHeader);
 		}
@@ -92,16 +92,17 @@ public class HttpSenderResultTest extends Mockito {
 		String contentType = null;
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileArray)));
-		for (String line = null; null != (line = reader.readLine());) {
-			if(line.startsWith("Content-Type")) {
+		for (String line; null != (line = reader.readLine()); ) {
+			if (line.startsWith("Content-Type")) {
 				contentType = line.substring(line.indexOf(":") + 1).trim();
 				break;
 			}
 		}
 		reader.close();
 
-		if(contentType != null)
-			System.out.println("found Content-Type ["+contentType+"]");
+		if (contentType != null) {
+			System.out.println("found Content-Type [" + contentType + "]");
+		}
 
 		InputStream dummyXmlString = new ByteArrayInputStream(fileArray);
 		return createHttpSender(dummyXmlString, contentType);
@@ -115,9 +116,9 @@ public class HttpSenderResultTest extends Mockito {
 		}
 	}
 
-	private final String BASEDIR = "/nl/nn/adapterframework/http/";
 	private InputStream getFile(String file) throws IOException {
-		URL url = this.getClass().getResource(BASEDIR+file);
+		String baseDir = "/nl/nn/adapterframework/http/";
+		URL url = this.getClass().getResource(baseDir + file);
 		if (url == null) {
 			throw new IOException("file not found");
 		}
@@ -157,7 +158,7 @@ public class HttpSenderResultTest extends Mockito {
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
 		assertNull(result);
 
-		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
+		byte[] byteArray = (byte[]) pls.get(SESSIONKEY_KEY);
 		assertEquals("<dummy result/>", new String(byteArray, StandardCharsets.UTF_8));
 	}
 
@@ -176,9 +177,9 @@ public class HttpSenderResultTest extends Mockito {
 
 		//Use InputStream 'content' as result.
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
-    	assertNull(result);
+		assertNull(result);
 
-		byte[] byteArray = (byte[])pls.get(SESSIONKEY_KEY);
+		byte[] byteArray = (byte[]) pls.get(SESSIONKEY_KEY);
 		assertEquals("<dummy result/>", new String(byteArray, StandardCharsets.UTF_8));
 	}
 
@@ -197,9 +198,9 @@ public class HttpSenderResultTest extends Mockito {
 
 		//Use InputStream 'content' as result.
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
-    	assertNull(result);
+		assertNull(result);
 
-		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
+		InputStream stream = (InputStream) pls.get(SESSIONKEY_KEY);
 		assertEquals("<dummy result/>", StreamUtil.streamToString(stream));
 	}
 
@@ -218,9 +219,9 @@ public class HttpSenderResultTest extends Mockito {
 
 		//Use InputStream 'content' as result.
 		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
-    	assertNull(result);
+		assertNull(result);
 
-		InputStream stream = (InputStream)pls.get(SESSIONKEY_KEY);
+		InputStream stream = (InputStream) pls.get(SESSIONKEY_KEY);
 		assertEquals("<dummy result/>", StreamUtil.streamToString(stream));
 	}
 
@@ -241,13 +242,13 @@ public class HttpSenderResultTest extends Mockito {
 
 		int multipartAttachmentCount = 0;
 		for (Map.Entry<String, Object> entry : pls.entrySet()) {
-			System.out.println("found multipart ["+entry.getKey()+"]");
+			System.out.println("found multipart [" + entry.getKey() + "]");
 			multipartAttachmentCount++;
 		}
 		assertEquals(2, multipartAttachmentCount);
 
 		assertEquals("Content of a txt file.", pls.getMessage("multipart1").asString().trim());
-		assertEquals("<!DOCTYPE html><title>Content of a html file.</title>",  pls.getMessage("multipart2").asString().trim());
+		assertEquals("<!DOCTYPE html><title>Content of a html file.</title>", pls.getMessage("multipart2").asString().trim());
 	}
 
 	@Test
@@ -265,7 +266,7 @@ public class HttpSenderResultTest extends Mockito {
 
 		int multipartAttachmentCount = 0;
 		for (Map.Entry<String, Object> entry : pls.entrySet()) {
-			System.out.println("found multipart key["+entry.getKey()+"] type["+(entry.getValue().getClass())+"]");
+			System.out.println("found multipart key[" + entry.getKey() + "] type[" + (entry.getValue().getClass()) + "]");
 			multipartAttachmentCount++;
 		}
 		assertEquals(1, multipartAttachmentCount);
