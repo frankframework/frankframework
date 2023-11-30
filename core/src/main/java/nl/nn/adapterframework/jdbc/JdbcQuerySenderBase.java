@@ -55,7 +55,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.dbms.DbmsException;
 import nl.nn.adapterframework.dbms.JdbcException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -99,7 +98,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-@SupportsOutputStreaming
 public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	public static final String UNP_START = "?{";

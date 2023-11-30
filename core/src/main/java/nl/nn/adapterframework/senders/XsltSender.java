@@ -38,7 +38,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
@@ -70,7 +69,6 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-@SupportsOutputStreaming
 public class XsltSender extends SenderWithParametersBase implements IThreadCreator {
 
 	public final OutputType DEFAULT_OUTPUT_METHOD=OutputType.XML;
