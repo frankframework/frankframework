@@ -10,6 +10,10 @@
   transform: none;
 }
 
+.mermaid {
+  margin: 0;
+}
+
 app-toasts-container {
   padding: 1rem !important;
   right: 0 !important;
