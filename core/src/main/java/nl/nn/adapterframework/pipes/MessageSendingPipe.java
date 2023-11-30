@@ -63,7 +63,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.RestListenerUtils;
@@ -105,7 +104,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @author  Gerrit van Brakel
  */
-@SupportsOutputStreaming
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
