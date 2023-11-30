@@ -1,11 +1,9 @@
 package nl.nn.adapterframework.extensions.cmis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.stream.Stream;
@@ -27,10 +25,10 @@ public class TestGetAction extends CmisSenderTestBase {
 			+ "<properties><property name=\"cmis:description\" type=\"string\">123456789</property>"
 			+ "<property name=\"cmis:lastModificationDate\" type=\"datetime\">2019-02-26T16:31:15</property>"
 			+ "<property name=\"cmis:creationDate\" type=\"boolean\">true</property></properties></cmis>");
-	
-	private static final String GET_RESULT_FOR_INPUT= "dummy_stream";
 
-	private static final String GET_RESULT_TO_SERVLET= null;
+	private static final String GET_RESULT_FOR_INPUT = "dummy_stream";
+
+	private static final String GET_RESULT_TO_SERVLET = null;
 
 	private static final String GET_RESULT_FOR_GET_PROPERTIES = "<cmis><properties>"
 			+ "<property name=\"cmis:name\" type=\"id\">dummy</property>"
@@ -72,25 +70,25 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.setAction(CmisAction.GET);
 		sender.configure();
 
-		if(!STUBBED) {
+		if (!STUBBED) {
 			sender.open();
 		}
 	}
 
 	@TestAllImplementations
 	public void sendMessageFileStream(BindingTypes bindingType, String expectedResult, Boolean resultToServlet, Boolean getProperties, Boolean getDocumentContent) throws Exception {
-		sender.setFileInputStreamSessionKey("fis");
+		sender.setFileSessionKey("fis");
 		configure(bindingType, resultToServlet, getProperties, getDocumentContent);
 
 		String actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session).asString();
-		if(!getProperties && !resultToServlet) {
+		if (!getProperties && !resultToServlet) {
 			assertNull(actualResult);
 		} else {
 			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
 		Message stream = session.getMessage(sender.getFileSessionKey());
-		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
+		if ((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
 			assertEquals(GET_RESULT_FOR_INPUT, stream.asString());
 		} else {
 			assertTrue(stream.isNull());
@@ -104,72 +102,29 @@ public class TestGetAction extends CmisSenderTestBase {
 		sender.configure();
 
 		Message actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session);
-		assertInstanceOf(InputStream.class, actualResult.asObject());
 		assertEquals(GET_RESULT_FOR_INPUT, actualResult.asString());
 	}
 
 	@TestAllImplementations
-	public void sendMessageFileContentSessionKey(BindingTypes bindingType, String expectedResult, Boolean resultToServlet, Boolean getProperties, Boolean getDocumentContent) throws Exception {
-		sender.setFileContentSessionKey("fileContent");
-		configure(bindingType, resultToServlet, getProperties, getDocumentContent);
-
-		String actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session).asString();
-		if(!getProperties && !resultToServlet) {
-			assertNull(actualResult);
-		} else {
-			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
-		}
-
-		String base64Content = (String) session.get(sender.getFileSessionKey());
-		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
-			assertEquals("ZHVtbXlfc3RyZWFt", base64Content);
-		} else {
-			assertNull(base64Content);
-		}
-	}
-
-	@TestAllImplementations
-	public void sendMessageFileStreamWithParameters(BindingTypes bindingType, String expectedResult, Boolean resultToServlet, Boolean getProperties, Boolean getDocumentContent) throws Exception {
-		sender.setFileInputStreamSessionKey("fis");
-		sender.addParameter(new Parameter("getProperties", getProperties.toString()));
-		sender.addParameter(new Parameter("getDocumentContent", getDocumentContent.toString()));
-		configure(bindingType, resultToServlet, getProperties, getDocumentContent);
-
-		String actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session).asString();
-		if(!getProperties && !resultToServlet) {
-			assertNull(actualResult);
-		} else {
-			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
-		}
-
-		Message stream = session.getMessage(sender.getFileSessionKey());
-		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
-			assertEquals(GET_RESULT_FOR_INPUT, stream.asString());
-		} else {
-			assertTrue(stream.isNull());
-		}
-	}
-
-	@TestAllImplementations
 	public void sendMessageFileContentWithParameters(BindingTypes bindingType, String expectedResult, Boolean resultToServlet, Boolean getProperties, Boolean getDocumentContent) throws Exception {
-		sender.setFileContentSessionKey("fileContent");
+		sender.setFileSessionKey("fileContent");
 		sender.addParameter(new Parameter("getProperties", getProperties.toString()));
 		sender.addParameter(new Parameter("getDocumentContent", getDocumentContent.toString()));
 
 		configure(bindingType, resultToServlet, getProperties, getDocumentContent);
 
 		String actualResult = sender.sendMessageOrThrow(INPUT_WITH_PROPERTIES, session).asString();
-		if(!getProperties && !resultToServlet) {
+		if (!getProperties && !resultToServlet) {
 			assertNull(actualResult);
 		} else {
 			TestAssertions.assertEqualsIgnoreRNTSpace(expectedResult, actualResult);
 		}
 
-		String base64Content = (String) session.get(sender.getFileSessionKey());
+		Message message = (Message) session.get(sender.getFileSessionKey());
 		if((getProperties && getDocumentContent) || (!getProperties && !resultToServlet)) {
-			assertEquals("ZHVtbXlfc3RyZWFt", base64Content);
+			assertEquals(GET_RESULT_FOR_INPUT, message.asString());
 		} else {
-			assertNull(base64Content);
+			assertNull(message);
 		}
 	}
 }
