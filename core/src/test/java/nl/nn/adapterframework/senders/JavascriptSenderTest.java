@@ -1,4 +1,4 @@
-package nl.nn.adapterframework.extensions.javascript;
+package nl.nn.adapterframework.senders;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -18,9 +18,7 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
-import nl.nn.adapterframework.senders.JavascriptSender;
 import nl.nn.adapterframework.senders.JavascriptSender.JavaScriptEngines;
-import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 

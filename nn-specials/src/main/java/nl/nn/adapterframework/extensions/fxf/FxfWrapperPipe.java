@@ -84,9 +84,9 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		setRemoveOutputNamespaces(true);
 		if (getDirection()==Direction.WRAP) {
 			ParameterList parameterList = getParameterList();
-			if (parameterList.findParameter(DESTINATION) == null) {
+			if (parameterList.findParameter(DESTINATION_PARAMETER_NAME) == null) {
 				Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
-				p.setName(DESTINATION);
+				p.setName(DESTINATION_PARAMETER_NAME);
 				p.setValue(DESTINATION_PREFIX+"."+retrieveStartTransferVersion()+"."+DESTINATION_SUFFIX);
 				parameterList.add(p);
 			}
