@@ -24,8 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -33,7 +31,6 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.EnumUtils;
 
 /**
  * Pipe that performs base64 encoding and decoding.
@@ -51,16 +48,11 @@ public class Base64Pipe extends FixedForwardPipe {
 	private @Getter String lineSeparator = "auto";
 	private @Getter int lineLength = 76;
 
-	private OutputTypes outputType = null;
 	private byte[] lineSeparatorArray;
 
 	public enum Direction {
 		ENCODE,
 		DECODE;
-	}
-	public enum OutputTypes {
-		STRING,
-		BYTES;
 	}
 
 	@Override
@@ -80,11 +72,6 @@ public class Base64Pipe extends FixedForwardPipe {
 				setLineSeparatorArray(getLineSeparator());
 			}
 		}
-
-		if (getOutputTypeEnum()==null) {
-			setOutputType(dir==Direction.DECODE ? "bytes" : "string");
-		}
-
 	}
 
 	private void setLineSeparatorArray(String separator) {
@@ -105,7 +92,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		InputStream base64 = new Base64InputStream(binaryInputStream, directionEncode, getLineLength(), lineSeparatorArray);
 
 		Message result = new Message(base64, message.copyContext().withoutSize().withCharset(directionEncode ? StandardCharsets.US_ASCII.name() : getCharset()));
-		if (getOutputTypeEnum() == OutputTypes.STRING) {
+		if (directionEncode) {
 			try {
 				result = new Message(result.asReader(), result.copyContext());
 			} catch (IOException e) {
@@ -121,23 +108,6 @@ public class Base64Pipe extends FixedForwardPipe {
 	/** @ff.default ENCODE */
 	public void setDirection(Direction direction) {
 		this.direction = direction;
-	}
-
-	/**
-	 * Either <code>string</code> for character output or <code>bytes</code> for binary output. The value <code>stream</code> is no longer used. Streaming is automatic where possible
-	 * @ff.default string for direction=encode, bytes for direction=decode
-	 */
-	@Deprecated
-	@ConfigurationWarning("It should not be necessary to specify outputType. If you encounter a situation where it is, please report to Frank!Framework Core Team")
-	public void setOutputType(String outputType) {
-		if (outputType.equalsIgnoreCase("Stream")) {
-			ConfigurationWarnings.add(this, log, "outputType 'Stream' is no longer used. Streaming is automatic where possible");
-		} else {
-			this.outputType = EnumUtils.parse(OutputTypes.class, outputType);
-		}
-	}
-	public OutputTypes getOutputTypeEnum() {
-		return outputType;
 	}
 
 	/** Character encoding to be used to when reading input from strings for direction=encode or writing data for direction=decode. */
