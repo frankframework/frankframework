@@ -998,8 +998,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	/**
 	 * Value of parameter is determined using substitution and formatting, following MessageFormat syntax with named parameters. The expression can contain references
-	 * to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat.
-	 * <br/>If for instance <code>fname</code> is a parameter or session variable that resolves to Eric, then the pattern
+	 * to <code>session-variables</code> or other <code>parameters</code> using the {name-of-parameter} and is formatted using java.text.MessageFormat.
+	 * <br/><b>NB: When referencing other <code>parameters</code> these MUST be defined before the parameter using pattern substitution.</b>
+	 * <br/>
+	 * <br/>
+	 * If for instance <code>fname</code> is a parameter or session-variable that resolves to Eric, then the pattern
 	 * 'Hi {fname}, how do you do?' resolves to 'Hi Eric, do you do?'.<br/>
 	 * The following predefined reference can be used in the expression too:<ul>
 	 * <li>{now}: the current system time</li>
