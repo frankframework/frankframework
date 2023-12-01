@@ -120,6 +120,7 @@ public class TestPipeline extends FrankApiBase {
 			return new String((byte[]) payload);
 		} else if(payload instanceof InputStream) {
 			try {
+				// Convert line endings to \n to show them in the browser as real line feeds
 				return StreamUtil.streamToString((InputStream) payload,  "\n", false);
 			} catch (IOException e) {
 				throw new ApiException("unable to read response payload", e);
