@@ -90,10 +90,10 @@
 			<version>${micrometer.version}</version>
 		</dependency>
 
-		<!-- explicit dependency to force version 1.1.1 -->
-		<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
-			<groupId>javax.activation</groupId>
-			<artifactId>activation</artifactId>
+		<dependency><!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
+			<groupId>jakarta.activation</groupId>
+			<artifactId>jakarta.activation-api</artifactId>
+			<version>1.2.2</version>
 		</dependency>
 		<dependency><!-- this dependency handles jakarta.activation.* imports -->
 			<groupId>com.sun.activation</groupId>
@@ -730,6 +730,10 @@
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>javax.activation</groupId>
+					<artifactId>activation</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
@@ -782,7 +786,7 @@
 			<artifactId>tika-core</artifactId>
 			<version>1.28.5</version>
 			<exclusions>
-				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
+				<exclusion><!-- excluded to be more in control our selves over the versions of the API and implementations -->
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
