@@ -166,73 +166,61 @@ public class JndiObjectStore implements ObjectStoreAPI {
 
 	@Override
 	public boolean allObjUids(String s, InputObjectState buff) throws ObjectStoreException {
-		System.err.println("allObjUids (bool): "+s);
 		return allObjUids(s, buff, StateStatus.OS_UNKNOWN);
 	}
 
 	@Override
 	public boolean commit_state(Uid objUid, String tName) throws ObjectStoreException {
-		System.err.println("commit_state: "+objUid+" - "+tName);
 		return driverImplementation.commit_state(objUid, tName);
 	}
 
 	@Override
 	public boolean hide_state(Uid objUid, String tName) throws ObjectStoreException {
-		System.err.println("hide_state: "+objUid+" - "+tName);
 		return driverImplementation.hide_state(objUid, tName);
 	}
 
 	@Override
 	public boolean reveal_state(Uid objUid, String tName) throws ObjectStoreException {
-		System.err.println("reveal_state: "+objUid+" - "+tName);
 		return driverImplementation.reveal_state(objUid, tName);
 	}
 
 	@Override
 	public int currentState(Uid objUid, String tName) throws ObjectStoreException {
-		System.err.println("currentState: "+objUid+" - "+tName);
 		return driverImplementation.currentState(objUid, tName);
 	}
 
 	@Override
 	public InputObjectState read_committed(Uid storeUid, String tName) throws ObjectStoreException {
-		System.err.println("read_committed: "+storeUid+" - "+tName);
 		return driverImplementation.read_state(storeUid, tName, StateStatus.OS_COMMITTED);
 	}
 
 	@Override
 	public InputObjectState read_uncommitted(Uid storeUid, String tName) throws ObjectStoreException {
-		System.err.println("read_uncommitted: "+storeUid+" - "+tName);
 		return driverImplementation.read_state(storeUid, tName, StateStatus.OS_UNCOMMITTED);
 	}
 
 	@Override
 	public boolean remove_committed(Uid storeUid, String tName) throws ObjectStoreException {
-		System.err.println("remove_committed: "+storeUid+" - "+tName);
 		return driverImplementation.remove_state(storeUid, tName, StateStatus.OS_COMMITTED);
 	}
 
 	@Override
 	public boolean remove_uncommitted(Uid storeUid, String tName) throws ObjectStoreException {
-		System.err.println("remove_uncommitted: "+storeUid+" - "+tName);
 		return driverImplementation.remove_state(storeUid, tName, StateStatus.OS_UNCOMMITTED);
 	}
 
 	@Override
 	public boolean write_committed(Uid storeUid, String tName, OutputObjectState state) throws ObjectStoreException {
-		System.err.println("write_committed: "+storeUid+" - "+tName +" - "+ state.toString());
 		return driverImplementation.write_state(storeUid, tName, state, StateStatus.OS_COMMITTED);
 	}
 
 	@Override
 	public boolean write_uncommitted(Uid storeUid, String tName, OutputObjectState state) throws ObjectStoreException {
-		System.err.println("write_uncommitted: "+storeUid+" - "+tName);
 		return driverImplementation.write_state(storeUid, tName, state, StateStatus.OS_UNCOMMITTED);
 	}
 
 	@Override
 	public boolean allObjUids(String tName, InputObjectState state, int match) throws ObjectStoreException {
-		System.err.println("allObjUids: "+tName);
 		return driverImplementation.allObjUids(tName, state, match);
 	}
 
