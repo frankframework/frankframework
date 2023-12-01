@@ -271,11 +271,11 @@ public class TransformerPool {
 		return result;
 	}
 
-	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
+	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, @Nonnull OutputType outputType, boolean includeXmlDeclaration, ParameterList params) throws ConfigurationException {
 		return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, 0);
 	}
 
-	public static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
+	private static TransformerPool getXPathTransformerPool(String namespaceDefs, String xPathExpression, OutputType outputType, boolean includeXmlDeclaration, ParameterList params, int xsltVersion) throws ConfigurationException {
 		String xslt = XmlUtils.createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, params, true, StringUtils.isEmpty(namespaceDefs), null, xsltVersion);
 		log.debug("xpath [{}] resulted in xslt [{}]", xPathExpression, xslt);
 
