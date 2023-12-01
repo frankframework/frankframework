@@ -32,6 +32,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
+			<artifactId>nn-specials</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-adapterframework-webapp</artifactId>
 			<type>war</type>
 		</dependency>

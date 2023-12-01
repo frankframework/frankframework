@@ -21,12 +21,17 @@ import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.DestinationValidator;
 import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.core.ISender;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
+import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.soap.SoapWrapperPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.SpringUtils;
@@ -233,7 +238,7 @@ import nl.nn.adapterframework.util.StringUtil;
  * @author Peter Leeuwenburgh
  */
 @Category("NN-Special")
-public class EsbSoapWrapperPipe extends SoapWrapperPipe {
+public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationValidator {
 	protected static final String OUTPUTNAMESPACEBASEURI = "http://nn.nl/XSD";
 	protected static final String BUSINESSDOMAIN_PARAMETER_NAME = "businessDomain";
 	protected static final String SERVICENAME_PARAMETER_NAME = "serviceName";
@@ -769,5 +774,30 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe {
 	/** When the messagingLayer part of the destination has this value interpret it as ESB */
 	public void setEsbAlias(String esbAlias) {
 		this.esbAlias = esbAlias;
+	}
+
+	@Override
+	public void validateListenerDestinations(PipeLine pipeLine) throws ConfigurationException {
+		INamedObject owner = pipeLine.getOwner();
+		if (owner instanceof Adapter) {
+			Adapter owningAdapter = (Adapter) owner;
+
+			for (Receiver<?> receiver : owningAdapter.getReceivers()) {
+				IListener<?> listener = receiver.getListener();
+				try {
+					if (retrievePhysicalDestinationFromListener(listener)) {
+						break;
+					}
+				} catch (JmsException e) {
+					throw new ConfigurationException(e);
+				}
+			}
+		}
+
+	}
+
+	@Override
+	public void validateSenderDestination(ISender sender) throws ConfigurationException {
+		retrievePhysicalDestinationFromSender(sender);
 	}
 }
