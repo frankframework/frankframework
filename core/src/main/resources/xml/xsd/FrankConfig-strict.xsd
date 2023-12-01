@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8.3">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8.4">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -2258,7 +2258,7 @@
       <xs:element name="SendGridSender">
         <xs:annotation>
           <xs:documentation>Sender that sends a mail via SendGrid v3 (cloud-based SMTP provider).
- 
+
  Sample XML file can be found in the path: iaf-core/src/test/resources/emailSamplesXML/emailSample.xml</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -4763,6 +4763,11 @@
         <xs:documentation>Name of the SMTP-host by which the messages are to be send</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="smtpPort" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Port of the SMTP-host by which the messages are to be send Default: 25</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="MailSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="MailSenderDeclaredAttributeGroup" />
@@ -4791,6 +4796,7 @@
     <xs:attribute ref="defaultMessageType" />
     <xs:attribute ref="defaultMessageBase64" />
     <xs:attribute ref="bounceAddress" />
+    <xs:attribute ref="domainWhitelist" />
   </xs:attributeGroup>
   <xs:attributeGroup name="MailSenderBaseCumulativeAttributeGroup">
     <xs:attributeGroup ref="MailSenderBaseDeclaredAttributeGroup" />
@@ -5597,6 +5603,7 @@
     <xs:attribute ref="defaultMessageType" />
     <xs:attribute ref="defaultMessageBase64" />
     <xs:attribute ref="bounceAddress" />
+    <xs:attribute ref="domainWhitelist" />
     <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="SenderWrapperType">
@@ -8779,7 +8786,7 @@
       <xs:element name="SendGridErrorSender">
         <xs:annotation>
           <xs:documentation>Sender that sends a mail via SendGrid v3 (cloud-based SMTP provider).
- 
+
  Sample XML file can be found in the path: iaf-core/src/test/resources/emailSamplesXML/emailSample.xml</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -18675,6 +18682,11 @@
   <xs:attribute name="bounceAddress" type="xs:string">
     <xs:annotation>
       <xs:documentation>NDR return address when mail cannot be delivered. This adds a Return-Path header Default: MAIL FROM attribute</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="domainWhitelist" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Comma separated list of domains to which mails can be send, domains not on the list are filtered out. Empty allows all domains */</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="slotId" type="xs:string">
