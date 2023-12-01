@@ -11,7 +11,7 @@
                 <div class="ibox-title">
                     <div class="pull-right">
                         <button class="btn btn-xs pull-right btn-info" type="button" (click)="download()" title="Packs all changelog xml files in classpath as a zip file">
-                            <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span>Download All Migration Scripts</span>
+                            <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i> <span> Download All Migration Scripts</span>
                         </button>
                     </div>
                     <h4>Liquibase Migration</h4>
@@ -35,7 +35,8 @@
                         </div>
                         <div class="row form-group">
                             <div class="col-sm-offset-3 col-sm-9 m-t-md">
-                                <button [ladda]="generateSql" class="btn btn-primary btn-w-m font-bold" type="submit" (click)="submit(form)">Generate SQL Changes</button>
+                                <button [ladda]="generateSql" class="btn btn-primary btn-w-m font-bold space-it-out" type="submit" (click)="submit(form)">Generate SQL Changes</button>
+                                <button class="btn btn-primary btn-w-m font-bold" type="submit" (click)="download()" title="Packs all changelog xml files in classpath as a zip file">Download Scripts</button>
                             </div>
                         </div>
                     </form>

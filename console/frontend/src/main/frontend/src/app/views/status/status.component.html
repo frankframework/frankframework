@@ -22,14 +22,10 @@
     <ng-template ngFor let-alert [ngForOf]="alerts">
       <li class="list-group-item" class="alert-{{alert.type}}"
         *ngIf="alert.configuration == '' || selectedConfiguration==alert.configuration || selectedConfiguration=='All'">
-        <div
-          [ngClass]="{pointer: alert.link ? true : false}"
-          (click)="navigateByAlert(alert)"
-        >
+        <div [ngClass]="{pointer: alert.link ? true : false}" (click)="navigateByAlert(alert)">
           <i class="m-r-md fa" class="fa-{{(alert.type=='warning') ? 'warning' : 'times'}}"></i>
-          <span
-            *ngIf="selectedConfiguration=='All' && alert.configuration!=''"
-          >Configuration [{{alert.configuration}}] - </span>
+          <span *ngIf="selectedConfiguration=='All' && alert.configuration!=''">Configuration [{{alert.configuration}}]
+            - </span>
           <span>{{alert.message}}</span>
         </div>
       </li>
@@ -39,8 +35,7 @@
   <div class="row">
     <div class="col-lg-12 tabs-container">
       <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
-        <li [ngClass]="{active : selectedConfiguration == 'All'}"><a
-            (click)="changeConfiguration('All')">All</a></li>
+        <li [ngClass]="{active : selectedConfiguration == 'All'}"><a (click)="changeConfiguration('All')">All</a></li>
         <li [ngClass]="{active : selectedConfiguration == configuration.name}"
           *ngFor="let configuration of configurations">
           <a (click)="changeConfiguration(configuration.name)">{{configuration.name}}</a>
@@ -143,33 +138,31 @@
           <div class="row ibox-grid">
             <div class="ibox-right">
               <div class="pull-left">
-                <button title="Stop All Adapters" (click)="stopAll()" class="btn btn-danger btn-xs"
+                <button title="Stop All Adapters" (click)="stopAll()" class="btn btn-danger btn-xs space-it-out"
                   id="stop-all-adapters" type="button"><i class="fa fa-stop"></i></button>
                 <button title="Start All Adapters" (click)="startAll()" class="btn btn-primary btn-xs"
                   id="start-all-adapters" type="button"><i class="fa fa-play"></i></button>
               </div>
               <div class="text-right pull-right">
-                <button title="Open All Adapters" (click)="expandAll()" class="btn btn-default btn-xs"
-                  id="expand-all" type="button"><i class="fa fa-angle-double-down fa-size-up"></i></button>
+                <button title="Open All Adapters" (click)="expandAll()" class="btn btn-default btn-xs space-it-out" id="expand-all"
+                  type="button"><i class="fa fa-angle-double-down fa-size-up"></i></button>
                 <button title="Collapse All Adapters" (click)="collapseAll()" class="btn btn-default btn-xs"
                   id="collapse-all" type="button"><i class="fa fa-angle-double-up fa-size-up"></i></button>
               </div>
               <div class="text-center">
                 <button
                   *ngIf="selectedConfiguration != 'All' && !reloading && !isConfigReloading[selectedConfiguration]"
-                  title="Reload Configuration" (click)="reloadConfiguration()" class="btn btn-info btn-xs"
+                  title="Reload Configuration" (click)="reloadConfiguration()" class="btn btn-info btn-xs space-it-out"
                   id="reload-configuration" type="button"><i class="fa fa-undo"></i></button>
-                <button
-                  *ngIf="selectedConfiguration != 'All' && !reloading && isConfigReloading[selectedConfiguration]"
-                  disabled="disabled" title="Reload Configuration" class="btn btn-warning btn-xs" type="button"><i
+                <button *ngIf="selectedConfiguration != 'All' && !reloading && isConfigReloading[selectedConfiguration]"
+                  disabled="disabled" title="Reload Configuration" class="btn btn-warning btn-xs space-it-out" type="button"><i
                     class="fa fa-spin fa-refresh"></i></button>
-                <button *ngIf="selectedConfiguration == 'All' && !reloading" title="Full Reload"
-                  (click)="fullReload()" class="btn btn-info btn-xs" id="full-reload" type="button"><i
-                    class="fa fa-undo"></i></button>
+                <button *ngIf="selectedConfiguration == 'All' && !reloading" title="Full Reload" (click)="fullReload()"
+                  class="btn btn-info btn-xs space-it-out" id="full-reload" type="button"><i class="fa fa-undo"></i></button>
                 <button *ngIf="reloading" disabled="disabled" title="Full Reload in process"
-                  class="btn btn-danger btn-xs" type="button"><i class="fa fa-spin fa-refresh"></i></button>
-                <button *ngIf="configurationFlowDiagram" title="Show Adapter References"
-                  (click)="showReferences()" class="btn btn-info btn-xs" id="adapter-references" type="button"><i
+                  class="btn btn-danger btn-xs space-it-out" type="button"><i class="fa fa-spin fa-refresh"></i></button>
+                <button *ngIf="configurationFlowDiagram" title="Show Adapter References" (click)="showReferences()"
+                  class="btn btn-info btn-xs" id="adapter-references" type="button"><i
                     class="fa fa-file-picture-o"></i></button>
               </div>
             </div>
@@ -177,31 +170,21 @@
               <span style="font-weight:700;margin-right:4px;">Filter:</span>
               <div class="btn-group state">
                 <!-- [(ngModel)]="filter.started" -->
-                <label
-                  class="btn btn-primary btn-outline btn-xs started"
-                  [ngClass]="{ active: this.filter['started'] }"
-                  (click)="applyFilter('started')"
-                >Started</label>
+                <label class="btn btn-primary btn-outline btn-xs started" [ngClass]="{ active: this.filter['started'] }"
+                  (click)="applyFilter('started')">Started</label>
                 <!-- [(ngModel)]="filter.stopped" -->
-                <label
-                  class="btn btn-danger btn-outline btn-xs stopped"
-                  [ngClass]="{ active: this.filter['stopped'] }"
-                  (click)="applyFilter('stopped')"
-                >Stopped</label>
+                <label class="btn btn-danger btn-outline btn-xs stopped" [ngClass]="{ active: this.filter['stopped'] }"
+                  (click)="applyFilter('stopped')">Stopped</label>
                 <!-- [(ngModel)]="filter.warning" -->
-                <label
-                  class="btn btn-warning btn-outline btn-xs warning"
-                  [ngClass]="{ active: this.filter['warning'] }"
-                  (click)="applyFilter('warning')"
-                >Warning</label>
+                <label class="btn btn-warning btn-outline btn-xs warning" [ngClass]="{ active: this.filter['warning'] }"
+                  (click)="applyFilter('warning')">Warning</label>
               </div>
             </div>
             <div class="ibox-stretch">
               <div class="input-group" id="searchbar">
                 <input type="text" class="form-control" placeholder="Search ... (Ctrl + Shift + F)"
-                  [(ngModel)]="searchText" name="search"
-                  (change)="updateQueryParams();" />
-                <i [hidden]="searchText.length == 0" (click)="searchText = ''; updateQueryParams();"
+                  [(ngModel)]="searchText" name="search" (change)="updateQueryParams();" />
+                <i [ngClass]="searchText.length == 0 ? ['hidden'] : [] " (click)="searchText = ''; updateQueryParams();"
                   class="fa fa-times input-group-closeSearch" aria-hidden="true"></i>
                 <span class="input-group-addon">
                   <i class="fa fa-search" aria-hidden="true"></i>
@@ -217,7 +200,8 @@
   <div class="row">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
-        <div *ngIf="messageLog[selectedConfiguration]" (click)="msgBoxExpanded = !msgBoxExpanded" class="ibox-title pointer" [ngClass]="{
+        <div *ngIf="messageLog[selectedConfiguration]" (click)="msgBoxExpanded = !msgBoxExpanded"
+          class="ibox-title pointer" [ngClass]="{
                     'warning': messageLog[selectedConfiguration].messageLevel=='WARN',
                     'danger': messageLog[selectedConfiguration].messageLevel=='ERROR'
                 }">
@@ -300,7 +284,8 @@
                     <i class="fa fa-sign-in"></i> ({{adapter.messageLogMessageCount}})
                   </span>
                   <span *ngIf="(adapter.errorStoreMessageCount ?? 0) > 0" class="text-danger"
-                    title="Total # of messages in Error">&nbsp;<i class="fa fa-times-circle"></i> ({{adapter.errorStoreMessageCount}})
+                    title="Total # of messages in Error">&nbsp;<i class="fa fa-times-circle"></i>
+                    ({{adapter.errorStoreMessageCount}})
                   </span>
                   <span *ngIf="(adapter.sendersMessageLogCount ?? 0) > 0" class="text-success"
                     title="Total # of messages processed by senders that have a messagelog">
@@ -320,11 +305,9 @@
             <div class="col-md-6">
               <!-- adapter information -->
               <span class="pull-right">
-                <button
-                  [routerLink]="['', adapter.configuration, 'adapter', adapter.name, 'statistics']"
-                  class="btn btn-xs btn-info pull-right m-r-xs"
-                  type="button"
-                ><i class="fa fa-bar-chart m-r-xs" aria-hidden="true"></i>More statistics</button>
+                <button [routerLink]="['', adapter.configuration, 'adapter', adapter.name, 'statistics']"
+                  class="btn btn-xs btn-info pull-right m-r-xs" type="button"><i class="fa fa-bar-chart m-r-xs"
+                    aria-hidden="true"></i>More statistics</button>
               </span>
               <h4>Adapter information</h4>
               <table class="table">
@@ -518,7 +501,7 @@
                         &nbsp;<i class="fa fa-info"></i>
                       </td>
                       <td style="width:200px;" class="text-left"><span appToDate [time]="message.date"></span></td>
-                      <td >{{message.message|truncate:700}}</td>
+                      <td>{{message.message|truncate:700}}</td>
                     </ng-template>
                     <ng-template [ngIf]="message.level == 'WARN'">
                       <td style="width:40px;" class="text-center">

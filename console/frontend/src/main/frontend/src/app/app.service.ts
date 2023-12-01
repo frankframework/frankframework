@@ -443,7 +443,7 @@ export class AppService {
       return;
     }
     if (configurationName == undefined)
-      configurationName = routeQueryParams.get("configuration") ?? undefined;
+      configurationName = routeQueryParams.get("configuration") ?? 'All';
 
     var adapterSummary: Record<Lowercase<RunState>, number> = {
       started: 0,
