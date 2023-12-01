@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author Peter Leeuwenburgh
  * @deprecated Please use BisWrapperPipe
  */
-
+@Deprecated
 public class BisUtils {
 	protected Logger log = LogUtil.getLogger(this);
 
