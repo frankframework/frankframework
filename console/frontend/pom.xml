@@ -38,11 +38,11 @@
 					<execution>
 						<id>npm build</id>
 						<goals>
-							<goal>npm</goal>
+							<goal>npx</goal>
 						</goals>
 						<phase>generate-resources</phase>
 						<configuration>
-							<arguments>run build -- -c development</arguments>
+							<arguments>ng build -c development</arguments>
 						</configuration>
 					</execution>
 				</executions>
@@ -188,11 +188,11 @@
 							<execution>
 								<id>npm build</id>
 								<goals>
-									<goal>npm</goal>
+									<goal>npx</goal>
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>run build</arguments>
+									<arguments>ng build</arguments>
 								</configuration>
 							</execution>
 						</executions>
