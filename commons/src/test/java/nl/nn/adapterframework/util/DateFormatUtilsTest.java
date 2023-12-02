@@ -1,14 +1,13 @@
 package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Calendar;
 import java.util.Date;
@@ -134,9 +133,13 @@ public class DateFormatUtilsTest {
 
 	@Test
 	public void testInstantInsteadOfDate() {
-		DateTimeFormatter formatter = DateFormatUtils.GENERIC_DATETIME_FORMATTER;
-		String dateString = formatter.format(Instant.now());
-		System.out.println(dateString);
-		assertInstanceOf(String.class, dateString);
+		// Arrange
+		Instant theMoment = Instant.now().atZone(ZoneOffset.UTC).withYear(2023).withMonth(5).withDayOfMonth(4).withHour(11).withMinute(11).withSecond(11).toInstant();
+
+		// Act
+		String dateString = DateFormatUtils.format(theMoment, DateFormatUtils.GENERIC_DATETIME_FORMATTER.withZone(ZoneId.of("UTC")));
+
+		// Assert
+		assertEquals("2023-05-04 11:11:11", dateString);
 	}
 }
