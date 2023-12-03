@@ -29,19 +29,18 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import com.arjuna.ats.arjuna.common.MetaObjectStoreEnvironmentBean;
-import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
 import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
-import com.arjuna.ats.arjuna.objectstore.ObjectStoreAPI;
-import com.arjuna.ats.arjuna.objectstore.StoreManager;
+import com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore;
 import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 import com.arjuna.common.util.propertyservice.PropertiesFactory;
 import com.arjuna.common.util.propertyservice.PropertiesFactoryStax;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.core.JndiContextPrefixFactory;
+import nl.nn.adapterframework.jndi.ObjectLocator;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.SpringUtils;
 
 public class NarayanaConfigurationBean implements InitializingBean, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
@@ -84,13 +83,18 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 	public void afterPropertiesSet() throws ObjectStoreException {
 		PropertiesFactory.setDelegatePropertiesFactory(new NarayanaPropertiesFactory());
 
+		// Set/Update the JdbcAccess value
 		final MetaObjectStoreEnvironmentBean jdbcStoreEnvironment = BeanPopulator.getDefaultInstance(MetaObjectStoreEnvironmentBean.class);
-		if(JndiObjectStore.class.getCanonicalName().equals(jdbcStoreEnvironment.getObjectStoreType())) {
-			configureJndiObjectStore(jdbcStoreEnvironment);
+		if(JDBCStore.class.getCanonicalName().equals(jdbcStoreEnvironment.getObjectStoreType())) {
+			jdbcStoreEnvironment.setJdbcAccess(getObjectStoreJndiName());
 		}
 	}
 
-	private DataSource getObjectStoreDatasource() throws ObjectStoreException {
+	/**
+	 * Tests if we can find a (valid) DataSource. Takes ApplicationServer specific jndiPrefixes into account.
+	 * If the DataSource is valid it will be returned with the {@link PoolingDataSourceJDBCAccess} prefix.
+	 */
+	private String getObjectStoreJndiName() throws ObjectStoreException {
 		String objectStoreDatasource = AppConstants.getInstance().getProperty("transactionmanager.narayana.objectStoreDatasource");
 		if(StringUtils.isBlank(objectStoreDatasource)) {
 			throw new ObjectStoreException("no datasource name provided, please set property [transactionmanager.narayana.objectStoreDatasource]");
@@ -100,25 +104,19 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 			throw new ObjectStoreException("no ApplicationContext to retrieve DataSource from");
 		}
 
-		PoolingDataSourceFactory dataSourceFactory = SpringUtils.createBean(applicationContext, PoolingDataSourceFactory.class);
-		SpringUtils.registerSingleton(applicationContext, "NarayanaObjectStoreDataSourceFactory", dataSourceFactory); //Register it so close will be called.
+		JndiContextPrefixFactory jndiContextFactory = applicationContext.getBean("jndiContextPrefixFactory", JndiContextPrefixFactory.class);
+		String jndiPrefix = jndiContextFactory.getContextPrefix();
+		String fullJndiName = (StringUtils.isNotEmpty(jndiPrefix)) ? jndiPrefix + objectStoreDatasource : objectStoreDatasource;
 
 		try {
-			return dataSourceFactory.getDataSource(objectStoreDatasource);
+			DataSource dataSource = ObjectLocator.lookup(fullJndiName, null, DataSource.class);
+			log.info("found Narayana ObjectStoreDatasource [{}]", dataSource);
+
+			StringBuilder builder = new StringBuilder(PoolingDataSourceJDBCAccess.class.getCanonicalName());
+			builder.append(';').append(fullJndiName);
+			return builder.toString();
 		} catch (NamingException e) {
 			throw new ObjectStoreException("unable to find datasource", e);
-		}
-	}
-
-	private void configureJndiObjectStore(ObjectStoreEnvironmentBean jdbcStoreEnvironment) throws ObjectStoreException {
-		DataSource datasource = getObjectStoreDatasource();
-		log.info("found Narayana ObjectStoreDatasource [{}]", datasource);
-
-		ObjectStoreAPI actionStore = new JndiObjectStore(datasource, "DefaultStore", jdbcStoreEnvironment);
-		new StoreManager(actionStore, actionStore, actionStore); //Sets STATIC JDBC stores
-
-		if(StoreManager.getRecoveryStore() != actionStore) { //Validate that statics have been updated
-			throw new IllegalStateException("RecoverStore should be the same as the just created ActionStore [TX_Action]");
 		}
 	}
 }

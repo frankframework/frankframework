@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.jta.narayana;
 
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.StringTokenizer;
 
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -28,28 +30,27 @@ import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
-import nl.nn.adapterframework.jndi.JndiObjectFactory;
+import com.arjuna.ats.arjuna.exceptions.FatalError;
+import com.arjuna.ats.arjuna.objectstore.jdbc.JDBCAccess;
+import com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;
 
-public class PoolingDataSourceFactory extends JndiObjectFactory<DataSource, DataSource> {
+import nl.nn.adapterframework.jndi.ObjectLocator;
 
-	public PoolingDataSourceFactory() {
-		super(DataSource.class);
-	}
+/**
+ * Alternative to {@link DataSourceJDBCAccess} which does a JNDI lookup each time a connection is called and does not pool connections.
+ * {@link #getConnection()} will be called for every transaction, pooling will drastically improve performance.
+ * 
+ * @author Niels Meijer
+ */
+public class PoolingDataSourceJDBCAccess implements JDBCAccess {
+	private DataSource datasource;
 
-	public DataSource getDataSource(String dataSourceName) throws NamingException {
-		return get(dataSourceName);
-	}
-
-	@Override
-	protected DataSource augment(DataSource dataSource, String objectName) {
+	private DataSource augmentDataSource(DataSource dataSource) {
 		ConnectionFactory cf = new DataSourceConnectionFactory(dataSource);
 		PoolableConnectionFactory poolableConnectionFactory = new PoolableConnectionFactory(cf, null);
 
 		ObjectPool<PoolableConnection> connectionPool = createConnectionPool(poolableConnectionFactory);
-
-		PoolingDataSource<PoolableConnection> ds = new PoolingDataSource<>(connectionPool);
-		log.info("created PoolingDataSource [{}]", ds);
-		return ds;
+		return new PoolingDataSource<>(connectionPool);
 	}
 
 	private ObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
@@ -62,5 +63,29 @@ public class PoolingDataSourceFactory extends JndiObjectFactory<DataSource, Data
 		connectionPool.setBlockWhenExhausted(true);
 		poolableConnectionFactory.setPool(connectionPool);
 		return connectionPool;
+	}
+
+	/** Must be a 'new' connection with autocommit set to false. Implementations should close the connection. */
+	@Override
+	public Connection getConnection() throws SQLException {
+		Connection connection = datasource.getConnection();
+		connection.setAutoCommit(false);
+		return connection;
+	}
+
+	/**
+	 * Since we've already verified the connection in {@link NarayanaConfigurationBean} 
+	 * we can almost be certain this won't fail. In case such a thing does happen, 
+	 * throw a fatal exception because we may absolutely not continue initializing the application.
+	 */
+	@Override
+	public void initialise(StringTokenizer stringTokenizer) {
+		String jndiName = stringTokenizer.nextToken();
+		try {
+			DataSource dataSource = ObjectLocator.lookup(jndiName, null, DataSource.class);
+			this.datasource = augmentDataSource(dataSource);
+		} catch (NamingException e) {
+			throw new FatalError("unable to lookup datasource ["+jndiName+"]", e);
+		}
 	}
 }
