@@ -144,9 +144,9 @@
 			<groupId>com.sun.activation</groupId>
 			<artifactId>jakarta.activation</artifactId>
 		</dependency>
-		<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
-			<groupId>javax.activation</groupId>
-			<artifactId>activation</artifactId>
+		<dependency><!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
+			<groupId>jakarta.activation</groupId>
+			<artifactId>jakarta.activation-api</artifactId>
 		</dependency>
 
 		<!-- Test scoped and provided dependencies -->
