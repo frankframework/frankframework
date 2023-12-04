@@ -211,11 +211,10 @@
 				<version>${project.version}</version>
 			</dependency>
 
-			<!-- explicit dependency to force version 1.1.1 -->
-			<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
-				<groupId>javax.activation</groupId>
-				<artifactId>activation</artifactId>
-				<version>1.1.1</version>
+			<dependency><!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
+				<groupId>jakarta.activation</groupId>
+				<artifactId>jakarta.activation-api</artifactId>
+				<version>1.2.2</version>
 			</dependency>
 			<dependency><!-- this dependency handles jakarta.activation.* imports -->
 				<groupId>com.sun.activation</groupId>
@@ -750,15 +749,9 @@
 										<excludes>
 											<exclude>javax.activation:javax.activation-api</exclude>
 											<exclude>com.sun.activation:javax.activation</exclude>
-									<!-- 	<exclude>javax.activation:activation</exclude> -->
+											<exclude>javax.activation:activation</exclude>
 										</excludes>
-										<message>use com.sun.activation:jakarta.activation instead of jakarta.activation:jakarta.activation-api</message>
-									</bannedDependencies>
-									<bannedDependencies>
-										<excludes>
-											<exclude>jakarta.activation:jakarta.activation-api</exclude>
-										</excludes>
-										<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
+										<message>Don't though versions, we should use javax.activation:1.2.2 and jakarta.activation:2.0.1</message>
 									</bannedDependencies>
 								</rules>
 							</configuration>
