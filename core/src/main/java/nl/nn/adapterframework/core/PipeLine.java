@@ -39,13 +39,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
-import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
-import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -252,8 +249,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		IWrapperPipe outputWrapper = getOutputWrapper();
 		if (outputWrapper != null) {
 			log.debug("configuring OutputWrapper");
-			if (outputWrapper instanceof EsbSoapWrapperPipe) {
-				validatePhysicalDestination((EsbSoapWrapperPipe) outputWrapper);
+			if (outputWrapper instanceof DestinationValidator) {
+				((DestinationValidator) outputWrapper).validateListenerDestinations(this);
 			}
 			configurationException = configureSpecialPipe(outputWrapper, OUTPUT_WRAPPER_NAME, configurationException);
 		}
@@ -288,24 +285,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			return suppressException(configurationException, e);
 		}
 		return configurationException;
-	}
-
-	private void validatePhysicalDestination(final EsbSoapWrapperPipe eswPipe) throws ConfigurationException {
-		INamedObject owner = getOwner();
-		if (owner instanceof Adapter) {
-			Adapter owningAdapter = (Adapter) owner;
-
-			for (Receiver<?> receiver : owningAdapter.getReceivers()) {
-				IListener<?> listener = receiver.getListener();
-				try {
-					if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
-						break;
-					}
-				} catch (JmsException e) {
-					throw new ConfigurationException(e);
-				}
-			}
-		}
 	}
 
 	@Nonnull

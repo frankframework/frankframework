@@ -41,6 +41,7 @@ import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.DestinationValidator;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
@@ -64,7 +65,6 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
-import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -338,10 +338,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			configureElement(outputValidator);
 		}
 		IWrapperPipe inputWrapper = getInputWrapper();
-		if (inputWrapper instanceof EsbSoapWrapperPipe) {
-			EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe) inputWrapper;
-			ISender sender = getSender();
-			eswPipe.retrievePhysicalDestinationFromSender(sender);
+		if (inputWrapper instanceof DestinationValidator) {
+			DestinationValidator destinationValidator = (DestinationValidator) inputWrapper;
+			destinationValidator.validateSenderDestination(getSender());
 		}
 		if (inputWrapper != null) {
 			configureElement(inputWrapper);
