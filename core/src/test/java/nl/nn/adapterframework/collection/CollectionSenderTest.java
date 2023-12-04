@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.senders.SenderTestBase;
 
@@ -13,8 +12,8 @@ class CollectionSenderTest extends SenderTestBase<CollectorSenderBase<TestCollec
 	private final TestCollector collector = new TestCollector();
 
 	@Override
-	public CollectorSenderBase<TestCollector, TestCollectorPart> createSender() throws ConfigurationException {
-		return new CollectorSenderBase<TestCollector, TestCollectorPart>() {
+	public CollectorSenderBase<TestCollector, TestCollectorPart> createSender() {
+		return new CollectorSenderBase<>() {
 			@Override
 			protected Collection<TestCollector, TestCollectorPart> getCollection(PipeLineSession session) {
 				return new Collection<>(collector);

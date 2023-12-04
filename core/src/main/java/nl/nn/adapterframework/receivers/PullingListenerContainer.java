@@ -61,8 +61,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 
 	private @Getter @Setter Receiver<M> receiver;
 	private @Getter @Setter PlatformTransactionManager txManager;
-	private Counter threadsRunning = new Counter(0);
-	private Counter tasksStarted = new Counter(0);
+	private final Counter threadsRunning = new Counter(0);
+	private final Counter tasksStarted = new Counter(0);
 	private Semaphore processToken = null; // guard against to many messages being processed at the same time
 	private Semaphore pollToken = null; // guard against to many threads polling at the same time
 	private boolean idle = false; // true if the last messages received was null, will cause wait loop
@@ -367,7 +367,8 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 							txStatus = null;
 						}
 					}
-					if (!messageHandled && inProcessStateManager!=null) {
+
+					if (!messageHandled && inProcessStateManager != null) {
 						txStatus = receiver.isTransacted() || receiver.getTransactionAttribute() != TransactionAttribute.NOTSUPPORTED ? txManager.getTransaction(txNew) : null;
 						boolean noMoreRetries = receiver.getMaxRetries()>=0 && deliveryCount>receiver.getMaxRetries();
 						ProcessState targetState = noMoreRetries ? ProcessState.ERROR : ProcessState.AVAILABLE;

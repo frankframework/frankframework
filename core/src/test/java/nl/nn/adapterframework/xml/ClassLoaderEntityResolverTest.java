@@ -24,9 +24,9 @@ import nl.nn.adapterframework.testutil.TestScopeProvider;
 
 public class ClassLoaderEntityResolverTest {
 
-	private String publicId="fakePublicId";
+	private final String publicId = "fakePublicId";
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
-	private IScopeProvider localScopeProvider = new TestScopeProvider();
+	private final IScopeProvider localScopeProvider = new TestScopeProvider();
 
 	@ParameterizedTest
 	@ValueSource(strings = {"AppConstants.properties", "/AppConstants.properties", "/Xslt/importDocument/lookup.xml"})

@@ -34,11 +34,11 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author Niels Meijer
  */
 public class DigesterRulesParser extends DigesterRulesHandler {
-	private Digester digester;
-	private RulesBinder rulesBinder;
+	private final Digester digester;
+	private final RulesBinder rulesBinder;
 	private @Setter ApplicationContext applicationContext; //Autowired ByType
 	private Rule attributeChecker;
-	private Set<String> parsedPatterns = new HashSet<>();
+	private final Set<String> parsedPatterns = new HashSet<>();
 
 	public DigesterRulesParser(Digester digester, RulesBinder rulesBinder) {
 		this.digester = digester;

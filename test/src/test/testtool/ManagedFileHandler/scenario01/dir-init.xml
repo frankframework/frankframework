@@ -13,6 +13,5 @@
 		<mkdir dir="${inprocess.dir}"/>
 		<mkdir dir="${processed.dir}"/>
 		<mkdir dir="${error.dir}"/>
-		<copy file="mfh-input.xml" todir="${target.dir}" preservelastmodified="true"/>
 	</target>
 </project>

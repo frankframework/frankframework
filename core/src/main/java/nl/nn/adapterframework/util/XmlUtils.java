@@ -26,6 +26,7 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -36,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import javax.annotation.Nonnull;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
@@ -74,6 +76,7 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xalan.processor.TransformerFactoryImpl;
+import org.apache.xmlbeans.GDate;
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
@@ -107,6 +110,7 @@ import nl.nn.adapterframework.validation.XmlValidatorErrorHandler;
 import nl.nn.adapterframework.xml.BodyOnlyFilter;
 import nl.nn.adapterframework.xml.CanonicalizeFilter;
 import nl.nn.adapterframework.xml.ClassLoaderEntityResolver;
+import nl.nn.adapterframework.xml.NamespaceRemovingFilter;
 import nl.nn.adapterframework.xml.NonResolvingExternalEntityResolver;
 import nl.nn.adapterframework.xml.PrettyPrintFilter;
 import nl.nn.adapterframework.xml.SaxException;
@@ -135,10 +139,8 @@ public class XmlUtils {
 	private static Boolean autoReload = null;
 	private static Integer buffersize=null;
 
-	private static ConcurrentHashMap<String,TransformerPool> utilityTPs = new ConcurrentHashMap<String,TransformerPool>();
+	private static final ConcurrentHashMap<String, TransformerPool> utilityTPs = new ConcurrentHashMap<>();
 	public static final String XPATH_GETROOTNODENAME = "name(/node()[position()=last()])";
-
-	private static final String ADAPTERSITE_XSLT = "/xml/xsl/web/adapterSite.xsl";
 
 	public static final XMLEventFactory EVENT_FACTORY = XMLEventFactory.newFactory();
 	public static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newFactory();
@@ -149,6 +151,12 @@ public class XmlUtils {
 		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
 
+	/**
+	 * Parses a string to a Date using XML Schema dateTime data type (GDate)
+	 */
+	public static Date parseXmlDateTime(String s) {
+		return new GDate(s).getDate();
+	}
 
 	private static TransformerPool getUtilityTransformerPool(Supplier<String> xsltSupplier, String key, boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
 		//log.debug("utility transformer pool key ["+key+"] xslt ["+xslt+"]");
@@ -239,6 +247,7 @@ public class XmlUtils {
 	}
 
 	protected static String makeRemoveNamespacesXsltTemplates() {
+		// TODO: Wish to get rid of this as well but it's still embedded in another XSLT.
 		return
 		"<xsl:template match=\"*\">"
 			+ "<xsl:element name=\"{local-name()}\">"
@@ -253,18 +262,6 @@ public class XmlUtils {
 			+ "<xsl:apply-templates/>"
 			+ "</xsl:copy>"
 		+ "</xsl:template>";
-	}
-
-	protected static String makeRemoveNamespacesXslt(boolean omitXmlDeclaration, boolean indent) {
-		return
-		"<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"2.0\">"
-			+ "<xsl:output method=\"xml\" indent=\""+(indent?"yes":"no")+"\" omit-xml-declaration=\""+(omitXmlDeclaration?"yes":"no")+"\"/>"
-			+ makeRemoveNamespacesXsltTemplates()
-			+ "</xsl:stylesheet>";
-	}
-
-	public static TransformerPool getRemoveNamespacesTransformerPool(boolean omitXmlDeclaration, boolean indent) throws ConfigurationException {
-		return getUtilityTransformerPool(()->makeRemoveNamespacesXslt(omitXmlDeclaration,indent),"RemoveNamespaces",omitXmlDeclaration,indent);
 	}
 
 	protected static String makeGetRootNamespaceXslt() {
@@ -717,7 +714,7 @@ public class XmlUtils {
 	/*
 	 * version of createXPathEvaluator that allows to set outputMethod, and uses copy-of instead of value-of, and enables use of parameters.
 	 */
-	public static String createXPathEvaluatorSource(String namespaceDefs, String xpathExpression, OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) {
+	public static String createXPathEvaluatorSource(String namespaceDefs, String xpathExpression, @Nonnull OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) {
 		String namespaceClause = getNamespaceClause(namespaceDefs);
 
 		final String copyMethod;
@@ -732,7 +729,7 @@ public class XmlUtils {
 		return createXPathEvaluatorSource(x -> "<xsl:"+copyMethod+" "+namespaceClause+" select=\"" + XmlEncodingUtils.encodeChars(xpathExpression) + "\"" + separatorString + "/>", xpathExpression, outputMethod, includeXmlDeclaration, params, stripSpace, ignoreNamespaces, xsltVersion);
 	}
 
-	public static String createXPathEvaluatorSource(Function<String,String> xpathContainerSupplier, String xpathExpression, OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
+	public static String createXPathEvaluatorSource(Function<String,String> xpathContainerSupplier, String xpathExpression, @Nonnull OutputType outputMethod, boolean includeXmlDeclaration, ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
 		if (StringUtils.isEmpty(xpathExpression)) {
 			throw new IllegalArgumentException("XPathExpression must be filled");
 		}
@@ -1098,7 +1095,6 @@ public class XmlUtils {
 		long num;
 
 		str = getChildTagAsString(el, tag, null);
-		num = 0;
 		if (str == null) {
 			return defaultValue;
 		}
@@ -1391,16 +1387,7 @@ public class XmlUtils {
 		return map;
 	}
 
-	public static String source2String(Source source, boolean removeNamespaces) throws TransformerException {
-		if (removeNamespaces) {
-			try {
-				TransformerPool tp = getRemoveNamespacesTransformerPool(true,false);
-				return tp.transform(source);
-			} catch (Exception e) {
-				throw new TransformerException(e);
-			}
-		}
-
+	public static String source2String(Source source) throws TransformerException {
 		StringWriter writer = new StringWriter();
 		StreamResult result = new StreamResult(writer);
 		TransformerFactory tf = XmlUtils.getTransformerFactory(2); // set xslt2=true to avoid problems with diacritics
@@ -1410,13 +1397,26 @@ public class XmlUtils {
 		return writer.toString();
 	}
 
-	public static String removeNamespaces(String input) {
-		try {
-			TransformerPool tp = getRemoveNamespacesTransformerPool(true,false);
-			return tp.transform(input,null);
+	public static String removeNamespaces(String input) throws XmlException {
+		try (Reader reader = new StringReader(input)) {
+			XmlWriter xmlWriter = new XmlWriter();
+			ContentHandler handler = new NamespaceRemovingFilter(xmlWriter);
+			InputSource inputSource = new InputSource(reader);
+			parseXml(inputSource, handler);
+			return xmlWriter.toString();
 		} catch (Exception e) {
-			log.warn("unable to remove namespaces", e);
-			return null;
+			throw new XmlException(e);
+		}
+	}
+
+	public static Message removeNamespaces(Message input) throws XmlException {
+		try {
+			XmlWriter xmlWriter = new XmlWriter();
+			ContentHandler handler = new NamespaceRemovingFilter(xmlWriter);
+			parseXml(input.asInputSource(), handler);
+			return Message.asMessage(xmlWriter.toString());
+		} catch (Exception e) {
+			throw new XmlException(e);
 		}
 	}
 
@@ -1555,40 +1555,34 @@ public class XmlUtils {
 		}
 	}
 
-
-	public static String getAdapterSite(String input, Map parameters) throws IOException, SAXException, TransformerException {
-		URL xsltSource = ClassLoaderUtils.getResourceURL(ADAPTERSITE_XSLT);
-		Transformer transformer = XmlUtils.createTransformer(xsltSource);
-		if (parameters != null) {
-			XmlUtils.setTransformerParameters(transformer, parameters);
-		}
-		return XmlUtils.transformXml(transformer, input);
-	}
-
-	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws DomBuilderException, XPathExpressionException {
+	public static Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
-		Collection<String> c = new ArrayList<>();
-		Document doc = buildDomDocument(msg, true, true);
-		XPath xPath = getXPathFactory().newXPath();
-		XPathExpression xPathExpression = xPath.compile(xpathExpr);
-		Object result = xPathExpression.evaluate(doc, XPathConstants.NODESET);
-		NodeList nodes = (NodeList) result;
-		for (int i = 0; i < nodes.getLength(); i++) {
-			if (nodes.item(i).getNodeType() == Node.ATTRIBUTE_NODE) {
-				c.add(nodes.item(i).getNodeValue());
-			} else {
-				//c.add(nodes.item(i).getTextContent());
-				c.add(nodes.item(i).getFirstChild().getNodeValue());
+		try {
+			Collection<String> c = new ArrayList<>();
+			Document doc = buildDomDocument(msg, true, true);
+			XPath xPath = getXPathFactory().newXPath();
+			XPathExpression xPathExpression = xPath.compile(xpathExpr);
+			Object result = xPathExpression.evaluate(doc, XPathConstants.NODESET);
+			NodeList nodes = (NodeList) result;
+			for (int i = 0; i < nodes.getLength(); i++) {
+				if (nodes.item(i).getNodeType() == Node.ATTRIBUTE_NODE) {
+					c.add(nodes.item(i).getNodeValue());
+				} else {
+					c.add(nodes.item(i).getFirstChild().getNodeValue());
+				}
 			}
+			if (!c.isEmpty()) {
+				return c;
+			}
+			// TODO Don't return stupid null
+			return null;
+		} catch (DomBuilderException | XPathExpressionException e) {
+			throw new XmlException(e);
 		}
-		if (!c.isEmpty()) {
-			return c;
-		}
-		return null;
 	}
 
-	public static String evaluateXPathNodeSetFirstElement(String input, String xpathExpr) throws DomBuilderException, XPathExpressionException {
+	public static String evaluateXPathNodeSetFirstElement(String input, String xpathExpr) throws XmlException {
 		Collection<String> c = evaluateXPathNodeSet(input, xpathExpr);
 		if (c != null && !c.isEmpty()) {
 			return c.iterator().next();
@@ -1596,37 +1590,46 @@ public class XmlUtils {
 		return null;
 	}
 
-	public static Double evaluateXPathNumber(String input, String xpathExpr) throws DomBuilderException, XPathExpressionException {
+	public static Double evaluateXPathNumber(String input, String xpathExpr) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
-		Document doc = buildDomDocument(msg, true, true);
-		XPath xPath = getXPathFactory().newXPath();
-		XPathExpression xPathExpression = xPath.compile(xpathExpr);
-		Object result = xPathExpression.evaluate(doc, XPathConstants.NUMBER);
-		return (Double) result;
+		try {
+			Document doc = buildDomDocument(msg, true, true);
+			XPath xPath = getXPathFactory().newXPath();
+			XPathExpression xPathExpression = xPath.compile(xpathExpr);
+			Object result = xPathExpression.evaluate(doc, XPathConstants.NUMBER);
+			return (Double) result;
+		} catch (DomBuilderException | XPathExpressionException e) {
+			throw new XmlException(e);
+		}
 	}
 
-	public static Map<String, String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws DomBuilderException, XPathExpressionException {
+	public static Map<String, String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		Map<String, String> m = new HashMap<>();
-		Document doc = buildDomDocument(msg, true, true);
-		XPath xPath = getXPathFactory().newXPath();
-		XPathExpression xPathExpression = xPath.compile(xpathExpr);
-		Object result = xPathExpression.evaluate(doc, XPathConstants.NODESET);
-		NodeList nodes = (NodeList) result;
-		for (int i = 0; i < nodes.getLength(); i++) {
-			Node node = nodes.item(i);
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				Element element = (Element) node;
-				String key = getChildTagAsString(element, keyElement);
-				String value = getChildTagAsString(element, valueElement);
-				m.put(key, value);
+		try {
+			Document doc = buildDomDocument(msg, true, true);
+			XPath xPath = getXPathFactory().newXPath();
+			XPathExpression xPathExpression = xPath.compile(xpathExpr);
+			Object result = xPathExpression.evaluate(doc, XPathConstants.NODESET);
+			NodeList nodes = (NodeList) result;
+			for (int i = 0; i < nodes.getLength(); i++) {
+				Node node = nodes.item(i);
+				if (node.getNodeType() == Node.ELEMENT_NODE) {
+					Element element = (Element) node;
+					String key = getChildTagAsString(element, keyElement);
+					String value = getChildTagAsString(element, valueElement);
+					m.put(key, value);
+				}
 			}
+		} catch (DomBuilderException | XPathExpressionException e) {
+			throw new XmlException(e);
 		}
 		if (!m.isEmpty()) {
 			return m;
 		}
+		// TODO Don't return stupid null
 		return null;
 	}
 

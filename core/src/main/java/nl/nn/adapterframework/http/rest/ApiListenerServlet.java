@@ -64,7 +64,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CookieUtil;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.HttpUtils;
 import nl.nn.adapterframework.util.LogUtil;
@@ -134,7 +134,7 @@ public class ApiListenerServlet extends HttpServletBase {
 	}
 
 	@Override
-	protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
 		final String remoteUser = request.getRemoteUser();
 
@@ -288,11 +288,9 @@ public class ApiListenerServlet extends HttpServletBase {
 					case AUTHROLE:
 						List<String> roles = listener.getAuthenticationRoleList();
 						if(roles != null) {
-							for (String role : roles) {
-								if(request.isUserInRole(role)) {
-									userPrincipal = new ApiPrincipal(); //Create a dummy user
-									break;
-								}
+							boolean userIsInRole = roles.stream().anyMatch(request::isUserInRole);
+							if(userIsInRole) {
+								userPrincipal = new ApiPrincipal();
 							}
 						}
 						break;
@@ -314,17 +312,16 @@ public class ApiListenerServlet extends HttpServletBase {
 						}
 						String requiredClaims = listener.getRequiredClaims();
 						String exactMatchClaims = listener.getExactMatchClaims();
+						String anyMatchClaims = listener.getAnyMatchClaims();
 						JwtSecurityHandler handler = (JwtSecurityHandler)messageContext.getSecurityHandler();
 						try {
-							handler.validateClaims(requiredClaims, exactMatchClaims);
+							handler.validateClaims(requiredClaims, exactMatchClaims, anyMatchClaims);
 							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
 								List<String> authRoles = listener.getAuthenticationRoleList();
 								if(authRoles != null) {
-									for (String role : authRoles) {
-										if(handler.isUserInRole(role, messageContext)) {
-											userPrincipal = new ApiPrincipal();
-											break;
-										}
+									boolean userIsInRole = authRoles.stream().anyMatch(role -> handler.isUserInRole(role, messageContext));
+									if(userIsInRole) {
+										userPrincipal = new ApiPrincipal();
 									}
 								} else {
 									userPrincipal = new ApiPrincipal();
@@ -564,7 +561,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(!Message.isEmpty(result)) {
 					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
 					if(StringUtils.isNotEmpty(lastModified)) {
-						Date date = DateUtils.parseToDate(lastModified, DateUtils.FORMAT_FULL_GENERIC);
+						Date date = DateFormatUtils.parseToDate(lastModified, DateFormatUtils.FORMAT_FULL_GENERIC);
 						if(date != null) {
 							lastModDate = date.getTime();
 						}

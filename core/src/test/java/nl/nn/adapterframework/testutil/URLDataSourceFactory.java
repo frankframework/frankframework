@@ -18,7 +18,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
 
 public class URLDataSourceFactory extends JndiDataSourceFactory {
-	private static Logger LOG = LogManager.getLogger(URLDataSourceFactory.class);
+	private static final Logger LOG = LogManager.getLogger(URLDataSourceFactory.class);
 
 	public static final String PRODUCT_KEY = "product";
 	public static final String TEST_PEEK_KEY = "testPeek";
@@ -101,7 +101,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 	}
 
 	@Override //fail fast
-	public DataSource get(String jndiName, Properties jndiEnvironment) throws NamingException {
+	public DataSource get(String jndiName, Properties jndiEnvironment) {
 		if(!availableDataSources.contains(jndiName)) {
 			throw new IllegalStateException("jndi ["+jndiName+"] not configured in test environment");
 		}
@@ -123,8 +123,6 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 				try {
 					DataSource ds = createDataSource(product, url, userId, password, testPeek, xaImplClassName);
 					return namedDataSource(ds, product, testPeek);
-				} catch (NamingException e) {
-					throw e;
 				} catch (Exception e) {
 					NamingException ne = new NamingException("cannot lookup datasource");
 					ne.initCause(e);

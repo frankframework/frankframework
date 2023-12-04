@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurationAware;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -43,7 +42,7 @@ public class RootValidations implements Iterable<RootValidation> {
 		this(new RootValidation(rootElement));
 	}
 
-	public void check(IConfigurationAware source, Set<IXSD> xsds) throws ConfigurationException {
+	public void check(IConfigurationAware source, Set<IXSD> xsds) {
 		for (RootValidation path: rootValidations) {
 			path.check(source, xsds);
 		}

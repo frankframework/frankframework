@@ -29,7 +29,7 @@ import com.sap.conn.jco.JCoParameterList;
  */
 public class RootHandler extends Handler {
 
-	private List<JCoParameterList> parameterLists;
+	private final List<JCoParameterList> parameterLists;
 	private boolean parsedRequestRoot = false;
 
 	public RootHandler(List<JCoParameterList> parameterLists) {
@@ -44,7 +44,7 @@ public class RootHandler extends Handler {
 		} else  {
 			Iterator<JCoParameterList> iterator = parameterLists.iterator();
 			while (iterator.hasNext()) {
-				JCoParameterList jcoParameterList = (JCoParameterList)iterator.next();
+				JCoParameterList jcoParameterList = iterator.next();
 				if (jcoParameterList.getMetaData().getName().equals(localName)) {
 					childHandler = new ParameterListHandler(jcoParameterList);
 				}

@@ -51,6 +51,7 @@ import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StringUtil;
+import nl.nn.adapterframework.util.XmlException;
 
 /**
  * This class sends messages with JMS.
@@ -191,7 +192,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 				return waitAndHandleResponseMessage(messageToSend, replyQueue, pipeLineSession, jmsSession);
 			}
 			return new Message(messageToSend.getJMSMessageID());
-		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException e) {
+		} catch (JMSException | IOException | NamingException | SAXException | TransformerException | JmsException | XmlException e) {
 			throw new SenderException(e);
 		} finally {
 			if (messageProducer != null) {
@@ -236,7 +237,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 		}
 	}
 
-	private Message waitAndHandleResponseMessage(javax.jms.Message msg, Destination replyQueue, PipeLineSession session, Session s) throws JMSException, TimeoutException, IOException, TransformerException, SAXException {
+	private Message waitAndHandleResponseMessage(javax.jms.Message msg, Destination replyQueue, PipeLineSession session, Session s) throws JMSException, TimeoutException, IOException, TransformerException, SAXException, XmlException {
 		String jmsMessageID = msg.getJMSMessageID();
 		String replyCorrelationId;
 		if (getReplyToName() == null) {

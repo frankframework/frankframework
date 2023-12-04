@@ -32,7 +32,7 @@ import nl.nn.credentialprovider.RoleToGroupMappingJndiRealm;
 public class RoleGroupMapperTest {
 
 	private static InMemoryDirectoryServer inMemoryDirectoryServer = null;
-	private static String baseDNs = "dc=myorg,dc=com";
+	private static final String baseDNs = "dc=myorg,dc=com";
 	private static final Log log = LogFactory.getLog(RoleGroupMapperTest.class);
 
 	private RoleToGroupMappingJndiRealm setupRoleToGroupMappingJndiRealm(Context context, String pathname) {
@@ -88,7 +88,7 @@ public class RoleGroupMapperTest {
 	}
 
 	@AfterAll
-	public static void tearDown() throws Exception {
+	public static void tearDown() {
 		if(inMemoryDirectoryServer != null) {
 			inMemoryDirectoryServer.shutDown(true);
 		}
@@ -102,7 +102,7 @@ public class RoleGroupMapperTest {
 	}
 
 	@Test
-	public void testNoExistingResource() throws LifecycleException {
+	public void testNoExistingResource() {
 
 		RoleToGroupMappingJndiRealm realm = setupRoleToGroupMappingJndiRealm(null, "classpath:conf/tomcat-role-group-mapping1.xml");
 

@@ -422,7 +422,7 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 	}
 
 	public Map<String, Object> asMap() {
-		Map<String, Object> tmp = new LinkedHashMap<String, Object>();
+		Map<String, Object> tmp = new LinkedHashMap<>();
 		tmp.put("name", getName());
 		for (int i=0; i< getItemCount(); i++) {
 			Object item = getItemValue(i);

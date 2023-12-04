@@ -34,7 +34,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  * @since 5.0
  */
 public class DummySchemasProviderImpl implements SchemasProvider {
-	private IScopeProvider scopeProvider = new TestScopeProvider();
+	private final IScopeProvider scopeProvider = new TestScopeProvider();
 	private final String id;
 	private final String xsd;
 

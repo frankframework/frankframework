@@ -31,16 +31,16 @@ import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.monitoring.events.FireMonitorEvent;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 
 /**
  * A Trigger that has its type configured at startup. Either use type = ALARM or type = CLEARING.
- *  
+ *
  * @author  Gerrit van Brakel
  * @since   4.9
- * 
+ *
  */
 public class Trigger implements ITrigger {
 	protected Logger log = LogUtil.getLogger(this);
@@ -53,8 +53,8 @@ public class Trigger implements ITrigger {
 	private @Getter @Setter SourceFiltering sourceFiltering = SourceFiltering.NONE;
 	private @Getter @Setter TriggerType triggerType = TriggerType.ALARM;
 
-	private List<String> eventCodes = new ArrayList<>();
-	private Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<>();
+	private final List<String> eventCodes = new ArrayList<>();
+	private final Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<>();
 
 	private @Getter int threshold = 0;
 	private @Getter int period = 0;
@@ -140,7 +140,7 @@ public class Trigger implements ITrigger {
 			Instant firstDate = eventDates.getFirst();
 			if ((now.toEpochMilli() - firstDate.toEpochMilli()) > getPeriod() * 1000) {
 				eventDates.removeFirst();
-				if (log.isDebugEnabled()) log.debug("removed element dated ["+DateUtils.format(firstDate.toEpochMilli())+"]");
+				if (log.isDebugEnabled()) log.debug("removed element dated ["+ DateFormatUtils.format(firstDate.toEpochMilli())+"]");
 			} else {
 				break;
 			}

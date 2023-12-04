@@ -25,7 +25,7 @@ import nl.nn.adapterframework.util.AppConstants;
 
 public class FlowDiagramAdapterWrapper extends AdapterLifecycleWrapperBase {
 	private FlowDiagramManager flowDiagramManager;
-	private boolean suppressWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.FLOW_GENERATION_ERROR.getKey(), false);
+	private final boolean suppressWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.FLOW_GENERATION_ERROR.getKey(), false);
 
 	@Override
 	public void addAdapter(Adapter adapter) {

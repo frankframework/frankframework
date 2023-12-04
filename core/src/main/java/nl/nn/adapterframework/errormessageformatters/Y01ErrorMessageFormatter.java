@@ -18,18 +18,18 @@ package nl.nn.adapterframework.errormessageformatters;
 import nl.nn.adapterframework.core.INamedObject;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 /**
  * ErrorMessageFormatter for JUICE, introduced with the Y01-project.
- * 
- * @deprecated Please note that the information returned by this ErrorMessageFormatter is not very 
+ *
+ * @deprecated Please note that the information returned by this ErrorMessageFormatter is not very
  * informative. Consider using one of {@link ErrorMessageFormatter} or {@link XslErrorMessageFormatter}
- * 
+ *
  * @author Johan Verrips IOS
  */
 public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
-	private String applicationName = AppConstants.getInstance().getProperty("application.name");
-	private String applicationVersion = AppConstants.getInstance().getProperty("application.version");
+	private final String applicationName = AppConstants.getInstance().getProperty("application.name");
+	private final String applicationVersion = AppConstants.getInstance().getProperty("application.version");
 
 	@Override
 	public Message format(String message, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime) {
@@ -39,7 +39,7 @@ public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 				"       <messageId>" +messageId+   "</messageId>\n" +
 				"       <from>"+applicationName+ " "+applicationVersion+ "</from>\n" +
 				"       <to>JUICE</to>\n" +
-				"       <timeStamp>" + DateUtils.getIsoTimeStamp() + "</timeStamp>\n" +
+				"       <timeStamp>" + DateFormatUtils.getTimeStamp() + "</timeStamp>\n" +
 				"       <ResponseStatus>\n" +
 				"           <statusCode>999</statusCode>\n" +
 				"           <statusType>SYSTEM</statusType>\n" +

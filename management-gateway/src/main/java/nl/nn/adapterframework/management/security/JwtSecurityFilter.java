@@ -60,7 +60,7 @@ public class JwtSecurityFilter implements Filter, InitializingBean { //OncePerRe
 	@Value("${management.gateway.http.jwks.endpoint}")
 	private @Setter String jwksEndpoint;
 
-	private SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
+	private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {

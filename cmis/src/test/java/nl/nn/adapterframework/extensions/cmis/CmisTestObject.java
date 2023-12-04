@@ -67,32 +67,32 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<Property<?>> getProperties() {
-		List<Property<?>> list = new ArrayList<Property<?>>();
-		
+		List<Property<?>> list = new ArrayList<>();
+
 		Property<String> pName = mock(Property.class);
 		when(pName.getId()).thenReturn("cmis:name");
 		when(pName.getFirstValue()).thenReturn("dummy");
 		when(pName.getType()).thenReturn(PropertyType.ID);
 		list.add(pName);
-		
+
 		Property<BigInteger> pProjectNumber = mock(Property.class);
 		when(pProjectNumber.getType()).thenReturn(PropertyType.INTEGER);
 		when(pProjectNumber.getId()).thenReturn("project:number");
 		when(pProjectNumber.getFirstValue()).thenReturn(new BigInteger("123456789"));
 		list.add(pProjectNumber);
-		
+
 		Property<GregorianCalendar> pLastModified = mock(Property.class);
 		when(pLastModified.getType()).thenReturn(PropertyType.DATETIME);
 		when(pLastModified.getId()).thenReturn("project:lastModified");
 		when(pLastModified.getFirstValue()).thenReturn(new GregorianCalendar(2019, 1, 26, 16, 31, 15));
 		list.add(pLastModified);
-		
+
 		Property<Boolean> pOnTime = mock(Property.class);
 		when(pOnTime.getId()).thenReturn("project:onTime");
 		when(pOnTime.getType()).thenReturn(PropertyType.BOOLEAN);
 		when(pOnTime.getFirstValue()).thenReturn(true);
 		list.add(pOnTime);
-		
+
 		// TODO Fill this list
 
 		return list;
@@ -101,7 +101,7 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 	@Override
 	public AllowableActions getAllowableActions() {
 		AllowableActions actions = mock(AllowableActions.class);
-		Set<Action> actionSet = new HashSet<Action>();
+		Set<Action> actionSet = new HashSet<>();
 		Action action = Action.CAN_CREATE_DOCUMENT;
 		actionSet.add(action);
 		when(actions.getAllowableActions()).thenReturn(actionSet);
@@ -115,7 +115,7 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 
 	@Override
 	public List<Relationship> getRelationships() {
-		List<Relationship> list = new ArrayList<Relationship>();
+		List<Relationship> list = new ArrayList<>();
 		Relationship relationship = mock(Relationship.class);
 		when(relationship.getId()).thenReturn(objectId);
 		list.add(relationship);
@@ -134,7 +134,7 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 
 	@Override
 	public List<ObjectId> getPolicyIds() {
-		List<ObjectId> policies = new ArrayList<ObjectId>();
+		List<ObjectId> policies = new ArrayList<>();
 		ObjectId objectId = mock(ObjectId.class);
 		when(objectId.getId()).thenReturn("dummyObjectId");
 		policies.add(objectId);

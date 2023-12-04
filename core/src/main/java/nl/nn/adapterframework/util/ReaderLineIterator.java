@@ -30,7 +30,7 @@ import nl.nn.adapterframework.core.SenderException;
  */
 public class ReaderLineIterator implements IDataIterator<String> {
 
-	private BufferedReader reader;
+	private final BufferedReader reader;
 	private String line;
 
 	public ReaderLineIterator(Reader inputreader) throws SenderException {

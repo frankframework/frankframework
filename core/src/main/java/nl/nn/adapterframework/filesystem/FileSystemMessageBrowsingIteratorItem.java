@@ -26,9 +26,9 @@ import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSystem<F>> implements IMessageBrowsingIteratorItem {
 
-	private FS fileSystem;
-	private RawMessageWrapper<F> item;
-	private String messageIdPropertyKey;
+	private final FS fileSystem;
+	private final RawMessageWrapper<F> item;
+	private final String messageIdPropertyKey;
 
 	public FileSystemMessageBrowsingIteratorItem(FS fileSystem, RawMessageWrapper<F> item, String messageIdPropertyKey) {
 		this.fileSystem = fileSystem;

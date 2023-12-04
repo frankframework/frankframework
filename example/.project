@@ -7,8 +7,6 @@
 		<project>iaf-ifsa</project>
 		<project>iaf-tibco</project>
 		<project>iaf-sap</project>
-		<project>iaf-coolgen</project>
-		<project>iaf-ibm</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

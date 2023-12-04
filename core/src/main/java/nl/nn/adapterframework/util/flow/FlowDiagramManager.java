@@ -53,11 +53,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 
 public class FlowDiagramManager implements ApplicationContextAware, InitializingBean, DisposableBean {
-	private static Logger log = LogUtil.getLogger(FlowDiagramManager.class);
+	private static final Logger log = LogUtil.getLogger(FlowDiagramManager.class);
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private File adapterFlowDir = new File(APP_CONSTANTS.getProperty("flow.adapter.dir"));
-	private File configFlowDir = new File(APP_CONSTANTS.getProperty("flow.config.dir"));
+	private final File adapterFlowDir = new File(APP_CONSTANTS.getProperty("flow.adapter.dir"));
+	private final File configFlowDir = new File(APP_CONSTANTS.getProperty("flow.config.dir"));
 	private @Setter ApplicationContext applicationContext;
 
 	private IFlowGenerator flowGenerator;

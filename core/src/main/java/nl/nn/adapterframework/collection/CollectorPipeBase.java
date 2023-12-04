@@ -103,7 +103,7 @@ public abstract class CollectorPipeBase<C extends ICollector<P>, P> extends Fixe
 		}
 	}
 
-	protected final @Nullable Message doAction(Action action, Message input, PipeLineSession session) throws CollectionException, PipeRunException {
+	protected final @Nullable Message doAction(Action action, Message input, PipeLineSession session) throws CollectionException {
 		try (CloseableThreadContext.Instance ctc = CloseableThreadContext.put("action", action.name())) {
 			Collection<C, P> collection = getCollection(session);
 			switch(action) {

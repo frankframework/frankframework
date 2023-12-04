@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.xml;
 
-import java.util.function.BiConsumer;
-
 import org.xml.sax.ContentHandler;
 
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -32,5 +30,5 @@ public interface IXmlDebugger {
 	/**
 	 * Allow the debugger to see the XML stream.
 	 */
-	public ContentHandler inspectXml(PipeLineSession session, String label, ContentHandler contentHandler, BiConsumer<AutoCloseable,String> closeOnCloseRegister);
+	public ContentHandler inspectXml(PipeLineSession session, String label, ContentHandler contentHandler);
 }

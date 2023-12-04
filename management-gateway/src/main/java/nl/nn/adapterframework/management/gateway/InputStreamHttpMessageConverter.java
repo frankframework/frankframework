@@ -39,7 +39,7 @@ public class InputStreamHttpMessageConverter extends AbstractHttpMessageConverte
 	}
 
 	@Override
-	protected InputStream readInternal(Class<? extends InputStream> clazz, HttpInputMessage inputMessage) throws IOException, HttpMessageNotReadableException {
+	protected InputStream readInternal(Class<? extends InputStream> clazz, HttpInputMessage inputMessage) throws HttpMessageNotReadableException {
 		throw new NotImplementedException("messages should not be read directly as InputStream");
 	}
 

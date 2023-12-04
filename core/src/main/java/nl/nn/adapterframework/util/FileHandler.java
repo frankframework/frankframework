@@ -280,7 +280,7 @@ public class FileHandler implements IScopeProvider {
 		}
 	}
 
-	private String getEffectiveFileName(byte[] in, PipeLineSession session) throws IOException {
+	private String getEffectiveFileName(byte[] in, PipeLineSession session) {
 		String name = getFilename();
 		if (StringUtils.isEmpty(name)) {
 			name = session.getString(filenameSessionKey);
@@ -637,11 +637,11 @@ public class FileHandler implements IScopeProvider {
 			fSize.setValue(Misc.toFileSize(fileSize,true));
 			fileXml.addSubElement(fSize);
 			Date lastModified = new Date(file.lastModified());
-			String date = DateUtils.format(lastModified, DateUtils.FORMAT_DATE);
+			String date = DateFormatUtils.format(lastModified, DateFormatUtils.FORMAT_DATE);
 			XmlBuilder modificationDate = new XmlBuilder("modificationDate");
 			modificationDate.setValue(date);
 			fileXml.addSubElement(modificationDate);
-			String time = DateUtils.format(lastModified, DateUtils.FORMAT_TIME_HMS);
+			String time = DateFormatUtils.format(lastModified, DateFormatUtils.FORMAT_TIME_HMS);
 			XmlBuilder modificationTime = new XmlBuilder("modificationTime");
 			modificationTime.setValue(time);
 			fileXml.addSubElement(modificationTime);

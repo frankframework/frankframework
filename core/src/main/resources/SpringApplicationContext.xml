@@ -46,12 +46,6 @@
 	/>
 
 	<bean
-		name="fxfPropertySourcePostProcessor"
-		class="nl.nn.adapterframework.extensions.fxf.FxfPropertySourcePostProcessor"
-		autowire="byName"
-	/>
-
-	<bean
 		name="jmsRealmsFactory"
 		class="nl.nn.adapterframework.jms.JmsRealmFactory"
 		autowire="byName"

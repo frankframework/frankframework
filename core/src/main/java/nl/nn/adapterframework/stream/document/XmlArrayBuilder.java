@@ -21,8 +21,8 @@ import nl.nn.adapterframework.xml.SaxElementBuilder;
 
 public class XmlArrayBuilder extends ArrayBuilder {
 
-	private SaxElementBuilder current;
-	private String elementName;
+	private final SaxElementBuilder current;
+	private final String elementName;
 
 
 	public XmlArrayBuilder(SaxElementBuilder current, String elementName) {

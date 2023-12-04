@@ -22,6 +22,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
+import nl.nn.adapterframework.util.XmlException;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -68,12 +69,15 @@ public class XmlBuilderPipe extends FixedForwardPipe {
 
 	private String buildXml(String xml) {
 		String result = XmlEncodingUtils.decodeChars(xml);
-		if (XmlUtils.isWellFormed(result)) {
-			result = XmlUtils.removeNamespaces(result);
-		} else {
+		if (!XmlUtils.isWellFormed(result)) {
 			return xml;
 		}
-		return result;
+		try {
+			return XmlUtils.removeNamespaces(result);
+		} catch (XmlException e) {
+			log.warn("Could not remove namespaces from XML, ignoring error.", e);
+			return result;
+		}
 	}
 
 	public String getSubstringStart() {

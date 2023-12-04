@@ -26,8 +26,8 @@ public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
 	}
 
 	@Test
-	public void testWrongEncoding() throws Exception {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+	public void testWrongEncoding() {
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("connectionFactory", "qcf/connectionFactory"));
 		attachments.add(new StringAttachment("destination", "some-queue"));
 		attachments.add(new StringAttachment("type", "type"));
@@ -40,8 +40,8 @@ public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
 	}
 
 	@Test
-	public void testFileWrongEncoding() throws Exception {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+	public void testFileWrongEncoding() {
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("connectionFactory", "qcf/connectionFactory"));
 		attachments.add(new StringAttachment("destination", "some-queue"));
 		attachments.add(new StringAttachment("type", "type"));
@@ -54,8 +54,8 @@ public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
 	}
 
 	@Test
-	public void testWithMessage() throws Exception {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+	public void testWithMessage() {
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("connectionFactory", "qcf/connectionFactory"));
 		attachments.add(new StringAttachment("destination", "some-queue"));
 		attachments.add(new StringAttachment("type", "type"));
@@ -77,8 +77,8 @@ public class SendJmsMessageTest extends FrankApiTestBase<SendJmsMessage>{
 	}
 
 	@Test
-	public void testWithFile() throws Exception {
-		List<Attachment> attachments = new ArrayList<Attachment>();
+	public void testWithFile() {
+		List<Attachment> attachments = new ArrayList<>();
 		attachments.add(new StringAttachment("connectionFactory", "qcf/connectionFactory"));
 		attachments.add(new StringAttachment("destination", "some-queue"));
 		attachments.add(new StringAttachment("type", "type"));

@@ -38,7 +38,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class ClassLoaderEntityResolver implements EntityResolver {
 	protected Logger log = LogUtil.getLogger(this);
-	private IScopeProvider scopeProvider;
+	private final IScopeProvider scopeProvider;
 
 	public ClassLoaderEntityResolver(IScopeProvider scopeProvider) {
 		this.scopeProvider = scopeProvider;

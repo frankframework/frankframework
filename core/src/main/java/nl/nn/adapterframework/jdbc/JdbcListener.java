@@ -29,8 +29,6 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import nl.nn.adapterframework.dbms.JdbcException;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -41,6 +39,8 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ProcessState;
+import nl.nn.adapterframework.dbms.DbmsException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
@@ -282,7 +282,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			} else {
 				message = new Message(key);
 			}
-			// log.debug("building wrapper for key ["+key+"], message ["+message+"]");
+			log.debug("building wrapper for key [{}], message [{}]", key, message);
 			String messageId = getColumnValueOrDefault(rs, getMessageIdField(), key);
 			String correlationId = getColumnValueOrDefault(rs, getCorrelationIdField(), messageId);
 			MessageWrapper<M> mw = new MessageWrapper<>(message, messageId, correlationId);
@@ -379,7 +379,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return false;
 	}
 
-	protected String convertQuery(String query) throws JdbcException, SQLException {
+	protected String convertQuery(String query) throws SQLException, DbmsException {
 		if (StringUtils.isEmpty(getSqlDialect())) {
 			return query;
 		}
@@ -415,7 +415,10 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 
-	/** Primary key field of the table, used to identify messages. For optimal performance, there should be an index on this field. */
+	/**
+	 * Primary key field of the table, used to identify and differentiate messages.
+	 * <b>NB: there should be an index on this field!</b>
+	 */
 	public void setKeyField(String fieldname) {
 		keyField = fieldname;
 	}
@@ -437,7 +440,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	/**
-	 * Field containing the message Id
+	 * Field containing the <code>messageId</code>.
+	 * <b>NB: If this column is not set the default (primary key) {@link #setKeyField(String) keyField} will be used as messageId!</b>
 	 * @ff.default <i>same as keyField</i>
 	 */
 	public void setMessageIdField(String fieldname) {
@@ -445,7 +449,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	/**
-	 * Field containing the correlationId
+	 * Field containing the <code>correlationId</code>.
+	 * <b>NB: If this column is not set, the <code>messageId</code> and <code>correlationId</code> will be the same!</b>
 	 * @ff.default <i>same as messageIdField</i>
 	 */
 	public void setCorrelationIdField(String fieldname) {

@@ -25,7 +25,6 @@ import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
@@ -91,11 +90,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 
 	@Override
 	public void closeBlock(Connection connection, PipeLineSession session) throws SenderException {
-		try {
-			super.closeConnectionForSendMessage(connection, session);
-		} catch (JdbcException | TimeoutException e) {
-			throw new SenderException("cannot close Connection", e);
-		}
+		super.closeConnectionForSendMessage(connection, session);
 	}
 
 	@Override
@@ -108,17 +103,6 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 	// implements IBlockEnabledSender.sendMessage()
 	public SenderResult sendMessage(Connection blockHandle, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		return new SenderResult(sendMessageOnConnection(blockHandle, message, session, null).getResult());
-	}
-
-	@Override
-	// implements IStreamingSender.sendMessage()
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
-		Connection blockHandle = openBlock(session);
-		try {
-			return sendMessageOnConnection(blockHandle, message, session, next);
-		} finally {
-			closeBlock(blockHandle, session);
-		}
 	}
 
 	protected PipeRunResult sendMessageOnConnection(Connection connection, Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
@@ -143,7 +127,7 @@ public class DirectQuerySender extends JdbcQuerySenderBase<Connection>{
 				result.getStatement().clearBatch();
 			}
 			return result;
-		} catch (JdbcException | ParameterException | SQLException e) {
+		} catch (JdbcException | SQLException e) {
 			throw new SenderException(getLogPrefix() + "cannot getQueryExecutionContext",e);
 		}
 	}

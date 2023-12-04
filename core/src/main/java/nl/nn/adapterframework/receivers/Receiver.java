@@ -62,7 +62,6 @@ import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
-import nl.nn.adapterframework.core.IBulkDataListener;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IHasProcessState;
 import nl.nn.adapterframework.core.IKnowsDeliveryCount;
@@ -341,7 +340,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 * put in the processResultCache will not be reprocessed even if it's
 	 * offered again.
 	 */
-	private final Map<String,ProcessResultCacheItem> processResultCache = new LinkedHashMap<String,ProcessResultCacheItem>() {
+	private final Map<String,ProcessResultCacheItem> processResultCache = new LinkedHashMap<>() {
 
 		@Override
 		protected boolean removeEldestEntry(Entry<String,ProcessResultCacheItem> eldest) {
@@ -1024,7 +1023,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@Override
 	public Message processRequest(IListener<M> origin, @Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Message message, @Nonnull PipeLineSession session) throws ListenerException {
 		Objects.requireNonNull(session, "Session can not be null");
-		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
+		try (final CloseableThreadContext.Instance ignored = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
 				throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 			}
@@ -1110,7 +1109,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private CloseableThreadContext.Instance getLoggingContext(@Nonnull IListener<M> listener, @Nonnull PipeLineSession session) {
 		CloseableThreadContext.Instance result = LogUtil.getThreadContext(adapter, session.getMessageId(), session);
-		result.put(THREAD_CONTEXT_KEY_NAME, listener.getName()).put(THREAD_CONTEXT_KEY_TYPE, ClassUtils.classNameOf(listener));
+		result.put(THREAD_CONTEXT_KEY_NAME, listener.getName());
+		result.put(THREAD_CONTEXT_KEY_TYPE, ClassUtils.classNameOf(listener));
 		return result;
 	}
 
@@ -1174,7 +1174,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean historyAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
-		try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session)) {
+		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session)) {
 			lastMessageDate = startProcessingTimestamp;
 			log.debug("{} received message with messageId [{}] correlationId [{}]", logPrefix, messageWrapper.getId(), messageWrapper.getCorrelationId());
 
@@ -1203,21 +1203,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			Message result = null;
 			PipeLineResult pipeLineResult = null;
 			try {
-				Message pipelineMessage;
-				if (getListener() instanceof IBulkDataListener) {
-					try {
-						IBulkDataListener<M> bdl = (IBulkDataListener<M>)getListener();
-						pipelineMessage=new Message(bdl.retrieveBulkData(messageWrapper, message, session));
-					} catch (Throwable t) {
-						errorMessage = t.getMessage();
-						messageInError = true;
-						error("exception retrieving bulk data", t);
-						throw wrapExceptionAsListenerException(t);
-					}
-				} else {
-					pipelineMessage = businessMessage.getMessage();
-				}
-
 				numReceived.increase();
 				showProcessingContext(messageId, businessCorrelationId, session);
 	//			threadContext=pipelineSession; // this is to enable Listeners to use session variables, for instance in afterProcessMessage()
@@ -1231,15 +1216,16 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						log.debug("{} activating TimeoutGuard with transactionTimeout [{}]s", logPrefix, getTransactionTimeout());
 						tg.activateGuard(getTransactionTimeout());
 
-						pipeLineResult = adapter.processMessageWithExceptions(messageId, pipelineMessage, session);
+						pipeLineResult = adapter.processMessageWithExceptions(messageId, businessMessage.getMessage(), session);
 
 						setExitState(session, pipeLineResult.getState(), pipeLineResult.getExitCode());
 						session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, String.valueOf(pipeLineResult.getExitCode()));
 						result=pipeLineResult.getResult();
 
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
-						if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN) { //Since we can determine the size, assume the message is preserved
-							errorMessage += result.asString().substring(0, ITransactionalStorage.MAXCOMMENTLEN);
+						if(!Message.isEmpty(result) && result.isRepeatable() && result.size() > ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length()) { //Since we can determine the size, assume the message is preserved
+							String resultString = result.asString();
+							errorMessage += resultString.substring(0, Math.min(ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length(), resultString.length()));
 						} else {
 							errorMessage += result;
 						}
@@ -1778,7 +1764,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	 */
 	@Protected
 	public void setRunState(RunState state) {
-		if(RunState.ERROR.equals(state)) {
+		if(RunState.ERROR == state) {
 			log.debug("{} Set RunState to ERROR -> Stop Running", this::getLogPrefix);
 			stopRunning();
 		}

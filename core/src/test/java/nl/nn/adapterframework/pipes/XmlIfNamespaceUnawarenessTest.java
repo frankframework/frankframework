@@ -11,11 +11,11 @@ import nl.nn.adapterframework.util.TransformerPoolNamespaceUnawarenessTest;
 
 public class XmlIfNamespaceUnawarenessTest extends PipeTestBase<XmlIf>{
 
-	private String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_XPATH;
-	private String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolNamespaceUnawarenessTest.NAMESPACED_INPUT_MESSAGE;
+	private final String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_XPATH;
+	private final String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolNamespaceUnawarenessTest.NAMESPACED_INPUT_MESSAGE;
 
-	private String pipeForwardThen = "then";
-	private String pipeForwardElse = "else";
+	private final String pipeForwardThen = "then";
+	private final String pipeForwardElse = "else";
 
 	@Override
 	public XmlIf createPipe() {

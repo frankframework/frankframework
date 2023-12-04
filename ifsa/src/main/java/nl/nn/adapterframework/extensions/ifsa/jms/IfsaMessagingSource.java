@@ -27,6 +27,7 @@ import javax.jms.QueueSession;
 import javax.naming.NamingException;
 
 import nl.nn.adapterframework.extensions.ifsa.IfsaException;
+import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.jms.MessagingSource;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -48,8 +49,8 @@ public class IfsaMessagingSource extends MessagingSource {
 	private static final String CLEANUP_ON_CLOSE_KEY="ifsa.cleanUpOnClose";
 	private static Boolean cleanUpOnClose=null;
 
-	private boolean preJms22Api;
-	private boolean xaEnabled;
+	private final boolean preJms22Api;
+	private final boolean xaEnabled;
 
 	public IfsaMessagingSource(String applicationId, IFSAContext context, IFSAQueueConnectionFactory connectionFactory, Map messagingSourceMap, boolean preJms22Api, boolean xaEnabled) {
 		super(applicationId,context,connectionFactory,messagingSourceMap,null,false,true);
@@ -105,7 +106,11 @@ public class IfsaMessagingSource extends MessagingSource {
 
 	protected void releaseClientReplyQueue(Queue replyQueue) throws IfsaException {
 		if (hasDynamicReplyQueue()) { // Temporary Dynamic
-			releaseDynamicReplyQueue(replyQueue);
+			try {
+				releaseDynamicReplyQueue(replyQueue);
+			} catch (JmsException e) {
+				throw new IfsaException(e);
+			}
 		}
 	}
 
@@ -157,13 +162,13 @@ public class IfsaMessagingSource extends MessagingSource {
 		}
 	}
 
-  	public IFSAQueue lookupService(String serviceId) throws IfsaException {
+	public IFSAQueue lookupService(String serviceId) throws IfsaException {
 		try {
 			return (IFSAQueue) ((IFSAContext)getContext()).lookupService(serviceId);
 		} catch (NamingException e) {
 			throw new IfsaException("cannot lookup queue for service ["+serviceId+"]",e);
 		}
-  	}
+	}
 
 	public IFSAQueue lookupProviderInput() throws IfsaException {
 		try {

@@ -29,7 +29,7 @@ import liquibase.logging.core.AbstractLogger;
  */
 public class LiquibaseLog4j2Logger extends AbstractLogger {
 	private static final String FQCN = LiquibaseLog4j2Logger.class.getName();
-	private ExtendedLogger logger;
+	private final ExtendedLogger logger;
 
 	public LiquibaseLog4j2Logger(Class<?> clazz) {
 		super();

@@ -15,11 +15,17 @@
 */
 package nl.nn.adapterframework.web;
 
+import javax.servlet.Filter;
+
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import nl.nn.adapterframework.console.ConsoleFrontend;
 import nl.nn.adapterframework.management.web.ServletDispatcher;
+import nl.nn.adapterframework.util.SpringUtils;
+import nl.nn.adapterframework.web.filters.DynamicFilterConfigurer;
 
 @Configuration
 public class RegisterServletEndpoints {
@@ -33,6 +39,29 @@ public class RegisterServletEndpoints {
 	public ServletRegistration frontendServletBean() {
 		ServletRegistration registration = new ServletRegistration(ConsoleFrontend.class);
 		registration.addUrlMappings("/*"); //Also host the console on the ROOT
+		return registration;
+	}
+
+	@Bean
+	public FilterRegistrationBean<Filter> createCorsFilter(ApplicationContext ac) {
+		return createFilter(ac, DynamicFilterConfigurer.DynamicFilters.CORS_FILTER);
+	}
+
+	@Bean
+	public FilterRegistrationBean<Filter> createCSPFilter(ApplicationContext ac) {
+		return createFilter(ac, DynamicFilterConfigurer.DynamicFilters.CSP_FILTER);
+	}
+
+	@Bean
+	public FilterRegistrationBean<Filter> createCacheControlFilter(ApplicationContext ac) {
+		return createFilter(ac, DynamicFilterConfigurer.DynamicFilters.CACHE_CONTROL_FILTER);
+	}
+
+	private FilterRegistrationBean<Filter> createFilter(ApplicationContext ac, DynamicFilterConfigurer.DynamicFilters df) {
+		Class<? extends Filter> filter = df.getFilterClass();
+		Filter filterInstance = SpringUtils.createBean(ac, filter);
+		FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<>(filterInstance);
+		registration.addUrlPatterns(df.getEndpoints());
 		return registration;
 	}
 }

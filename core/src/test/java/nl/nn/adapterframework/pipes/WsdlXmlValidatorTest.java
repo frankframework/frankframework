@@ -442,7 +442,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.setWsdl(DOUBLE_BODY);
 		val.setSoapHeader("MessageHeader");
 		val.setSoapBody("GetPolicyDetails_Request");
-		val.setSoapBodyNamespace("http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1");
+		val.setSoapBodyNamespace("http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1");
 		val.setAddNamespaceToSchema(true);
 		val.setThrowException(true);
 		val.registerForward(new PipeForward("success", null));
@@ -456,14 +456,14 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setSoapHeader("MessageHeader");
 		pipe.setSoapBody("GetPolicyDetails_Request");
 		pipe.setAddNamespaceToSchema(true);
-		pipe.setSchemaLocation("http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2 http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 ");
+		pipe.setSchemaLocation("http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2 http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 ");
 		pipe.setThrowException(true);
 		pipe.registerForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		assertEquals(1, getConfigurationWarnings().size());
 		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] attribute [schemaLocation] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl] already has a "
-				+ "default value [http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2]", getConfigurationWarnings().get(0));
+				+ "default value [http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2]", getConfigurationWarnings().get(0));
 	}
 
 	@Test
@@ -472,14 +472,14 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		pipe.setSoapHeader("MessageHeader");
 		pipe.setSoapBody("GetPolicyDetails_Request");
 		pipe.setAddNamespaceToSchema(true);
-		pipe.setSchemaLocation("http://ibissource.org/XSD/Generic/MessageHeader/2 schema1 http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/2 schema2");
+		pipe.setSchemaLocation("http://frankframework.org/XSD/Generic/MessageHeader/2 schema1 http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/2 schema2");
 		pipe.setThrowException(true);
 		pipe.registerForward(new PipeForward("success", null));
 		configureAndStartPipe();
 
 		assertEquals(1, getConfigurationWarnings().size());
-		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] use attribute [soapBodyNamespace] instead of attribute [schemaLocation] with value [http://ibissource.org/XSD/Generic/MessageHeader/2 schema1"
-				+ " http://ibissource.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]", getConfigurationWarnings().get(0));
+		assertEquals("WsdlXmlValidator [WsdlXmlValidator under test] use attribute [soapBodyNamespace] instead of attribute [schemaLocation] with value [http://frankframework.org/XSD/Generic/MessageHeader/2 schema1"
+				+ " http://frankframework.org/XSD/LifeRetailCB/PolicyJuice/1/GetPolicyDetails/1 schema2] for wsdl [/Validation/Wsdl/GetPolicyDetails/GetPolicyDetails.wsdl]", getConfigurationWarnings().get(0));
 	}
 
 	@Test

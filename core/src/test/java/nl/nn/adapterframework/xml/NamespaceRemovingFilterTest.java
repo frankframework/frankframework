@@ -25,13 +25,13 @@ import nl.nn.adapterframework.util.XmlUtils;
 
 public class NamespaceRemovingFilterTest {
 
-	private boolean TEST_CDATA=true;
-	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
-	private String CDATA_END=TEST_CDATA?"]]>":"";
+	private final boolean TEST_CDATA = true;
+	private final String CDATA_START = TEST_CDATA ? "<![CDATA[" : "";
+	private final String CDATA_END = TEST_CDATA ? "]]>" : "";
 
-	private String messageBasicNoNS="<root><sub name=\"p &amp; Q\">A &amp; B</sub><sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub nil=\"true\"/></root>";
-	private String messageBasicNS1="<root xmlns=\"urn:test\"><sub name=\"p &amp; Q\">A &amp; B</sub><sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</sub><sub xmlns=\"http://www.w3.org/2001/XMLSchema-instance\" nil=\"true\"/></root>";
-	private String messageBasicNS2="<ns:root xmlns:ns=\"urn:test\"><ns:sub name=\"p &amp; Q\">A &amp; B</ns:sub><ns:sub>"+CDATA_START+"<a>a &amp; b</a>"+CDATA_END+"</ns:sub><sub xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"/></ns:root>";
+	private final String messageBasicNoNS = "<root><sub name=\"p &amp; Q\">A &amp; B</sub><sub>" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub><sub nil=\"true\"/></root>";
+	private final String messageBasicNS1 = "<root xmlns=\"urn:test\"><sub name=\"p &amp; Q\">A &amp; B</sub><sub>" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub><sub xmlns=\"http://www.w3.org/2001/XMLSchema-instance\" nil=\"true\"/></root>";
+	private final String messageBasicNS2 = "<ns:root xmlns:ns=\"urn:test\"><ns:sub name=\"p &amp; Q\">A &amp; B</ns:sub><ns:sub>" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</ns:sub><sub xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:nil=\"true\"/></ns:root>";
 
 	public void testToWriter(String source, String expected) throws Exception {
 		StringWriter target = new StringWriter();

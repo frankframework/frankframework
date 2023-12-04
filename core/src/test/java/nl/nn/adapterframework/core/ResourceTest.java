@@ -23,7 +23,7 @@ public class ResourceTest {
 
 	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
-	private IScopeProvider testScopeProvider = new TestScopeProvider();
+	private final IScopeProvider testScopeProvider = new TestScopeProvider();
 
 	private void testUri(IScopeProvider cl, String ref, String expectedContents, String expectedSystemId) throws TransformerException, SAXException, IOException {
 		testUri(cl, ref, null, expectedContents, expectedSystemId);
@@ -33,9 +33,9 @@ public class ResourceTest {
 		Resource resource = Resource.getResource(cl, ref, allowedProtocol);
 		assertNotNull(resource, "<null> resource: "+ref);
 		if (expectedContents!=null) {
-			assertEquals(expectedContents, XmlUtils.source2String(resource.asSource(), false));
+			assertEquals(expectedContents, XmlUtils.source2String(resource.asSource()));
 		} else {
-			assertNotNull( XmlUtils.source2String(resource.asSource(), false));
+			assertNotNull( XmlUtils.source2String(resource.asSource()));
 		}
 		assertEquals(expectedSystemId,resource.getSystemId());
 	}
@@ -97,7 +97,7 @@ public class ResourceTest {
 //		}
 //		return Thread.currentThread().getContextClassLoader();
 //	}
-//	
+//
 //	private String getBase(ClassLoader classLoader, BaseType baseType) throws ConfigurationException, IOException {
 //		URL result=null;
 //		switch (baseType) {
@@ -143,15 +143,15 @@ public class ResourceTest {
 //
 //	private String getExpected(BaseType baseType, RefType refType) throws ConfigurationException {
 //		switch(refType) {
-//		case ROOT: 
+//		case ROOT:
 //			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoaderTestFile.xml</file>";
 //		case ABS_PATH:
 //			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/ClassLoaderTestFile.xml</file>";
-//		case DOTDOT: 
+//		case DOTDOT:
 //			return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>/ClassLoader/subfolder/ClassLoaderTestFile.xml</file>";
-//		case SAME_FOLDER: 
+//		case SAME_FOLDER:
 //			return null;
-//		case OVERRIDABLE: 
+//		case OVERRIDABLE:
 //			if (baseType==BaseType.BYTES) {
 //				return "<?xml version=\"1.0\" encoding=\"UTF-8\"?><file>zip:/overrideablefile.xml</file>";
 //			}
@@ -168,7 +168,7 @@ public class ResourceTest {
 //		ClassLoader classLoader = getClassLoader(baseType);
 //		String baseUrl = getBase(classLoader, baseType);
 //		System.out.println("BaseType ["+baseType+"] classLoader ["+classLoader+"] BaseUrl ["+baseUrl+"]");
-//		
+//
 //		String ref = getRef(baseType,refType);
 //		String expected = getExpected(baseType,refType);
 //		System.out.println("BaseType ["+baseType+"] refType ["+refType+"] ref ["+ref+"] expected ["+expected+"]");

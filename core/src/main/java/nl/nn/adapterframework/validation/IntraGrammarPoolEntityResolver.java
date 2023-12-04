@@ -30,12 +30,12 @@ import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * EntityResolver for XercesXmlValidator to resolve imported schema documents to other schemas used to populate the grammar pool.
- * 
+ *
  * References are resolved by namespace.
- * 
+ *
  * @author Gerrit van Brakel
  */
-public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { //ClassLoaderXmlEntityResolver 
+public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { //ClassLoaderXmlEntityResolver
 	protected Logger log = LogUtil.getLogger(this);
 
 	private final List<Schema> schemas;
@@ -83,7 +83,7 @@ public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { //Cla
 
 		// Throw an exception so the XercesValidationErrorHandler picks this up as ERROR.
 		// Do not rely on the fallback resource resolver, this will bypass configuration classloaders.
-		// See https://github.com/ibissource/iaf/issues/3973
+		// See https://github.com/frankframework/frankframework/issues/3973
 		throw new XNIException("Cannot find resource [" + resourceIdentifier.getExpandedSystemId() +
 			"] from systemId [" + resourceIdentifier.getLiteralSystemId() +
 			"] with base [" + resourceIdentifier.getBaseSystemId() + "]");

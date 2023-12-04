@@ -1057,18 +1057,18 @@ public class TransformerHandlerImpl
     }
   }
 
-  ////////////////////////////////////////////////////////////////////
-  // Internal state.
-  ////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////
+	// Internal state.
+	////////////////////////////////////////////////////////////////////
 
-  /** Set to true for diagnostics output.         */
-  private static boolean DEBUG = false;
+	/** Set to true for diagnostics output.         */
+	private static final boolean DEBUG = false;
 
-  /**
-   * The transformer this will use to transform a
-   * source tree into a result tree.
-   */
-  private TransformerImpl m_transformer;
+	/**
+	 The transformer this will use to transform a
+	 source tree into a result tree.
+	*/
+	private final TransformerImpl m_transformer;
 
   /** The system ID to use as a base for relative URLs. */
   private String m_baseSystemID;
@@ -1094,8 +1094,8 @@ public class TransformerHandlerImpl
   /** The lexical handler to aggregate to. */
   private LexicalHandler m_lexicalHandler = null;
 
-  /** The decl handler to aggregate to. */
-  private DeclHandler m_declHandler = null;
+	/** The decl handler to aggregate to. */
+	private final DeclHandler m_declHandler = null;
   
   /** The Document Table Instance we are transforming. */
   DTM m_dtm;

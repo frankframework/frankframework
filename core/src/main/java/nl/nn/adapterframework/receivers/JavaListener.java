@@ -50,7 +50,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.LogUtil;
 
 
-// TODO: When anchors are supported by the Frank!Doc, link to https://github.com/ibissource/ibis-servicedispatcher
+// TODO: When anchors are supported by the Frank!Doc, link to https://github.com/frankframework/servicedispatcher
 /**
  * Use this listener to receive messages from other adapters or a scheduler within the same Frank-application or from other components residing in the same JVM.
  * JavaListeners can receive calls made via de ibis-servicedispatcher, which should be located on the JVM classpath to receive calls from other components in the JVM. If you want to call an adapter in the same Frank-application, consider using the IbisLocalSender.

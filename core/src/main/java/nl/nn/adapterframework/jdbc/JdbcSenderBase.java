@@ -28,7 +28,6 @@ import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
-import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.JdbcUtil;
 
@@ -38,7 +37,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * @author  Gerrit van Brakel
  * @since 	4.2.h
  */
-public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnabledSender<H>, IStreamingSender {
+public abstract class JdbcSenderBase<H> extends JdbcFacade implements IBlockEnabledSender<H> {
 
 	private int timeout = 0;
 

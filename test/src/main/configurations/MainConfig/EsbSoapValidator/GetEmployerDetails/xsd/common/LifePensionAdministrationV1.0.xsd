@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:lpa="http://www.ibissource.org/lpa" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.ibissource.org/lpa" elementFormDefault="qualified" lpa:agent="lpa" lpa:package="com.ibissource.lpa">
+<xsd:schema xmlns:lpa="http://www.frankframework.org/lpa" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.frankframework.org/lpa" elementFormDefault="qualified" lpa:agent="lpa" lpa:package="com.frankframework.lpa">
 	<xsd:annotation>
 		<xsd:documentation>EM - Life - PensionAdministration LC V10</xsd:documentation>
 		<xsd:appinfo>V1.0</xsd:appinfo>

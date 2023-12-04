@@ -13,8 +13,6 @@ import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -26,12 +24,12 @@ import nl.nn.adapterframework.util.TransformerPoolNamespaceUnawarenessTest;
 
 public class XsltSenderTest extends SenderTestBase<XsltSender> {
 
-	private String NAMESPACE_UNAWARENESS_STYLESHEET = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_STYLESHEET;
-	private String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_XPATH;
-	private String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolNamespaceUnawarenessTest.NAMESPACED_INPUT_MESSAGE;
-	private String NAMESPACE_UNAWARE_EXPECTED_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_INSENSITIVE_RESULT;
-	private String NAMESPACE_COMPLIANT_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_COMPLIANT_RESULT;
-	private String NAMESPACE_UNAWARE_EXPECTED_FIRST_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_INSENSITIVE_FIRST_RESULT;
+	private final String NAMESPACE_UNAWARENESS_STYLESHEET = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_STYLESHEET;
+	private final String NAMESPACE_UNAWARENESS_XPATH = TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_XPATH;
+	private final String NAMESPACE_UNAWARENESS_INPUT = TransformerPoolNamespaceUnawarenessTest.NAMESPACED_INPUT_MESSAGE;
+	private final String NAMESPACE_UNAWARE_EXPECTED_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_INSENSITIVE_RESULT;
+	private final String NAMESPACE_COMPLIANT_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_COMPLIANT_RESULT;
+	private final String NAMESPACE_UNAWARE_EXPECTED_FIRST_RESULT = TransformerPoolNamespaceUnawarenessTest.NAMESPACE_INSENSITIVE_FIRST_RESULT;
 
 
 	@Override
@@ -150,7 +148,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void testDynamicStylesheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
+	public void testDynamicStylesheet() throws ConfigurationException, IOException, SenderException, TimeoutException {
 		sender.setStyleSheetName("/Xslt/dynamicStylesheet/wrongDummy.xsl");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -167,7 +165,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void testDynamicStylesheetWithoutDefault() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
+	public void testDynamicStylesheetWithoutDefault() throws ConfigurationException, IOException, SenderException, TimeoutException {
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
 		sender.open();
@@ -183,7 +181,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void useDefaultStylesheetWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
+	public void useDefaultStylesheetWithEmptySessionKey() throws ConfigurationException, IOException, SenderException, TimeoutException {
 		sender.setStyleSheetName("/Xslt/dynamicStylesheet/correctDummy.xsl");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -199,13 +197,13 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void noStylesheetOrXpathOrSessionKeyGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
+	public void noStylesheetOrXpathOrSessionKeyGiven() {
 		ConfigurationException e = assertThrows(ConfigurationException.class, sender::configure);
 		assertThat(e.getMessage(), endsWith("one of xpathExpression, styleSheetName or styleSheetNameSessionKey must be specified"));
 	}
 
 	@Test
-	public void stylesheetSessionKeyAndXpathGiven() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
+	public void stylesheetSessionKeyAndXpathGiven() throws ConfigurationException, IOException, SenderException, TimeoutException {
 		sender.setXpathExpression("result");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -222,7 +220,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void useDefaultXpathWithEmptySessionKey() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
+	public void useDefaultXpathWithEmptySessionKey() throws ConfigurationException, IOException, SenderException, TimeoutException {
 		sender.setXpathExpression("result");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -237,7 +235,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 	}
 
 	@Test
-	public void nonexistingStyleSheet() throws ConfigurationException, IOException, PipeRunException, PipeStartException, SenderException, TimeoutException {
+	public void nonexistingStyleSheet() throws ConfigurationException, IOException, SenderException, TimeoutException {
 		sender.setXpathExpression("number(count(/results/result[contains(@name , 'test')]))");
 		sender.setStyleSheetNameSessionKey("stylesheetName");
 		sender.configure();
@@ -316,7 +314,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		sender.setIndentXml(true);
 		sender.setOutputType(OutputType.TEXT);
 		sender.setOmitXmlDeclaration(true);
-		sender.setNamespaceAware(namespaceAware);
+		sender.setRemoveNamespaces(!namespaceAware);
 		sender.configure();
 		sender.open();
 		Message input=new Message(NAMESPACE_UNAWARENESS_INPUT);

@@ -124,7 +124,7 @@ public class GraphvizEngine {
 	}
 
 	private String jsEscape(String js) {
-		return js.replaceAll("\n", " ").replaceAll("\r", "").replace("\\", "\\\\").replace("'", "\\'");
+		return js.replace("\n", " ").replace("\r", "").replace("\\", "\\\\").replace("'", "\\'");
 	}
 
 	private String getVizJsSource(String version) throws IOException {

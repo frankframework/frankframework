@@ -1,32 +1,32 @@
-dn: dc=ibissource,dc=org
+dn: dc=frankframework,dc=org
 objectClass: top
 objectClass: domain
-dc: ibissource
+dc: frankframework
 
-dn: ou=development,dc=ibissource,dc=org
+dn: ou=development,dc=frankframework,dc=org
 changetype: add
 objectClass: organizationalUnit
 ou: development
 
-dn: ou=groups,ou=development,dc=ibissource,dc=org
+dn: ou=groups,ou=development,dc=frankframework,dc=org
 changetype: add
 objectClass: organizationalUnit
 objectClass: top
 ou: groups
 
-dn: cn=LEA Administrator,ou=groups,ou=development,dc=ibissource,dc=org
+dn: cn=LEA Administrator,ou=groups,ou=development,dc=frankframework,dc=org
 changetype: add
 objectClass: posixGroup
 objectClass: top
 cn: LEA Administrator
 gidNumber: 505
-mail: leaadministrator@ibissource.org
+mail: leaadministrator@frankframework.org
 memberUid: sunsetadmin
 memberUid: daybreakadmin
 memberUid: daybreaknorealmadmin
 memberUid: mreynolds
 
-dn: cn=Application Developer,ou=groups,ou=development,dc=ibissource,dc=org
+dn: cn=Application Developer,ou=groups,ou=development,dc=frankframework,dc=org
 changetype: add
 objectClass: posixGroup
 objectClass: top
@@ -35,12 +35,12 @@ gidNumber: 506
 memberUid: testdeveloper
 memberUid: developer
 memberUid: slcdeveloper
-memberUid: developer-email@ibissource.org
-memberUid: devldapuser@ibissource.org
+memberUid: developer-email@frankframework.org
+memberUid: devldapuser@frankframework.org
 memberUid: sandboxdeveloper
-memberUid: admintest-developer@ibissource.org
+memberUid: admintest-developer@frankframework.org
 
-dn: cn=SEA Administrator,ou=groups,ou=development,dc=ibissource,dc=org
+dn: cn=SEA Administrator,ou=groups,ou=development,dc=frankframework,dc=org
 changetype: add
 objectClass: posixGroup
 objectClass: top
@@ -50,7 +50,7 @@ memberUid: nyadmin
 memberUid: iladmin
 memberUid: mreynolds
 
-dn: cn=Realm Administrator,ou=groups,ou=development,dc=ibissource,dc=org
+dn: cn=Realm Administrator,ou=groups,ou=development,dc=frankframework,dc=org
 changetype: add
 objectClass: posixGroup
 objectClass: top
@@ -64,13 +64,13 @@ memberUid: daybreakadmin
 memberUid: mreynolds
  GRFCuEDNjZSMfahLDbIlZuxYqdbnbFzOd
 
-dn: ou=people,ou=development,dc=ibissource,dc=org
+dn: ou=people,ou=development,dc=frankframework,dc=org
 changetype: add
 objectClass: organizationalUnit
 objectClass: top
 ou: people
 
-dn: cn=SLC Operator,ou=people,ou=development,dc=ibissource,dc=org
+dn: cn=SLC Operator,ou=people,ou=development,dc=frankframework,dc=org
 changetype: add
 objectClass: inetOrgPerson
 objectClass: posixAccount
@@ -84,10 +84,10 @@ uidNumber: 1118
 displayName: 2ccd88620d9d3fb3ee8ee839c806fb73
 givenName: SLC
 loginShell: /bin/sh
-mail: slcoperator@ibissource.org
+mail: slcoperator@frankframework.org
 userPassword:: e01ENX1qeGVYbGNhWlgxWDFDemx2VGpCdTZ3PT0=
 
-dn: cn=Daybreak Admin,ou=people,ou=development,dc=ibissource,dc=org
+dn: cn=Daybreak Admin,ou=people,ou=development,dc=frankframework,dc=org
 changetype: add
 objectClass: inetOrgPerson
 objectClass: posixAccount
@@ -103,5 +103,5 @@ description:: dGVuYW50PU1pZGdhciBlZE9yZz1JTC1EQVlCUkVBSw==
 displayName: 0bd6b800ec046191473a61b9b9584c48
 givenName: Daybreak
 loginShell: /bin/sh
-mail: daybreakadmin@ibissource.org
+mail: daybreakadmin@frankframework.org
 userPassword:: e1NIQX1SSC93Qmc5REtXcnBxc25aYlN2TG4zYXZwKzg9

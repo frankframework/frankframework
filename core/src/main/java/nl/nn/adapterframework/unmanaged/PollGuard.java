@@ -25,20 +25,20 @@ import javax.annotation.Nonnull;
 import org.apache.logging.log4j.Logger;
 
 import lombok.Setter;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.MessageKeeper.MessageKeeperLevel;
 import nl.nn.adapterframework.util.RunState;
 
 public class PollGuard extends TimerTask {
-	private Logger log = LogUtil.getLogger(this);
-	private SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateUtils.FORMAT_FULL_GENERIC);
+	private final Logger log = LogUtil.getLogger(this);
+	private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 	private @Setter SpringJmsConnector springJmsConnector;
 	private long lastCheck;
 	private long previousLastPollFinishedTime;
 	private boolean timeoutDetected = false;
 
-	private static AtomicInteger pollTimeouts = new AtomicInteger();
+	private static final AtomicInteger pollTimeouts = new AtomicInteger();
 
 	public PollGuard() {
 		lastCheck = System.currentTimeMillis();

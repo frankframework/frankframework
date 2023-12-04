@@ -40,8 +40,8 @@ public class ClassLoaderMock extends ClassLoader {
 
 	public ClassLoaderMock() {
 		// we don't call super(); we mock all requests!
-		URLs = new HashMap<String, URL>();
-		parentURLs = new HashMap<String, URL>();
+		URLs = new HashMap<>();
+		parentURLs = new HashMap<>();
 
 		populateUrls();
 		populateUrls(BASEPATH);
@@ -100,7 +100,7 @@ public class ClassLoaderMock extends ClassLoader {
 
 	@Override
 	public Enumeration<URL> getResources(String name) throws IOException {
-		Vector<URL> urls = new Vector<URL>();
+		Vector<URL> urls = new Vector<>();
 
 		URL basePathUrl = getResource(name);
 		if (basePathUrl != null)

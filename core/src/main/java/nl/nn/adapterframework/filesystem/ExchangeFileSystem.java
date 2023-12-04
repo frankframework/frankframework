@@ -15,7 +15,6 @@
  */
 package nl.nn.adapterframework.filesystem;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -603,7 +602,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	@Override
-	public Message readFile(ExchangeMessageReference f, String charset) throws FileSystemException, IOException {
+	public Message readFile(ExchangeMessageReference f, String charset) throws FileSystemException {
 		EmailMessage emailMessage = f.getMessage();
 
 		try {
@@ -864,7 +863,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 
 
 	@Override
-	public Message readAttachment(ExchangeAttachmentReference ref) throws FileSystemException, IOException {
+	public Message readAttachment(ExchangeAttachmentReference ref) throws FileSystemException {
 		final Attachment a = ref.getAttachment();
 		try {
 			a.load();
@@ -889,7 +888,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 	}
 
 	@Override
-	public ExchangeMessageReference getFileFromAttachment(final ExchangeAttachmentReference ref) throws FileSystemException {
+	public ExchangeMessageReference getFileFromAttachment(final ExchangeAttachmentReference ref) {
 		Attachment attachment = ref.getAttachment();
 		if (attachment instanceof ItemAttachment) {
 			Item item = ((ItemAttachment) attachment).getItem();
@@ -913,12 +912,12 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 
 
 	@Override
-	public String getAttachmentContentType(final ExchangeAttachmentReference a) throws FileSystemException {
+	public String getAttachmentContentType(final ExchangeAttachmentReference a) {
 		return a.getAttachment().getContentType();
 	}
 
 	@Override
-	public String getAttachmentFileName(final ExchangeAttachmentReference ref) throws FileSystemException {
+	public String getAttachmentFileName(final ExchangeAttachmentReference ref) {
 		final Attachment a = ref.getAttachment();
 		if (a instanceof FileAttachment) {
 			return ((FileAttachment) a).getFileName();
@@ -928,7 +927,7 @@ public class ExchangeFileSystem extends MailFileSystemBase<ExchangeMessageRefere
 
 
 	@Override
-	public Map<String, Object> getAdditionalAttachmentProperties(final ExchangeAttachmentReference ref) throws FileSystemException {
+	public Map<String, Object> getAdditionalAttachmentProperties(final ExchangeAttachmentReference ref) {
 		final Attachment a = ref.getAttachment();
 		Map<String, Object> result = new LinkedHashMap<>();
 		result.put("id", a.getId());

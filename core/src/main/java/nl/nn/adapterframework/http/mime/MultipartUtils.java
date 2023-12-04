@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,14 +18,13 @@ package nl.nn.adapterframework.http.mime;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
-import nl.nn.adapterframework.util.LogUtil;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public abstract class MultipartUtils {
-	private static Logger log = LogUtil.getLogger(MultipartUtils.class);
 
 	public static final String FORM_DATA = "form-data";
 	public static final String MULTIPART = "multipart/";
@@ -42,7 +41,7 @@ public abstract class MultipartUtils {
 	public static String getFieldName(BodyPart part) {
 		try {
 			String[] id = part.getHeader("Content-ID"); //MTOM requests
-			if(id != null) {
+			if(id != null && StringUtils.isNotBlank(id[0])) {
 				String idField = id[0];
 				return idField.substring(1, idField.length()-1);
 			}
@@ -103,9 +102,9 @@ public abstract class MultipartUtils {
 
 	private static String parseParameterField(String cdFields, String fieldName) {
 		for(String field : cdFields.split(";")) {
-			String[] f = field.trim().split("=");
+			String[] f = field.trim().split("=", 2);
 			String name = f[0];
-			if(fieldName.equalsIgnoreCase(name)) {
+			if(f.length > 1 && fieldName.equalsIgnoreCase(name) && StringUtils.isNotBlank(f[1])) {
 				return f[1].substring(1, f[1].length()-1);
 			}
 		}

@@ -20,8 +20,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class InputStreamDataSource implements javax.activation.DataSource, jakarta.activation.DataSource {
-	private String contentType;
-	private InputStream inputStream;
+	private final String contentType;
+	private final InputStream inputStream;
 
 	/**
 	 * Use content type application/octet-stream in case it cannot be

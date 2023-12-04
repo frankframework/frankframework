@@ -107,7 +107,7 @@ public class WebContentServlet extends HttpServletBase {
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String path = req.getPathInfo();
 		if(path == null) {
 			resp.sendRedirect(req.getContextPath() + SERVLET_PATH);
@@ -235,10 +235,10 @@ public class WebContentServlet extends HttpServletBase {
 	}
 
 	/**
-	 * Should be fetched runtime, the IbisContext is not available until after the IbisApplicationServlet has initialized
+	 * Should be fetched runtime, the IbisContext is not available until after the FrankApplicationInitializer has initialized
 	 */
 	private IbisManager getIbisManager() {
-		IbisContext ibisContext = IbisApplicationServlet.getIbisContext(getServletContext());
+		IbisContext ibisContext = FrankApplicationInitializer.getIbisContext(getServletContext());
 		return ibisContext.getIbisManager();
 	}
 

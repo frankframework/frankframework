@@ -47,7 +47,7 @@ public class Samba1Sender extends FileSystemSender<SmbFile, Samba1FileSystem> {
 
 	/** in case the user account is bound to a domain */
 	public void setDomain(String domain) {
-		getFileSystem().setDomain(domain);
+		getFileSystem().setAuthenticationDomain(domain);
 	}
 
 	/**

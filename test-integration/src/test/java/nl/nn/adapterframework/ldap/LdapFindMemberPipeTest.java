@@ -13,16 +13,16 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.PropertyUtil;
 
 public class LdapFindMemberPipeTest {
-	private String PROPERTY_FILE = "LdapFindMemberPipe.properties";
+	private final String PROPERTY_FILE = "LdapFindMemberPipe.properties";
 
-	private String host    = PropertyUtil.getProperty(PROPERTY_FILE, "host");
-	private int port       = PropertyUtil.getProperty(PROPERTY_FILE, "port", 636);
-	private boolean useSSL = PropertyUtil.getProperty(PROPERTY_FILE, "useSSL", true);
-	private String baseDN  = PropertyUtil.getProperty(PROPERTY_FILE, "baseDN");
-	private String bindDN  = PropertyUtil.getProperty(PROPERTY_FILE, "bindDN");
-	private String findDN  = PropertyUtil.getProperty(PROPERTY_FILE, "findDN");
+	private final String host = PropertyUtil.getProperty(PROPERTY_FILE, "host");
+	private final int port = PropertyUtil.getProperty(PROPERTY_FILE, "port", 636);
+	private final boolean useSSL = PropertyUtil.getProperty(PROPERTY_FILE, "useSSL", true);
+	private final String baseDN = PropertyUtil.getProperty(PROPERTY_FILE, "baseDN");
+	private final String bindDN = PropertyUtil.getProperty(PROPERTY_FILE, "bindDN");
+	private final String findDN = PropertyUtil.getProperty(PROPERTY_FILE, "findDN");
 
-	private String bindPassword = PropertyUtil.getProperty(PROPERTY_FILE, "password");
+	private final String bindPassword = PropertyUtil.getProperty(PROPERTY_FILE, "password");
 
 	private LdapFindMemberPipe pipe;
 

@@ -26,7 +26,6 @@ import javax.annotation.Nonnull;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Session;
-import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,7 +50,7 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 
 /**
  * Common baseclass for Pulling and Pushing JMS Listeners.
@@ -137,7 +136,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 	 * @param rawMessage - Original message received, can not be <code>null</code>
 	 * @return A {@link Map} with the properties of the JMS {@link javax.jms.Message}.
 	 */
-	public Map<String, Object> extractMessageProperties(javax.jms.Message rawMessage) throws ListenerException {
+	public Map<String, Object> extractMessageProperties(javax.jms.Message rawMessage) {
 		Map<String, Object> messageProperties = new HashMap<>();
 		String id = "unset";
 		String cid = "unset";
@@ -188,7 +187,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				+ "] got message with JMSDeliveryMode=[" + mode
 				+ "] \n  JMSMessageID=[" + id
 				+ "] \n  JMSCorrelationID=[" + cid
-				+ "] \n  Timestamp Sent=[" + DateUtils.format(tsSent)
+				+ "] \n  Timestamp Sent=[" + DateFormatUtils.format(tsSent)
 				+ "] \n  ReplyTo=[" + ((replyTo==null)?"none" : replyTo.toString())
 				+ "] \n Message=[" + rawMessage
 				+ "]");
@@ -299,7 +298,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 					}
 				}
 			}
-		} catch (JMSException | SenderException | TimeoutException | NamingException | IOException e) {
+		} catch (JMSException | SenderException | TimeoutException | IOException e) {
 			throw new ListenerException(e);
 		}
 
@@ -339,7 +338,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		return isTransacted() || isJmsTransacted() || getAcknowledgeModeEnum() == AcknowledgeMode.CLIENT_ACKNOWLEDGE;
 	}
 
-	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws SenderException, ListenerException, NamingException, JMSException, IOException {
+	protected void sendReply(PipeLineResult plr, Destination replyTo, String replyCid, long timeToLive, boolean ignoreInvalidDestinationException, PipeLineSession pipeLineSession, Map<String, Object> properties) throws ListenerException, JMSException, IOException, SenderException {
 		Session session = (Session) pipeLineSession.get(IListenerConnector.THREAD_CONTEXT_SESSION_KEY); // session is/must be saved in PipeLineSession by JmsConnector
 		send(session, replyTo, replyCid, prepareReply(plr.getResult(), pipeLineSession), getReplyMessageType(), timeToLive, getReplyDeliveryMode().getDeliveryMode(), getReplyPriority(), ignoreInvalidDestinationException, properties);
 	}

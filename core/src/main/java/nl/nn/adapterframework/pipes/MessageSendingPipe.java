@@ -63,7 +63,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
 import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.RestListenerUtils;
@@ -76,12 +75,7 @@ import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
-import nl.nn.adapterframework.stream.IOutputStreamingSupport;
-import nl.nn.adapterframework.stream.IStreamingSender;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingException;
-import nl.nn.adapterframework.stream.StreamingPipe;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -110,8 +104,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @author  Gerrit van Brakel
  */
-@SupportsOutputStreaming
-public class MessageSendingPipe extends StreamingPipe implements HasSender, HasStatistics {
+public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PIPE_TIMEOUT_MONITOR_EVENT = "Sender Timeout";
@@ -394,37 +387,6 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 	public void setName(String name) {
 		super.setName(name);
 		propagateName();
-	}
-
-	@Override
-	public boolean supportsOutputStreamPassThrough() {
-		return false; // TODO to be implemented!
-	}
-
-	@Override
-	protected boolean canProvideOutputStream() {
-		return super.canProvideOutputStream() &&
-				getInputValidator()==null && getInputWrapper()==null && getOutputValidator()==null && getOutputWrapper()==null &&
-				!isStreamResultToServlet() && StringUtils.isEmpty(getStubFilename()) && getMessageLog()==null && getListener()==null;
-	}
-
-	@Override
-	protected boolean canStreamToNextPipe() {
-		return super.canStreamToNextPipe() && getOutputValidator()==null && getOutputWrapper()==null && !isStreamResultToServlet();
-	}
-
-	@Override
-	protected MessageOutputStream provideOutputStream(PipeLineSession session) throws StreamingException {
-		MessageOutputStream result=null;
-		if (sender instanceof IOutputStreamingSupport) {
-			// TODO insert output validator
-			// TODO insert output wrapper
-			IOutputStreamingSupport streamingSender = (IOutputStreamingSupport)sender;
-			result = streamingSender.provideOutputStream(session, getNextPipe());
-			// TODO insert input wrapper
-			// TODO insert input validator
-		}
-		return result;
 	}
 
 	/**
@@ -787,7 +749,7 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 		return validResult;
 	}
 
-	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeoutException, IOException, InterruptedException {
+	protected PipeRunResult sendMessage(Message input, PipeLineSession session, ISender sender, Map<String,Object> threadContext) throws SenderException, TimeoutException, InterruptedException, IOException {
 		long startTime = System.currentTimeMillis();
 		PipeRunResult sendResult;
 		String exitState = null;
@@ -795,15 +757,11 @@ public class MessageSendingPipe extends StreamingPipe implements HasSender, HasS
 			if (isPresumedTimeout(startTime)) {
 				exitState = PRESUMED_TIMEOUT_FORWARD;
 				throw new TimeoutException(PRESUMED_TIMEOUT_FORWARD);
-			};
+			}
 			try {
-				if (sender instanceof IStreamingSender && canStreamToNextPipe()) {
-					sendResult = ((IStreamingSender)sender).sendMessage(input, session, getNextPipe());
-				} else {
-					SenderResult senderResult = sender.sendMessage(input, session);
-					PipeForward forward = findForwardForResult(senderResult);
-					sendResult = new PipeRunResult(forward, senderResult.getResult());
-				}
+				SenderResult senderResult = sender.sendMessage(input, session);
+				PipeForward forward = findForwardForResult(senderResult);
+				sendResult = new PipeRunResult(forward, senderResult.getResult());
 			} catch (SenderException se) {
 				exitState = PipeForward.EXCEPTION_FORWARD_NAME;
 				throw se;

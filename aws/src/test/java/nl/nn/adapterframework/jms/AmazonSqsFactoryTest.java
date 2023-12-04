@@ -23,7 +23,7 @@ public class AmazonSqsFactoryTest {
 
 	protected String accessKey = PropertyUtil.getProperty(PROPERTY_FILE, "accessKey");
 	protected String secretKey = PropertyUtil.getProperty(PROPERTY_FILE, "secretKey");
-	private Regions clientRegion = Regions.EU_WEST_1;
+	private final Regions clientRegion = Regions.EU_WEST_1;
 
 	private AmazonSqsFactory sqsFactory;
 
@@ -36,7 +36,7 @@ public class AmazonSqsFactoryTest {
 	}
 
 	@Test
-	public void testCreateConnectionFactory() throws JMSException {
+	public void testCreateConnectionFactory() {
 		// Arrange / Act
 		ConnectionFactory cf = sqsFactory.createConnectionFactory();
 

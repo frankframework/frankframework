@@ -40,8 +40,6 @@ import javax.annotation.Nullable;
 import javax.jms.JMSException;
 import javax.servlet.http.HttpServletResponse;
 
-import nl.nn.adapterframework.dbms.JdbcException;
-
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.ContentHandler;
@@ -55,8 +53,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
-import nl.nn.adapterframework.jta.TransactionConnectorCoordinator;
+import nl.nn.adapterframework.dbms.DbmsException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -65,7 +63,6 @@ import nl.nn.adapterframework.pipes.Base64Pipe;
 import nl.nn.adapterframework.pipes.Base64Pipe.Direction;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingException;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.DB2DocumentWriter;
@@ -101,7 +98,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
-@SupportsOutputStreaming
 public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 
 	public static final String UNP_START = "?{";
@@ -196,7 +192,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	@Nonnull
-	protected String convertQuery(@Nonnull String query) throws JdbcException, SQLException {
+	protected String convertQuery(@Nonnull String query) throws SQLException, DbmsException {
 		if (!StringUtils.isNotEmpty(getSqlDialect()) || getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
 			return query;
 		}
@@ -248,7 +244,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return st.getGeneratedKeys();
 	}
 
-	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message) throws SenderException, SQLException, ParameterException, JdbcException {
+	public QueryExecutionContext getQueryExecutionContext(Connection connection, Message message) throws SenderException, SQLException, JdbcException {
 		ParameterList newParameterList = paramList != null ? (ParameterList) paramList.clone() : new ParameterList();
 		String query = getQuery(message);
 		if (BooleanUtils.isTrue(getUseNamedParams()) || (getUseNamedParams() == null && query.contains(UNP_START))) {
@@ -275,7 +271,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return connection;
 	}
 
-	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) throws JdbcException, TimeoutException {
+	protected void closeConnectionForSendMessage(Connection connection, PipeLineSession session) {
 		if (isConnectionsArePooled() && connection != null) {
 			try {
 				connection.close();
@@ -384,7 +380,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		}
 	}
 
-	protected String adjustQueryAndParameterListForNamedParameters(ParameterList parameterList, String query) throws SenderException {
+	protected String adjustQueryAndParameterListForNamedParameters(ParameterList parameterList, String query) {
 		if (log.isDebugEnabled()) {
 			log.debug("{}Adjusting list of parameters [{}]", this::getLogPrefix, ()->parameterListToString(parameterList));
 		}
@@ -443,7 +439,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		return getResult(resultset,null,null);
 	}
 
-	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException, JMSException {
+	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
 		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null, null, null).getResult();
 	}
 
@@ -545,7 +541,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 
-	private BlobOutputStream getBlobOutputStream(PreparedStatement statement, int blobColumn, boolean compressBlob) throws SQLException, JdbcException, IOException {
+	private BlobOutputStream getBlobOutputStream(PreparedStatement statement, int blobColumn, boolean compressBlob) throws SQLException, JdbcException {
 		log.debug(getLogPrefix() + "executing an update BLOB command");
 		ResultSet rs = statement.executeQuery();
 		XmlBuilder result=new XmlBuilder("result");
@@ -614,77 +610,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 			throw new SenderException(getLogPrefix() + "got exception executing an update CLOB command", e);
 		}
 		return new Message(clobWriter.getWarnings().toXML());
-	}
-
-	protected boolean canProvideOutputStream() {
-		return false; // FixedQuerySender returns true for updateBlob and updateClob
-	}
-
-	@Override
-	public boolean supportsOutputStreamPassThrough() {
-		return false;
-	}
-
-	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
-		if (!canProvideOutputStream()) {
-			return null;
-		}
-		return TransactionConnectorCoordinator.doInUnsuspendedTransationContext(()-> {
-			final Connection connection;
-			QueryExecutionContext queryExecutionContext;
-			try {
-				connection = getConnectionWithTimeout(getTimeout());
-				queryExecutionContext = getQueryExecutionContext(connection, null);
-			} catch (JdbcException | ParameterException | SQLException | SenderException | TimeoutException e) {
-				throw new StreamingException(getLogPrefix() + "cannot getQueryExecutionContext",e);
-			}
-			try {
-				PreparedStatement statement=queryExecutionContext.getStatement();
-				if (queryExecutionContext.getParameterList() != null) {
-					JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), Message.nullMessage(), session);
-				}
-				if (queryExecutionContext.getQueryType()==QueryType.UPDATEBLOB) {
-					BlobOutputStream blobOutputStream = getBlobOutputStream(statement, blobColumn, isBlobsCompressed());
-					TransactionConnectorCoordinator.onEndChildThread(()-> {
-						blobOutputStream.close();
-						connection.close();
-						log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
-					});
-					return new MessageOutputStream(this, blobOutputStream, next) {
-						// perform close() on MessageOutputStream.close(), necessary when no TransactionConnector available for onEndThread()
-						@Override
-						public void afterClose() throws SQLException {
-							if (!connection.isClosed()) {
-								connection.close();
-							}
-							log.warn(getLogPrefix()+"warnings: "+blobOutputStream.getWarnings().toXML());
-						}
-					};
-				}
-				if (queryExecutionContext.getQueryType()==QueryType.UPDATECLOB) {
-					ClobWriter clobWriter = getClobWriter(statement, getClobColumn());
-					TransactionConnectorCoordinator.onEndChildThread(()-> {
-						clobWriter.close();
-						connection.close();
-						log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
-					});
-					return new MessageOutputStream(this, clobWriter, next) {
-						// perform close() on MessageOutputStream.close(), necessary when no TransactionConnector available for onEndThread()
-						@Override
-						public void afterClose() throws SQLException {
-							if (!connection.isClosed()) {
-								connection.close();
-							}
-							log.warn(getLogPrefix()+"warnings: "+clobWriter.getWarnings().toXML());
-						}
-					};
-				}
-				throw new IllegalArgumentException(getLogPrefix()+"illegal queryType ["+queryExecutionContext.getQueryType()+"], must be 'updateBlob' or 'updateClob'");
-			} catch (JdbcException | SQLException | IOException | ParameterException e) {
-				throw new StreamingException(getLogPrefix() + "cannot update CLOB or BLOB",e);
-			}
-		});
 	}
 
 	protected PipeRunResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, PipeLineSession session, IForwardTarget next) throws SenderException{

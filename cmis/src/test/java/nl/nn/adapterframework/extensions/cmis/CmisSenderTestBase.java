@@ -112,7 +112,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 		doAnswer(cmisObject).when(cmisSession).createDocument(anyMap(), any(), any(), any());
 
 //		FIND
-		ItemIterable<QueryResult> query = new EmptyItemIterable<QueryResult>();
+		ItemIterable<QueryResult> query = new EmptyItemIterable<>();
 		doReturn(query).when(cmisSession).query(anyString(), anyBoolean(), any());
 
 		doReturn(new ContentStreamMock()).when(cmisSession).getContentStream(any(), any(), any(), any());

@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * in a DOCTYPE.
  */
 public class NonResolvingURIResolver implements URIResolver {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	@Override
 	public Source resolve(String href, String base) throws TransformerException {

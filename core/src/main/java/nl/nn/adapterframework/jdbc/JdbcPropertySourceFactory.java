@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.LogUtil;
 public class JdbcPropertySourceFactory implements ApplicationContextAware {
 	public static final String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
 	private @Setter ApplicationContext applicationContext;
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	public Properties createPropertySource(String name) {
 		return createPropertySource(name, JndiDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);

@@ -33,7 +33,7 @@ import nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilde
  * @author Niels Meijer
  */
 public class DirectQuerySenderMock extends DirectQuerySender {
-	private Map<String, Message> mocks = new HashMap<>();
+	private final Map<String, Message> mocks = new HashMap<>();
 
 	@Override
 	public Connection getConnection() throws JdbcException {

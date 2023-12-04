@@ -37,7 +37,7 @@ import nl.nn.adapterframework.util.SpringUtils;
 
 public class BusEndpointBase implements ApplicationContextAware, InitializingBean {
 	protected Logger log = LogUtil.getLogger(this);
-	private Logger secLog = LogUtil.getLogger("SEC");
+	private final Logger secLog = LogUtil.getLogger("SEC");
 	private ApplicationContext applicationContext;
 	private IbisManager ibisManager;
 

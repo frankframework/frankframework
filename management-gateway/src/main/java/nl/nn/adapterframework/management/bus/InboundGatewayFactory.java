@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public class InboundGatewayFactory implements InitializingBean, ApplicationContextAware {
 
-	private Logger log = LogManager.getLogger(this);
+	private final Logger log = LogManager.getLogger(this);
 	private @Setter ApplicationContext applicationContext;
 	private static final String LOCAL_GATEWAY_CLASSNAME = LocalGateway.class.getCanonicalName();
 

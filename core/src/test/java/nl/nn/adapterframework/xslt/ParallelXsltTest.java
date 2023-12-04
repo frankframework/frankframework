@@ -55,7 +55,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	public SenderPipe createPipe() {
 		SenderPipe pipe = new SenderPipe();
 		SenderSeries psenders=createSenderContainer();
-		xsltSenders=new ArrayList<XsltSender>();
+		xsltSenders=new ArrayList<>();
 		for(int i=0;i<NUM_SENDERS;i++) {
 			XsltSender sender = new XsltSender();
 			//sender.setSessionKey("out"+i);
@@ -98,16 +98,18 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		expected=stripPrefix(expected, xmlPrefix);
 		expected=stripPrefix(expected, xmlPrefix.replaceAll("\\s",""));
 
-		String combinedExpected="<results>";
+		StringBuilder combinedExpected= new StringBuilder("<results>");
 
-		for (int i=0;i<NUM_SENDERS;i++) {
-			combinedExpected+="<result senderClass=\"XsltSender\" success=\"true\" type=\"String\">"
-					+expected.replaceFirst(">headerDefault<", ">header"+i+"<")
-							 .replaceFirst(">sessionKeyDefault<", ">sessionKeyValue"+i+"<")
-							 //.replaceFirst(">sessionKeyGlobalDefault<", ">sessionKeyGlobalValue<")
-							 +"</result>";
+		for (int i = 0; i < NUM_SENDERS; i++) {
+			combinedExpected
+					.append("<result senderClass=\"XsltSender\" success=\"true\" type=\"IGNORE\">")
+					.append(expected
+									.replaceFirst(">headerDefault<", ">header" + i + "<")
+									.replaceFirst(">sessionKeyDefault<", ">sessionKeyValue" + i + "<")
+							//.replaceFirst(">sessionKeyGlobalDefault<", ">sessionKeyGlobalValue<")
+					).append("</result>");
 		}
-		combinedExpected+="</results>";
+		combinedExpected.append("</results>");
 //		super.assertResultsAreCorrect(
 //				combinedExpected.replaceAll("\\r\\n","\n").replaceAll("  ","").replaceAll("\\n ","\n"),
 //						  actual.replaceAll("\\r\\n","\n").replaceAll("  ","").replaceAll("\\n ","\n"), session);
@@ -115,11 +117,11 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 //		super.assertResultsAreCorrect(combinedExpected, actual, session);
 
 		/* Parallel sender uses toXml method which escapes the new line char. In the comparison we need unescaped char.*/
-		actual = actual.replace("&#xA;", "&#10;");
+		actual = actual.replace("&#xA;", "&#10;").replace("WindowsPath", "IGNORE").replace("UnixPath", "IGNORE");
 		if (stripAllWhitespace) {
-			super.assertResultsAreCorrect(combinedExpected.replaceAll("\\s",""), actual.replaceAll("\\s",""), session);
+			super.assertResultsAreCorrect(combinedExpected.toString().replaceAll("\\s",""), actual.replaceAll("\\s",""), session);
 		} else {
-			super.assertResultsAreCorrect(combinedExpected, actual, session);
+			super.assertResultsAreCorrect(combinedExpected.toString(), actual, session);
 		}
 	}
 

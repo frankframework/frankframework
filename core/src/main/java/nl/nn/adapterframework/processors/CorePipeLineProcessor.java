@@ -16,18 +16,13 @@
 */
 package nl.nn.adapterframework.processors;
 
-import java.io.IOException;
 import java.util.Map;
 
-import javax.xml.transform.TransformerException;
-
 import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.SAXException;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.AdapterManager;
-import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IAdapter;
 import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.IPipe;
@@ -44,7 +39,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.XmlException;
 import nl.nn.adapterframework.util.XmlUtils;
 
 /**
@@ -121,26 +116,13 @@ public class CorePipeLineProcessor implements PipeLineProcessor {
 		}
 
 		if (pipeLine.isStoreOriginalMessageWithoutNamespaces()) {
-			String input;
-			try {
-				input = message.asString();
-			} catch (IOException e) {
-				throw new PipeRunException(null, "cannot open stream", e);
-			}
-			if (XmlUtils.isWellFormed(input)) {
+			if (XmlUtils.isWellFormed(message, null)) {
 				IPipe pipe = forwardTarget instanceof IPipe ? (IPipe)forwardTarget : null;
-				try{
-					TransformerPool tpRemoveNamespaces = XmlUtils.getRemoveNamespacesTransformerPool(true,true);
-					String xsltResult = tpRemoveNamespaces.transform(message,null);
+				try {
+					Message xsltResult = XmlUtils.removeNamespaces(message);
 					pipeLineSession.put("originalMessageWithoutNamespaces", xsltResult);
-				} catch (IOException e) {
-					throw new PipeRunException(pipe,"cannot retrieve removeNamespaces", e);
-				} catch (ConfigurationException ce) {
-					throw new PipeRunException(pipe,"got error creating transformer for removeNamespaces", ce);
-				} catch (TransformerException te) {
-					throw new PipeRunException(pipe,"got error transforming removeNamespaces", te);
-				} catch (SAXException se) {
-					throw new PipeRunException(pipe,"caught SAXException", se);
+				} catch (XmlException e) {
+					throw new PipeRunException(pipe, "caught XmlException", e);
 				}
 			} else {
 				log.warn("original message is not well-formed");

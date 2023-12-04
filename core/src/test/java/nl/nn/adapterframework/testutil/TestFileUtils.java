@@ -16,7 +16,7 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 public class TestFileUtils {
-	private static Logger LOG = LogUtil.getLogger(TestFileUtils.class);
+	private static final Logger LOG = LogUtil.getLogger(TestFileUtils.class);
 
 	public static String getTestFile(String file) throws IOException {
 		return getTestFile(file, "UTF-8");

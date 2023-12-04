@@ -20,7 +20,6 @@ import java.util.Map;
 
 import javax.jms.ConnectionFactory;
 import javax.naming.Context;
-import javax.naming.NamingException;
 
 import com.tibco.tibjms.TibjmsQueueConnectionFactory;
 import com.tibco.tibjms.TibjmsTopicConnectionFactory;
@@ -62,11 +61,11 @@ public class TibcoMessagingSourceFactory extends JmsMessagingSourceFactory {
 	}
 
 	@Override
-	protected Context createContext() throws NamingException {
+	protected Context createContext() {
 		return null;
 	}
 
-	protected ConnectionFactory createConnectionFactory(Context context, String serverUrl) throws IbisException {
+	protected ConnectionFactory createConnectionFactory(Context context, String serverUrl) {
 		ConnectionFactory connectionFactory;
 
 		if (useTopic) {

@@ -37,11 +37,11 @@ public class IncludeFilter extends FullXmlFilter {
 
 	private final char[] NEWLINE="\n".toCharArray();
 
-	private String targetElement = "Include";
-	private String targetAttribute = "ref";
+	private final String targetElement = "Include";
+	private final String targetAttribute = "ref";
 
-	private Resource resource;
-	private ClassLoaderURIResolver uriResolver;
+	private final Resource resource;
+	private final ClassLoaderURIResolver uriResolver;
 
 	public IncludeFilter(ContentHandler handler, Resource resource) {
 		super(handler);

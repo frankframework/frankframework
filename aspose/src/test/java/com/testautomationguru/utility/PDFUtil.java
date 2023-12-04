@@ -528,7 +528,7 @@ public class PDFUtil {
 
 		logger.info("file : " + file + ", startPage: " + startPage + ", endPage: " + endPage);
 
-		ArrayList<String> imgNames = new ArrayList<String>();
+		ArrayList<String> imgNames = new ArrayList<>();
 		boolean bImageFound = false;
 		try {
 

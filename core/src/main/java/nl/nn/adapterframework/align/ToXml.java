@@ -80,9 +80,9 @@ public abstract class ToXml<C,N> extends XmlAligner {
 	private @Getter @Setter boolean deepSearch=false;
 	private @Getter @Setter boolean failOnWildcards=false;
 
-	private String prefixPrefix="ns";
+	private final String prefixPrefix = "ns";
 	private int prefixPrefixCounter=1;
-	private Map<String,String>prefixMap=new HashMap<String,String>();
+	private final Map<String, String> prefixMap = new HashMap<>();
 
 
 	public ToXml(ValidatorHandler validatorHandler, List<XSModel> schemaInformation) {
@@ -301,7 +301,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 				log.trace(msg);
 			}
 		}
-		Set<String> processedChildren = new HashSet<String>();
+		Set<String> processedChildren = new HashSet<>();
 
 		if (childParticles!=null) {
 //			if (log.isTraceEnabled()) log.trace("ToXml.handleComplexTypedElement() iterating over childParticles, size ["+childParticles.size()+"]");
@@ -323,7 +323,7 @@ public abstract class ToXml<C,N> extends XmlAligner {
 		Set<String> unProcessedChildren = getUnprocessedChildElementNames(elementDeclaration, node, processedChildren);
 
 		if (unProcessedChildren!=null && !unProcessedChildren.isEmpty()) {
-			Set<String> unProcessedChildrenWorkingCopy=new LinkedHashSet<String>(unProcessedChildren);
+			Set<String> unProcessedChildrenWorkingCopy=new LinkedHashSet<>(unProcessedChildren);
 			log.warn("processing ["+unProcessedChildren.size()+"] unprocessed child elements"+(unProcessedChildren.size()>0?", first ["+unProcessedChildren.iterator().next()+"]":""));
 			// this loop is required to handle for mixed content element containing globally defined elements
 			for (String childName:unProcessedChildrenWorkingCopy) {
@@ -428,8 +428,8 @@ public abstract class ToXml<C,N> extends XmlAligner {
 //					return null;
 				}
 				if (log.isTraceEnabled()) log.trace("typeDefinition particle ["+ToStringBuilder.reflectionToString(particle,ToStringStyle.MULTI_LINE_STYLE)+"]");
-				List<XSParticle> result=new LinkedList<XSParticle>();
-				List<String> failureReasons=new LinkedList<String>();
+				List<XSParticle> result=new LinkedList<>();
+				List<String> failureReasons=new LinkedList<>();
 				if (getBestMatchingElementPath(elementDeclaration, node, particle, result, failureReasons)) {
 					return result;
 				}
@@ -484,10 +484,10 @@ public abstract class ToXml<C,N> extends XmlAligner {
 			case XSModelGroup.COMPOSITOR_CHOICE:
 				List<XSParticle> bestPath=null;
 
-				List<String> choiceFailureReasons = new LinkedList<String>();
+				List<String> choiceFailureReasons = new LinkedList<>();
 				for (int i=0;i<particles.getLength();i++) {
 					XSParticle childParticle = (XSParticle)particles.item(i);
-					List<XSParticle> optionPath=new LinkedList<XSParticle>(path);
+					List<XSParticle> optionPath=new LinkedList<>(path);
 
 					if (getBestMatchingElementPath(baseElementDeclaration, baseNode, childParticle, optionPath, choiceFailureReasons)) {
 						if (bestPath==null || bestPath.size()<optionPath.size()) {

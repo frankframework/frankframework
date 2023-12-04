@@ -17,18 +17,18 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.PropertyUtil;
 
 public class LdapFindMembershipsPipeTest {
-	private String PROPERTY_FILE = "LdapFindMemberships.properties";
+	private final String PROPERTY_FILE = "LdapFindMemberships.properties";
 
-	private String ldapProviderUrl = PropertyUtil.getProperty(PROPERTY_FILE, "ldapProviderUrl");
+	private final String ldapProviderUrl = PropertyUtil.getProperty(PROPERTY_FILE, "ldapProviderUrl");
 
-	private String host    = PropertyUtil.getProperty(PROPERTY_FILE, "host");
-	private int port       = PropertyUtil.getProperty(PROPERTY_FILE, "port", 636);
-	private boolean useSSL = PropertyUtil.getProperty(PROPERTY_FILE, "useSSL", true);
-	private String baseDN  = PropertyUtil.getProperty(PROPERTY_FILE, "baseDN");
-	private String bindDN  = PropertyUtil.getProperty(PROPERTY_FILE, "bindDN");
-	private String pipeInput  = PropertyUtil.getProperty(PROPERTY_FILE, "pipeInput");
+	private final String host = PropertyUtil.getProperty(PROPERTY_FILE, "host");
+	private final int port = PropertyUtil.getProperty(PROPERTY_FILE, "port", 636);
+	private final boolean useSSL = PropertyUtil.getProperty(PROPERTY_FILE, "useSSL", true);
+	private final String baseDN = PropertyUtil.getProperty(PROPERTY_FILE, "baseDN");
+	private final String bindDN = PropertyUtil.getProperty(PROPERTY_FILE, "bindDN");
+	private final String pipeInput = PropertyUtil.getProperty(PROPERTY_FILE, "pipeInput");
 
-	private String bindPassword = PropertyUtil.getProperty(PROPERTY_FILE, "password");
+	private final String bindPassword = PropertyUtil.getProperty(PROPERTY_FILE, "password");
 
 	private LdapFindGroupMembershipsPipe pipe;
 
@@ -75,11 +75,11 @@ public class LdapFindMembershipsPipeTest {
 	}
 
 	@Test
-	public void findMembershipsRecursivelyWithCache() throws Exception {
+	public void findMembershipsRecursivelyWithCache() {
 		pipe.setBaseDN(baseDN);
 		pipe.setRecursiveSearch(true);
 
-		EhCache<Set<String>> cache = new EhCache<Set<String>>();
+		EhCache<Set<String>> cache = new EhCache<>();
 		cache.setTimeToLiveSeconds(3600);
 		pipe.setCache(cache);
 		pipe.configure();

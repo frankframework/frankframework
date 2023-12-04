@@ -146,7 +146,7 @@ public class StreamCaptureUtils {
 			}
 
 			@Override
-			protected OutputStream getStream() throws IOException {
+			protected OutputStream getStream() {
 				if (isThresholdExceeded()) {
 					return NullOutputStream.NULL_OUTPUT_STREAM;
 				}

@@ -90,7 +90,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 //		return stmt.getConnection().unwrap(org.postgresql.PGConnection.class).getLargeObjectAPI();
 //	}
 
-	private Object createLob(Statement stmt) throws SQLException {
+	private Object createLob(Statement stmt) {
 		if (useLargeObjectFeature) {
 			throw new IllegalStateException("Handling BLOBs and CLOBs as LargeObjects not available");
 //			LargeObjectManager lobj = getLargeObjectManager(stmt);
@@ -101,7 +101,7 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		return new ByteArrayOutputStream();
 	}
 
-	private OutputStream openLobOutputStream(Statement stmt, Object blobUpdateHandle) throws SQLException {
+	private OutputStream openLobOutputStream(Statement stmt, Object blobUpdateHandle) {
 //		if (useLargeObjectFeature) {
 //			LargeObjectManager lobj = getLargeObjectManager(stmt);
 //			long oid = (long)blobUpdateHandle;

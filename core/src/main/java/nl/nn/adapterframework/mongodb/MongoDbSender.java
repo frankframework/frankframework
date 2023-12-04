@@ -52,19 +52,17 @@ import lombok.Lombok;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IForwardTarget;
-import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.MessageOutputStreamCap;
 import nl.nn.adapterframework.stream.StreamingException;
-import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.stream.document.ArrayBuilder;
 import nl.nn.adapterframework.stream.document.DocumentBuilderFactory;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
@@ -85,7 +83,7 @@ import nl.nn.adapterframework.util.StringResolver;
  * @author Gerrit van Brakel
  *
  */
-public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDestination {
+public class MongoDbSender extends SenderWithParametersBase implements HasPhysicalDestination {
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "Mongo";
 	public static final String PARAM_DATABASE="database";
@@ -110,7 +108,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	private @Setter @Getter IMongoClientFactory mongoClientFactory = null; // Spring should wire this!
 
 	private MongoClient mongoClient;
-	private ConcurrentHashMap<String,MongoDatabase> mongoDatabases = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, MongoDatabase> mongoDatabases = new ConcurrentHashMap<>();
 
 	public enum MongoAction {
 		INSERTONE,
@@ -167,16 +165,10 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
-		return null;
-	}
-
-
-	@Override
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		message.closeOnCloseOf(session, this);
 		MongoAction mngaction = getAction();
-		try (MessageOutputStream target = mngaction==MongoAction.FINDONE || mngaction==MongoAction.FINDMANY ? MessageOutputStream.getTargetStream(this, session, next) : new MessageOutputStreamCap(this, next)) {
+		try (MessageOutputStream target = mngaction==MongoAction.FINDONE || mngaction==MongoAction.FINDMANY ? MessageOutputStream.getTargetStream(this, session, null) : new MessageOutputStreamCap(this, null)) {
 			ParameterValueList pvl = ParameterValueList.get(getParameterList(), message, session);
 			MongoDatabase mongoDatabase = getDatabase(pvl);
 			MongoCollection<Document> mongoCollection = getCollection(mongoDatabase, pvl);
@@ -208,7 +200,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 			default:
 				throw new SenderException("Unknown action ["+getAction()+"]");
 			}
-			return target.getPipeRunResult();
+			return new SenderResult(target.getPipeRunResult().getResult());
 		} catch (Exception e) {
 			throw new SenderException("Cannot execute action ["+getAction()+"]", e);
 		}
@@ -350,7 +342,7 @@ public class MongoDbSender extends StreamingSenderBase implements HasPhysicalDes
 		return mongoDatabase.getCollection(collectionName);
 	}
 
-	protected Document getFilter(ParameterValueList pvl, Message message) throws IOException, ParameterException, IllegalArgumentException {
+	protected Document getFilter(ParameterValueList pvl, Message message) throws IOException, IllegalArgumentException {
 		String filterSpec = getParameterOverriddenAttributeValue(pvl, PARAM_FILTER, getFilter());
 		if (StringUtils.isEmpty(filterSpec)) {
 			filterSpec = Message.isEmpty(message) ? "" : message.asString();

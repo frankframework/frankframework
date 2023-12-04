@@ -97,7 +97,7 @@ public class MessageTest {
 			{ "7.8 2021-04-20", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300055a00186661696c6564546f44657465726d696e65436861727365744c0007636f6e7465787474000f4c6a6176612f7574696c2f4d61703b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400124c6a6176612f6c616e672f537472696e673b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e740006627974655b5d78" },
 		};
 
-	private final SerializationTester<Message> serializationTester=new SerializationTester<Message>();
+	private final SerializationTester<Message> serializationTester=new SerializationTester<>();
 
 	protected void testAsInputStream(Message message) throws IOException {
 		byte[] header = message.getMagic(6);
@@ -342,7 +342,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testReaderToString() throws Exception {
+	public void testReaderToString() {
 		StringReader source = new StringReader(testString);
 		Message adapter = new Message(source);
 		testToString(adapter, StringReader.class);
@@ -492,7 +492,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testStringToString() throws Exception {
+	public void testStringToString() {
 		String source = testString;
 		Message adapter = new Message(source);
 		testToString(adapter, String.class);
@@ -585,7 +585,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testURLToString() throws Exception {
+	public void testURLToString() {
 		URL source = this.getClass().getResource(testStringFile);
 		Message adapter = new UrlMessage(source);
 		testToString(adapter, URL.class);
@@ -636,7 +636,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testFileToString() throws Exception {
+	public void testFileToString() {
 		File source = new File(this.getClass().getResource(testStringFile).getPath());
 		Message adapter = new FileMessage(source);
 		testToString(adapter, File.class);
@@ -687,7 +687,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testPathToString() throws Exception {
+	public void testPathToString() {
 		Path source = Paths.get(new File(this.getClass().getResource(testStringFile).getPath()).getAbsolutePath());
 		Message adapter = new PathMessage(source);
 		testToString(adapter, source.getClass());
@@ -1025,7 +1025,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testMessageSizeReader() throws Exception {
+	public void testMessageSizeReader() {
 		Message message = new Message(new StringReader("string"));
 		assertEquals(-1, message.size(), "size differs or could not be determined");
 	}

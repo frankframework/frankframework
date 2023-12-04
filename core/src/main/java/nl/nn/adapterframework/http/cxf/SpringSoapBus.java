@@ -39,7 +39,7 @@ class SpringSoapBus extends SpringBus implements InitializingBean, DisposableBea
 		"org.apache.cxf.stax.maxElementCount");
 	private static final String SOAP_BUS_PREFIX = "soap.bus.";
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	private ApplicationContext ctx;
 
 	public SpringSoapBus() {

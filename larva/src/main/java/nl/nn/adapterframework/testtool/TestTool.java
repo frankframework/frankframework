@@ -75,7 +75,7 @@ import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jdbc.FixedQuerySender;
 import nl.nn.adapterframework.jms.JmsSender;
 import nl.nn.adapterframework.jms.PullingJmsListener;
-import nl.nn.adapterframework.lifecycle.IbisApplicationServlet;
+import nl.nn.adapterframework.lifecycle.FrankApplicationInitializer;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.FileMessage;
@@ -135,16 +135,16 @@ public class TestTool {
 	}
 
 	private static IbisContext getIbisContext(ServletContext application) {
-		return IbisApplicationServlet.getIbisContext(application);
+		return FrankApplicationInitializer.getIbisContext(application);
 	}
 
-
+	// Invoked by LarvaServlet
 	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, String realPath) {
-		runScenarios(application, request, out, false, realPath);
+		runScenarios(getIbisContext(application), request, out, false, realPath);
 	}
 
 	// Invoked by the IbisTester class
-	public static void runScenarios(ServletContext application, HttpServletRequest request, Writer out, boolean silent, String realPath) {
+	public static void runScenarios(IbisContext ibisContext, HttpServletRequest request, Writer out, boolean silent, String realPath) {
 		String paramLogLevel = request.getParameter("loglevel");
 		String paramAutoScroll = request.getParameter("autoscroll");
 		String paramExecute = request.getParameter("execute");
@@ -159,7 +159,6 @@ public class TestTool {
 			}
 		}
 		String paramScenariosRootDirectory = request.getParameter("scenariosrootdirectory");
-		IbisContext ibisContext = getIbisContext(application);
 		runScenarios(ibisContext, paramLogLevel,
 				paramAutoScroll, paramExecute, paramWaitBeforeCleanUp, timeout,
 				realPath, paramScenariosRootDirectory, out, silent);
@@ -188,7 +187,7 @@ public class TestTool {
 
 		Map<String, Object> writers = null;
 		if (!silent) {
-			writers = new HashMap<String, Object>();
+			writers = new HashMap<>();
 			writers.put("out", out);
 			writers.put("htmlbuffer", new StringWriter());
 			writers.put("logbuffer", new StringWriter());
@@ -264,7 +263,7 @@ public class TestTool {
 				List<File> scenarioFiles;
 				if (paramExecute.endsWith(".properties")) {
 					debugMessage("Read one scenario", writers);
-					scenarioFiles = new ArrayList<File>();
+					scenarioFiles = new ArrayList<>();
 					scenarioFiles.add(new File(paramExecute));
 				} else {
 					debugMessage("Read all scenarios from directory '" + paramExecute + "'", writers);
@@ -469,8 +468,8 @@ public class TestTool {
 			Iterator<String> scenariosRootDirectoriesIterator = scenariosRootDirectories.iterator();
 			Iterator<String> scenariosRootDescriptionsIterator = scenariosRootDescriptions.iterator();
 			while (scenariosRootDirectoriesIterator.hasNext()) {
-				String directory = (String)scenariosRootDirectoriesIterator.next();
-				String description = (String)scenariosRootDescriptionsIterator.next();
+				String directory = scenariosRootDirectoriesIterator.next();
+				String description = scenariosRootDescriptionsIterator.next();
 				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(directory) + "\"";
 				if (scenariosRootDirectory.equals(directory)) {
 					option = option + " selected";
@@ -992,8 +991,8 @@ public class TestTool {
 			if (!realPath.endsWith(File.separator)) {
 				realPath = realPath + File.separator;
 			}
-			Map<String, String> scenariosRoots = new HashMap<String, String>();
-			Map<String, String> scenariosRootsBroken = new HashMap<String, String>();
+			Map<String, String> scenariosRoots = new HashMap<>();
+			Map<String, String> scenariosRootsBroken = new HashMap<>();
 			int j = 1;
 			String directory = appConstants.getProperty("scenariosroot" + j + ".directory");
 			String description = appConstants.getProperty("scenariosroot" + j + ".description");
@@ -1027,7 +1026,7 @@ public class TestTool {
 				directory = appConstants.getProperty("scenariosroot" + j + ".directory");
 				description = appConstants.getProperty("scenariosroot" + j + ".description");
 			}
-			TreeSet<String> treeSet = new TreeSet<String>(new CaseInsensitiveComparator());
+			TreeSet<String> treeSet = new TreeSet<>(new CaseInsensitiveComparator());
 			treeSet.addAll(scenariosRoots.keySet());
 			Iterator<String> iterator = treeSet.iterator();
 			while (iterator.hasNext()) {
@@ -1062,7 +1061,7 @@ public class TestTool {
 	}
 
 	public static List<File> readScenarioFiles(AppConstants appConstants, String scenariosDirectory, Map<String, Object> writers) {
-		List<File> scenarioFiles = new ArrayList<File>();
+		List<File> scenarioFiles = new ArrayList<>();
 		debugMessage("List all files in directory '" + scenariosDirectory + "'", writers);
 		File[] files = new File(scenariosDirectory).listFiles();
 		if (files == null) {
@@ -1186,7 +1185,7 @@ public class TestTool {
 	}
 
 	public static List<String> getSteps(Properties properties, Map<String, Object> writers) {
-		List<String> steps = new ArrayList<String>();
+		List<String> steps = new ArrayList<>();
 		int i = 1;
 		boolean lastStepFound = false;
 		while (!lastStepFound) {
@@ -1377,13 +1376,13 @@ public class TestTool {
 	private static int executeJmsSenderWrite(String stepDisplayName, Map<String, Queue> queues, Map<String, Object> writers, String queueName, String fileContent, String correlationId) {
 		int result = RESULT_ERROR;
 
-		Map<?, ?> jmsSenderInfo = (Map<?, ?>)queues.get(queueName);
+		Map<?, ?> jmsSenderInfo = queues.get(queueName);
 		JmsSender jmsSender = (JmsSender)jmsSenderInfo.get("jmsSender");
 		try {
 			String providedCorrelationId = null;
 			String useCorrelationIdFrom = (String)jmsSenderInfo.get("useCorrelationIdFrom");
 			if (useCorrelationIdFrom != null) {
-				Map<?, ?> listenerInfo = (Map<?, ?>)queues.get(useCorrelationIdFrom);
+				Map<?, ?> listenerInfo = queues.get(useCorrelationIdFrom);
 				if (listenerInfo == null) {
 					errorMessage("Could not find listener '" + useCorrelationIdFrom + "' to use correlation id from", writers);
 				} else {
@@ -2029,7 +2028,7 @@ public class TestTool {
 			Iterator<Entry<String,HashMap<String,String>>> keySpecIt = keySpecMap.entrySet().iterator();
 			while (keySpecIt.hasNext()) {
 				Entry<String,HashMap<String,String>> spec = keySpecIt.next();
-				HashMap<String, String> keyPair = (HashMap<String, String>) spec.getValue();
+				HashMap<String, String> keyPair = spec.getValue();
 
 				String key1 = keyPair.get("key1");
 				String key2 = keyPair.get("key2");
@@ -2066,8 +2065,8 @@ public class TestTool {
 		if (keySpecMap!=null) {
 			Iterator<Entry<String,HashMap<String,String>>> keySpecIt = keySpecMap.entrySet().iterator();
 			while (keySpecIt.hasNext()) {
-				Entry<String,HashMap<String,String>> spec = (Map.Entry) keySpecIt.next();
-				HashMap<String, String> keyPair = (HashMap<String, String>) spec.getValue();
+				Entry<String,HashMap<String,String>> spec = keySpecIt.next();
+				HashMap<String, String> keyPair = spec.getValue();
 
 				String key = keyPair.get("key");
 
@@ -2418,63 +2417,7 @@ public class TestTool {
 					HttpServletResponseMock httpServletResponseMock = new HttpServletResponseMock();
 					httpServletResponseMock.setOutputFile(outputFile);
 					value = httpServletResponseMock;
-				}
-				/** Support for httpRequest parameterType is removed because it depends on Spring and Http-client libraries that contain CVEs. Upgrading these libraries requires some work.
-				On the other hand, httpRequest parameter is only used in CreateRestViewPipe. It is unlikely to create a larva test for this pipe.
-				Therefore, it is decided to stop supporting it. */
-				/* else if ("httpRequest".equals(type)) {
-					value = properties.getProperty(property + _param + i + ".value");
-					if("multipart".equals(value)){
-						MockMultipartHttpServletRequest request = new MockMultipartHttpServletRequest();
-						// following line is required to avoid
-						// "(FileUploadException) the request was rejected because
-						// no multipart boundary was found"
-						request.setContentType("multipart/mixed;boundary=gc0p4Jq0M2Yt08jU534c0p");
-						List<Part> parts = new ArrayList<>();
-						boolean partsProcessed = false;
-						int j = 1;
-						while (!partsProcessed) {
-							String filename = properties.getProperty(property + _param + i + ".part" + j + ".filename");
-							if (filename == null) {
-								partsProcessed = true;
-							} else {
-								String partFile = properties.getProperty(property + _param + i + ".part" + j + ".filename.absolutepath");
-								String partType = properties.getProperty(property + _param + i + ".part" + j + _type);
-								String partName = properties.getProperty(property + _param + i + ".part" + j + _name);
-								if ("file".equalsIgnoreCase(partType)) {
-									File file = new File(partFile);
-									try {
-										FilePart filePart = new FilePart( "file" + j, (partName == null ? file.getName() : partName), file);
-										parts.add(filePart);
-									} catch (FileNotFoundException e) {
-										errorMessage("Could not read file '" + partFile+ "': " + e.getMessage(), e, writers);
-									}
-								} else {
-									String string = readFile(partFile, writers);
-									StringPart stringPart = new StringPart((partName == null ? "string" + j : partName), string);
-									parts.add(stringPart);
-								}
-								j++;
-							}
-						}
-						Part[] allParts = new Part[parts.size()];
-						allParts = parts.toArray(allParts);
-						MultipartRequestEntity multipartRequestEntity = new MultipartRequestEntity(allParts, new PostMethod().getParams());
-						ByteArrayOutputStream requestContent = new ByteArrayOutputStream();
-						try {
-							multipartRequestEntity.writeRequest(requestContent);
-						} catch (IOException e) {
-							errorMessage("Could not create multipart: " + e.getMessage(), e, writers);
-						}
-						request.setContent(requestContent.toByteArray());
-						request.setContentType(multipartRequestEntity.getContentType());
-						value = request;
-					}
-					else{
-						value = new MockHttpServletRequest();
-					}
-				} */
-				else {
+				} else {
 					value = properties.getProperty(property + _param + i + ".value");
 					if (value == null) {
 						String filename = properties.getProperty(property + _param + i + ".valuefile.absolutepath");
@@ -2688,7 +2631,7 @@ public class TestTool {
 			case "removeKey":
 				// in case of an empty string as attribute, assume it should read the value
 				// ie: ignoreKey.identifier=value
-				attributes = new ArrayList<String>(Arrays.asList( new String[]{"key", ""}));
+				attributes = new ArrayList<>(Arrays.asList( new String[]{"key", ""}));
 				break;
 		}
 

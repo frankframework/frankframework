@@ -42,7 +42,7 @@ import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.ProcessState;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 
 public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
 
@@ -60,7 +60,7 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		super.setUp();
 		fileSystemListener = createFileSystemListener();
 		autowireByName(fileSystemListener);
-		threadContext=new HashMap<String,Object>();
+		threadContext=new HashMap<>();
 	}
 
 	@Override
@@ -531,11 +531,12 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 
 		String id = rawMessage.getId();
 		assertThat(id, containsString(filename));
-		String currentDateFormatted=DateUtils.format(new Date());
+		long currentDate = System.currentTimeMillis();
+		String currentDateFormatted= DateFormatUtils.format(currentDate, DateFormatUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ);
 		String timestamp=id.substring(id.length()-currentDateFormatted.length());
-		long currentDate=DateUtils.parseAnyDate(currentDateFormatted).getTime();
-		long timestampDate=DateUtils.parseAnyDate(timestamp).getTime();
-		assertTrue(Math.abs(timestampDate-currentDate)<7300000); // less then two hours in milliseconds.
+		long timestampDate= DateFormatUtils.parseToDate(timestamp, DateFormatUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ).getTime();
+		log.debug("Current date formatted: {}, in Millis: {}, timestamp from file: {}, parsed to millis: {}, difference: {}", currentDateFormatted, currentDate, timestamp, timestampDate, timestampDate-currentDate);
+		assertTrue(Math.abs(timestampDate-currentDate)<7300000); // less than two hours in milliseconds.
 	}
 
 	@Test

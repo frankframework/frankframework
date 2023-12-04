@@ -24,7 +24,7 @@ import nl.nn.adapterframework.util.LogUtil;
 
 public class JndiContextPrefixFactory implements InitializingBean {
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	private String jndiContextPrefix = null;
 
 	private enum ContextPrefix {

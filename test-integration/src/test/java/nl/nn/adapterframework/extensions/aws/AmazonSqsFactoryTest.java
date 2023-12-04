@@ -31,7 +31,7 @@ public class AmazonSqsFactoryTest {
 
 	protected String accessKey = PropertyUtil.getProperty(PROPERTY_FILE, "accessKey");
 	protected String secretKey = PropertyUtil.getProperty(PROPERTY_FILE, "secretKey");
-	private Regions clientRegion = Regions.EU_WEST_1;
+	private final Regions clientRegion = Regions.EU_WEST_1;
 
 	private AmazonSqsFactory sqsFactory;
 

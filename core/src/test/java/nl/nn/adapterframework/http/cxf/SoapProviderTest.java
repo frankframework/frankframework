@@ -198,7 +198,7 @@ public class SoapProviderTest {
 		SOAPMessage message = SOAPProvider.invoke(request);
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("correct-soapmsg.xml").asString();
-		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
+		assertEquals(expected.replace("\r", ""), result.replace("\r", ""));
 
 		PipeLineSession session = SOAPProvider.getSession();
 		assertNotNull(session.get("mimeHeaders"));
@@ -230,7 +230,7 @@ public class SoapProviderTest {
 		SOAPMessage message = SOAPProvider.invoke(request);
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("correct-soapmsg.xml").asString();
-		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
+		assertEquals(expected.replace("\r", ""), result.replace("\r", ""));
 
 		PipeLineSession session = SOAPProvider.getSession();
 		assertAttachmentInSession(session);
@@ -256,7 +256,7 @@ public class SoapProviderTest {
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("correct-soapmsg.xml").asString();
-		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
+		assertEquals(expected.replace("\r", ""), result.replace("\r", ""));
 
 		assertAttachmentInReceivedMessage(message);
 	}
@@ -281,7 +281,7 @@ public class SoapProviderTest {
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("correct-soapmsg.xml").asString();
-		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
+		assertEquals(expected.replace("\r", ""), result.replace("\r", ""));
 
 		assertAttachmentInReceivedMessage(message);
 	}
@@ -302,7 +302,7 @@ public class SoapProviderTest {
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("correct-soapmsg.xml").asString();
-		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
+		assertEquals(expected.replace("\r", ""), result.replace("\r", ""));
 
 		assertEquals(1, message.countAttachments());
 
@@ -325,7 +325,7 @@ public class SoapProviderTest {
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("correct-soapmsg.xml").asString();
-		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
+		assertEquals(expected.replace("\r", ""), result.replace("\r", ""));
 
 		assertEquals(1, message.countAttachments());
 
@@ -348,7 +348,7 @@ public class SoapProviderTest {
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("correct-soapmsg.xml").asString();
-		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
+		assertEquals(expected.replace("\r", ""), result.replace("\r", ""));
 
 		assertEquals(1, message.countAttachments());
 
@@ -399,7 +399,7 @@ public class SoapProviderTest {
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("correct-soapmsg.xml").asString();
-		assertEquals(expected.replaceAll("\r", ""), result.replaceAll("\r", ""));
+		assertEquals(expected.replace("\r", ""), result.replace("\r", ""));
 
 		//Validate an attachment was sent to the listener
 		assertAttachmentInSession(SOAPProvider.getSession());

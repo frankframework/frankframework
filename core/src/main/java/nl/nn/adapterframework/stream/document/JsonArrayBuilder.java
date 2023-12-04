@@ -21,7 +21,7 @@ import nl.nn.adapterframework.stream.JsonEventHandler;
 
 public class JsonArrayBuilder extends ArrayBuilder {
 
-	private JsonEventHandler handler;
+	private final JsonEventHandler handler;
 
 	public JsonArrayBuilder(JsonEventHandler handler) throws SAXException {
 		this.handler = handler;

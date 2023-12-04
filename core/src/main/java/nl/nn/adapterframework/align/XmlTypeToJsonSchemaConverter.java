@@ -521,7 +521,7 @@ public class XmlTypeToJsonSchemaConverter  {
 		JsonArrayBuilder requiredPropertiesBuilder = Json.createArrayBuilder();
 		boolean wildcardFound = false;
 		if (particles != null) {
-			List<XSModelGroup> modelGroups = new ArrayList<XSModelGroup>();
+			List<XSModelGroup> modelGroups = new ArrayList<>();
 			for (int i=0;i<particles.getLength();i++) {
 				XSParticle childParticle = (XSParticle)particles.item(i);
 				if (log.isTraceEnabled()) log.trace("childParticle ["+i+"]["+ToStringBuilder.reflectionToString(childParticle,ToStringStyle.MULTI_LINE_STYLE)+"]");

@@ -121,7 +121,7 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 		}
 	}
 
-	private void disconnect() throws XAException {
+	private void disconnect() {
 		try {
 			this.xaConnection.close();
 		}

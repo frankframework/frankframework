@@ -51,8 +51,8 @@ public class MetricsRegistryFactoryBean implements InitializingBean, DisposableB
 	private static final String CONFIGURATOR_CLASS_SUFFIX = ".configurator";
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
-	private Logger log = LogUtil.getLogger(this);
-	private MeterRegistry registry;
+	private final Logger log = LogUtil.getLogger(this);
+	private final MeterRegistry registry;
 	private @Nullable JvmGcMetrics jvmGcMetrics;
 	private @Nullable Log4j2Metrics log4j2Metrics;
 

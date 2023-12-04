@@ -58,7 +58,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessageOrThrow(input, pls).asString().replaceAll("&#xD;", "\r");
+		String result = sender.sendMessageOrThrow(input, pls).asString().replace("&#xD;", "\r");
 		assertEqualsIgnoreCRLF(getFile("simpleMockedRestGet.txt"), result.trim());
 	}
 
@@ -74,7 +74,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 		sender.configure();
 		sender.open();
 
-		String result = sender.sendMessageOrThrow(input, pls).asString().replaceAll("&#xD;", "\r");
+		String result = sender.sendMessageOrThrow(input, pls).asString().replace("&#xD;", "\r");
 		assertEqualsIgnoreCRLF(getFile("simpleMockedRestPost.txt"), result.trim());
 	}
 }

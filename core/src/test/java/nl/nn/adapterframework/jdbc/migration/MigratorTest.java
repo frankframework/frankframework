@@ -6,11 +6,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -32,7 +35,7 @@ import nl.nn.adapterframework.util.MessageKeeper;
 public class MigratorTest extends TransactionManagerTestBase {
 
 	private LiquibaseMigrator migrator = null;
-	private String tableName="DUMMYTABLE";
+	private final String tableName = "DUMMYTABLE";
 
 	@Override
 	protected void prepareDatabase() throws Exception {
@@ -140,18 +143,27 @@ public class MigratorTest extends TransactionManagerTestBase {
 	}
 
 	private String applyIgnores(String sqlScript) {
+		Pattern regex = Pattern.compile("(\\d+)\\'\\)");
+		Matcher match = regex.matcher(sqlScript);
+		if(match.find()) {
+			String deploymentId = match.group(1);
+			sqlScript = sqlScript.replace(deploymentId, "IGNORE");
+		} else {
+			fail("no match found");
+			return null;
+		}
 		sqlScript = sqlScript.replaceAll("\\'[4-9]\\.\\d+\\.\\d{1,3}\\'", "'VERSION'"); //Replace the Liquibase Version
 		sqlScript = sqlScript.replaceAll("'\\d{1,2}:[a-f0-9]{32}'", "'CHANGESET-CHECKSUM'"); //Replace the Liquibase Changeset Checksum
 
 		sqlScript = sqlScript.replaceAll("SET SEARCH_PATH TO public, \"\\$user\",\"public\";", ""); //Remove search path setting
-		sqlScript = sqlScript.replaceAll("\r\n", "\n"); //change CRLF into LF
-		sqlScript = sqlScript.replaceAll("\n\n\n", "\n"); //remove duplicate linefeeds
+		sqlScript = sqlScript.replace("\r\n", "\n"); //change CRLF into LF
+		sqlScript = sqlScript.replace("\n\n\n", "\n"); //remove duplicate linefeeds
 
 		return sqlScript.replaceAll("(LOCKEDBY = ')(.*)(WHERE)", "LOCKEDBY = 'IGNORE', LOCKGRANTED = 'IGNORE' WHERE");
 	}
 
 	@Test
-	public void testScriptExecutionLogs() throws Exception {
+	public void testScriptExecutionLogs() {
 		AppConstants.getInstance().setProperty("liquibase.changeLogFile", "/Migrator/DatabaseChangelog.xml");
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
 		try {

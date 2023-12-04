@@ -29,7 +29,7 @@ import nl.nn.adapterframework.util.flow.graphviz.GraphvizEngine;
  */
 public class GraphvizJsFlowGenerator extends DotFlowGenerator {
 
-	private static ThreadLocal<SoftReference<GraphvizEngine>> GRAPHVIZ_ENGINES = new ThreadLocal<>();
+	private static final ThreadLocal<SoftReference<GraphvizEngine>> GRAPHVIZ_ENGINES = new ThreadLocal<>();
 
 	/**
 	 * The IFlowGenerator is wrapped in a SoftReference, wrapped in a ThreadLocal. 

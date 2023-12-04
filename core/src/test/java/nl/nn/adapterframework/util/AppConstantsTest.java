@@ -17,11 +17,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class AppConstantsTest {
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 
 	private ClassLoaderMock classLoader;
 	private AppConstants constants;
-	private ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+	private final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 
 	@BeforeEach
 	public void setUp() {
@@ -207,7 +207,7 @@ public class AppConstantsTest {
 
 		@Override
 		public Enumeration<URL> getResources(String name) throws IOException {
-			Vector<URL> urls = new Vector<URL>();
+			Vector<URL> urls = new Vector<>();
 			String nameToUse = name;
 
 			URL file = getParent().getResource("AppConstants/"+nameToUse);

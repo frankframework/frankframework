@@ -466,7 +466,7 @@ public abstract class FilterCmisService extends AbstractCmisService implements C
 
 		Acl removeAces = null;
 		if (orgAcl != null && orgAcl.getAces() != null && !orgAcl.getAces().isEmpty()) {
-			List<Ace> directAces = new ArrayList<Ace>();
+			List<Ace> directAces = new ArrayList<>();
 
 			for (Ace ace : orgAcl.getAces()) {
 				if (ace.isDirect()) {

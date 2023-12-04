@@ -24,7 +24,6 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -130,12 +129,6 @@ public class FixedResultSender extends SenderWithParametersBase {
 	 */
 	public void setSubstituteVars(boolean substitute){
 		this.substituteVars=substitute;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("attribute 'fileName' is replaced with 'filename'")
-	public void setFileName(String fileName) {
-		setFilename(fileName);
 	}
 
 	/** Name of the file containing the result message */

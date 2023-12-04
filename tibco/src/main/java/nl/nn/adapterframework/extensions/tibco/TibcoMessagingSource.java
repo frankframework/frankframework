@@ -41,8 +41,8 @@ import com.tibco.tibjms.TibjmsConnectionFactory;
  * @since   4.9
  */
 public class TibcoMessagingSource extends JmsMessagingSource {
-	
-	private TibjmsConnectionFactory connectionFactory;
+
+	private final TibjmsConnectionFactory connectionFactory;
 	
 	public TibcoMessagingSource(String connectionFactoryName, Context context,
 			ConnectionFactory connectionFactory, Map<String, MessagingSource> messagingSourceMap,

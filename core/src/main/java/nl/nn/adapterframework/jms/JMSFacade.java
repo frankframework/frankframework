@@ -71,8 +71,9 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassUtils;
-import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.XmlException;
 
 
 /**
@@ -420,7 +421,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		message.setJMSCorrelationID(correlationID);
 	}
 
-	public Destination getDestination() throws NamingException, JMSException, JmsException {
+	public Destination getDestination() throws JmsException {
 		if (StringUtils.isEmpty(getDestinationName())) {
 			throw new JmsException("no (default) destinationName specified");
 		}
@@ -501,11 +502,11 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * @param destination the Destination
 	 * @return the MessageConsumer
 	 */
-	public MessageConsumer getMessageConsumer(Session session, Destination destination) throws NamingException, JMSException {
+	public MessageConsumer getMessageConsumer(Session session, Destination destination) throws JMSException {
 		return getMessageConsumer(session, destination, getMessageSelector());
 	}
 
-	public MessageProducer getMessageProducer(Session session, Destination destination) throws NamingException, JMSException {
+	public MessageProducer getMessageProducer(Session session, Destination destination) throws JMSException {
 		MessageProducer mp;
 		if (useJms102()) {
 			if (useTopicFunctions) {
@@ -723,7 +724,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 					+ "] JMSDeliveryMode=[" + message.getJMSDeliveryMode()
 					+ "] JMSMessageID=[" + message.getJMSMessageID()
 					+ "] JMSCorrelationID=[" + message.getJMSCorrelationID()
-					+ "] JMSTimestamp=[" + DateUtils.format(message.getJMSTimestamp())
+					+ "] JMSTimestamp=[" + DateFormatUtils.format(message.getJMSTimestamp())
 					+ "] JMSExpiration=[" + message.getJMSExpiration()
 					+ "] JMSPriority=[" + message.getJMSPriority()
 					+ "] JMSType=[" + message.getJMSType()
@@ -818,7 +819,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 * Supports only
 	 * {@link javax.jms.TextMessage}s and {@link javax.jms.BytesMessage}.<br/><br/>
 	 */
-	public Message extractMessage(javax.jms.Message jmsMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+	public Message extractMessage(javax.jms.Message jmsMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException, XmlException {
 		Message message;
 
 		if (jmsMessage instanceof TextMessage) {
@@ -852,7 +853,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return messageText;
 	}
 
-	protected Message extractMessageBody(Message message, Map<String, Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException {
+	protected Message extractMessageBody(Message message, Map<String, Object> context, SoapWrapper soapWrapper) throws SAXException, TransformerException, IOException, XmlException {
 		if (context instanceof PipeLineSession) {
 			return soapWrapper.getBody(message, false, (PipeLineSession) context, null);
 		}
