@@ -12,7 +12,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -74,11 +73,7 @@ public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 		ftpSession.setPort(port);
 		ftpSession.configure();
 
-		try {
-			ftpClient = ftpSession.openClient(remoteDirectory);
-		} catch (FtpConnectException e) {
-			throw new FileSystemException("Cannot connect to the FTP server with domain [" + host + "]", e);
-		}
+		ftpClient = ftpSession.openClient(remoteDirectory);
 	}
 
 	@Override

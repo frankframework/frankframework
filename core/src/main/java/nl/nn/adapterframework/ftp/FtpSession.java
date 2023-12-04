@@ -39,6 +39,7 @@ import nl.nn.adapterframework.encryption.AuthSSLContextFactory;
 import nl.nn.adapterframework.encryption.HasKeystore;
 import nl.nn.adapterframework.encryption.HasTruststore;
 import nl.nn.adapterframework.encryption.KeystoreType;
+import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -144,7 +145,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 	}
 
-	public synchronized FTPClient openClient(String remoteDirectory) throws FtpConnectException {
+	public synchronized FTPClient openClient(String remoteDirectory) throws FileSystemException {
 		LOG.debug("open ftp client");
 		if (ftpClient == null || ! ftpClient.isConnected()) {
 			openFtpClient(remoteDirectory);
@@ -152,7 +153,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 		return ftpClient;
 	}
 
-	private void openFtpClient(String remoteDirectory) throws FtpConnectException {
+	private void openFtpClient(String remoteDirectory) throws FileSystemException {
 		try {
 			// connect and logic using normal, non-secure ftp
 			ftpClient = createFTPClient();
@@ -174,7 +175,7 @@ public abstract class FtpSession implements IConfigurable, HasKeystore, HasTrust
 			}
 		} catch(Exception e) {
 			close(ftpClient);
-			throw new FtpConnectException(e);
+			throw new FileSystemException("Cannot connect to the FTP server with domain ["+getHost()+"]", e);
 		}
 	}
 
