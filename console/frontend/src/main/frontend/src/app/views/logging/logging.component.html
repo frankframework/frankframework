@@ -2,7 +2,7 @@
 <div ui-view></div>
 
 <div class="wrapper wrapper-content">
-  <ngb-alert *ngIf="alert" type="danger">{{alert}}</ngb-alert>
+  <ngb-alert *ngIf="alert" type="danger" [dismissible]="false">{{alert}}</ngb-alert>
   <div class="row">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">

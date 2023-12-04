@@ -1,6 +1,6 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <ngb-alert *ngFor="let alert of getNotes() | orderby:'type'; index as $index" [type]="alert.type"
-    (closed)="closeNote($index)">{{alert.message}}</ngb-alert>
+    (closed)="closeNote($index)" [dismissible]="false">{{alert.message}}</ngb-alert>
 
   <div class="row">
     <div class="col-lg-12">

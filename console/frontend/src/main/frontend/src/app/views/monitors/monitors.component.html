@@ -31,11 +31,11 @@
       <div class="ibox float-e-margins">
         <div class="ibox-title {{monitor.raised ? 'danger' : 'primary'}}">
           <div class="pull-right">
-            <button *ngIf="!monitor.raised && !monitor.edit" title="Raise alarm {{monitor.name}}" class="btn btn-warning btn-xs" type="button" (click)="raise(monitor)"><i class="fa fa-arrow-circle-o-right"></i> Raise</button>
-            <button *ngIf="monitor.raised" title="Clear alarm {{monitor.name}}" class="btn btn-primary btn-xs" type="button" (click)="clear(monitor)"><i class="fa fa-arrow-circle-o-right"></i> Clear</button>
-            <button *ngIf="!monitor.raised && monitor.edit" title="Delete Monitor {{monitor.name}}" class="btn btn-danger btn-xs" type="button" (click)="deleteMonitor(monitor)"><i class="fa fa-close"></i> Delete</button>
-            <button *ngIf="!monitor.raised && !monitor.edit" title="Edit Monitor {{monitor.name}}" class="btn btn-info btn-xs" type="button" (click)="monitor.edit = true"><i class="fa fa-pencil"></i> Edit</button>
-            <button *ngIf="!monitor.raised && monitor.edit" title="Save Monitor {{monitor.name}}" class="btn btn-primary btn-xs" type="button" (click)="edit(monitor)"><i class="fa fa-save"></i> Save</button>
+            <button *ngIf="!monitor.raised && !monitor.edit" title="Raise alarm {{monitor.name}}" class="btn btn-warning btn-xs space-it-out" type="button" (click)="raise(monitor)"><i class="fa fa-arrow-circle-o-right"></i> Raise</button>
+            <button *ngIf="monitor.raised" title="Clear alarm {{monitor.name}}" class="btn btn-primary btn-xs space-it-out" type="button" (click)="clear(monitor)"><i class="fa fa-arrow-circle-o-right"></i> Clear</button>
+            <button *ngIf="!monitor.raised && monitor.edit" title="Delete Monitor {{monitor.name}}" class="btn btn-danger btn-xs space-it-out" type="button" (click)="deleteMonitor(monitor)"><i class="fa fa-close"></i> Delete</button>
+            <button *ngIf="!monitor.raised && !monitor.edit" title="Edit Monitor {{monitor.name}}" class="btn btn-info btn-xs space-it-out" type="button" (click)="monitor.edit = true"><i class="fa fa-pencil"></i> Edit</button>
+            <button *ngIf="!monitor.raised && monitor.edit" title="Save Monitor {{monitor.name}}" class="btn btn-primary btn-xs space-it-out" type="button" (click)="edit(monitor)"><i class="fa fa-save"></i> Save</button>
             <button title="Download Monitor Configuration" class="btn btn-secondary btn-xs" type="button" (click)="downloadXML(monitor.name)"><i class="fa fa-file-code-o"></i> XML</button>
           </div>
           <div class="m-l-n m-r-n almost-full-width">
@@ -126,7 +126,7 @@
                     <td *ngIf="monitor.edit" class="pull-right">
                       <button
                         title="Edit trigger {{trigger.name}}"
-                        class="btn btn-info btn-xs"
+                        class="btn btn-info btn-xs space-it-out"
                         type="button"
                         [routerLink]="['/monitors', monitor.name, 'triggers', trigger.id]"
                         [queryParams]="{ configuration: selectedConfiguration }"

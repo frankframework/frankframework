@@ -1,12 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
 // @import 'bootstrap/scss/bootstrap'; only for v5 or newer
 
+// @import '~datatables.net-dt/css/jquery.dataTables.css';
 @import './toast';
 
 @import './assets/css/animate';
 @import './assets/css/plugins/iCheck/custom';
 @import './assets/css/style';
-@import './assets/css/plugins/iCheck/custom';
 @import './assets/css/bootstrap-fix';
 
 .space-it-out {

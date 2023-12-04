@@ -92,7 +92,7 @@
           <div class="col-md-12 space-15">
             <div class="input-group" id="searchbar">
               <input type="text" class="form-control" placeholder="Search ... (Ctrl + Shift + F)" [(ngModel)]="searchFilter" name="search" />
-              <i [hidden]="!searchFilter.length" (click)="searchFilter = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"></i>
+              <i [ngClass]="searchFilter.length == 0 ? ['hidden'] : []" (click)="searchFilter = ''" class="fa fa-times input-group-closeSearch" aria-hidden="true"></i>
               <span class="input-group-addon">
                 <i class="fa fa-search" aria-hidden="true"></i>
               </span>

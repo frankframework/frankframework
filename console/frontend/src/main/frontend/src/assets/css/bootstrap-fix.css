@@ -47,3 +47,97 @@ app-toasts-container {
 .toast-warning {
   background-color: #f8ac59;
 }
+
+.sk-spinner-wave.sk-spinner>div+div {
+  margin-left: 3px;
+}
+
+div.dataTables_wrapper div.dataTables_filter {
+  text-align: right;
+}
+
+div.dataTables_wrapper div.dataTables_filter label,
+div.dataTables_wrapper div.dataTables_length label {
+  font-weight: normal;
+  text-align: left;
+  white-space: nowrap;
+}
+
+div.dataTables_wrapper div.dataTables_length select {
+  width: 75px;
+  display: inline-block;
+  height: 30px;
+  border: 1px solid #e5e6e7;
+}
+
+div.dataTables_wrapper div.dataTables_filter input {
+  margin-left: 0.5em;
+  display: inline-block;
+  width: auto;
+  border: 1px solid #e5e6e7;
+  height: 30px;
+}
+
+div.dataTables_wrapper div.dataTables_info,
+div.dataTables_wrapper div.dataTables_paginate {
+  position: relative;
+  min-height: 1px;
+}
+
+div.dataTables_wrapper div.dataTables_info{
+  width: 41.66666667%;
+}
+
+div.dataTables_wrapper div.dataTables_paginate {
+  width: 58.33333333%;
+  margin: 0;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.dataTables_paginate .paginate_button, .dataTables_paginate .ellipsis {
+  background-color: #FFFFFF;
+  border: 1px solid #DDDDDD;
+  color: inherit;
+  line-height: 1.42857;
+  margin-left: -1px;
+  padding: 4px 10px;
+  position: relative;
+  text-decoration: none;
+}
+
+.dataTables_paginate .paginate_button:focus,
+.dataTables_paginate .paginate_button:hover{
+  z-index: 2;
+  color: #23527c !important;
+  background-color: #eee!important;
+  border: 1px solid #DDDDDD !important;
+}
+
+.dataTables_paginate .paginate_button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.dataTables_paginate .paginate_button:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.dataTables_paginate .paginate_button.current {
+  background-color: #f4f4f4;
+  border-color: #DDDDDD;
+  color: inherit;
+  cursor: default;
+  z-index: 2;
+}
+
+.dataTables_paginate .disabled.paginate_button,
+.dataTables_paginate .disabled.paginate_button:focus,
+.dataTables_paginate .disabled.paginate_button:hover,
+.pagination>.disabled>span,
+.pagination>.disabled>span:focus,
+.pagination>.disabled>span:hover {
+  color: #777;
+  cursor: not-allowed;
+  background-color: #fff;
+  border-color: #ddd;
+}

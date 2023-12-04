@@ -49,7 +49,6 @@
               "node_modules/prismjs/themes/prism.css",
               "node_modules/prismjs/plugins/line-numbers/prism-line-numbers.css",
               "node_modules/prismjs/plugins/line-highlight/prism-line-highlight.css",
-              "node_modules/datatables.net-dt/css/jquery.dataTables.css",
               "src/styles.scss"
             ],
             "scripts": [
