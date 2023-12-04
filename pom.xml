@@ -1342,9 +1342,9 @@
 						<artifactId>lombok-maven-plugin</artifactId>
 					</plugin>
 					<plugin>
-						<groupId>org.ibissource</groupId>
+						<groupId>org.frankframework</groupId>
 						<artifactId>frank-doc-plugin</artifactId>
-						<version>0.3</version>
+						<version>1.0</version>
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>
