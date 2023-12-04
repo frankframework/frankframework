@@ -37,7 +37,7 @@ import com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCA
 import nl.nn.adapterframework.jndi.ObjectLocator;
 
 /**
- * Alternative to {@link DataSourceJDBCAccess} which does a JNDI lookup each time a connection is called and does not pool connections.
+ * Alternative to {@link DataSourceJDBCAccess} that adds connection pooling, instead of doing a JNDI lookup each time a connection is called.
  * {@link #getConnection()} will be called for every transaction, pooling will drastically improve performance.
  * 
  * @author Niels Meijer
