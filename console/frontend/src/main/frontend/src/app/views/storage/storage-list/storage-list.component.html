@@ -121,24 +121,24 @@
         <div class="ibox-content">
           <div class="pull-right">
             <button [title]="truncateButtonText" (click)="truncate()"
-              [ngClass]="truncated ? 'btn btn-info btn-sm' : 'btn btn-default btn-sm'"
+              [ngClass]="truncated ? 'btn btn-info btn-sm space-it-out' : 'btn btn-default btn-sm space-it-out'"
               type="button">{{truncateButtonText}}</button>
-            <button title="Select All Messages" (click)="selectAll()" class="btn btn-default btn-sm"
+            <button title="Select All Messages" (click)="selectAll()" class="btn btn-default btn-sm space-it-out"
               type="button">Select All</button>
-            <button title="Unselect All Messages" (click)="unselectAll()" class="btn btn-default btn-sm"
+            <button title="Unselect All Messages" (click)="unselectAll()" class="btn btn-default btn-sm space-it-out"
               type="button">Unselect All</button>
             <span *ngFor="let targetState of targetStates">
               <button [ladda]="changingProcessState" data-style="slide-right"
                 (click)="changeProcessState(targetState.name)"
-                class="btn btn-default btn-sm" type="button"><i
+                class="btn btn-default btn-sm space-it-out" type="button"><i
                   class="fa {{getProcessStateIcon(targetState.name)}}"></i> Move to
                 {{targetState.name}}</button>
             </span>
             <button [ladda]="messagesDownloading" data-style="slide-right" title="Download Selected Messages"
-              (click)="downloadMessages()" class="btn btn-info btn-sm" type="button"><i
+              (click)="downloadMessages()" class="btn btn-info btn-sm space-it-out" type="button"><i
                 class="fa fa-arrow-circle-o-down"></i> Download Selected</button>
             <button *ngIf="storageParams.processState=='Error'" [ladda]="messagesResending" data-style="slide-right"
-              title="Resend Selected Messages" (click)="resendMessages()" class="btn btn-warning btn-sm"
+              title="Resend Selected Messages" (click)="resendMessages()" class="btn btn-warning btn-sm space-it-out"
               type="button"><i class="fa fa-repeat"></i> Resend Selected</button>
             <button *ngIf="storageParams.processState=='Error'" [ladda]="messagesDeleting" data-style="slide-right"
               title="Delete Selected Messages" (click)="deleteMessages()" class="btn btn-danger btn-sm" type="button"><i
