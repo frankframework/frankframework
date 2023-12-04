@@ -33,6 +33,7 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurable;
+import nl.nn.adapterframework.filesystem.FileSystemException;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -101,7 +102,7 @@ public class SftpSession implements IConfigurable {
 		}
 	}
 
-	public synchronized ChannelSftp openClient(String remoteDirectory) throws FtpConnectException {
+	public synchronized ChannelSftp openClient(String remoteDirectory) throws FileSystemException {
 		LOG.debug("open sftp client");
 		if (sftpClient == null || sftpClient.isClosed()) {
 			openSftpClient(remoteDirectory);
@@ -109,7 +110,7 @@ public class SftpSession implements IConfigurable {
 		return sftpClient;
 	}
 
-	private void openSftpClient(String remoteDirectory) throws FtpConnectException {
+	private void openSftpClient(String remoteDirectory) throws FileSystemException {
 		try {
 			Session sftpSession = createSftpSession(jsch);
 			ChannelSftp channel = (ChannelSftp) sftpSession.openChannel("sftp");
@@ -121,13 +122,13 @@ public class SftpSession implements IConfigurable {
 
 			sftpClient = channel;
 		} catch (JSchException e) {
-			throw new FtpConnectException("unable to open SFTP channel");
+			throw new FileSystemException("unable to open SFTP channel");
 		} catch (SftpException e) {
-			throw new FtpConnectException("unable to enter remote directory ["+remoteDirectory+"]");
+			throw new FileSystemException("unable to enter remote directory ["+remoteDirectory+"]");
 		}
 	}
 
-	private Session createSftpSession(JSch jsch) throws FtpConnectException {
+	private Session createSftpSession(JSch jsch) throws FileSystemException {
 		try {
 			final CredentialFactory credentialFactory = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 
@@ -160,13 +161,13 @@ public class SftpSession implements IConfigurable {
 			sftpSession.connect();
 
 			if (!sftpSession.isConnected()) {
-				throw new FtpConnectException("Could not authenticate to sftp server");
+				throw new FileSystemException("could not authenticate to sftp server");
 			}
 
 			return sftpSession;
 		}
 		catch(JSchException e) {
-			throw new FtpConnectException(e);
+			throw new FileSystemException("cannot connect to the FTP server with domain ["+getHost()+"]", e);
 		}
 	}
 
