@@ -298,7 +298,7 @@
 		<dependency> <!-- for version number compare -->
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-artifact</artifactId>
-			<version>3.9.5</version>
+			<version>3.9.6</version>
 		</dependency>
 
 		<dependency>
