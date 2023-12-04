@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,21 +19,34 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
+import com.arjuna.ats.arjuna.common.MetaObjectStoreEnvironmentBean;
+import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
+import com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore;
+import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 import com.arjuna.common.util.propertyservice.PropertiesFactory;
 import com.arjuna.common.util.propertyservice.PropertiesFactoryStax;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.core.JndiContextPrefixFactory;
+import nl.nn.adapterframework.jndi.ObjectLocator;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.LogUtil;
 
-public class NarayanaConfigurationBean implements InitializingBean {
+public class NarayanaConfigurationBean implements InitializingBean, ApplicationContextAware {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter @Setter Properties properties;
+	private @Setter ApplicationContext applicationContext;
 
 	private class NarayanaPropertiesFactory extends PropertiesFactoryStax {
 		@Override
@@ -67,7 +80,43 @@ public class NarayanaConfigurationBean implements InitializingBean {
 	 * Populate all the jBossTS EnvironmentBeans.
 	 */
 	@Override
-	public void afterPropertiesSet() {
+	public void afterPropertiesSet() throws ObjectStoreException {
 		PropertiesFactory.setDelegatePropertiesFactory(new NarayanaPropertiesFactory());
+
+		// Set/Update the JdbcAccess value
+		final MetaObjectStoreEnvironmentBean jdbcStoreEnvironment = BeanPopulator.getDefaultInstance(MetaObjectStoreEnvironmentBean.class);
+		if(JDBCStore.class.getCanonicalName().equals(jdbcStoreEnvironment.getObjectStoreType())) {
+			jdbcStoreEnvironment.setJdbcAccess(getObjectStoreJndiName());
+		}
+	}
+
+	/**
+	 * Tests if we can find a (valid) DataSource. Takes ApplicationServer specific jndiPrefixes into account.
+	 * If the DataSource is valid it will be returned with the {@link PoolingDataSourceJDBCAccess} prefix.
+	 */
+	private String getObjectStoreJndiName() throws ObjectStoreException {
+		String objectStoreDatasource = AppConstants.getInstance().getProperty("transactionmanager.narayana.objectStoreDatasource");
+		if(StringUtils.isBlank(objectStoreDatasource)) {
+			throw new ObjectStoreException("no datasource name provided, please set property [transactionmanager.narayana.objectStoreDatasource]");
+		}
+
+		if(applicationContext == null) {
+			throw new ObjectStoreException("no ApplicationContext to retrieve DataSource from");
+		}
+
+		JndiContextPrefixFactory jndiContextFactory = applicationContext.getBean("jndiContextPrefixFactory", JndiContextPrefixFactory.class);
+		String jndiPrefix = jndiContextFactory.getContextPrefix();
+		String fullJndiName = (StringUtils.isNotEmpty(jndiPrefix)) ? jndiPrefix + objectStoreDatasource : objectStoreDatasource;
+
+		try {
+			DataSource dataSource = ObjectLocator.lookup(fullJndiName, null, DataSource.class);
+			log.info("found Narayana ObjectStoreDatasource [{}]", dataSource);
+
+			StringBuilder builder = new StringBuilder(PoolingDataSourceJDBCAccess.class.getCanonicalName());
+			builder.append(';').append(fullJndiName);
+			return builder.toString();
+		} catch (NamingException e) {
+			throw new ObjectStoreException("unable to find datasource", e);
+		}
 	}
 }

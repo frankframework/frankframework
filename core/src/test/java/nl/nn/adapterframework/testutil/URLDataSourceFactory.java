@@ -101,7 +101,7 @@ public class URLDataSourceFactory extends JndiDataSourceFactory {
 	}
 
 	@Override //fail fast
-	public DataSource get(String jndiName, Properties jndiEnvironment) {
+	public DataSource get(String jndiName, Properties jndiEnvironment) throws NamingException {
 		if(!availableDataSources.contains(jndiName)) {
 			throw new IllegalStateException("jndi ["+jndiName+"] not configured in test environment");
 		}

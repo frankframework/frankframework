@@ -57,7 +57,8 @@ public abstract class ObjectFactoryBase<O,L> implements DisposableBean {
 		return get(jndiName, null);
 	}
 
-	public O get(String jndiName, Properties jndiEnvironment) {
+	//Sonar doesn't see the SneakyThrows on compute
+	public O get(String jndiName, Properties jndiEnvironment) throws NamingException {
 		return objects.computeIfAbsent(jndiName, k -> compute(k, jndiEnvironment));
 	}
 
