@@ -101,10 +101,9 @@
 			<version>${micrometer.version}</version>
 		</dependency>
 
-		<!-- explicit dependency to force version 1.1.1 -->
-		<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
-			<groupId>javax.activation</groupId>
-			<artifactId>activation</artifactId>
+		<dependency><!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
+			<groupId>jakarta.activation</groupId>
+			<artifactId>jakarta.activation-api</artifactId>
 		</dependency>
 		<dependency><!-- this dependency handles jakarta.activation.* imports -->
 			<groupId>com.sun.activation</groupId>
@@ -704,6 +703,10 @@
 					<!-- excluded because we want the stax2 api -->
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.activation</groupId>
+					<artifactId>activation</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
