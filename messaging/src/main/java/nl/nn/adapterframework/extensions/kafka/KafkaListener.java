@@ -34,6 +34,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.clients.consumer.OffsetResetStrategy;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -70,8 +71,8 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	/** The group id of the consumer */
 	private @Setter String groupId;
 
-	/** Whether to start reading from the beginning of the topic. */
-	private @Setter boolean fromBeginning = false;
+	/** Whether to start reading from the beginning of the topic or the end. */
+	private @Setter OffsetResetStrategy offsetStrategy = OffsetResetStrategy.EARLIEST;
 
 	/** How often to check for new topics when using Patterns. (in MS) */
 	private @Setter int patternRecheckInterval = 5000;
@@ -101,9 +102,10 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 			throw new ConfigurationException("patternRecheckInterval should be at least 10");
 
 		properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-		properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, fromBeginning ? "earliest" : "latest");
+		properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, offsetStrategy.name().toLowerCase());
 		properties.setProperty(ConsumerConfig.METADATA_MAX_AGE_CONFIG, String.valueOf(patternRecheckInterval));
 		properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
+		properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "1"); //This setting does not impact the underlying fetching behavior. The consumer will cache the records from each fetch request and returns them incrementally from each poll.
 
 		List<String> topicList = StringUtil.split(topics);
 		for (String topic : topicList) {
@@ -122,7 +124,8 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 			consumer = buildConsumer();
 			consumer.subscribe(topicPattern);
 			waiting = consumer.poll(Duration.ofMillis(100)).iterator();
-			if (waiting.hasNext()) return;
+			if (waiting.hasNext()) return; //TODO implement IPeekableListener don't have any logic in open.. it should only open/create the connection.
+
 			Double metric = (Double) consumer.metrics().values().stream().filter(item -> item.metricName().name().equals("response-total")).findFirst().orElseThrow(() -> new ListenerException("Failed to get response-total metric.")).metricValue();
 			if (metric.intValue() == 0) throw new ListenerException("Didn't get a response from Kafka while connecting for Listening.");
 		} catch (RuntimeException e) {
@@ -148,8 +151,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 	}
 
 	@Override
-	public Message extractMessage(
-			@Nonnull RawMessageWrapper<ConsumerRecord<String, byte[]>> wrappedMessage, @Nonnull Map<String, Object> context) {
+	public Message extractMessage(@Nonnull RawMessageWrapper<ConsumerRecord<String, byte[]>> wrappedMessage, @Nonnull Map<String, Object> context) {
 		Map<String, String> headers = new HashMap<>();
 		ConsumerRecord<String, byte[]> rawMessage = wrappedMessage.getRawMessage();
 		rawMessage.headers().forEach(header -> {
@@ -194,7 +196,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 		lock.lock();
 		try {
 			if (!waiting.hasNext()) waiting = consumer.poll(pollDuration).iterator();
-			if (!waiting.hasNext()) return null;
+			if (!waiting.hasNext()) return null; //TODO implement IPeekableListener don't have any logic in getRawMessage.. it should only extract a message.
 			ConsumerRecord<String, byte[]> next = waiting.next();
 			offsetAndMetadataMap.put(new TopicPartition(next.topic(), next.partition()), new OffsetAndMetadata(next.offset() + 1));
 			consumer.commitAsync(offsetAndMetadataMap, (Map<TopicPartition, OffsetAndMetadata> offsets, Exception exception) -> {

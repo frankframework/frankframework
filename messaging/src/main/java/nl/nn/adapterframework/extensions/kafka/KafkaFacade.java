@@ -19,6 +19,9 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.ApplicationContext;
 
 import lombok.AccessLevel;
@@ -50,5 +53,7 @@ public abstract class KafkaFacade implements HasPhysicalDestination, IConfigurab
 
 		properties.setProperty(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 		properties.setProperty(CommonClientConfigs.CLIENT_ID_CONFIG, clientId);
+		properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getCanonicalName());
+		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getCanonicalName());
 	}
 }
