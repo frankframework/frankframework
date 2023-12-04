@@ -11,5 +11,7 @@
 	<Include ref="TransactionHandlingMultiAdapter.xml"/>
 	<Include ref="TransactionHandlingMultiThread.xml"/>
 
+	<Include ref="TransactionFailureInNonDbPipe.xml"/>
+
 	<Include ref="MonitorConfig.xml"/>
 </Configuration>

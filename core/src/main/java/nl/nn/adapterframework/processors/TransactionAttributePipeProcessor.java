@@ -55,11 +55,11 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 		IbisTransaction itx = new IbisTransaction(txManager, txDef, "pipe [" + pipe.getName() + "]");
 		try {
 			TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getOwner().getName() + "] running pipe ["+pipe.getName()+"]");
-			Throwable tCaught=null;
+			PipeRunException tCaught=null;
 			try {
 				tg.activateGuard(txTimeout);
 				pipeRunResult = chain.apply(message);
-			} catch (Throwable t) {
+			} catch (PipeRunException t) {
 				tCaught=t;
 				throw tCaught;
 			} finally {
@@ -70,18 +70,10 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 					log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
 				}
 			}
-		} catch (Throwable t) {
-			log.debug("setting RollBackOnly for pipe [" + pipe.getName()+"] after catching exception");
-			itx.setRollbackOnly();
-			if (t instanceof Error) {
-				throw (Error)t;
-			} else if (t instanceof RuntimeException) {
-				throw (RuntimeException)t;
-			} else if (t instanceof PipeRunException) {
-				throw (PipeRunException)t;
-			} else {
-				throw new PipeRunException(pipe, "Caught unknown checked exception", t);
-			}
+		} catch (Error | RuntimeException | PipeRunException ex) {
+			throw ex;
+		} catch (Exception e) {
+			throw new PipeRunException(pipe, "Caught unknown checked exception", e);
 		} finally {
 			itx.complete();
 		}
