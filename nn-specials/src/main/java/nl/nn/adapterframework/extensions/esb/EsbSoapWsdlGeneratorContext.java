@@ -60,9 +60,7 @@ public class EsbSoapWsdlGeneratorContext implements WsdlGeneratorExtensionContex
 
 	protected void warn(String warning) {
 		warning = "Warning: " + warning;
-		if (!warnings.contains(warning)) {
-			warnings.add(warning);
-		}
+		warnings.add(warning);
 	}
 
 	@Override
