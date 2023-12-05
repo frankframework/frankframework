@@ -65,7 +65,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		if (ldifDataUrl == null) {
 			fail("cannot find resource [" + ldifDataFile + "]");
 		}
-		inMemoryDirectoryServer.importFromLDIF(true, ldifDataUrl.getPath());
+		inMemoryDirectoryServer.importFromLDIF(true, ldifDataUrl.getPath().replaceAll("%20", " "));
 		inMemoryDirectoryServer.startListening();
 		super.setUp();
 	}

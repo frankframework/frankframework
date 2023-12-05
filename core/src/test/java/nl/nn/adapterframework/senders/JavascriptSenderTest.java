@@ -243,7 +243,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.open();
 
 		assertThrows(SenderException.class, () -> {
-			assertEquals("1", sender.sendMessageOrThrow(dummyInput, session).asString());
+			sender.sendMessageOrThrow(dummyInput, session);
 		});
 	}
 
@@ -259,7 +259,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.open();
 
 		assertThrows(SenderException.class, () -> {
-			assertEquals("1", sender.sendMessageOrThrow(dummyInput,session).asString());
+			sender.sendMessageOrThrow(dummyInput,session);
 		});
 	}
 
