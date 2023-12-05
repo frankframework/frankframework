@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,8 +56,8 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  */
 @Log4j2
 public class FileUtils {
-	protected static final String WEEKLY_ROLLING_FILENAME_DATE_FORMAT = "YYYY'W'ww";
-	protected static final String DAILY_ROLLING_FILENAME_DATE_FORMAT = "yyyy-MM-dd";
+	protected static final DateTimeFormatter WEEKLY_ROLLING_FILENAME_DATE_FORMATTER = DateFormatUtils.buildFormatter("YYYY'W'ww");
+	protected static final DateTimeFormatter DAILY_ROLLING_FILENAME_DATE_FORMATTER = DateFormatUtils.buildFormatter("yyyy-MM-dd");
 
 	/**
 	 * Construct a filename from a pattern and session variables.
@@ -359,18 +360,18 @@ public class FileUtils {
 	}
 
 	public static File getWeeklyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
-		return getRollingFile(directory, filenamePrefix, WEEKLY_ROLLING_FILENAME_DATE_FORMAT, filenameSuffix, retentionDays);
+		return getRollingFile(directory, filenamePrefix, WEEKLY_ROLLING_FILENAME_DATE_FORMATTER, filenameSuffix, retentionDays);
 	}
 
 	public static File getDailyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
-		return getRollingFile(directory, filenamePrefix, DAILY_ROLLING_FILENAME_DATE_FORMAT, filenameSuffix, retentionDays);
+		return getRollingFile(directory, filenamePrefix, DAILY_ROLLING_FILENAME_DATE_FORMATTER, filenameSuffix, retentionDays);
 	}
 
-	private static File getRollingFile(String directory, String filenamePrefix, String dateformat, String filenameSuffix, int retentionDays) {
+	private static File getRollingFile(String directory, String filenamePrefix, DateTimeFormatter dateformat, String filenameSuffix, int retentionDays) {
 		return getRollingFile(directory, filenamePrefix, dateformat, filenameSuffix, retentionDays, null);
 	}
 
-	protected static File getRollingFile(String directory, String filenamePrefix, String dateformat, String filenameSuffix, int retentionDays, Date date) {
+	protected static File getRollingFile(String directory, String filenamePrefix, DateTimeFormatter dateformat, String filenameSuffix, int retentionDays, Date date) {
 
 		final long millisPerDay = 24 * 60 * 60 * 1000L;
 
@@ -380,7 +381,7 @@ public class FileUtils {
 
 		Date dateInFileName = date != null ? date : new Date();
 
-		String filename=filenamePrefix+ DateFormatUtils.format(dateInFileName,dateformat)+filenameSuffix;
+		String filename = filenamePrefix + DateFormatUtils.format(dateInFileName, dateformat) + filenameSuffix;
 		File result = new File(directory, filename);
 		if (!result.exists()) {
 			long thisMorning = dateInFileName.getTime();

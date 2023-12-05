@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -561,9 +560,9 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(!Message.isEmpty(result)) {
 					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
 					if(StringUtils.isNotEmpty(lastModified)) {
-						Date date = DateFormatUtils.parseToDate(lastModified, DateFormatUtils.FORMAT_FULL_GENERIC);
+						Instant date = DateFormatUtils.parseToInstant(lastModified, DateFormatUtils.FULL_GENERIC_FORMATTER);
 						if(date != null) {
-							lastModDate = date.getTime();
+							lastModDate = date.toEpochMilli();
 						}
 					}
 				}

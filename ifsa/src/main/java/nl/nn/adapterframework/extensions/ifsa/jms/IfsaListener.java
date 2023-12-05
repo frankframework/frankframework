@@ -18,7 +18,6 @@ package nl.nn.adapterframework.extensions.ifsa.jms;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -105,6 +104,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 					mode = "PERSISTENT";
 				}
 		} catch (JMSException ignore) {
+			// Ignore
 		}
 		// --------------------------
 		// retrieve MessageID
@@ -112,6 +112,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		try {
 			id = message.getJMSMessageID();
 		} catch (JMSException ignore) {
+			// Ignore
 		}
 		// --------------------------
 		// retrieve CorrelationID
@@ -119,6 +120,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		try {
 			cid = message.getJMSCorrelationID();
 		} catch (JMSException ignore) {
+			// Ignore
 		}
 		// --------------------------
 		// retrieve TimeStamp
@@ -126,23 +128,24 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		try {
 			long lTimeStamp = message.getJMSTimestamp();
 			tsSent = new Date(lTimeStamp);
-
 		} catch (JMSException ignore) {
+			// Ignore
 		}
 		// --------------------------
 		// retrieve ReplyTo address
 		// --------------------------
 		try {
 			replyTo = message.getJMSReplyTo();
-
 		} catch (JMSException ignore) {
+			// Ignore
 		}
 		// --------------------------
 		// retrieve message text
 		// --------------------------
 		try {
 			messageText = ((TextMessage) message).getText();
-		} catch (Throwable ignore) {
+		} catch (JMSException ignore) {
+			// Ignore
 		}
 		// --------------------------
 		// retrieve ifsaServiceDestination
@@ -189,11 +192,11 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 					+ "] \n  ifsaGroup=["+ ifsaGroup
 					+ "] \n  ifsaOccurrence=["+ ifsaOccurrence
 					+ "] \n  ifsaVersion=["+ ifsaVersion
-					+ "] \n  Timestamp Sent=[" + DateFormatUtils.format(tsSent)
+					+ "] \n  Timestamp Sent=[" + (tsSent != null ? DateFormatUtils.format(tsSent) : null)
 					+ "] \n  ReplyTo=[" + ((replyTo == null) ? "none" : replyTo.toString())
 					+ "] \n  MessageHeaders=["+displayHeaders(message)+"\n"
 //					+ "] \n  btcData=["+ btcData
-					+ "] \n  Message=[" + message.toString()+"\n]");
+					+ "] \n  Message=[" + message + "\n]");
 
 		}
 //		if (cid == null) {
@@ -206,7 +209,7 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 //			}
 //		}
 
-		PipeLineSession.updateListenerParameters(messageContext, id, BIFname, null, tsSent);
+		PipeLineSession.updateListenerParameters(messageContext, id, BIFname, null, tsSent != null ? tsSent.toInstant() : null);
 		messageContext.put("timestamp", tsSent);
 		messageContext.put("replyTo", ((replyTo == null) ? "none" : replyTo.toString()));
 		messageContext.put("messageText", messageText);
@@ -221,9 +224,9 @@ public abstract class IfsaListener extends IfsaFacade implements IListener<IFSAM
 		Map udz = message.getIncomingUDZObject();
 		if (udz!=null) {
 			StringBuilder contextDump = new StringBuilder("ifsaUDZ:");
-			for (Iterator it = udz.keySet().iterator(); it.hasNext();) {
-				String key = (String)it.next();
-				String value = (String)udz.get(key);
+			for (Object o : udz.keySet()) {
+				String key = (String) o;
+				String value = (String) udz.get(key);
 				contextDump.append("\n ").append(key).append("=[").append(value).append("]");
 				messageContext.put(key, value);
 			}

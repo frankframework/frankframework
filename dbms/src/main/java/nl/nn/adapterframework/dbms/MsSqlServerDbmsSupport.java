@@ -81,7 +81,7 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat(DateFormatUtils.FORMAT_GENERICDATETIME);
+		SimpleDateFormat formatter = new SimpleDateFormat(DateFormatUtils.FORMAT_DATETIME_GENERIC);
 		String formattedDate = formatter.format(date);
 		return "CONVERT(datetime, '" + formattedDate + "', 120)";
 	}

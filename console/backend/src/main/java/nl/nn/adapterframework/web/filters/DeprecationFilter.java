@@ -34,9 +34,9 @@ import org.springframework.core.env.Environment;
 
 /**
  * Manages deprecations per resource/collection.
- * 
+ *
  * Default JAX-RS provider and is automatically picked-up by the FF!API Spring context because of the package (component) scanner.
- * 
+ *
  * @since   7.8.1
  * @author  Niels Meijer
  */
@@ -49,7 +49,7 @@ public class DeprecationFilter implements ContainerRequestFilter, EnvironmentAwa
 	private static final Response DEPRECATION_ERROR = Response.status(Response.Status.BAD_REQUEST).build();
 	private static final Response SERVER_ERROR = Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
 
-	private Logger log = LogManager.getLogger(this);
+	private final Logger log = LogManager.getLogger(this);
 	private boolean allowDeprecatedEndpoints = false;
 
 	@Override

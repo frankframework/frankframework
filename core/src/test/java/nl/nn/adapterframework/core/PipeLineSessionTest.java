@@ -15,8 +15,8 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -108,13 +108,8 @@ public class PipeLineSessionTest {
 
 	@Test
 	public void testTsSentTsReceived() {
-		Calendar cal = Calendar.getInstance();
-		cal.setTimeInMillis(1634150000000L);
-		Date tsReceived = cal.getTime();
-
-		Calendar cal2 = Calendar.getInstance();
-		cal2.setTimeInMillis(1634500000000L);
-		Date tsSent = cal2.getTime();
+		Instant tsReceived = Instant.ofEpochMilli(1634150000000L);
+		Instant tsSent = Instant.ofEpochMilli(1634500000000L);
 
 		//Should set the value as a String
 		PipeLineSession.updateListenerParameters(session, null, null, tsReceived, tsSent);

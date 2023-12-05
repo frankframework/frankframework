@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.scheduler.job;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -141,7 +141,7 @@ public class CleanupDatabaseJob extends JobDef {
 
 	@Override
 	public void execute() {
-		Date date = new Date();
+		Instant instant = Instant.now();
 
 		int maxRows = AppConstants.getInstance().getInt("cleanup.database.maxrows", 25000);
 
@@ -157,7 +157,7 @@ public class CleanupDatabaseJob extends JobDef {
 				qs.setTimeout(getQueryTimeout());
 				qs.setScalar(true);
 
-				Parameter param = new Parameter("now", DateFormatUtils.format(date));
+				Parameter param = new Parameter("now", DateFormatUtils.format(instant));
 				param.setType(ParameterType.TIMESTAMP);
 				qs.addParameter(param);
 

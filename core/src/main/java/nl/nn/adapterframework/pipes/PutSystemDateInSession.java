@@ -15,10 +15,9 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
@@ -49,10 +48,11 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 	private String sessionKey="systemDate";
 	private String dateFormat= DateFormatUtils.FORMAT_FULL_ISO;
-	private SimpleDateFormat formatter;
+	private DateTimeFormatter formatter;
 	private boolean returnFixedDate=false;
 	private long sleepWhenEqualToPrevious = -1;
 	private TimeZone timeZone=null;
+	private ZoneId zoneId=null;
 	private String previousFormattedDate;
 	private boolean getCurrentTimeStampInMillis = false;
 
@@ -72,26 +72,24 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 			throw new ConfigurationException("has a null value for dateFormat");
 		}
 
-		if (isReturnFixedDate()) {
-			if (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
-				throw new ConfigurationException("returnFixedDate only allowed in stub mode");
-			}
+		if (isReturnFixedDate() && (!ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader()))) {
+			throw new ConfigurationException("returnFixedDate only allowed in stub mode");
 		}
 
 		if(isGetCurrentTimeStampInMillis() && isReturnFixedDate()) {
 			throw new ConfigurationException("returnFixedDate cannot be used to get current time stamp in millis");
 		}
+		if (timeZone == null) {
+			zoneId = ZoneId.systemDefault();
+		} else {
+			zoneId = timeZone.toZoneId();
+		}
 		// check the dateformat
 		try {
-			formatter = new SimpleDateFormat(getDateFormat());
+			formatter = DateTimeFormatter.ofPattern(getDateFormat()).withZone(zoneId);
 		} catch (IllegalArgumentException ex){
 			throw new ConfigurationException("has an illegal value for dateFormat", ex);
 		}
-
-		if (timeZone!=null) {
-			formatter.setTimeZone(timeZone);
-		}
-
 	}
 
 	@Override
@@ -99,42 +97,40 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 
 		String formattedDate;
 		if(isGetCurrentTimeStampInMillis()) {
-			formattedDate = new Date().getTime()+"";
-		}
-		else {
+			formattedDate = System.currentTimeMillis()+"";
+		} else {
 			if (isReturnFixedDate()) {
-				DateFormat formatterFrom = DateFormatUtils.GENERIC_DATETIME_FORMATTER;
+				DateTimeFormatter formatterFrom = DateFormatUtils.GENERIC_DATETIME_FORMATTER.withZone(zoneId);
 				String fixedDateTime = session.getString(FIXEDDATE_STUB4TESTTOOL_KEY);
 				if (StringUtils.isEmpty(fixedDateTime)) {
 					fixedDateTime = FIXEDDATETIME;
 				}
-				Date d;
+				Instant instant;
 				try {
-					d = formatterFrom.parse(fixedDateTime);
-				} catch (ParseException e) {
-					throw new PipeRunException(this,"cannot parse fixed date ["+fixedDateTime+"] with format ["+ DateFormatUtils.FORMAT_GENERICDATETIME+"]",e);
+					instant = Instant.from(formatterFrom.parse(fixedDateTime));
+				} catch (Exception e) {
+					throw new PipeRunException(this,"cannot parse fixed date ["+fixedDateTime+"] with format ["+ DateFormatUtils.FORMAT_DATETIME_GENERIC +"]",e);
 				}
-				formattedDate = formatter.format(d);
-			}
-			else {
+				formattedDate = formatter.format(instant);
+			} else {
 				if (sleepWhenEqualToPrevious > -1) {
 					// Synchronize on a static value to generate unique value's for the
 					// whole virtual machine.
 					synchronized(OBJECT) {
-						formattedDate = formatter.format(new Date());
+						formattedDate = formatter.format(Instant.now());
 						while (formattedDate.equals(previousFormattedDate)) {
 							try {
-								Thread.sleep(sleepWhenEqualToPrevious);
+								OBJECT.wait(sleepWhenEqualToPrevious);
 							} catch(InterruptedException e) {
 								log.debug("interrupted");
+								Thread.currentThread().interrupt();
 							}
-							formattedDate = formatter.format(new Date());
+							formattedDate = formatter.format(Instant.now());
 						}
 						previousFormattedDate = formattedDate;
 					}
-				}
-				else {
-					formattedDate = formatter.format(new Date());
+				} else {
+					formattedDate = formatter.format(Instant.now());
 				}
 			}
 		}

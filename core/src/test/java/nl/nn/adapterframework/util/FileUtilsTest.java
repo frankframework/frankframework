@@ -286,7 +286,7 @@ public class FileUtilsTest {
 
 	public File getRollingFile(String dir, int year, int month, int day) {
 		Date date = new GregorianCalendar(year, month, day).getTime();
-		return FileUtils.getRollingFile(dir, "", FileUtils.WEEKLY_ROLLING_FILENAME_DATE_FORMAT, "", 0, date);
+		return FileUtils.getRollingFile(dir, "", FileUtils.WEEKLY_ROLLING_FILENAME_DATE_FORMATTER, "", 0, date);
 	}
 	// Helper method to verify the filename
 	public boolean testWeeklyRollingFilename(String name) {
@@ -345,7 +345,7 @@ public class FileUtilsTest {
 
 		test.setLastModified(new GregorianCalendar(2020, 11, 25).getTime().getTime()); // change the last modified date
 																						// for the file to be deleted.
-		test = FileUtils.getRollingFile(tempDirRoot.getAbsolutePath(), "", FileUtils.WEEKLY_ROLLING_FILENAME_DATE_FORMAT,
+		test = FileUtils.getRollingFile(tempDirRoot.getAbsolutePath(), "", FileUtils.WEEKLY_ROLLING_FILENAME_DATE_FORMATTER,
 				"", 7, null);
 		Files.createFile(Paths.get(test.getAbsolutePath()));
 		assertEquals(1, tempDirRoot.listFiles().length); // test number of files

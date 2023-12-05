@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.statistics;
 
-import nl.nn.adapterframework.util.DateFormatUtils;
-
 /**
  * List of statistics items that can be iterated over to show all values.
  *
@@ -25,12 +23,12 @@ import nl.nn.adapterframework.util.DateFormatUtils;
  */
 public interface ItemList {
 
-	final String ITEM_FORMAT_TIME= DateFormatUtils.FORMAT_MILLISECONDS;
-	final String ITEM_FORMAT_PERC="##0.0";
+	String ITEM_FORMAT_TIME= "######.###";
+	String ITEM_FORMAT_PERC="##0.0";
 
-	final String PRINT_FORMAT_COUNT="#,##0";
-	final String PRINT_FORMAT_TIME="#,##0";
-	final String PRINT_FORMAT_PERC="##0.0";
+	String PRINT_FORMAT_COUNT="#,##0";
+	String PRINT_FORMAT_TIME="#,##0";
+	String PRINT_FORMAT_PERC="##0.0";
 
 	public enum Type {
 		INTEGER,

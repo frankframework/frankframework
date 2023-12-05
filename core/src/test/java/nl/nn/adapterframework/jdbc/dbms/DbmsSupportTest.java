@@ -310,8 +310,8 @@ public class DbmsSupportTest extends JdbcTestBase {
 	@Test
 	public void testJdbcSetParameter() throws Exception {
 		String number = "1234.5678";
-		String datetime = DateFormatUtils.now(DateFormatUtils.FORMAT_GENERICDATETIME);
-		String date = DateFormatUtils.now(DateFormatUtils.FORMAT_SHORT_ISO);
+		String datetime = DateFormatUtils.now(DateFormatUtils.GENERIC_DATETIME_FORMATTER);
+		String date = DateFormatUtils.now(DateFormatUtils.ISO_DATE_FORMATTER);
 
 		assumeFalse(dbmsSupport.getDbmsName().equals("Oracle")); // This fails on Oracle, cannot set a non-integer number via setString()
 		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)";

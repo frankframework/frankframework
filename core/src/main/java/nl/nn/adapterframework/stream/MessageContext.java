@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.stream;
 
 import java.nio.charset.Charset;
+import java.time.Instant;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -26,7 +27,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
 
-import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateFormatUtils;
 
 public class MessageContext extends LinkedHashMap<String,Object> {
@@ -97,7 +97,7 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 		return this;
 	}
 	public MessageContext withModificationTime(long time) {
-		return withModificationTime(new Date(time));
+		return withModificationTime(Instant.ofEpochMilli(time));
 	}
 	public MessageContext withModificationTime(Date time) {
 		if (time!=null) {
@@ -105,8 +105,11 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 		}
 		return this;
 	}
-	public MessageContext withModificationTime(String time) throws CalendarParserException {
-		return withModificationTime(DateFormatUtils.parseAnyDate(time));
+	public MessageContext withModificationTime(Instant time) {
+		if (time!=null) {
+			put(METADATA_MODIFICATIONTIME, DateFormatUtils.format(time));
+		}
+		return this;
 	}
 	public MessageContext withName(String name) {
 		put(METADATA_NAME, name);

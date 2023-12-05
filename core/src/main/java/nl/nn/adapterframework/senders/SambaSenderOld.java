@@ -221,18 +221,18 @@ public class SambaSenderOld extends SenderWithParametersBase {
 		fileXml.addAttribute("name", file.getName());
 		long fileSize = file.length();
 		fileXml.addAttribute("size", "" + fileSize);
-		fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize, true));
+		fileXml.addAttribute("fSize", Misc.toFileSize(fileSize, true));
 		fileXml.addAttribute("directory", "" + file.isDirectory());
 		fileXml.addAttribute("canonicalName", file.getCanonicalPath());
 
 		// Get the modification date of the file
 		Date modificationDate = new Date(file.lastModified());
 		//add date
-		String date = DateFormatUtils.format(modificationDate, DateFormatUtils.FORMAT_DATE);
+		String date = DateFormatUtils.format(modificationDate, DateFormatUtils.SHORT_DATE_FORMATTER);
 		fileXml.addAttribute("modificationDate", date);
 
 		// add the time
-		String time = DateFormatUtils.format(modificationDate, DateFormatUtils.FORMAT_TIME_HMS);
+		String time = DateFormatUtils.format(modificationDate, DateFormatUtils.TIME_HMS_FORMATTER);
 		fileXml.addAttribute("modificationTime", time);
 
 		return fileXml;

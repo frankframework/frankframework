@@ -1031,8 +1031,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				throw new ListenerException(getLogPrefix()+"is not started");
 			}
 
-			Date tsReceived = PipeLineSession.getTsReceived(session);
-			Date tsSent = PipeLineSession.getTsSent(session);
+			Instant tsReceived = PipeLineSession.getTsReceived(session);
+			Instant tsSent = PipeLineSession.getTsSent(session);
 			PipeLineSession.updateListenerParameters(session, null, null, tsReceived, tsSent);
 
 			String messageId = rawMessage.getId() != null ? rawMessage.getId() : session.getMessageId();
@@ -1149,12 +1149,12 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 				try {
 					String messageId = session.getMessageId();
 					String correlationId = session.getCorrelationId();
-					Date receivedDate = session.getTsReceived();
+					Instant receivedDate = session.getTsReceived();
 					if (receivedDate == null) {
 						log.warn("{} {} is unknown, cannot update comments", this::getLogPrefix, logValue(PipeLineSession.TS_RECEIVED_KEY));
 					} else {
 						errorStorage.deleteMessage(storageKey);
-						errorStorage.storeMessage(messageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg.rawMessage);
+						errorStorage.storeMessage(messageId, correlationId,Date.from(receivedDate),"after retry: "+e.getMessage(),null, msg.rawMessage);
 					}
 				} catch (SenderException e1) {
 					itxErrorStorage.setRollbackOnly();

@@ -532,9 +532,9 @@ public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> 
 		String id = rawMessage.getId();
 		assertThat(id, containsString(filename));
 		long currentDate = System.currentTimeMillis();
-		String currentDateFormatted= DateFormatUtils.format(currentDate, DateFormatUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ);
+		String currentDateFormatted= DateFormatUtils.format(currentDate, DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER);
 		String timestamp=id.substring(id.length()-currentDateFormatted.length());
-		long timestampDate= DateFormatUtils.parseToDate(timestamp, DateFormatUtils.FORMAT_FULL_ISO_TIMESTAMP_NO_TZ).getTime();
+		long timestampDate= DateFormatUtils.parseToInstant(timestamp, DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER).toEpochMilli();
 		log.debug("Current date formatted: {}, in Millis: {}, timestamp from file: {}, parsed to millis: {}, difference: {}", currentDateFormatted, currentDate, timestamp, timestampDate, timestampDate-currentDate);
 		assertTrue(Math.abs(timestampDate-currentDate)<7300000); // less than two hours in milliseconds.
 	}

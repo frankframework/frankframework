@@ -18,6 +18,7 @@ package nl.nn.adapterframework.jms;
 import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -141,7 +142,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		String id = "unset";
 		String cid = "unset";
 		DeliveryMode mode = null;
-		Date tsSent = null;
+		Instant tsSent = null;
 		Destination replyTo=null;
 		try {
 			mode = DeliveryMode.parse(rawMessage.getJMSDeliveryMode());
@@ -169,7 +170,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 		// --------------------------
 		try {
 			long lTimeStamp = rawMessage.getJMSTimestamp();
-			tsSent = new Date(lTimeStamp);
+			tsSent = Instant.ofEpochMilli(lTimeStamp);
 		} catch (JMSException e) {
 			log.debug("ignoring JMSException in getJMSTimestamp()", e);
 		}
