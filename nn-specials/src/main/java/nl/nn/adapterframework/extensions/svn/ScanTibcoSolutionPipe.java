@@ -82,7 +82,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 		try {
 			html = getHtml(cUrl);
 		} catch (Exception e) {
-			error(xmlStreamWriter, "error occured during getting html", e, true);
+			error(xmlStreamWriter, "error occurred during getting html", e, true);
 			html = null;
 		}
 		if (html != null) {
@@ -181,7 +181,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 					"log-report/log-item/date");
 			xmlStreamWriter.writeAttribute("date", date);
 		} catch (Exception e) {
-			error(xmlStreamWriter, "error occured during adding commit info",
+			error(xmlStreamWriter, "error occurred during adding commit info",
 					e, false);
 		}
 		xmlStreamWriter.writeEndElement();
@@ -195,7 +195,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 		try {
 			content = getHtml(urlString);
 		} catch (Exception e) {
-			error(xmlStreamWriter, "error occured during getting file content",
+			error(xmlStreamWriter, "error occurred during getting file content",
 					e, true);
 			content = null;
 		}
@@ -262,7 +262,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 								wsdl = getHtml(wsdlUrl.toString());
 							} catch (Exception e) {
 								error(xmlStreamWriter,
-										"error occured during getting wsdl file content",
+										"error occurred during getting wsdl file content",
 										e, true);
 								wsdl = null;
 							}
@@ -374,7 +374,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 					 */
 				}
 			} catch (Exception e) {
-				error(xmlStreamWriter, "error occured during processing "
+				error(xmlStreamWriter, "error occurred during processing "
 						+ type + " file", e, true);
 			}
 			if (warnMessage.size() > 0) {
