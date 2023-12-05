@@ -215,7 +215,7 @@ public abstract class ClassUtils {
 
 		try {//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = parseValueToSet(method, valueToSet);
-			if(log.isDebugEnabled()) log.debug("trying to set method ["+method.getName()+"] with value ["+valueToSet+"] of type ["+castValue.getClass().getCanonicalName()+"] on ["+ClassUtils.nameOf(bean)+"]");
+			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, ()->valueToSet, ()->castValue.getClass().getCanonicalName(), ()->ClassUtils.nameOf(bean));
 
 			method.invoke(bean, castValue);
 		} catch (IllegalAccessException | InvocationTargetException e) {
@@ -225,12 +225,12 @@ public abstract class ClassUtils {
 
 	private static Object parseValueToSet(Method m, String value) throws IllegalArgumentException {
 		Class<?> setterArgumentClass = m.getParameters()[0].getType();
-		String fieldName = StringUtil.lcFirst(m.getName().substring(3));
 
 		//Try to parse as primitive
 		try {
 			return convertToType(setterArgumentClass, value);
 		} catch (IllegalArgumentException e) {
+			String fieldName = StringUtil.lcFirst(m.getName().substring(3));
 			throw new IllegalArgumentException("cannot set field ["+fieldName+"]: " + e.getMessage(), e);
 		}
 	}

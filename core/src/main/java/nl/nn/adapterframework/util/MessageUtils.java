@@ -33,6 +33,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.config.TikaConfig;
+import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaMetadataKeys;
 import org.springframework.util.DigestUtils;
@@ -47,6 +48,17 @@ import nl.nn.adapterframework.stream.MessageContext;
 public abstract class MessageUtils {
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
 	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
+	private static final TikaConfig TIKA_CONFIG = createTikaConfig();
+	private static final int TIKA_MAGIC_LENGHT = 64 * 1024; // This needs to be reasonably large to be able to correctly detect things like XML root elements after initial comment and DTDs
+
+	private static TikaConfig createTikaConfig() {
+		try {
+			return new TikaConfig();
+		} catch (TikaException | IOException e) {
+			LOG.error("unable to create Tika config, cannot determine mimetypes!", e);
+			return null;
+		}
+	}
 
 	/**
 	 * Fetch metadata from the {@link HttpServletRequest} such as Content-Length, Content-Type (mimetype + charset)
@@ -75,14 +87,7 @@ public abstract class MessageUtils {
 		while (mimeHeaders.hasNext()) {
 			MimeHeader header = mimeHeaders.next();
 			String name = header.getName();
-			if("Content-Transfer-Encoding".equals(name)) {
-				try {
-					Charset charset = Charset.forName(header.getValue());
-					result.withCharset(charset);
-				} catch (Exception e) {
-					LOG.warn("Could not determine charset", e);
-				}
-			} else if("Content-Type".equals(name)) {
+			if("Content-Type".equals(name)) {
 				result.withMimeType(header.getValue());
 			} else {
 				result.put(MessageContext.HEADER_PREFIX + name, header.getValue());
@@ -179,13 +184,16 @@ public abstract class MessageUtils {
 
 		MimeType mimeType = (MimeType)message.getContext().get(MessageContext.METADATA_MIMETYPE);
 		if(mimeType == null) {
+			LOG.trace("no mimetype found in MessageContext");
 			return null;
 		}
 
 		if(message.getCharset() != null) { //and is character data?
+			LOG.trace("found mimetype [{}] in MessageContext with charset [{}]", ()->mimeType, message::getCharset);
 			return new MimeType(mimeType, Charset.forName(message.getCharset()));
 		}
 
+		LOG.trace("found mimetype [{}] in MessageContext without charset", mimeType);
 		return mimeType;
 	}
 
@@ -207,7 +215,7 @@ public abstract class MessageUtils {
 	/**
 	 * Computes the {@link MimeType} when not available, attempts to resolve the Charset when of type TEXT.
 	 * <p>
-	 * NOTE: This is a resource intensive operation, the first 64k is being read and stored in memory.
+	 * NOTE: This is a resource intensive operation, the first {@value #TIKA_MAGIC_LENGHT} bytes are being read and stored in memory.
 	 */
 	public static MimeType computeMimeType(Message message, String filename) {
 		if(Message.isEmpty(message)) {
@@ -215,34 +223,37 @@ public abstract class MessageUtils {
 		}
 
 		MessageContext context = message.getContext();
-		MimeType mimeType = getMimeType(message);
-		if(mimeType != null) {
-			return mimeType;
+		MimeType contextMimeType = getMimeType(message);
+		if(contextMimeType != null) {
+			LOG.debug("returning predetermined mimetype [{}]", contextMimeType);
+			return contextMimeType;
 		}
 
 		String name = (String) context.get(MessageContext.METADATA_NAME);
 		if(StringUtils.isNotEmpty(filename)) {
+			LOG.trace("using filename from MessageContext [{}]", name);
 			name = filename;
 		}
 
 		try {
-			TikaConfig tika = new TikaConfig();
 			Metadata metadata = new Metadata();
 			metadata.set(TikaMetadataKeys.RESOURCE_NAME_KEY, name);
-			int tikaMimeMagicLength = tika.getMimeRepository().getMinLength();
-			byte[] magic = message.getMagic(tikaMimeMagicLength);
+			byte[] magic = message.getMagic(TIKA_MAGIC_LENGHT);
 			if(magic.length == 0) {
 				return null;
 			}
-			org.apache.tika.mime.MediaType tikaMediaType = tika.getDetector().detect(new ByteArrayInputStream(magic), metadata);
-			mimeType = MimeType.valueOf(tikaMediaType.toString());
+			org.apache.tika.mime.MediaType tikaMediaType = TIKA_CONFIG.getDetector().detect(new ByteArrayInputStream(magic), metadata);
+			MimeType mimeType = MimeType.valueOf(tikaMediaType.toString());
 			context.withMimeType(mimeType);
 			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
 				Charset charset = computeDecodingCharset(message);
 				if(charset != null) {
+					LOG.debug("found mimetype [{}] with charset [{}]", mimeType, charset);
 					return new MimeType(mimeType, charset);
 				}
 			}
+
+			LOG.debug("found mimetype [{}]", mimeType);
 			return mimeType;
 		} catch (Exception t) {
 			LOG.warn("error parsing message to determine mimetype", t);

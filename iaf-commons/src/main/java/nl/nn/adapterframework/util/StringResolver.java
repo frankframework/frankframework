@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.util;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -467,7 +468,12 @@ public class StringResolver {
 
 	private static Collection<AdditionalStringResolver> getAdditionalStringResolvers() {
 		if (additionalStringResolvers == null) {
-			additionalStringResolvers = CollectionUtils.collect(serviceLoader.iterator(), input -> input);
+			try {
+				additionalStringResolvers = CollectionUtils.collect(serviceLoader.iterator(), input -> input);
+			} catch (Throwable t) {
+				t.printStackTrace(); //Cannot log this because it's used before Log4j2 initializes.
+				additionalStringResolvers = Collections.emptyList();
+			}
 		}
 		return additionalStringResolvers;
 	}

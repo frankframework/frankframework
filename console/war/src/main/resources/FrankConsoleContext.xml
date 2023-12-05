@@ -11,13 +11,19 @@
 
 	<context:property-placeholder location="classpath:application.properties"/>
 
-	<bean class="nl.nn.adapterframework.runner.ConsoleFrontendBean"/>
-	<bean class="nl.nn.adapterframework.runner.ConsoleBackendBean"/>
+	<context:component-scan base-package="nl.nn.adapterframework.web" />
 
 	<!-- Messaging Gateway -->
 	<bean id="outboundGateway" class="nl.nn.adapterframework.management.bus.OutboundGatewayFactory">
 		<property name="gatewayClassname" value="${management.gateway.outbound.class}" />
 	</bean>
+
+	<bean id="httpFirewall" class="org.springframework.security.web.firewall.StrictHttpFirewall">
+		<property name="allowSemicolon" value="true"/>
+		<property name="allowUrlEncodedPercent" value="true"/>
+	</bean>
+
+	<bean id="JwtKeyGenerator" class="nl.nn.adapterframework.management.security.JwtKeyGenerator"/>
 
 	<bean id="messageBuilderFactory" class="org.springframework.integration.support.DefaultMessageBuilderFactory" />
 </beans>

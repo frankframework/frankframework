@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ConfiguredTestBase;
@@ -28,6 +30,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	public abstract P createPipe() throws ConfigurationException;
 
 	@Override
+	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
 		pipe = createPipe();
@@ -38,6 +41,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 	}
 
 	@Override
+	@AfterEach
 	public void tearDown() throws Exception {
 		getConfigurationWarnings().destroy();
 		getConfigurationWarnings().afterPropertiesSet();
@@ -89,7 +93,9 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 				Message wrappedInput = new Message(new ThrowingAfterCloseInputStream((InputStream) input.asObject()));
 				wrappedInput.closeOnCloseOf(session, pipe);
 				session.computeIfAbsent(PipeLineSession.ORIGINAL_MESSAGE_KEY, k -> wrappedInput);
-				return pipe.doPipe(wrappedInput, session);
+				PipeRunResult result = pipe.doPipe(wrappedInput, session);
+				session.unscheduleCloseOnSessionExit(result.getResult());
+				return result;
 			}
 		}
 		session.computeIfAbsent(PipeLineSession.ORIGINAL_MESSAGE_KEY, k -> input);

@@ -15,8 +15,9 @@
 */
 package nl.nn.adapterframework.receivers;
 
+import static nl.nn.adapterframework.functional.FunctionalUtil.logMethod;
+import static nl.nn.adapterframework.functional.FunctionalUtil.logValue;
 import static nl.nn.adapterframework.functional.FunctionalUtil.supplier;
-import static nl.nn.adapterframework.functional.FunctionalUtil.supply;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -120,6 +121,7 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
+import nl.nn.adapterframework.xml.XmlWriter;
 
 /**
  * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
@@ -786,7 +788,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			runState.setRunState(RunState.STARTED);
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		} catch (Throwable t) {
-			error("error occured while starting", t);
+			error("error occurred while starting", t);
 
 			runState.setRunState(RunState.EXCEPTION_STARTING);
 			closeAllResources(); //Close potential dangling resources, don't change state here..
@@ -967,7 +969,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		try {
 			txStatus = txManager.getTransaction(txDef);
 		} catch (RuntimeException e) {
-			log.error("{} Exception preparing to move input message with id [{}] correlationId [{}] to error sender", supplier(this::getLogPrefix), supply(originalMessageId), supply(correlationId), e);
+			log.error("{} Exception preparing to move input message with id [{}] correlationId [{}] to error sender", logMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), e);
 			// no use trying again to send message on errorSender, will cause same exception!
 
 			// NB: Why does this case return, instead of re-throwing?
@@ -991,13 +993,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			}
 			txManager.commit(txStatus);
 		} catch (Exception e) {
-			log.error("{} Exception moving message with id [{}] correlationId [{}] to error sender or error storage, original message: [{}]", supplier(this::getLogPrefix), supply(originalMessageId), supply(correlationId), supply(rawMessageWrapper), e);
+			log.error("{} Exception moving message with id [{}] correlationId [{}] to error sender or error storage, original message: [{}]", logMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), logValue(rawMessageWrapper), e);
 			try {
 				if (!txStatus.isCompleted()) {
 					txManager.rollback(txStatus);
 				}
 			} catch (Exception rbe) {
-				log.error("{} Exception while rolling back transaction for message  with id [{}] correlationId [{}], original message: [{}]", supplier(this::getLogPrefix), supply(originalMessageId), supply(correlationId), supply(rawMessageWrapper), rbe);
+				log.error("{} Exception while rolling back transaction for message  with id [{}] correlationId [{}], original message: [{}]", logMethod(this::getLogPrefix), logValue(originalMessageId), logValue(correlationId), logValue(rawMessageWrapper), rbe);
 			}
 		}
 	}
@@ -1022,7 +1024,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	@Override
 	public Message processRequest(IListener<M> origin, @Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Message message, @Nonnull PipeLineSession session) throws ListenerException {
 		Objects.requireNonNull(session, "Session can not be null");
-		try (final CloseableThreadContext.Instance ctc = getLoggingContext(getListener(), session)) {
+		try (final CloseableThreadContext.Instance ignored = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
 				throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 			}
@@ -1108,7 +1110,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 	private CloseableThreadContext.Instance getLoggingContext(@Nonnull IListener<M> listener, @Nonnull PipeLineSession session) {
 		CloseableThreadContext.Instance result = LogUtil.getThreadContext(adapter, session.getMessageId(), session);
-		result.put(THREAD_CONTEXT_KEY_NAME, listener.getName()).put(THREAD_CONTEXT_KEY_TYPE, ClassUtils.classNameOf(listener));
+		result.put(THREAD_CONTEXT_KEY_NAME, listener.getName());
+		result.put(THREAD_CONTEXT_KEY_TYPE, ClassUtils.classNameOf(listener));
 		return result;
 	}
 
@@ -1149,7 +1152,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 					String correlationId = session.getCorrelationId();
 					Date receivedDate = session.getTsReceived();
 					if (receivedDate == null) {
-						log.warn("{} {} is unknown, cannot update comments", supplier(this::getLogPrefix), supply(PipeLineSession.TS_RECEIVED_KEY));
+						log.warn("{} {} is unknown, cannot update comments", this::getLogPrefix, logValue(PipeLineSession.TS_RECEIVED_KEY));
 					} else {
 						errorStorage.deleteMessage(storageKey);
 						errorStorage.storeMessage(messageId, correlationId,receivedDate,"after retry: "+e.getMessage(),null, msg.rawMessage);
@@ -1172,7 +1175,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	private Message processMessageInAdapter(MessageWrapper<M> messageWrapper, PipeLineSession session, long waitingDuration, boolean manualRetry, boolean historyAlreadyChecked) throws ListenerException {
 		final long startProcessingTimestamp = System.currentTimeMillis();
 		final String logPrefix = getLogPrefix();
-		try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session)) {
+		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(getAdapter(), messageWrapper.getId(), session)) {
 			lastMessageDate = startProcessingTimestamp;
 			log.debug("{} received message with messageId [{}] correlationId [{}]", logPrefix, messageWrapper.getId(), messageWrapper.getCorrelationId());
 
@@ -1236,8 +1239,9 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 						result=pipeLineResult.getResult();
 
 						errorMessage = "exitState ["+pipeLineResult.getState()+"], result [";
-						if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN) { //Since we can determine the size, assume the message is preserved
-							errorMessage += result.asString().substring(0, ITransactionalStorage.MAXCOMMENTLEN);
+						if(!Message.isEmpty(result) && result.isRepeatable() && result.size() > ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length()) { //Since we can determine the size, assume the message is preserved
+							String resultString = result.asString();
+							errorMessage += resultString.substring(0, Math.min(ITransactionalStorage.MAXCOMMENTLEN - errorMessage.length(), resultString.length()));
 						} else {
 							errorMessage += result;
 						}
@@ -1454,7 +1458,8 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	private Message compactMessage(Message message, PipeLineSession session) {
-		CompactSaxHandler handler = new CompactSaxHandler();
+		XmlWriter xmlWriter = new XmlWriter();
+		CompactSaxHandler handler = new CompactSaxHandler(xmlWriter);
 		handler.setChompCharSize(getChompCharSize());
 		handler.setElementToMove(getElementToMove());
 		handler.setElementToMoveChain(getElementToMoveChain());
@@ -1464,7 +1469,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 
 		try {
 			XmlUtils.parseXml(message.asInputSource(), handler);
-			return new Message(handler.getXmlString());
+			return new Message(xmlWriter.toString());
 		} catch (Exception e) {
 			warn("received message could not be compacted: " + e.getMessage());
 			return message;
@@ -1652,7 +1657,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		if (currentInterval>1) {
 			error(description+", will continue retrieving messages in [" + currentInterval + "] seconds", t);
 		} else {
-			log.warn("{}, will continue retrieving messages in [{}] seconds", description, currentInterval, t);
+			log.info("{}, will continue retrieving messages in [{}] seconds. Details: {}", description, currentInterval, t != null ? t.getMessage() : "NA");
 		}
 		synchronized (this) {
 			if (currentInterval*2 > RCV_SUSPENSION_MESSAGE_THRESHOLD && !suspensionMessagePending) {
@@ -1699,8 +1704,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 			hski.closeGroup(recData);
 		}
 	}
-
-
 
 	@Override
 	public boolean isThreadCountReadable() {
@@ -1827,7 +1830,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		String errorMessage = null;
 		try {
 			if (getSender() != null) {
-				if (log.isDebugEnabled()) { log.debug("Receiver ["+getName()+"] sending result to configured sender"); }
+				log.debug("Receiver [{}] sending result to configured sender", this::getName);
 				getSender().sendMessageOrThrow(result, null); // sending correlated responses via a receiver embedded sender is not supported
 			}
 		} catch (Exception e) {
@@ -1967,15 +1970,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		return lastMessageDate;
 	}
 
-//	public StatisticsKeeper getRequestSizeStatistics() {
-//		return requestSizeStatistics;
-//	}
-//	public StatisticsKeeper getResponseSizeStatistics() {
-//		return responseSizeStatistics;
-//	}
-
-
-
 	public void resetNumberOfExceptionsCaughtWithoutMessageBeingReceived() {
 		if(log.isDebugEnabled()) log.debug("resetting [numberOfExceptionsCaughtWithoutMessageBeingReceived] to 0");
 		numberOfExceptionsCaughtWithoutMessageBeingReceived.setValue(0);
@@ -2040,13 +2034,11 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		this.messageLog = messageLog;
 	}
 
-
 	/**
-	 * Sets the name of the Receiver.
+	 * Sets the name of the Receiver, as known to the Adapter.
 	 * If the listener implements the {@link INamedObject name} interface and <code>getName()</code>
 	 * of the listener is empty, the name of this object is given to the listener.
 	 */
-	/** Name of the Receiver as known to the Adapter */
 	@Override
 	public void setName(String newName) {
 		name = newName;
@@ -2061,9 +2053,6 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		this.onError = value;
 	}
 
-	/**
-	 * The number of threads that this receiver is configured to work with.
-	 */
 	/**
 	 * The number of threads that may execute a Pipeline concurrently (only for pulling listeners)
 	 * @ff.default 1
@@ -2081,18 +2070,26 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	/**
-	 * The number of seconds waited after an unsuccesful poll attempt before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners
+	 * The number of seconds waited after an unsuccessful poll attempt, before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners
 	 * @ff.default 10
 	 */
 	public void setPollInterval(int i) {
 		pollInterval = i;
 	}
 
-	/** timeout to start receiver. If this timeout is reached, the Receiver may be stopped again */
+	/**
+	 *  timeout (in seconds) to start receiver. If this timeout is exceeded, the Receiver startup is
+	 *  aborted and all resources closed and the receiver will be in state {@code EXCEPTION_STARTING}
+	 *  and a new start command may be issued again.
+	 */
 	public void setStartTimeout(int i) {
 		startTimeout = i;
 	}
-	/** timeout to stopped receiver. If this timeout is reached, a new stop command may be issued */
+	/**
+	 *  timeout (in seconds) to stop receiver. If this timeout is exceeded, stopping will be aborted
+	 *  and the receiver will be in state {@code EXCEPTION_STOPPING}.
+	 *  The receiver will no longer be running but some resources might not have been cleaned up properly.
+	 */
 	public void setStopTimeout(int i) {
 		stopTimeout = i;
 	}
@@ -2178,13 +2175,13 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 		chompCharSize = string;
 	}
 
-	/** If set, the character data in this element is stored under a session key and in the message replaced by a reference to this session key: {sessionkey: + <code>elementToMoveSessionKey</code> + } */
+	/** If set, the character data in this XML element is stored inside a session key and in the message it is replaced by a reference to this session key: {sessionKey: + <code>elementToMoveSessionKey</code> + } */
 	public void setElementToMove(String string) {
 		elementToMove = string;
 	}
 
 	/**
-	 * (Only used when <code>elementToMove</code> is set) Name of the session key under which the character data is stored
+	 * (Only used when <code>elementToMove</code> or <code>elementToMoveChain</code> is set) Name of the session key wherein the character data is stored
 	 * @ff.default ref_ + the name of the element
 	 */
 	public void setElementToMoveSessionKey(String string) {
@@ -2227,7 +2224,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	/**
-	 * Number of connection attemps to put the adapter in warning status
+	 * Number of connection attempts to put the adapter in warning status
 	 * @ff.default 5
 	 */
 	public void setNumberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold(int number) {

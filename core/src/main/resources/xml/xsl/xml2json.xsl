@@ -1,9 +1,21 @@
-<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.0">
 	<xsl:output method="text"/>
+	<xsl:param name="includeRootElement" as="xs:boolean"/>
 	<xsl:template match="/">
-		<xsl:for-each select="*">
-			<xsl:call-template name="nodeValue"/>
-		</xsl:for-each>
+		<xsl:choose>
+			<xsl:when test="$includeRootElement">
+				<xsl:call-template name="node">
+					<xsl:with-param name="originalMessage">
+						<xsl:copy-of select="."/>
+					</xsl:with-param>
+				</xsl:call-template>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:for-each select="*">
+					<xsl:call-template name="nodeValue"/>
+				</xsl:for-each>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	<xsl:template name="node">
 		<xsl:param name="originalMessage"/>
@@ -60,8 +72,8 @@
 					<xsl:for-each select="tokenize(.,'&quot;')">
 						<xsl:if test="position()!=1">
 							<xsl:value-of select="'&amp;quot;'"/>
-						</xsl:if>	
-						<xsl:copy-of select="normalize-space(.)"/>	
+						</xsl:if>
+						<xsl:copy-of select="normalize-space(.)"/>
 					</xsl:for-each>
 				</xsl:variable>
 				<xsl:for-each select="tokenize($message,'\\')">

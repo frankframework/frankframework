@@ -34,9 +34,9 @@ import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupportFactory;
-import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.jndi.JndiBase;
 import nl.nn.adapterframework.jndi.JndiDataSourceFactory;
+import nl.nn.adapterframework.jndi.TransactionalDbmsSupportAwareDataSourceProxy;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeperIterationHandler;
@@ -87,7 +87,7 @@ public class JdbcFacade extends JndiBase implements HasPhysicalDestination, IXAE
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getDatasourceName())) {
-			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getResolvedProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
+			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getProperty(JndiDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY));
 		}
 		try {
 			if (getDatasource() == null) {

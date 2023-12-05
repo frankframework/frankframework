@@ -17,10 +17,10 @@ package nl.nn.adapterframework.validation;
 
 import java.util.Map;
 
-import javanet.staxutils.helpers.StreamWriterDelegate;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
+import javanet.staxutils.helpers.StreamWriterDelegate;
 
 /**
  * This writer simply filters an other writer. It copies everything, except it

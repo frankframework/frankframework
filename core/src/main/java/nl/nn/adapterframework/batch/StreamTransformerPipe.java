@@ -52,6 +52,7 @@ import nl.nn.adapterframework.util.StreamUtil;
  *
  * @author John Dekker / Gerrit van Brakel
  * @since   4.7
+ * @deprecated Warning: non-maintained functionality.
  */
 @ElementType(ElementTypes.TRANSLATOR)
 public class StreamTransformerPipe extends FixedForwardPipe {

@@ -99,9 +99,9 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<global-forwards>
-				<forward name="exception" path="error_exception2" />
-			</global-forwards>
+			<GlobalForwards>
+				<Forward name="exception" path="error_exception2" />
+			</GlobalForwards>
 			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
 				xpathExpression="request/@action"></pipe>
 			<!-- send2ws_no_forwards -->

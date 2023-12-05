@@ -8,9 +8,14 @@
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid} %c{2} - %m%n%xEx{short}</Pattern>
 			</Layout>
 		</Appender>
+		<Appender name="systemout" type="Console">
+			<Layout type="PatternLayout">
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%xEx{short}</Pattern>
+			</Layout>
+		</Appender>
 		<Appender name="file" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
 			<Filters>
-				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex}" />
+				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex:-}" />
 			</Filters>
 			<Layout type="IbisPatternLayout">
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid,adapter,pipe} %c{2} - %m%n%xEx{filters(${ctx:log.stacktrace.filters})}</Pattern>
@@ -22,7 +27,7 @@
 		</Appender>
 		<Appender name="XML" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}_xml.log.%i">
 			<Filters>
-				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex}" />
+				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex:-}" />
 			</Filters>
 			<Layout type="IbisXmlLayout" />
 			<Policies>
@@ -31,7 +36,7 @@
 			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
 		<Appender name="msg-text" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log.%i" append="true">
-			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m %X %x%n"/>
+			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m %TC %x%n"/>
 			<Policies>
 				<Policy type="SizeBasedTriggeringPolicy" size="${ctx:log.maxFileSize}" />
 			</Policies>
@@ -103,7 +108,7 @@
 		<Logger name="org.springframework.security.ldap" level="WARN" />
 
 		<Logger name="liquibase.migrationLog" level="INFO">
-			<AppenderRef ref="stdout"/>
+			<AppenderRef ref="systemout"/>
 			<AppenderRef ref="config"/>
 		</Logger>
 
@@ -111,7 +116,7 @@
 			<AppenderRef ref="msg-text"/>
 			<AppenderRef ref="msg-json"/>
 		</Logger>
-		<Logger name="SEC" additivity="false" level="INFO">
+		<Logger name="SEC" additivity="false" level="${ctx:security.log.level}">
 			<AppenderRef ref="security"/>
 		</Logger>
 		<Logger name="HEARTBEAT" additivity="false" level="INFO">
@@ -119,6 +124,9 @@
 		</Logger>
 		<Logger name="CONFIG" additivity="false" level="INFO">
 			<AppenderRef ref="config"/>
+		</Logger>
+		<Logger name="APPLICATION" additivity="true" level="DEBUG">
+			<AppenderRef ref="systemout"/>
 		</Logger>
 		<Logger name="nl.nn.testtool" additivity="false" level="INFO">
 			<AppenderRef ref="ladybug"/>

@@ -37,6 +37,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  *
  * @author  Gerrit van Brakel
  * @since   4.7
+ * @deprecated Warning: non-maintained functionality.
  */
 public class ResultBlock2Sender extends Result2StringWriter {
 
@@ -153,12 +154,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 				Message message=new Message(writer.getBuffer().toString());
 				log.debug("sending block ["+message+"] to sender ["+sender.getName()+"]");
 				writer.getBuffer().setLength(0);
-				/*
-				 * This used to be:
-				 * getSender().sendMessage(streamId+"-"+incCounter(streamId),message, session);
-				 * Be aware that 'correlationId' no longer reflects streamId and counter
-				 */
-				getSender().sendMessageOrThrow(message,session);
+				getSender().sendMessageOrThrow(message, session).close();
 			}
 		}
 	}

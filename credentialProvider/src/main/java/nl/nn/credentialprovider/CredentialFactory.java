@@ -22,15 +22,15 @@ import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.credentialprovider.util.AppConstants;
+import nl.nn.credentialprovider.util.CredentialConstants;
 
 public class CredentialFactory {
 	protected Logger log = Logger.getLogger(this.getClass().getCanonicalName());
 
 	private static final String CREDENTIAL_FACTORY_KEY="credentialFactory.class";
 	private static final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY="credentialFactory.optionalPrefix";
-	private static final String DEFAULT_CREDENTIAL_FACTORY1=FileSystemCredentialFactory.class.getName();
-	private static final String DEFAULT_CREDENTIAL_FACTORY2=WebSphereCredentialFactory.class.getName();
+	private static final String DEFAULT_CREDENTIAL_FACTORY=FileSystemCredentialFactory.class.getName();
+	private static final String FALLBACK_CREDENTIAL_FACTORY=WebSphereCredentialFactory.class.getName();
 
 	private static String optionalPrefix;
 
@@ -39,7 +39,7 @@ public class CredentialFactory {
 	private static CredentialFactory self;
 
 	static {
-		optionalPrefix = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY);
+		optionalPrefix = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY);
 		if (optionalPrefix != null) {
 			optionalPrefix = optionalPrefix.toLowerCase();
 		}
@@ -53,14 +53,14 @@ public class CredentialFactory {
 	}
 
 	private CredentialFactory() {
-		String factoryClassName = AppConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
+		String factoryClassName = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
 		if (tryFactory(factoryClassName)) {
 			return;
 		}
-		if (tryFactory(DEFAULT_CREDENTIAL_FACTORY1)) {
+		if (tryFactory(DEFAULT_CREDENTIAL_FACTORY)) {
 			return;
 		}
-		if (tryFactory(DEFAULT_CREDENTIAL_FACTORY2)) {
+		if (tryFactory(FALLBACK_CREDENTIAL_FACTORY)) {
 			return;
 		}
 		log.warning("No CredentialFactory installed");

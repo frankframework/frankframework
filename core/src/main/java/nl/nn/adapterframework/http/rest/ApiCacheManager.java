@@ -24,8 +24,8 @@ public class ApiCacheManager {
 	private static IApiCache cache = null;
 	private static AppConstants appConstants = AppConstants.getInstance();
 	private static String etagCacheType = appConstants.getProperty("etag.cache.type", "ehcache");
-	private static String instanceName = appConstants.getResolvedProperty("instance.name");
-	private static String dtapStage = appConstants.getResolvedProperty("dtap.stage");
+	private static String instanceName = appConstants.getProperty("instance.name");
+	private static String dtapStage = appConstants.getProperty("dtap.stage");
 
 	/**
 	 * Get the etagCache, defaults to EhCache when no type has been specified.

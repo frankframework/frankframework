@@ -54,7 +54,7 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class BrowseJdbcTable extends BusEndpointBase {
 
 	private static final String DB2XML_XSLT = "xml/xsl/BrowseJdbcTableExecute.xsl";
-	private static final String JDBC_PERMISSION_RULES = AppConstants.getInstance().getResolvedProperty("browseJdbcTable.permission.rules");
+	private static final String JDBC_PERMISSION_RULES = AppConstants.getInstance().getProperty("browseJdbcTable.permission.rules");
 	private static final String COLUMN_NAME = "COLUMN_NAME";
 	private static final String DATA_TYPE = "DATA_TYPE";
 	private static final String COLUMN_SIZE = "COLUMN_SIZE";
@@ -128,9 +128,11 @@ public class BrowseJdbcTable extends BusEndpointBase {
 				Transformer t = XmlUtils.createTransformer(url);
 				query = XmlUtils.transformXml(t, browseJdbcTableExecuteREQ);
 			}
-			result = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query), null).asString();
+			try (nl.nn.adapterframework.stream.Message message = qs.sendMessageOrThrow(new nl.nn.adapterframework.stream.Message(query), null)) {
+				result = message.asString();
+			}
 		} catch (Exception t) {
-			throw new BusException("an error occured on executing jdbc query ["+query+"]", t);
+			throw new BusException("an error occurred on executing jdbc query ["+query+"]", t);
 		} finally {
 			qs.close();
 		}

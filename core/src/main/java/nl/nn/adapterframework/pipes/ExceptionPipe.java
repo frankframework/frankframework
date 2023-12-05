@@ -15,16 +15,16 @@
 */
 package nl.nn.adapterframework.pipes;
 
+import java.io.IOException;
+
+import org.apache.commons.lang3.StringUtils;
+
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.stream.Message;
-
-import java.io.IOException;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Pipe that throws an exception, based on the input message.

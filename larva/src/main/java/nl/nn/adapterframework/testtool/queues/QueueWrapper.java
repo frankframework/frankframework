@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.IListener;
@@ -37,6 +38,7 @@ import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -52,8 +54,10 @@ import nl.nn.adapterframework.testtool.SenderThread;
 import nl.nn.adapterframework.testtool.TestTool;
 import nl.nn.adapterframework.testtool.XsltProviderListener;
 import nl.nn.adapterframework.util.DomBuilderException;
+import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.XmlUtils;
 
+@Log4j2
 public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	private static final String CONVERT_MESSAGE_TO_EXCEPTION_KEY = "convertExceptionToMessage";
 	private static final String PIPELINESESSION_KEY = "session";
@@ -64,7 +68,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 	private QueueWrapper(IConfigurable configurable) {
 		super();
 
-		queueKey = QueueUtils.firstCharToLower(configurable.getClass().getSimpleName());
+		queueKey = StringUtil.lcFirst(configurable.getClass().getSimpleName());
 		put(queueKey, configurable);
 
 		if(configurable instanceof IPushingListener) {
@@ -257,8 +261,7 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 		return (IConfigurable) get(queueKey);
 	}
 
-	public static QueueWrapper createQueue(String className, Properties queueProperties, int defaultTimeout, String correlationId) { //TODO use correlationId
-		IConfigurable configurable = QueueUtils.createInstance(className);
+	public static QueueWrapper create(IConfigurable configurable, Properties queueProperties, int defaultTimeout, String correlationId) { //TODO use correlationId
 		QueueUtils.invokeSetters(configurable, queueProperties);
 		return create(configurable).invokeSetters(defaultTimeout, queueProperties);
 	}
@@ -303,9 +306,14 @@ public class QueueWrapper extends HashMap<String, Object> implements Queue {
 			fileSender.sendMessage(fileContent);
 			return TestTool.RESULT_OK;
 		}
-		if(get() instanceof DelaySender) {
-			DelaySender delaySender = (DelaySender)get();
-			delaySender.sendMessage(new Message(fileContent), null);
+		if (get() instanceof DelaySender) {
+			DelaySender delaySender = (DelaySender) get();
+			SenderResult senderResult = delaySender.sendMessage(new Message(fileContent), null);
+			try {
+				senderResult.getResult().close();
+			} catch (IOException e) {
+				log.warn("Could not close senderResult for queue {}", get(), e);
+			}
 			return TestTool.RESULT_OK;
 		}
 		if(get() instanceof XsltProviderListener) {

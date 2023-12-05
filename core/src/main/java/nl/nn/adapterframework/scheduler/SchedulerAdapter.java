@@ -20,16 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import nl.nn.adapterframework.configuration.Configuration;
-import nl.nn.adapterframework.configuration.IbisManager;
-import nl.nn.adapterframework.scheduler.job.IJob;
-import nl.nn.adapterframework.statistics.ItemList;
-import nl.nn.adapterframework.statistics.StatisticsKeeper;
-import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.MessageKeeper;
-import nl.nn.adapterframework.util.XmlBuilder;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.quartz.CronTrigger;
@@ -43,6 +33,16 @@ import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
+
+import nl.nn.adapterframework.configuration.Configuration;
+import nl.nn.adapterframework.configuration.IbisManager;
+import nl.nn.adapterframework.scheduler.job.IJob;
+import nl.nn.adapterframework.statistics.ItemList;
+import nl.nn.adapterframework.statistics.StatisticsKeeper;
+import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.MessageKeeper;
+import nl.nn.adapterframework.util.XmlBuilder;
 /**
  * The SchedulerAdapter is an adapter for the <a href="http://quartz.sourceforge.net">Quartz scheduler</a> <br/>
  * It transforms the information from the scheduler to XML.

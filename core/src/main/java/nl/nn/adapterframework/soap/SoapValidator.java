@@ -70,7 +70,7 @@ public class SoapValidator extends Json2XmlValidator {
 			if (StringUtils.isEmpty(getSchemaLocation())) {
 				throw new ConfigurationException("schemaLocation must be specified");
 			}
-			super.setSchemaLocation(getSchemaLocation() + (getSchemaLocation().length() > 0 ? " " : "") + soapVersion.getSchemaLocation());
+			super.setSchemaLocation(getSchemaLocation() + (!getSchemaLocation().isEmpty() ? " " : "") + soapVersion.getSchemaLocation());
 		}
 
 		if (!isAllowPlainXml()) {
@@ -80,10 +80,7 @@ public class SoapValidator extends Json2XmlValidator {
 			}
 			addRequestRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader));
 
-			List<String> soapRootNamespaces = new ArrayList<>();
-			for (String namespace:soapVersion.getNamespaces()) {
-				soapRootNamespaces.add(namespace);
-			}
+			List<String> soapRootNamespaces = new ArrayList<>(soapVersion.getNamespaces());
 			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_BODY_ELEMENT_NAME, soapBody), soapRootNamespaces);
 			addInvalidRootNamespaces(Arrays.asList(SOAP_ENVELOPE_ELEMENT_NAME, SOAP_HEADER_ELEMENT_NAME, soapHeader), soapRootNamespaces);
 		}
@@ -176,8 +173,8 @@ public class SoapValidator extends Json2XmlValidator {
 	}
 
 	/**
-	 * Ignore namespaces in the input message which are unknown. If the XSD used has elementFormDefault=unqualified, it is necessary to set this to true. Be aware, however, that 
-	 * this will inhibit the validator to detect validation failures of namespaceless subelements of the SoapBody. 
+	 * Ignore namespaces in the input message which are unknown. If the XSD used has elementFormDefault=unqualified, it is necessary to set this to true. Be aware, however, that
+	 * this will inhibit the validator to detect validation failures of namespaceless subelements of the SoapBody.
 	 * @ff.default true when <code>schema</code> or <code>noNamespaceSchemaLocation</code> is used, false otherwise
 	 */
 	@Override

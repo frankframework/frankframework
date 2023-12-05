@@ -20,7 +20,7 @@
 		</pipeline>
 	</adapter>
 	<adapter name="CompactMessage-JmsListener" active="${active.jms}">
-		<receiver chompCharSize="50" elementToMoveChain="AuditLog_Action;Message;Text">
+		<receiver chompCharSize="50" elementToMoveChain="AuditLog_Action;Message;FunctionCallId">
 			<listener className="nl.nn.adapterframework.jms.JmsListener"
 				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE ='I4TIAF3'">

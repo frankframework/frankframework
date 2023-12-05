@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.ldap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -13,8 +13,9 @@ import org.custommonkey.xmlunit.Difference;
 import org.custommonkey.xmlunit.DifferenceConstants;
 import org.custommonkey.xmlunit.DifferenceListener;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -46,6 +47,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	}
 
 	@Override
+	@BeforeEach
 	public void setUp() throws Exception {
 		XMLUnit.setIgnoreWhitespace(true);
 		XMLUnit.setIgnoreAttributeOrder(true);
@@ -67,8 +69,8 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		super.setUp();
 	}
 
-	@After
 	@Override
+	@AfterEach
 	public void tearDown() throws Exception {
 		if(inMemoryDirectoryServer != null) {
 			inMemoryDirectoryServer.shutDown(true);
@@ -204,6 +206,6 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 			}
 		});
-		assertTrue(diff.toString(), diff.identical());
+		assertTrue(diff.identical(), diff.toString());
 	}
 }

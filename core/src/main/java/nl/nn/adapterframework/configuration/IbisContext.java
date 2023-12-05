@@ -61,6 +61,7 @@ import nl.nn.adapterframework.util.flow.FlowDiagramManager;
  */
 public class IbisContext extends IbisApplicationContext {
 	private static final Logger LOG = LogUtil.getLogger(IbisContext.class);
+	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	static {
 		if(!Boolean.parseBoolean(APP_CONSTANTS.getProperty("jdbc.convertFieldnamesToUppercase")))
@@ -111,7 +112,7 @@ public class IbisContext extends IbisApplicationContext {
 		try {
 			long start = System.currentTimeMillis();
 
-			LOG.info("Attempting to start IBIS application [{}]", getApplicationName());
+			APPLICATION_LOG.debug("Starting application [{}]", this::getApplicationName);
 			createApplicationContext();
 			LOG.debug("Created Ibis Application Context");
 
@@ -129,19 +130,21 @@ public class IbisContext extends IbisApplicationContext {
 
 			load();
 
-			log("startup in " + (System.currentTimeMillis() - start) + " ms");
+			long startupTime = (System.currentTimeMillis() - start);
+			log("startup in " + startupTime + " ms");
+			APPLICATION_LOG.info("Application [{}] startup in {} ms", this::getApplicationName, ()-> startupTime);
 		}
 		catch (Exception e) {
 			//Catch all exceptions, the IBIS failed to startup...
 			if(reconnect) {
-				LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", e);
+				APPLICATION_LOG.error("Failed to initialize IbisContext, retrying in 1 minute!", e);
 
 				ibisContextReconnectThread = new Thread(new IbisContextRunnable(this));
 				ibisContextReconnectThread.setName("IbisContext-ReconnectThread"); //Give the thread a somewhat descriptive name
 				ibisContextReconnectThread.start();
 			}
 			else {
-				LOG.error("Failed to initialize IbisContext", e);
+				APPLICATION_LOG.fatal("Failed to initialize IbisContext", e);
 				throw e;
 			}
 		}
@@ -154,6 +157,7 @@ public class IbisContext extends IbisApplicationContext {
 	 */
 	@Override
 	public synchronized void close() {
+		LOG.debug("Shutting down application [{}]", this::getApplicationName);
 		long start = System.currentTimeMillis();
 
 		if(ibisManager != null) {
@@ -166,8 +170,10 @@ public class IbisContext extends IbisApplicationContext {
 			classLoaderManager.shutdown();
 		}
 
-		log("shutdown in " + (System.currentTimeMillis() - start) + " ms"); //Should log this before the actual Context is destroyed
+		long shutdownTime = (System.currentTimeMillis() - start);
+		log("shutdown in " + shutdownTime + " ms"); //Should log this before the actual Context is destroyed
 		super.close();
+		APPLICATION_LOG.info("Application [{}] shutdown in {} ms", this::getApplicationName, ()-> shutdownTime);
 	}
 
 	/**
@@ -237,7 +243,7 @@ public class IbisContext extends IbisApplicationContext {
 	 * @see #load(String)
 	 */
 	private void load() {
-		if(AppConstants.getInstance().getBoolean(AppConstants.JDBC_PROPERTIES_KEY, false)) {
+		if(AppConstants.getInstance().getBoolean(JdbcPropertySourceFactory.JDBC_PROPERTIES_KEY, false)) {
 			JdbcPropertySourceFactory propertySourceFactory = getBean("jdbcPropertySourceFactory", JdbcPropertySourceFactory.class);
 			Properties properties = propertySourceFactory.createPropertySource(getApplicationName()+"-DatabaseProperties");
 			if(properties != null) {

@@ -18,8 +18,8 @@ package nl.nn.adapterframework.http.cxf;
 import javax.xml.ws.BindingType;
 import javax.xml.ws.ServiceMode;
 
-import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.ListenerException;
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.PushingListenerAdapter;
 import nl.nn.adapterframework.stream.Message;
 

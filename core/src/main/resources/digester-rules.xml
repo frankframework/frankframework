@@ -37,7 +37,7 @@
 	<rule pattern="*/pipe" registerMethod="addPipe" paramtype="nl.nn.adapterframework.core.IPipe" beanClass="nl.nn.adapterframework.pipes.SenderPipe"/>
 
 	<!-- forward element is on the pipeline / global-forward as well as on the pipe element -->
-	<rule pattern="*/global-forwards" registerMethod="setGlobalForwards"/>
+	<rule pattern="*/globalForwards" registerMethod="setGlobalForwards"/>
 	<rule pattern="*/forward" registerMethod="registerForward" beanClass="nl.nn.adapterframework.core.PipeForward"/>
 	<rule pattern="*/child" registerMethod="registerChild"/>
 	<rule pattern="*/outputFields" registerMethod="registerOutputFields"/>

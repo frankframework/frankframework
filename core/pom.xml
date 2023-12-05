@@ -22,6 +22,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ibissource</groupId>
 			<artifactId>credentialprovider</artifactId>
 		</dependency>
 		<dependency>
@@ -93,10 +97,9 @@
 			<version>${micrometer.version}</version>
 		</dependency>
 
-		<!-- explicit dependency to force version 1.1.1 -->
-		<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
-			<groupId>javax.activation</groupId>
-			<artifactId>activation</artifactId>
+		<dependency><!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
+			<groupId>jakarta.activation</groupId>
+			<artifactId>jakarta.activation-api</artifactId>
 		</dependency>
 		<dependency><!-- this dependency handles jakarta.activation.* imports -->
 			<groupId>com.sun.activation</groupId>
@@ -114,6 +117,13 @@
 			</exclusions>
 		</dependency>
 
+		<!-- perhaps it's a good idea to put all API's at the top of the POM... -->
+		<dependency>
+			<groupId>jakarta.transaction</groupId>
+			<artifactId>jakarta.transaction-api</artifactId>
+			<version>1.3.3</version>
+			<scope>provided</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.geronimo.specs</groupId>
 			<artifactId>geronimo-jms_1.1_spec</artifactId>
@@ -121,7 +131,7 @@
 		<dependency>
 			<groupId>org.messaginghub</groupId>
 			<artifactId>pooled-jms</artifactId>
-			<version>1.2.4</version>
+			<version>1.2.6</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.geronimo.specs</groupId>
@@ -132,13 +142,13 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-dbcp2</artifactId>
-			<version>2.9.0</version>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.transaction</groupId>
-			<artifactId>jakarta.transaction-api</artifactId>
-			<version>1.3.3</version>
-			<scope>provided</scope>
+			<version>2.11.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>jakarta.transaction</groupId>
+					<artifactId>jakarta.transaction-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -154,7 +164,6 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
-			<version>1.10.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -284,29 +293,11 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-core</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-config</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-ldap</artifactId>
-		</dependency>
-		<!-- not yet used, note that it depends on Spring 4.3.30
-		<dependency>
-			<groupId>org.springframework.security.oauth</groupId>
-			<artifactId>spring-security-oauth2</artifactId>
-			<version>2.5.2.RELEASE</version>
-		</dependency>
-		-->
+
 		<dependency> <!-- for version number compare -->
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-artifact</artifactId>
-			<version>3.9.3</version>
+			<version>3.9.6</version>
 		</dependency>
 
 		<dependency>
@@ -328,7 +319,7 @@
 		<dependency>
 			<groupId>org.apache.wss4j</groupId>
 			<artifactId>wss4j-ws-security-dom</artifactId>
-			<version>2.4.1</version>
+			<version>2.4.3</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.opensaml</groupId>
@@ -354,6 +345,10 @@
 				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -384,22 +379,16 @@
 		<dependency>
 			<groupId>com.github.mwiede</groupId>
 			<artifactId>jsch</artifactId>
-			<version>0.2.11</version>
+			<version>0.2.13</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.mockftpserver</groupId>
-			<artifactId>MockFtpServer</artifactId>
-			<version>3.1.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.sshd</groupId>
 			<artifactId>sshd-sftp</artifactId>
-			<version>2.10.0</version>
+			<version>2.11.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -407,6 +396,12 @@
 			<artifactId>jfileserver</artifactId>
 			<version>1.3.15</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- available through our nexus -->
 		<dependency>
@@ -435,12 +430,6 @@
 			<groupId>xalan</groupId>
 			<artifactId>serializer</artifactId>
 			<version>2.7.3</version>
-			<exclusions>
-				<exclusion><!-- Part of JDK nowadays, prevent conflicts -->
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -457,7 +446,7 @@
 		<dependency>
 			<groupId>org.apache.xmlbeans</groupId>
 			<artifactId>xmlbeans</artifactId>
-			<version>5.1.1</version>
+			<version>5.2.0</version>
 			<exclusions>
 				<exclusion><!-- Java 8 scoped profile -->
 					<groupId>xml-apis</groupId>
@@ -473,12 +462,18 @@
 		<dependency>
 			<groupId>com.sendgrid</groupId>
 			<artifactId>sendgrid-java</artifactId>
-			<version>4.9.3</version>
+			<version>4.10.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>com.hierynomus</groupId>
 			<artifactId>smbj</artifactId>
-			<version>0.12.1</version>
+			<version>0.13.0</version>
 		</dependency>
 		<dependency>
 			<groupId>jcifs</groupId>
@@ -550,7 +545,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.13.9</version>
+			<version>1.14.0</version>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
@@ -570,7 +565,7 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-			<version>4.23.0</version>
+			<version>4.24.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>javax.xml.bind</groupId>
@@ -729,6 +724,10 @@
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>javax.activation</groupId>
+					<artifactId>activation</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
@@ -750,7 +749,7 @@
 		<dependency>
 			<groupId>org.codehaus.woodstox</groupId>
 			<artifactId>stax2-api</artifactId>
-			<version>4.2.1</version>
+			<version>4.2.2</version>
 		</dependency>
 
 		<dependency>
@@ -763,21 +762,32 @@
 					<groupId>ch.qos.logback</groupId>
 					<artifactId>logback-classic</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcpg-jdk15on</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
-<!--		Bouncy GPG uses this version. However another dependency uses 1.60,
-			and causes problems during loading from classpath.
-			So, it requires it to be explicitly defined here in the pom -->
+		<!-- bouncy-gpg uses an very old version published under a different artifact name -->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.70</version>
+			<artifactId>bcprov-jdk18on</artifactId>
+			<version>1.77</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpg-jdk18on</artifactId>
+			<version>1.77</version>
 		</dependency>
 
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
-			<version>9.31</version>
+			<version>9.37.2</version>
 		</dependency>
 
 		<dependency>
@@ -806,7 +816,7 @@
 		<!-- Test scoped dependencies -->
 		<dependency>
 			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-all</artifactId>
+			<artifactId>hamcrest</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -827,18 +837,30 @@
 		<dependency>
 			<groupId>com.github.tomakehurst</groupId>
 			<artifactId>wiremock-jre8-standalone</artifactId>
-			<version>2.35.0</version>
+			<version>2.35.1</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.icegreen</groupId>
 			<artifactId>greenmail-junit5</artifactId>
-			<version>2.0.0</version>
+			<version>2.0.1</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.mockrunner</groupId>
+			<artifactId>mockrunner-jms</artifactId>
+			<version>2.0.7</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>xerces</groupId>
+					<artifactId>xercesImpl</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -891,7 +913,7 @@
 		<dependency>
 			<groupId>com.unboundid</groupId>
 			<artifactId>unboundid-ldapsdk</artifactId>
-			<version>6.0.9</version>
+			<version>6.0.11</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -910,6 +932,26 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>log4j2-plugin-processor</id>
+						<goals>
+							<goal>compile</goal>
+						</goals>
+						<phase>process-classes</phase>
+						<configuration>
+							<proc>only</proc>
+							<compileSourceRoots>${project.build.directory}/generated-sources/delombok</compileSourceRoots>
+							<annotationProcessors>
+								<annotationProcessor>org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor</annotationProcessor>
+							</annotationProcessors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -968,24 +1010,4 @@
 		</profile>
 	</profiles>
 
-	<!-- Lock transient dependency versions to fix CVE's -->
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>net.minidev</groupId>
-				<artifactId>json-smart</artifactId>
-				<version>2.5.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.jdom</groupId>
-				<artifactId>jdom2</artifactId>
-				<version>2.0.6.1</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-beanutils</groupId>
-				<artifactId>commons-beanutils</artifactId>
-				<version>1.9.4</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
 </project>

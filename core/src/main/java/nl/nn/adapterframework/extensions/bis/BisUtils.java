@@ -23,7 +23,6 @@ import java.util.List;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import nl.nn.adapterframework.util.UUIDUtil;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -37,9 +36,10 @@ import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Misc;
 import nl.nn.adapterframework.util.TransformerPool;
+import nl.nn.adapterframework.util.TransformerPool.OutputType;
+import nl.nn.adapterframework.util.UUIDUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
-import nl.nn.adapterframework.util.TransformerPool.OutputType;
 
 /**
  * Some utilities for working with BIS.
@@ -47,7 +47,7 @@ import nl.nn.adapterframework.util.TransformerPool.OutputType;
  * @author Peter Leeuwenburgh
  * @deprecated Please use BisWrapperPipe
  */
-
+@Deprecated
 public class BisUtils {
 	protected Logger log = LogUtil.getLogger(this);
 

@@ -21,16 +21,16 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
-import nl.nn.adapterframework.util.LogUtil;
 
 public class MessageContext extends LinkedHashMap<String,Object> {
-	protected transient Logger log = LogUtil.getLogger(this);
+	private static final Logger LOG = LogManager.getLogger(MessageContext.class);
 
 	public static final String HEADER_PREFIX = "Header.";
 
@@ -75,7 +75,7 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 		try {
 			withMimeType(MimeType.valueOf(mimeType));
 		} catch (InvalidMimeTypeException imte) {
-			log.warn("unable to parse mimetype from string [{}]", mimeType, imte);
+			LOG.warn("unable to parse mimetype from string [{}]", mimeType, imte);
 		}
 
 		return this;

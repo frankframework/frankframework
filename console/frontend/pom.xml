@@ -10,13 +10,34 @@
 	<artifactId>ibis-adapterframework-console-frontend</artifactId>
 	<name>Frank Console Frontend</name>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.ibissource</groupId>
+			<artifactId>ibis-adapterframework-commons</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
 	<build>
 		<defaultGoal>generate-resources</defaultGoal>
 		<plugins>
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
 				<artifactId>frontend-maven-plugin</artifactId>
-				<version>1.13.4</version>
+				<version>1.15.0</version>
 				<executions>
 					<execution>
 						<id>install node and npm</id>
@@ -63,7 +84,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.outputDirectory}/META-INF/resources/iaf/gui</outputDirectory>
+							<outputDirectory>${project.build.outputDirectory}/console</outputDirectory>
 							<resources>
 								<resource>
 									<directory>${basedir}/target/frontend</directory>
@@ -167,13 +188,34 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.6.3</version>
 				<configuration>
 					<skip>true</skip>
 				</configuration>
 			</plugin>
 		</plugins>
 	</reporting>
+
+	<developers>
+		<developer>
+			<name>Niels Meijer</name>
+			<email>niels@frankframework.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+		<developer>
+			<name>Matt Booman</name>
+			<email>matt@frankframework.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+		<developer>
+			<name>Sergi Philipsen</name>
+			<email>sergi@frankframework.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+	</developers>
 
 	<profiles>
 		<profile>
@@ -183,7 +225,7 @@
 					<plugin>
 						<groupId>com.github.eirslett</groupId>
 						<artifactId>frontend-maven-plugin</artifactId>
-						<version>1.13.4</version>
+						<version>1.15.0</version>
 						<executions>
 							<execution>
 								<id>npm build</id>

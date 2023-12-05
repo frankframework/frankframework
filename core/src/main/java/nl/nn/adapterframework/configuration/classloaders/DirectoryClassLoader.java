@@ -36,7 +36,7 @@ public class DirectoryClassLoader extends ClassLoaderBase {
 
 		if (directory == null) {
 			AppConstants appConstants = AppConstants.getInstance();
-			String configurationsDirectory = appConstants.getResolvedProperty("configurations.directory");
+			String configurationsDirectory = appConstants.getProperty("configurations.directory");
 			if (configurationsDirectory == null) {
 				throw new ClassLoaderException("Could not find property configurations.directory");
 			}

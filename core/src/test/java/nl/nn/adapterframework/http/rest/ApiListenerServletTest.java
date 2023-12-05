@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
@@ -59,7 +58,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -87,6 +85,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
 import nl.nn.adapterframework.core.IMessageHandler;
@@ -106,11 +105,10 @@ import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.EnumUtils;
-import nl.nn.adapterframework.util.LogUtil;
 
+@Log4j2
 public class ApiListenerServletTest extends Mockito {
-	private Logger log = LogUtil.getLogger(this);
-	private List<ApiListener> listeners = Collections.synchronizedList(new ArrayList<>());
+	private final List<ApiListener> listeners = Collections.synchronizedList(new ArrayList<>());
 	private static final String JWT_VALIDATION_URI="/jwtvalidator";
 
 	private static final String PAYLOAD="{\"sub\":\"UnitTest\",\"aud\":\"Framework\",\"iss\":\"JWTPipeTest\",\"jti\":\"1234\"}";
@@ -763,7 +761,7 @@ public class ApiListenerServletTest extends Mockito {
 		// Assert
 		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(400, result.getStatus());
-		assertEquals("Could not read mime multipart response", result.getErrorMessage());
+		assertEquals("Could not read mime multipart request", result.getErrorMessage());
 	}
 
 	@Test
@@ -851,12 +849,13 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void apiListenerWithRepeatableMessageShouldReturnEtag() throws Exception {
+	public void apiListenerWithExplicitlyEnabledEtag() throws Exception {
 		// Arrange
 		String uri="/etag1";
 		Message repeatableMessage = new Message("{\"tralalalallala\":true}", new MessageContext().withModificationTime("2023-01-13 14:02:00"));
 		new ApiListenerBuilder(uri, Methods.GET)
 			.withResponseContent(repeatableMessage)
+			.setUpdateEtag(true)
 			.build();
 
 		Map<String, String> headers = new HashMap<String, String>();
@@ -877,13 +876,12 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void apiListenerWithNonRepeatableMessageShouldNotReturnEtag() throws Exception {
+	public void apiListenerWithRepeatableMessageAndGloballyDisabled() throws Exception {
 		// Arrange
 		String uri="/etag2";
 		Message repeatableMessage = Message.asMessage(new Message("{\"tralalalallala\":true}").asByteArray());
-		Message nonRepeatableMessage = new Message(new FilterInputStream(repeatableMessage.asInputStream()) {}, new MessageContext().withModificationTime("2023-01-13 14:02:00"));
 		new ApiListenerBuilder(uri, Methods.GET)
-			.withResponseContent(nonRepeatableMessage)
+			.withResponseContent(repeatableMessage)
 			.build();
 
 		Map<String, String> headers = new HashMap<String, String>();
@@ -900,7 +898,6 @@ public class ApiListenerServletTest extends Mockito {
 		assertFalse(result.containsHeader("etag"));
 		assertEquals("no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0", result.getHeader("Cache-Control"));
 		assertTrue(result.containsHeader("pragma"));
-		assertEquals("Fri, 13 Jan 2023 13:02:00 GMT", result.getHeader("Last-Modified"));
 	}
 
 	@Test
@@ -1400,6 +1397,41 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void testJwtTokenParsingWithAnyMatchClaims() throws Exception {
+		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
+			.setRequiredIssuer("JWTPipeTest")
+			.setAnyMatchClaims("aud=nomatch, sub=UnitTest")
+			.setAuthenticationMethod(AuthenticationMethods.JWT)
+			.build();
+
+		Response result = service(prepareJWTRequest(null));
+
+		assertEquals(200, result.getStatus());
+		assertEquals(PAYLOAD, session.get("ClaimsSet"));
+		assertTrue(result.containsHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void testJwtTokenParsingWithExactAndAnyMatchClaims() throws Exception {
+		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
+			.setRequiredIssuer("JWTPipeTest")
+			.setExactMatchClaims("sub=UnitTest")
+			.setAnyMatchClaims("aud=nomatch, aud=Framework")
+			.setAuthenticationMethod(AuthenticationMethods.JWT)
+			.build();
+
+		Response result = service(prepareJWTRequest(null));
+
+		assertEquals(200, result.getStatus());
+		assertEquals(PAYLOAD, session.get("ClaimsSet"));
+		assertTrue(result.containsHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void testJwtTokenMissingRequiredClaims() throws Exception {
 		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
 			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
@@ -1429,6 +1461,22 @@ public class ApiListenerServletTest extends Mockito {
 		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
 		assertEquals(403, result.getStatus());
 		assertEquals("JWT aud claim has value [Framework], must be [test]", result.getErrorMessage());
+	}
+
+	@Test
+	public void testJwtTokenNoMatchForAnyMatchClaim() throws Exception {
+		new ApiListenerBuilder(JWT_VALIDATION_URI, Methods.GET)
+			.setJwksURL(TestFileUtils.getTestFileURL("/JWT/jwks.json").toString())
+			.setRequiredIssuer("JWTPipeTest")
+			.setAnyMatchClaims("sub=test, aud=test")
+			.setAuthenticationMethod(AuthenticationMethods.JWT)
+			.build();
+
+		Response result = service(prepareJWTRequest(null));
+
+		assertFalse(handlerInvoked, "Request Handler should not have been invoked, pre-conditions should have failed and stopped request-processing");
+		assertEquals(403, result.getStatus());
+		assertEquals("JWT does not match one of: [sub=test, aud=test]", result.getErrorMessage());
 	}
 
 	@Test
@@ -1498,13 +1546,14 @@ public class ApiListenerServletTest extends Mockito {
 		return prepareJWTRequest(token, "Authorization");
 	}
 	public MockHttpServletRequest prepareJWTRequest(String token, String header) throws Exception {
-		Map<String, String> headers = new HashMap();
+		Map<String, String> headers = new HashMap<>();
 		headers.put(header, "Bearer "+ (token != null ? token : createJWT()) );
 
 		return createRequest(JWT_VALIDATION_URI, Methods.GET, null, headers);
 	}
+
+	@Log4j2
 	private static class StricterMockHttpServletResponse extends MockHttpServletResponse {
-		private static Logger log = LogUtil.getLogger(StricterMockHttpServletResponse.class);
 		boolean responseAccessed = false;
 		boolean responseCommitted = false;
 
@@ -1690,6 +1739,11 @@ public class ApiListenerServletTest extends Mockito {
 
 		}
 
+		public ApiListenerBuilder setUpdateEtag(boolean roles) {
+			listener.setUpdateEtag(roles);
+			return this;
+		}
+
 		public ApiListenerBuilder setAuthenticationRoles(String roles) {
 			listener.setAuthenticationRoles(roles);
 			return this;
@@ -1722,6 +1776,11 @@ public class ApiListenerServletTest extends Mockito {
 
 		public ApiListenerBuilder setExactMatchClaims(String exactMatchClaims) {
 			listener.setExactMatchClaims(exactMatchClaims);
+			return this;
+		}
+
+		public ApiListenerBuilder setAnyMatchClaims(String anyMatchClaims) {
+			listener.setAnyMatchClaims(anyMatchClaims);
 			return this;
 		}
 

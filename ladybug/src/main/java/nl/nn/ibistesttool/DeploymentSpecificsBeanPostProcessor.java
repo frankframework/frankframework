@@ -83,7 +83,7 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor, 
 			}
 		}
 		if (bean instanceof Views) {
-			String defaultView = APP_CONSTANTS.getResolvedProperty("ibistesttool.defaultView");
+			String defaultView = APP_CONSTANTS.getProperty("ibistesttool.defaultView");
 			if (defaultView != null) {
 				Views views = (Views)bean;
 				View view = views.setDefaultView(defaultView);

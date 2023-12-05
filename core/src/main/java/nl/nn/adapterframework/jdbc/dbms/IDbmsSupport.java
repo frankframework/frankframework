@@ -193,12 +193,16 @@ public interface IDbmsSupport {
 	/**
 	 * DBMS Feature flag: is it possible to return a DB CURSOR in an OUT parameter, as a means to
 	 * return results of a SELECT statement.
-	 *
-	 * Currently not yet supported on any database, planned for future for PostgreSQL and Oracle.
+	 * <br/>
+	 * Currently, not yet supported on any database, planned for future for PostgreSQL and Oracle.
 	 *
 	 * @return false for all databases currently. Future support planned for Oracle and PostgreSQL.
 	 */
 	default boolean isStoredProcedureRefCursorOutParameterSupported() {
 		return false;
+	}
+
+	default boolean canFetchStatementParameterMetaData() {
+		return true;
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import nl.nn.adapterframework.util.LogUtil;
  * TODO use PropertySources (PropertiesPropertySource)
  */
 public class JdbcPropertySourceFactory implements ApplicationContextAware {
+	public static final String JDBC_PROPERTIES_KEY = "AppConstants.properties.jdbc";
 	private @Setter ApplicationContext applicationContext;
 	private Logger log = LogUtil.getLogger(this);
 

@@ -15,17 +15,26 @@
 */
 package nl.nn.adapterframework.logging;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 
+import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.testutil.TestAppender;
@@ -40,10 +49,18 @@ public class TestLogMessages {
 	private static String TEST_REGEX_OUT = "log my name but not my password! username=\"top\" password=\"******\" hihi";
 	private static String PATTERN = "%level - %m";
 
+	@BeforeEach
+	public void setup() {
+		ThreadContext.clearAll();
+	}
+
 	@Test
-	public void hidePasswordInLogMessages() {
+	public void testHideRegexMatchInLogMessage() {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
 		TestAppender.addToRootLogger(appender);
+		Set<String> globalReplace = IbisMaskingLayout.getGlobalReplace();
+		IbisMaskingLayout.cleanGlobalReplace();
+		// Password matching regex that is intentionally different from the default
 		IbisMaskingLayout.addToGlobalReplace("(?<=password=\").+?(?=\")");
 		try {
 			log.debug(TEST_REGEX_IN);
@@ -55,6 +72,24 @@ public class TestLogMessages {
 		}
 		finally {
 			IbisMaskingLayout.cleanGlobalReplace();
+			globalReplace.forEach(IbisMaskingLayout::addToGlobalReplace);
+			TestAppender.removeAppender(appender);
+		}
+	}
+
+	@Test
+	public void testLogHideRegexPropertyAppliedFromConfig() {
+		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout(PATTERN).build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			log.debug("my beautiful log with <password>TO BE HIDDEN</password> hidden value");
+
+			List<String> logEvents = appender.getLogLines();
+			assertEquals(1, logEvents.size(), "found messages "+logEvents);
+			String message = logEvents.get(0);
+			assertEquals("DEBUG - my beautiful log with <password>************</password> hidden value", message);
+		}
+		finally {
 			TestAppender.removeAppender(appender);
 		}
 	}
@@ -142,7 +177,6 @@ public class TestLogMessages {
 			assertEquals("DEBUG - my beautiful <![CDATA[debug]]> for me & you --> \"world\"", message);
 		}
 		finally {
-			IbisMaskingLayout.cleanGlobalReplace();
 			TestAppender.removeAppender(appender);
 		}
 	}
@@ -160,7 +194,6 @@ public class TestLogMessages {
 			assertEquals("DEBUG - my beautiful unicode debug  aâΔع你好ಡತ  message for me & you --> \\\"world\\\"", message);
 		}
 		finally {
-			IbisMaskingLayout.cleanGlobalReplace();
 			TestAppender.removeAppender(appender);
 		}
 	}
@@ -267,7 +300,7 @@ public class TestLogMessages {
 	public void testChangeLogLevel() {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
 		TestAppender.addToRootLogger(appender);
-		String rootLoggerName = LogUtil.getLogger(this).getName(); //For tests we use the `nl.nn` logger instead of the rootlogger
+		String rootLoggerName = LogUtil.getLogger(this).getName(); //For tests, we use the `nl.nn` logger instead of the rootlogger
 
 		try {
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);
@@ -292,6 +325,50 @@ public class TestLogMessages {
 		} finally {
 			TestAppender.removeAppender(appender);
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);
+		}
+	}
+
+	@Test
+	public void testMessageLogThreadContext() throws Exception {
+		PatternLayout layout =  PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
+		TestAppender appender = TestAppender.newBuilder().setLayout(layout).build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("key", "value").put("key.two", "value2")) {
+				log.debug("Adapter Success");
+			}
+
+			List<String> logEvents = appender.getLogLines();
+			assertEquals(1, logEvents.size());
+			String message = logEvents.get(0);
+			assertAll(
+				() -> assertThat(message, StringContains.containsString("DEBUG - Adapter Success ")),
+				() -> assertThat(message, StringContains.containsString("key [value]")),
+				() -> assertThat(message, StringContains.containsString("key-two [value2]")),
+				() -> assertFalse(message.endsWith(" "), "message should not end with a space"),
+				() -> assertFalse(message.contains("log.dir")) // No other info in log context
+			);
+		}
+		finally {
+			TestAppender.removeAppender(appender);
+		}
+	}
+
+	@Test
+	public void testMessageEmptyLogThreadContext() throws Exception {
+		PatternLayout layout =  PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
+		TestAppender appender = TestAppender.newBuilder().setLayout(layout).build();
+		TestAppender.addToRootLogger(appender);
+		try {
+			log.debug("Adapter Success");
+
+			List<String> logEvents = appender.getLogLines();
+			assertEquals(1, logEvents.size());
+			String message = logEvents.get(0);
+			assertEquals("DEBUG - Adapter Success ", message);
+		}
+		finally {
+			TestAppender.removeAppender(appender);
 		}
 	}
 }

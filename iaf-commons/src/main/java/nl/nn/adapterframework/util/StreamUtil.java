@@ -41,8 +41,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import nl.nn.adapterframework.functional.ThrowingRunnable;
-
 /**
  * Functions to read and write from one stream to another.
  *
@@ -227,32 +225,6 @@ public class StreamUtil {
 				writer.write(buffer,0,charsRead);
 			}
 		}
-	}
-
-	public static InputStream onClose(InputStream stream, ThrowingRunnable<IOException> onClose) {
-		return new FilterInputStream(stream) {
-			@Override
-			public void close() throws IOException {
-				try {
-					super.close();
-				} finally {
-					onClose.run();
-				}
-			}
-		};
-	}
-
-	public static Reader onClose(Reader reader, ThrowingRunnable<IOException> onClose) {
-		return new FilterReader(reader) {
-			@Override
-			public void close() throws IOException {
-				try {
-					super.close();
-				} finally {
-					onClose.run();
-				}
-			}
-		};
 	}
 
 	/**

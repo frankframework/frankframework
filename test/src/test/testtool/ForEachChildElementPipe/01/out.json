@@ -6,7 +6,7 @@
     "logContext": {
         "listener.type": "JavaListener",
         "adapter": "ForEachChildElementPipe",
-        "exitState": "SUCCESS",
+        "exit.state": "SUCCESS",
         "pipeline.duration": "4",
         "listener": "listener of [JavaListener]",
         "pipe": "echo",

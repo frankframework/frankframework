@@ -44,7 +44,6 @@ import nl.nn.adapterframework.receivers.ServiceDispatcher;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &lt;<code>exit</code>&gt;
@@ -238,7 +237,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 			if (session.getCorrelationId() != null) {
 				subAdapterSession.put(PipeLineSession.CORRELATION_ID_KEY, session.getCorrelationId());
 			}
-			if (paramList!=null) {
+			if (paramList != null) {
 				try {
 					Map<String,Object> paramValues = paramList.getValues(message, session).getValueMap();
 					subAdapterSession.putAll(paramValues);
@@ -274,6 +273,7 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 					log.debug("{} calling {} in same Thread", this::getLogPrefix, () -> serviceIndication);
 					result = new SenderResult(serviceClient.processRequest(message, subAdapterSession));
 				}
+
 			} catch (ListenerException | IOException e) {
 				if (ExceptionUtils.getRootCause(e) instanceof TimeoutException) {
 					throw new TimeoutException(getLogPrefix()+"timeout calling "+serviceIndication,e);
@@ -283,7 +283,11 @@ public class IbisLocalSender extends SenderWithParametersBase implements HasPhys
 				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 				}
-				Misc.copyContext(getReturnedSessionKeys(), subAdapterSession, session, this);
+
+				// The original message will be set by the InputOutputPipeLineProcessor, which add it to the autocloseables list.
+				// The input message should not be managed by this sub-PipelineSession but rather the original pipeline
+				subAdapterSession.unscheduleCloseOnSessionExit(message);
+				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
 
 			ExitState exitState = (ExitState)subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);

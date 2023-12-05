@@ -15,25 +15,27 @@
 */
 package nl.nn.adapterframework.management.gateway;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
+import javax.servlet.Filter;
+import javax.servlet.HttpConstraintElement;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.ServletRegistration;
+import javax.servlet.ServletSecurityElement;
+import javax.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -44,27 +46,41 @@ import org.springframework.integration.http.inbound.HttpRequestHandlingMessaging
 import org.springframework.integration.http.support.DefaultHttpHeaderMapper;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.SubscribableChannel;
+import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.support.HttpRequestHandlerServlet;
 import org.springframework.web.filter.RequestContextFilter;
 
 import lombok.Setter;
-import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.management.bus.BusAction;
 import nl.nn.adapterframework.management.bus.BusMessageUtils;
 import nl.nn.adapterframework.management.bus.BusTopic;
+import nl.nn.adapterframework.management.security.JwtSecurityFilter;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StreamUtil;
 
-public class HttpInboundGateway extends HttpServlet implements DynamicRegistration.Servlet, IntegrationPattern, InitializingBean, ApplicationContextAware {
+@Order(Ordered.LOWEST_PRECEDENCE-1)
+public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, ServletContextAware, IntegrationPattern, InitializingBean, ApplicationContextAware, BeanFactoryAware {
+	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 
-	private static final long serialVersionUID = 1L;
+	private static final String SERVLET_NAME = "HttpInboundGatewayServlet";
 
-	private final transient Logger log = LogManager.getLogger(HttpInboundGateway.class);
+	private final Logger log = LogManager.getLogger(HttpInboundGateway.class);
 
-	private transient HttpRequestHandlingMessagingGateway gateway;
-	private transient @Setter ApplicationContext applicationContext;
+	private HttpRequestHandlingMessagingGateway gateway;
+	private @Setter ApplicationContext applicationContext;
+	private @Setter BeanFactory beanFactory;
+	private @Setter ServletContext servletContext;
 
 	@Value("${management.gateway.http.inbound.path:/iaf/management}")
-	private transient String httpPath;
+	private String httpPath;
 
 	@Override
 	public void afterPropertiesSet() {
@@ -73,8 +89,8 @@ public class HttpInboundGateway extends HttpServlet implements DynamicRegistrati
 		}
 
 		if(gateway == null) {
-			addRequestContextFilter();
 			createGateway();
+			createGatewayEndpoint();
 		}
 	}
 
@@ -92,7 +108,21 @@ public class HttpInboundGateway extends HttpServlet implements DynamicRegistrati
 		headerMapper.setOutboundHeaderNames(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		gateway.setHeaderMapper(headerMapper);
 
-		gateway.start();
+		ConfigurableBeanFactory cbf = (ConfigurableBeanFactory) this.beanFactory;
+		cbf.registerSingleton(SERVLET_NAME, gateway);
+	}
+
+	public void createGatewayEndpoint() {
+		HttpRequestHandlerServlet servlet = new HttpRequestHandlerServlet(); //name of this servlet must match the inbound gateway name
+
+		log.info("created management service endpoint [{}]", httpPath);
+
+		ServletRegistration.Dynamic serv = servletContext.addServlet(SERVLET_NAME, servlet);
+		serv.setLoadOnStartup(-1);
+		serv.addMapping(httpPath);
+
+		HttpConstraintElement httpConstraintElement = new HttpConstraintElement(TransportGuarantee.NONE);
+		serv.setServletSecurity(new ServletSecurityElement(httpConstraintElement));
 	}
 
 	private String[] getRequestHeaders() {
@@ -101,13 +131,6 @@ public class HttpInboundGateway extends HttpServlet implements DynamicRegistrati
 		headers.add(BusTopic.TOPIC_HEADER_NAME);
 		headers.add(BusMessageUtils.HEADER_PREFIX_PATTERN);
 		return headers.toArray(new String[0]);
-	}
-
-	private void addRequestContextFilter() {
-		ServletContext context = applicationContext.getBean("servletContext", ServletContext.class);
-		FilterRegistration.Dynamic filter = context.addFilter("RequestContextFilter", RequestContextFilter.class);
-		EnumSet<DispatcherType> dispatcherTypes = EnumSet.of(DispatcherType.REQUEST);
-		filter.addMappingForServletNames(dispatcherTypes, false, getName());
 	}
 
 	private MessageChannel getRequestChannel(ApplicationContext applicationContext) {
@@ -141,37 +164,46 @@ public class HttpInboundGateway extends HttpServlet implements DynamicRegistrati
 	}
 
 	@Override
-	public void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
-		if(gateway == null) {
-			throw new ServletException("no gateway configured");
-		}
-
-		gateway.handleRequest(req, res);
-	}
-
-	@Override
-	public void destroy() {
-		gateway.stop();
-		super.destroy();
-	}
-
-	@Override
-	public String getUrlMapping() {
-		return httpPath;
-	}
-
-	@Override
-	public String[] getAccessGrantingRoles() {
-		return DynamicRegistration.ALL_IBIS_USER_ROLES;
-	}
-
-	@Override
-	public String getName() {
-		return this.getClass().getSimpleName();
-	}
-
-	@Override
 	public IntegrationPatternType getIntegrationPatternType() {
 		return IntegrationPatternType.inbound_gateway;
+	}
+
+	@Override
+	public void init(WebSecurity builder) throws Exception {
+		// Nothing to init
+	}
+
+	@Override
+	public void configure(WebSecurity builder) throws Exception {
+		builder.addSecurityFilterChainBuilder(this::createSecurityFilterChain);
+	}
+
+	private SecurityFilterChain createSecurityFilterChain() {
+		HttpSecurity httpSecurityConfigurer = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
+		return configureHttpSecurity(httpSecurityConfigurer);
+	}
+
+	private SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
+		try {
+			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
+			http.headers().frameOptions().sameOrigin(); //Allow same origin iframe request
+			http.csrf().disable();
+			http.securityMatcher(new AntPathRequestMatcher(httpPath));
+			http.formLogin().disable(); //Disable the form login filter
+			http.anonymous().disable(); //Disable the default anonymous filter
+			http.logout().disable(); //Disable the logout endpoint on every filter
+			http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED);
+			http.authorizeHttpRequests().anyRequest().authenticated();
+
+			Filter requestDispatcher = SpringUtils.createBean(applicationContext, RequestContextFilter.class);
+			http.addFilterAfter(requestDispatcher, AuthorizationFilter.class);
+
+			JwtSecurityFilter securityFilter = SpringUtils.createBean(applicationContext, JwtSecurityFilter.class);
+			http.addFilterBefore(securityFilter, BasicAuthenticationFilter.class);
+
+			return http.build();
+		} catch (Exception e) {
+			throw new IllegalStateException("unable to configure Spring Security", e);
+		}
 	}
 }

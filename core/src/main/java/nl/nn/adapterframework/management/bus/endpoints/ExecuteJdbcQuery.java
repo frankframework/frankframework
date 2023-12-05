@@ -92,7 +92,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 		secLog.info(String.format("executing query [%s] on datasource [%s] queryType [%s] avoidLocking [%s]", query, datasource, queryType, avoidLocking));
 
 		DirectQuerySender qs = createBean(DirectQuerySender.class);
-		String result = null;
+		String result;
 		MimeType mimetype;
 
 		try {
@@ -123,6 +123,7 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 				mimetype = MediaType.APPLICATION_XML;
 				break;
 			}
+			message.close();
 		} catch (Exception e) {
 			throw new BusException("error executing query", e);
 		} finally {

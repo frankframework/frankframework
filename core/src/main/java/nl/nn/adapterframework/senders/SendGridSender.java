@@ -94,9 +94,8 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 
 	@Override
 	public String sendEmail(MailSessionBase mailSession) throws SenderException {
-		String result = null;
-
-		Mail mail = null;
+		String result;
+		Mail mail;
 
 		try {
 			mail = createEmail((GridMailSession)mailSession);
@@ -112,7 +111,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 				request.setBody(mail.build());
 				Response response = sendGrid.api(request);
 				result = response.getBody();
-				log.debug("Mail send result" + result);
+				log.debug("Mail send result: [{}]", result);
 				return result;
 			} catch (Exception e) {
 				throw new SenderException(
@@ -139,7 +138,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		Personalization personalization = gridMailSession.getPersonalization();
 
 		EMail from = gridMailSession.getFrom();
-		EMail replyTo = gridMailSession.getReplyto();
+		EMail replyTo = gridMailSession.getReplyTo();
 		setEmailAddresses(mail, gridMailSession, from, replyTo);
 
 		String subject = gridMailSession.getSubject();

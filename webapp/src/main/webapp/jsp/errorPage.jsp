@@ -17,7 +17,7 @@
 		<p>Please notify the administrator or check the application logs for more information.</p>
 
 <%
-String dtapStage = AppConstants.getInstance().getResolvedProperty("dtap.stage");
+String dtapStage = AppConstants.getInstance().getProperty("dtap.stage");
 if (!"ACC".equals(dtapStage) && !"PRD".equals(dtapStage)) {
 %>
 		<br>

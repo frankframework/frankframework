@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ import nl.nn.adapterframework.core.IPullingListener;
  * <p>You can add parameters to the JmsListener, the values will be added as Headers to the JMS response message.</p>
  *
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
- * <code>javax.jms.TextMessage</code>s <br/><br/>
+ * {@link javax.jms.TextMessage}s and {@link javax.jms.BytesMessage}<br/><br/>
  * </p>
  * @author Gerrit van Brakel
  * @since 4.0.1, since 4.8 as 'switch'-class

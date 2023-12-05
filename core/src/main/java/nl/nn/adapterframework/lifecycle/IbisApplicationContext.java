@@ -18,15 +18,12 @@ package nl.nn.adapterframework.lifecycle;
 import static java.util.Objects.requireNonNull;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.apache.cxf.bus.spring.SpringBus;
@@ -41,6 +38,7 @@ import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.ResourceUtils;
 
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.Environment;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -71,7 +69,8 @@ public class IbisApplicationContext implements Closeable {
 	private ApplicationContext parentContext = null;
 
 	protected static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private final Logger log = LogUtil.getLogger(this);
+	private static final Logger LOG = LogUtil.getLogger(IbisApplicationContext.class);
+	private final Logger applicationLog = LogUtil.getLogger("APPLICATION");
 	private BootState state = BootState.FIRST_START;
 	private final Map<String, String> iafModules = new HashMap<>();
 
@@ -89,7 +88,7 @@ public class IbisApplicationContext implements Closeable {
 	 * @throws BeansException If the Factory can not be created.
 	 */
 	protected void createApplicationContext() throws BeansException {
-		log.debug("creating Spring Application Context");
+		applicationLog.debug("Creating IbisApplicationContext");
 		if (!state.equals(BootState.FIRST_START)) {
 			state = BootState.STARTING;
 		}
@@ -104,7 +103,7 @@ public class IbisApplicationContext implements Closeable {
 		try {
 			applicationContext = createClassPathApplicationContext();
 			if (parentContext != null) {
-				log.debug("found Spring rootContext [{}]", parentContext);
+				LOG.info("found Spring rootContext [{}]", parentContext);
 				applicationContext.setParent(parentContext);
 			}
 			applicationContext.refresh();
@@ -114,7 +113,7 @@ public class IbisApplicationContext implements Closeable {
 			throw be;
 		}
 
-		log.info("created {} in {} ms", () -> applicationContext.getClass().getSimpleName(), () -> (System.currentTimeMillis() - start));
+		applicationLog.info("Created IbisApplicationContext [{}] in {} ms", applicationContext::getId, () -> (System.currentTimeMillis() - start));
 		state = BootState.STARTED;
 	}
 
@@ -135,7 +134,7 @@ public class IbisApplicationContext implements Closeable {
 		springConfigurationFiles.addAll(splitIntoConfigFiles(classLoader, configLocations));
 		addJmxConfigurationIfEnabled(springConfigurationFiles);
 
-		log.info("loading Spring configuration files {}", springConfigurationFiles);
+		LOG.info("loading Spring configuration files {}", springConfigurationFiles);
 		return springConfigurationFiles.toArray(new String[springConfigurationFiles.size()]);
 	}
 
@@ -150,7 +149,7 @@ public class IbisApplicationContext implements Closeable {
 	private boolean isSpringConfigFileOnClasspath(ClassLoader classLoader, String filename) {
 		URL fileURL = classLoader.getResource(filename);
 		if (fileURL == null) {
-			log.error("unable to locate Spring configuration file [{}]", filename);
+			LOG.error("unable to locate Spring configuration file [{}]", filename);
 		}
 		return fileURL != null;
 	}
@@ -186,7 +185,7 @@ public class IbisApplicationContext implements Closeable {
 		if (classLoader == null) throw new IllegalStateException("no ClassLoader found to initialize Spring from");
 		classPathApplicationContext.setConfigLocations(getSpringConfigurationFiles(classLoader));
 
-		String instanceName = APP_CONSTANTS.getResolvedProperty("instance.name");
+		String instanceName = APP_CONSTANTS.getProperty("instance.name");
 		classPathApplicationContext.setId(requireNonNull(instanceName));
 		classPathApplicationContext.setDisplayName("IbisApplicationContext [" + instanceName + "]");
 
@@ -199,13 +198,13 @@ public class IbisApplicationContext implements Closeable {
 	@Override
 	public void close() {
 		if (applicationContext != null) {
-			String oldContextName = applicationContext.getDisplayName();
-			log.debug("destroying Ibis Application Context [{}]", oldContextName);
+			String oldContextName = applicationContext.getId();
+			LOG.info("closing IbisApplicationContext [{}]", oldContextName);
 
 			applicationContext.close();
 			applicationContext = null;
 
-			log.info("destroyed Ibis Application Context [{}]", oldContextName);
+			applicationLog.info("Closed IbisApplicationContext [{}]", oldContextName);
 		}
 	}
 
@@ -255,19 +254,23 @@ public class IbisApplicationContext implements Closeable {
 		List<String> modulesToScanFor = new ArrayList<>();
 
 		modulesToScanFor.add("ibis-adapterframework-akamai");
+		modulesToScanFor.add("ibis-adapterframework-aspose");
+		modulesToScanFor.add("ibis-adapterframework-aws");
 		modulesToScanFor.add("ibis-adapterframework-cmis");
+		modulesToScanFor.add("ibis-adapterframework-commons");
+		modulesToScanFor.add("ibis-adapterframework-console-backend");
 		modulesToScanFor.add("ibis-adapterframework-coolgen");
 		modulesToScanFor.add("ibis-adapterframework-core");
+		modulesToScanFor.add("credentialprovider");
 		modulesToScanFor.add("ibis-adapterframework-ibm");
 		modulesToScanFor.add("ibis-adapterframework-idin");
 		modulesToScanFor.add("ibis-adapterframework-ifsa");
 		modulesToScanFor.add("ibis-adapterframework-ladybug");
 		modulesToScanFor.add("ibis-adapterframework-larva");
+		modulesToScanFor.add("iaf-management-gateway");
 		modulesToScanFor.add("ibis-adapterframework-sap");
 		modulesToScanFor.add("ibis-adapterframework-tibco");
 		modulesToScanFor.add("ibis-adapterframework-webapp");
-		modulesToScanFor.add("ibis-adapterframework-console");
-		modulesToScanFor.add("ibis-adapterframework-aws");
 
 		registerApplicationModules(modulesToScanFor);
 	}
@@ -279,39 +282,13 @@ public class IbisApplicationContext implements Closeable {
 	 */
 	private void registerApplicationModules(List<String> modules) {
 		for (String module : modules) {
-			String version = getModuleVersion(module);
+			String version = Environment.getModuleVersion(module);
 
 			if (version != null) {
 				iafModules.put(module, version);
 				APP_CONSTANTS.put(module + ".version", version);
-				log.info("Loading IAF module [{}] version [{}]", module, version);
+				applicationLog.debug("Loading IAF module [{}] version [{}]", module, version);
 			}
-		}
-	}
-
-	/**
-	 * Get IBIS module version
-	 *
-	 * @param module name of the module to fetch the version
-	 * @return module version or null if not found
-	 */
-	private String getModuleVersion(String module) {
-		ClassLoader classLoader = this.getClass().getClassLoader();
-		String basePath = "META-INF/maven/org.ibissource/";
-		URL pomProperties = classLoader.getResource(basePath + module + "/pom.properties");
-
-		if (pomProperties == null) {
-			// unable to find module, assume it's not on the classpath
-			return null;
-		}
-		try (InputStream is = pomProperties.openStream()) {
-			Properties props = new Properties();
-			props.load(is);
-			return (String) props.get("version");
-		} catch (IOException e) {
-			log.warn("unable to read pom.properties file for module[{}]", module, e);
-
-			return "unknown";
 		}
 	}
 }

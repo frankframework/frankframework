@@ -15,7 +15,7 @@
     <SenderId>senderId2</SenderId>
   </Header>
   <Message>
-    <Text>*** character data size [70] exceeds [50] and is chomped ***text-----1---------2---------3---------4---------5...(20 characters more)</Text>
+    <Text>text-----1---------2---------3---------4---------5---------6---------7</Text>
     <Type>received</Type>
     <FunctionCallId>functionCallId3</FunctionCallId>
     <Label>label4</Label>

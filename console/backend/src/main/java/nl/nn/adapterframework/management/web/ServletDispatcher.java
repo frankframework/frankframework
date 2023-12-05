@@ -16,9 +16,7 @@
 package nl.nn.adapterframework.management.web;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
@@ -26,18 +24,18 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.transport.servlet.CXFServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import nl.nn.adapterframework.lifecycle.DynamicRegistration;
 import nl.nn.adapterframework.util.HttpUtils;
-import nl.nn.adapterframework.util.StringUtil;
 
 /**
  * Main dispatcher for all API resources.
@@ -46,27 +44,16 @@ import nl.nn.adapterframework.util.StringUtil;
  * @author	Niels Meijer
  */
 @Component
+@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 public class ServletDispatcher extends CXFServlet implements DynamicRegistration.ServletWithParameters {
 
 	private static final long serialVersionUID = 3L;
 
-	private Logger secLog = LogManager.getLogger("SEC");
-	private Logger log = LogManager.getLogger(this);
+	private final Logger secLog = LogManager.getLogger("SEC");
+	private final Logger log = LogManager.getLogger(this);
 
 	@Value("${iaf-api.enabled:true}")
 	private boolean isEnabled;
-
-	@Value("${iaf-api.cors.allowOrigin:''}")
-	private String allowedCorsOrigins; //Defaults to nothing
-
-	@Value("${iaf-api.cors.exposeHeaders:Allow, ETag, Content-Disposition}")
-	private String exposedCorsHeaders;
-
-	//TODO: Maybe filter out the methods that are not present on the resource? Till then allow all methods
-	@Value("${iaf-api.cors.allowMethods:GET, POST, PUT, DELETE, OPTIONS, HEAD}")
-	private String allowedCorsMethods;
-
-	private List<String> allowedCorsDomains =  new ArrayList<>();
 
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
@@ -76,21 +63,6 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 		log.debug("initialize {} servlet", this::getName);
 		super.init(servletConfig);
-
-		if(StringUtils.isNotEmpty(allowedCorsOrigins)) {
-			List<String> allowedOrigins = StringUtil.split(allowedCorsOrigins);
-			for (String domain : allowedOrigins) {
-				if(domain.startsWith("http://")) {
-					log.warn("cross side resource domain ["+domain+"] is insecure, it is strongly encouraged to use a secure protocol (HTTPS)");
-				}
-				if(!domain.startsWith("http://") && !domain.startsWith("https://")) {
-					log.error("skipping invalid domain ["+domain+"], domains must start with http(s)://");
-					continue;
-				}
-				allowedCorsDomains.add(domain);
-				log.debug("whitelisted CORS domain ["+domain+"]");
-			}
-		}
 	}
 
 	@Override
@@ -105,57 +77,18 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 			return;
 		}
 
-		final String method = request.getMethod();
 
 		/**
 		 * Log POST, PUT and DELETE requests
 		 */
+		final String method = request.getMethod();
 		if(!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("OPTIONS")) {
-			secLog.info(HttpUtils.getExtendedCommandIssuedBy(request));
-		}
-
-		/**
-		 * Handle Cross-Origin Resource Sharing
-		 */
-		String origin = request.getHeader("Origin");
-		if (origin == null) {
-			// Return standard response if OPTIONS request w/o Origin header
-			if(method.equals("OPTIONS")) {
-				response.setHeader("Allow", allowedCorsMethods);
-				response.setStatus(200);
-				return;
-			}
-		}
-		else {
-			//Always add the cors headers when the origin has been set
-			if(allowedCorsDomains.contains(origin)) {
-				response.setHeader("Access-Control-Allow-Origin", origin);
-
-				String requestHeaders = request.getHeader("Access-Control-Request-Headers");
-				if (requestHeaders != null)
-					response.setHeader("Access-Control-Allow-Headers", requestHeaders);
-
-				response.setHeader("Access-Control-Expose-Headers", exposedCorsHeaders);
-				response.setHeader("Access-Control-Allow-Methods", allowedCorsMethods);
-
-				// Allow caching cross-domain permission
-				response.setHeader("Access-Control-Max-Age", "3600");
-			}
-			else {
-				//If origin has been set, but has not been whitelisted, report the request in security log.
-				secLog.info("host["+request.getRemoteHost()+"] tried to access uri["+request.getPathInfo()+"] with origin["+origin+"] but was blocked due to CORS restrictions");
-			}
-			//If we pass one of the valid domains, it can be used to spoof the connection
+			secLog.debug("received http request from URI [{}:{}] issued by [{}]", method, request.getRequestURI(), HttpUtils.getCommandIssuedBy(request));
 		}
 
 		//TODO add X-Rate-Limit to prevent possible clients to flood the IAF API
 
-		/**
-		 * Pass request down the chain, except for OPTIONS
-		 */
-		if (!method.equals("OPTIONS")) {
-			super.invoke(request, response);
-		}
+		super.invoke(request, response);
 	}
 
 	@Override
@@ -198,7 +131,7 @@ public class ServletDispatcher extends CXFServlet implements DynamicRegistration
 
 	@Override
 	public String getUrlMapping() {
-		return "iaf/api/*";
+		return "iaf/api/*,!/iaf/api/server/health";
 	}
 
 	@Override

@@ -15,12 +15,15 @@
 */
 package nl.nn.adapterframework.extensions.esb;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
+import javax.jms.BytesMessage;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -38,9 +41,11 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.Default;
 import nl.nn.adapterframework.doc.Mandatory;
+import nl.nn.adapterframework.jms.BytesMessageInputStream;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringUtil;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
@@ -55,13 +60,13 @@ import nl.nn.adapterframework.util.XmlUtils;
 public class EsbJmsListener extends JmsListener implements ITransactionRequirements {
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private final String MSGLOG_KEYS = APP_CONSTANTS.getResolvedProperty("msg.log.keys");
+	private static final String MSGLOG_KEYS = APP_CONSTANTS.getProperty("msg.log.keys");
 
 	private @Getter MessageProtocol messageProtocol = null;
 	private @Getter boolean copyAEProperties = false;
 	private @Getter String xPathLoggingKeys=null;
 
-	private final Map<String, String> xPathLogMap = new HashMap<String, String>();
+	private final Map<String, String> xPathLogMap = new HashMap<>();
 
 	public enum MessageProtocol {
 		/** Fire & Forget protocol */
@@ -73,7 +78,9 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	@Override
 	public void configure() throws ConfigurationException {
 		if (getMessageProtocol() == MessageProtocol.RR) {
-			setForceMessageIdAsCorrelationId(true);
+			if (getForceMessageIdAsCorrelationId() == null) {
+				setForceMessageIdAsCorrelationId(true);
+			}
 			if (getCacheMode()==CacheMode.CACHE_CONSUMER) {
 				ConfigurationWarnings.add(this, log, "attribute [cacheMode] already has a default value [" + CacheMode.CACHE_CONSUMER + "]", SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY, getReceiver().getAdapter());
 			}
@@ -100,7 +107,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 			return;
 		}
 		for (String name : StringUtil.split(logKeys)) {
-			String xPath = APP_CONSTANTS.getResolvedProperty("msg.log.xPath." + name);
+			String xPath = APP_CONSTANTS.getProperty("msg.log.xPath." + name);
 			if(xPath != null)
 				xPathLogMap.put(name, xPath);
 		}
@@ -130,24 +137,33 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		}
 
 		try {
-			TextMessage textMessage = (TextMessage) rawMessage;
-			String soapMessage = textMessage.getText();
+			String soapMessage;
+			if (rawMessage instanceof TextMessage) {
+				TextMessage textMessage = (TextMessage) rawMessage;
+				soapMessage = textMessage.getText();
+			} else if (rawMessage instanceof BytesMessage) {
+				BytesMessage bytesMessage = (BytesMessage) rawMessage;
+				InputStream input = new BytesMessageInputStream(bytesMessage);
+				soapMessage = StreamUtil.streamToString(input);
+			} else {
+				soapMessage = null;
+			}
 
-			if(!getxPathLogMap().isEmpty()) {
+			if(soapMessage != null && !getxPathLogMap().isEmpty()) {
 				StringBuilder xPathLogKeys = new StringBuilder();
 				for (Entry<String, String> pair : getxPathLogMap().entrySet()) {
-				String sessionKey = pair.getKey();
-				String xPath = pair.getValue();
-				String result = getResultFromxPath(soapMessage, xPath);
-				if (!result.isEmpty()) {
-					messageProperties.put(sessionKey, result);
-					xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
+					String sessionKey = pair.getKey();
+					String xPath = pair.getValue();
+					String result = getResultFromxPath(soapMessage, xPath);
+					if (!result.isEmpty()) {
+						messageProperties.put(sessionKey, result);
+						xPathLogKeys.append(",").append(sessionKey); // Only pass items that have been found, otherwise logs will clutter with NULL.
+					}
 				}
-			}
 				messageProperties.put("xPathLogKeys", xPathLogKeys.toString());
 			}
-		} catch (JMSException e) {
-			log.debug("ignoring JMSException", e);
+		} catch (JMSException | IOException e) {
+			log.debug("ignoring Exception", e);
 		}
 		return messageProperties;
 	}
@@ -156,7 +172,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 		String found = "";
 		if(message != null && !message.isEmpty() && (XmlUtils.isWellFormed(message))) {
 			try {
-				TransformerPool test = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false), 0);
+				TransformerPool test = TransformerPool.getUtilityInstance(XmlUtils.createXPathEvaluatorSource("", xPathExpression, OutputType.TEXT, false));
 				found = test.transform(message, null);
 
 				//xPath not found and message length is 0 but not null nor ""
@@ -180,22 +196,16 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 	}
 
 	@Override
-	protected Map<String, Object> getMessageProperties(Map<String, Object> threadContext) {
-		Map<String, Object> properties = super.getMessageProperties(threadContext);
+	protected Map<String, Object> getMessageProperties(PipeLineSession session) {
+		Map<String, Object> properties = super.getMessageProperties(session);
 
-		if (isCopyAEProperties()) {
+		if (isCopyAEProperties() && session != null) {
 			if(properties == null)
-				properties = new HashMap<String, Object>();
+				properties = new HashMap<>();
 
-			if (threadContext != null) {
-				for (Iterator<String> it = threadContext.keySet().iterator(); it.hasNext();) {
-					String key = it.next();
-					if (key.startsWith("ae_")) {
-						Object value = threadContext.get(key);
-						properties.put(key, value);
-					}
-				}
-			}
+			properties.putAll(session.entrySet().stream()
+					.filter(entry -> entry.getKey().startsWith("ae_"))
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 		}
 
 		return properties;
@@ -231,7 +241,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	@Override
 	@Default("if messageProtocol=<code>RR</code>: </td><td><code>true</code>")
-	public void setForceMessageIdAsCorrelationId(boolean force) {
+	public void setForceMessageIdAsCorrelationId(Boolean force) {
 		super.setForceMessageIdAsCorrelationId(force);
 	}
 

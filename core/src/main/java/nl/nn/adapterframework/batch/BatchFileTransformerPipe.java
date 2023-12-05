@@ -40,6 +40,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * Each line will be handled by this recordHandler and resultHandler.
  *
  * @author  John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class BatchFileTransformerPipe extends StreamTransformerPipe {
 

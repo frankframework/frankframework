@@ -23,14 +23,12 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.Session;
-import javax.naming.NamingException;
-import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.jms.JmsSender;
@@ -98,9 +96,10 @@ public class IMSSender extends MQSender {
 		super.configure();
 	}
 
+	@Nonnull
 	@Override
-	public javax.jms.Message createMessage(Session session, String correlationID, Message message) throws NamingException, JMSException {
-		BytesMessage bytesMessage = null;
+	public javax.jms.Message createMessage(Session session, String correlationID, Message message, MessageClass messageClass) throws JMSException {
+		BytesMessage bytesMessage;
 		bytesMessage = session.createBytesMessage();
 
 		setMessageCorrelationID(bytesMessage, correlationID);
@@ -127,7 +126,8 @@ public class IMSSender extends MQSender {
 
 			byte[] data = message.asByteArray(CHARSET.name());
 
-			bos.write(shortToBytes(data.length + 13)); //LL, +13 is for LL, ZZ and transaction code bytes
+			int messageLength = data == null ? 0 : data.length;
+			bos.write(shortToBytes(messageLength + 13)); //LL, +13 is for LL, ZZ and transaction code bytes
 			bos.write(new byte[2]); //ZZ
 			bos.write((transactionCode + " ").getBytes(CHARSET));
 
@@ -150,7 +150,7 @@ public class IMSSender extends MQSender {
 	}
 
 	@Override
-	public Message extractMessage(javax.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, SAXException, TransformerException, IOException {
+	public Message extractMessage(javax.jms.Message rawMessage, Map<String,Object> context, boolean soap, String soapHeaderSessionKey, SoapWrapper soapWrapper) throws JMSException, IOException {
 		BytesMessage message;
 		try {
 			message = (BytesMessage)rawMessage;

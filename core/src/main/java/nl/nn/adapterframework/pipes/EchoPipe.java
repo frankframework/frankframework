@@ -17,10 +17,10 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
-import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.doc.ElementType;
+import nl.nn.adapterframework.doc.ElementType.ElementTypes;
+import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageOutputStream;
 import nl.nn.adapterframework.stream.StreamingException;

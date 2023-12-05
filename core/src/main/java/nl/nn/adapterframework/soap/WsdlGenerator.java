@@ -87,7 +87,7 @@ public class WsdlGenerator {
 
 	public static final String WSDL_EXTENSION					= ".wsdl";
 
-	protected static final List<String> excludeXsds = new ArrayList<String>();
+	protected static final List<String> excludeXsds = new ArrayList<>();
 	static {
 		excludeXsds.add(SoapVersion.SOAP11.namespace); // SOAP envelope 1.1
 		excludeXsds.add(SoapVersion.SOAP12.namespace); // SOAP envelope 1.2
@@ -134,7 +134,7 @@ public class WsdlGenerator {
 
 	private String documentation;
 
-	private List<String> warnings = new ArrayList<String>();
+	private final List<String> warnings = new ArrayList<>();
 
 	public WsdlGenerator(PipeLine pipeLine) {
 		this(pipeLine, null);
@@ -166,9 +166,9 @@ public class WsdlGenerator {
 		}
 		String fileName = getName();
 		AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfigurationClassLoader());
-		String tns = appConstants.getResolvedProperty("wsdl." + getName() + ".targetNamespace");
+		String tns = appConstants.getProperty("wsdl." + getName() + ".targetNamespace");
 		if (tns == null) {
-			tns = appConstants.getResolvedProperty("wsdl.targetNamespace");
+			tns = appConstants.getProperty("wsdl.targetNamespace");
 		}
 		if (tns == null) {
 			if (inputValidator instanceof EsbSoapValidator) {
@@ -200,8 +200,7 @@ public class WsdlGenerator {
 				} else {
 					warn("Namespace '" + schemaLocation + "' invalid according to ESB SOAP standard");
 					IPipe outputWrapper = pipeLine.getOutputWrapper();
-					if (outputWrapper != null
-							&& outputWrapper instanceof EsbSoapWrapperPipe) {
+					if (outputWrapper instanceof EsbSoapWrapperPipe) {
 						EsbSoapWrapperPipe esbSoapWrapper = (EsbSoapWrapperPipe)outputWrapper;
 						esbSoapBusinessDomain = esbSoapWrapper.getBusinessDomain();
 						esbSoapServiceName = esbSoapWrapper.getServiceName();
@@ -229,6 +228,7 @@ public class WsdlGenerator {
 						if (listener instanceof WebServiceListener
 								|| listener instanceof JmsListener) {
 							wsdlType = "concrete";
+							break;
 						}
 					}
 					fileName = esbSoapBusinessDomain + "_"
@@ -295,10 +295,9 @@ public class WsdlGenerator {
 		if (inputValidator.getSchema() != null && webServiceListenerNamespace == null) {
 			throw new IllegalStateException("Adapter has an inputValidator using the schema attribute in which case a WebServiceListener with serviceNamespaceURI is required");
 		}
-		if (outputValidator != null) {
-			if (outputValidator.getSchema() != null && webServiceListenerNamespace == null) {
+		if (outputValidator != null && (outputValidator.getSchema() != null && webServiceListenerNamespace == null)) {
 				throw new IllegalStateException("Adapter has an outputValidator using the schema attribute in which case a WebServiceListener with serviceNamespaceURI is required");
-			}
+
 		}
 		this.fileName = fileName;
 		this.targetNamespace = WsdlGeneratorUtils.validUri(tns);
@@ -359,18 +358,15 @@ public class WsdlGenerator {
 	}
 
 	public void init() throws ConfigurationException {
-		Set<IXSD> inputXsds = new HashSet<>();
 		Set<IXSD> outputXsds = new HashSet<>();
 		xsds = new HashSet<>();
 		rootXsds = new HashSet<>();
-		Set<IXSD> inputRootXsds = new HashSet<>();
-		inputRootXsds.addAll(getXsds(inputValidator));
+		Set<IXSD> inputRootXsds = new HashSet<>(getXsds(inputValidator));
 		rootXsds.addAll(inputRootXsds);
-		inputXsds.addAll(XSD.getXsdsRecursive(inputRootXsds));
+		Set<IXSD> inputXsds = new HashSet<>(XSD.getXsdsRecursive(inputRootXsds));
 		xsds.addAll(inputXsds);
 		if (outputValidator != null) {
-			Set<IXSD> outputRootXsds = new HashSet<>();
-			outputRootXsds.addAll(getXsds(outputValidator));
+			Set<IXSD> outputRootXsds = new HashSet<>(getXsds(outputValidator));
 			rootXsds.addAll(outputRootXsds);
 			outputXsds.addAll(XSD.getXsdsRecursive(outputRootXsds));
 			xsds.addAll(outputXsds);
@@ -380,20 +376,22 @@ public class WsdlGenerator {
 		int prefixCount = 1;
 		xsdsGroupedByNamespace =
 				SchemaUtils.getXsdsGroupedByNamespace(xsds, true);
-		for (String namespace: xsdsGroupedByNamespace.keySet()) {
+		for (Map.Entry<String, Set<IXSD>> entry: xsdsGroupedByNamespace.entrySet()) {
 			// When a schema has targetNamespace="http://www.w3.org/XML/1998/namespace"
 			// it needs to be ignored as prefix xml is the only allowed prefix
 			// for namespace http://www.w3.org/XML/1998/namespace. The xml
 			// prefix doesn't have to be declared as the prefix xml is by
 			// definition bound to the namespace name http://www.w3.org/XML/1998/namespace
 			// (see http://www.w3.org/TR/xml-names/#ns-decl).
-			if (!"http://www.w3.org/XML/1998/namespace".equals(namespace)) {
-				for (IXSD xsd: xsdsGroupedByNamespace.get(namespace)) {
-					prefixByXsd.put(xsd, "ns" + prefixCount);
-				}
-				namespaceByPrefix.put("ns" + prefixCount, namespace);
-				prefixCount++;
+			String namespace = entry.getKey();
+			if ("http://www.w3.org/XML/1998/namespace".equals(namespace)) {
+				continue;
 			}
+			for (IXSD xsd: entry.getValue()) {
+				prefixByXsd.put(xsd, "ns" + prefixCount);
+			}
+			namespaceByPrefix.put("ns" + prefixCount, namespace);
+			prefixCount++;
 		}
 		for (IXSD xsd : xsds) {
 			if (StringUtils.isEmpty(xsd.getTargetNamespace()) && !xsd.isAddNamespaceToSchema()) {
@@ -416,7 +414,7 @@ public class WsdlGenerator {
 			} else if (listener instanceof JmsListener) {
 				jmsActive = true;
 			} else if (listener instanceof JavaListener) {
-				JavaListener jl = (JavaListener) listener;
+				JavaListener<?> jl = (JavaListener<?>) listener;
 				if (jl.isHttpWsdl()) httpActive = true;
 			}
 		}
@@ -427,8 +425,8 @@ public class WsdlGenerator {
 			String root = ((SoapValidator) xmlValidator).getSoapHeader();
 			if (StringUtils.isNotEmpty(root)) {
 				String[] roots = root.trim().split(",", -1);
-				for (int i = 0; i < roots.length; i++) {
-					if (roots[i].trim().length() == 0) {
+				for (String s : roots) {
+					if (s.trim().isEmpty()) {
 						return true;
 					}
 				}
@@ -645,15 +643,15 @@ public class WsdlGenerator {
 
 	protected String getSoapAction(IListener<?> listener) {
 		AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfiguration().getClassLoader());
-		String sa = appConstants.getResolvedProperty("wsdl." + getName() + "." + listener.getName() + ".soapAction");
+		String sa = appConstants.getProperty("wsdl." + getName() + "." + listener.getName() + ".soapAction");
 		if (sa != null) {
 			return sa;
 		}
-		sa = appConstants.getResolvedProperty("wsdl." + getName() + ".soapAction");
+		sa = appConstants.getProperty("wsdl." + getName() + ".soapAction");
 		if (sa != null) {
 			return sa;
 		}
-		sa = appConstants.getResolvedProperty("wsdl.soapAction");
+		sa = appConstants.getProperty("wsdl.soapAction");
 		if (sa != null) {
 			return sa;
 		}
@@ -665,11 +663,11 @@ public class WsdlGenerator {
 
 	protected String getLocation(String defaultLocation) {
 		AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfiguration().getClassLoader());
-		String sa = appConstants.getResolvedProperty("wsdl." + getName() + ".location");
+		String sa = appConstants.getProperty("wsdl." + getName() + ".location");
 		if (sa != null) {
 			return sa;
 		}
-		sa = appConstants.getResolvedProperty("wsdl.location");
+		sa = appConstants.getProperty("wsdl.location");
 		if (sa != null) {
 			return sa;
 		}
@@ -826,7 +824,7 @@ public class WsdlGenerator {
 						w.writeCharacters("externalJndiName-for-"
 								+ listener.getQueueConnectionFactoryName()
 								+ "-on-"
-								+ AppConstants.getInstance().getResolvedProperty("dtap.stage"));
+								+ AppConstants.getInstance().getProperty("dtap.stage"));
 						w.writeEndElement();
 					}
 					w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "targetAddress"); {
@@ -835,7 +833,7 @@ public class WsdlGenerator {
 						if (queueName == null) {
 							queueName = "queueName-for-"
 									+ listener.getDestinationName() + "-on-"
-									+ AppConstants.getInstance().getResolvedProperty("dtap.stage");
+									+ AppConstants.getInstance().getProperty("dtap.stage");
 						}
 						w.writeCharacters(queueName);
 						w.writeEndElement();
@@ -868,7 +866,7 @@ public class WsdlGenerator {
 						warn("Could not encode queueConnectionFactoryName for listener '" + listener.getName() + "'", e);
 					}
 				}
-				String stage = AppConstants.getInstance().getResolvedProperty("dtap.stage");
+				String stage = AppConstants.getInstance().getProperty("dtap.stage");
 				if (StringUtils.isEmpty(stage)) {
 					warn("Property dtap.stage empty");
 				} else {

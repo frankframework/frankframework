@@ -29,13 +29,26 @@ public class MessageUtilsTest {
 	public void testCharset() throws Exception {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.setCharacterEncoding("tja"); //overridden by content-type header
-		request.setContentType("application/pdf;  charset=utf-8"); //2 spaces
+		request.setContentType("application/xml;  charset=utf-8"); //2 spaces
 		request.setContent("request".getBytes());
 		MessageContext context = MessageUtils.getContext(request);
 
 		assertEquals("UTF-8", context.get(MessageContext.METADATA_CHARSET));
 		assertEquals((long) 7, context.get(MessageContext.METADATA_SIZE));
-		assertEquals(MimeType.valueOf("application/pdf; charset=UTF-8"), context.get(MessageContext.METADATA_MIMETYPE));
+		assertEquals(MimeType.valueOf("application/xml; charset=UTF-8"), context.get(MessageContext.METADATA_MIMETYPE));
+	}
+
+	@Test
+	public void testCharsetUtf8() throws Exception {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.setCharacterEncoding("tja"); //overridden by content-type header
+		request.setContentType("application/xml;  charset=utf-16"); //2 spaces
+		request.setContent("request".getBytes());
+		MessageContext context = MessageUtils.getContext(request);
+
+		assertEquals("UTF-16", context.get(MessageContext.METADATA_CHARSET));
+		assertEquals((long) 7, context.get(MessageContext.METADATA_SIZE));
+		assertEquals(MimeType.valueOf("application/xml; charset=UTF-16"), context.get(MessageContext.METADATA_MIMETYPE));
 	}
 
 	@Test
@@ -143,34 +156,52 @@ public class MessageUtilsTest {
 		URL url = TestFileUtils.getTestFileURL("/file.xml");
 		assertNotNull(url);
 		Message message = new UrlMessage(url);
-		MessageDataSource ds = new MessageDataSource(message);
-		assertEquals("file.xml", ds.getName(), "filename should be the same");
-		assertEquals("application/xml", ds.getContentType(),"content-type should be the same"); //determined from file extension
-		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
-		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
+		try (MessageDataSource ds = new MessageDataSource(message)) {
+			assertEquals("file.xml", ds.getName(), "filename should be the same");
+			assertEquals("application/xml", ds.getContentType(),"content-type should be the same"); //determined from file extension
+			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
+			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
+		}
 	}
 
 	@Test
 	public void testMessageDataSourceFromStringDataWithoutXmlDeclaration() throws Exception {
 		URL url = TestFileUtils.getTestFileURL("/file.xml");
 		assertNotNull(url);
-		Message message = new UrlMessage(url);
-		MessageDataSource ds = new MessageDataSource(Message.asMessage(message.asString()));
-		assertEquals(null, ds.getName(), "filename is unknown");
-		assertEquals("application/octet-stream", ds.getContentType(), "content-type cannot be determined");
-		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
-		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
+		try (Message message = new UrlMessage(url)) {
+			MessageDataSource ds = new MessageDataSource(Message.asMessage(message.asString()));
+			assertEquals(null, ds.getName(), "filename is unknown");
+			assertEquals("application/octet-stream", ds.getContentType(), "content-type cannot be determined");
+			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
+			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
+		}
 	}
 
 	@Test
 	public void testMessageDataSourceFromStringDataWithXmlDeclaration() throws Exception {
 		URL url = TestFileUtils.getTestFileURL("/log4j4ibis.xml");
 		assertNotNull(url);
-		Message message = new UrlMessage(url);
-		MessageDataSource ds = new MessageDataSource(Message.asMessage(message.asString()));
-		assertEquals(null, ds.getName(), "filename is unknown");
-		assertEquals(ds.getContentType(),"application/xml", "content-type cannot be determined");
-		assertEquals(StreamUtil.streamToString(ds.getInputStream()), StreamUtil.streamToString(url.openStream()), "contents should be the same");
-		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
+		try (Message message = new UrlMessage(url)) {
+			MessageDataSource ds = new MessageDataSource(Message.asMessage(message.asString()));
+			assertEquals(null, ds.getName(), "filename is unknown");
+			assertEquals("application/xml", ds.getContentType(), "content-type cannot be determined");
+			assertEquals(StreamUtil.streamToString(ds.getInputStream()), StreamUtil.streamToString(url.openStream()), "contents should be the same");
+			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
+		}
+	}
+
+	@Test
+	public void testJsonMessage() throws Exception {
+		Message json = Message.asMessage("{\"GUID\": \"ABC\"}");
+		MimeType mimeType = MessageUtils.computeMimeType(json);
+		assertNotNull(mimeType);
+		assertEquals("application/octet-stream", mimeType.toString()); //mime-type cannot be determined
+	}
+	@Test
+	public void testJsonMessageWithName() throws Exception {
+		Message json = new Message("{\"GUID\": \"ABC\"}", new MessageContext().withName("foo.json"));
+		MimeType mimeType = MessageUtils.computeMimeType(json);
+		assertNotNull(mimeType);
+		assertEquals("application/json", mimeType.toString()); //mime-type can be determined
 	}
 }

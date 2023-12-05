@@ -76,7 +76,7 @@ public class ApiEhcache implements IApiCache {
 		}
 
 		String DiskStorePath = null;
-		String cacheDir = ac.getResolvedProperty("etag.ehcache.dir");
+		String cacheDir = ac.getProperty("etag.ehcache.dir");
 		if (StringUtils.isNotEmpty(cacheDir)) {
 			DiskStorePath = cacheDir;
 		}

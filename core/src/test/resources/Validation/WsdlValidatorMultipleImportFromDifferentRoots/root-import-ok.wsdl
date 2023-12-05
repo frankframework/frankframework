@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+				  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+				  xmlns:xml="http://www.w3.org/XML/1998/namespace"
+>
+	<wsdl:types>
+		<xsd:schema>
+			<xsd:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="/xml/xsd/soap/xml.xsd"/>
+		</xsd:schema>
+		<xsd:element name="test">
+			<xsd:complexType>
+				<xsd:attribute ref="xml:lang"/>
+			</xsd:complexType>
+		</xsd:element>
+	</wsdl:types>
+</wsdl:definitions>

@@ -79,7 +79,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
  * whatever it is configured to.</p>
  *
  * <p><b>Notice:</b> the JmsListener is ONLY capable of processing
- * <code>javax.jms.TextMessage</code>s <br/><br/>
+ * {@link javax.jms.TextMessage}s and {@link javax.jms.BytesMessage}<br/><br/>
  * </p>
  *
  * @author  Tim van der Leeuw

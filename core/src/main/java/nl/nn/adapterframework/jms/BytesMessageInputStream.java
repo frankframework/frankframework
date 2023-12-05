@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2021-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.io.InputStream;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 
-class BytesMessageInputStream extends InputStream {
+public class BytesMessageInputStream extends InputStream {
 
 	private final BytesMessage bytesMsg;
 

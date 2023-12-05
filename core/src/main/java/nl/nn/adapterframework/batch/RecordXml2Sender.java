@@ -32,6 +32,7 @@ import nl.nn.adapterframework.util.ClassUtils;
  * @ff.parameters any parameters defined on the recordHandler will be handed to the sender, if this is a {@link ISenderWithParameters ISenderWithParameters}
  *
  * @author  John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class RecordXml2Sender extends RecordXmlTransformer {
 
@@ -61,7 +62,9 @@ public class RecordXml2Sender extends RecordXmlTransformer {
 	@Override
 	public String handleRecord(PipeLineSession session, List<String> parsedRecord) throws Exception {
 		String xml = super.handleRecord(session,parsedRecord);
-		return getSender().sendMessageOrThrow(new Message(xml), session).asString();
+		try (Message message = getSender().sendMessageOrThrow(new Message(xml), session)) {
+			return message.asString();
+		}
 	}
 
 

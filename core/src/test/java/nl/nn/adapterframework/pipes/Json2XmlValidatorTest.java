@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.core.IValidator;
 import nl.nn.adapterframework.core.PipeForward;
@@ -129,6 +130,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		PipeRunResult prr = doPipe(pipe, input,session);
 
 		assertEquals(expected, prr.getResult().asString());
+		assertEquals(MediaType.APPLICATION_JSON, prr.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
 	}
 
 	@Test
@@ -147,6 +149,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		PipeRunResult prr = doPipe(pipe, input,session);
 
 		assertEquals(expected, prr.getResult().asString());
+		assertEquals(MediaType.APPLICATION_XML, prr.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
 	}
 
 	@Test
@@ -212,20 +215,41 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 	@Test
 	public void testDefaultAcceptHeaderFromMessage() throws Exception {
-		testDefaultAcceptHeaderFromMessage(DocumentFormat.XML, DocumentFormat.XML, "*/*");
+		testDefaultAcceptHeaderFromEmptyMessage(DocumentFormat.XML, DocumentFormat.XML, "*/*");
+		testDefaultAcceptHeaderFromXmlInputMessage(DocumentFormat.XML, DocumentFormat.XML, "*/*");
+	}
+
+	@Test
+	public void testDefaultAcceptHeaderFromMessageWithFaultyAcceptHeader() throws Exception {
+		testDefaultAcceptHeaderFromEmptyMessage(DocumentFormat.XML, DocumentFormat.XML, "*/*;text/html");
+		testDefaultAcceptHeaderFromXmlInputMessage(DocumentFormat.XML, DocumentFormat.XML, "*/*;text/html");
 	}
 
 	@Test
 	public void testDefaultAcceptHeaderFromMessageJSON() throws Exception {
-		testDefaultAcceptHeaderFromMessage(DocumentFormat.JSON, DocumentFormat.JSON, "*/*");
+		testDefaultAcceptHeaderFromEmptyMessage(DocumentFormat.JSON, DocumentFormat.JSON, "*/*");
+		testDefaultAcceptHeaderFromXmlInputMessage(DocumentFormat.JSON, DocumentFormat.JSON, "*/*");
 	}
 
 	@Test
 	public void testMultipleAcceptHeaderValuesFromMessage() throws Exception {
-		testDefaultAcceptHeaderFromMessage(DocumentFormat.XML, DocumentFormat.JSON, "application/json    ,application/xml,     */*");
+		testDefaultAcceptHeaderFromEmptyMessage(DocumentFormat.XML, DocumentFormat.JSON, "application/json    ,application/xml,     */*");
+		testDefaultAcceptHeaderFromXmlInputMessage(DocumentFormat.XML, DocumentFormat.JSON, "application/json    ,application/xml,     */*");
 	}
 
-	private void testDefaultAcceptHeaderFromMessage(DocumentFormat defaultFormat, DocumentFormat expectedFormat, String acceptHeader) throws Exception {
+	@Test
+	public void testLongAcceptHeaderFromMessage() throws Exception {
+		testDefaultAcceptHeaderFromEmptyMessage(DocumentFormat.JSON, DocumentFormat.XML, "text/html,application/xml,*/*");
+		testDefaultAcceptHeaderFromXmlInputMessage(DocumentFormat.JSON, DocumentFormat.XML, "text/html,application/xml,*/*");
+	}
+
+	@Test
+	public void testAcceptHeaderShouldIgnoreQFactor() throws Exception {
+		testDefaultAcceptHeaderFromEmptyMessage(DocumentFormat.XML, DocumentFormat.JSON, "*/*;q=0.8,text/html,application/json;q=0.9");
+		testDefaultAcceptHeaderFromXmlInputMessage(DocumentFormat.XML, DocumentFormat.JSON, "*/*;q=0.8,text/html,application/json;q=0.9");
+	}
+
+	private void testDefaultAcceptHeaderFromEmptyMessage(DocumentFormat defaultFormat, DocumentFormat expectedFormat, String acceptHeader) throws Exception {
 		pipe.setName("Response_To_Json_from_acceptHeader");
 		pipe.setRoot("Root");
 		pipe.setResponseRoot("Root");
@@ -243,9 +267,34 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		// Get request with no content, when no (valid) accept header, fall back to the default.
 		Message inputMessage = new Message("", new MessageContext().with("Header.Accept", acceptHeader));
 
-		doPipe(inputMessage);
+		PipeRunResult inResult = doPipe(inputMessage);
+		PipeRunResult outResult = pipe.getResponseValidator().validate(inputMessage, session, "Root");
 
 		assertEquals(expectedFormat, pipe.getOutputFormat(session, true));
+		assertEquals(defaultFormat == DocumentFormat.JSON ? MediaType.APPLICATION_JSON : MediaType.APPLICATION_XML, inResult.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
+		assertEquals(expectedFormat == DocumentFormat.JSON ? MediaType.APPLICATION_JSON : MediaType.APPLICATION_XML, outResult.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
+	}
+
+	private void testDefaultAcceptHeaderFromXmlInputMessage(DocumentFormat defaultFormat, DocumentFormat expectedFormat, String acceptHeader) throws Exception {
+		pipe.setName("Response_To_Json_from_acceptHeader");
+		pipe.setRoot("Root");
+		pipe.setResponseRoot("Root");
+		pipe.setOutputFormat(defaultFormat);
+		pipe.setSchema("/Validation/Parameters/simple.xsd");
+		pipe.setThrowException(true);
+
+		pipe.configure();
+		pipe.start();
+
+		// Get request with no content, when no (valid) accept header, fall back to the default.
+		Message inputMessage = new Message("<Root><a/></Root>", new MessageContext().with("Header.Accept", acceptHeader));
+
+		PipeRunResult inResult = doPipe(inputMessage);
+		PipeRunResult outResult = pipe.getResponseValidator().validate(inputMessage, session, "Root");
+
+		assertEquals(expectedFormat, pipe.getOutputFormat(session, true));
+		assertEquals(defaultFormat == DocumentFormat.JSON ? MediaType.APPLICATION_JSON : MediaType.APPLICATION_XML, inResult.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
+		assertEquals(expectedFormat == DocumentFormat.JSON ? MediaType.APPLICATION_JSON : MediaType.APPLICATION_XML, outResult.getResult().getContext().get(MessageContext.METADATA_MIMETYPE));
 	}
 
 	@Test

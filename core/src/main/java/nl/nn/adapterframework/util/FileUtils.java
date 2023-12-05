@@ -277,7 +277,7 @@ public class FileUtils {
 	 * @return The absolute path of ${ibis.tmpdir} or IOException if it cannot be resolved
 	 */
 	public static @Nonnull String getTempDirectory() {
-		String directory = AppConstants.getInstance().getResolvedProperty("ibis.tmpdir");
+		String directory = AppConstants.getInstance().getProperty("ibis.tmpdir");
 
 		if (StringUtils.isNotEmpty(directory)) {
 			File file = new File(directory);

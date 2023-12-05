@@ -33,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.sql.Time;
@@ -46,6 +47,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 import javax.servlet.http.HttpServletResponse;
@@ -59,6 +61,8 @@ import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.jdbc.JdbcException;
 import nl.nn.adapterframework.jdbc.dbms.IDbmsSupport;
+import nl.nn.adapterframework.jms.BytesMessageInputStream;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValue;
@@ -205,7 +209,8 @@ public class JdbcUtil {
 				return nullValue;
 			}
 		}
-		switch(rsmeta.getColumnType(colNum)) {
+		int columnType = rsmeta.getColumnType(colNum);
+		switch(columnType) {
 			// return "undefined" for types that cannot be rendered to strings easily
 			case Types.LONGVARBINARY:
 			case Types.VARBINARY:
@@ -215,21 +220,19 @@ public class JdbcUtil {
 			case Types.DISTINCT:
 			case Types.REF:
 			case Types.STRUCT:
-			return "undefined";
+				return "undefined";
 			case Types.BOOLEAN :
-			case Types.BIT :
-			{
+			case Types.BIT : {
 				boolean value = rs.getBoolean(colNum);
 				return Boolean.toString(value);
 			}
 			// return as specified date format
 			case Types.TIMESTAMP :
-			case Types.DATE :
-			{
+			case Types.DATE : {
 				try {
-					if(rsmeta.getColumnType(colNum) == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty())
+					if(columnType == Types.TIMESTAMP && !TIMESTAMPFORMAT.isEmpty())
 						return new SimpleDateFormat(TIMESTAMPFORMAT).format(rs.getTimestamp(colNum));
-					else if(rsmeta.getColumnType(colNum) == Types.DATE && !DATEFORMAT.isEmpty())
+					else if(columnType == Types.DATE && !DATEFORMAT.isEmpty())
 						return new SimpleDateFormat(DATEFORMAT).format(rs.getDate(colNum));
 				}
 				catch (Exception e) {
@@ -238,14 +241,14 @@ public class JdbcUtil {
 			}
 			//$FALL-THROUGH$
 			default: {
-				String value = rs.getString(colNum);
+				Object value = rs.getObject(colNum);
 				if (value == null) {
 					return nullValue;
 				}
 				if (trimSpaces) {
-					return value.trim();
+					return value.toString().trim();
 				}
-				return value;
+				return value.toString();
 			}
 			}
 		}
@@ -256,14 +259,14 @@ public class JdbcUtil {
 	public static InputStream getBlobInputStream(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, boolean blobIsCompressed) throws SQLException, JdbcException {
 		return getBlobInputStream(dbmsSupport.getBlobInputStream(rs, column), blobIsCompressed);
 	}
-	private static InputStream getBlobInputStream(InputStream blobIntputStream, boolean blobIsCompressed) {
-		if (blobIntputStream==null) {
+	private static InputStream getBlobInputStream(InputStream blobInputStream, boolean blobIsCompressed) {
+		if (blobInputStream==null) {
 			return null;
 		}
 		if (blobIsCompressed) {
-			return new InflaterInputStream(blobIntputStream);
+			return new InflaterInputStream(blobInputStream);
 		}
-		return blobIntputStream;
+		return blobInputStream;
 	}
 
 	public static Reader getBlobReader(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
@@ -272,43 +275,43 @@ public class JdbcUtil {
 	public static Reader getBlobReader(final IDbmsSupport dbmsSupport, final ResultSet rs, String column, String charset, boolean blobIsCompressed) throws IOException, JdbcException, SQLException {
 		return getBlobReader(getBlobInputStream(dbmsSupport, rs, column, blobIsCompressed),charset);
 	}
-	public static Reader getBlobReader(final InputStream blobIntputStream, String charset) throws IOException {
-		if (blobIntputStream==null) {
+	public static Reader getBlobReader(final InputStream blobInputStream, String charset) throws IOException {
+		if (blobInputStream==null) {
 			return null;
 		}
 		if (charset==null) {
 			charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
-		return StreamUtil.getCharsetDetectingInputStreamReader(blobIntputStream, charset);
+		return StreamUtil.getCharsetDetectingInputStreamReader(blobInputStream, charset);
 	}
 
 	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
-		try (InputStream blobIntputStream = getBlobInputStream(dbmsSupport, rs, columnIndex, blobIsCompressed)) {
-			streamBlob(blobIntputStream, charset, blobBase64Direction, target, close);
+		try (InputStream blobInputStream = getBlobInputStream(dbmsSupport, rs, columnIndex, blobIsCompressed)) {
+			streamBlob(blobInputStream, charset, blobBase64Direction, target, close);
 		}
 	}
 	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, String columnName, String charset, boolean blobIsCompressed, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
-		try (InputStream blobIntputStream = getBlobInputStream(dbmsSupport, rs, columnName, blobIsCompressed)) {
-			streamBlob(blobIntputStream, charset, blobBase64Direction, target, close);
+		try (InputStream blobInputStream = getBlobInputStream(dbmsSupport, rs, columnName, blobIsCompressed)) {
+			streamBlob(blobInputStream, charset, blobBase64Direction, target, close);
 		}
 	}
 
-	public static void streamBlob(final InputStream blobIntputStream, String charset, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, IOException {
+	public static void streamBlob(final InputStream blobInputStream, String charset, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, IOException {
 		if (target==null) {
 			throw new JdbcException("cannot stream Blob to null object");
 		}
 		OutputStream outputStream = getOutputStream(target);
 		if (outputStream != null) {
 			if (blobBase64Direction == Direction.DECODE){
-				Base64InputStream base64DecodedStream = new Base64InputStream (blobIntputStream);
+				Base64InputStream base64DecodedStream = new Base64InputStream (blobInputStream);
 				StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);
 			}
 			else if (blobBase64Direction == Direction.ENCODE){
-				Base64InputStream base64EncodedStream = new Base64InputStream (blobIntputStream, true);
+				Base64InputStream base64EncodedStream = new Base64InputStream (blobInputStream, true);
 				StreamUtil.copyStream(base64EncodedStream, outputStream, 50000);
 			}
 			else {
-				StreamUtil.copyStream(blobIntputStream, outputStream, 50000);
+				StreamUtil.copyStream(blobInputStream, outputStream, 50000);
 			}
 
 			if (close) {
@@ -318,7 +321,7 @@ public class JdbcUtil {
 		}
 		Writer writer = getWriter(target);
 		if (writer !=null) {
-			Reader reader = JdbcUtil.getBlobReader(blobIntputStream, charset);
+			Reader reader = JdbcUtil.getBlobReader(blobInputStream, charset);
 			StreamUtil.copyReaderToWriter(reader, writer, 50000);
 			if (close) {
 				writer.close();
@@ -415,12 +418,21 @@ public class JdbcUtil {
 			}
 			String rawMessage;
 			if (objectOK) {
+				// TODO: Direct handling of JMS messages in here should be removed. I do not expect any current instances to actually store unwrapped JMS Messages?
 				if (result instanceof MessageWrapper) {
 					rawMessage = ((MessageWrapper)result).getMessage().asString();
 				} else if (result instanceof TextMessage) {
 					try {
 						rawMessage = ((TextMessage)result).getText();
 					} catch (JMSException e) {
+						throw new JdbcException(e);
+					}
+				} else if (result instanceof BytesMessage) {
+					try {
+						BytesMessage bytesMessage = (BytesMessage) result;
+						InputStream input = new BytesMessageInputStream(bytesMessage);
+						rawMessage = StreamUtil.streamToString(input);
+					} catch (IOException e) {
 						throw new JdbcException(e);
 					}
 				} else {
@@ -862,11 +874,40 @@ public class JdbcUtil {
 		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
 		if (parameters != null) {
 			for (int i = 0; i < parameters.size(); i++) {
+				if (parameters.getParameterValue(i).getDefinition().getMode() == Parameter.ParameterMode.OUTPUT) {
+					continue;
+				}
 				applyParameter(statement, parameters.getParameterValue(i), i + 1, parameterTypeMatchRequired, session);
 			}
 		}
 	}
 
+	public static SQLType mapParameterTypeToSqlType(ParameterType parameterType) {
+		switch (parameterType) {
+			case DATE:
+				return JDBCType.DATE;
+			case TIMESTAMP:
+			case DATETIME:
+			case XMLDATETIME:
+				return JDBCType.TIMESTAMP;
+			case TIME:
+				return JDBCType.TIME;
+			case NUMBER:
+				return JDBCType.NUMERIC;
+			case INTEGER:
+				return JDBCType.INTEGER;
+			case BOOLEAN:
+				return JDBCType.BOOLEAN;
+			case STRING:
+				return JDBCType.VARCHAR;
+			case CHARACTER:
+				return JDBCType.CLOB;
+			case BINARY:
+				return JDBCType.BLOB;
+			default:
+				throw new IllegalArgumentException("Parameter type [" + parameterType + "] cannot be mapped to a SQL type");
+		}
+	}
 
 	private static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired, PipeLineSession session) throws SQLException, JdbcException {
 		String paramName=pv.getDefinition().getName();

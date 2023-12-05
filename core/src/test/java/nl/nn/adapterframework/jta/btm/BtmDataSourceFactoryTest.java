@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.jta.btm;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ public class BtmDataSourceFactoryTest {
 	}
 
 	@Test
-	public void testSetup() {
+	void testSetup() {
 		// Arrange
 		AppConstants appConstants = AppConstants.getInstance();
 		appConstants.setProperty("transactionmanager.btm.jdbc.connection.minPoolSize", "1");

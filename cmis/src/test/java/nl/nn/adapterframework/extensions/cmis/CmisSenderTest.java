@@ -1,7 +1,9 @@
 package nl.nn.adapterframework.extensions.cmis;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConnectionException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
@@ -16,17 +18,17 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		return new CmisSender();
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testEmptyUrlOverrideEntryPointWSDLNull() {
-		sender.setUrl("");
+		assertThrows(IllegalArgumentException.class, ()->sender.setUrl(""));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testEmptyRepository() {
-		sender.setRepository("");
+		assertThrows(IllegalArgumentException.class, ()->sender.setRepository(""));
 	}
 
-	@Test(expected = SenderException.class)
+	@Test
 	public void testOverrideEntryPointWSDLWithoutWebservice() throws Exception {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
@@ -35,10 +37,11 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		sender.setBindingType(BindingTypes.BROWSER);
 		sender.setAction(CmisAction.DYNAMIC);
 		sender.configure();
-		sender.open();
+
+		assertThrows(SenderException.class, sender::open);
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void testCreateActionWithNoSession() throws ConfigurationException {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
@@ -46,10 +49,10 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		sender.setRepository(dummyString);
 		sender.setBindingType(BindingTypes.WEBSERVICES);
 		sender.setAction(CmisAction.CREATE);
-		sender.configure();
+		assertThrows(ConfigurationException.class, sender::configure);
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void testGetActionWithNoSession() throws ConfigurationException {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
@@ -57,10 +60,10 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		sender.setBindingType(BindingTypes.WEBSERVICES);
 		sender.setAction(CmisAction.GET);
 		sender.setGetProperties(true);
-		sender.configure();
+		assertThrows(ConfigurationException.class, sender::configure);
 	}
 
-	@Test(expected = CmisConnectionException.class)
+	@Test
 	public void testSuccessfulConfigure() throws Exception {
 		String dummyString = "dummyString";
 		sender.setUrl(dummyString);
@@ -68,6 +71,8 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		sender.setBindingType(BindingTypes.WEBSERVICES);
 		sender.setAction(CmisAction.FIND);
 		sender.configure();
-		sender.open();//Should configure and open just fine, but fail trying to connect to an endpoint.
+
+		//Should configure and open just fine, but fail trying to connect to an endpoint.
+		assertThrows(CmisConnectionException.class, sender::open);
 	}
 }

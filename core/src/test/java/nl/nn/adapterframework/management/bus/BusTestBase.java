@@ -19,15 +19,17 @@ import nl.nn.adapterframework.configuration.Configuration;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.testutil.QuerySenderPostProcessor;
 import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.testutil.mock.MockRunnerConnectionFactoryFactory;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class BusTestBase {
 
 	private Configuration configuration;
 	private ApplicationContext parentContext;
-	private QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
+	protected MockRunnerConnectionFactoryFactory mockConnectionFactoryFactory;
+	private final QuerySenderPostProcessor qsPostProcessor = new QuerySenderPostProcessor();
 
-	private final ApplicationContext getParentContext() {
+	private ApplicationContext getParentContext() {
 		if(parentContext == null) {
 			ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext();
 			applicationContext.setConfigLocation("testBusApplicationContext.xml");
@@ -71,6 +73,7 @@ public class BusTestBase {
 	@BeforeEach
 	public void setUp() throws Exception {
 		getConfiguration(); //Create configuration
+		mockConnectionFactoryFactory = getParentContext().getBean(MockRunnerConnectionFactoryFactory.class);
 	}
 
 	@AfterEach
@@ -79,7 +82,7 @@ public class BusTestBase {
 	}
 
 	/**
-	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked 
+	 * Add the ability to mock FixedQuerySender ResultSets. Enter the initial query and a mocked
 	 * ResultSet using a {@link nl.nn.adapterframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder ResultSetBuilder}.
 	 */
 	public void mockFixedQuerySenderResult(String query, ResultSet resultSet) {

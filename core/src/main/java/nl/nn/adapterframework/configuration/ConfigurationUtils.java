@@ -82,7 +82,7 @@ public class ConfigurationUtils {
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.database.autoLoad", false);
 	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
-	private static final String CONFIGURATIONS = APP_CONSTANTS.getResolvedProperty("configurations.names.application");
+	private static final String CONFIGURATIONS = APP_CONSTANTS.getProperty("configurations.names.application");
 	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
 
 	private static final String DUMMY_SELECT_QUERY = "SELECT COUNT(*) FROM IBISCONFIG";
@@ -96,9 +96,9 @@ public class ConfigurationUtils {
 
 	public static String getConfigurationFile(ClassLoader classLoader, String currentConfigurationName) {
 		String configFileKey = "configurations." + currentConfigurationName + ".configurationFile";
-		String configurationFile = AppConstants.getInstance(classLoader).getResolvedProperty(configFileKey);
+		String configurationFile = AppConstants.getInstance(classLoader).getProperty(configFileKey);
 		if (StringUtils.isEmpty(configurationFile) && classLoader != null) {
-			configurationFile = AppConstants.getInstance(classLoader.getParent()).getResolvedProperty(configFileKey);
+			configurationFile = AppConstants.getInstance(classLoader.getParent()).getProperty(configFileKey);
 		}
 		if (StringUtils.isEmpty(configurationFile)) {
 			configurationFile = DEFAULT_CONFIGURATION_FILE;

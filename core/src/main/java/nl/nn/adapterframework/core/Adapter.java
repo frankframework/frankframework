@@ -86,14 +86,14 @@ import nl.nn.adapterframework.util.StringUtil;
 public class Adapter implements IAdapter, NamedBean {
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private Logger log = LogUtil.getLogger(this);
+	private final Logger log = LogUtil.getLogger(this);
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";
 	public static final String PROCESS_STATE_ERROR = "ERROR";
 
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private AppConstants APP_CONSTANTS = AppConstants.getInstance(configurationClassLoader);
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final AppConstants APP_CONSTANTS = AppConstants.getInstance(configurationClassLoader);
 
 	private String name;
 	private @Getter String description;
@@ -106,30 +106,20 @@ public class Adapter implements IAdapter, NamedBean {
 
 	private @Getter Configuration configuration;
 
-	private ArrayList<Receiver<?>> receivers = new ArrayList<>();
+	private final ArrayList<Receiver<?>> receivers = new ArrayList<>();
 	private long lastMessageDate = 0;
 	private @Getter String lastMessageProcessingState; //"OK" or "ERROR"
 	private PipeLine pipeline;
 
-	private Map<String, SenderLastExitState> sendersLastExitState = new HashMap<String, SenderLastExitState>();
-
-	private class SenderLastExitState {
-		private String lastExitState = null;
-		private long lastExitStateDate = 0;
-
-		public SenderLastExitState (long lastExitStateDate, String lastExitState) {
-			this.lastExitStateDate = lastExitStateDate;
-			this.lastExitState = lastExitState;
-		}
-	}
+	private final Map<String, SenderLastExitState> sendersLastExitState = new HashMap<>();
 
 	private int numOfMessagesInProcess = 0;
 
-	private CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
-	private CounterStatistic numOfMessagesInError = new CounterStatistic(0);
+	private final CounterStatistic numOfMessagesProcessed = new CounterStatistic(0);
+	private final CounterStatistic numOfMessagesInError = new CounterStatistic(0);
 
 	private int hourOfLastMessageProcessed=-1;
-	private long[] numOfMessagesStartProcessingByHour = new long[24];
+	private final long[] numOfMessagesStartProcessingByHour = new long[24];
 
 	private StatisticsKeeper statsMessageProcessingDuration = null;
 
@@ -139,13 +129,21 @@ public class Adapter implements IAdapter, NamedBean {
 	private final RunStateManager runState = new RunStateManager();
 	private @Getter boolean configurationSucceeded = false;
 	private MessageKeeper messageKeeper; //instantiated in configure()
-	private boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
-
+	private final boolean msgLogHumanReadable = APP_CONSTANTS.getBoolean("msg.log.humanReadable", false);
 
 	private @Getter @Setter TaskExecutor taskExecutor;
 
 	private String composedHideRegex;
 
+	private static class SenderLastExitState {
+		private final String lastExitState;
+		private final long lastExitStateDate;
+
+		public SenderLastExitState(long lastExitStateDate, String lastExitState) {
+			this.lastExitStateDate = lastExitStateDate;
+			this.lastExitState = lastExitState;
+		}
+	}
 
 	/*
 	 * This function is called by Configuration.registerAdapter,
@@ -240,7 +238,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	/**
-	 * sends a warning to the log and to the messagekeeper of the adapter
+	 * send a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
 		log.warn("Adapter [{}] {}", name, msg);
@@ -248,7 +246,7 @@ public class Adapter implements IAdapter, NamedBean {
 	}
 
 	/**
-	 * sends a warning to the log and to the messagekeeper of the adapter
+	 * send an error to the log and to the messagekeeper of the adapter
 	 */
 	protected void addErrorMessageToMessageKeeper(String msg, Throwable t) {
 		log.error("Adapter [{}] {}", name, msg, t);
@@ -594,7 +592,7 @@ public class Adapter implements IAdapter, NamedBean {
 	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession) {
 		long startTime = System.currentTimeMillis();
 		try {
-			try (final CloseableThreadContext.Instance ctc = LogUtil.getThreadContext(this, messageId, pipeLineSession)) {
+			try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession)) {
 				PipeLineResult result = new PipeLineResult();
 				boolean success = false;
 				try {
@@ -673,7 +671,7 @@ public class Adapter implements IAdapter, NamedBean {
 			}
 			processingSuccess = false;
 			incNumOfMessagesInError();
-			addErrorMessageToMessageKeeper("error processing message with messageId [" + messageId+"]: ",e);
+			warn("error processing message with messageId [" + messageId + "]: " + e.getMessage());
 			result = new PipeLineResult();
 			result.setState(ExitState.ERROR);
 			result.setResult(new Message(e.getMessage()));
@@ -683,9 +681,9 @@ public class Adapter implements IAdapter, NamedBean {
 			long duration = endTime - startTime;
 			//reset the InProcess fields, and increase processedMessagesCount
 			decNumOfMessagesInProcess(duration, processingSuccess);
-			ThreadContext.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, result.getState().name());
+			ThreadContext.put(LogUtil.MDC_EXIT_STATE_KEY, result.getState().name());
 			if (result.getExitCode()!=0) {
-				ThreadContext.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, Integer.toString(result.getExitCode()));
+				ThreadContext.put(LogUtil.MDC_EXIT_CODE_KEY, Integer.toString(result.getExitCode()));
 			}
 			ThreadContext.put("pipeline.duration", msgLogHumanReadable ? Misc.getAge(startTime) : Long.toString(duration));
 			if (log.isDebugEnabled()) {
@@ -722,9 +720,9 @@ public class Adapter implements IAdapter, NamedBean {
 	 * then add a receiver for each channel.
 	 * @ff.mandatory
 	 */
+	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
 	public void registerReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
-		// Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
 		if (log.isDebugEnabled()) log.debug("Adapter [{}] registered receiver [{}] with properties [{}]", name, receiver.getName(), receiver.toString());
 	}
 
@@ -882,6 +880,7 @@ public class Adapter implements IAdapter, NamedBean {
 					runState.setRunState(RunState.STOPPING);
 					log.debug("Adapter [{}] is stopping receivers", name);
 					for (Receiver<?> receiver: receivers) {
+						// Will not stop receivers that are in state "STARTING"
 						receiver.stopRunning();
 					}
 					// IPullingListeners might still be running, see also
@@ -891,6 +890,10 @@ public class Adapter implements IAdapter, NamedBean {
 							continue; // We don't need to stop the receiver as it's already stopped...
 						}
 						while (!receiver.isStopped()) {
+							if (receiver.getRunState() == RunState.STARTED || receiver.getRunState() == RunState.EXCEPTION_STARTING) {
+								log.debug("Adapter [{}] stopping receiver [{}] which was still starting when stop() command was received", name, receiver.getName());
+								receiver.stopRunning();
+							}
 							// Passing receiver.getRunState() as supplier could cause recursive log invocation so should be avoided
 							if (log.isDebugEnabled()) log.debug("Adapter [{}] waiting for receiver [{}] in state [{}] to stop", name, receiver.getName(), receiver.getRunState());
 							try {
@@ -913,9 +916,11 @@ public class Adapter implements IAdapter, NamedBean {
 					statsUpSince = 0;
 					runState.setRunState(RunState.STOPPED);
 					getMessageKeeper().add("Adapter [" + name + "] stopped");
+					log.debug("Adapter [{}] now in state STOPPED", name);
 				} catch (Throwable t) {
 					addErrorMessageToMessageKeeper("got error stopping Adapter", t);
 					runState.setRunState(RunState.ERROR);
+					log.warn("Adapter [{}] in state ERROR", name, t);
 				} finally {
 					configuration.removeStopAdapterThread(this);
 				}

@@ -17,8 +17,6 @@ package nl.nn.adapterframework.senders;
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,7 +34,6 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.receivers.JavaListener;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.Misc;
 
 /**
  * Posts a message to another IBIS-adapter or application in the same JVM using IbisServiceDispatcher.
@@ -54,7 +51,7 @@ import nl.nn.adapterframework.util.Misc;
  *   <li>Define a Receiver with a JavaListener</li>
  *   <li>Set the attribute <code>serviceName</code> to <i>yourExternalServiceName</i></li>
  * </ul>
- * N.B. Please make sure that the IbisServiceDispatcher-1.1.jar is present on the class path of the server.
+ * N.B. Please make sure that the IbisServiceDispatcher-1.4.jar or newer is present on the class path of the server.
  *
  * @ff.parameters All parameters are copied to the PipeLineSession of the service called.
  * @ff.forward "&lt;Exit.code&gt;" default
@@ -100,57 +97,54 @@ public class IbisJavaSender extends SenderWithParametersBase implements HasPhysi
 	@Override
 	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		String result;
-		Map<String, Object> context = null;
-		try {
-			if (paramList!=null) {
-				context = paramList.getValues(message, session).getValueMap();
-			} else {
-				context=new HashMap<>();
-			}
-			DispatcherManager dm;
-			Class c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
+		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
+			try {
+				if (paramList != null) {
+					subAdapterSession.putAll(paramList.getValues(message, session).getValueMap());
+				}
+				DispatcherManager dm;
+				Class<?> c = Class.forName("nl.nn.adapterframework.dispatcher.DispatcherManagerFactory");
 
-			if(getDispatchType().equalsIgnoreCase("DLL")) {
-				String version = nl.nn.adapterframework.dispatcher.Version.version;
-				if(version.contains("IbisServiceDispatcher 1.3"))
-					throw new SenderException("IBIS-ServiceDispatcher out of date! Please update to version 1.4 or higher");
+				if (getDispatchType().equalsIgnoreCase("DLL")) {
+					String version = nl.nn.adapterframework.dispatcher.Version.version;
+					if (version.contains("IbisServiceDispatcher 1.3"))
+						throw new SenderException("IBIS-ServiceDispatcher out of date! Please update to version 1.4 or higher");
 
-				Method getDispatcherManager = c.getMethod("getDispatcherManager", String.class);
-				dm = (DispatcherManager) getDispatcherManager.invoke(null, getDispatchType());
-			}
-			else {
-				Method getDispatcherManager = c.getMethod("getDispatcherManager");
-				dm = (DispatcherManager) getDispatcherManager.invoke(null, (Object[])null);
-			}
+					Method getDispatcherManager = c.getMethod("getDispatcherManager", String.class);
+					dm = (DispatcherManager) getDispatcherManager.invoke(null, getDispatchType());
+				} else {
+					Method getDispatcherManager = c.getMethod("getDispatcherManager");
+					dm = (DispatcherManager) getDispatcherManager.invoke(null, (Object[]) null);
+				}
 
-			String serviceName;
-			if (StringUtils.isNotEmpty(getServiceNameSessionKey())) {
-				serviceName = session.getString(getServiceNameSessionKey());
-			} else {
-				serviceName = getServiceName();
-			}
+				String serviceName;
+				if (StringUtils.isNotEmpty(getServiceNameSessionKey())) {
+					serviceName = session.getString(getServiceNameSessionKey());
+				} else {
+					serviceName = getServiceName();
+				}
 
-			String correlationID = session==null ? null : session.getCorrelationId();
-			result = dm.processRequest(serviceName, correlationID, message.asString(), (HashMap) context);
-			if (isMultipartResponse()) {
-				return new SenderResult(HttpSender.handleMultipartResponse(MULTIPART_RESPONSE_CONTENT_TYPE, new ByteArrayInputStream(result.getBytes(MULTIPART_RESPONSE_CHARSET)), session));
+				String correlationID = session == null ? null : session.getCorrelationId();
+				result = dm.processRequest(serviceName, correlationID, message.asString(), subAdapterSession);
+				if (isMultipartResponse()) {
+					return new SenderResult(HttpSender.handleMultipartResponse(MULTIPART_RESPONSE_CONTENT_TYPE, new ByteArrayInputStream(result.getBytes(MULTIPART_RESPONSE_CHARSET)), session));
+				}
+			} catch (ParameterException e) {
+				throw new SenderException(getLogPrefix() + "exception evaluating parameters", e);
+			} catch (Exception e) {
+				throw new SenderException(getLogPrefix() + "exception processing message using request processor [" + serviceName + "]", e);
+			} finally {
+				if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
+					log.debug("returning values of session keys [" + getReturnedSessionKeys() + "]");
+				}
+				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
-		} catch (ParameterException e) {
-			throw new SenderException(getLogPrefix()+"exception evaluating parameters",e);
-		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"exception processing message using request processor ["+serviceName+"]",e);
-		} finally {
-			if (log.isDebugEnabled() && StringUtils.isNotEmpty(getReturnedSessionKeys())) {
-				log.debug("returning values of session keys ["+getReturnedSessionKeys()+"]");
-			}
-			Misc.copyContext(getReturnedSessionKeys(), context, session, this);
+			ExitState exitState = (ExitState) subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+			Object exitCode = subAdapterSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
+			String forwardName = exitCode != null ? exitCode.toString() : null;
+			return new SenderResult(exitState == null || exitState == ExitState.SUCCESS, new Message(result), "exitState=" + exitState, forwardName);
 		}
-		ExitState exitState = (ExitState)context.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
-		Object exitCode = context.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
-		String forwardName = exitCode !=null ? exitCode.toString() : null;
-		return new SenderResult(exitState==null || exitState==ExitState.SUCCESS, new Message(result), "exitState="+exitState, forwardName);
 	}
-
 
 	/**
 	 * ServiceName of the {@link JavaListener} that should be called.

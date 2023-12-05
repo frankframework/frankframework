@@ -15,9 +15,9 @@
 */
 package nl.nn.adapterframework.processors;
 
-import nl.nn.adapterframework.util.LogUtil;
-
 import org.apache.logging.log4j.Logger;
+
+import nl.nn.adapterframework.util.LogUtil;
 
 /**
  * Baseclass for SenderWrapperProcessor.

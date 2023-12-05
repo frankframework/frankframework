@@ -37,12 +37,11 @@ import nl.nn.adapterframework.testutil.ConcurrentActionTester;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
-import nl.nn.adapterframework.util.Semaphore;
 
 @RunWith(Parameterized.class)
 public class StatusRecordingTransactionManagerImplementationTest<S extends StatusRecordingTransactionManager> extends StatusRecordingTransactionManagerTestBase<S> {
 
-	private static String SECONDARY_PRODUCT="H2";
+	private static final String SECONDARY_PRODUCT = "H2";
 
 	protected SpringTxManagerProxy txManager;
 	protected StatusRecordingTransactionManager txManagerReal;
@@ -64,16 +63,18 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 
 	@BeforeClass
 	public static void init() {
-		assumeThat(URLDataSourceFactory.availableDatasources, hasItems(SECONDARY_PRODUCT));
-		for (TransactionManagerType tmt:TransactionManagerType.values()) {
-			tmt.closeConfigurationContext();
-		}
+		assumeThat(URLDataSourceFactory.getAvailableDataSources(), hasItems(SECONDARY_PRODUCT));
+		TransactionManagerType.closeAllConfigurationContexts();
 	}
 
 	@Override
 	public void setup() throws IOException {
 		assumeFalse(transactionManagerType==TransactionManagerType.DATASOURCE);
 		assumeThat(productKey, not(equalTo(SECONDARY_PRODUCT)));
+
+		// Release any hanging commits that might be from previous tests
+		XaDatasourceCommitStopper.stop(false);
+
 		super.setup();
 	}
 
@@ -92,12 +93,12 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 	@After
 	public void teardown() {
 		log.debug("teardown");
+		XaDatasourceCommitStopper.stop(false);
 		try {
 			transactionManagerType.closeConfigurationContext();
 		} catch (Exception e) {
 			log.warn("Exception in teardown", e);
 		}
-		XaDatasourceCommitStopper.stop(false);
 	}
 
 	protected String getTMUID() {
@@ -109,7 +110,7 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 		case NARAYANA:
 			return arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier();
 		default:
-			throw new NotImplementedException("Unkonwn transaction manager type ["+transactionManagerType+"]");
+			throw new NotImplementedException("Unknown transaction manager type ["+transactionManagerType+"]");
 		}
 	}
 
@@ -123,38 +124,40 @@ public class StatusRecordingTransactionManagerImplementationTest<S extends Statu
 	}
 
 	@Test
-	public void testShutdown() throws Exception {
+	public void testShutdown() {
 		setupTransactionManager();
 		assertStatus("ACTIVE", txManagerReal.getUid());
 		assertEquals(txManagerReal.getUid(),getTMUID());
 		ConcurrentXATransactionTester xaTester = new ConcurrentXATransactionTester();
-		xaTester.run(); // same thread
+		xaTester.start(); // same thread
 		txManagerReal.destroy();
 		assertStatus("COMPLETED", txManagerReal.getUid());
 
 	}
 
 	@Test
-	public void testShutdownPending() throws Exception {
+	public void testShutdownPending() {
 		setupTransactionManager();
 		String uid = txManagerReal.getUid();
 		assertStatus("ACTIVE", uid);
 		XaDatasourceCommitStopper.stop(true);
-		Semaphore actionDone = new Semaphore();
 		ConcurrentXATransactionTester xaTester = new ConcurrentXATransactionTester();
-		xaTester.setActionDone(actionDone);
+		// Register each ConcurrentXATransactionTester instance right away
+		XaDatasourceCommitStopper.commitGuard.register();
 
 		xaTester.start();
-		XaDatasourceCommitStopper.commitCalled.acquire();
+		// Wait for all others to have arrived here too.
+		log.info("<*> Nr of participants: {}", XaDatasourceCommitStopper.commitGuard.getRegisteredParties());
+		log.info("Waiting for all other participants to arrive in 'commit'");
+		int tst1 = XaDatasourceCommitStopper.commitGuard.arriveAndAwaitAdvance();
+		log.info("<*> Phase at Tst1: {}", tst1);
+
 		txManagerReal.destroy();
 		assertStatus("PENDING", uid);
 
 		teardown();
-		XaDatasourceCommitStopper.performCommit.release();
 		XaDatasourceCommitStopper.stop(false);
 
-//		log.debug("waiting for commit to finish");
-//		actionDone.acquire();
 		log.debug("recreating transaction manager");
 		setupTransactionManager();
 

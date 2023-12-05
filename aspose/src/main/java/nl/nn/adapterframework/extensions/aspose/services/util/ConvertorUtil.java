@@ -15,6 +15,11 @@
 */
 package nl.nn.adapterframework.extensions.aspose.services.util;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
  *         Hoorn</a> (d937275)
@@ -35,41 +40,34 @@ public class ConvertorUtil {
 	 * removed.
 	 */
 	public static String createTidyNameWithoutExtension(String argFilename) {
-		String filename = argFilename;
-		if (filename == null) {
+		String filename;
+		if (StringUtils.isBlank(argFilename)) {
 			filename = DEFAULT_FILENAME;
+		} else {
+			filename = argFilename;
 		}
 		if (filename.contains(".")) {
 			// Remove the file type.
-			filename = filename.substring(0, filename.lastIndexOf('.'));
+			return filename.substring(0, filename.lastIndexOf('.'));
 		}
 
 		return filename;
-	}
-
-	/**
-	 * Creates a filename which always contains pdf as file type. If the file
-	 * already contains a extension it will be replaced with pdf.
-	 */
-	public static String createTidyPdfFilename(String argFilename) {
-		return createTidyFilename(argFilename, PDF_FILETYPE);
 	}
 
 	/**
 	 * Creates a filename which always contains the given extension as file type
 	 * (without period). If the file already contains a extension it will be
 	 * replaced with the given extension.
-	 * 
+	 *
 	 * @param argFilename
 	 * @param extension (without the period).
 	 */
-	public static String createTidyFilename(String argFilename, String extension) {
-		String extensionWithDelim = EXTENSION_DELIMITER + extension;
+	public static String createTidyFilename(@Nullable String argFilename, @Nonnull String extension) {
+		String extensionWithDelim = extension.startsWith(EXTENSION_DELIMITER) ? extension : EXTENSION_DELIMITER + extension;
 		String filename = createTidyNameWithoutExtension(argFilename);
 		if (!filename.endsWith(extensionWithDelim)) {
 			filename = filename + extensionWithDelim;
 		}
 		return filename;
 	}
-
 }

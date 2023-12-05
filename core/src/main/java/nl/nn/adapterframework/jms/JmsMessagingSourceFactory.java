@@ -43,17 +43,22 @@ import nl.nn.adapterframework.util.AppConstants;
  * @since   4.4
  */
 public class JmsMessagingSourceFactory extends MessagingSourceFactory {
-	private static Map<String,MessagingSource> jmsMessagingSourceMap = new HashMap<>();
-	private JMSFacade jmsFacade;
-	private String applicationServerType = AppConstants.getInstance().getResolvedProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
+
+	/**
+	 * Global JVM-wide cache for JMS Messaging Sources, which hold reference to ConnectionFactories.
+	 */
+	private static final Map<String,MessagingSource> JMS_MESSAGING_SOURCE_MAP = new HashMap<>();
+
+	private final JMSFacade jmsFacade;
+	private final String applicationServerType = AppConstants.getInstance().getProperty(AppConstants.APPLICATION_SERVER_TYPE_PROPERTY);
 
 	public JmsMessagingSourceFactory(JMSFacade jmsFacade) {
 		this.jmsFacade = jmsFacade;
 	}
 
 	@Override
-	protected Map<String,MessagingSource> getMessagingSourceMap() {
-		return jmsMessagingSourceMap;
+	protected Map<String, MessagingSource> getMessagingSourceMap() {
+		return JMS_MESSAGING_SOURCE_MAP;
 	}
 
 	@Override
@@ -76,7 +81,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	@Override
 	protected ConnectionFactory createConnectionFactory(Context context, String cfName, boolean createDestination, boolean useJms102) throws IbisException {
 		IConnectionFactoryFactory connectionFactoryFactory = jmsFacade.getConnectionFactoryFactory();
-		if (connectionFactoryFactory==null) {
+		if (connectionFactoryFactory == null) {
 			throw new ConfigurationException("No ConnectionFactoryFactory was configured");
 		}
 

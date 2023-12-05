@@ -27,6 +27,7 @@ import nl.nn.adapterframework.core.PipeLineSession;
  *
  *
  * @author John Dekker
+ * @deprecated Warning: non-maintained functionality.
  */
 public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 

@@ -17,11 +17,12 @@ package nl.nn.adapterframework.http;
 
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import jakarta.mail.MessagingException;
 import jakarta.mail.Part;
-
-import org.apache.commons.lang3.StringUtils;
-
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 
@@ -29,7 +30,9 @@ public class PartMessage extends Message {
 
 	private static final long serialVersionUID = 4740404985426114492L;
 
-	private transient Part part;
+	private static final Logger LOG = LogManager.getLogger(Message.class);
+
+	private final transient Part part;
 
 	public PartMessage(Part part) throws MessagingException {
 		this(new MessageContext(), part);
@@ -59,7 +62,7 @@ public class PartMessage extends Message {
 			try {
 				context.withMimeType(part.getContentType());
 			} catch (Exception e) {
-				log.warn("Could not determine charset", e);
+				LOG.warn("Could not determine charset", e);
 			}
 		}
 	}
@@ -70,7 +73,7 @@ public class PartMessage extends Message {
 			try {
 				return part.getSize();
 			} catch (MessagingException e) {
-				log.warn("Cannot get size", e);
+				LOG.warn("Cannot get size", e);
 				return -1;
 			}
 		}

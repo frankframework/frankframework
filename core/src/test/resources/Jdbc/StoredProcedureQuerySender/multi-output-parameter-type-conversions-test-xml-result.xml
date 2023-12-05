@@ -1,0 +1,11 @@
+<result>
+    <fielddefinition>IGNORE</fielddefinition>
+    <rowset>
+        <row number="0">
+			<field name="MESSAGE">MESSAGE-CONTENTS</field>
+            <field name="R1">1</field>
+            <field name="R2">1</field>
+            <field name="R3">1</field>
+        </row>
+    </rowset>
+</result>

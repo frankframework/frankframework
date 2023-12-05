@@ -96,9 +96,8 @@ public class CompressPipe extends StreamingPipe {
 				in = message.asInputStream();
 			} else {
 				filename = message.asString();
-				if (compress) {
-					zipMultipleFiles = StringUtils.contains(filename, ";");
-				} else {
+				zipMultipleFiles = StringUtils.contains(filename, ";");
+				if (!compress || !zipMultipleFiles) {
 					in = Files.newInputStream(Paths.get(filename));
 				}
 			}
