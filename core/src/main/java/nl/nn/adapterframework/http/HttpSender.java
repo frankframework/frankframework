@@ -110,8 +110,6 @@ public class HttpSender extends HttpSenderBase {
 	@Deprecated private @Getter String storeResultAsStreamInSessionKey;
 	@Deprecated private @Getter String storeResultAsByteArrayInSessionKey;
 
-	private @Getter boolean streamResultToServlet=false;
-
 	private @Getter boolean paramsInUrl=true;
 	private @Getter String firstBodyPartName=null;
 
@@ -441,42 +439,34 @@ public class HttpSender extends HttpSenderBase {
 			return new Message(body);
 		}
 
-		HttpServletResponse response = null;
-		if (isStreamResultToServlet())
-			response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-
-		if (response==null) {
-			Message responseMessage = responseHandler.getResponseMessage();
-			if(!Message.isEmpty(responseMessage)) {
-				responseMessage.closeOnCloseOf(session, this);
-			}
-
-			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
-				try {
-					String fileName = session.getString(getStreamResultToFileNameSessionKey());
-					File file = new File(fileName);
-					StreamUtil.streamToFile(responseMessage.asInputStream(), file);
-					return new Message(fileName);
-				} catch (IOException e) {
-					throw new SenderException("cannot find filename to stream result to", e);
-				}
-			} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
-				session.put(getStoreResultAsStreamInSessionKey(), responseMessage.asInputStream());
-				return Message.nullMessage();
-			} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
-				session.put(getStoreResultAsByteArrayInSessionKey(), responseMessage.asByteArray());
-				return Message.nullMessage();
-			} else if (BooleanUtils.isTrue(getMultipartResponse()) || responseHandler.isMultipart()) {
-				if(BooleanUtils.isFalse(getMultipartResponse())) {
-					log.warn("multipart response was set to false, but the response is multipart!");
-				}
-				return handleMultipartResponse(responseHandler, session);
-			} else {
-				return getResponseBody(responseHandler);
-			}
+		Message responseMessage = responseHandler.getResponseMessage();
+		if (!Message.isEmpty(responseMessage)) {
+			responseMessage.closeOnCloseOf(session, this);
 		}
-		streamResponseBody(responseHandler, response);
-		return Message.nullMessage();
+
+		if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
+			try {
+				String fileName = session.getString(getStreamResultToFileNameSessionKey());
+				File file = new File(fileName);
+				StreamUtil.streamToFile(responseMessage.asInputStream(), file);
+				return new Message(fileName);
+			} catch (IOException e) {
+				throw new SenderException("cannot find filename to stream result to", e);
+			}
+		} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
+			session.put(getStoreResultAsStreamInSessionKey(), responseMessage.asInputStream());
+			return Message.nullMessage();
+		} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
+			session.put(getStoreResultAsByteArrayInSessionKey(), responseMessage.asByteArray());
+			return Message.nullMessage();
+		} else if (BooleanUtils.isTrue(getMultipartResponse()) || responseHandler.isMultipart()) {
+			if (BooleanUtils.isFalse(getMultipartResponse())) {
+				log.warn("multipart response was set to false, but the response is multipart!");
+			}
+			return handleMultipartResponse(responseHandler, session);
+		} else {
+			return getResponseBody(responseHandler);
+		}
 	}
 
 	public Message getResponseBody(HttpResponseHandler responseHandler) {
@@ -522,14 +512,6 @@ public class HttpSender extends HttpSenderBase {
 			throw new IOException("Could not read mime multipart response", e);
 		}
 		return result;
-	}
-
-	private void streamResponseBody(HttpResponseHandler responseHandler, HttpServletResponse response) throws IOException {
-		streamResponseBody(responseHandler.getResponse(), responseHandler.getHeader("Content-Type"), responseHandler.getHeader("Content-Disposition"), response, log, getLogPrefix());
-	}
-
-	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix) throws IOException {
-		streamResponseBody(is, contentType, contentDisposition, response, log, logPrefix, null);
 	}
 
 	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix, String redirectLocation) throws IOException {
@@ -603,14 +585,6 @@ public class HttpSender extends HttpSenderBase {
 	@ConfigurationWarning("no longer required to store the result as a byte array in the PipeLineSession, the sender can return binary data")
 	public void setStoreResultAsByteArrayInSessionKey(String storeResultAsByteArrayInSessionKey) {
 		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
-	}
-
-	/**
-	 * If set, the result is streamed to the HhttpServletResponse object of the RestServiceDispatcher (instead of passed as a string)
-	 * @ff.default false
-	 */
-	public void setStreamResultToServlet(boolean b) {
-		streamResultToServlet = b;
 	}
 
 	@Deprecated

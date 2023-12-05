@@ -82,7 +82,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * in order: The n-th questionmark is replaced by the value of the n-th parameter.
  *
  * <h3>Note on using packages</h3>
- * The package processor makes some assumptions about the datatypes:
+ * The package processor makes some assumptions about the data types:
  * <ul>
  *   <li>elements that start with a single quote are assumed to be Strings</li>
  *   <li>elements that contain a dash ('-') are assumed to be dates (yyyy-MM-dd) or timestamps (yyyy-MM-dd HH:mm:ss)</li>
@@ -132,7 +132,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private @Getter String rowIdSessionKey=null;
 	private @Getter String packageContent = "db2";
 	private @Getter String[] columnsReturnedList=null;
-	private @Getter boolean streamResultToServlet=false;
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	private @Getter boolean lockRows=false;
 	private @Getter int lockWait=-1;
@@ -313,14 +312,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						//noinspection deprecation
 						clobSessionVar = session.getMessage(getClobSessionKey()).asObject();
 					}
-					if (isStreamResultToServlet()) {
-						HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-						String contentType = session.getString("contentType");
-						String contentDisposition = session.getString("contentDisposition");
-						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
-					} else {
-						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, session, next);
-					}
+					return executeSelectQuery(statement, blobSessionVar, clobSessionVar, session, next);
 				case UPDATEBLOB:
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
 						return new PipeRunResult(null, executeUpdateBlobQuery(statement, session.getMessage(getBlobSessionKey())));
@@ -447,7 +439,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (isScalar()) {
 			String result=null;
 			if (resultset.next()) {
-				//result = resultset.getString(1);
 				ResultSetMetaData rsmeta = resultset.getMetaData();
 				int numberOfColumns = rsmeta.getColumnCount();
 				if(numberOfColumns > 1) {
@@ -807,9 +798,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 								}
 							} else {
 								if (element.contains(".")) {
-									paramArray[idx] = new Float(element);
+									paramArray[idx] = Float.parseFloat(element);
 								} else {
-									paramArray[idx] = new Integer(element);
+									paramArray[idx] = Integer.parseInt(element);
 								}
 							}
 						}
@@ -948,16 +939,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	/** If specified, the rowid of the processed row is put in the pipelinesession under the specified key (only applicable for <code>querytype=other</code>). <b>Note:</b> If multiple rows are processed a SqlException is thrown. */
 	public void setRowIdSessionKey(String string) {
 		rowIdSessionKey = string;
-	}
-
-
-	/**
-	 * If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as bytes or as a String)
-	 * @ff.default false
-	 */
-	@Deprecated
-	public void setStreamResultToServlet(boolean b) {
-		streamResultToServlet = b;
 	}
 
 	/** If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect */
