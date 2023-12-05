@@ -84,16 +84,9 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 		sender.setRemoveNamespaces(removeNamespaces);
 	}
 
-
-	@Override
-	protected void setXslt2(boolean xslt2) {
-		sender.setXslt2(xslt2);
-	}
-
 	@Override
 	protected void setHandleLexicalEvents(boolean handleLexicalEvents) {
 		sender.setHandleLexicalEvents(handleLexicalEvents);
 	}
-
 
 }

@@ -107,11 +107,6 @@ public class Xslt3Test extends XsltErrorTestBase<XsltPipe>{
 	}
 
 	@Override
-	protected void setXslt2(boolean xslt2) {
-		pipe.setXslt2(xslt2);
-	}
-
-	@Override
 	protected void setOutputType(OutputType outputType) {
 		pipe.setOutputType(outputType);
 	}

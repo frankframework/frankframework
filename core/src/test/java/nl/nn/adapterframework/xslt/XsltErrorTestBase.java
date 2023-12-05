@@ -40,7 +40,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	private static class ErrorOutputStream extends OutputStream {
-		private StringBuilder line = new StringBuilder();
+		private final StringBuilder line = new StringBuilder();
 
 		@Override
 		public void write(int b) {
@@ -97,7 +97,6 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	public void duplicateImportErrorAlertsXslt1() throws Exception {
 		// this condition appears to result in a warning only for XSLT 2.0 using Saxon
 		setStyleSheetName("/Xslt/duplicateImport/root.xsl");
-		setXslt2(false);
 		pipe.configure();
 		checkTestAppender(0,null);
 	}
@@ -106,15 +105,13 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	@Test
 	public void duplicateImportErrorAlertsXslt2() throws Exception {
 		setStyleSheetName("/Xslt/duplicateImport/root2.xsl");
-		setXslt2(true);
 		pipe.configure();
 		pipe.start();
 		checkTestAppender(getMultiplicity(),"is included or imported more than once");
 	}
 
-	public void duplicateImportErrorProcessing(boolean xslt2) throws Exception {
+	public void duplicateImportErrorProcessing() throws Exception {
 		setStyleSheetName("/Xslt/duplicateImport/root.xsl");
-		setXslt2(xslt2);
 		setIndent(true);
 		pipe.configure();
 		pipe.start();
@@ -130,20 +127,19 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 
-	@Test
-	public void duplicateImportErrorProcessingXslt1() throws Exception {
-		duplicateImportErrorProcessing(false);
-	}
+//	@Test
+//	public void duplicateImportErrorProcessingXslt1() throws Exception {
+//		duplicateImportErrorProcessing();
+//	}
 
 	@Test
 	public void duplicateImportErrorProcessingXslt2() throws Exception {
-		duplicateImportErrorProcessing(true);
+		duplicateImportErrorProcessing();
 	}
 
 	@Test
 	public void documentIncludedInSourceNotFoundXslt1() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importNotFound1.xsl");
-		setXslt2(false);
 		setIndent(true);
 		pipe.configure();
 		pipe.start();
@@ -171,7 +167,6 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	public void documentIncludedInSourceNotFoundXslt2() throws Exception {
 		// error not during configure(), but during doPipe()
 		setStyleSheetName("/Xslt/importDocument/importNotFound2.xsl");
-		setXslt2(true);
 		pipe.configure();
 		pipe.start();
 		String input = TestFileUtils.getTestFile("/Xslt/importDocument/in.xml");
@@ -196,9 +191,8 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void importNotFoundXslt1() throws Exception {
+	public void importNotFoundXslt1() {
 		setStyleSheetName("/Xslt/importNotFound/root.no-validate-xsl");
-		setXslt2(false);
 		String errorMessage = null;
 		try {
 			pipe.configure();
@@ -211,10 +205,9 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void importNotFoundXslt2() throws Exception {
+	public void importNotFoundXslt2() {
 		setStyleSheetName("/Xslt/importNotFound/root2.no-validate-xsl");
-		setXslt2(true);
-		String errorMessage = null;
+		String errorMessage;
 		try {
 			pipe.configure();
 			fail("expected configuration to fail because an import could not be found");
@@ -226,10 +219,9 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void notifyXalanExtensionsIllegalForSaxon() throws ConfigurationException {
+	public void notifyXalanExtensionsIllegalForSaxon() {
 		setStyleSheetName("/Xslt/XalanExtension/XalanExtension.xsl");
-		setXslt2(true);
-		String errorMessage = null;
+		String errorMessage;
 		try {
 			pipe.configure();
 			fail("expected configuration to fail");
@@ -243,10 +235,9 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void illegalXPathExpressionXslt2() throws Exception {
+	public void illegalXPathExpressionXslt2() {
 		// error not during configure(), but during doPipe()
 		setXpathExpression("position()='1'");
-		setXslt2(true);
 		String errorMessage = null;
 		try {
 			pipe.configure();
@@ -265,10 +256,9 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void illegalXPathExpression2Xslt1() throws Exception {
+	public void illegalXPathExpression2Xslt1() {
 		// error not during configure(), but during doPipe()
 		setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
-		setXslt2(false);
 		String errorMessage = null;
 		try {
 			pipe.configure();
@@ -276,9 +266,9 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString("<result><status>invalid</status><message>$failureReason</message></result>"));
-			assertThat(errorMessage,containsString("A location path was expected, but the following token was encountered:  <"));
+			assertThat(errorMessage,containsString("(XPathException) Unexpected token \"<\" at start of expression"));
 		}
-		checkTestAppender(2,null);
+		checkTestAppender(1,null);
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
 			System.out.println("ErrorStream(=stderr): "+errorOutputStream.toString());
@@ -288,10 +278,9 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void illegalXPathExpression2Xslt2() throws Exception {
+	public void illegalXPathExpression2Xslt2() {
 		// error not during configure(), but during doPipe()
 		setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
-		setXslt2(true);
 		String errorMessage = null;
 		try {
 			pipe.configure();
