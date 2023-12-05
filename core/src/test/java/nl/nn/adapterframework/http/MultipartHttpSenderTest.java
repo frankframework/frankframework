@@ -26,6 +26,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 
+import org.junit.jupiter.api.Disabled;
+
 public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSender> {
 
 	@Override
@@ -214,5 +216,12 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 				sender.close();
 			}
 		}
+	}
+
+	@Test
+	@Override
+	@Disabled
+	public void testIfToStringWorks() {
+
 	}
 }

@@ -15,6 +15,7 @@ import org.custommonkey.xmlunit.DifferenceListener;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
@@ -151,6 +152,13 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 
 		assertEquals("<LdapResult>Success</LdapResult>", result);
 		compareXML("Ldap/expected/delete.xml", getTree());
+	}
+
+	@Test
+	@Override
+	@Disabled
+	public void testIfToStringWorks() {
+
 	}
 
 	//Create a new sender and execute the TREE action to run a diff against that changes

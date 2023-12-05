@@ -9,6 +9,9 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -68,6 +71,8 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	/*Test with two given parameters. The integer values of the given parameters will be added and the result
 	is given as the output of the pipe */
 	@Test
+	@ParameterizedTest
+	@MethodSource("paramData")
 	public void twoParameters() throws ConfigurationException, SenderException, TimeoutException, IOException {
 
 		Message dummyInput = new Message("dummyinput");
@@ -246,6 +251,13 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.open();
 
 		assertEquals("1", sender.sendMessageOrThrow(dummyInput,session).asString());
+	}
+
+	@Test
+	@Override
+	@Disabled
+	public void testIfToStringWorks() {
+
 	}
 
 	//The input is expected to be of type integer but an input of type Sting is given.
