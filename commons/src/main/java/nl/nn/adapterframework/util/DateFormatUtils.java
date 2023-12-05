@@ -16,13 +16,20 @@
 package nl.nn.adapterframework.util;
 
 import java.time.Instant;
+import java.time.Year;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalQueries;
-import java.util.Calendar;
 import java.util.Date;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -49,6 +56,48 @@ public class DateFormatUtils {
 	public static final DateTimeFormatter ISO_DATE_FORMATTER = buildFormatter(FORMAT_DATE_ISO);
 	public static final DateTimeFormatter SHORT_DATE_FORMATTER = buildFormatter(FORMAT_SHORT_DATE);
 	public static final DateTimeFormatter TIME_HMS_FORMATTER = buildFormatter(FORMAT_TIME_HMS);
+
+	private static final Map<Pattern, DateTimeFormatter> DATE_EXPRESSION_PARSER_MAP;
+
+	static {
+		DATE_EXPRESSION_PARSER_MAP = Map.ofEntries(
+			Map.entry(Pattern.compile("^\\d{8}$"), buildFormatter("yyyyMMdd")),
+			Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}$"), buildFormatter("dd-MM-yyyy")),
+			Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{2}$"), SHORT_DATE_FORMATTER),
+			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}$"), ISO_DATE_FORMATTER),
+			Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}$"), buildFormatter("MM/dd/yyyy")),
+			Map.entry(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}$"), buildFormatter("yyyy/MM/dd")),
+			Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}$"), buildFormatter("dd MMM yyyy")),
+			Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}$"), buildFormatter("dd MMMM yyyy")),
+			Map.entry(Pattern.compile("^\\d{12}$"), buildFormatter("yyyyMMddHHmm")),
+			Map.entry(Pattern.compile("^\\d{8}\\s\\d{4}$"), buildFormatter("yyyyMMdd HHmm")),
+			Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}$"), buildFormatter("dd-MM-yyyy HH:mm")),
+			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}$"), buildFormatter("yyyy-MM-dd HH:mm")),
+			Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}$"), buildFormatter("MM/dd/yyyy HH:mm")),
+			Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), new DateTimeFormatterBuilder()
+					.appendPattern("dd/MM/")
+					.appendValueReduced(ChronoField.YEAR, 2, 2, Year.now().getValue() - 60)
+					.appendPattern(" HH:mm:ss")
+					.toFormatter()
+					.withZone(ZoneId.systemDefault())
+					.withResolverStyle(ResolverStyle.LENIENT)),
+			Map.entry(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}$"), buildFormatter("yyyy/MM/dd HH:mm")),
+			Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), buildFormatter("dd MMM yyyy HH:mm")),
+			Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}$"), buildFormatter("dd MMMM yyyy HH:mm")),
+			Map.entry(Pattern.compile("^\\d{14}$"), buildFormatter("yyyyMMddHHmmss")),
+			Map.entry(Pattern.compile("^\\d{8}\\s\\d{6}$"), buildFormatter("yyyyMMdd HHmmss")),
+			Map.entry(Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("dd-MM-yyyy HH:mm:ss")),
+			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), GENERIC_DATETIME_FORMATTER),
+			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), FULL_GENERIC_FORMATTER),
+			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\.\\d{3}$"), FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER),
+			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}\\w+$"), FULL_ISO_FORMATTER),
+			Map.entry(Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}T\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("yyyy-MM-dd'T'HH:mm:ss")),
+			Map.entry(Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("MM/dd/yyyy HH:mm:ss")),
+			Map.entry(Pattern.compile("^\\d{4}/\\d{1,2}/\\d{1,2}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("yyyy/MM/dd HH:mm:ss")),
+			Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{3}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("dd MMM yyyy HH:mm:ss")),
+			Map.entry(Pattern.compile("^\\d{1,2}\\s[a-z]{4,}\\s\\d{4}\\s\\d{1,2}:\\d{2}:\\d{2}$"), buildFormatter("dd MMMM yyyy HH:mm:ss"))
+		);
+	}
 
 	public static DateTimeFormatter buildFormatter(String format) {
 		return DateTimeFormatter.ofPattern(format).withZone(ZoneId.systemDefault()).withResolverStyle(ResolverStyle.LENIENT);
@@ -112,11 +161,30 @@ public class DateFormatUtils {
 	 * Parses a string to a Date using CalendarParser
 	 */
 	@Deprecated
-	public static Date parseAnyDate(String dateInAnyFormat) throws CalendarParserException {
-		// TODO: Fix this crap
-		// Either: https://stackoverflow.com/a/3390252/3588231
-		// Or: https://github.com/sisyphsu/dateparser
-		Calendar c = CalendarParser.parse(dateInAnyFormat.replace('T', ' ')); // "Parse any format" doesn't parse ISO dates with a 'T' between date and time.
-		return new Date(c.getTimeInMillis());
+	@Nonnull
+	public static Date parseAnyDate(@Nonnull String dateInAnyFormat) throws DateTimeParseException, IllegalArgumentException {
+		return Date.from(parseGenericDate(dateInAnyFormat));
+	}
+
+	@Nonnull
+	public static Instant parseGenericDate(@Nonnull String dateString) throws DateTimeParseException, IllegalArgumentException {
+		// Date parsing based on: https://stackoverflow.com/a/3390252/3588231
+		// An alternative would have been this library: https://github.com/sisyphsu/dateparser
+		// But I prefer the clarity of having more direct control and using standard Java APIs.
+		DateTimeFormatter parser = determineDateFormat(dateString);
+		if (parser == null) {
+			throw new IllegalArgumentException("Cannot determine date-format for input [" + dateString + "]");
+		}
+		return parser.parse(dateString, Instant::from);
+	}
+
+	@Nullable
+	private static DateTimeFormatter determineDateFormat(String dateString) {
+		for (Map.Entry<Pattern, DateTimeFormatter> entry : DATE_EXPRESSION_PARSER_MAP.entrySet()) {
+			if (entry.getKey().matcher(dateString).matches()) {
+				return entry.getValue();
+			}
+		}
+		return null;
 	}
 }
