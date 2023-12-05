@@ -61,7 +61,6 @@ public class EsbJmsSender extends JmsSender {
 			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("SoapAction");
 			p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");
-			//p.setXslt2(true);
 			p.setRemoveNamespaces(true);
 			addParameter(p);
 		}
