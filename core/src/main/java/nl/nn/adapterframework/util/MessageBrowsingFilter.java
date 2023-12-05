@@ -46,7 +46,7 @@ public class MessageBrowsingFilter {
 
 	private @Getter SortOrder sortOrder = SortOrder.NONE;
 	private IMessageBrowser<?> storage = null;
-	private IListener listener = null;
+	private IListener<?> listener = null;
 
 	public MessageBrowsingFilter() {
 		this(AppConstants.getInstance().getInt("browse.messages.max", 100), 0);
@@ -143,14 +143,12 @@ public class MessageBrowsingFilter {
 	public boolean matchMessage(IMessageBrowsingIteratorItem iterItem) throws ListenerException, IOException {
 		if(message != null) {
 			String msg = getMessageText(storage, listener, iterItem.getId());
-			if (!StringUtils.containsIgnoreCase(msg, message)) {
-				return false;
-			}
+			return StringUtils.containsIgnoreCase(msg, message);
 		}
 		return true;
 	}
 
-	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener listener, String messageId) throws ListenerException, IOException {
+	private String getMessageText(IMessageBrowser<?> messageBrowser, IListener<?> listener, String messageId) throws ListenerException, IOException {
 		RawMessageWrapper<?> rawmsg = messageBrowser.browseMessage(messageId);
 		return MessageBrowsingUtil.getMessageText(rawmsg, listener);
 	}
@@ -177,7 +175,7 @@ public class MessageBrowsingFilter {
 			try {
 				startDate = DateFormatUtils.parseAnyDate(startDateMask);
 			}
-			catch(CalendarParserException ex) {
+			catch(Exception ex) {
 				throw new IllegalStateException("could not parse date from ["+startDateMask+"]", ex);
 			}
 		}
@@ -188,7 +186,7 @@ public class MessageBrowsingFilter {
 			try {
 				endDate = DateFormatUtils.parseAnyDate(endDateMask);
 			}
-			catch(CalendarParserException ex) {
+			catch(Exception ex) {
 				throw new IllegalStateException("could not parse date from ["+endDateMask+"]", ex);
 			}
 		}
