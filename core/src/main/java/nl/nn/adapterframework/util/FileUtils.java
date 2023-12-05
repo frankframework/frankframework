@@ -39,6 +39,7 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 
 import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -57,7 +58,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
 @Log4j2
 public class FileUtils {
 	protected static final DateTimeFormatter WEEKLY_ROLLING_FILENAME_DATE_FORMATTER = DateFormatUtils.buildFormatter("YYYY'W'ww");
-	protected static final DateTimeFormatter DAILY_ROLLING_FILENAME_DATE_FORMATTER = DateFormatUtils.buildFormatter("yyyy-MM-dd");
 
 	/**
 	 * Construct a filename from a pattern and session variables.
@@ -359,22 +359,7 @@ public class FileUtils {
 		targetFile.renameTo(backupFile);
 	}
 
-	public static File getWeeklyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
-		return getRollingFile(directory, filenamePrefix, WEEKLY_ROLLING_FILENAME_DATE_FORMATTER, filenameSuffix, retentionDays);
-	}
-
-	public static File getDailyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
-		return getRollingFile(directory, filenamePrefix, DAILY_ROLLING_FILENAME_DATE_FORMATTER, filenameSuffix, retentionDays);
-	}
-
-	private static File getRollingFile(String directory, String filenamePrefix, DateTimeFormatter dateformat, String filenameSuffix, int retentionDays) {
-		return getRollingFile(directory, filenamePrefix, dateformat, filenameSuffix, retentionDays, null);
-	}
-
 	protected static File getRollingFile(String directory, String filenamePrefix, DateTimeFormatter dateformat, String filenameSuffix, int retentionDays, Date date) {
-
-		final long millisPerDay = 24 * 60 * 60 * 1000L;
-
 		if (directory == null) {
 			return null;
 		}
@@ -385,8 +370,7 @@ public class FileUtils {
 		File result = new File(directory, filename);
 		if (!result.exists()) {
 			long thisMorning = dateInFileName.getTime();
-
-			long deleteBefore = thisMorning - retentionDays * millisPerDay;
+			long deleteBefore = thisMorning - retentionDays * DateUtils.MILLIS_PER_DAY;
 
 			WildCardFilter filter = new WildCardFilter(filenamePrefix+"*"+filenameSuffix);
 			File dir = new File(directory);
@@ -532,12 +516,12 @@ public class FileUtils {
 		}
 	}
 
-	/*
+	/**
 	 * create a filled array
 	 */
-	public static char[] getFilledArray(int length, char fillchar) {
+	public static char[] getFilledArray(int length, char fillChar) {
 		char[] fill = new char[length];
-		Arrays.fill(fill, fillchar);
+		Arrays.fill(fill, fillChar);
 		return fill;
 	}
 

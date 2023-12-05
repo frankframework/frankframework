@@ -145,7 +145,6 @@
 	<nl.nn.adapterframework.extensions.svn.ScanTibcoSolutionPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.extensions.svn.ScanTibcoSolutionPipe>
 	<nl.nn.adapterframework.extensions.tibco.SendTibcoMessage><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.extensions.tibco.SendTibcoMessage>
 	<nl.nn.adapterframework.pipes.SenderPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.pipes.SenderPipe>
-	<nl.nn.adapterframework.pipes.GenericMessageSendingPipe><mermaid:type>endpoint</mermaid:type></nl.nn.adapterframework.pipes.GenericMessageSendingPipe>
 
 	<!--Validator-->
 	<nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator>

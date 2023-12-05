@@ -360,11 +360,6 @@
     <ClassName>nl.nn.adapterframework.senders.SambaSender</ClassName>
   </Element>
   <Element>
-    <Name>SambaSenderOldSender</Name>
-    <Type>sender</Type>
-    <ClassName>nl.nn.adapterframework.senders.SambaSenderOld</ClassName>
-  </Element>
-  <Element>
     <Name>SapSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.extensions.sap.SapSender</ClassName>
