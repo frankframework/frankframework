@@ -6,6 +6,15 @@ import { Injectable } from '@angular/core';
 export class SidebarService {
   toggle() {
     $("body").toggleClass("mini-navbar");
+    this.swichStates();
+  }
+
+  small(){
+    $("body").addClass("mini-navbar");
+    this.swichStates();
+  }
+
+  private swichStates(){
     if (!$('body').hasClass('mini-navbar') || $('body').hasClass('body-small')) {
       // Hide menu in order to smoothly turn on when maximize menu
       $('#side-menu').hide();

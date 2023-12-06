@@ -12,3 +12,23 @@
 .space-it-out {
   margin: 0 3px 0 0;
 }
+
+@media screen and (max-width: 960px) {
+  .mini-navbar {
+    .page-heading {
+      padding: 3px;
+    }
+
+    .navbar-header .iaf-info {
+      line-height: 50px;
+    }
+
+    .navbar-top-links li a {
+      padding: 15px 10px 0 10px;
+    }
+
+    .navbar .stage {
+      font-size: 20px;
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { Directive, ElementRef, OnInit } from '@angular/core';
+import { SidebarService } from 'src/app/components/pages/sidebar.service';
 
 @Directive({
   selector: '[appFitHeight]'
@@ -12,7 +13,10 @@ export class FitHeightDirective implements OnInit {
     min: 800
   };
 
-  constructor(private element: ElementRef<HTMLElement>) { }
+  constructor(
+    private element: ElementRef<HTMLElement>,
+    private sidebar: SidebarService
+  ) { }
 
   ngOnInit() {
     window.addEventListener("resize", () => {
