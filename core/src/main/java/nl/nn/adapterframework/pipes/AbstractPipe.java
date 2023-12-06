@@ -201,8 +201,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 		this.locker = locker;
 	}
 
-	@Override
 	/** Forwards are used to determine the next Pipe to execute in the Pipeline */
+	@Override
 	public void registerForward(PipeForward forward) throws ConfigurationException {
 		String forwardName = forward.getName();
 		if(forwardName != null) {

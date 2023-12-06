@@ -55,7 +55,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
@@ -175,13 +174,14 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		PERSISTENT(javax.jms.DeliveryMode.PERSISTENT),
 		NON_PERSISTENT(javax.jms.DeliveryMode.NON_PERSISTENT);
 
-		private @Getter int deliveryMode;
-		private DeliveryMode(int deliveryMode) {
+		private @Getter final int deliveryMode;
+
+		DeliveryMode(int deliveryMode) {
 			this.deliveryMode = deliveryMode;
 		}
 
 		public static DeliveryMode parse(int deliveryMode) {
-			return EnumUtils.parseFromField(DeliveryMode.class, "DeliveryMode", deliveryMode, d -> d.getDeliveryMode());
+			return EnumUtils.parseFromField(DeliveryMode.class, "DeliveryMode", deliveryMode, DeliveryMode::getDeliveryMode);
 		}
 	}
 
@@ -904,17 +904,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		this.destinationType=destinationType;
 		useTopicFunctions = this.destinationType==DestinationType.TOPIC;
 	}
-
-	/**
-	 * Sets the JMS-acknowledge mode. This controls for non transacted listeners the way messages are acknowledged.
-	 * See the jms-documentation.
-	 */
-	@Deprecated
-	@ConfigurationWarning("please use attribute acknowledgeMode instead")
-	public void setAckMode(int ackMode) {
-		this.acknowledgeMode = EnumUtils.parseFromField(AcknowledgeMode.class, "ackMode", ackMode, a -> a.getAcknowledgeMode());
-	}
-
 
 	/**
 	 * If not transacted, the way the application informs the JMS provider that it has successfully received a message.
