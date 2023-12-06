@@ -132,6 +132,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private @Getter String rowIdSessionKey=null;
 	private @Getter String packageContent = "db2";
 	private @Getter String[] columnsReturnedList=null;
+	private @Getter boolean streamResultToServlet=false;
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	private @Getter boolean lockRows=false;
 	private @Getter int lockWait=-1;
@@ -312,7 +313,14 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 						//noinspection deprecation
 						clobSessionVar = session.getMessage(getClobSessionKey()).asObject();
 					}
-					return executeSelectQuery(statement, blobSessionVar, clobSessionVar, session, next);
+					if (isStreamResultToServlet()) {
+						HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
+						String contentType = session.getString("contentType");
+						String contentDisposition = session.getString("contentDisposition");
+						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition, session, next);
+					} else {
+						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, session, next);
+					}
 				case UPDATEBLOB:
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
 						return new PipeRunResult(null, executeUpdateBlobQuery(statement, session.getMessage(getBlobSessionKey())));
@@ -636,38 +644,38 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				pstmt.setMaxRows(
 					getMaxRows() + (getStartRow() > 1 ? getStartRow() - 1 : 0));
 			}
-			int var = 1;
+			int parameterIndex = 1;
 			for (final Object o : paramArray) {
 				if (o instanceof Timestamp) {
-					pstmt.setTimestamp(var, (Timestamp) o);
-					var++;
+					pstmt.setTimestamp(parameterIndex, (Timestamp) o);
+					parameterIndex++;
 				}
 				if (o instanceof java.sql.Date) {
-					pstmt.setDate(var, (java.sql.Date) o);
-					var++;
+					pstmt.setDate(parameterIndex, (java.sql.Date) o);
+					parameterIndex++;
 				}
 				if (o instanceof String) {
-					pstmt.setString(var, (String) o);
-					var++;
+					pstmt.setString(parameterIndex, (String) o);
+					parameterIndex++;
 				}
 				if (o instanceof Integer) {
 					int x = Integer.parseInt(o.toString());
-					pstmt.setInt(var, x);
-					var++;
+					pstmt.setInt(parameterIndex, x);
+					parameterIndex++;
 				}
 				if (o instanceof Float) {
 					float x = Float.parseFloat(o.toString());
-					pstmt.setFloat(var, x);
-					var++;
+					pstmt.setFloat(parameterIndex, x);
+					parameterIndex++;
 				}
 			}
 			if (query.indexOf('?') != -1) {
-				pstmt.registerOutParameter(var, Types.CLOB); // make sure enough space is available for result...
+				pstmt.registerOutParameter(parameterIndex, Types.CLOB); // make sure enough space is available for result...
 			}
 			if ("xml".equalsIgnoreCase(getPackageContent())) {
 				log.debug(getLogPrefix() + "executing a package SQL command");
 				pstmt.executeUpdate();
-				String pUitvoer = pstmt.getString(var);
+				String pUitvoer = pstmt.getString(parameterIndex);
 				return new Message(pUitvoer);
 			}
 			log.debug(getLogPrefix() + "executing a package SQL command");
@@ -939,6 +947,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	/** If specified, the rowid of the processed row is put in the pipelinesession under the specified key (only applicable for <code>querytype=other</code>). <b>Note:</b> If multiple rows are processed a SqlException is thrown. */
 	public void setRowIdSessionKey(String string) {
 		rowIdSessionKey = string;
+	}
+
+
+	/**
+	 * If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as bytes or as a String)
+	 * @ff.default false
+	 */
+	@Deprecated
+	public void setStreamResultToServlet(boolean b) {
+		streamResultToServlet = b;
 	}
 
 	/** If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect */
