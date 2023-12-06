@@ -10,6 +10,10 @@
 	<artifactId>ibis-adapterframework-console-frontend</artifactId>
 	<name>Frank Console Frontend</name>
 
+	<properties>
+		<frontend.location>${project.build.directory}/frontend</frontend.location>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -76,6 +80,25 @@
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.3.1</version>
 				<executions>
+					<execution><!-- This whole block only creates the frontend directory inside the maven target directory -->
+						<id>create ./target/frontend directory</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${frontend.location}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/frontend</directory>
+									<includes>
+										<include>dummy.file</include>
+									</includes>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
 					<execution>
 						<id>copy NPM dist to Maven build folder</id>
 						<phase>process-resources</phase>
@@ -86,7 +109,7 @@
 							<outputDirectory>${project.build.outputDirectory}/console</outputDirectory>
 							<resources>
 								<resource>
-									<directory>${basedir}/target/frontend</directory>
+									<directory>${frontend.location}</directory>
 									<filtering>false</filtering>
 								</resource>
 							</resources>
