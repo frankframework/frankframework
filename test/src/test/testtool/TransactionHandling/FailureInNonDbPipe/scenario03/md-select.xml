@@ -9,5 +9,6 @@
 				<name>VALUE</name>
 			</column>
 		</columns>
+		<order>NAME</order>
 	</select>
 </manageDatabaseREQ>
