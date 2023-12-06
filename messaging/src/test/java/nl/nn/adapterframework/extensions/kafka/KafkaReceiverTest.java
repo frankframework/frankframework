@@ -49,6 +49,7 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 import nl.nn.adapterframework.stream.Message;
 
+@SuppressWarnings("deprecation")
 public class KafkaReceiverTest {
 	final MockConsumer<String, byte[]> mockListener = Mockito.spy(new MockConsumer<>(OffsetResetStrategy.EARLIEST));
 	KafkaListener listener;
@@ -102,8 +103,8 @@ public class KafkaReceiverTest {
 				Arguments.of(configure(listener->listener.setGroupId("test")), true, "valid groupId"),
 				Arguments.of(configure(listener->listener.setPatternRecheckInterval(0)), false, "0 patternRecheckInterval"),
 				Arguments.of(configure(listener->listener.setPatternRecheckInterval(100)), true, "valid patternRecheckInterval"),
-				Arguments.of(configure(listener->listener.setFromBeginning(true)), true, "valid fromBeginning"),
-				Arguments.of(configure(listener->listener.setFromBeginning(false)), true, "valid fromBeginning"),
+				Arguments.of(configure(listener->listener.setOffsetStrategy(OffsetResetStrategy.EARLIEST)), true, "valid fromBeginning"),
+				Arguments.of(configure(listener->listener.setOffsetStrategy(OffsetResetStrategy.LATEST)), true, "valid fromBeginning"),
 				Arguments.of(configure(listener->listener.setPatternRecheckInterval(0)), false, "0 patternRecheckInterval"),
 				Arguments.of(configure(listener->listener.setPatternRecheckInterval(9)), false, "9 patternRecheckInterval"),
 				Arguments.of(configure(listener->listener.setPatternRecheckInterval(10)), true, "10 patternRecheckInterval")

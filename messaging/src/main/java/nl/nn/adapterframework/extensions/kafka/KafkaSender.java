@@ -67,7 +67,7 @@ public class KafkaSender extends KafkaFacade implements ISender {
 	public void open() throws SenderException {
 		producer = new KafkaProducer<>(properties, new StringSerializer(), new ByteArraySerializer());
 
-		//TODO find a better alternative, perhaps attempting to create (and close) a transaction?
+		//TODO find a better alternative, perhaps attempting to create (and close) a transaction? Definitely don't use Thread.sleep!
 		try {
 			Thread.sleep(100);
 		} catch (InterruptedException e) {

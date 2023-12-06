@@ -124,7 +124,7 @@ public class KafkaListener extends KafkaFacade implements IPullingListener<Consu
 			consumer = buildConsumer();
 			consumer.subscribe(topicPattern);
 			waiting = consumer.poll(Duration.ofMillis(100)).iterator();
-			if (waiting.hasNext()) return; //TODO implement IPeekableListener don't have any logic in open.. it should only open/create the connection.
+			if (waiting.hasNext()) return; //TODO implement IPeekableListener. We shouldn't this logic in open.. it should only open/create the connection. The subscribe method will throw a Runtime (KafkaException) if it cannot connect!
 
 			Double metric = (Double) consumer.metrics().values().stream().filter(item -> item.metricName().name().equals("response-total")).findFirst().orElseThrow(() -> new ListenerException("Failed to get response-total metric.")).metricValue();
 			if (metric.intValue() == 0) throw new ListenerException("Didn't get a response from Kafka while connecting for Listening.");
