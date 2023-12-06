@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -35,18 +34,18 @@ import nl.nn.adapterframework.util.CredentialFactory;
  */
 public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 
-	private String ldapProviderURL;
-	private String host;
-	private int port = -1;
-	private boolean useSsl = false;
-	private String baseDN;
+	private @Getter String ldapProviderURL;
+	private @Getter String host;
+	private @Getter int port = -1;
+	private @Getter boolean useSsl = false;
+	private @Getter String baseDN;
 
 	private @Getter String authAlias;
 	private @Getter String username;
 	private @Getter String password;
 
-	private String notFoundForwardName = "notFound";
-	private String exceptionForwardName = null;
+	private @Getter String notFoundForwardName = "notFound";
+	private @Getter String exceptionForwardName = null;
 
 	protected CredentialFactory cf;
 	protected PipeForward notFoundForward;
@@ -102,29 +101,19 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 		return url + d;
 	}
 
-
 	/** Url to context to search in, e.g. 'ldaps://DOMAIN.EXT'. */
 	public void setLdapProviderURL(String string) {
 		ldapProviderURL = string;
-	}
-	public String getLdapProviderURL() {
-		return ldapProviderURL;
 	}
 
 	/** Host part of ldapProviderUrl. Only used when ldapProviderUrl not specified */
 	public void setHost(String string) {
 		host = string;
 	}
-	public String getHost() {
-		return host;
-	}
 
 	/** Port of ldapProviderUrl. Only used when ldapProviderUrl not specified */
 	public void setPort(int i) {
 		port = i;
-	}
-	public int getPort() {
-		return port;
 	}
 
 	/**
@@ -134,9 +123,6 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	public void setUseSsl(boolean b) {
 		useSsl = b;
 	}
-	public boolean isUseSsl() {
-		return useSsl;
-	}
 
 	/**
 	 * BaseDN, e.g. CN=USERS,DC=DOMAIN,DC=EXT
@@ -145,11 +131,6 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	public void setBaseDN(String baseDN) {
 		this.baseDN = baseDN;
 	}
-	public String getBaseDN() {
-		return baseDN;
-	}
-
-
 
 	/** Alias used to obtain credentials to connect to ldap server */
 	public void setAuthAlias(String string) {
@@ -160,32 +141,19 @@ public abstract class LdapQueryPipeBase extends FixedForwardPipe {
 	public void setUsername(String string) {
 		username = string;
 	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute username instead")
-	public void setUserName(String username) {
-		setUsername(username);
-	}
 
 	/** Password used to obtain credentials to connect to ldap server */
 	public void setPassword(String string) {
 		password = string;
 	}
 
-
 	public void setNotFoundForwardName(String string) {
 		notFoundForwardName = string;
 	}
-	public String getNotFoundForwardName() {
-		return notFoundForwardName;
-	}
-
 
 	/** PipeForward used when an exception is caught */
 	public void setExceptionForwardName(String string) {
 		exceptionForwardName = string;
-	}
-	public String getExceptionForwardName() {
-		return exceptionForwardName;
 	}
 
 }

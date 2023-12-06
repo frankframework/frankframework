@@ -51,7 +51,6 @@ import jcifs.ntlmssp.Type3Message;
 import jcifs.util.Base64;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -258,15 +257,10 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 	public void setUsername(String string) {
 		username = string;
 	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute username instead")
-	public void setUserName(String username) {
-		setUsername(username);
-	}
 
 	/**
 	 * password used to authenticate with the host
-	 * @ff.default  
+	 * @ff.default
 	 */
 	public void setPassword(String string) {
 		password = string;
@@ -285,8 +279,8 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 	}
 
 	/**
-	 * 
-	 * @ff.default  
+	 *
+	 * @ff.default
 	 */
 	public void setProxyHost(String string) {
 		proxyHost = string;
@@ -297,7 +291,7 @@ public class WebServiceNtlmSender extends SenderWithParametersBase implements Ha
 	}
 
 	/**
-	 * 
+	 *
 	 * @ff.default 80
 	 */
 	public void setProxyPort(int i) {
