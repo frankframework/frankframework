@@ -690,11 +690,6 @@
     <ClassName>nl.nn.adapterframework.pipes.IsUserInRolePipe</ClassName>
   </Element>
   <Element>
-    <Name>IsXmlIfPipe</Name>
-    <Type>pipe</Type>
-    <ClassName>nl.nn.adapterframework.pipes.IsXmlIfPipe</ClassName>
-  </Element>
-  <Element>
     <Name>Json2XmlValidatorPipe</Name>
     <Type>pipe</Type>
     <ClassName>nl.nn.adapterframework.pipes.Json2XmlValidator</ClassName>

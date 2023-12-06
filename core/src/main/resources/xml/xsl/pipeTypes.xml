@@ -269,7 +269,6 @@
 	<nl.nn.adapterframework.pipes.DelayPipe><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.DelayPipe>
 	<nl.nn.adapterframework.pipes.IfMultipart><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.IfMultipart>
 	<nl.nn.adapterframework.pipes.IsUserInRolePipe><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.IsUserInRolePipe>
-	<nl.nn.adapterframework.pipes.IsXmlIfPipe><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.IsXmlIfPipe>
 	<nl.nn.adapterframework.pipes.XmlIf><mermaid:type>router</mermaid:type></nl.nn.adapterframework.pipes.XmlIf>
 	<nl.nn.adapterframework.pipes.XmlSwitch>
 		<mermaid:type>router</mermaid:type>

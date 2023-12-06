@@ -2,34 +2,33 @@ package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
-public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
+class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 
 	String pipeForwardThen = "then";
 	String pipeForwardElse = "else";
 
 	@Override
 	public IsXmlPipe createPipe() throws ConfigurationException {
-		IsXmlPipe isXmlIfPipe = new IsXmlPipe();
+		IsXmlPipe isXmlPipe = new IsXmlPipe();
 
 		//Add default pipes
-		isXmlIfPipe.registerForward(new PipeForward(pipeForwardThen,null));
-		isXmlIfPipe.registerForward(new PipeForward(pipeForwardElse,null));
-
-		return isXmlIfPipe;
+		isXmlPipe.registerForward(new PipeForward(pipeForwardThen, null));
+		isXmlPipe.registerForward(new PipeForward(pipeForwardElse, null));
+		return isXmlPipe;
 	}
 
 	@Test
-	public void validInputOnInvalidElsePipeTestUnRegistered() throws Exception {
+	void validInputOnInvalidElsePipeTestUnRegistered() throws Exception {
 		String pipeName = "test123";
 		pipe.setElseForwardName(pipeName);
 		configureAndStartPipe();
@@ -39,18 +38,18 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 	}
 
 	@Test
-	public void emptySpaceInputOnValidThenPipeTest() throws Exception {
+	void emptySpaceInputOnValidThenPipeTest() throws Exception {
 		String pipeName = "test123";
 		pipe.registerForward(new PipeForward(pipeName, null));
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, " <test1", session);
-		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+		assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void emptySpaceInputOnInvalidThenPipeTest() throws Exception {
+	void emptySpaceInputOnInvalidThenPipeTest() throws Exception {
 		String pipeName = "test123";
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
@@ -60,18 +59,18 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 	}
 
 	@Test
-	public void tabSpaceInputOnValidThenPipeTest() throws Exception {
+	void tabSpaceInputOnValidThenPipeTest() throws Exception {
 		String pipeName = "test123";
 		pipe.registerForward(new PipeForward(pipeName, null));
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "	<test1", session);
-		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+		assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void tabSpaceInputOnInvalidThenPipeTest() throws Exception {
+	void tabSpaceInputOnInvalidThenPipeTest() throws Exception {
 		String pipeName = "test123";
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
@@ -81,7 +80,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 	}
 
 	@Test
-	public void validInputOnInvalidThenPipeTestUnRegistered() throws Exception {
+	void validInputOnInvalidThenPipeTestUnRegistered() throws Exception {
 		String pipeName = "test123";
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
@@ -91,7 +90,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 	}
 
 	@Test
-	public void validInputOnInvalidElsePipeTest() throws Exception {
+	void validInputOnInvalidElsePipeTest() throws Exception {
 		String pipeName = "test123";
 
 		pipe.setElseForwardName(pipeName);
@@ -99,67 +98,67 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "test1", session);
-		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+		assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void validInputOnInvalidThenPipeTest() throws Exception {
+	void validInputOnInvalidThenPipeTest() throws Exception {
 		String pipeName = "test123";
 		pipe.setThenForwardName(pipeName);
 		pipe.registerForward(new PipeForward(pipeName,null));
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "<test1", session);
-		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+		assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void validInputOnElsePipeTest() throws Exception {
+	void validInputOnElsePipeTest() throws Exception {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "test", session);
-		Assert.assertEquals(pipeForwardElse, prr.getPipeForward().getName());
+		assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void validInputOnThenPipeTest() throws Exception {
+	void validInputOnThenPipeTest() throws Exception {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "<test", session);
-		Assert.assertEquals(pipeForwardThen, prr.getPipeForward().getName());
+		assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void emptyInputOnElsePipeTest() throws Exception {
+	void emptyInputOnElsePipeTest() throws Exception {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "", session);
-		Assert.assertEquals(pipeForwardElse, prr.getPipeForward().getName());
+		assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void emptyInputOnThenPipeTest() throws Exception {
+	void emptyInputOnThenPipeTest() throws Exception {
 		pipe.setElseForwardOnEmptyInput(false);
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "", session);
-		Assert.assertEquals(pipeForwardThen, prr.getPipeForward().getName());
+		assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void nullInputOnElsePipeTest() throws Exception {
+	void nullInputOnElsePipeTest() throws Exception {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, null, session);
-		Assert.assertEquals(pipeForwardElse, prr.getPipeForward().getName());
+		assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void nullInputOnThenPipeTest() throws Exception {
+	void nullInputOnThenPipeTest() throws Exception {
 		pipe.setElseForwardOnEmptyInput(false);
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, null, session);
-		Assert.assertEquals(pipeForwardThen, prr.getPipeForward().getName());
+		assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 }
