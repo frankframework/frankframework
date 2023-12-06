@@ -2,15 +2,16 @@ package nl.nn.adapterframework.pipes;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.pipes.CsvParserPipe.HeaderCase;
+
+import org.junit.jupiter.api.Test;
 
 public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 

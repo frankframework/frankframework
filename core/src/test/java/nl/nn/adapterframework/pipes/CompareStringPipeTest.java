@@ -1,15 +1,16 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
@@ -28,11 +29,14 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 		return pipe;
 	}
 
-	@Test(expected = ConfigurationException.class)
-	public void emptySessionKeys() throws ConfigurationException {
+	@Test
+	public void emptySessionKeys() {
 		pipe.setSessionKey1("");
 		pipe.setSessionKey2("");
-		pipe.configure();
+
+		assertThrows(ConfigurationException.class, () -> {
+			pipe.configure();
+		});
 	}
 
 	@Test
@@ -46,7 +50,7 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 		PipeRunResult prr = doPipe(pipe, null, session);
 		assertEquals(LESS_THAN, prr.getPipeForward().getName());
 	}
-	
+
 	@Test
 	public void testEquals() throws Exception {
 		pipe.addParameter(new Parameter("operand1", "a"));

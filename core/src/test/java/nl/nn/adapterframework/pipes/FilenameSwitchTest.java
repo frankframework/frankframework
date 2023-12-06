@@ -1,18 +1,19 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
+import org.junit.jupiter.api.Test;
+
 /**
  * FilenameSwitch Tester.
- * 
+ *
  * @author <Sina Sen>
  */
 public class FilenameSwitchTest extends PipeTestBase<FilenameSwitch> {

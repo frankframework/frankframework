@@ -1,14 +1,16 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
-import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
+
+import org.junit.jupiter.api.Test;
 
 public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingPipe> {
 
@@ -52,16 +54,18 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
         assertEquals(pipe.getDefaultUserid(), dummyString);
     }
 
-    @Test(expected = ConfigurationException.class)
+    @Test
     public void testNoTargetUserId() throws ConfigurationException {
         pipe.setTargetPassword("dummyPassword");
         pipe.configure();
     }
 
-    @Test(expected = ConfigurationException.class)
+    @Test
     public void testNoTargetUserPassword() throws ConfigurationException {
         pipe.setTargetUserid("dummyId");
-        pipe.configure();
+		assertThrows(ConfigurationException.class, () -> {
+			pipe.configure();
+		});
     }
 
     @Test
@@ -76,9 +80,11 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
 
     }
 
-    @Test(expected = ConfigurationException.class)
+    @Test
     public void testNonExisitingTarget() throws ConfigurationException {
-        pipe.configure();
+		assertThrows(ConfigurationException.class, () -> {
+			pipe.configure();
+		});
     }
 
     @Test

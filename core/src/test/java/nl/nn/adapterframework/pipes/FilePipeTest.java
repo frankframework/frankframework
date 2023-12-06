@@ -1,18 +1,18 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * FilePipe Tester.
@@ -21,7 +21,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  */
 public class FilePipeTest extends PipeTestBase<FilePipe> {
 
-	@ClassRule
+
 	public static TemporaryFolder testFolderSource = new TemporaryFolder();
 
 	private static String sourceFolderPath;
@@ -33,7 +33,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
 		return new FilePipe();
 	}
 
-	@BeforeClass
+	@BeforeAll
 	public static void before() throws Exception {
 		testFolderSource.newFile("1.txt");
 		sourceFolderPath = testFolderSource.getRoot().getPath();
