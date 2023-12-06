@@ -5,10 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -92,13 +89,6 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		Message promiseResult = promise.getPromiseResult();
 		assertFalse("promise not called", Message.isEmpty(promiseResult));
 		assertEquals("success", promiseResult.asString());
-	}
-
-	@Test
-	@Override
-	@Disabled
-	public void testIfToStringWorks() {
-
 	}
 
 	private static class PromiseResultSender extends SenderWithParametersBase {

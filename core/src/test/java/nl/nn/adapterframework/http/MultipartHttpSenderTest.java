@@ -217,11 +217,4 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			}
 		}
 	}
-
-	@Test
-	@Override
-	@Disabled
-	public void testIfToStringWorks() {
-
-	}
 }

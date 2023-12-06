@@ -196,11 +196,4 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			throw e.getCause();
 		}
 	}
-
-	@Test
-	@Override
-	@Disabled
-	public void testIfToStringWorks() {
-
-	}
 }

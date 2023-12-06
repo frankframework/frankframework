@@ -263,13 +263,6 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		});
 	}
 
-	@Test
-	@Override
-	@Disabled
-	public void testIfToStringWorks() {
-
-	}
-
 	//The input is expected to be of type integer but an input of type Sting is given.
 	@Test
 	public void wrongInputAsFirstParameter() throws ConfigurationException, SenderException, TimeoutException, IOException {
