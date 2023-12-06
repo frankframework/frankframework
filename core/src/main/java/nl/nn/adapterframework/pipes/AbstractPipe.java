@@ -35,6 +35,7 @@ import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.DummyNamedObject;
 import nl.nn.adapterframework.core.IExtendedPipe;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IWithParameters;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineExit;
@@ -83,7 +84,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  *
  * @see PipeLineSession
  */
-public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, ApplicationContextAware {
+public abstract class AbstractPipe extends TransactionAttributes implements IExtendedPipe, EventThrowing, ApplicationContextAware, IWithParameters {
 	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter ApplicationContext applicationContext;
 
@@ -184,6 +185,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	/**
 	 * Add a parameter to the list of parameters
 	 */
+	@Override
 	public void addParameter(Parameter param) {
 		log.debug("Pipe ["+getName()+"] added parameter ["+param.toString()+"]");
 		parameterList.add(param);
@@ -192,6 +194,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IExt
 	/**
 	 * return the Parameters
 	 */
+	@Override
 	public ParameterList getParameterList() {
 		return parameterList;
 	}

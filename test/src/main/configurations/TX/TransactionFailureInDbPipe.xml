@@ -1,6 +1,6 @@
 <module>
 	<adapter
-		name="TransactionHandlingWithAnExceptionInNonDbPipe"
+		name="TransactionHandlingWithAnExceptionInDbPipe"
 		description="Tests 'Exception is not correctly handled (#5203)'"
 	>
 		<receiver
@@ -9,11 +9,11 @@
 		>
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
-				name="TransactionExceptionInNonDbPipe"
-				serviceName="ibis4test-TransactionExceptionInNonDbPipe"
+				name="TransactionExceptionInDbPipe"
+				serviceName="ibis4test-TransactionExceptionInDbPipe"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				slotId="${applicationId}/TransactionExceptionInNonDbPipe"
+				slotId="${applicationId}/TransactionExceptionInDbPipe"
 			/>
 		</receiver>
 
@@ -27,11 +27,17 @@
 				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('LASTNAME',?)" queryType="insert">
 					<param name="value" value="test1" />
 				</sender>
-				<forward name="success" path="causes a transaction timeout" />
+				<forward name="success" path="fixedInsert2" />
 			</pipe>
 
-			<pipe name="causes a transaction timeout" className="nl.nn.adapterframework.pipes.SenderPipe" transactionTimeout="1">
-				<sender className="nl.nn.adapterframework.senders.DelaySender"/>
+			<pipe name="fixedInsert2" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE1) VALUES ('this-column-does-not-exist')" queryType="insert"/>
+				<forward name="success" path="fail"/>
+				<forward name="exception" path="fixedInsert3"/>
+			</pipe>
+
+			<pipe name="fixedInsert3" className="nl.nn.adapterframework.pipes.SenderPipe" transactionAttribute="NotSupported">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE2) VALUES ('this-column-does-not-exist')" queryType="insert"/>
 				<forward name="success" path="fail"/>
 				<forward name="exception" path="This PutInSession should throw an exception but not trigger a rollback"/>
 			</pipe>

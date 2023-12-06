@@ -28,7 +28,9 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.functional.ThrowingFunction;
+import nl.nn.adapterframework.jdbc.JdbcFacade;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
+import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -41,43 +43,56 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 	private @Getter @Setter PlatformTransactionManager txManager;
 
 	@Override
-	protected PipeRunResult processPipe(PipeLine pipeLine, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
-		PipeRunResult pipeRunResult;
+	protected PipeRunResult processPipe(PipeLine pipeline, IPipe pipe, Message message, PipeLineSession pipeLineSession, ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		TransactionDefinition txDef;
-		int txTimeout=0;
-		if (pipe instanceof HasTransactionAttribute) {
+		int txTimeout = 0;
+		if(pipe instanceof HasTransactionAttribute) {
 			HasTransactionAttribute taPipe = (HasTransactionAttribute) pipe;
 			txDef = taPipe.getTxDef();
-			txTimeout= taPipe.getTransactionTimeout();
+			txTimeout = taPipe.getTransactionTimeout();
 		} else {
-			txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS,txTimeout);
+			txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS, txTimeout);
 		}
 		IbisTransaction itx = new IbisTransaction(txManager, txDef, "pipe [" + pipe.getName() + "]");
+		boolean isJdbcFacade = pipe instanceof MessageSendingPipe && ((MessageSendingPipe) pipe).getSender() instanceof JdbcFacade;
 		try {
-			TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getOwner().getName() + "] running pipe ["+pipe.getName()+"]");
-			PipeRunException tCaught=null;
-			try {
-				tg.activateGuard(txTimeout);
-				pipeRunResult = chain.apply(message);
-			} catch (PipeRunException t) {
-				tCaught=t;
-				throw tCaught;
-			} finally {
-				if (tg.cancel()) {
-					if (tCaught==null) {
-						throw new PipeRunException(pipe,tg.getDescription()+" was interrupted");
-					}
-					log.warn("Thread interrupted, but propagating other caught exception of type ["+ClassUtils.nameOf(tCaught)+"]");
-				}
+			if(isJdbcFacade && itx.isRollbackOnly()) {
+				throw new PipeRunException(pipe, "unable to execute SQL statement, transaction has been marked as failed by an earlier sender");
 			}
+
+			return execute(pipeline, pipe, message, chain, txTimeout);
+
 		} catch (Error | RuntimeException | PipeRunException ex) {
+			if(isJdbcFacade) {
+				itx.setRollbackOnly();
+			}
 			throw ex;
 		} catch (Exception e) {
+			if(isJdbcFacade) {
+				itx.setRollbackOnly();
+			}
 			throw new PipeRunException(pipe, "Caught unknown checked exception", e);
 		} finally {
 			itx.complete();
 		}
-		return pipeRunResult;
 	}
 
+	private PipeRunResult execute(PipeLine pipeLine, IPipe pipe, Message message, ThrowingFunction<Message, PipeRunResult, PipeRunException> chain, int txTimeout) throws Exception {
+		TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getOwner().getName() + "] running pipe ["+pipe.getName()+"]");
+		Exception tCaught = null;
+		try {
+			tg.activateGuard(txTimeout);
+			return chain.apply(message);
+		} catch (PipeRunException t) {
+			tCaught = t;
+			throw tCaught;
+		} finally {
+			if(tg.cancel()) {
+				if(tCaught == null) {
+					throw new PipeRunException(pipe, tg.getDescription() + " was interrupted");
+				}
+				log.warn("Thread interrupted, but propagating other caught exception of type [{}]", ClassUtils.nameOf(tCaught));
+			}
+		}
+	}
 }
