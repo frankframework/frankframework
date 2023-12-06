@@ -279,7 +279,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.open();
 
 		assertThrows(SenderException.class, () -> {
-			assertEquals("12", sender.sendMessageOrThrow(input,session).asString());
+			sender.sendMessageOrThrow(input,session).asString();
 		});
 	}
 
