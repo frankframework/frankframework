@@ -19,6 +19,7 @@ import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -75,11 +76,20 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 		try {
 			withMimeType(MimeType.valueOf(mimeType));
 		} catch (InvalidMimeTypeException imte) {
+			String parsed = Stream.of(mimeType.split(";")).filter(e -> !e.contains("=")).findFirst().orElse(null);
+			if(parsed != null) {
+				try {
+					return withMimeType(MimeType.valueOf(parsed));
+				} catch (InvalidMimeTypeException imte2) {
+					log.debug("tried to parse cleansed mimetype [{}]", parsed, imte2);
+				}
+			}
 			log.warn("unable to parse mimetype from string [{}]", mimeType, imte);
 		}
 
 		return this;
 	}
+
 	public MessageContext withMimeType(MimeType mimeType) {
 		put(METADATA_MIMETYPE, mimeType);
 		withCharset(mimeType.getCharset());
