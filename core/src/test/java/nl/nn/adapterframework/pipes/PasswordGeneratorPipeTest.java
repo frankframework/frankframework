@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.PipeRunResult;
-import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * PasswordGeneratorPipe Tester.
@@ -49,10 +49,4 @@ public class PasswordGeneratorPipeTest extends PipeTestBase<PasswordGeneratorPip
         PipeRunResult res = doPipe(pipe, "pipey", session);
         assertEquals(11, res.getResult().asString().length());
     }
-
-
-
-
-
-
 }

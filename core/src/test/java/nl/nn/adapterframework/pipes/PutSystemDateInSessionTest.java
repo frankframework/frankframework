@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.test.util.AssertionErrors.assertFalse;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -160,7 +160,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 		long timeDifference = second.toEpochMilli()-first.toEpochMilli();
 
-		assertEquals("Timestamps should be different", 1000L, timeDifference);
+		assertEquals(1000L, timeDifference);
 	}
 
 }

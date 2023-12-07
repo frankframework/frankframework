@@ -44,7 +44,6 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
     @ClassRule
     public static TemporaryFolder testFolderCantDelete = new TemporaryFolder();
 
-
     private static String cantdeleteFolderPath;
 
     @ClassRule

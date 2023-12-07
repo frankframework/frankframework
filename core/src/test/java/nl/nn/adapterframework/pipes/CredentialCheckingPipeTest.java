@@ -55,9 +55,11 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
     }
 
     @Test
-    public void testNoTargetUserId() throws ConfigurationException {
+    public void testNoTargetUserId() {
         pipe.setTargetPassword("dummyPassword");
-        pipe.configure();
+		assertThrows(ConfigurationException.class, () -> {
+			pipe.configure();
+		});
     }
 
     @Test
