@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.pipes;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URL;
+
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -78,9 +78,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	public void badCharset() throws Exception {
 		pipe.setCharset("dummy");
 		configureAndStartPipe();
-		assertThrows(PipeRunException.class, () -> {
-			doPipe(pipe,"anotherDummy", session);
-		});
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "anotherDummy", session));
 	}
 
 	@Test
