@@ -11,7 +11,7 @@
 	<name>Frank Console Frontend</name>
 
 	<properties>
-		<frontend.source.location>${project.basedir}}/src/main/frontend</frontend.source.location>
+		<frontend.source.location>${project.basedir}/src/main/frontend</frontend.source.location>
 		<frontend.target.location>${project.build.directory}/frontend</frontend.target.location>
 	</properties>
 
