@@ -102,11 +102,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since 7.0
  * @version 2.0
  */
-
 public class HttpSender extends HttpSenderBase {
-
-	@Deprecated private @Getter String storeResultAsStreamInSessionKey;
-	@Deprecated private @Getter String storeResultAsByteArrayInSessionKey;
 
 	private @Getter boolean paramsInUrl=true;
 	private @Getter String firstBodyPartName=null;
@@ -399,7 +395,6 @@ public class HttpSender extends HttpSenderBase {
 				}
 			}
 		}
-
 		return entity.build();
 	}
 
@@ -442,13 +437,7 @@ public class HttpSender extends HttpSenderBase {
 			responseMessage.closeOnCloseOf(session, this);
 		}
 
-		if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
-			session.put(getStoreResultAsStreamInSessionKey(), responseMessage.asInputStream());
-			return Message.nullMessage();
-		} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
-			session.put(getStoreResultAsByteArrayInSessionKey(), responseMessage.asByteArray());
-			return Message.nullMessage();
-		} else if (BooleanUtils.isTrue(getMultipartResponse()) || responseHandler.isMultipart()) {
+		if (BooleanUtils.isTrue(getMultipartResponse()) || responseHandler.isMultipart()) {
 			if (BooleanUtils.isFalse(getMultipartResponse())) {
 				log.warn("multipart response was set to false, but the response is multipart!");
 			}
@@ -551,21 +540,8 @@ public class HttpSender extends HttpSenderBase {
 		this.firstBodyPartName = firstBodyPartName;
 	}
 
-	/** If set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream) */
-	@Deprecated
-	@ConfigurationWarning("no longer required to store the result as a stream in the PipeLineSession, the sender can return binary data")
-	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
-		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("no longer required to store the result as a byte array in the PipeLineSession, the sender can return binary data")
-	public void setStoreResultAsByteArrayInSessionKey(String storeResultAsByteArrayInSessionKey) {
-		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
-	}
-
 	/**
-	 * If true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.
+	 * If true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received. The first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.
 	 * @ff.default false
 	 */
 	@Deprecated
