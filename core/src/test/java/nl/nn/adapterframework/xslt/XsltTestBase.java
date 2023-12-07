@@ -3,13 +3,18 @@ package nl.nn.adapterframework.xslt;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 import java.util.Properties;
 
+import org.hamcrest.core.StringContains;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
@@ -31,6 +36,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	protected abstract void setIndent(boolean indent);
 	protected abstract void setSkipEmptyTags(boolean skipEmptyTags);
 	protected abstract void setRemoveNamespaces(boolean removeNamespaces);
+	protected abstract void setXsltVersion(int xsltVersion);
 	protected abstract void setOutputType(OutputType outputType);
 	protected abstract void setHandleLexicalEvents(boolean handleLexicalEvents);
 
@@ -107,6 +113,25 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		testXslt(styleSheetName, input, expected, omitXmlDeclaration, indent, skipEmptyTags, removeNamespaces, xslt2);
 	}
 
+	/*
+	 * Beware, this test could fail when run multithreaded
+	 */
+	@Test
+	public void testConfigWarnings() throws ConfigurationException {
+		ConfigurationWarnings warnings = getConfigurationWarnings();
+		String styleSheetName = "/Xslt3/orgchart.xslt";
+		setStyleSheetName(styleSheetName);
+		setXsltVersion(1);
+		pipe.configure();
+		for (int i = 0; i < warnings.size(); i++) {
+			System.out.println(i + " " + warnings.get(i));
+		}
+		assertTrue("Expected at least one config warnings", warnings.size() > 0);
+		int nextPos = 0;//warnings.size()>4?warnings.size()-2:1;
+		assertThat(warnings.get(nextPos), StringContains.containsString("configured xsltVersion [1] does not match xslt version [2] declared in stylesheet"));
+		assertThat(warnings.get(nextPos), StringContains.containsString(styleSheetName));
+	}
+
 	public void testSkipEmptyTags(String input, String expected, boolean omitXmlDeclaration, boolean indent) throws Exception {
 		testXslt(IDENTITY_STYLESHEET, input, expected, omitXmlDeclaration, indent, true, null, null);
 	}
@@ -161,6 +186,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	@Test
 	public void documentIncludedInSourceRelativeXslt1() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importLookupRelative1.xsl");
+		setXsltVersion(1);
 		setRemoveNamespaces(true);
 		setIndent(true);
 		pipe.configure();
@@ -176,6 +202,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	@Test
 	public void documentIncludedInSourceRelativeXslt2() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importLookupRelative2.xsl");
+		setXsltVersion(1);
 		setRemoveNamespaces(true);
 		setIndent(true);
 		pipe.configure();
@@ -194,6 +221,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		String stylesheetname="/Xslt/importDocument/importLookupRelative1.xsl";
 		session.put("Stylesheet", stylesheetname);
 		setStyleSheetNameSessionKey("Stylesheet");
+		setXsltVersion(1);
 		setRemoveNamespaces(true);
 		setIndent(true);
 		pipe.configure();
@@ -211,6 +239,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		String stylesheetname="/Xslt/importDocument/importLookupRelative1.xsl";
 		session.put("Stylesheet", stylesheetname);
 		setStyleSheetNameSessionKey("Stylesheet");
+		setXsltVersion(2);
 		setRemoveNamespaces(true);
 		setIndent(true);
 		pipe.configure();
@@ -226,6 +255,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	@Test
 	public void documentIncludedInSourceAbsoluteXslt1() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importLookupAbsolute1.xsl");
+		setXsltVersion(1);
 		setRemoveNamespaces(true);
 		setIndent(true);
 		pipe.configure();
@@ -241,6 +271,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	@Test
 	public void documentIncludedInSourceAbsoluteXslt2() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importLookupAbsolute2.xsl");
+		setXsltVersion(1);
 		setRemoveNamespaces(true);
 		setIndent(true);
 		pipe.configure();
@@ -395,6 +426,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/SkipEmptyTagsIndent.xml");
 
 		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
+		setXsltVersion(1);
 		setSkipEmptyTags(true);
 		setOmitXmlDeclaration(true);
 		setHandleLexicalEvents(true);
@@ -411,6 +443,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	@Test
 	public void skipEmptyTagsXslt2() throws Exception {
 		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
+		setXsltVersion(2);
 		setSkipEmptyTags(true);
 		setOmitXmlDeclaration(true);
 		setHandleLexicalEvents(true);

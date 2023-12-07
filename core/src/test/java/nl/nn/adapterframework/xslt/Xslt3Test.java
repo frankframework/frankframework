@@ -107,8 +107,8 @@ public class Xslt3Test extends XsltErrorTestBase<XsltPipe>{
 	}
 
 	@Override
-	protected void setXslt2(boolean xslt2) {
-		pipe.setXsltVersion(xslt2 ? 2 : 1);
+	protected void setXsltVersion(int xsltVersion) {
+		pipe.setXsltVersion(xsltVersion);
 	}
 
 	@Override

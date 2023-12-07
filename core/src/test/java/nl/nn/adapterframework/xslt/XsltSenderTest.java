@@ -23,8 +23,8 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 	}
 
 	@Override
-	public void setXslt2(boolean xslt2) {
-		sender.setXsltVersion(xslt2 ? 2 : 1);
+	protected void setXsltVersion(int xsltVersion) {
+		sender.setXsltVersion(xsltVersion);
 	}
 
 	/*
