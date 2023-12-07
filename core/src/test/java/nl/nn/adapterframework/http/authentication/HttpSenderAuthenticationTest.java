@@ -474,6 +474,6 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 	@Override
 	@Disabled
 	public void testIfToStringWorks() {
-
+		// Once this class is on Junit 5 this method will be removed
 	}
 }
