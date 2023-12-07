@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,7 +38,6 @@ import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateUtils;
 
 import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -57,7 +55,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  */
 @Log4j2
 public class FileUtils {
-	protected static final DateTimeFormatter WEEKLY_ROLLING_FILENAME_DATE_FORMATTER = DateFormatUtils.buildFormatter("YYYY'W'ww");
 
 	/**
 	 * Construct a filename from a pattern and session variables.
@@ -353,41 +350,10 @@ public class FileUtils {
 				curFile=srcFile;
 			}
 		}
-		// move current file to backup
+		// move current file to back up
 		String backupFilename=targetFile.getPath()+".1";
 		File backupFile=new File(backupFilename);
 		targetFile.renameTo(backupFile);
-	}
-
-	protected static File getRollingFile(String directory, String filenamePrefix, DateTimeFormatter dateformat, String filenameSuffix, int retentionDays, Date date) {
-		if (directory == null) {
-			return null;
-		}
-
-		Date dateInFileName = date != null ? date : new Date();
-
-		String filename = filenamePrefix + DateFormatUtils.format(dateInFileName, dateformat) + filenameSuffix;
-		File result = new File(directory, filename);
-		if (!result.exists()) {
-			long thisMorning = dateInFileName.getTime();
-			long deleteBefore = thisMorning - retentionDays * DateUtils.MILLIS_PER_DAY;
-
-			WildCardFilter filter = new WildCardFilter(filenamePrefix+"*"+filenameSuffix);
-			File dir = new File(directory);
-			File[] files = dir.listFiles(filter);
-
-			int count = (files == null ? 0 : files.length);
-			for (int i = 0; i < count; i++) {
-				File file = files[i];
-				if (file.isDirectory()) {
-					continue;
-				}
-				if (file.lastModified()<deleteBefore) {
-					file.delete();
-				}
-			}
-		}
-		return result;
 	}
 
 	public static File[] getFiles(String directory, String wildcard, String excludeWildcard, long minStability) {
