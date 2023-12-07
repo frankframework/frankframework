@@ -28,6 +28,7 @@ import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.util.CalendarParserException;
 import nl.nn.adapterframework.util.DateUtils;
+import nl.nn.adapterframework.util.StringUtil;
 
 public class MessageContext extends LinkedHashMap<String,Object> {
 	private static final Logger LOG = LogManager.getLogger(MessageContext.class);
@@ -75,11 +76,20 @@ public class MessageContext extends LinkedHashMap<String,Object> {
 		try {
 			withMimeType(MimeType.valueOf(mimeType));
 		} catch (InvalidMimeTypeException imte) {
+			String parsed = StringUtil.splitToStream(mimeType, ";").filter(e -> !e.contains("=")).findFirst().orElse(null);
+			if(parsed != null) {
+				try {
+					return withMimeType(MimeType.valueOf(parsed));
+				} catch (InvalidMimeTypeException imte2) {
+					LOG.debug("tried to parse cleansed mimetype [{}]", parsed, imte2);
+				}
+			}
 			LOG.warn("unable to parse mimetype from string [{}]", mimeType, imte);
 		}
 
 		return this;
 	}
+
 	public MessageContext withMimeType(MimeType mimeType) {
 		put(METADATA_MIMETYPE, mimeType);
 		withCharset(mimeType.getCharset());
