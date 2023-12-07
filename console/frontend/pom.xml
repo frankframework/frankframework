@@ -11,7 +11,8 @@
 	<name>Frank Console Frontend</name>
 
 	<properties>
-		<frontend.location>${project.build.directory}/frontend</frontend.location>
+		<frontend.source.location>${project.basedir}}/src/main/frontend</frontend.source.location>
+		<frontend.target.location>${project.build.directory}/frontend</frontend.target.location>
 	</properties>
 
 	<dependencies>
@@ -85,7 +86,7 @@
 							<outputDirectory>${project.build.outputDirectory}/console</outputDirectory>
 							<resources>
 								<resource>
-									<directory>${frontend.location}</directory>
+									<directory>${frontend.target.location}</directory>
 									<filtering>false</filtering>
 								</resource>
 							</resources>
@@ -142,7 +143,7 @@
 					<version>1.15.0</version>
 					<configuration>
 						<nodeVersion>v16.20.0</nodeVersion>
-						<workingDirectory>${project.basedir}/src/main/frontend</workingDirectory><!-- frontend resources -->
+						<workingDirectory>${frontend.source.location}</workingDirectory><!-- frontend resources -->
 						<installDirectory>${project.build.directory}</installDirectory><!-- npm + npx install folder -->
 					</configuration>
 				</plugin>
@@ -243,7 +244,7 @@
 						<artifactId>exec-maven-plugin</artifactId>
 						<version>3.1.1</version>
 						<configuration>
-							<workingDirectory>${frontend.location}</workingDirectory>
+							<workingDirectory>${frontend.source.location}</workingDirectory>
 						</configuration>
 						<executions>
 							<execution>
