@@ -249,6 +249,13 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	}
 
 	@Override
+	protected void setXslt2(boolean xslt2) {
+		for (XsltSender sender : xsltSenders) {
+			sender.setXsltVersion(xslt2 ? 2 : 1);
+		}
+	}
+
+	@Override
 	protected void setHandleLexicalEvents(boolean handleLexicalEvents) {
 		for (XsltSender sender:xsltSenders) {
 			sender.setHandleLexicalEvents(handleLexicalEvents);

@@ -62,6 +62,10 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 		pipe.setHandleLexicalEvents(handleLexicalEvents);
 	}
 
+	@Override
+	public void setXslt2(boolean xslt2) {
+		pipe.setXsltVersion(xslt2 ? 2 : 1);
+	}
 
 	@Test
 	public void testSessionKey() throws Exception {
