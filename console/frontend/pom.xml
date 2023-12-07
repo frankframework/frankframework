@@ -234,15 +234,39 @@
 					<plugin>
 						<groupId>com.github.eirslett</groupId>
 						<artifactId>frontend-maven-plugin</artifactId>
+						<configuration>
+							<skip>true</skip>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>3.1.1</version>
 						<executions>
-							<execution><!-- do not install NPM -->
-								<id>install node and npm</id>
-								<phase>none</phase>
-							</execution>
-							<execution><!-- do not run with '-c development' -->
-								<id>npm build</id>
+							<execution>
+								<id>npm install</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>ng build</arguments>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>ng build</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<executable>npx</executable>
+									<arguments>
+										<argument>ng build</argument>
+									</arguments>
 								</configuration>
 							</execution>
 						</executions>
