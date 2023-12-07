@@ -39,7 +39,7 @@ import nl.nn.adapterframework.util.FileUtils;
  * A chain of zipWriterPipes can be used to create a ZIP archive. You can use the pipe with different actions (see specified below).
  * Action <code>CLOSE</code> will generate the ZIP archive which is returned as the pipe ouput.
  * </p>
- * 
+ *
  * @ff.parameter filename only for action=<code>WRITE</code>: the filename of the zip-entry
  * @ff.parameter contents only for action=<code>WRITE</code>: contents of the zip-entry, If not specified, the input is used.
  *
@@ -121,7 +121,7 @@ public class ZipWriterPipe extends CollectorPipeBase<ZipWriter, MessageZipEntry>
 	}
 
 	/**
-	 * Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested
+	 * Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested. Deprecated, use collectionName instead.
 	 * @ff.default zipwriterhandle
 	 */
 	@Deprecated

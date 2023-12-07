@@ -16,7 +16,6 @@
 						updateStatusToErrorQuery="UPDATE IBISTEMP SET TCHAR='3' WHERE TKEY=?"
 						keyField="tkey"
 						messageField="TCLOB"
-						sqlDialect="Oracle"
 						peekQuery="SELECT TKEY, TCLOB
 										FROM IBISTEMP
 										WHERE TCHAR = '1'
