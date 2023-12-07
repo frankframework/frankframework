@@ -22,6 +22,11 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 		return pipe;
 	}
 
+	@Override
+	public void setXslt2(boolean xslt2) {
+		sender.setXsltVersion(xslt2 ? 2 : 1);
+	}
+
 	/*
 	 * Test with output-method=xml, but yielding a text file.
 	 * It should not render namespace definitions multiple times
