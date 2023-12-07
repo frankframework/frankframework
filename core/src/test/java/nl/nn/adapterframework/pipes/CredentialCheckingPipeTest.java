@@ -6,11 +6,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
-
-import org.junit.jupiter.api.Test;
 
 public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingPipe> {
 
@@ -57,21 +56,17 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
     @Test
     public void testNoTargetUserId() {
         pipe.setTargetPassword("dummyPassword");
-		assertThrows(ConfigurationException.class, () -> {
-			pipe.configure();
-		});
+		assertThrows(ConfigurationException.class, () -> pipe.configure());
     }
 
     @Test
-    public void testNoTargetUserPassword() throws ConfigurationException {
+	public void testNoTargetUserPassword() {
         pipe.setTargetUserid("dummyId");
-		assertThrows(ConfigurationException.class, () -> {
-			pipe.configure();
-		});
+		assertThrows(ConfigurationException.class, () -> pipe.configure());
     }
 
     @Test
-    public void testExistingTarget() throws ConfigurationException {
+	public void testExistingTarget() {
         try {
             pipe.setTargetPassword("dummyPassword");
             pipe.setTargetUserid("dummyId");
@@ -83,10 +78,8 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
     }
 
     @Test
-    public void testNonExisitingTarget() throws ConfigurationException {
-		assertThrows(ConfigurationException.class, () -> {
-			pipe.configure();
-		});
+	public void testNonExisitingTarget() {
+		assertThrows(ConfigurationException.class, () -> pipe.configure());
     }
 
     @Test
@@ -131,6 +124,4 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
 			throw new PipeRunException(pipe, "cannot convert results", e);
 		}
     }
-
-
 }
