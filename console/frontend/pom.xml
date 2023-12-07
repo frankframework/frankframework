@@ -70,35 +70,11 @@
 						</configuration>
 					</execution>
 				</executions>
-				<configuration>
-					<nodeVersion>v16.20.0</nodeVersion>
-					<workingDirectory>${project.basedir}/src/main/frontend</workingDirectory>
-					<installDirectory>${project.build.directory}</installDirectory>
-				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>3.3.1</version>
 				<executions>
-					<execution><!-- This whole block only creates the frontend directory inside the maven target directory -->
-						<id>create ./target/frontend directory</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${frontend.location}</outputDirectory>
-							<resources>
-								<resource>
-									<directory>src/main/frontend</directory>
-									<includes>
-										<include>dummy.file</include>
-									</includes>
-									<filtering>false</filtering>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
 					<execution>
 						<id>copy NPM dist to Maven build folder</id>
 						<phase>process-resources</phase>
@@ -164,6 +140,11 @@
 					<groupId>com.github.eirslett</groupId>
 					<artifactId>frontend-maven-plugin</artifactId>
 					<version>1.15.0</version>
+					<configuration>
+						<nodeVersion>v16.20.0</nodeVersion>
+						<workingDirectory>${project.basedir}/src/main/frontend</workingDirectory><!-- frontend resources -->
+						<installDirectory>${project.build.directory}</installDirectory><!-- npm + npx install folder -->
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.glassfish.copyright</groupId>
@@ -254,12 +235,12 @@
 						<groupId>com.github.eirslett</groupId>
 						<artifactId>frontend-maven-plugin</artifactId>
 						<executions>
-							<execution>
+							<execution><!-- do not install NPM -->
+								<id>install node and npm</id>
+								<phase>none</phase>
+							</execution>
+							<execution><!-- do not run with '-c development' -->
 								<id>npm build</id>
-								<goals>
-									<goal>npx</goal>
-								</goals>
-								<phase>generate-resources</phase>
 								<configuration>
 									<arguments>ng build</arguments>
 								</configuration>
