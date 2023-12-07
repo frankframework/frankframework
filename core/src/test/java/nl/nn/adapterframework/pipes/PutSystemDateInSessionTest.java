@@ -128,7 +128,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		long timeStampInMillis = new Date().getTime();
 		String timeStampInMillisFromSessionKey = (String) session.get("dummy");
 		//Compare timestamp put in session key with the actual timestamp fail if it is bigger than 1 sec.
-		assertFalse(timeStampInMillis - new Long(timeStampInMillisFromSessionKey) > 1000, "Time stamp difference cannot be bigger than 1 s");
+		assertFalse(timeStampInMillis - Long.parseLong(timeStampInMillisFromSessionKey) > 1000, "Time stamp difference cannot be bigger than 1 s");
 	}
 
 	@Test
