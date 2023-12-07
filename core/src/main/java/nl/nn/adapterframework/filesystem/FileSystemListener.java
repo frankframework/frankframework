@@ -361,7 +361,7 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			if (isFileTimeSensitive()) {
 				messageId += "-" + DateFormatUtils.format(fs.getModificationTime(rawMessage), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER);
 			}
-			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId, null, null);
+			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId);
 			if (attributes!=null) {
 				messageProperties.putAll(attributes);
 			}

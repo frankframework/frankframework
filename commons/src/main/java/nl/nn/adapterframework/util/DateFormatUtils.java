@@ -121,15 +121,15 @@ public class DateFormatUtils {
 		return date == null ? null : format(date.toInstant());
 	}
 
-	public static String format(long date) {
+	public static String format(@Nonnull long date) {
 		return format(date, FULL_GENERIC_FORMATTER);
 	}
 
-	public static String format(Instant instant) {
+	public static String format(@Nonnull Instant instant) {
 		return format(instant, FULL_GENERIC_FORMATTER);
 	}
 
-	public static String format(long date, DateTimeFormatter formatter) {
+	public static String format(@Nonnull long date, DateTimeFormatter formatter) {
 		return format(Instant.ofEpochMilli(date), formatter);
 	}
 
@@ -138,7 +138,7 @@ public class DateFormatUtils {
 		return format(date.toInstant(), formatter);
 	}
 
-	public static String format(Instant instant, DateTimeFormatter formatter) {
+	public static String format(@Nonnull Instant instant, DateTimeFormatter formatter) {
 		return formatter.format(instant);
 	}
 
