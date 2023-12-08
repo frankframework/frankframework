@@ -77,4 +77,16 @@ public class MessageContextTest {
 		assertNull(mimetype.getParameter("name"));
 		assertNull(charset);
 	}
+
+	@Test // When it cannot parse a parameter, only parses the mimetype and thus also skips the charset.
+	public void testValidMimeTypeWithInvalidCharset() {
+		MessageContext context = new MessageContext();
+		context.withMimeType("text/xml;charset=\"text/xml\";name=\"tralala.xml\"");
+		MimeType mimetype = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
+		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
+
+		assertEquals("text/xml", mimetype.getType() + "/" + mimetype.getSubtype());
+		assertNull(mimetype.getParameter("name"));
+		assertNull(charset);
+	}
 }
