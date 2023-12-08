@@ -30,9 +30,7 @@ public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 		pipe.registerForward(new PipeForward("greaterthan", null));
 		pipe.registerForward(new PipeForward("equals", null));
 
-		assertThrows(ConfigurationException.class, () -> {
-			pipe.configure();
-		}, "has neither parameter [operand1] nor parameter [operand2] specified");
+		assertThrows(ConfigurationException.class, pipe::configure, "has neither parameter [operand1] nor parameter [operand2] specified");
 	}
 
 	@Test

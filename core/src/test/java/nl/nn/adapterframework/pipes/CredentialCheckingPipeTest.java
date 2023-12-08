@@ -56,13 +56,13 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
     @Test
     public void testNoTargetUserId() {
         pipe.setTargetPassword("dummyPassword");
-		assertThrows(ConfigurationException.class, () -> pipe.configure());
+		assertThrows(ConfigurationException.class, pipe::configure);
     }
 
     @Test
 	public void testNoTargetUserPassword() {
         pipe.setTargetUserid("dummyId");
-		assertThrows(ConfigurationException.class, () -> pipe.configure());
+		assertThrows(ConfigurationException.class, pipe::configure);
     }
 
     @Test

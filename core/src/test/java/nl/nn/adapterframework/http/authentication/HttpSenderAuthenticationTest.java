@@ -318,9 +318,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
-		SenderException exception = assertThrows(SenderException.class, () -> {
-			sendNonRepeatableMessage();
-		});
+		SenderException exception = assertThrows(SenderException.class, this::sendNonRepeatableMessage);
 		assertTrue(exception.getCause() instanceof SocketException);
 		assertEquals("(SocketException) Connection reset", exception.getMessage());
 	}
@@ -380,9 +378,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
-		SenderException exception = assertThrows(SenderException.class, () -> {
-			sendNonRepeatableMessage();
-		});
+		SenderException exception = assertThrows(SenderException.class, this::sendNonRepeatableMessage);
 		assertTrue(exception.getCause() instanceof SocketException);
 		assertEquals("(SocketException) Connection reset", exception.getMessage());
 	}
