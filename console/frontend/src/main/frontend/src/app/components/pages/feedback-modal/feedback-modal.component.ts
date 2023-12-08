@@ -3,6 +3,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 type FeedbackForm = {
   rating: number,
@@ -26,7 +27,8 @@ export class FeedbackModalComponent implements OnInit {
     private http: HttpClient,
     private activeModal: NgbActiveModal,
     private appService: AppService,
-    private sweetalertService: SweetalertService
+    private sweetalertService: SweetalertService,
+    private toastService: ToastService
   ){
     this.appConstants = this.appService.APP_CONSTANTS;
     this.appService.appConstants$.subscribe(() => {
@@ -57,7 +59,7 @@ export class FeedbackModalComponent implements OnInit {
     form.rating++;
     this.http.post<{result: string}>(this.appConstants["console.feedbackURL"], form).subscribe({ next: (response) => {
       if (response['result'] == "ok")
-        this.sweetalertService.Success("Thank you for sending us feedback!");
+        this.toastService.success("Thank you for sending us feedback!");
       else
         this.sweetalertService.Error("Oops, something went wrong...", "Please try again later!");
     }, error: () => {

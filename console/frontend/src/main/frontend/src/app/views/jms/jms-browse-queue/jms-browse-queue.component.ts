@@ -40,13 +40,12 @@ export class JmsBrowseQueueComponent implements OnInit {
   };
 
   submit(formData: JmsBrowseForm) {
-    this.processing = true;
-
     if (!formData || !formData.destination) {
       this.error = "Please specify a connection factory and destination!";
       return;
     };
 
+    this.processing = true;
     this.webStorageService.set("browseJmsQueue", formData);
     if (!formData.connectionFactory) formData.connectionFactory = this.connectionFactories[0] || "";
     if (!formData.type) formData.type = this.destinationTypes[0] || "";

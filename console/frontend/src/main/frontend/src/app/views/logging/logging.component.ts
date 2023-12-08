@@ -127,23 +127,12 @@ export class LoggingComponent implements OnInit {
         this.alert = "Total number of items [" + data.count + "] exceeded maximum number, only showing first [" + (data.list.length - 1) + "] items!";
       }
     }, error: (data) => {
-      this.alert = (data) ? data.error : "An unknown error occured!";
+      this.alert = (data.error) ? data.error.error : "An unknown error occured!";
     }});
   };
 
   copyToClipboard(path: string) {
-    let textToCopy = path.trim();
-
-    if (textToCopy) {
-      let el = document.createElement('textarea');
-      el.value = textToCopy;
-      el.setAttribute('readonly', '');
-      el.style.position = 'absolute';
-      el.style.left = '-9999px';
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-    }
+    const textToCopy = path.trim();
+    this.appService.copyToClipboard(textToCopy);
   };
 }

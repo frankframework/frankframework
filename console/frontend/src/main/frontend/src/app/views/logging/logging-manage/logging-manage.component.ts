@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ErrorLevels, LogInformation, LoggingService, LoggingSettings, errorLevelsConst } from '../logging.service';
-import { SweetalertService } from 'src/app/services/sweetalert.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-logging-manage',
@@ -25,7 +25,7 @@ export class LoggingManageComponent implements OnInit {
 
   constructor(
     private loggingService: LoggingService,
-    private sweetalertService: SweetalertService
+    private toastService: ToastService
   ) { };
 
   ngOnInit() {
@@ -48,7 +48,7 @@ export class LoggingManageComponent implements OnInit {
   //Individual level
   changeLoglevel(logger: string, level: typeof this.errorLevels[number]) {
     this.loggingService.putLoggingSettingsChange({ logger: logger, level: level }).subscribe(() => {
-      this.sweetalertService.Success("Updated logger [" + logger + "] to [" + level + "]");
+      this.toastService.success("Updated logger [" + logger + "] to [" + level + "]");
       this.updateLogInformation();
     });
   };
@@ -56,7 +56,7 @@ export class LoggingManageComponent implements OnInit {
   //Reconfigure Log4j2
   reconfigure() {
     this.loggingService.putLoggingSettingsChange({ reconfigure: true }).subscribe(() => {
-      this.sweetalertService.Success("Reconfigured log definitions!");
+      this.toastService.success("Reconfigured log definitions!");
       this.updateLogInformation();
     });
   };
@@ -67,7 +67,7 @@ export class LoggingManageComponent implements OnInit {
       this.loggingService.getLoggingSettings().subscribe((data) => {
         this.form = data;
         this.updateDynamicParams = false;
-        this.sweetalertService.Success("Successfully updated log configuration!");
+        this.toastService.success("Successfully updated log configuration!");
         this.updateLogInformation();
       });
     }, error: () => {

@@ -66,6 +66,8 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
 
   submit(formData: JdbcBrowseForm) {
     const columnNameArray: string[] = [];
+    this.columnNames = [];
+    this.result = [];
     this.processingMessage = true;
 
     if (!formData || !formData.table) {

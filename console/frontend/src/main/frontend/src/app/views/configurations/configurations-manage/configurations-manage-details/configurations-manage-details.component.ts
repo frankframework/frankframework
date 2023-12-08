@@ -4,6 +4,7 @@ import { AppService, Configuration } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ConfigurationsService } from '../../configurations.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-configurations-manage-details',
@@ -29,8 +30,8 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
     private router: Router,
     private appService: AppService,
     private configurationsService: ConfigurationsService,
-    // private toastrService: ToastrService,
-    private sweetalertService: SweetalertService
+    private sweetalertService: SweetalertService,
+    private toastService: ToastService
   ) {
     const routeState = this.router.getCurrentNavigation()?.extras.state ?? {}
     if(!routeState['configuration']){
@@ -89,7 +90,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
     this.sweetalertService.Confirm({ title: message }).then(result => {
       if (result.isConfirmed) {
         this.configurationsService.deleteConfigurationVersion(config.name, encodeURIComponent(config.version!)).subscribe(() => {
-          this.sweetalertService.Success("Successfully removed version '" + config.version + "'");
+          this.toastService.success("Successfully removed version '" + config.version + "'");
           this.update();
         });
       }
@@ -103,7 +104,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
         configs.actived = false;
     }
     this.configurationsService.updateConfigurationVersion( config.name, encodeURIComponent(config.version!), { activate: config.active! }).subscribe({ next: () => {
-      this.sweetalertService.Success("Successfully changed startup config to version '" + config.version + "'");
+      this.toastService.success("Successfully changed startup config to version '" + config.version + "'");
     }, error: () => {
       this.update();
     }});
@@ -111,7 +112,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
 
   scheduleReload(config: Configuration) {
     this.configurationsService.updateConfigurationVersion( config.name, encodeURIComponent(config.version!), { autoreload: config.autoreload }).subscribe({ next: () => {
-      this.sweetalertService.Success("Successfully " + (config.autoreload ? "enabled" : "disabled") + " Auto Reload for version '" + config.version + "'");
+      this.toastService.success("Successfully " + (config.autoreload ? "enabled" : "disabled") + " Auto Reload for version '" + config.version + "'");
     }, error: () => {
       this.update();
     }});
