@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 - 2020 WeAreFrank!
+   Copyright 2017 - 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.mqtt;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -27,18 +26,18 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IConfigurable;
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.util.CredentialFactory;
-import nl.nn.adapterframework.util.LogUtil;
 
+@Log4j2
 public class MqttFacade implements HasPhysicalDestination, IConfigurable {
 	private final @Getter(onMethod = @__(@Override)) String domain = "MQTT";
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter @Setter ApplicationContext applicationContext;
-	protected Logger log = LogUtil.getLogger(this);
+	private @Getter(onMethod = @__(@Override)) ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter(onMethod = @__(@Override)) @Setter ApplicationContext applicationContext;
 
 	private @Getter String name;
 	private @Getter int timeout = 3000;

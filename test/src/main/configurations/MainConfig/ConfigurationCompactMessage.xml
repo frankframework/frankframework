@@ -44,7 +44,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe"
-				  removeCompactMsgNamespaces="true" elementToMoveChain="AuditLog_Action;Message;Text">
+				  elementToMoveChain="AuditLog_Action;Message;Text">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
