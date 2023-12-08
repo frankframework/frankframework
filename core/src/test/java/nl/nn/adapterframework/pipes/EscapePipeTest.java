@@ -1,13 +1,13 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.EscapePipe.Direction;
 import nl.nn.adapterframework.testutil.TestAssertions;
-
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
@@ -17,27 +17,21 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 	}
 
 	@Test
-	public void testNullDirectionGiven() throws Exception {
+	public void testNullDirectionGiven() {
 		pipe.setDirection(null);
-		assertThrows(ConfigurationException.class, () -> {
-			pipe.configure();
-		});
+		assertThrows(ConfigurationException.class, () -> pipe.configure());
 	}
 
 	@Test
-	public void testNoSubstringEnd() throws Exception {
+	public void testNoSubstringEnd() {
 		pipe.setSubstringStart("Substring");
-		assertThrows(ConfigurationException.class, () -> {
-			pipe.configure();
-		});
+		assertThrows(ConfigurationException.class, () -> pipe.configure());
 	}
 
 	@Test
-	public void testNoSubstringStart() throws Exception {
+	public void testNoSubstringStart() {
 		pipe.setSubstringEnd("Substring");
-		assertThrows(ConfigurationException.class, () -> {
-			pipe.configure();
-		});
+		assertThrows(ConfigurationException.class, () -> pipe.configure());
 	}
 
 	@Test
