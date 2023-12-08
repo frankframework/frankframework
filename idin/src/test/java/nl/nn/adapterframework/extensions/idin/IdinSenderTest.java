@@ -17,7 +17,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.test;
+import org.junit.Test;
 import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
