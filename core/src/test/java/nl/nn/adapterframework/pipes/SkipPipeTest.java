@@ -3,10 +3,10 @@ package nl.nn.adapterframework.pipes;
 
 import nl.nn.adapterframework.core.PipeRunResult;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import org.junit.jupiter.api.Test;
 
 
 /**
@@ -27,28 +27,28 @@ public class SkipPipeTest extends PipeTestBase<SkipPipe>{
 	 * Method: setSkip(int skip)
 	 */
 	@Test
-	public void testDoPipeSkip3Read2WithString() throws Exception {
+	void testDoPipeSkip3Read2WithString() throws Exception {
 		pipe.setSkip(3); pipe.setLength(2);
 		PipeRunResult res = doPipe(pipe, "0123456", session);
 		assertEquals("34", res.getResult().asString());
 	}
 
 	@Test
-	public void  testSkip3() throws Exception {
+	void testSkip3() throws Exception {
 		pipe.setSkip(3);
 		PipeRunResult res = doPipe(pipe, "0123456", session);
 		assertEquals( "3456", res.getResult().asString());
 	}
 
 	@Test
-	public void testRead2WithString() throws Exception {
+	void testRead2WithString() throws Exception {
 		pipe.setLength(2);
 		PipeRunResult res = doPipe(pipe, "0123456", session);
 		assertEquals( "01", res.getResult().asString());
 	}
 
 	@Test
-	public void testDoPipeWithByteArray() throws Exception {
+	void testDoPipeWithByteArray() throws Exception {
 		byte[] myvar = "Any String you want".getBytes(); pipe.setSkip(2);
 		PipeRunResult res = doPipe(pipe, myvar, session);
 		assertNotEquals( "", res.getResult().asString());

@@ -8,12 +8,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
 import lombok.Getter;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
@@ -24,13 +23,9 @@ import nl.nn.adapterframework.senders.JavascriptSender.JavaScriptEngines;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 
-@RunWith(Parameterized.class)
 public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
-
-	@Parameterized.Parameter(0)
 	public JavaScriptEngines engine;
 
-	@Parameters(name = "{0}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {{JavaScriptEngines.J2V8}});
 	}
@@ -40,8 +35,10 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		return new JavascriptSender();
 	}
 
-	@Test
-	public void simpleParameterizedSenderNoCallbacks() throws ConfigurationException, SenderException, TimeoutException, IOException {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	public void simpleParameterizedSenderNoCallbacks(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
+		initJavascriptSenderCallbackTest(engine);
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f2");
@@ -58,8 +55,10 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 	}
 
 	//An EchoSender will be called in the javascript code.
-	@Test
-	public void javaScriptSenderWithNestedEchoSender() throws ConfigurationException, SenderException, TimeoutException, IOException {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	public void javaScriptSenderWithNestedEchoSender(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
+		initJavascriptSenderCallbackTest(engine);
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f4");
@@ -80,8 +79,10 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 		assertEquals("true", sender.sendMessageOrThrow(dummyInput,session).asString());
 	}
 
-	@Test
-	public void promise() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{0}")
+	public void promise(JavaScriptEngines engine) throws Exception {
+		initJavascriptSenderCallbackTest(engine);
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("promise");
@@ -109,5 +110,9 @@ public class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSende
 			promiseResult = message;
 			return new SenderResult(Message.nullMessage());
 		}
+	}
+
+	public void initJavascriptSenderCallbackTest(JavaScriptEngines engine) {
+		this.engine = engine;
 	};
 }

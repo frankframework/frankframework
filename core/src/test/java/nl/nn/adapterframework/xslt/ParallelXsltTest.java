@@ -2,16 +2,16 @@ package nl.nn.adapterframework.xslt;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.runners.Parameterized.Parameters;
 
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -30,7 +30,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	private List<XsltSender> xsltSenders;
 	boolean expectExtraParamWarning=false;
 
-	@Before
+	@BeforeEach
 	public void clear() {
 		expectExtraParamWarning=false;
 	}
@@ -76,7 +76,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		return pipe;
 	}
 
-	@After
+	@AfterEach
 	@Override
 	public void tearDown() throws Exception {
 		xsltSenders = null;
@@ -132,43 +132,43 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 	}
 
 	@Override
-	@Ignore("test fails in parallel, ParallelSenders does not propagate exception")
+	@Disabled("test fails in parallel, ParallelSenders does not propagate exception")
 	public void documentIncludedInSourceNotFoundXslt2() throws Exception {
 		// test is ignored
 	}
 
 	@Override
-	@Ignore("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
+	@Disabled("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
 	public void anyXmlBasic() throws Exception {
 		// test is ignored
 	}
 	@Override
-	@Ignore("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
+	@Disabled("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
 	public void anyXmlNoMethodConfigured() throws Exception {
 		// test is ignored
 	}
 	@Override
-	@Ignore("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
+	@Disabled("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
 	public void anyXmlIndent() throws Exception {
 		// test is ignored
 	}
 	@Override
-	@Ignore("test fails in parallel, results get escaped")
+	@Disabled("test fails in parallel, results get escaped")
 	public void anyXmlAsText() throws Exception {
 		// test is ignored
 	}
 	@Override
-	@Ignore("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
+	@Disabled("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
 	public void skipEmptyTagsXslt1() throws Exception {
 		// test is ignored
 	}
 	@Override
-	@Ignore("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
+	@Disabled("test fails in parallel, processing instructions are ignored by XmlBuilder in ParallelSenders")
 	public void skipEmptyTagsXslt2() throws Exception {
 		// test is ignored
 	}
 	@Override
-	@Ignore("test fails in parallel, parameters are not passed to the individual parallel senders")
+	@Disabled("test fails in parallel, parameters are not passed to the individual parallel senders")
 	public void xPathFromParameter() throws Exception {
 		// test is ignored
 	}

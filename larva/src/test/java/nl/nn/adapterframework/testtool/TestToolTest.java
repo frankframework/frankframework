@@ -1,17 +1,17 @@
 package nl.nn.adapterframework.testtool;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TestToolTest {
 
-    @Test
-	public void decodeUnzipContentBetweenKeysFromIgnoreMap() {
+	@Test
+	void decodeUnzipContentBetweenKeysFromIgnoreMap() {
         String propertyName = "decodeUnzipContentBetweenKeys";
 
         Properties scenario = new Properties();
@@ -37,9 +37,8 @@ public class TestToolTest {
         assertEquals(identifier.get("key2"), key2);
         assertEquals(identifier.get("replaceNewlines"), replaceNewlines);
     }
-    
-    @Test
-    public void canonicaliseFilePathContentBetweenKeysFromIgnoreMap() {
+	@Test
+	void canonicaliseFilePathContentBetweenKeysFromIgnoreMap() {
         String propertyName = "canonicaliseFilePathContentBetweenKeys";
 
         Properties scenario = new Properties();
@@ -63,8 +62,8 @@ public class TestToolTest {
         assertEquals(identifier.get("key2"), key2);
     }
 
-    @Test
-    public void replaceRegularExpressionKeysFromIgnoreMap() {
+	@Test
+	void replaceRegularExpressionKeysFromIgnoreMap() {
         String propertyName = "replaceRegularExpressionKeys";
 
         Properties scenario = new Properties();
@@ -88,10 +87,10 @@ public class TestToolTest {
         assertEquals(identifier.get("key2"), key2);
     }
 
-    @Test
-    public void ignoreContentBetweenKeysFromIgnoreMap() {
+	@Test
+	void ignoreContentBetweenKeysFromIgnoreMap() {
         String propertyName = "ignoreContentBetweenKeys";
-        
+
         Properties scenario = new Properties();
         String key1 = "<field name='zip'>";
         String key2 = "</field'>";
@@ -113,10 +112,10 @@ public class TestToolTest {
         assertEquals(identifier.get("key2"), key2);
     }
 
-    @Test
-    public void ignoreKeysAndContentBetweenKeysFromIgnoreMap() {
+	@Test
+	void ignoreKeysAndContentBetweenKeysFromIgnoreMap() {
         String propertyName = "ignoreKeysAndContentBetweenKeys";
-        
+
         Properties scenario = new Properties();
         String key1 = "<field name='zip'>";
         String key2 = "</field'>";
@@ -138,10 +137,10 @@ public class TestToolTest {
         assertEquals(identifier.get("key2"), key2);
     }
 
-    @Test
-    public void removeKeysAndContentBetweenKeysFromIgnoreMap() {
+	@Test
+	void removeKeysAndContentBetweenKeysFromIgnoreMap() {
         String propertyName = "removeKeysAndContentBetweenKeys";
-        
+
         Properties scenario = new Properties();
         String key1 = "<field name='zip'>";
         String key2 = "</field'>";
@@ -163,10 +162,10 @@ public class TestToolTest {
         assertEquals(identifier.get("key2"), key2);
     }
 
-    @Test
-    public void replaceKeyFromIgnoreMap() {
+	@Test
+	void replaceKeyFromIgnoreMap() {
         String propertyName = "replaceKey";
-        
+
         Properties scenario = new Properties();
         String key1 = "<field name='zip'>";
         String key2 = "</field'>";
@@ -188,10 +187,10 @@ public class TestToolTest {
         assertEquals(identifier.get("key2"), key2);
     }
 
-    @Test
-    public void replaceEverywhereKeyFromIgnoreMap() {
+	@Test
+	void replaceEverywhereKeyFromIgnoreMap() {
         String propertyName = "replaceEverywhereKey";
-        
+
         Properties scenario = new Properties();
         String key1 = "<field name='zip'>";
         String key2 = "</field'>";
@@ -213,10 +212,10 @@ public class TestToolTest {
         assertEquals(identifier.get("key2"), key2);
     }
 
-    @Test
-    public void formatDecimalContentBetweenKeysFromIgnoreMap() {
+	@Test
+	void formatDecimalContentBetweenKeysFromIgnoreMap() {
         String propertyName = "formatDecimalContentBetweenKeys";
-        
+
         Properties scenario = new Properties();
         String key1 = "<field name='zip'>";
         String key2 = "</field'>";
@@ -238,10 +237,10 @@ public class TestToolTest {
         assertEquals(identifier.get("key2"), key2);
     }
 
-    @Test
-    public void ignoreRegularExpressionKeyFromIgnoreMap() {
+	@Test
+	void ignoreRegularExpressionKeyFromIgnoreMap() {
         String propertyName = "ignoreRegularExpressionKey";
-        
+
         Properties scenario = new Properties();
         String key = "abc*";
         scenario.setProperty(propertyName + ".identifier.key", key);
@@ -260,10 +259,10 @@ public class TestToolTest {
         assertEquals(identifier.get("key"), key);
     }
 
-    @Test
-    public void removeRegularExpressionKeyFromIgnoreMap() {
+	@Test
+	void removeRegularExpressionKeyFromIgnoreMap() {
         String propertyName = "removeRegularExpressionKey";
-        
+
         Properties scenario = new Properties();
         String key = "abc*";
         scenario.setProperty(propertyName + ".identifier.key", key);
@@ -282,10 +281,10 @@ public class TestToolTest {
         assertEquals(identifier.get("key"), key);
     }
 
-    @Test
-    public void ignoreContentBeforeKeyFromIgnoreMap() {
+	@Test
+	void ignoreContentBeforeKeyFromIgnoreMap() {
         String propertyName = "ignoreContentBeforeKey";
-        
+
         Properties scenario = new Properties();
         String key = "abc*";
         scenario.setProperty(propertyName + ".identifier.key", key);
@@ -304,10 +303,10 @@ public class TestToolTest {
         assertEquals(identifier.get("key"), key);
     }
 
-    @Test
-    public void ignoreContentAfterKeyFromIgnoreMap() {
+	@Test
+	void ignoreContentAfterKeyFromIgnoreMap() {
         String propertyName = "ignoreContentAfterKey";
-        
+
         Properties scenario = new Properties();
         String key = "abc*";
         scenario.setProperty(propertyName + ".identifier.key", key);
@@ -326,8 +325,8 @@ public class TestToolTest {
         assertEquals(identifier.get("key"), key);
     }
 
-    @Test
-	public void ignoreCurrentTimeBetweenKeysFromIgnoreMap() {
+	@Test
+	void ignoreCurrentTimeBetweenKeysFromIgnoreMap() {
         String propertyName = "ignoreCurrentTimeBetweenKeys";
 
         Properties scenario = new Properties();
@@ -360,10 +359,10 @@ public class TestToolTest {
         assertEquals(identifier.get("errorMessageOnRemainingString"), errorMessageOnRemainingString);
     }
 
-    @Test
-    public void removeKeyFromIgnoreMap() {
+	@Test
+	void removeKeyFromIgnoreMap() {
         String propertyName = "removeKey";
-        
+
         Properties scenario = new Properties();
         String key = "<field name='zip'>";
         scenario.setProperty(propertyName + ".identifier.key", key);
@@ -382,10 +381,10 @@ public class TestToolTest {
         assertEquals(identifier.get("key"), key);
     }
 
-    @Test
-    public void removeKeyWithoutKeyFromIgnoreMap() {
+	@Test
+	void removeKeyWithoutKeyFromIgnoreMap() {
         String propertyName = "removeKey";
-        
+
         Properties scenario = new Properties();
         String value = "<field name='zip'>";
         scenario.setProperty(propertyName + ".identifier", value);
@@ -404,10 +403,10 @@ public class TestToolTest {
         assertEquals(identifier.get("value"), value);
     }
 
-    @Test
-    public void ignoreKeyFromIgnoreMap() {
+	@Test
+	void ignoreKeyFromIgnoreMap() {
         String propertyName = "ignoreKey";
-        
+
         Properties scenario = new Properties();
         String key = "<field name='zip'>";
         scenario.setProperty(propertyName + ".identifier.key", key);
@@ -426,10 +425,10 @@ public class TestToolTest {
         assertEquals(identifier.get("key"), key);
     }
 
-    @Test
-    public void ignoreKeyWithoutKeyFromIgnoreMap() {
+	@Test
+	void ignoreKeyWithoutKeyFromIgnoreMap() {
         String propertyName = "ignoreKey";
-        
+
         Properties scenario = new Properties();
         String value = "<field name='zip'>";
         scenario.setProperty(propertyName + ".identifier", value);
@@ -447,5 +446,5 @@ public class TestToolTest {
 
         assertEquals(identifier.get("value"), value);
     }
-    
+
 }

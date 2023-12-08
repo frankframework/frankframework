@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -8,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,7 +85,7 @@ public class TestPipelineTest extends BusTestBase {
 				+ "<?ibiscontext key1=whitespace is allowed ?>\n"
 				+ "<test/>";
 		Map<String, String> context = tp.getSessionKeysFromPayload(input);
-		MatcherAssert.assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1"));
+		assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1"));
 		assertEquals("whitespace is allowed", context.get("key1"));
 	}
 
@@ -105,7 +105,7 @@ public class TestPipelineTest extends BusTestBase {
 		String message = TestFileUtils.getTestFile("/test1.xml"); //File without xml declaration
 		String input = "<?ibiscontext key1=whitespace is allowed ?>"+message;
 		Map<String, String> context = tp.getSessionKeysFromPayload(input);
-		MatcherAssert.assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1"));
+		assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1"));
 		assertEquals("whitespace is allowed", context.get("key1"));
 	}
 
@@ -117,7 +117,7 @@ public class TestPipelineTest extends BusTestBase {
 				+ "<?ibiscontext key2=whitespace is allowed ?>\n"
 				+ "<test/>";
 		Map<String, String> context = tp.getSessionKeysFromPayload(input);
-		MatcherAssert.assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1", "key2"));
+		assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1", "key2"));
 		assertEquals("whitespace is allowed", context.get("key1"));
 		assertEquals("whitespace is allowed", context.get("key2"));
 	}
@@ -127,7 +127,7 @@ public class TestPipelineTest extends BusTestBase {
 		TestPipeline tp = new TestPipeline();
 		String input = "<?ibiscontext key1=whitespace is allowed ?> <test/> <?ibiscontext key2=whitespace is allowed ?>";
 		Map<String, String> context = tp.getSessionKeysFromPayload(input);
-		MatcherAssert.assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1", "key2"));
+		assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1", "key2"));
 		assertEquals("whitespace is allowed", context.get("key1"));
 		assertEquals("whitespace is allowed", context.get("key2"));
 	}

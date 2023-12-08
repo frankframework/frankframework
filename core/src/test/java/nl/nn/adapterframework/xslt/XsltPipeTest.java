@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.xslt;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import nl.nn.adapterframework.core.PipeRunResult;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.pipes.XsltPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -69,7 +69,7 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 
 
 	@Test
-	public void testSessionKey() throws Exception {
+	void testSessionKey() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = "Euro € single quote ' double quote escaped \" newline escaped \n";
 

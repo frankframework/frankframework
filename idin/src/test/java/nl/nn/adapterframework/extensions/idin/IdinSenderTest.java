@@ -17,7 +17,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Test;
 import org.mockito.Mockito;
 import org.xml.sax.SAXException;
 
@@ -33,8 +32,8 @@ import nl.nn.adapterframework.util.ClassLoaderUtils;
 
 /**
  * Initially I thought, hey lets add some unittests...
- * Lets just skip them for now shall we? :) 
- * 
+ * Lets just skip them for now shall we? :)
+ *
  * PS: Requires java 1.7 to compile/run!
  *
  */

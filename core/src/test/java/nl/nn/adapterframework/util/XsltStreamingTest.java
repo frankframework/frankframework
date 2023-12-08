@@ -12,7 +12,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.junit.Assume;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -26,7 +26,7 @@ public class XsltStreamingTest {
 	private class SwitchCounter {
 		public int count;
 		private String prevLabel;
-		
+
 		public void mark(String label) {
 			if (prevLabel==null || !prevLabel.equals(label)) {
 				prevLabel=label;
@@ -36,10 +36,10 @@ public class XsltStreamingTest {
 	}
 
 	private class SaxLogger extends XMLFilterImpl implements ContentHandler {
-		
+
 		private String prefix;
 		private SwitchCounter sc;
-		
+
 		SaxLogger(String prefix, SwitchCounter sc) {
 			this.prefix=prefix;
 			this.sc=sc;
@@ -48,7 +48,7 @@ public class XsltStreamingTest {
 			System.out.println(prefix+" "+string);
 			sc.mark(prefix);
 		}
-		
+
 		@Override
 		public void characters(char[] ch, int start, int length) throws SAXException {
 			print(new String(ch,start,length));
@@ -72,17 +72,17 @@ public class XsltStreamingTest {
 			print("startElement "+localName);
 			super.startElement(uri, localName, qName, attributes);
 		}
-		
+
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 			print("endElement "+localName);
 			super.endElement(uri, localName, qName);
 		}
 
-		
+
 	}
-	
-	
+
+
 //	@Test()
 //	public void testStreamingXsltViaTransformerHandlerAndEvents() throws SAXException, DomBuilderException, TransformerException, IOException {
 //		/*
@@ -91,21 +91,21 @@ public class XsltStreamingTest {
 //		 * receive SAX destination events
 //		 * received events and source events should be mixed
 //		 */
-//		
+//
 //		SwitchCounter sc = new SwitchCounter();
-//		
+//
 //		String xpath="/root/a";
 //		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null, xpath,"xml", false, null, false, false, null, 1));
-//		
+//
 //		SAXResult result = new SAXResult();
 //		SaxLogger resultfilter = new SaxLogger("out>",sc);
 //		result.setHandler(resultfilter);
 //
 //		TransformerHandler handler = tp.getTransformerHandler();
 //		handler.setResult(result);
-//		
+//
 //		SaxLogger inputfilter = new SaxLogger("in>",sc);
-//		
+//
 //		inputfilter.setContentHandler(handler);
 //
 ////		tp.transform(source, result, null);
@@ -125,16 +125,16 @@ public class XsltStreamingTest {
 //		}
 //		inputfilter.endElement(uri, "root", "root");
 //		inputfilter.endDocument();
-//		
+//
 //		assertTrue("switch count ["+sc.count+"] should be larger than 2",sc.count>2);
 //	}
-	
-	
+
+
 	private class LoggingInputStream extends FilterInputStream {
 
 		private int blocksize=10;
 		private SwitchCounter sc;
-		
+
 		public LoggingInputStream(InputStream arg0, SwitchCounter sc) {
 			super(arg0);
 			this.sc=sc;
@@ -179,7 +179,7 @@ public class XsltStreamingTest {
 			}
 			return l;
 		}
-		
+
 	}
 
 	@Test()
@@ -190,12 +190,12 @@ public class XsltStreamingTest {
 		 * receive SAX destination events
 		 * received events and source events should be mixed
 		 */
-		Assume.assumeTrue("Streaming XSLT switched off", AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true));
+		Assumptions.assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
 		SwitchCounter sc = new SwitchCounter();
-		
+
 		String xpath="/root/a";
 		TransformerPool tp = TransformerPool.getInstance(XmlUtils.createXPathEvaluatorSource(null, xpath,OutputType.XML, false, null, false, false, null, 1));
-		
+
 		SAXResult result = new SAXResult();
 		SaxLogger resultfilter = new SaxLogger("out>", sc);
 		result.setHandler(resultfilter);
@@ -205,13 +205,13 @@ public class XsltStreamingTest {
 			input+="<a>"+i+"</a>"+"<b>opvulling</b>";
 		}
 		input+="</root>";
-		
+
 		ByteArrayInputStream bais = new ByteArrayInputStream(input.getBytes());
 		Source source = new StreamSource(new LoggingInputStream(bais,sc));
-		
+
 		tp.transform(source, result);
 		assertTrue(sc.count>2, "switch count ["+sc.count+"] should be larger than 2");
 	}
-	
+
 
 }

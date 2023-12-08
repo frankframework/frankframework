@@ -4,8 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -14,7 +12,7 @@ import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
 /**
- * 
+ *
  * @author alisihab
  *
  */
@@ -24,7 +22,7 @@ public abstract class MailSenderTestBase<M extends IMailSender> extends SenderTe
 
 	@Override
 	public abstract M createSender();
-	
+
 	@Override
 		public void setup() throws Exception {
 			super.setup();

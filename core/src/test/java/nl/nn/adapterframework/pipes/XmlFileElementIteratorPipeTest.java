@@ -3,9 +3,9 @@ package nl.nn.adapterframework.pipes;
 import java.io.File;
 import java.net.URL;
 
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.PipeRunResult;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.senders.XsltSender;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestAssertions;
@@ -19,14 +19,14 @@ public class XmlFileElementIteratorPipeTest extends PipeTestBase<XmlFileElementI
 	}
 
 	@Test
-	public void testElementName() throws Exception {
+	void testElementName() throws Exception {
 		XsltSender sender = new XsltSender();
 		sender.setXpathExpression("concat(Person/PersonName/Id,'_',Person/Demographics/Gender)");
 		pipe.setSender(sender);
 		pipe.setElementName("Person");
 		pipe.configure();
 		pipe.start();
-		
+
 		URL input = TestFileUtils.getTestFileURL("/XmlFileElementIteratorPipe/input.xml");
 		File file = new File(input.toURI());
 		String expected = TestFileUtils.getTestFile("/XmlFileElementIteratorPipe/ElementNameOutput.xml");
@@ -36,14 +36,14 @@ public class XmlFileElementIteratorPipeTest extends PipeTestBase<XmlFileElementI
 	}
 
 	@Test
-	public void testElementChain() throws Exception {
+	void testElementChain() throws Exception {
 		XsltSender sender = new XsltSender();
 		sender.setXpathExpression("concat(Person/PersonName/Id,'_',Person/Demographics/Gender)");
 		pipe.setSender(sender);
 		pipe.setElementChain("GetPartiesOnAgreementRLY;PartyAgreementRole;PartyInternalAgreementRole;Party;Person");
 		pipe.configure();
 		pipe.start();
-		
+
 		URL input = TestFileUtils.getTestFileURL("/XmlFileElementIteratorPipe/input.xml");
 		File file = new File(input.toURI());
 		String expected = TestFileUtils.getTestFile("/XmlFileElementIteratorPipe/ElementChainOutput.xml");

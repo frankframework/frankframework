@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -36,8 +36,8 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -108,7 +108,7 @@ public class HttpSenderResultTest extends Mockito {
 		return createHttpSender(dummyXmlString, contentType);
 	}
 
-	@After
+	@AfterEach
 	public void setDown() {
 		if (sender != null) {
 			sender.close();
@@ -126,7 +126,7 @@ public class HttpSenderResultTest extends Mockito {
 	}
 
 	@Test
-	public void simpleMockedHttpGet() throws Exception {
+	void simpleMockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSender();
 
 		PipeLineSession session = new PipeLineSession();
@@ -142,7 +142,7 @@ public class HttpSenderResultTest extends Mockito {
 	}
 
 	@Test
-	public void simpleByteArrayInSessionKeyMockedHttpGet() throws Exception {
+	void simpleByteArrayInSessionKeyMockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSender();
 		String SESSIONKEY_KEY = "result";
 
@@ -163,7 +163,7 @@ public class HttpSenderResultTest extends Mockito {
 	}
 
 	@Test
-	public void simpleByteArrayInSessionKeyMockedHttpPost() throws Exception {
+	void simpleByteArrayInSessionKeyMockedHttpPost() throws Exception {
 		HttpSender sender = createHttpSender();
 		String SESSIONKEY_KEY = "result";
 
@@ -184,7 +184,7 @@ public class HttpSenderResultTest extends Mockito {
 	}
 
 	@Test
-	public void simpleResultAsStreamMockedHttpGet() throws Exception {
+	void simpleResultAsStreamMockedHttpGet() throws Exception {
 		HttpSender sender = createHttpSender();
 		String SESSIONKEY_KEY = "result";
 
@@ -205,7 +205,7 @@ public class HttpSenderResultTest extends Mockito {
 	}
 
 	@Test
-	public void simpleResultAsStreamMockedHttpPost() throws Exception {
+	void simpleResultAsStreamMockedHttpPost() throws Exception {
 		HttpSender sender = createHttpSender();
 		String SESSIONKEY_KEY = "result";
 
@@ -226,7 +226,7 @@ public class HttpSenderResultTest extends Mockito {
 	}
 
 	@Test
-	public void simpleMultiPartResponse() throws Exception {
+	void simpleMultiPartResponse() throws Exception {
 		HttpSender sender = createHttpSenderFromFile("multipart1.txt");
 
 		PipeLineSession pls = new PipeLineSession();
@@ -252,7 +252,7 @@ public class HttpSenderResultTest extends Mockito {
 	}
 
 	@Test
-	public void simpleMtomResponse() throws Exception {
+	void simpleMtomResponse() throws Exception {
 		HttpSender sender = createHttpSenderFromFile("mtom-multipart.txt");
 
 		PipeLineSession pls = new PipeLineSession();

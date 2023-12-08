@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.xslt;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import nl.nn.adapterframework.core.PipeRunResult;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.pipes.XsltPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
@@ -32,7 +32,7 @@ public class Xslt3Test extends XsltErrorTestBase<XsltPipe>{
 	}
 
 	@Test
-	public void testBasicWrappedJsonConversion() throws Exception {
+	void testBasicWrappedJsonConversion() throws Exception {
 		String styleSheetName = "/Xslt3/conversion/jsonToXmlConversion.xsl";
 		String input = TestFileUtils.getTestFile("/Xslt3/conversion/wrappedOriginalJson.json");
 		String expected = TestFileUtils.getTestFile("/Xslt3/conversion/expectedXml.xml");
@@ -40,7 +40,7 @@ public class Xslt3Test extends XsltErrorTestBase<XsltPipe>{
 	}
 
 	@Test
-	public void testComplexWrappedJsonConversion() throws Exception {
+	void testComplexWrappedJsonConversion() throws Exception {
 		String styleSheetName = "/Xslt3/conversion/jsonToXmlConversion.xsl";
 		String input = TestFileUtils.getTestFile("/Xslt3/conversion/complexOriginalJson.json");
 		String expected = TestFileUtils.getTestFile("/Xslt3/conversion/complexExpectedXml.xml");
@@ -48,7 +48,7 @@ public class Xslt3Test extends XsltErrorTestBase<XsltPipe>{
 	}
 
 	@Test
-	public void testBasicReturnXmlConversion() throws Exception {
+	void testBasicReturnXmlConversion() throws Exception {
 		String styleSheetName = "/Xslt3/conversion/xmlToJsonConversion.xsl";
 		String input = TestFileUtils.getTestFile("/Xslt3/conversion/returnOriginalXml.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt3/conversion/expectedJson.json");
@@ -56,7 +56,7 @@ public class Xslt3Test extends XsltErrorTestBase<XsltPipe>{
 	}
 
 	@Test
-	public void testComplexReturnXmlConversion() throws Exception {
+	void testComplexReturnXmlConversion() throws Exception {
 		String styleSheetName = "/Xslt3/conversion/xmlToJsonConversion.xsl";
 		String input = TestFileUtils.getTestFile("/Xslt3/conversion/returnComplexOriginalXml.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt3/conversion/complexExpectedJson.json");
@@ -64,7 +64,7 @@ public class Xslt3Test extends XsltErrorTestBase<XsltPipe>{
 	}
 
 	@Test
-	public void testParameterizedJsonConversion() throws Exception {
+	void testParameterizedJsonConversion() throws Exception {
 		String styleSheetName = "/Xslt3/conversion/unwrappedJsontoXmlConversion.xsl";
 		String input = TestFileUtils.getTestFile("/Xslt3/conversion/returnComplexOriginalXml.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt3/conversion/outputXml.xml");

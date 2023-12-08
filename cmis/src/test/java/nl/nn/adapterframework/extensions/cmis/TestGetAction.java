@@ -8,6 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -57,6 +58,7 @@ public class TestGetAction extends CmisSenderTestBase {
 
 	@ParameterizedTest(name = "{0} - {1} - toServlet = {2} - getProperties = {3} - getDocumentContent = {4}")
 	@MethodSource("allImplementations")
+	@Nested
 	@Retention(RetentionPolicy.RUNTIME)
 	private @interface TestAllImplementations {
 	}

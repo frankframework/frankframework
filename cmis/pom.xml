@@ -33,7 +33,8 @@
 			<artifactId>chemistry-opencmis-client-impl</artifactId>
 			<version>${opencmis.version}</version>
 			<exclusions>
-				<exclusion><!-- Exclude 1.0-2 as 1.0.1 is already included by xmlbeans. -->
+				<exclusion>
+					<!-- Exclude 1.0-2 as 1.0.1 is already included by xmlbeans. -->
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
 				</exclusion>
@@ -42,7 +43,7 @@
 					<groupId>org.apache.cxf</groupId>
 					<artifactId>cxf-rt-ws-policy</artifactId>
 				</exclusion>
-					<!-- to avoid stax1 vs stax2 incompatibility problems -->
+				<!-- to avoid stax1 vs stax2 incompatibility problems -->
 				<exclusion>
 					<groupId>org.codehaus.woodstox</groupId>
 					<artifactId>woodstox-core-asl</artifactId>
@@ -61,11 +62,13 @@
 			<artifactId>cxf-rt-frontend-jaxws</artifactId>
 			<version>${cxf.version}</version>
 			<exclusions>
-				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
+				<exclusion>
+					<!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
-				<exclusion><!-- added by the JDK 9 profile in CXF-Parent -->
+				<exclusion>
+					<!-- added by the JDK 9 profile in CXF-Parent -->
 					<groupId>org.apache.geronimo.specs</groupId>
 					<artifactId>geronimo-jta_1.1_spec</artifactId>
 				</exclusion>
@@ -76,7 +79,8 @@
 			<artifactId>cxf-rt-transports-http</artifactId>
 			<version>${cxf.version}</version>
 			<exclusions>
-				<exclusion><!-- added by the JDK 9 profile in CXF-Parent -->
+				<exclusion>
+					<!-- added by the JDK 9 profile in CXF-Parent -->
 					<groupId>org.apache.geronimo.specs</groupId>
 					<artifactId>geronimo-jta_1.1_spec</artifactId>
 				</exclusion>
@@ -87,7 +91,8 @@
 			<artifactId>cxf-rt-ws-policy</artifactId>
 			<version>${cxf.version}</version>
 			<exclusions>
-				<exclusion><!-- added by the JDK 9 profile in CXF-Parent -->
+				<exclusion>
+					<!-- added by the JDK 9 profile in CXF-Parent -->
 					<groupId>org.apache.geronimo.specs</groupId>
 					<artifactId>geronimo-jta_1.1_spec</artifactId>
 				</exclusion>
@@ -107,6 +112,11 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

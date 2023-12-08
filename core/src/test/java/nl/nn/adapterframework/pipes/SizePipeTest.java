@@ -1,34 +1,34 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.PipeRunResult;
 
-/** 
-* SizePipe Tester. 
-* 
+import org.junit.jupiter.api.Test;
+
+/**
+* SizePipe Tester.
+*
 * @author <Sina Sen>
-*/ 
+*/
 public class SizePipeTest extends PipeTestBase<SizePipe>{
 
 
 	/**
-	 * 
+	 *
 	 * Method: doPipe(Object input, PipeLineSession session)
-	 * 
+	 *
 	 */
 	@Test
-	public void testDoPipeSuccess() throws Exception {
+	void testDoPipeSuccess() throws Exception {
 		PipeRunResult res = doPipe(pipe, "abcsd", session);
 		assertEquals("5", res.getResult().asString());
 	}
 
 	@Test
-	public void testDoPipeFail() throws Exception {
+	void testDoPipeFail() throws Exception {
 		ArrayList<String> arr = new ArrayList<>();
 		PipeRunResult res = doPipe(pipe, arr, session);
 		assertEquals("-1", res.getResult().asString());

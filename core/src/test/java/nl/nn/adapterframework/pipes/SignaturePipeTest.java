@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URL;
 import java.security.KeyStore;
@@ -16,7 +16,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -41,12 +41,12 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	}
 
 	@Test
-	public void testSign() throws Exception {
+	void testSign() throws Exception {
 		String pfxCertificate = "/Signature/certificate.pfx";
 		String pfxPassword = "geheim";
 
 		URL pfxURL = ClassLoaderUtils.getResourceURL(pfxCertificate);
-		assertNotNull("PFX file not found", pfxURL);
+		assertNotNull(pfxURL, "PFX file not found");
 		KeyStore keystore = PkiUtil.createKeyStore(pfxURL, pfxPassword, KeystoreType.PKCS12, "junittest");
 		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, pfxPassword, null);
 		if (keymanagers==null || keymanagers.length==0) {
@@ -69,7 +69,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 				fail("unable to retreive alias from PFX file");
 			}
 		}
-		assertNotNull((aliases != null) ? ("found aliases "+Arrays.asList(aliases)+" in PFX file") : "no aliases found in PFX file", privateKey);
+		assertNotNull(privateKey, (aliases != null) ? ("found aliases "+Arrays.asList(aliases)+" in PFX file") : "no aliases found in PFX file");
 
 		pipe.setKeystore("/Signature/certificate.pfx");
 		pipe.setKeystorePassword(pfxPassword);
@@ -78,13 +78,13 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
-		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertFalse(prr.getResult().isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(testSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void testWithKeystoreAndKeyPairHavingDifferentPasswords() throws Exception {
+	void testWithKeystoreAndKeyPairHavingDifferentPasswords() throws Exception {
 		pipe.setKeystore("/Signature/ks_multipassword.jks");
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreType(KeystoreType.JKS);
@@ -94,13 +94,13 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
-		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertFalse(prr.getResult().isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(multipasswordKSSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void tryUsingSamePasswordForKeystoreAndKeyPairHavingDifferentPasswords() {
+	void tryUsingSamePasswordForKeystoreAndKeyPairHavingDifferentPasswords() {
 		pipe.setKeystore("/Signature/ks_multipassword.jks");
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreType(KeystoreType.JKS);
@@ -111,7 +111,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	}
 
 	@Test
-	public void testWithKeystoreHavingMultipleEntriesWithSamePassword() throws Exception {
+	void testWithKeystoreHavingMultipleEntriesWithSamePassword() throws Exception {
 		pipe.setKeystore("/Signature/ks_multientry_samepassword.jks");
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreType(KeystoreType.JKS);
@@ -121,14 +121,14 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
-		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertFalse(prr.getResult().isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(multipasswordKSSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 
 	}
 
 	@Test
-	public void testTargetingSpecificKeyPairInMultiEntryKeystore() throws Exception {
+	void testTargetingSpecificKeyPairInMultiEntryKeystore() throws Exception {
 		pipe.setKeystore("/Signature/ks_multientry_differentpassword.jks");
 		pipe.setKeystorePassword("geheim");
 		pipe.setKeystoreType(KeystoreType.JKS);
@@ -138,27 +138,27 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
-		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertFalse(prr.getResult().isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(multipasswordKSSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 
 	}
 
 	@Test
-	public void testSignPem() throws Exception {
+	void testSignPem() throws Exception {
 		pipe.setKeystore("/Signature/privateKey.key");
 		pipe.setKeystoreType(KeystoreType.PEM);
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
 
-		assertFalse("base64 signature should not be binary", prr.getResult().isBinary()); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
+		assertFalse(prr.getResult().isBinary(), "base64 signature should not be binary"); // Base64 is meant to be able to handle data as String. Having it as bytes causes wrong handling, e.g. as parameters to XSLT
 		assertEquals(testSignature, prr.getResult().asString());
 		assertEquals("success", prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void testVerifyOK() throws Exception {
+	void testVerifyOK() throws Exception {
 		pipe.setAction(Action.VERIFY);
 		pipe.setKeystore("/Signature/certificate.pfx");
 		pipe.setKeystorePassword("geheim");
@@ -178,7 +178,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	}
 
 	@Test
-	public void testVerifyNotOK() throws Exception {
+	void testVerifyNotOK() throws Exception {
 		pipe.setAction(Action.VERIFY);
 		pipe.setKeystore("/Signature/certificate.pfx");
 		pipe.setKeystorePassword("geheim");
@@ -197,7 +197,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 	}
 
 	@Test
-	public void testVerifyOKPEM() throws Exception {
+	void testVerifyOKPEM() throws Exception {
 		pipe.setAction(Action.VERIFY);
 		pipe.setKeystore("/Signature/certificate.crt");
 		pipe.setKeystoreType(KeystoreType.PEM);

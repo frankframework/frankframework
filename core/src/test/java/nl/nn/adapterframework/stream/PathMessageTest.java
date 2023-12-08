@@ -4,20 +4,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 
 import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class PathMessageTest {
+
+	@TempDir
+	public static Path testFolder;
+
 	protected Logger log = LogUtil.getLogger(this);
 
 	protected String testString = MessageTest.testString;
-	protected String testStringFile = MessageTest.testStringFile;
 	protected int testStringLength = 116;
 
 	private final String[][] wires = {
@@ -28,9 +32,8 @@ public class PathMessageTest {
 
 	@Test
 	public void testSerialize() throws Exception {
-		TemporaryFolder folder = new TemporaryFolder();
-		folder.create();
-		File source = folder.newFile();
+		File folder = new File(testFolder.toString());
+		File source = File.createTempFile("junit", null, folder);
 		MessageTest.writeContentsToFile(source, testString);
 
 		Message in = new PathMessage(source.toPath(), new MessageContext().withCharset("UTF-8"));

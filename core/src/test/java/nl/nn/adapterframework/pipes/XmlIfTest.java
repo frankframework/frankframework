@@ -2,11 +2,11 @@ package nl.nn.adapterframework.pipes;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -34,7 +34,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void nullXPathExpressionTest() throws Exception{
+	void nullXPathExpressionTest() throws Exception{
 		pipe.setXpathExpression(null);
 		pipe.configure();
 		pipe.start();
@@ -44,7 +44,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void emptySessionKeyTest() throws Exception {
+	void emptySessionKeyTest() throws Exception {
 		pipe.setSessionKey("");
 		configureAndStartPipe();
 
@@ -53,7 +53,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void someSessionKeyTest() throws Exception {
+	void someSessionKeyTest() throws Exception {
 		pipe.setSessionKey("test");
 		configureAndStartPipe();
 
@@ -65,7 +65,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void expressionValueTest() throws Exception {
+	void expressionValueTest() throws Exception {
 		pipe.setExpressionValue("test");
 		configureAndStartPipe();
 
@@ -74,7 +74,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void emptySessionKeyNullInputTest() throws Exception {
+	void emptySessionKeyNullInputTest() throws Exception {
 		pipe.setSessionKey("");
 		configureAndStartPipe();
 
@@ -83,7 +83,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void invalidXPathExpressionTest() throws Exception {
+	void invalidXPathExpressionTest() throws Exception {
 		pipe.setXpathExpression("someexpression");
 		configureAndStartPipe();
 
@@ -92,7 +92,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void emptyRegexTest() throws Exception {
+	void emptyRegexTest() throws Exception {
 		pipe.setRegex("");
 		configureAndStartPipe();
 
@@ -101,7 +101,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void someRegexTextTest() throws Exception {
+	void someRegexTextTest() throws Exception {
 		pipe.setRegex("some");
 		pipe.configure();
 		pipe.start();
@@ -111,7 +111,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void emptyXPathExpressionTest() throws Exception {
+	void emptyXPathExpressionTest() throws Exception {
 		pipe.setXpathExpression("");
 		configureAndStartPipe();
 
@@ -120,7 +120,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void emptyXPathExpressionWithEmptyExpressionValueTest() throws Exception {
+	void emptyXPathExpressionWithEmptyExpressionValueTest() throws Exception {
 		pipe.setXpathExpression("");
 		pipe.setExpressionValue("");
 		configureAndStartPipe();
@@ -130,7 +130,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void inputMatchesWithRegexTest() throws Exception {
+	void inputMatchesWithRegexTest() throws Exception {
 		pipe.setRegex("test123");
 		pipe.setExpressionValue("");
 		configureAndStartPipe();
@@ -139,7 +139,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void inputMatchesExpressionValueTest() throws Exception {
+	void inputMatchesExpressionValueTest() throws Exception {
 		pipe.setExpressionValue("test123");
 		configureAndStartPipe();
 
@@ -148,7 +148,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void invalidXPathExpressionValueTest() throws Exception {
+	void invalidXPathExpressionValueTest() throws Exception {
 		pipe.setXpathExpression("");
 		configureAndStartPipe();
 
@@ -157,7 +157,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void testWithInvalidThenPipe() throws Exception {
+	void testWithInvalidThenPipe() throws Exception {
 		String pipeName = "someText";
 		pipe.setThenForwardName(pipeName);
 		pipe.registerForward(new PipeForward(pipeName,null));
@@ -168,7 +168,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void testWithInvalidElsePipe() throws Exception {
+	void testWithInvalidElsePipe() throws Exception {
 		String pipeName = "someText";
 		pipe.setElseForwardName(pipeName);
 		pipe.registerForward(new PipeForward(pipeName,null));
@@ -179,7 +179,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void someXMLInputEmptyExpressionValue() throws Exception {
+	void someXMLInputEmptyExpressionValue() throws Exception {
 		pipe.setXpathExpression("/root");
 		pipe.setExpressionValue("");
 		pipe.configure();
@@ -190,7 +190,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void someXMLInput() throws Exception {
+	void someXMLInput() throws Exception {
 		pipe.setXpathExpression("/root");
 		pipe.setExpressionValue("test");
 		configureAndStartPipe();
@@ -200,7 +200,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void someXMLInputNotEqualtoExpressionValue() throws Exception {
+	void someXMLInputNotEqualtoExpressionValue() throws Exception {
 		pipe.setXpathExpression("/root");
 		pipe.setExpressionValue("test");
 		configureAndStartPipe();
@@ -210,7 +210,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void someEmptyXMLInputTest() throws Exception {
+	void someEmptyXMLInputTest() throws Exception {
 		pipe.setXpathExpression("/root");
 		pipe.setExpressionValue("");
 		configureAndStartPipe();
@@ -220,7 +220,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void testXsltVersion3() throws Exception {
+	void testXsltVersion3() throws Exception {
 		pipe.setXsltVersion(3);
 		// The '||' operator is used to concatenate the string representation of two values. This operator is new to XPath 3.0.
 		pipe.setXpathExpression("/company/office/employee/first_name = ('Joh' || 'n')");
@@ -231,7 +231,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void someXMLInputNotEqualtoXPath() throws Exception {
+	void someXMLInputNotEqualtoXPath() throws Exception {
 		pipe.setXpathExpression("/test");
 		pipe.setExpressionValue("");
 		configureAndStartPipe();
@@ -241,7 +241,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void xsltVersion1Success() throws Exception {
+	void xsltVersion1Success() throws Exception {
 		pipe.setXpathExpression("number(count(/results/result[contains(@name , 'test')]))>1");
 		pipe.setXsltVersion(1);
 		configureAndStartPipe();
@@ -250,18 +250,20 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
 	}
 
-	@Test(expected = ConfigurationException.class)
-	public void xsltVersion1Error() throws Exception {
-		pipe.setXpathExpression("number(count(/results/result[contains(@name , lower-case('test'))]))>1");
-		pipe.setXsltVersion(1); //current default
-		configureAndStartPipe();
+	@Test
+	void xsltVersion1Error() throws Exception {
+		assertThrows(ConfigurationException.class, () -> {
+			pipe.setXpathExpression("number(count(/results/result[contains(@name , lower-case('test'))]))>1");
+			pipe.setXsltVersion(1); //current default
+			configureAndStartPipe();
 
-		PipeRunResult pipeRunResult = doPipe(pipe, "<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
-		assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+			PipeRunResult pipeRunResult = doPipe(pipe, "<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
+			assertEquals(pipeForwardThen, pipeRunResult.getPipeForward().getName());
+		});
 	}
 
 	@Test
-	public void xsltVersion2Success() throws Exception {
+	void xsltVersion2Success() throws Exception {
 		pipe.setXpathExpression("number(count(/results/result[contains(@name , lower-case('test'))]))>1");
 		pipe.setXsltVersion(2); //current default
 		configureAndStartPipe();
@@ -271,7 +273,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void dummyNamedElsePipe() throws Exception {
+	void dummyNamedElsePipe() throws Exception {
 		pipe.setXpathExpression("/test");
 		pipe.setElseForwardName("test");
 		configureAndStartPipe();
@@ -281,7 +283,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void dummyNamedThenPipe() throws Exception {
+	void dummyNamedThenPipe() throws Exception {
 		pipe.setXpathExpression("/root");
 		pipe.setThenForwardName("test");
 		configureAndStartPipe();
@@ -291,7 +293,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void spaceInputOnValidThenPipeTest() throws Exception {
+	void spaceInputOnValidThenPipeTest() throws Exception {
 		pipe.setThenForwardName("then");
 		configureAndStartPipe();
 
@@ -300,7 +302,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void spaceInputOnInvalidThenPipeTest() throws Exception {
+	void spaceInputOnInvalidThenPipeTest() throws Exception {
 		String pipeName = "test123";
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
@@ -310,7 +312,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void tabInputOnValidThenPipeTest() throws Exception {
+	void tabInputOnValidThenPipeTest() throws Exception {
 		pipe.setThenForwardName("then");
 		configureAndStartPipe();
 
@@ -319,7 +321,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void tabInputOnInvalidThenPipeTest() throws Exception {
+	void tabInputOnInvalidThenPipeTest() throws Exception {
 		String pipeName = "test1";
 		pipe.setThenForwardName(pipeName);
 		configureAndStartPipe();
@@ -329,7 +331,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void emptyNamespaceDefsTest() {
+	void emptyNamespaceDefsTest() {
 		String pipeName = "test1";
 		pipe.setThenForwardName(pipeName);
 		pipe.setXpathExpression("xs:boolean(count(/root/dummy) > 1)");
@@ -339,7 +341,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void namespaceDefsTestTrue() throws Exception {
+	void namespaceDefsTestTrue() throws Exception {
 		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
 		String pipeName = "test1";
 		pipe.setThenForwardName(pipeName);
@@ -353,7 +355,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void namespaceDefsTestFalse() throws Exception {
+	void namespaceDefsTestFalse() throws Exception {
 		String input = "<root><dummy>true</dummy><dummy>true</dummy></root>";
 		String pipeName = "test1";
 		pipe.setElseForwardName(pipeName);
@@ -367,7 +369,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void namespaceDefsTestEmptyBooleanCheck() throws Exception {
+	void namespaceDefsTestEmptyBooleanCheck() throws Exception {
 		String pipeName = "test1";
 		pipe.setElseForwardName(pipeName);
 		pipe.registerForward(new PipeForward(pipeName,null));
@@ -379,7 +381,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void testNullInput() throws Exception {
+	void testNullInput() throws Exception {
 		String pipeName = "test1";
 		pipe.setElseForwardName(pipeName);
 		pipe.registerForward(new PipeForward(pipeName,null));
@@ -390,7 +392,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void testWithParameter() throws Exception {
+	void testWithParameter() throws Exception {
 		String elsePipeName = "test1";
 		String thenPipeName = "test2";
 		pipe.setElseForwardName(elsePipeName);
@@ -408,7 +410,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void testWithParameterEquals() throws Exception {
+	void testWithParameterEquals() throws Exception {
 		String elsePipeName = "test1";
 		String thenPipeName = "test2";
 		pipe.setElseForwardName(elsePipeName);
@@ -427,7 +429,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void testWithMultipleParameters() throws Exception {
+	void testWithMultipleParameters() throws Exception {
 		String elsePipeName = "test1";
 		String thenPipeName = "test2";
 		pipe.setElseForwardName(elsePipeName);
@@ -450,7 +452,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void testWithParameterThatGetsValueFromInput() throws Exception {
+	void testWithParameterThatGetsValueFromInput() throws Exception {
 		String elsePipeName = "test1";
 		String thenPipeName = "test2";
 		pipe.setElseForwardName(elsePipeName);

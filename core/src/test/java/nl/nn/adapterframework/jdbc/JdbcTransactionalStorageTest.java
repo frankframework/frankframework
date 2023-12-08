@@ -17,7 +17,7 @@ package nl.nn.adapterframework.jdbc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -31,14 +31,13 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.zip.DeflaterOutputStream;
 
-import nl.nn.adapterframework.dbms.JdbcException;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
 public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
@@ -201,16 +200,12 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testRetrieveObjectWithADifferentColumnNotCompressed() throws Exception {
-		assertThrows("unknown compression method", JdbcException.class, () -> {
-			testRetrieveObjectWithADifferentColumnHelper(false);
-		});
+		assertThrows(JdbcException.class, () -> testRetrieveObjectWithADifferentColumnHelper(false));
 	}
 
 	@Test
 	public void testRetrieveObjectWithADifferentColumn() throws Exception {
-		assertThrows("invalid stream header", JdbcException.class, () -> {
-			testRetrieveObjectWithADifferentColumnHelper(true);
-		});
+		assertThrows(JdbcException.class, () -> testRetrieveObjectWithADifferentColumnHelper(true));
 	}
 
 	public void testRetrieveObjectWithADifferentColumnHelper(boolean blobsCompressed) throws Exception {

@@ -3,10 +3,10 @@ package nl.nn.adapterframework.jta.btm;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.Field;
 import java.nio.channels.FileChannel;
@@ -33,8 +33,8 @@ import nl.nn.adapterframework.jdbc.TransactionManagerTestBase;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.util.AppConstants;
-import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.DbmsUtil;
+import nl.nn.adapterframework.util.JdbcUtil;
 
 public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase {
 

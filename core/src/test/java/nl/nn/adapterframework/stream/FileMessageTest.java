@@ -8,7 +8,6 @@ import java.io.File;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
 
 import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.util.LogUtil;
@@ -27,9 +26,8 @@ public class FileMessageTest {
 
 	@Test
 	public void testSerialize() throws Exception {
-		TemporaryFolder folder = new TemporaryFolder();
-		folder.create();
-		File source = folder.newFile();
+		File folder = new File("/tempdir/");
+		File source = File.createTempFile("junit", null, folder);
 		MessageTest.writeContentsToFile(source, testString);
 
 		Message in = new FileMessage(source, "UTF-8");

@@ -17,11 +17,11 @@ package nl.nn.adapterframework.http;
 
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.spy;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -36,7 +36,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 	}
 
 	@Test
-	public void relativeUrl() throws Throwable {
+	void relativeUrl() throws Throwable {
 		RestSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 
 		sender.setMethodType(HttpMethod.GET);
@@ -47,7 +47,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 	}
 
 	@Test
-	public void simpleMockedHttpGet() throws Throwable {
+	void simpleMockedHttpGet() throws Throwable {
 		RestSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
@@ -63,7 +63,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 	}
 
 	@Test
-	public void simpleMockedHttpPost() throws Throwable {
+	void simpleMockedHttpPost() throws Throwable {
 		RestSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo this is my message");
 
