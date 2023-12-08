@@ -302,6 +302,21 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
+	public void xpathNodeText() throws Exception {
+		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
+		String expected = "Euro € single quote ' double quote \"";
+
+		setXpathExpression("request/g");
+		pipe.configure();
+		pipe.start();
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String result = Message.asMessage(prr.getResult()).asString();
+
+		assertResultsAreCorrect(expected, result, session);
+	}
+
+	@Test
 	public void xpathAttrText() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = "Euro € single quote ' double quote escaped \" newline escaped \n";
