@@ -343,8 +343,8 @@ export class AppService {
   configurations: Configuration[] = [];
   updateConfigurations(configurations: Configuration[]) {
     const updatedConfigurations: Configuration[] = [];
-    for (var i in configurations) {
-      var config = configurations[i];
+    for (let i in configurations) {
+      let config = configurations[i];
       if (config.name.startsWith("IAF_"))
         updatedConfigurations.unshift(config);
       else
@@ -436,7 +436,7 @@ export class AppService {
   }
 
   updateAdapterSummary(routeQueryParams: ParamMap, configurationName?: string) {
-    var updated = (new Date().getTime());
+    let updated = (new Date().getTime());
     if (updated - 3000 < this.lastUpdated && !configurationName) { //3 seconds
       clearTimeout(this.timeout);
       this.timeout = window.setTimeout(() => this.updateAdapterSummary(routeQueryParams), 1000);
@@ -445,7 +445,7 @@ export class AppService {
     if (configurationName == undefined)
       configurationName = routeQueryParams.get("configuration") ?? 'All';
 
-    var adapterSummary: Record<Lowercase<RunState>, number> = {
+    let adapterSummary: Record<Lowercase<RunState>, number> = {
       started: 0,
       stopped: 0,
       starting: 0,
@@ -454,7 +454,7 @@ export class AppService {
       exception_stopping: 0,
       error: 0
     };
-    var receiverSummary: Record<Lowercase<RunState>, number> = {
+    let receiverSummary: Record<Lowercase<RunState>, number> = {
       started: 0,
       stopped: 0,
       starting: 0,
@@ -463,15 +463,15 @@ export class AppService {
       exception_stopping: 0,
       error: 0
     };
-    var messageSummary: Record<Lowercase<MessageLevel>, number> = {
+    let messageSummary: Record<Lowercase<MessageLevel>, number> = {
       info: 0,
       warn: 0,
       error: 0
     };
 
-    var allAdapters = this.adapters;
+    let allAdapters = this.adapters;
     for (const adapterName in allAdapters) {
-      var adapter = allAdapters[adapterName];
+      let adapter = allAdapters[adapterName];
 
       if (adapter.configuration == configurationName || configurationName == 'All') { // Only adapters for active config
         adapterSummary[adapter.state]++;
@@ -479,7 +479,7 @@ export class AppService {
           receiverSummary[adapter.receivers[+i].state.toLowerCase() as Lowercase<RunState>]++;
         }
         for (const i in adapter.messages) {
-          var level = adapter.messages[+i].level.toLowerCase() as Lowercase<MessageLevel>;
+          let level = adapter.messages[+i].level.toLowerCase() as Lowercase<MessageLevel>;
           messageSummary[level]++;
         }
       }
@@ -529,5 +529,17 @@ export class AppService {
       return window.navigator.languages[0];
     }
     return window.navigator.language;
+  }
+
+  copyToClipboard(text: string) {
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.setAttribute('readonly', '');
+    el.style.position = 'absolute';
+    el.style.left = '-9999px';
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy'); // TODO: soon deprecated but no real solution yet
+    document.body.removeChild(el);
   }
 }

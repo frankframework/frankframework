@@ -73,15 +73,7 @@ export class ConfigurationsShowComponent implements OnInit {
 
   clipboard() {
     if (this.configuration) {
-      let el = document.createElement('textarea');
-      el.value = this.configuration;
-      el.setAttribute('readonly', '');
-      el.style.position = 'absolute';
-      el.style.left = '-9999px';
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy'); // TODO: soon deprecated
-      document.body.removeChild(el);
+      this.appService.copyToClipboard(this.configuration);
     }
   }
 
