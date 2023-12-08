@@ -38,24 +38,24 @@
 			</pipe>
 
 			<pipe name="namespaceAware" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetName="XsltPipe/namespaceAware.xsl" namespaceAware="true">
+				styleSheetName="XsltPipe/namespaceAware.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
 			<pipe name="passThrough" className="nl.nn.adapterframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			
+
 			<pipe name="copy" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/copy.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			
+
 			<pipe name="copySkipEmptyTags" className="nl.nn.adapterframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/copy.xsl" skipEmptyTags="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			
+
 			<pipe name="StylesheetNameSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
 				sessionKey="stylesheetLocation" value="XsltPipe/GenericFunctions.xsl">
 				<forward name="success" path="SetSessionKeyName" />
@@ -63,7 +63,7 @@
 			</pipe>
 
 			<pipe name="SetSessionKeyName" className="nl.nn.adapterframework.pipes.XsltPipe"
-				styleSheetNameSessionKey="stylesheetLocation" namespaceAware="true"
+				styleSheetNameSessionKey="stylesheetLocation"
 				styleSheetName="XsltPipe/TransformXSLT1.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
