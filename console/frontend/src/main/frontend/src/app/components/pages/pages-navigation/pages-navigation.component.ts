@@ -21,6 +21,6 @@ export class PagesNavigationComponent {
   }
 
   getClassByRoute(className: string, routeState: string){
-    return { [className]: this.router.url.includes(routeState) }
+    return { [className]: this.router.url.split("?")[0].includes(routeState) }
   }
 }
