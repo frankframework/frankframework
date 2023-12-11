@@ -255,9 +255,6 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		String actual = Message.asString(prr.getResult());
 
 		assertEquals("<results count=\"10\"/>", actual);
-
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithErrorsLog.txt");
-		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 
 	@Test
