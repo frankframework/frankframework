@@ -407,29 +407,41 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			results.append(itemResult).append("\n");
 		}
 
-		public void waitForResults() throws SenderException {
+		public void waitForResults() throws SenderException, IOException {
 			if (isParallel()) {
 				try {
 					guard.waitForAllResources();
-					int count = 0;
-					for (ParallelSenderExecutor pse : executorList) {
-						count++;
-						String itemResult;
-						if (pse.getThrowable() == null) {
-							SenderResult senderResult = pse.getReply();
-							if (senderResult.isSuccess()) {
-								itemResult = senderResult.getResult().asString();
-							} else {
-								itemResult = "<exception>"+ XmlEncodingUtils.encodeChars(senderResult.getResult().asString())+"</exception>";
-							}
-						} else {
-							itemResult = "<exception>"+ XmlEncodingUtils.encodeChars(pse.getThrowable().getMessage())+"</exception>";
-						}
-						addResult(count, pse.getRequest(), itemResult);
-					}
-				} catch (InterruptedException | IOException e) {
+					collectResultsOrThrowExceptions();
+				} catch (InterruptedException e) {
 					throw new SenderException("was interrupted",e);
 				}
+			}
+		}
+
+		private void collectResultsOrThrowExceptions() throws SenderException, IOException {
+			int count = 0;
+			List<Throwable> exceptions = new ArrayList<>();
+			for(ParallelSenderExecutor pse : executorList) {
+				count++;
+				final String itemResult;
+				if(pse.getThrowable() == null) {
+					SenderResult senderResult = pse.getReply();
+					if(senderResult.isSuccess()) {
+						itemResult = senderResult.getResult().asString();
+					} else {
+						itemResult = "<exception>" + XmlEncodingUtils.encodeChars(senderResult.getResult().asString()) + "</exception>";
+						exceptions.add(new SenderException(senderResult.getResult().asString()));
+					}
+				} else {
+					itemResult = "<exception>" + XmlEncodingUtils.encodeChars(pse.getThrowable().getMessage()) + "</exception>";
+					exceptions.add(pse.getThrowable());
+				}
+				addResult(count, pse.getRequest(), itemResult);
+			}
+			if(!isIgnoreExceptions() && !exceptions.isEmpty()) {
+				SenderException se = new SenderException("an error occurred during parallel execution");
+				exceptions.stream().forEach(se::addSuppressed);
+				throw se;
 			}
 		}
 
