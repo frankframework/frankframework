@@ -105,7 +105,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	@Test
 	public void testBasic() throws Exception {
 		testBasic(false);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResult.log");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 	@Test
@@ -126,7 +126,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	@Test
 	public void testBasicMaxItems() throws Exception {
 		testBasicMaxItems(false);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResult.log");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 	@Test
@@ -148,7 +148,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	@Test
 	public void testFullBlocks() throws Exception {
 		testFullBlocks(false);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResult.log");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 	@Test
@@ -169,7 +169,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	@Test
 	public void testPartialFinalBlock() throws Exception {
 		testPartialFinalBlock(false);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResult.log");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 	@Test
@@ -191,7 +191,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	@Test
 	public void testPartialFinalBlockMaxItems() throws Exception {
 		testPartialFinalBlockMaxItems(false);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResult.log");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 	@Test
@@ -235,7 +235,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
 		configureAndStartPipe();
 		testTenLines();
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResult.log");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 
@@ -256,7 +256,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 		assertEquals("<results count=\"10\"/>", actual);
 
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithErrorsResult.log");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithErrorsLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 
@@ -278,7 +278,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 		assertEquals(expected, actual);
 
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithErrorsResult.log");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithErrorsLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 
@@ -299,7 +299,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 		assertEquals("<results count=\"10\"/>", actual);
 
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithExceptionsResult.log");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithExceptionsLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 
@@ -321,7 +321,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 		assertEquals(expected, actual);
 
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithExceptionsResult.log");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithExceptionsLog.txt");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 }
