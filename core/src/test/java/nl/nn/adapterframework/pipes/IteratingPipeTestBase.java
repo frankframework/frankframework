@@ -268,6 +268,23 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 		// Act
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithErrors.txt");
+
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
+		assertTrue(e.getMessage().contains("an error occurred during parallel execution"));
+	}
+
+	@Test
+	public void testParallelCollectResultsWithIgnoredErrors() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setParallel(true);
+		pipe.setMaxChildThreads(1);
+		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
+		pipe.setCollectResults(true);
+		pipe.setIgnoreExceptions(true);
+		configureAndStartPipe();
+
+		// Act
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithErrors.txt");
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithErrorsResult.xml");
 
 		PipeRunResult prr = doPipe(pipe, input, session);
@@ -304,6 +321,23 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		pipe.setMaxChildThreads(1);
 		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
 		pipe.setCollectResults(true);
+		configureAndStartPipe();
+
+		// Act
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithExceptions.txt");
+
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
+		assertTrue(e.getMessage().contains("an error occurred during parallel execution"));
+	}
+
+	@Test
+	public void testParallelCollectResultsWithIgnoredExceptions() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setParallel(true);
+		pipe.setMaxChildThreads(1);
+		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
+		pipe.setCollectResults(true);
+		pipe.setIgnoreExceptions(true);
 		configureAndStartPipe();
 
 		// Act
