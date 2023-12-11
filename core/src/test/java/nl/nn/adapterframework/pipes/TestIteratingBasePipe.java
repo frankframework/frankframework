@@ -6,11 +6,11 @@ import java.util.Map;
 import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.pipes.TestIteratingPipe.IteratingTestPipe;
+import nl.nn.adapterframework.pipes.TestIteratingBasePipe.IteratingTestPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.ReaderLineIterator;
 
-public class TestIteratingPipe extends IteratingPipeTestBase<IteratingTestPipe> {
+public class TestIteratingBasePipe extends IteratingPipeTestBase<IteratingTestPipe> {
 
 	final class IteratingTestPipe extends IteratingPipe<String> {
 
