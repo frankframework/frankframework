@@ -47,7 +47,7 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 
 				ErrorMessageFormatter emf = new ErrorMessageFormatter();
 				Message errorMessage = emf.format(e.getMessage(), e.getCause(), pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
-				log.warn("exception occured, forwarding to exception-forward [{}], exception:\n", PipeForward.EXCEPTION_FORWARD_NAME, e);
+				log.info("exception occured, forwarding to exception-forward [{}], exception:\n", PipeForward.EXCEPTION_FORWARD_NAME, e);
 				return new PipeRunResult(pipe.getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), errorMessage);
 			}
 			throw e;
