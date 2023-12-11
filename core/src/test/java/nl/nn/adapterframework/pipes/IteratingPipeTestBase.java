@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.IOException;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
-import nl.nn.adapterframework.core.IDataIterator;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -19,34 +19,10 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.util.ReaderLineIterator;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> extends PipeTestBase<P> {
 
 	protected StringBuilder resultLog;
-
-	private final class TestIteratingPipe extends IteratingPipe<String> {
-
-		@Override
-		protected IDataIterator<String> getIterator(Message input, PipeLineSession session, Map<String, Object> threadContext) throws SenderException {
-			try {
-				if (input.isEmpty()) {
-					return null;
-				}
-				return new ReaderLineIterator(input.asReader());
-			} catch (IOException e) {
-				throw new SenderException(e);
-			}
-		}
-
-	}
-
-	@Override
-	public P createPipe() {
-		return (P)new TestIteratingPipe();
-	}
 
 	protected ISender getElementRenderer(boolean blockEnabled) {
 		resultLog = new StringBuilder();
