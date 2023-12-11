@@ -10,14 +10,11 @@ import nl.nn.adapterframework.util.XmlEncodingUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPipe> {
-
 	@Override
 	public EsbSoapWrapperPipe createPipe() {
 		EsbSoapWrapperPipe pipe = new EsbSoapWrapperPipe();
 		return pipe;
 	}
-
-
 	@Override
 	public void addParam(String name, String value) {
 		Parameter param = new Parameter();
@@ -25,8 +22,6 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		param.setValue(value);
 		pipe.addParameter(param);
 	}
-
-
 	@Test
 	public void testWrapCMH2() {
 		pipe.setOutputNamespace("http://nn.nl/XSD/Archiving/Document/3/GetDocumentAndAttributes/1");
@@ -52,7 +47,6 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 //		TestAssertions.assertXpathValueEquals("operationVersion-value", result, "**/Envelope/Header/MessageHeader/Service/Version");
 		TestAssertions.assertXpathValueEquals("OK", 					result, "/Envelope/Body/MessageHeader/Result/Status");
 	}
-
 	@Test
 	public void testWrapFindDocumentsOK() {
 
@@ -72,7 +66,6 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		String errorReason=null;
 		String errorDetailCode=null;
 		String errorDetailText=null;
-
 
 		String destination=messagingLayer+"."+businessDomain+"."+applicationName+"."+serviceName+"."+serviceVersion+"."+operation+"."+operationVersion+"."+paradigm;
 
@@ -127,7 +120,6 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		String errorReason="errorReason-value";
 		String errorDetailCode="errorDetailCode-value";
 		String errorDetailText="<reasons>errorDetailText-value</reasons>";
-
 
 		String destination=messagingLayer+"."+businessDomain+"."+applicationName+"."+serviceName+"."+serviceVersion+"."+operation+"."+operationVersion+"."+paradigm;
 
@@ -184,23 +176,4 @@ public class EsbSoapWrapperPipeTest extends SoapWrapperPipeTest<EsbSoapWrapperPi
 		String result=prr.getResult().asString();
 		System.out.println("result ["+result+"]");
 	}
-
-
-//	@Override
-//	@Test
-//	@Ignore("Must incorporate CMH in test")
-//	public void testBasicUnWrap() throws Exception {
-//		// TODO Auto-generated method stub
-//		super.testBasicWrap();
-//	}
-//
-//
-//	@Override
-//	@Test
-//	@Ignore("Must incorporate CMH in test")
-//	public void testBasicWrapChangeRoot() throws Exception {
-//		// TODO Auto-generated method stub
-//		super.testBasicWrapChangeRoot();
-//	}
-//
 }

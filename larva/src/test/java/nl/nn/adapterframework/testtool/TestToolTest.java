@@ -9,7 +9,6 @@ import java.util.Properties;
 import org.junit.jupiter.api.Test;
 
 public class TestToolTest {
-
 	@Test
 	void decodeUnzipContentBetweenKeysFromIgnoreMap() {
         String propertyName = "decodeUnzipContentBetweenKeys";
@@ -37,6 +36,7 @@ public class TestToolTest {
         assertEquals(identifier.get("key2"), key2);
         assertEquals(identifier.get("replaceNewlines"), replaceNewlines);
     }
+
 	@Test
 	void canonicaliseFilePathContentBetweenKeysFromIgnoreMap() {
         String propertyName = "canonicaliseFilePathContentBetweenKeys";

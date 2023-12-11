@@ -2,14 +2,15 @@ package nl.nn.adapterframework.pipes;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.URL;
 
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -133,8 +134,8 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
 		doPipe(new UrlMessage(zip));
 		String[] files = new File(folder + "/Folder/innerFolder").list();
-		Assertions.assertEquals(1, files.length);
-		Assertions.assertTrue(files[0].contains("innerFile"));
+		assertEquals(1, files.length);
+		assertTrue(files[0].contains("innerFile"));
 	}
 
 	@Test
@@ -145,10 +146,10 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
 		doPipe(new UrlMessage(zip));
 		String[] files = new File(folder + "/MyProjects/").list();
-		Assertions.assertEquals(5, files.length);
+		assertEquals(5, files.length);
 
 		files = new File(folder + "/MyProjects/classes/xml/xsl/").list();
-		Assertions.assertEquals(2, files.length);
+		assertEquals(2, files.length);
 	}
 
 	@Test
@@ -161,7 +162,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
 		doPipe(new UrlMessage(zip));
 		String[] files = new File(folder.getPath()).list();
-		Assertions.assertEquals(6, files.length);
+		assertEquals(6, files.length);
 	}
 
 	@Test
@@ -171,7 +172,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/input.zip");
 		doPipe(new UrlMessage(zip));
 		String[] files = new File(folder.getPath()).list();
-		Assertions.assertEquals(6, files.length);
+		assertEquals(6, files.length);
 	}
 
 	@Test
@@ -184,7 +185,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		URL zip = TestFileUtils.getTestFileURL("/Unzip/folder.zip");
 		doPipe(new UrlMessage(zip));
 		File toBePresent = new File(folder + "/Folder/innerFolder/innerFile.txt");
-		Assertions.assertTrue(toBePresent.isFile());
+		assertTrue(toBePresent.isFile());
 	}
 
 	@Test
@@ -197,7 +198,7 @@ public class UnzipPipeTest extends PipeTestBase<UnzipPipe> {
 		doPipe(new UrlMessage(zip));
 
 		File toBePresent = new File(folder + "/Folder/innerFolder/innerFile.txt");
-		Assertions.assertTrue(toBePresent.exists());
+		assertTrue(toBePresent.exists());
 	}
 
 	@Test

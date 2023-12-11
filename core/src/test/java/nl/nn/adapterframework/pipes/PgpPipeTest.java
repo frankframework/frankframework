@@ -1,10 +1,13 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -20,13 +23,8 @@ import nl.nn.adapterframework.util.StringUtil;
 public class PgpPipeTest {
 
 	private PipeLineSession session;
-
 	protected PGPPipe encryptPipe;
 	protected PGPPipe decryptPipe;
-
-	private String expectation;
-	private String[] encryptParams, decryptParams;
-
 	private final String MESSAGE = "My Secret!!";
 	private final String PGP_FOLDER = "PGP/";
 
@@ -65,9 +63,6 @@ public class PgpPipeTest {
 	}
 
 	public void initPgpPipeTest(String name, String expectation, String[] encryptParams, String[] decryptParams) {
-		this.expectation = expectation;
-		this.encryptParams = encryptParams;
-		this.decryptParams = decryptParams;
 	}
 
 	@MethodSource("data")
@@ -93,11 +88,12 @@ public class PgpPipeTest {
 			byte[] result = decryptionResult.getResult().asByteArray();
 
 			// Assert decrypted message equals to the original message
-			Assertions.assertEquals(MESSAGE, new String(result));
-			Assertions.assertEquals("success", expectation);
+			assert result != null;
+			assertEquals(MESSAGE, new String(result));
+			assertEquals("success", expectation);
 		} catch (Exception e) {
 			if (checkExceptionClass(e, expectation)) {
-				Assertions.assertTrue(true);
+				assertTrue(true);
 			} else {
 				throw e;
 			}
@@ -190,7 +186,7 @@ public class PgpPipeTest {
 	 * @param secretMessage Plaintext of the same message.
 	 */
 	private void assertMessage(String message, String secretMessage) {
-		Assertions.assertTrue(message.startsWith("-----BEGIN PGP MESSAGE-----"), "Message does not comply with PGP message beginning.");
-		Assertions.assertFalse(message.contains(secretMessage), "Encrypted version contains the secret message.");
+		assertTrue(message.startsWith("-----BEGIN PGP MESSAGE-----"), "Message does not comply with PGP message beginning.");
+		assertFalse(message.contains(secretMessage), "Encrypted version contains the secret message.");
 	}
 }

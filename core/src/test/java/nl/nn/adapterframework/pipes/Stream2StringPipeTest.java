@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import nl.nn.adapterframework.core.PipeRunResult;
-
 import org.junit.jupiter.api.Test;
+
+import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
 
 /**
@@ -16,10 +16,6 @@ import nl.nn.adapterframework.stream.Message;
  * @author <Sina Sen>
  */
 public class Stream2StringPipeTest extends PipeTestBase<Stream2StringPipe> {
-
-	/**
-	* Method: doPipe(Object input, PipeLineSession session)
-	*/
 	@Test
 	void testDoPipeSuccess() throws Exception {
         String myString = "testString";
@@ -28,10 +24,6 @@ public class Stream2StringPipeTest extends PipeTestBase<Stream2StringPipe> {
         PipeRunResult res = doPipe(pipe, m, session);
         assertEquals("testString", res.getResult().asString());
     }
-
-	/**
-	 * Method: doPipe(Object input, PipeLineSession session)
-	 */
 	@Test
 	void testDoPipeFail() throws Exception {
         String myString = "testString";

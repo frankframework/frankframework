@@ -2,8 +2,8 @@ package nl.nn.adapterframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -241,7 +241,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	@Test
 	void emptyParameterList() throws Exception {
 		pipe.setSessionKey("sessionKey");
-		Assertions.assertThrows(PipeRunException.class, () -> testSwitch(new Message("dummy"),"Envelope"), "cannot find forward or pipe named");
+		assertThrows(PipeRunException.class, () -> testSwitch(new Message("dummy"), "Envelope"), "cannot find forward or pipe named");
 	}
 
 	@Test
@@ -280,12 +280,12 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	void configureNotFoundForwardNotRegistered() throws Exception {
 		pipe.setXpathExpression("name(/node()[position()=last()])");
 		pipe.setStyleSheetName("/XmlSwitch/selection.xsl");
-		Assertions.assertThrows(ConfigurationException.class, () -> pipe.configure(), "cannot have both an xpathExpression and a styleSheetName specified");
+		assertThrows(ConfigurationException.class, () -> pipe.configure(), "cannot have both an xpathExpression and a styleSheetName specified");
 	}
 
 	@Test
 	void styleSheetNotExists() throws Exception {
 		pipe.setStyleSheetName("/XmlSwitch/dummy.xsl");
-		Assertions.assertThrows(ConfigurationException.class, () -> pipe.configure(), "cannot find stylesheet");
+		assertThrows(ConfigurationException.class, () -> pipe.configure(), "cannot find stylesheet");
 	}
 }

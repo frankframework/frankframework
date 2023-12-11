@@ -178,8 +178,6 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
-		} catch (AssumptionViolatedException e) {
-			assumeTrue(false,"assumption violated:"+e.getMessage());
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
@@ -196,7 +194,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	void importNotFoundXslt1() throws Exception {
+	void importNotFoundXslt1() {
 		setStyleSheetName("/Xslt/importNotFound/root.no-validate-xsl");
 		setXslt2(false);
 		String errorMessage = null;
@@ -211,7 +209,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	void importNotFoundXslt2() throws Exception {
+	void importNotFoundXslt2() {
 		setStyleSheetName("/Xslt/importNotFound/root2.no-validate-xsl");
 		setXslt2(true);
 		String errorMessage = null;
@@ -226,7 +224,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	void notifyXalanExtensionsIllegalForSaxon() throws ConfigurationException {
+	void notifyXalanExtensionsIllegalForSaxon() {
 		setStyleSheetName("/Xslt/XalanExtension/XalanExtension.xsl");
 		setXslt2(true);
 		String errorMessage = null;
@@ -243,7 +241,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	void illegalXPathExpressionXslt2() throws Exception {
+	void illegalXPathExpressionXslt2() {
 		// error not during configure(), but during doPipe()
 		setXpathExpression("position()='1'");
 		setXslt2(true);
@@ -265,7 +263,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	void illegalXPathExpression2Xslt1() throws Exception {
+	void illegalXPathExpression2Xslt1() {
 		// error not during configure(), but during doPipe()
 		setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
 		setXslt2(false);
@@ -288,7 +286,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	void illegalXPathExpression2Xslt2() throws Exception {
+	void illegalXPathExpression2Xslt2() {
 		// error not during configure(), but during doPipe()
 		setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
 		setXslt2(true);

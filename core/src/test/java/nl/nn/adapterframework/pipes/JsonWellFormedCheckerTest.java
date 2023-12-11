@@ -1,15 +1,15 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.Arrays;
-import java.util.Collection;
+import nl.nn.adapterframework.core.PipeForward;
+import nl.nn.adapterframework.core.PipeRunResult;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import nl.nn.adapterframework.core.PipeForward;
-import nl.nn.adapterframework.core.PipeRunResult;
+import java.util.Arrays;
+import java.util.Collection;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecker> {
 	public String input = null;
@@ -36,7 +36,7 @@ public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecke
 	@MethodSource("data")
 	@ParameterizedTest(name = "{index}: input [ {0} ] forward [{1}]")
 	public void runTest(String input, String forward) throws Exception {
-		initJsonWellFormedCheckerTest(input, forward);
+		initJsonWellFormedCheckerTestData(input, forward);
 		pipe.registerForward( new PipeForward("failure", "path") );
 		pipe.configure();
 		pipe.start();
@@ -44,7 +44,7 @@ public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecke
 		assertEquals(forward, pipeRunResult.getPipeForward().getName());
 	}
 
-	public void initJsonWellFormedCheckerTest(String input, String forward) {
+	public void initJsonWellFormedCheckerTestData(String input, String forward) {
 		this.input = input;
 		this.forward = forward;
 	}

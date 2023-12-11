@@ -1,11 +1,10 @@
 package nl.nn.adapterframework.soap;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import nl.nn.adapterframework.configuration.ConfigurationException;
-
 import org.junit.jupiter.api.Test;
+
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.PipeTestBase;
@@ -62,53 +61,47 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 
 	@Test
 	void validate12Invalid() throws Exception {
-		assertThrows(PipeRunException.class, () -> {
-			configureSoapValidator();
-			pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
-			pipe.setSoapVersion(SoapVersion.SOAP12);
-			pipe.setSoapBody("Request");
-			pipe.configure();
-			pipe.start();
-			String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP;
-			Message input = MessageTestUtils.getMessage(inputFile);
-			String expected = TestFileUtils.getTestFile(inputFile);
-			PipeRunResult prr = doPipe(input);
-			assertEquals(expected, prr.getResult().asString());
-		});
+		configureSoapValidator();
+		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
+		pipe.setSoapVersion(SoapVersion.SOAP12);
+		pipe.setSoapBody("Request");
+		pipe.configure();
+		pipe.start();
+		String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP;
+		Message input = MessageTestUtils.getMessage(inputFile);
+		String expected = TestFileUtils.getTestFile(inputFile);
+
+		assertThrows(PipeRunException.class, () -> doPipe(input));
 	}
 
 	@Test
 	void validate12Invalid_body() throws Exception {
-		assertThrows(PipeRunException.class, () -> {
-			configureSoapValidator();
-			pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
-			pipe.setSoapVersion(SoapVersion.SOAP11);
-			pipe.setSoapBody("Request");
-			pipe.configure();
-			pipe.start();
-			String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP_BODY;
-			Message input = MessageTestUtils.getMessage(inputFile);
-			String expected = TestFileUtils.getTestFile(inputFile);
-			PipeRunResult prr = doPipe(input);
-			assertEquals(expected, prr.getResult().asString());
-		});
+		configureSoapValidator();
+		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
+		pipe.setSoapVersion(SoapVersion.SOAP11);
+		pipe.setSoapBody("Request");
+		pipe.configure();
+		pipe.start();
+		String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP_BODY;
+		Message input = MessageTestUtils.getMessage(inputFile);
+		String expected = TestFileUtils.getTestFile(inputFile);
+
+		assertThrows(PipeRunException.class, () -> doPipe(input));
 	}
 
 	@Test
 	void validate12Unknown_namespace_body() throws Exception {
-		assertThrows(PipeRunException.class, () -> {
-			configureSoapValidator();
-			pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
-			pipe.setSoapVersion(SoapVersion.SOAP11);
-			pipe.setSoapBody("Request");
-			pipe.configure();
-			pipe.start();
-			String inputFile = INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY;
-			Message input = MessageTestUtils.getMessage(inputFile);
-			String expected = TestFileUtils.getTestFile(inputFile);
-			PipeRunResult prr = doPipe(input);
-			assertEquals(expected, prr.getResult().asString());
-		});
+		configureSoapValidator();
+		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
+		pipe.setSoapVersion(SoapVersion.SOAP11);
+		pipe.setSoapBody("Request");
+		pipe.configure();
+		pipe.start();
+		String inputFile = INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY;
+		Message input = MessageTestUtils.getMessage(inputFile);
+		String expected = TestFileUtils.getTestFile(inputFile);
+
+		assertThrows(PipeRunException.class, () -> doPipe(input));
 	}
 
 	@Test

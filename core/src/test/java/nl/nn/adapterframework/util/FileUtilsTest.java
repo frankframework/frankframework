@@ -18,7 +18,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,8 +33,8 @@ public class FileUtilsTest {
 
 	public static String testFolderPath;
 
-	@BeforeEach
-	public void setUp() {
+	@BeforeAll
+	public static void setUpTest() {
 		testFolderPath = testFolder.toString();
 	}
 
