@@ -1,12 +1,13 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe> {
 
@@ -27,11 +28,10 @@ public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe> {
 		assertEquals(dummyDivisor, otherDivisor);
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void testDivisorLessThanTwo() throws Exception {
 		pipe.setDivisor(1);
-		configureAndStartPipe();
-
+		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 	}
 
 	@Test
@@ -42,9 +42,9 @@ public class CounterSwitchPipeTest extends PipeTestBase<CounterSwitchPipe> {
 		assertEquals("2", result.getPipeForward().getName());
 	}
 
-	@Test(expected = ConfigurationException.class)
+	@Test
 	public void testNonExistingForward() throws Exception {
 		pipe.setDivisor(3);
-		configureAndStartPipe();
+		assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 	}
 }

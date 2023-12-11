@@ -2,8 +2,6 @@ package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
 
-import org.junit.Test;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineResult;
@@ -13,6 +11,8 @@ import nl.nn.adapterframework.processors.CorePipeLineProcessor;
 import nl.nn.adapterframework.processors.CorePipeProcessor;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
+
+import org.junit.jupiter.api.Test;
 
 public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
 
@@ -53,5 +53,4 @@ public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
 
 		MatchUtils.assertXmlEquals("<Document><Header>HeaderValue</Header><ActionFound>ActionValue</ActionFound></Document>", pipeLineResult.getResult().asString());
 	}
-
 }

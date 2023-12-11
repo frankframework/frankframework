@@ -1,17 +1,17 @@
 package nl.nn.adapterframework.extensions.fxf;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.extensions.fxf.FxfXmlValidator.Direction;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.validation.XmlValidatorException;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FxfXmlValidatorTest extends PipeTestBase<FxfXmlValidator> {
 

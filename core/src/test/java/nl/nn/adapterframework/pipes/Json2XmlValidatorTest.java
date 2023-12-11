@@ -3,15 +3,15 @@ package nl.nn.adapterframework.pipes;
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.core.IValidator;
@@ -699,7 +699,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		testRecoverableError(DocumentFormat.JSON, false, "failure", "No typeDefinition found for element [d]");
 	}
 	@Test
-	@Ignore("Cannot ignore XML validation failure")
+	@Disabled("Cannot ignore XML validation failure")
 	public void testValidWithWarningsXml2Json() throws Exception {
 		testRecoverableError(DocumentFormat.JSON, true, "warnings", "No typeDefinition found for element [d]");
 	}

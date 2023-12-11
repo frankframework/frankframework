@@ -1,10 +1,9 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -14,28 +13,24 @@ import nl.nn.adapterframework.parameters.Parameter;
 
 public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
-
 	@Override
 	public CompareIntegerPipe createPipe() {
 		return new CompareIntegerPipe();
 	}
 
 	@Test
-	public void sessionKeyDoesNotExist() throws PipeRunException {
-		thrown.expectMessage("Exception on getting [operand1] from session key [1]");
+	public void sessionKeyDoesNotExist() {
 		pipe.setSessionKey1("1");
-		doPipe(pipe,"input", session);
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "input", session), "Exception on getting [operand1] from session key [1]");
 	}
 
 	@Test
 	public void noSessionKey() throws ConfigurationException {
-		thrown.expectMessage("has neither parameter [operand1] nor parameter [operand2] specified");
 		pipe.registerForward(new PipeForward("lessthan", null));
 		pipe.registerForward(new PipeForward("greaterthan", null));
 		pipe.registerForward(new PipeForward("equals", null));
-		pipe.configure();
+
+		assertThrows(ConfigurationException.class, pipe::configure, "has neither parameter [operand1] nor parameter [operand2] specified");
 	}
 
 	@Test
@@ -90,15 +85,14 @@ public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 	}
 
 	@Test
-	public void numberFormatExceptionFromMessageOperand() throws ConfigurationException, PipeRunException {
-		thrown.expectMessage("Exception on getting [operand2] from input");
+	public void numberFormatExceptionFromMessageOperand() throws ConfigurationException {
 		pipe.registerForward(new PipeForward("lessthan", null));
 		pipe.registerForward(new PipeForward("greaterthan", null));
 		pipe.registerForward(new PipeForward("equals", null));
 		pipe.addParameter(new Parameter("operand1", "5"));
 		pipe.configure();
 
-		doPipe(pipe, "non-numeric", session);
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "non-numeric", session), "Exception on getting [operand1] from session key [1]");
 	}
 
 	@Test

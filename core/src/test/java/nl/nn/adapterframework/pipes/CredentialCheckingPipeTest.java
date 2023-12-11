@@ -1,11 +1,12 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -52,20 +53,20 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
         assertEquals(pipe.getDefaultUserid(), dummyString);
     }
 
-    @Test(expected = ConfigurationException.class)
-    public void testNoTargetUserId() throws ConfigurationException {
+    @Test
+    public void testNoTargetUserId() {
         pipe.setTargetPassword("dummyPassword");
-        pipe.configure();
-    }
-
-    @Test(expected = ConfigurationException.class)
-    public void testNoTargetUserPassword() throws ConfigurationException {
-        pipe.setTargetUserid("dummyId");
-        pipe.configure();
+		assertThrows(ConfigurationException.class, pipe::configure);
     }
 
     @Test
-    public void testExistingTarget() throws ConfigurationException {
+	public void testNoTargetUserPassword() {
+        pipe.setTargetUserid("dummyId");
+		assertThrows(ConfigurationException.class, pipe::configure);
+    }
+
+    @Test
+	public void testExistingTarget() {
         try {
             pipe.setTargetPassword("dummyPassword");
             pipe.setTargetUserid("dummyId");
@@ -76,9 +77,9 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
 
     }
 
-    @Test(expected = ConfigurationException.class)
-    public void testNonExisitingTarget() throws ConfigurationException {
-        pipe.configure();
+    @Test
+	public void testNonExisitingTarget() {
+		assertThrows(ConfigurationException.class, () -> pipe.configure());
     }
 
     @Test
@@ -123,6 +124,4 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
 			throw new PipeRunException(pipe, "cannot convert results", e);
 		}
     }
-
-
 }

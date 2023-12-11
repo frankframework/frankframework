@@ -1,16 +1,17 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
+
+import org.junit.jupiter.api.Test;
 
 public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 
@@ -46,7 +47,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, " <test1", session);
-		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+		assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -67,7 +68,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "	<test1", session);
-		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+		assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -99,7 +100,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "test1", session);
-		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+		assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -110,7 +111,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "<test1", session);
-		Assert.assertEquals(pipeName, prr.getPipeForward().getName());
+		assertEquals(pipeName, prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -118,7 +119,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "test", session);
-		Assert.assertEquals(pipeForwardElse, prr.getPipeForward().getName());
+		assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -126,7 +127,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "<test", session);
-		Assert.assertEquals(pipeForwardThen, prr.getPipeForward().getName());
+		assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -134,7 +135,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "", session);
-		Assert.assertEquals(pipeForwardElse, prr.getPipeForward().getName());
+		assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -143,7 +144,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, "", session);
-		Assert.assertEquals(pipeForwardThen, prr.getPipeForward().getName());
+		assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -151,7 +152,7 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, null, session);
-		Assert.assertEquals(pipeForwardElse, prr.getPipeForward().getName());
+		assertEquals(pipeForwardElse, prr.getPipeForward().getName());
 	}
 
 	@Test
@@ -160,6 +161,6 @@ public class IsXmlIfPipeTest extends PipeTestBase<IsXmlPipe> {
 		configureAndStartPipe();
 
 		PipeRunResult prr  = doPipe(pipe, null, session);
-		Assert.assertEquals(pipeForwardThen, prr.getPipeForward().getName());
+		assertEquals(pipeForwardThen, prr.getPipeForward().getName());
 	}
 }
