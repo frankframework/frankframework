@@ -22,6 +22,11 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 		return pipe;
 	}
 
+	@Override
+	protected void setXsltVersion(int xsltVersion) {
+		sender.setXsltVersion(xsltVersion);
+	}
+
 	/*
 	 * Test with output-method=xml, but yielding a text file.
 	 * It should not render namespace definitions multiple times
@@ -84,16 +89,9 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 		sender.setRemoveNamespaces(removeNamespaces);
 	}
 
-
-	@Override
-	protected void setXslt2(boolean xslt2) {
-		sender.setXslt2(xslt2);
-	}
-
 	@Override
 	protected void setHandleLexicalEvents(boolean handleLexicalEvents) {
 		sender.setHandleLexicalEvents(handleLexicalEvents);
 	}
-
 
 }

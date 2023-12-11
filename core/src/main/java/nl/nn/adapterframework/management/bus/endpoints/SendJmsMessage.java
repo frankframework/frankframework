@@ -112,7 +112,7 @@ public class SendJmsMessage extends BusEndpointBase {
 			}
 			return new StringResponseMessage(responseMessage.asString());
 		} catch (Exception e) {
-			throw new BusException("error occured sending message", e);
+			throw new BusException("error occurred sending message", e);
 		} finally {
 			try {
 				qms.close();

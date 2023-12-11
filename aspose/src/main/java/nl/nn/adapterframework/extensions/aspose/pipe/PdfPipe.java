@@ -202,12 +202,10 @@ public class PdfPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * The session key used to store the main conversion result document. Only to be
-	 * used when action is set to 'convert'.
-	 *
-	 * ff.default documents
+	 * The session key used to store the main conversion result document. Only to be used when action is set to 'convert'.
 	 *
 	 * @param conversionResultDocumentSessionKey Name of the session key.
+	 * @ff.default documents
 	 */
 	public void setConversionResultDocumentSessionKey(String conversionResultDocumentSessionKey) {
 		this.conversionResultDocumentSessionKey = conversionResultDocumentSessionKey;

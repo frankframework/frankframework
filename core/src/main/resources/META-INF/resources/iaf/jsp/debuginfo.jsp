@@ -65,8 +65,8 @@
         <td><%= request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort() +request.getContextPath()%>
         </td>
       </tr>
-      
-      
+
+
     </table>
 
 
@@ -205,23 +205,22 @@
       try {
          InitialContext ic = new InitialContext();
 
-         NamingEnumeration ne = 
+         NamingEnumeration ne =
                       ic.listBindings("java:comp/env");
-         
+
          while (ne.hasMore()) {
             Binding ncp = (Binding)ne.next();
             String objName = ncp.getName();
             Object objObj = ncp.getObject();
-            
+
             out.println("<TR bgcolor=\"#eeeeee\"><TD>" + objName + "</TD>");
             out.print(
              "<TD>" + objObj.toString() + "</TD></TR>");
          }
          out.println("</TABLE></BODY></HTML>");
-         
+
       } catch (Exception e) {
-        out.println("Error occured retrieving entries:"+e.getMessage());
+        out.println("Error occurred retrieving entries:"+e.getMessage());
       }
       %>
       </table>
-      
