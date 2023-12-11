@@ -470,7 +470,9 @@ public class HttpSender extends HttpSenderBase {
 	}
 
 	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) throws IOException {
-		String partName = element.getAttribute("name"); //Name of the part
+		String part = element.getAttribute("name"); //Name of the part
+		boolean isFile = "file".equals(element.getAttribute("type")); //text of file, empty == text
+		String filename = element.getAttribute("filename"); //if type == file, the filename
 		String partSessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
 		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
 		Message partObject = session.getMessage(partSessionKey);
@@ -479,9 +481,16 @@ public class HttpSender extends HttpSenderBase {
 			mimeType = MimeType.valueOf(partMimeType);
 		}
 
-		String name = partObject.isBinary() || StringUtils.isBlank(partName) ? partSessionKey : partName;
-		String filename = StringUtils.isNotBlank(partName) ? partName : null;
-		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, filename)).build();
+		final String filenameToUse;
+		if(isFile || StringUtils.isNotBlank(filename)) {
+			String filenamebackup = StringUtils.isBlank(part) ? partSessionKey : part;
+			filenameToUse = StringUtils.isNotBlank(filename) ? filename : filenamebackup;
+		} else {
+			filenameToUse = null;
+		}
+
+		String partname = isFile || StringUtils.isBlank(part) ? partSessionKey : part;
+		return FormBodyPartBuilder.create(partname, new MessageContentBody(partObject, mimeType, filenameToUse)).build();
 	}
 
 	protected boolean validateResponseCode(int statusCode) {

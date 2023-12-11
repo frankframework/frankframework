@@ -22,7 +22,7 @@ Content-Transfer-Encoding: binary
 
 mock pdf content
 --IGNORE
-Content-Disposition: form-data; name="part_file"
+Content-Disposition: form-data; name="part_file"; filename="part_file"
 Content-Type: application/pdf
 Content-Transfer-Encoding: binary
 
