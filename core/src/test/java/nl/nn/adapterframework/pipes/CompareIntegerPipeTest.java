@@ -13,7 +13,6 @@ import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 
 class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
-
 	@Override
 	public CompareIntegerPipe createPipe() {
 		return new CompareIntegerPipe();
@@ -24,8 +23,8 @@ class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 		pipe.registerForward(new PipeForward("lessthan", null));
 		pipe.registerForward(new PipeForward("greaterthan", null));
 		pipe.registerForward(new PipeForward("equals", null));
-		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> pipe.configure());
-		assertTrue(exception.getMessage().contains("has neither parameter [operand1] nor parameter [operand2] specified"));
+
+		assertThrows(ConfigurationException.class, pipe::configure, "has neither parameter [operand1] nor parameter [operand2] specified");
 	}
 
 	@Test

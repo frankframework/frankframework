@@ -1,14 +1,15 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-
 import org.hamcrest.Matchers;
-import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.stream.Message;
+
+import org.junit.jupiter.api.Test;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * ExceptionPipe Tester.
@@ -31,7 +32,7 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
 	}
 
 	@Test
-	public void throwsExceptionWithoutMessage() throws Exception {
+	public void throwsExceptionWithoutMessage() {
 		pipe.setThrowException(true);
 
 		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "", session));
@@ -39,12 +40,10 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
 	}
 
 	@Test
-	public void throwsExceptionWithMessage() throws Exception {
+	public void throwsExceptionWithMessage() {
 		pipe.setThrowException(true);
 
 		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "exception thrown with a custom message", session));
 		assertThat(e.getMessage(), Matchers.endsWith("exception thrown with a custom message"));
-
 	}
-
 }

@@ -1,17 +1,18 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.pipes.HashPipe.HashAlgorithm;
 import nl.nn.adapterframework.pipes.HashPipe.HashEncoding;
+
+import org.junit.jupiter.api.Test;
 
 public class HashPipeTest extends PipeTestBase<HashPipe> {
 

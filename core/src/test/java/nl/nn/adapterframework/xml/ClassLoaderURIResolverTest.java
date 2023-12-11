@@ -164,9 +164,7 @@ public class ClassLoaderURIResolverTest {
 		log.debug("BaseType [{}] refType [{}] ref [{}] expected [{}]", baseType, refType, ref, expected);
 		if (ref!=null) {
 			if(refType.expectsException() != null) {
-				assertThrows(refType.expectsException(), () -> {
-					testUri(baseType.name(), refType.name(), classLoaderProvider, baseUrl, ref, expected);
-				});
+				assertThrows(refType.expectsException(), () -> testUri(baseType.name(), refType.name(), classLoaderProvider, baseUrl, ref, expected));
 			} else {
 				testUri(baseType.name(), refType.name(), classLoaderProvider, baseUrl, ref, expected);
 			}

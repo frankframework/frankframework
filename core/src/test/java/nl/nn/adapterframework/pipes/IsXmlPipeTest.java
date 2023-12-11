@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,7 @@ import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
-class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
+public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 
 	String pipeForwardThen = "then";
 	String pipeForwardElse = "else";

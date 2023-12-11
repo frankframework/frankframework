@@ -4,9 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
+
+import nl.nn.adapterframework.testutil.TestFileUtils;
 
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.Difference;
@@ -59,12 +62,12 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		config.setListenerConfigs(listenerConfig);
 		inMemoryDirectoryServer = new InMemoryDirectoryServer(config);
 
-		String ldifDataFile = "Ldap/data.ldif";
-		URL ldifDataUrl = ClassLoaderUtils.getResourceURL(ldifDataFile);
+		String ldifDataFile = "/Ldap/data.ldif";
+		URL ldifDataUrl = TestFileUtils.getTestFileURL(ldifDataFile);
 		if (ldifDataUrl == null) {
 			fail("cannot find resource [" + ldifDataFile + "]");
 		}
-		inMemoryDirectoryServer.importFromLDIF(true, ldifDataUrl.getPath());
+		inMemoryDirectoryServer.importFromLDIF(true, new File(ldifDataUrl.toURI()));
 		inMemoryDirectoryServer.startListening();
 		super.setUp();
 	}

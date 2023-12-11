@@ -2,15 +2,15 @@ package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.JsonPipe.Direction;
 import nl.nn.adapterframework.testutil.MatchUtils;
+
+import org.junit.jupiter.api.Test;
 
 public class JsonPipeTest extends PipeTestBase<JsonPipe> {
 

@@ -1,11 +1,9 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 import nl.nn.adapterframework.core.IDataIterator;
@@ -22,6 +20,8 @@ import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.ReaderLineIterator;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTestBase<P> {
 
