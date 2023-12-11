@@ -447,15 +447,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				}
 				throw new PipeRunException(this, "caught timeout-exception", toe);
 
-			} catch (Throwable t) {
+			} catch (Exception e) {
 				throwEvent(PIPE_EXCEPTION_MONITOR_EVENT);
-				PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
-				if (exceptionForward != null) {
-					log.warn("exception occurred, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);
-					return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(null,t,this,input,session.getMessageId(),0));
-				}
-				throw new PipeRunException(this, "caught exception", t);
+				throw new PipeRunException(this, "caught exception", e);
 			}
+
 			result = sendResult.getResult();
 			if (sendResult.getPipeForward() != null) {
 				forward = sendResult.getPipeForward();

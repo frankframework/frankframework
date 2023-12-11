@@ -59,7 +59,7 @@ public class PartMessageTest {
 		PartMessage partMessage = new PartMessage(testPart);
 
 		assertNull(partMessage.getCharset());
-		assertNull(partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
+		assertEquals(MimeType.valueOf("application/pdf"), (MimeType)partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
 	}
 
 	private class TestPart extends MimeBodyPart {

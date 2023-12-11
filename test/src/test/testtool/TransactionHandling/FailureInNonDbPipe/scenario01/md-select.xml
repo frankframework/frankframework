@@ -1,0 +1,13 @@
+<manageDatabaseREQ>
+	<select>
+		<tableName>IBISPROP</tableName>
+		<columns>
+			<column>
+				<name>NAME</name>
+			</column>
+			<column>
+				<name>VALUE</name>
+			</column>
+		</columns>
+	</select>
+</manageDatabaseREQ>
