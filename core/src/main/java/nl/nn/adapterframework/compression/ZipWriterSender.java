@@ -72,7 +72,7 @@ public class ZipWriterSender extends CollectorSenderBase<ZipWriter, MessageZipEn
 	 * @ff.default zipwriterhandle
 	 */
 	@Deprecated
-	@ConfigurationWarning("Replaced with attribute collection")
+	@ConfigurationWarning("Replaced with attribute collectionName")
 	public void setZipWriterHandle(String string) {
 		setCollectionName(string);
 	}
