@@ -60,7 +60,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -107,7 +106,6 @@ public class HttpSender extends HttpSenderBase {
 	private @Getter boolean paramsInUrl=true;
 	private @Getter String firstBodyPartName=null;
 
-	private @Getter Boolean multipartResponse=null;
 	private @Getter String multipartXmlSessionKey;
 	private @Getter String mtomContentTransferEncoding = null; //Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
 	private @Getter boolean encodeMessages = false;
@@ -437,10 +435,7 @@ public class HttpSender extends HttpSenderBase {
 			responseMessage.closeOnCloseOf(session, this);
 		}
 
-		if (BooleanUtils.isTrue(getMultipartResponse()) || responseHandler.isMultipart()) {
-			if (BooleanUtils.isFalse(getMultipartResponse())) {
-				log.warn("multipart response was set to false, but the response is multipart!");
-			}
+		if (responseHandler.isMultipart()) {
 			return handleMultipartResponse(responseHandler, session);
 		} else {
 			return getResponseBody(responseHandler);
@@ -538,16 +533,6 @@ public class HttpSender extends HttpSenderBase {
 	/** (Only used when <code>methodType</code>=<code>POST</code> and <code>postType</code>=<code>URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content */
 	public void setFirstBodyPartName(String firstBodyPartName) {
 		this.firstBodyPartName = firstBodyPartName;
-	}
-
-	/**
-	 * If true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received. The first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.
-	 * @ff.default false
-	 */
-	@Deprecated
-	@ConfigurationWarning("Unless set explicitly multipart response will be detected automatically")
-	public void setMultipartResponse(Boolean b) {
-		multipartResponse = b;
 	}
 
 	/**

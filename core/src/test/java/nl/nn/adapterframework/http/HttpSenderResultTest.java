@@ -146,8 +146,6 @@ public class HttpSenderResultTest extends Mockito {
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.setMethodType(HttpMethod.GET);
-		sender.setMultipartResponse(true);
-
 		sender.configure();
 		sender.open();
 

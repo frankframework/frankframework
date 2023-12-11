@@ -35,7 +35,6 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
@@ -619,7 +618,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	private Message getStubbedResult(final Message input, final PipeLineSession session) throws PipeRunException {
-		return getStubFileName(input, session)
+		return getStubFilename(input, session)
 				.map(stubFileName -> {
 					Message result = loadMessageFromClasspathResource(stubFileName);
 					log.info("returning result from dynamic stub [{}]", stubFileName);
@@ -642,7 +641,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return result;
 	}
 
-	private Optional<String> getStubFileName(final Message input, final PipeLineSession session) throws PipeRunException {
+	private Optional<String> getStubFilename(final Message input, final PipeLineSession session) throws PipeRunException {
 		ParameterList pl = getParameterList();
 		if (pl == null) {
 			return Optional.empty();
@@ -1176,12 +1175,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	 */
 	public void setPresumedTimeOutInterval(int i) {
 		presumedTimeOutInterval = i;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("attribute 'stubFileName' is replaced with 'stubFilename'")
-	public void setStubFileName(String fileName) {
-		setStubFilename(fileName);
 	}
 
 	/** If set, the pipe returns a message from a file, instead of doing the regular process */
