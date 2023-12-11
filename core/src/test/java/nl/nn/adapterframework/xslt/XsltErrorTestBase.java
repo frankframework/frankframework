@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 import org.apache.logging.log4j.Level;
+import org.junit.AssumptionViolatedException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,19 +27,15 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	protected TestAppender testAppender;
 	private ErrorOutputStream errorOutputStream;
 	private PrintStream prevStdErr;
-	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=0;
-
-	private final String FILE_NOT_FOUND_EXCEPTION="Cannot get resource for href [";
-	private final String FILE_NOT_FOUND_EXCEPTION_SAXON_10="WARN Fatal transformation error: Exception thrown by URIResolver resolving `";
-
-	private final boolean testForEmptyOutputStream=false;
-
+	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS = 0;
+	private final String FILE_NOT_FOUND_EXCEPTION = "Cannot get resource for href [";
+	private final boolean testForEmptyOutputStream = false;
 	protected int getMultiplicity() {
 		return 1;
 	}
 
 	private static class ErrorOutputStream extends OutputStream {
-		private StringBuilder line = new StringBuilder();
+		private final StringBuilder line = new StringBuilder();
 
 		@Override
 		public void write(int b) {
@@ -48,10 +45,6 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		@Override
 		public String toString() {
 			return line.toString();
-		}
-
-		public boolean isEmpty() {
-			return toString().isEmpty();
 		}
 	}
 
@@ -149,9 +142,10 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
+		} catch (AssumptionViolatedException e) {
+			throw e;
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
-			//System.out.println("ErrorMessage: "+errorMessage);
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
 		assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION));
@@ -174,12 +168,15 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
+		} catch (AssumptionViolatedException e) {
+			throw e;
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
 		// Saxon 9.8 no longer considers a missing import to be fatal. This is similar to Xalan
-		assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION_SAXON_10));
+		String FILE_NOT_FOUND_EXCEPTION_SAXON_10 = "WARN Fatal transformation error: Exception thrown by URIResolver resolving `";
+		assertThat(testAppender.toString(), containsString(FILE_NOT_FOUND_EXCEPTION_SAXON_10));
 
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
