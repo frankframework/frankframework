@@ -23,7 +23,7 @@ import nl.nn.adapterframework.util.ReaderLineIterator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTestBase<P> {
+public abstract class IteratingPipeTest<P extends IteratingPipe<String>> extends PipeTestBase<P> {
 
 	protected StringBuilder resultLog;
 
