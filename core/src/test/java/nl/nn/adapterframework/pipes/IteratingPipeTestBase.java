@@ -1,6 +1,8 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
@@ -9,6 +11,7 @@ import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
@@ -207,6 +210,21 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	}
 
 	@Test
+	public void testCollectResultsFalseWithExceptions() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setMaxChildThreads(1);
+		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
+		pipe.setCollectResults(false);
+		configureAndStartPipe();
+
+		// Act
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithExceptions.txt");
+
+		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, input, session));
+		assertTrue(e.getMessage().contains("Exception triggered"));
+	}
+
+	@Test
 	public void testParallel() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setParallel(true);
@@ -220,6 +238,27 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 	@Test
 	public void testParallelResultsWithExceptions() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setParallel(true);
+		pipe.setMaxChildThreads(1);
+		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
+		pipe.setCollectResults(false);
+		configureAndStartPipe();
+
+		// Act
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithExceptions.txt");
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals("<results count=\"10\"/>", actual);
+
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithExceptionsResult.log");
+		assertEquals(expectedRenderResult, resultLog.toString().trim());
+	}
+
+	@Test
+	public void testParallelCollectResultsWithExceptions() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setParallel(true);
 		pipe.setMaxChildThreads(1);
@@ -238,5 +277,4 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithExceptionsResult.log");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
-
 }
