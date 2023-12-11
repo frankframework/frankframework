@@ -99,7 +99,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	@Test
 	public void testBasic() throws Exception {
 		testBasic(false);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLogPlain.txt");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResult.log");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 	@Test
@@ -120,7 +120,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	@Test
 	public void testBasicMaxItems() throws Exception {
 		testBasicMaxItems(false);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesLogPlain.txt");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResult.log");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 	@Test
@@ -142,7 +142,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	@Test
 	public void testFullBlocks() throws Exception {
 		testFullBlocks(false);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLogPlain.txt");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResult.log");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 	@Test
@@ -163,7 +163,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	@Test
 	public void testPartialFinalBlock() throws Exception {
 		testPartialFinalBlock(false);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLogPlain.txt");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResult.log");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 	@Test
@@ -173,18 +173,19 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 
-	public void testPartialFinalBlockMaxItems(boolean blockEnabled) throws Exception {
+	private void testPartialFinalBlockMaxItems(boolean blockEnabled) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
 		pipe.setBlockSize(4);
 		pipe.setMaxItems(7);
 		configureAndStartPipe();
+
 		testTenLinesToSeven();
 	}
 
 	@Test
 	public void testPartialFinalBlockMaxItems() throws Exception {
 		testPartialFinalBlockMaxItems(false);
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesLogPlain.txt");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/SevenLinesResult.log");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 	@Test
@@ -213,7 +214,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
 		configureAndStartPipe();
 		testTenLines();
-		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLogPlain.txt");
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResult.log");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 

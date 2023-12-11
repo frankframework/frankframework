@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeForward;
