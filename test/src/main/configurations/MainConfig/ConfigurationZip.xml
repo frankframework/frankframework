@@ -89,7 +89,6 @@
 			<pipe
 				name="SimpleZip3"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe"
-				action="write"
 				getInputFromSessionKey="originalMessage"
 				>
 					<param name="filename" value="zipentry.txt" />
@@ -121,7 +120,7 @@
 			<pipe
 				name="SimpleZipX3"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe"
-				action="write" completeFileHeader="true"
+				completeFileHeader="true"
 				getInputFromSessionKey="originalMessage"
 				>
 					<param name="filename" value="zipentry.xml" />
@@ -243,7 +242,6 @@
 				className="nl.nn.adapterframework.compression.ZipWriterPipe"
 				action="open"
 				zipWriterHandle="zipwriter2"
-				closeOutputstreamOnExit="false"
 				backwardsCompatibility="true"
 				>
 				<forward name="success" path="ZipRead"/>
@@ -257,7 +255,7 @@
 				contentsSessionKey="nestedZipData"
 				>
 				<sender className="nl.nn.adapterframework.compression.ZipWriterSender"
-					zipWriterHandle="zipwriter2"
+					collectionName="zipwriter2"
 					backwardsCompatibility="true"
 				>
 					<param name="contents" sessionKey="nestedZipData" />
@@ -268,7 +266,7 @@
 				name="close nested zip"
 				className="nl.nn.adapterframework.compression.ZipWriterPipe"
 				action="close"
-				zipWriterHandle="zipwriter2"
+				collectionName="zipwriter2"
 				backwardsCompatibility="true"
 				>
 				<forward name="success" path="READY"/>
@@ -422,10 +420,8 @@
 				  sessionKey="fileContents"/>
 
 			<!-- Encode/decode causes the original to be registered for close at end of this sub-adapter, issue 5702 -->
-			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				  direction="encode"/>
-			<pipe name="Decode" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				  direction="decode"/>
+			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe"/>
+			<pipe name="Decode" className="nl.nn.adapterframework.pipes.Base64Pipe" direction="decode"/>
 
 			<pipe className="nl.nn.adapterframework.compression.ZipWriterPipe" collectionName="zipHandle" name="WriteDataToZipStream">
 				<param name="filename" sessionKey="originalMessage" xpathExpression="file/filename"/>

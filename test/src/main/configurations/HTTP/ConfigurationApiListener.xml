@@ -153,7 +153,6 @@
 				name="LargeStreamProducer"
 				className="nl.nn.adapterframework.http.rest.ApiListener"
 				uriPattern="largeStream"
-				method="get"
 			/>
 		</receiver>
 		<pipeline>

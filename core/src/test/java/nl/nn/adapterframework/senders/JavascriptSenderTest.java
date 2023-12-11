@@ -5,14 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -21,23 +20,20 @@ import nl.nn.adapterframework.senders.JavascriptSender.JavaScriptEngines;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
-	public JavaScriptEngines engine;
+
+	private final JavaScriptEngines engine = JavaScriptEngines.J2V8;
 
 	@Override
 	public JavascriptSender createSender() {
 		return new JavascriptSender();
 	}
 
-	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {{JavaScriptEngines.J2V8}});
-	}
-
 	//Test without a given jsFunctionName. Will call the javascript function main as default
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void callMain(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		initJavascriptSenderTest(engine);
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	public void callMain() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setEngineName(engine);
@@ -49,10 +45,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	}
 
 	//Test without parameters, returns the result of a subtraction
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void noParameters(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		initJavascriptSenderTest(engine);
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	public void noParameters() throws ConfigurationException, SenderException, TimeoutException, IOException {
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("f1");
@@ -66,11 +61,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 	/*Test with two given parameters. The integer values of the given parameters will be added and the result
 	is given as the output of the pipe */
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void twoParameters(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-
-		initJavascriptSenderTest(engine);
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	public void twoParameters() throws ConfigurationException, SenderException, TimeoutException, IOException {
 
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
@@ -89,11 +82,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 
 	/*Test with two parameters. The first parameter is the input of the pipe given using the originalMessage sessionKey. The input is expected to be
 	 * an integer. The two parameters will be added and the result is given as the output of the pipe */
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void inputAsFirstParameter(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-
-		initJavascriptSenderTest(engine);
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	public void inputAsFirstParameter() throws ConfigurationException, SenderException, TimeoutException, IOException {
 
 		String input = "10";
 		Message message = new Message(input);
@@ -112,13 +103,11 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("12", sender.sendMessageOrThrow(message,session).asString());
 	}
 
-	/*Test with two given parameters, the first parameter being the input of the pipe. Both parameters need to be of type String and the output of the pipe
+	/* Test with two given parameters, the first parameter being the input of the pipe. Both parameters need to be of type String and the output of the pipe
 	 * will be the result of concatenating the two parameter strings. */
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void concatenateString(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-
-		initJavascriptSenderTest(engine);
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	public void concatenateString() throws ConfigurationException, SenderException, TimeoutException, IOException {
 
 		Message input = new Message("Hello");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
@@ -139,11 +128,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	/*Test with three given parameters. The integer values of the first two given parameters will be added and the result
 	is given as the output of the pipe, if the value of the last parameter is set to true. If the value of the last parameter is
 	set to false, the function will return 0 */
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void threeParametersTrue(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-
-		initJavascriptSenderTest(engine);
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	public void threeParametersTrue() throws ConfigurationException, SenderException, TimeoutException, IOException {
 
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
@@ -163,11 +150,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	/*Test with three given parameters. The integer values of the first two given parameters will be added and the result
 	is given as the output of the pipe, if the value of the last parameter is set to true. If the value of the last parameter is
 	set to false, the function will return 0 */
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void threeParametersFalse(JavaScriptEngines engine) throws Exception {
-
-		initJavascriptSenderTest(engine);
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	public void threeParametersFalse() throws Exception {
 
 		Message dummyInput = new Message("dummyinput");
 		sender.setJsFileName("Javascript/JavascriptTest.js");
@@ -185,10 +170,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	}
 
 	//A ConfigurationException is given when a non existing file is given as FileName
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void invalidFileGivenException(JavaScriptEngines engine) throws  Exception {
-		initJavascriptSenderTest(engine);
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	public void invalidFileGivenException() throws  Exception {
 		sender.setJsFileName("Nonexisting.js");
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
@@ -199,10 +183,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	}
 
 	//A ConfigurationException is given when an empty string is given as FileName
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void emptyFileNameGivenException(JavaScriptEngines engine) throws Exception {
-		initJavascriptSenderTest(engine);
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	public void emptyFileNameGivenException() throws Exception {
 		sender.setJsFileName("");
 		sender.setJsFunctionName("f1");
 		sender.setEngineName(engine);
@@ -213,10 +196,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	}
 
 	//If the given FunctionName is not a function of the given javascript file a SenderException is thrown.
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void invalidFunctionGivenException(JavaScriptEngines engine) throws Exception {
-		initJavascriptSenderTest(engine);
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	public void invalidFunctionGivenException() throws Exception {
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("nonexisting");
 		sender.setEngineName(engine);
@@ -230,10 +212,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	}
 
 	//A ConfigurationException is given when an empty string is given as FunctionName
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void emptyFunctionGivenException(JavaScriptEngines engine) throws Exception {
-		initJavascriptSenderTest(engine);
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	public void emptyFunctionGivenException() throws Exception {
 		sender.setJsFileName("Javascript/JavascriptTest.js");
 		sender.setJsFunctionName("");
 		sender.setEngineName(engine);
@@ -244,42 +225,38 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	}
 
 	//If there is a syntax error in the given Javascript file a SenderException is thrown.
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void invalidJavascriptSyntax(JavaScriptEngines engine) throws Exception {
-		initJavascriptSenderTest(engine);
+	@Test
+	public void invalidJavascriptSyntax() throws ConfigurationException, SenderException {
+		Message dummyInput = new Message("dummyinput");
+		sender.setJsFileName("Javascript/IncorrectJavascript.js");
+		sender.setEngineName(engine);
+
+		sender.configure();
+		sender.open();
+
 		assertThrows(SenderException.class, () -> {
-			Message dummyInput = new Message("dummyinput");
-			sender.setJsFileName("Javascript/IncorrectJavascript.js");
-			sender.setEngineName(engine);
-
-			sender.configure();
-			sender.open();
-
-			assertEquals("1", sender.sendMessageOrThrow(dummyInput, session).asString());
+			sender.sendMessageOrThrow(dummyInput, session);
 		});
 	}
 
 	// This test uses a Javascript file which contains a function call to a function which does not exist. A SenderException
 	// is thrown if the used javascript function gives an error.
-	@MethodSource("data")
-	@ParameterizedTest(name = "{0}")
-	void errorInJavascriptCode(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {
-		initJavascriptSenderTest(engine);
+	@Test
+	public void errorInJavascriptCode() throws ConfigurationException, SenderException, TimeoutException, IOException {
+		Message dummyInput = new Message("dummyinput");
+		sender.setJsFileName("Javascript/IncorrectJavascript2.js");
+		sender.setEngineName(engine);
+
+		sender.configure();
+		sender.open();
+
 		assertThrows(SenderException.class, () -> {
-			Message dummyInput = new Message("dummyinput");
-			sender.setJsFileName("Javascript/IncorrectJavascript2.js");
-			sender.setEngineName(engine);
-
-			sender.configure();
-			sender.open();
-
-			assertEquals("1", sender.sendMessageOrThrow(dummyInput, session).asString());
+			sender.sendMessageOrThrow(dummyInput,session);
 		});
 	}
 
 	//The input is expected to be of type integer but an input of type Sting is given.
-	//@Test(expected = SenderException.class)
+	@Test
 	public void wrongInputAsFirstParameter() throws ConfigurationException, SenderException, TimeoutException, IOException {
 
 		Message input = new Message("Stringinput");
@@ -295,11 +272,9 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertEquals("12", sender.sendMessageOrThrow(input,session).asString());
-	}
-
-	public void initJavascriptSenderTest(JavaScriptEngines engine) {
-		this.engine = engine;
+		assertThrows(SenderException.class, () -> {
+			sender.sendMessageOrThrow(input,session);
+		});
 	}
 
 }
