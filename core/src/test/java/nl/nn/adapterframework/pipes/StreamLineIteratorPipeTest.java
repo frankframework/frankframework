@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.PipeForward;
@@ -18,12 +18,12 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-public class StreamLineIteratorPipeTest extends IteratingPipeTest<StreamLineIteratorPipe> {
+public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIteratorPipe> {
 
 	@Override
 	public StreamLineIteratorPipe createPipe() {
 		StreamLineIteratorPipe result = new StreamLineIteratorPipe();
-		result.setCombineBlocks(false); // default is true, but false is compatible with super test class IteratingPipeTest
+		result.setCombineBlocks(false); // default is true, but false is compatible with super test class IteratingPipeTestBase
 		return result;
 	}
 
