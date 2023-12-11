@@ -20,8 +20,10 @@ import org.springframework.transaction.TransactionDefinition;
 
 import lombok.Getter;
 import lombok.Setter;
+import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.HasTransactionAttribute;
 import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.IbisTransaction;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -29,8 +31,8 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.functional.ThrowingFunction;
 import nl.nn.adapterframework.jdbc.JdbcFacade;
+import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jta.SpringTxManagerProxy;
-import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.task.TimeoutGuard;
 import nl.nn.adapterframework.util.ClassUtils;
@@ -54,27 +56,36 @@ public class TransactionAttributePipeProcessor extends PipeProcessorBase {
 			txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS, txTimeout);
 		}
 		IbisTransaction itx = new IbisTransaction(txManager, txDef, "pipe [" + pipe.getName() + "]");
-		boolean isJdbcFacade = pipe instanceof MessageSendingPipe && ((MessageSendingPipe) pipe).getSender() instanceof JdbcFacade;
+		boolean isTxCapable = hasTxCapableSender(pipe);
 		try {
-			if(isJdbcFacade && itx.isRollbackOnly()) {
+			if(isTxCapable && itx.isRollbackOnly()) {
 				throw new PipeRunException(pipe, "unable to execute SQL statement, transaction has been marked as failed by an earlier sender");
 			}
 
 			return execute(pipeline, pipe, message, chain, txTimeout);
 
 		} catch (Error | RuntimeException | PipeRunException ex) {
-			if(isJdbcFacade) {
+			if(isTxCapable) {
 				itx.setRollbackOnly();
 			}
 			throw ex;
 		} catch (Exception e) {
-			if(isJdbcFacade) {
+			if(isTxCapable) {
 				itx.setRollbackOnly();
 			}
 			throw new PipeRunException(pipe, "Caught unknown checked exception", e);
 		} finally {
 			itx.complete();
 		}
+	}
+
+	/** If the pipe implements HasSender and the sender is TX Capable, it should mark RollBackOnly! */
+	private boolean hasTxCapableSender(IPipe pipe) {
+		if(pipe instanceof HasSender) {
+			ISender sender = ((HasSender) pipe).getSender();
+			return sender instanceof JdbcFacade || sender instanceof JMSFacade;
+		}
+		return false;
 	}
 
 	private PipeRunResult execute(PipeLine pipeLine, IPipe pipe, Message message, ThrowingFunction<Message, PipeRunResult, PipeRunException> chain, int txTimeout) throws Exception {
