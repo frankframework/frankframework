@@ -29,7 +29,21 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		if (blockEnabled) {
 			return new BlockEnabledRenderer();
 		}
-		return getElementRenderer(null);
+		return new ElementRenderer();
+	}
+
+	/** If a line contains the word 'error' an exception will be thrown and the line wont be logged */
+	private SenderResult resultCollector(Message message, PipeLineSession session) throws SenderException {
+		try {
+			if (message.asString().contains("error")) {
+				throw new SenderException("Exception triggered");
+			}
+			String result = "["+message.asString()+"]";
+			resultLog.append(result+"\n");
+			return new SenderResult(result);
+		} catch (IOException e) {
+			throw new SenderException("unable to parse message", e);
+		}
 	}
 
 	protected class BlockEnabledRenderer extends BlockEnabledSenderBase<String> {
@@ -47,38 +61,19 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 		@Override
 		public SenderResult sendMessage(String blockHandle, Message message, PipeLineSession session) throws SenderException {
-			try {
-				String result = "["+message.asString()+"]";
-				resultLog.append(result+"\n");
-				return new SenderResult(result);
-			} catch (IOException e) {
-				throw new SenderException(e);
-			}
+			return resultCollector(message, session);
 		}
 	}
 
-	protected ISender getElementRenderer(final Exception e) {
-		EchoSender sender = new EchoSender() {
+	protected class ElementRenderer extends EchoSender {
 
-			@Override
-			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
-				try {
-					if (message.asString().contains("error")) {
-						throw new SenderException("Exception triggered", e);
-					}
-					String result = "["+message.asString()+"]";
-					resultLog.append(result+"\n");
-					return new SenderResult(result);
-				} catch (IOException e) {
-					throw new SenderException(getLogPrefix(),e);
-				}
-			}
-
-		};
-		return sender;
+		@Override
+		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+			return resultCollector(message, session);
+		}
 	}
 
-	public void testTenLines(String expectedFile) throws Exception {
+	private void doPipeWithTenLineInput(String expectedFile) throws Exception {
 		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLines.txt");
 		String expected = TestFileUtils.getTestFile(expectedFile);
 
@@ -88,17 +83,16 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		assertEquals(expected, actual);
 	}
 
-	public void testTenLines() throws Exception {
-		testTenLines("/IteratingPipe/TenLinesResult.xml");
+	protected void testTenLines() throws Exception {
+		doPipeWithTenLineInput("/IteratingPipe/TenLinesResult.xml");
 	}
-	public void testTenLinesToSeven() throws Exception {
-		testTenLines("/IteratingPipe/SevenLinesResult.xml");
+	protected void testTenLinesToSeven() throws Exception {
+		doPipeWithTenLineInput("/IteratingPipe/SevenLinesResult.xml");
 	}
 
 	public void testBasic(boolean blockEnabled) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
-		configurePipe();
-		pipe.start();
+		configureAndStartPipe();
 		testTenLines();
 	}
 
@@ -119,8 +113,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	public void testBasicMaxItems(boolean blockEnabled) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
 		pipe.setMaxItems(7);
-		configurePipe();
-		pipe.start();
+		configureAndStartPipe();
 		testTenLinesToSeven();
 	}
 
@@ -142,8 +135,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	public void testFullBlocks(boolean blockEnabled) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
 		pipe.setBlockSize(5);
-		configurePipe();
-		pipe.start();
+		configureAndStartPipe();
 		testTenLines();
 	}
 
@@ -164,8 +156,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	public void testPartialFinalBlock(boolean blockEnabled) throws Exception {
 		pipe.setSender(getElementRenderer(blockEnabled));
 		pipe.setBlockSize(4);
-		configurePipe();
-		pipe.start();
+		configureAndStartPipe();
 		testTenLines();
 	}
 
@@ -186,8 +177,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		pipe.setSender(getElementRenderer(blockEnabled));
 		pipe.setBlockSize(4);
 		pipe.setMaxItems(7);
-		configurePipe();
-		pipe.start();
+		configureAndStartPipe();
 		testTenLinesToSeven();
 	}
 
@@ -207,8 +197,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	@Test
 	public void testNullIterator() throws Exception {
 		pipe.setSender(getElementRenderer(false));
-		configurePipe();
-		pipe.start();
+		configureAndStartPipe();
 
 		String expected = "<results/>";
 
@@ -222,10 +211,30 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		pipe.setParallel(true);
 		pipe.setMaxChildThreads(1);
 		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
-		configurePipe();
-		pipe.start();
+		configureAndStartPipe();
 		testTenLines();
 		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesLogPlain.txt");
+		assertEquals(expectedRenderResult, resultLog.toString().trim());
+	}
+
+	@Test
+	public void testParallelResultsWithExceptions() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setParallel(true);
+		pipe.setMaxChildThreads(1);
+		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
+		configureAndStartPipe();
+
+		// Act
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithExceptions.txt");
+		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithExceptionsResult.xml");
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expected, actual);
+
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithExceptionsResult.log");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 
