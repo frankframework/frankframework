@@ -26,6 +26,7 @@ app-toasts-container {
   background-color: #1ab394;
   color: #fff;
   font-size: 14px;
+  margin-bottom: 1rem;
 }
 
 .toast .toast-body .title {
