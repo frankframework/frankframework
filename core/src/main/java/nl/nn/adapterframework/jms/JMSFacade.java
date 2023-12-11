@@ -177,7 +177,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		PERSISTENT(javax.jms.DeliveryMode.PERSISTENT),
 		NON_PERSISTENT(javax.jms.DeliveryMode.NON_PERSISTENT);
 
-		private final @Getter final int deliveryMode;
+		private final @Getter int deliveryMode;
 
 		DeliveryMode(int deliveryMode) {
 			this.deliveryMode = deliveryMode;
