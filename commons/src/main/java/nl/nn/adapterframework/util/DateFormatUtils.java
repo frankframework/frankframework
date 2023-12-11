@@ -112,7 +112,7 @@ public class DateFormatUtils {
 		return format(Instant.now(), buildFormatter(format));
 	}
 
-	public static String now(DateTimeFormatter formatter) {
+	public static String now(@Nonnull DateTimeFormatter formatter) {
 		return format(Instant.now(), formatter);
 	}
 
@@ -121,7 +121,7 @@ public class DateFormatUtils {
 		return date == null ? null : format(date.toInstant());
 	}
 
-	public static String format(@Nonnull long date) {
+	public static String format(long date) {
 		return format(date, FULL_GENERIC_FORMATTER);
 	}
 
@@ -129,16 +129,16 @@ public class DateFormatUtils {
 		return format(instant, FULL_GENERIC_FORMATTER);
 	}
 
-	public static String format(@Nonnull long date, DateTimeFormatter formatter) {
+	public static String format(long date, @Nonnull DateTimeFormatter formatter) {
 		return format(Instant.ofEpochMilli(date), formatter);
 	}
 
 	@Deprecated
-	public static String format(Date date, DateTimeFormatter formatter) {
+	public static String format(Date date, @Nonnull DateTimeFormatter formatter) {
 		return format(date.toInstant(), formatter);
 	}
 
-	public static String format(@Nonnull Instant instant, DateTimeFormatter formatter) {
+	public static String format(@Nonnull Instant instant, @Nonnull DateTimeFormatter formatter) {
 		return formatter.format(instant);
 	}
 
@@ -149,11 +149,11 @@ public class DateFormatUtils {
 		return GENERIC_DATETIME_FORMATTER.format(Instant.now());
 	}
 
-	public static Instant parseToInstant(String s, DateTimeFormatter parser) throws DateTimeParseException {
+	public static Instant parseToInstant(String s, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {
 		return parser.parse(s, Instant::from);
 	}
 
-	public static java.time.LocalDate parseToLocalDate(String s, DateTimeFormatter parser) throws DateTimeParseException {
+	public static java.time.LocalDate parseToLocalDate(String s, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {
 		return parser.parse(s, TemporalQueries.localDate());
 	}
 
