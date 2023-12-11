@@ -38,11 +38,14 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	/** If a line contains the word 'error' an exception will be thrown and the line wont be logged */
 	private SenderResult resultCollector(Message message, PipeLineSession session) throws SenderException {
 		try {
-			if (message.asString().contains("error")) {
+			if (message.asString().contains("exception")) {
 				throw new SenderException("Exception triggered");
 			}
 			String result = "["+message.asString()+"]";
 			resultLog.append(result+"\n");
+			if (message.asString().contains("error")) {
+				return new SenderResult(Message.asMessage(result), "Error triggered");
+			}
 			return new SenderResult(result);
 		} catch (IOException e) {
 			throw new SenderException("unable to parse message", e);
@@ -210,7 +213,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	}
 
 	@Test
-	public void testCollectResultsFalseWithExceptions() throws Exception {
+	public void testCollectResultsFalseWithExceptionsShouldRethrowException() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setMaxChildThreads(1);
 		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
@@ -233,6 +236,49 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		configureAndStartPipe();
 		testTenLines();
 		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesResult.log");
+		assertEquals(expectedRenderResult, resultLog.toString().trim());
+	}
+
+	@Test
+	public void testParallelResultsWithErrors() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setParallel(true);
+		pipe.setMaxChildThreads(1);
+		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
+		pipe.setCollectResults(false);
+		configureAndStartPipe();
+
+		// Act
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithErrors.txt");
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals("<results count=\"10\"/>", actual);
+
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithErrorsResult.log");
+		assertEquals(expectedRenderResult, resultLog.toString().trim());
+	}
+
+	@Test
+	public void testParallelCollectResultsWithErrors() throws Exception {
+		pipe.setSender(getElementRenderer(false));
+		pipe.setParallel(true);
+		pipe.setMaxChildThreads(1);
+		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
+		pipe.setCollectResults(true);
+		configureAndStartPipe();
+
+		// Act
+		Message input = MessageTestUtils.getMessage("/IteratingPipe/TenLinesWithErrors.txt");
+		String expected = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithErrorsResult.xml");
+
+		PipeRunResult prr = doPipe(pipe, input, session);
+		String actual = Message.asString(prr.getResult());
+
+		assertEquals(expected, actual);
+
+		String expectedRenderResult = TestFileUtils.getTestFile("/IteratingPipe/TenLinesWithErrorsResult.log");
 		assertEquals(expectedRenderResult, resultLog.toString().trim());
 	}
 
@@ -263,6 +309,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 		pipe.setParallel(true);
 		pipe.setMaxChildThreads(1);
 		pipe.setTaskExecutor(new ConcurrentTaskExecutor());
+		pipe.setCollectResults(true);
 		configureAndStartPipe();
 
 		// Act
