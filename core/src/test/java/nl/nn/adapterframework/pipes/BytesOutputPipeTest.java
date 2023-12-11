@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.PipeRunException;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import nl.nn.adapterframework.core.PipeRunException;
 
 public class BytesOutputPipeTest extends PipeTestBase<BytesOutputPipe> {
 
@@ -15,8 +15,6 @@ public class BytesOutputPipeTest extends PipeTestBase<BytesOutputPipe> {
 
 	@Test
 	public void emptyInput() {
-		assertThrows(PipeRunException.class, () -> {
-			doPipe(pipe, "", session);
-		});
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "", session));
 	}
 }

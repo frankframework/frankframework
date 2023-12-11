@@ -1,16 +1,16 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.junit.jupiter.api.Test;
+
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
-
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 
@@ -34,9 +34,7 @@ public class CompareStringPipeTest extends PipeTestBase<CompareStringPipe> {
 		pipe.setSessionKey1("");
 		pipe.setSessionKey2("");
 
-		assertThrows(ConfigurationException.class, () -> {
-			pipe.configure();
-		});
+		assertThrows(ConfigurationException.class, pipe::configure);
 	}
 
 	@Test

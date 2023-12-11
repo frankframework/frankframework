@@ -21,9 +21,7 @@ public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 	@Test
 	public void sessionKeyDoesNotExist() {
 		pipe.setSessionKey1("1");
-		assertThrows(PipeRunException.class, () -> {
-			doPipe(pipe,"input", session);
-		}, "Exception on getting [operand1] from session key [1]");
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "input", session), "Exception on getting [operand1] from session key [1]");
 	}
 
 	@Test
@@ -32,9 +30,7 @@ public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 		pipe.registerForward(new PipeForward("greaterthan", null));
 		pipe.registerForward(new PipeForward("equals", null));
 
-		assertThrows(ConfigurationException.class, () -> {
-			pipe.configure();
-		}, "has neither parameter [operand1] nor parameter [operand2] specified");
+		assertThrows(ConfigurationException.class, pipe::configure, "has neither parameter [operand1] nor parameter [operand2] specified");
 	}
 
 	@Test
@@ -96,9 +92,7 @@ public class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 		pipe.addParameter(new Parameter("operand1", "5"));
 		pipe.configure();
 
-		assertThrows(PipeRunException.class, () -> {
-			doPipe(pipe, "non-numeric", session);
-		}, "Exception on getting [operand1] from session key [1]");
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "non-numeric", session), "Exception on getting [operand1] from session key [1]");
 	}
 
 	@Test

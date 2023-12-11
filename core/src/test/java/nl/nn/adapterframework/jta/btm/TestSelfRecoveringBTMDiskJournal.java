@@ -127,12 +127,12 @@ public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase
 			for (int i = 0; i < 5; i++) {
 				getConnectionCloseJournalAndTestException(); // 5 times OK
 			}
-			assertThrows(TransactionSystemException.class, () -> getConnectionCloseJournalAndTestException());
+			assertThrows(TransactionSystemException.class, this::getConnectionCloseJournalAndTestException);
 
 			assertEquals(6, getNumberOfLines()); // Database has been updated !?
 
 			// Assert that no new transaction can be created
-			assertThrows(CannotCreateTransactionException.class, () -> runInsertQuery());
+			assertThrows(CannotCreateTransactionException.class, this::runInsertQuery);
 
 			assertEquals(6, getNumberOfLines()); // Assert no new changes
 		} finally {

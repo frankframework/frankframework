@@ -58,19 +58,15 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	}
 
 	@Test
-	public void cantCalculate() throws Exception {
-		assertThrows(Exception.class, () -> {
-			doPipe(pipe, new Message((String)null), session);
-		});
+	public void cantCalculate() {
+		assertThrows(Exception.class, () -> doPipe(pipe, new Message((String) null), session));
 	}
 
 	@Test
 	public void wrongPathToFile() throws Exception {
 		pipe.setInputIsFile(true);
 		configureAndStartPipe();
-		assertThrows(Exception.class, () -> {
-			doPipe(pipe,"dummyPathToFile", session);
-		});
+		assertThrows(Exception.class, () -> doPipe(pipe, "dummyPathToFile", session));
 	}
 
 
@@ -78,9 +74,7 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 	public void badCharset() throws Exception {
 		pipe.setCharset("dummy");
 		configureAndStartPipe();
-		assertThrows(PipeRunException.class, () -> {
-			doPipe(pipe,"anotherDummy", session);
-		});
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "anotherDummy", session));
 	}
 
 	@Test

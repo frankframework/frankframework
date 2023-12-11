@@ -1,14 +1,13 @@
 package nl.nn.adapterframework.pipes;
 
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunException;
-
-import org.junit.jupiter.api.Test;
-
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
+import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.PipeRunException;
 
 public class CleanupOldFilesPipeTest extends PipeTestBase<CleanupOldFilesPipe> {
 
@@ -21,9 +20,7 @@ public class CleanupOldFilesPipeTest extends PipeTestBase<CleanupOldFilesPipe> {
 
 	@Test
 	public void emptyInput() throws PipeRunException {
-		assertThrows(PipeRunException.class, () -> {
-			doPipe(pipe, "", session);
-		});
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "", session));
 	}
 
 	@Test

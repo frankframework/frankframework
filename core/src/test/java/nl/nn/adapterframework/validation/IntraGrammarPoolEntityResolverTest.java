@@ -145,9 +145,7 @@ public class IntraGrammarPoolEntityResolverTest {
 		assertNotNull(url);
 		resourceIdentifier.setBaseSystemId(url.toExternalForm());
 
-		XNIException thrown = assertThrows(XNIException.class, () -> {
-			resolver.resolveEntity(resourceIdentifier);
-		});
+		XNIException thrown = assertThrows(XNIException.class, () -> resolver.resolveEntity(resourceIdentifier));
 
 		assertThat(thrown.getMessage(), startsWith("Cannot find resource ["));
 	}
