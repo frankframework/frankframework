@@ -32,7 +32,6 @@ Content-ID: <document.pdf>
 --IGNORE
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Content-Disposition: attachment; name="string.txt"; filename="string.txt"
 Content-ID: <string.txt>
 
 mock pdf content
