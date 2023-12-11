@@ -150,7 +150,7 @@ public class WebServiceSenderResultTest extends Mockito {
 		sender.configure();
 		sender.open();
 
-		Throwable exception = assertThrows(Exception.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls).asString());
+		Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls).asString());
 		assertTrue(exception.getMessage().contains("Missing start boundary"));
 	}
 
