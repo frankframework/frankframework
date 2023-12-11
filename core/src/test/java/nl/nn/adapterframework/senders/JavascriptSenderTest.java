@@ -234,9 +234,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertThrows(SenderException.class, () -> {
-			sender.sendMessageOrThrow(dummyInput, session);
-		});
+		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(dummyInput, session));
 	}
 
 	// This test uses a Javascript file which contains a function call to a function which does not exist. A SenderException
@@ -250,9 +248,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertThrows(SenderException.class, () -> {
-			sender.sendMessageOrThrow(dummyInput,session);
-		});
+		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(dummyInput, session));
 	}
 
 	//The input is expected to be of type integer but an input of type Sting is given.
@@ -272,9 +268,7 @@ public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.open();
 
-		assertThrows(SenderException.class, () -> {
-			sender.sendMessageOrThrow(input,session);
-		});
+		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(input, session));
 	}
 
 }

@@ -37,6 +37,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
@@ -129,48 +130,40 @@ public class WebServiceSenderResultTest extends Mockito {
 	}
 
 	@Test
-	void simpleSoapMultiPartResponseMocked500StatusCode() throws Exception {
-		assertThrows(SenderException.class, () -> {
-			WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart.txt", "multipart/form-data", 500);
+	void simpleSoapMultiPartResponseMocked500StatusCode() throws IOException, ConfigurationException, SenderException {
+		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart.txt", "multipart/form-data", 500);
 
-			PipeLineSession pls = new PipeLineSession();
+		PipeLineSession pls = new PipeLineSession();
 
-			sender.configure();
-			sender.open();
+		sender.configure();
+		sender.open();
 
-			sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
-		});
+		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls).asString());
 	}
 
 	@Test
 	void simpleInvalidMultipartResponse() throws Exception {
-		Throwable exception = assertThrows(Exception.class, () -> {
+		WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart2.txt", "multipart/form-data", 200);
 
-			WebServiceSender sender = createWebServiceSenderFromFile("soapMultipart2.txt", "multipart/form-data", 200);
+		PipeLineSession pls = new PipeLineSession();
 
-			PipeLineSession pls = new PipeLineSession();
+		sender.configure();
+		sender.open();
 
-			sender.configure();
-			sender.open();
-
-			sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
-		});
+		Throwable exception = assertThrows(Exception.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls).asString());
 		assertTrue(exception.getMessage().contains("Missing start boundary"));
 	}
 
 	@Test
 	void soapFault() throws Exception {
-		Throwable exception = assertThrows(SenderException.class, () -> {
+		WebServiceSender sender = createWebServiceSenderFromFile("soapFault.txt", "text/xml", 500);
 
-			WebServiceSender sender = createWebServiceSenderFromFile("soapFault.txt", "text/xml", 500);
+		PipeLineSession pls = new PipeLineSession();
 
-			PipeLineSession pls = new PipeLineSession();
+		sender.configure();
+		sender.open();
 
-			sender.configure();
-			sender.open();
-
-			sender.sendMessageOrThrow(new Message("tralala"), pls);
-		});
+		Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(new Message("tralala"), pls));
 		assertTrue(exception.getMessage().contains("SOAP fault [soapenv:Client]: much error"));
 	}
 
