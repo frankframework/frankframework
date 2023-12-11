@@ -132,7 +132,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private @Getter String rowIdSessionKey=null;
 	private @Getter String packageContent = "db2";
 	private @Getter String[] columnsReturnedList=null;
-	private @Getter boolean streamResultToServlet=false; //TODO: add streaming to servlet
+	private @Getter boolean streamResultToServlet = false; //TODO: remove stream result to servlet
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	private @Getter boolean lockRows=false;
 	private @Getter int lockWait=-1;
