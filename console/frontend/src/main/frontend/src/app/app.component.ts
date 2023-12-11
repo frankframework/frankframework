@@ -2,7 +2,7 @@ import { Component, Inject, LOCALE_ID, OnDestroy, OnInit, Renderer2 } from '@ang
 import { Idle } from '@ng-idle/core';
 import { Observable, Subscription, combineLatest, filter, first } from 'rxjs';
 import { Adapter, AppConstants, AppService, ServerInfo } from './app.service';
-import { ActivatedRoute, Data, NavigationEnd, NavigationStart, ParamMap, Router, RouterEvent, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, Data, NavigationEnd, NavigationSkipped, NavigationStart, ParamMap, Router, RouterEvent, convertToParamMap } from '@angular/router';
 import { ViewportScroller, formatDate } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 // @ts-ignore pace-js does not have types
@@ -76,13 +76,24 @@ export class AppComponent implements OnInit, OnDestroy {
       ), first()
     ).subscribe((e) => {
       const event = e as any as NavigationStart
-        this.router.navigateByUrl(event.url.replace('/!', ''));
+      this.router.navigateByUrl(event.url.replace('/!', ''));
     });
+
+    this.router.events.pipe(filter((e) =>
+      e instanceof NavigationSkipped
+    )).subscribe(e => {
+      const event = e as any as NavigationSkipped
+      const childRoute = this.route.children.slice(-1)[0];
+      this.routeQueryParams = childRoute.snapshot.queryParamMap;
+      this.routeData = childRoute.snapshot.data;
+    })
 
     this.router.events.pipe(
       filter((e) => e instanceof NavigationEnd)
     ).subscribe((e) => {
-      const childRoute = this.route.children.pop()!;
+      const childRoute = this.route.children.slice(-1)[0];
+      this.routeQueryParams = childRoute.snapshot.queryParamMap;
+      this.routeData = childRoute.snapshot.data;
       if (this.router.url === '/login') {
         this.isLoginView = true;
         this.renderer.addClass(document.body, 'gray-bg');
@@ -90,8 +101,6 @@ export class AppComponent implements OnInit, OnDestroy {
         this.isLoginView = false;
         this.renderer.removeClass(document.body, 'gray-bg');
       };
-      this.routeQueryParams = childRoute.snapshot.paramMap;
-      this.routeData = childRoute.snapshot.data;
     });
 
     /* state controller */
@@ -376,7 +385,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
           this.appService.adapters[adapter.name] = adapter;
 
-          this.appService.updateAdapterSummary(this.routeQueryParams);
+          const selectedConfiguration = this.routeQueryParams.get("configuration");
+          this.appService.updateAdapterSummary(selectedConfiguration ?? 'All', false);
           this.updateAdapterNotifications(adapter);
         }
       }
@@ -384,7 +394,7 @@ export class AppComponent implements OnInit, OnDestroy {
     };
 
     //Get base information first, then update it with more details
-    this.appService.getAdapters().pipe(first()).subscribe((data: Record<string, Adapter>) => pollerCallback(data));
+    this.appService.getAdapters().pipe(first()).subscribe((data: Record<string, Adapter>) => { pollerCallback(data) });
     window.setTimeout(() => {
       this.pollerService.add("adapters?expanded=all", (data: Record<string, Adapter>) => { pollerCallback(data) }, true);
       this.appService.updateLoading(false);

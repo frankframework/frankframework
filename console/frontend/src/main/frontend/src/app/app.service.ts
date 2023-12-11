@@ -435,17 +435,15 @@ export class AppService {
     return this.http.get(this.absoluteApiPath +"server/health", { responseType: 'text' });
   }
 
-  updateAdapterSummary(routeQueryParams: ParamMap, configurationName?: string) {
-    let updated = (new Date().getTime());
-    if (updated - 3000 < this.lastUpdated && !configurationName) { //3 seconds
+  updateAdapterSummary(configurationName: string, changedConfiguration: boolean) {
+    const updated = (new Date().getTime());
+    if (updated - 3000 < this.lastUpdated && !changedConfiguration) { //3 seconds
       clearTimeout(this.timeout);
-      this.timeout = window.setTimeout(() => this.updateAdapterSummary(routeQueryParams), 1000);
+      this.timeout = window.setTimeout(() => { this.updateAdapterSummary(configurationName, false) }, 1000);
       return;
     }
-    if (configurationName == undefined)
-      configurationName = routeQueryParams.get("configuration") ?? 'All';
 
-    let adapterSummary: Record<Lowercase<RunState>, number> = {
+    const adapterSummary: Record<Lowercase<RunState>, number> = {
       started: 0,
       stopped: 0,
       starting: 0,
@@ -454,7 +452,7 @@ export class AppService {
       exception_stopping: 0,
       error: 0
     };
-    let receiverSummary: Record<Lowercase<RunState>, number> = {
+    const receiverSummary: Record<Lowercase<RunState>, number> = {
       started: 0,
       stopped: 0,
       starting: 0,
@@ -463,15 +461,15 @@ export class AppService {
       exception_stopping: 0,
       error: 0
     };
-    let messageSummary: Record<Lowercase<MessageLevel>, number> = {
+    const messageSummary: Record<Lowercase<MessageLevel>, number> = {
       info: 0,
       warn: 0,
       error: 0
     };
 
-    let allAdapters = this.adapters;
+    const allAdapters = this.adapters;
     for (const adapterName in allAdapters) {
-      let adapter = allAdapters[adapterName];
+      const adapter = allAdapters[adapterName];
 
       if (adapter.configuration == configurationName || configurationName == 'All') { // Only adapters for active config
         adapterSummary[adapter.state]++;
@@ -479,7 +477,7 @@ export class AppService {
           receiverSummary[adapter.receivers[+i].state.toLowerCase() as Lowercase<RunState>]++;
         }
         for (const i in adapter.messages) {
-          let level = adapter.messages[+i].level.toLowerCase() as Lowercase<MessageLevel>;
+          const level = adapter.messages[+i].level.toLowerCase() as Lowercase<MessageLevel>;
           messageSummary[level]++;
         }
       }

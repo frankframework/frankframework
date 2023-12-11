@@ -63,7 +63,6 @@ export class StatusComponent implements OnInit, OnDestroy {
   getProcessStateIcon = this.appService.getProcessStateIcon;
   getProcessStateIconColor = this.appService.getProcessStateIconColor;
 
-  private routeQueryParams!: ParamMap;
   private _subscriptions = new Subscription();
 
   constructor(
@@ -77,7 +76,6 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.route.queryParamMap.subscribe(params => {
-      this.routeQueryParams = params;
       this.route.fragment.subscribe(fragment => {
         const hash = fragment; // let hash = this.$location.hash();
         this.adapterName = params.get("adapter") ?? "";
@@ -273,7 +271,7 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   changeConfiguration(name: string) {
     this.selectedConfiguration = name;
-    this.appService.updateAdapterSummary(this.routeQueryParams, name);
+    this.appService.updateAdapterSummary(name, true);
     this.updateQueryParams();
     this.updateConfigurationFlowDiagram(name);
   }
