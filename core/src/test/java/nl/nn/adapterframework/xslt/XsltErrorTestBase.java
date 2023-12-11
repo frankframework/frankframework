@@ -5,13 +5,11 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
 
 import org.apache.logging.log4j.Level;
-import org.junit.AssumptionViolatedException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -151,8 +149,6 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		String errorMessage = null;
 		try {
 			doPipe(pipe, input, session);
-		} catch (AssumptionViolatedException e) {
-			assumeTrue(false,"assumption violated:"+e.getMessage());
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			//System.out.println("ErrorMessage: "+errorMessage);
