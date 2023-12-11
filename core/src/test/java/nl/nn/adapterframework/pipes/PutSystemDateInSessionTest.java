@@ -1,9 +1,9 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
@@ -128,7 +128,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		long timeStampInMillis = new Date().getTime();
 		String timeStampInMillisFromSessionKey = (String) session.get("dummy");
 		//Compare timestamp put in session key with the actual timestamp fail if it is bigger than 1 sec.
-		assertFalse("Time stamp difference cannot be bigger than 1 s", timeStampInMillis - new Long(timeStampInMillisFromSessionKey)>1000);
+		assertFalse(timeStampInMillis - Long.parseLong(timeStampInMillisFromSessionKey) > 1000, "Time stamp difference cannot be bigger than 1 s");
 	}
 
 	@Test
@@ -160,7 +160,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 		long timeDifference = second.toEpochMilli()-first.toEpochMilli();
 
-		assertEquals("Timestamps should be different", 1000L, timeDifference);
+		assertEquals(1000L, timeDifference);
 	}
 
 }

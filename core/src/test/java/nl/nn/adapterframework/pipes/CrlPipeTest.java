@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.pipes;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertTestFileEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.InputStream;
 

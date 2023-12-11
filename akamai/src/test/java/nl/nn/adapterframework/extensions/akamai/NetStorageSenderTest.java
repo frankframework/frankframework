@@ -21,6 +21,7 @@ import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,6 +42,12 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 	public void setUp() throws Exception {
 		super.setUp();
 		AppConstants.getInstance().setProperty("http.headers.messageid", false);
+	}
+
+	@Override
+	@AfterEach
+	public void tearDown() throws Exception {
+		AppConstants.getInstance().remove("http.headers.messageid");
 	}
 
 	@Override

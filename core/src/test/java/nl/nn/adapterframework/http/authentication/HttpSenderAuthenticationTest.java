@@ -27,6 +27,8 @@ import nl.nn.adapterframework.senders.SenderTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
 
+import org.junit.jupiter.api.Disabled;
+
 public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 	String RESULT_STATUS_CODE_SESSIONKEY= "ResultStatusCodeSessionKey";
@@ -318,9 +320,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
-		SenderException exception = assertThrows(SenderException.class, () -> {
-			sendNonRepeatableMessage();
-		});
+		SenderException exception = assertThrows(SenderException.class, this::sendNonRepeatableMessage);
 		assertTrue(exception.getCause() instanceof SocketException);
 		assertEquals("(SocketException) Connection reset", exception.getMessage());
 	}
@@ -380,9 +380,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 
 		authtenticatedService.setScenarioState(authtenticatedService.SCENARIO_CONNECTION_RESET, authtenticatedService.SCENARIO_STATE_RESET_CONNECTION);
 
-		SenderException exception = assertThrows(SenderException.class, () -> {
-			sendNonRepeatableMessage();
-		});
+		SenderException exception = assertThrows(SenderException.class, this::sendNonRepeatableMessage);
 		assertTrue(exception.getCause() instanceof SocketException);
 		assertEquals("(SocketException) Connection reset", exception.getMessage());
 	}
@@ -466,5 +464,12 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		Message result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
+	}
+
+	@Test
+	@Override
+	@Disabled
+	public void testIfToStringWorks() {
+		// Once this class is on Junit 5 this method will be removed
 	}
 }

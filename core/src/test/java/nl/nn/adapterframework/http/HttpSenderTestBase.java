@@ -15,8 +15,8 @@
 */
 package nl.nn.adapterframework.http;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -66,7 +66,7 @@ public abstract class HttpSenderTestBase<S extends HttpSenderBase> extends Sende
 
 	protected String getFile(String file) throws IOException {
 		String content = TestFileUtils.getTestFile(BASEDIR+file);
-		assertNotNull("file ["+BASEDIR+file+"] not found", content);
+		assertNotNull(content, "file ["+BASEDIR+file+"] not found");
 		return content;
 	}
 }

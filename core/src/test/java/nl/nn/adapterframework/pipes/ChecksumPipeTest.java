@@ -1,11 +1,12 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -56,24 +57,24 @@ public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 		assertNotNull(result);
 	}
 
-	@Test(expected = Exception.class)
-	public void cantCalculate() throws Exception {
-		doPipe(pipe, new Message((String)null), session);
+	@Test
+	public void cantCalculate() {
+		assertThrows(Exception.class, () -> doPipe(pipe, new Message((String) null), session));
 	}
 
-	@Test(expected = Exception.class)
+	@Test
 	public void wrongPathToFile() throws Exception {
 		pipe.setInputIsFile(true);
 		configureAndStartPipe();
-		doPipe(pipe,"dummyPathToFile", session);
+		assertThrows(Exception.class, () -> doPipe(pipe, "dummyPathToFile", session));
 	}
 
 
-	@Test(expected = PipeRunException.class)
+	@Test
 	public void badCharset() throws Exception {
 		pipe.setCharset("dummy");
 		configureAndStartPipe();
-		doPipe(pipe,"anotherDummy", session);
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "anotherDummy", session));
 	}
 
 	@Test
