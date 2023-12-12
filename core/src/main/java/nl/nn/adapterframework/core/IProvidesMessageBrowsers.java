@@ -23,9 +23,9 @@ public interface IProvidesMessageBrowsers<M> extends IHasProcessState<M> {
 
 
 	/**
-	 * returns a {@link IMessageBrowser browser} of messages that are in ProcessState 'state', and are stored in a 
+	 * returns a {@link IMessageBrowser browser} of messages that are in ProcessState 'state', and are stored in a
 	 * storage managed by the listener itself (as opposed to a storage configured as a messageLog or errorStorage in the configuration).
 	 */
-	public IMessageBrowser<M> getMessageBrowser(ProcessState state);
+	IMessageBrowser<M> getMessageBrowser(ProcessState state);
 
 }

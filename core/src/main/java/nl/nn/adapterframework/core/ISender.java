@@ -37,18 +37,18 @@ public interface ISender extends IConfigurable {
 	 * As much as possible class-instantiating should take place in the <code>configure()</code> or <code>open()</code> method, to improve performance.
 	 */
 	@Override
-	public void configure() throws ConfigurationException;
+	void configure() throws ConfigurationException;
 
 	/**
 	 * This method will be called to start the sender. After this method is called the sendMessage method may be called.
-	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link #sendMessage(Message,PipeLineSession) sendMessage()} method.
+	 * Purpose of this method is to reduce creating connections to databases etc. in the {@link #sendMessage(Message, PipeLineSession) sendMessage()} method.
 	 */
-	public void open() throws SenderException;
+	void open() throws SenderException;
 
 	/**
 	 * Stop/close the sender and deallocate resources.
 	 */
-	public void close() throws SenderException;
+	void close() throws SenderException;
 
 	/**
 	 * When <code>true</code>, the result of sendMessage is the reply of the request.
@@ -73,7 +73,7 @@ public interface ISender extends IConfigurable {
 	 * Multiple objects may try to call this method at the same time, from different threads.
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
 	 */
-	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
+	SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException;
 
 	default Message sendMessageOrThrow(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult senderResult = sendMessage(message, session);

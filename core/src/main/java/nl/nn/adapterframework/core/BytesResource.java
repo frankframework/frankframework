@@ -31,8 +31,8 @@ import nl.nn.adapterframework.util.StreamUtil;
  *
  */
 public class BytesResource extends Resource {
-	private String name;
-	private byte[] bytes;
+	private final String name;
+	private final byte[] bytes;
 
 	public BytesResource(byte[] bytes, String name, IScopeProvider scopeProvider) {
 		super(scopeProvider);

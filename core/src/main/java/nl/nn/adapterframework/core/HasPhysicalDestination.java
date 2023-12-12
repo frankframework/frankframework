@@ -19,10 +19,10 @@ package nl.nn.adapterframework.core;
  * The <code>HasPhysicalDestination</code> allows objects to declare that they have a physical destination.
  * This is used for instance in ShowConfiguration, to show the physical destination of receivers
  * that have one.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public interface HasPhysicalDestination {
-	public String getPhysicalDestinationName();
-	public String getDomain();
+	String getPhysicalDestinationName();
+	String getDomain();
 }
