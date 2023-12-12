@@ -535,18 +535,6 @@ public abstract class HttpSenderBase extends HttpSessionBase implements HasPhysi
 	}
 
 	@Deprecated
-	@ConfigurationWarning("Please use attribute username instead")
-	public void setUserName(String username) {
-		setUsername(username);
-	}
-
-	@Deprecated
-	@ConfigurationWarning("Please use \"proxyUsername\" instead")
-	public void setProxyUserName(String string) {
-		setProxyUsername(string);
-	}
-
-	@Deprecated
 	@ConfigurationWarning("Please use attribute keystore instead")
 	public void setCertificate(String string) {
 		setKeystore(string);

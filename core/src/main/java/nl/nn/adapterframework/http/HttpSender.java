@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.http;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -61,7 +60,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -103,17 +101,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since 7.0
  * @version 2.0
  */
-
 public class HttpSender extends HttpSenderBase {
-
-	@Deprecated private @Getter String streamResultToFileNameSessionKey = null;
-	@Deprecated private @Getter String storeResultAsStreamInSessionKey;
-	@Deprecated private @Getter String storeResultAsByteArrayInSessionKey;
 
 	private @Getter boolean paramsInUrl=true;
 	private @Getter String firstBodyPartName=null;
 
-	private @Getter Boolean multipartResponse=null;
 	private @Getter String multipartXmlSessionKey;
 	private @Getter String mtomContentTransferEncoding = null; //Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
 	private @Getter boolean encodeMessages = false;
@@ -401,7 +393,6 @@ public class HttpSender extends HttpSenderBase {
 				}
 			}
 		}
-
 		return entity.build();
 	}
 
@@ -453,25 +444,7 @@ public class HttpSender extends HttpSenderBase {
 			responseMessage.closeOnCloseOf(session, this);
 		}
 
-		if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
-			try {
-				String fileName = session.getString(getStreamResultToFileNameSessionKey());
-				File file = new File(fileName);
-				StreamUtil.streamToFile(responseMessage.asInputStream(), file);
-				return new Message(fileName);
-			} catch (IOException e) {
-				throw new SenderException("cannot find filename to stream result to", e);
-			}
-		} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
-			session.put(getStoreResultAsStreamInSessionKey(), responseMessage.asInputStream());
-			return Message.nullMessage();
-		} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
-			session.put(getStoreResultAsByteArrayInSessionKey(), responseMessage.asByteArray());
-			return Message.nullMessage();
-		} else if (BooleanUtils.isTrue(getMultipartResponse()) || responseHandler.isMultipart()) {
-			if (BooleanUtils.isFalse(getMultipartResponse())) {
-				log.warn("multipart response was set to false, but the response is multipart!");
-			}
+		if (responseHandler.isMultipart()) {
 			return handleMultipartResponse(responseHandler, session);
 		} else {
 			return getResponseBody(responseHandler);
@@ -566,56 +539,9 @@ public class HttpSender extends HttpSenderBase {
 		paramsInUrl = b;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Use the firstBodyPartName attribute instead")
-	public void setInputMessageParam(String inputMessageParam) {
-		setFirstBodyPartName(inputMessageParam);
-	}
 	/** (Only used when <code>methodType</code>=<code>POST</code> and <code>postType</code>=<code>URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content */
 	public void setFirstBodyPartName(String firstBodyPartName) {
 		this.firstBodyPartName = firstBodyPartName;
-	}
-
-	/** If set, the result is streamed to a file (instead of passed as a string) */
-	@Deprecated
-	@ConfigurationWarning("no longer required to store the result as a file in the PipeLineSession, the sender can return binary data")
-	public void setStreamResultToFileNameSessionKey(String string) {
-		streamResultToFileNameSessionKey = string;
-	}
-
-	/** If set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream) */
-	@Deprecated
-	@ConfigurationWarning("no longer required to store the result as a stream in the PipeLineSession, the sender can return binary data")
-	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
-		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("no longer required to store the result as a byte array in the PipeLineSession, the sender can return binary data")
-	public void setStoreResultAsByteArrayInSessionKey(String storeResultAsByteArrayInSessionKey) {
-		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("multipart has been replaced by postType='formdata'")
-	/**
-	 * If true and <code>methodType<code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, request parameters are put in a multipart/form-data entity instead of in the request body
-	 * @ff.default false
-	 */
-	public void setMultipart(boolean b) {
-		if(b && postType != PostType.MTOM) {
-			postType = PostType.FORMDATA;
-		}
-	}
-
-	@Deprecated
-	@ConfigurationWarning("Unless set explicitly multipart response will be detected automatically")
-	/**
-	 * If true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.
-	 * @ff.default false
-	 */
-	public void setMultipartResponse(Boolean b) {
-		multipartResponse = b;
 	}
 
 	/**
@@ -630,12 +556,6 @@ public class HttpSender extends HttpSenderBase {
 	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("mtomEnabled has been replaced by postType='mtom'")
-	public void setMtomEnabled(boolean b) {
-		if(b) postType = PostType.MTOM;
 	}
 
 	public void setMtomContentTransferEncoding(String mtomContentTransferEncoding) {

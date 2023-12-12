@@ -956,11 +956,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		sessionBuilder.setUsername(userName);
 		this.username = userName;
 	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute username instead")
-	public void setUserName(String userName) {
-		setUsername(userName);
-	}
 
 	/** Password used in authentication to host */
 	public void setPassword(String password) {

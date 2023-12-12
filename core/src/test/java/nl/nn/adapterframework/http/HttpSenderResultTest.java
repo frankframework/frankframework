@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.http;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -24,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.apache.http.Header;
@@ -142,98 +140,12 @@ public class HttpSenderResultTest extends Mockito {
 	}
 
 	@Test
-	public void simpleByteArrayInSessionKeyMockedHttpGet() throws Exception {
-		HttpSender sender = createHttpSender();
-		String SESSIONKEY_KEY = "result";
-
-		PipeLineSession pls = new PipeLineSession();
-
-		sender.setMethodType(HttpMethod.GET);
-		sender.setStoreResultAsByteArrayInSessionKey(SESSIONKEY_KEY);
-
-		sender.configure();
-		sender.open();
-
-		//Use InputStream 'content' as result.
-		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
-		assertNull(result);
-
-		byte[] byteArray = (byte[]) pls.get(SESSIONKEY_KEY);
-		assertEquals("<dummy result/>", new String(byteArray, StandardCharsets.UTF_8));
-	}
-
-	@Test
-	public void simpleByteArrayInSessionKeyMockedHttpPost() throws Exception {
-		HttpSender sender = createHttpSender();
-		String SESSIONKEY_KEY = "result";
-
-		PipeLineSession pls = new PipeLineSession();
-
-		sender.setMethodType(HttpMethod.POST);
-		sender.setStoreResultAsByteArrayInSessionKey(SESSIONKEY_KEY);
-
-		sender.configure();
-		sender.open();
-
-		//Use InputStream 'content' as result.
-		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
-		assertNull(result);
-
-		byte[] byteArray = (byte[]) pls.get(SESSIONKEY_KEY);
-		assertEquals("<dummy result/>", new String(byteArray, StandardCharsets.UTF_8));
-	}
-
-	@Test
-	public void simpleResultAsStreamMockedHttpGet() throws Exception {
-		HttpSender sender = createHttpSender();
-		String SESSIONKEY_KEY = "result";
-
-		PipeLineSession pls = new PipeLineSession();
-
-		sender.setMethodType(HttpMethod.GET);
-		sender.setStoreResultAsStreamInSessionKey(SESSIONKEY_KEY);
-
-		sender.configure();
-		sender.open();
-
-		//Use InputStream 'content' as result.
-		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
-		assertNull(result);
-
-		InputStream stream = (InputStream) pls.get(SESSIONKEY_KEY);
-		assertEquals("<dummy result/>", StreamUtil.streamToString(stream));
-	}
-
-	@Test
-	public void simpleResultAsStreamMockedHttpPost() throws Exception {
-		HttpSender sender = createHttpSender();
-		String SESSIONKEY_KEY = "result";
-
-		PipeLineSession pls = new PipeLineSession();
-
-		sender.setMethodType(HttpMethod.POST);
-		sender.setStoreResultAsStreamInSessionKey(SESSIONKEY_KEY);
-
-		sender.configure();
-		sender.open();
-
-		//Use InputStream 'content' as result.
-		String result = sender.sendMessageOrThrow(new Message("tralala"), pls).asString();
-		assertNull(result);
-
-		InputStream stream = (InputStream) pls.get(SESSIONKEY_KEY);
-		assertEquals("<dummy result/>", StreamUtil.streamToString(stream));
-	}
-
-	@Test
 	public void simpleMultiPartResponse() throws Exception {
 		HttpSender sender = createHttpSenderFromFile("multipart1.txt");
 
 		PipeLineSession pls = new PipeLineSession();
 
 		sender.setMethodType(HttpMethod.GET);
-		sender.setMultipartResponse(true);
-
 		sender.configure();
 		sender.open();
 
