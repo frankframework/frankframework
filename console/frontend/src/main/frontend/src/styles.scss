@@ -1,0 +1,34 @@
+/* You can add global styles to this file, and also import other style files */
+// @import 'bootstrap/scss/bootstrap'; only for v5 or newer
+
+// @import '~datatables.net-dt/css/jquery.dataTables.css';
+@import './toast';
+
+@import './assets/css/animate';
+@import './assets/css/plugins/iCheck/custom';
+@import './assets/css/style';
+@import './assets/css/bootstrap-fix';
+
+.space-it-out {
+  margin: 0 3px 0 0;
+}
+
+@media screen and (max-width: 960px) {
+  .mini-navbar {
+    .page-heading {
+      padding: 3px;
+    }
+
+    .navbar-header .iaf-info {
+      line-height: 50px;
+    }
+
+    .navbar-top-links li a {
+      padding: 15px 10px 0 10px;
+    }
+
+    .navbar .stage {
+      font-size: 20px;
+    }
+  }
+}
