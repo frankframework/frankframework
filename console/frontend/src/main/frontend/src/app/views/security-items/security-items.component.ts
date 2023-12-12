@@ -9,7 +9,6 @@ import { AuthEntry, CertificateList, Datasource, JmsRealm, SapSystem, SecurityIt
 })
 export class SecurityItemsComponent implements OnInit {
   sapSystems: SapSystem[] = [];
-  serverProps: ServerProps = { maximumTransactionTimeout: "", totalTransactionLifetimeTimeout: "" };
   authEntries: AuthEntry[] = [];
   jmsRealms: JmsRealm[] = [];
   securityRoles: SecurityRole[] = [];
@@ -47,7 +46,6 @@ export class SecurityItemsComponent implements OnInit {
       this.jmsRealms = data.jmsRealms;
       this.sapSystems = data.sapSystems;
       this.securityRoles = data.securityRoles;
-      this.serverProps = data.serverProps;
       this.xmlComponents = data.xmlComponents;
     });
   };
