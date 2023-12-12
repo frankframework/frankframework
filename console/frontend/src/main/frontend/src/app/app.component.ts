@@ -256,8 +256,8 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   checkIafVersions() {
-    /* Check IAF version */
-    console.log("Checking IAF version with remote...");
+    /* Check FF version */
+    console.log("Checking FF version with remote...");
     this.appService.getIafVersions(this.miscService.getUID(this.serverInfo!)).subscribe((response) => {
       this.serverInfo = null;
       if (!response || response.length === 0) return;
@@ -272,7 +272,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
       if (+version > 0) {
         this.sessionService.set("IAF-Release", release);
-        this.notificationService.add('fa-exclamation-circle', "IAF update available!", false, () => {
+        this.notificationService.add('fa-exclamation-circle', "FF update available!", false, () => {
           this.router.navigate(['iaf-update']);
         });
       }

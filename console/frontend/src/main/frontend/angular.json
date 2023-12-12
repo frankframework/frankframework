@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "iaf-console-gui": {
+    "ff-console-gui": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -101,15 +101,15 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "iaf-console-gui:build:production"
+              "browserTarget": "ff-console-gui:build:production"
             },
             "development": {
-              "browserTarget": "iaf-console-gui:build:development",
+              "browserTarget": "ff-console-gui:build:development",
               "proxyConfig": "src/proxy.conf.json"
             },
-            "development-iaftest": {
-              "browserTarget": "iaf-console-gui:build:development",
-              "proxyConfig": "src/proxy-iaftest.conf.json"
+            "development-fftest": {
+              "browserTarget": "ff-console-gui:build:development",
+              "proxyConfig": "src/proxy-fftest.conf.json"
             }
           },
           "defaultConfiguration": "development"
@@ -117,7 +117,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "iaf-console-gui:build"
+            "browserTarget": "ff-console-gui:build"
           }
         },
         "test": {

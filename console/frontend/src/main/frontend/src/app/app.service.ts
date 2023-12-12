@@ -270,7 +270,7 @@ export class AppService {
     //Server to connect to, defaults to local server.
     "server": server,
 
-    //How often the interactive frontend should poll the IAF API for new data
+    //How often the interactive frontend should poll the FF API for new data
     "console.pollerInterval": 30000,
 
     //How often the interactive frontend should poll during IDLE state
