@@ -45,7 +45,7 @@ public class Samba1FileSystemTest extends FileSystemTest<SmbFile, Samba1FileSyst
 		result.setShare("smb://localhost:"+port+"/"+shareName);
 		result.setUsername(username);
 		result.setPassword(password);
-		result.setAuthenticationDomain(domain);
+		result.setDomainName(domain);
 		return result;
 	}
 }

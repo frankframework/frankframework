@@ -19,7 +19,7 @@ import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem.Samba2AuthType;
 
-public interface SambaFileSystemDelegator {
+public interface Samba2FileSystemDelegator {
 
 	Samba2FileSystem getFileSystem();
 
@@ -53,7 +53,7 @@ public interface SambaFileSystemDelegator {
 		getFileSystem().setPassword(passwd);
 	}
 
-	/** domain, in case the user account is bound to a domain */
+	@ReferTo(Samba2FileSystem.class)
 	default void setDomainName(String domain) {
 		getFileSystem().setDomainName(domain);
 	}
