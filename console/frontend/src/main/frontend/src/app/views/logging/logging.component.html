@@ -38,10 +38,6 @@
                   <td><span *ngIf="file.type == 'file'">{{file.size}}</span></td>
                   <td appToDate [time]="file.lastModified"></td>
                   <td class="hideBtn1170" *ngIf="file.type == 'file'">
-                    <button *ngIf="file.name.indexOf('-stats_') >= 0" (click)="open(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span> 2HTML</span></button>
-                    <button *ngIf="file.name.indexOf('_xml.log') >= 0" (click)="open(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span> 2HTML</span></button>
-                    <button *ngIf="file.name.indexOf('-stats_') >= 0 || file.name.indexOf('_xml.log') >= 0" (click)="open(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-code-o" aria-hidden="true"></i> <span> XML</span></button>
-                    <button *ngIf="file.name.indexOf('-stats_') < 0 && file.name.indexOf('_xml.log') < 0" (click)="open(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-file-text-o" aria-hidden="true"></i> <span> HTML</span></button>
                     <button (click)="download(file)" class="btn btn-xs pull-right" type="button"><i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i> <span> Download</span></button>
                   </td>
                   <td class="loggingBtn" *ngIf="file.type == 'directory'">

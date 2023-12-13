@@ -65,45 +65,10 @@ export class LoggingComponent implements OnInit {
     } else {
       this.router.navigate(['/logging'], { queryParams: { directory: this.directory, file: file.name } });
     };
-  };
-
-  getFileType(fileName: string) {
-    if (fileName.indexOf('-stats_') >= 0)
-      return 'stats';
-    else if (fileName.indexOf('_xml.log') >= 0)
-      return 'log4j';
-    else if (fileName.indexOf('-stats_') >= 0 || fileName.indexOf('_xml.log') >= 0)
-      return 'xml';
-    else if (fileName.indexOf('-stats_') < 0 && fileName.indexOf('_xml.log') < 0)
-      return 'html';
-
-    return '';
-  };
+  }
 
   openFile(file: { name: string, path: string }) {
-    let resultType = "";
-    let params = "";
-    let as = this.getFileType(file.name);
-    switch (as) {
-      case "stats":
-        resultType = "html";
-        params += "&stats=true";
-        break;
-      case "log4j":
-        resultType = "html";
-        params += "&log4j=true";
-        break;
-      default:
-        resultType = as;
-        break;
-    };
-
-    let URL = this.appService.getServerPath() + "FileViewerServlet?resultType=" + resultType + "&fileName=" + this.miscService.escapeURL(file.path) + params;
-    if (resultType == "xml") {
-      window.open(URL, "_blank");
-      return;
-    };
-
+    const URL = this.appService.getServerPath() + "FileViewerServlet?resultType=html&fileName=" + this.miscService.escapeURL(file.path);
     this.viewFile = this.sanitizer.bypassSecurityTrustResourceUrl(URL);
 
     setTimeout(() => {
