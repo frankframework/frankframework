@@ -41,11 +41,10 @@
 				</StoredProcedureQuerySender>
 			</SenderPipe>
 			<PutInSessionPipe name="Record Stored Procedure Result in Session" sessionKey="SP2Result"/>
-			<CompareIntegerPipe
-					name="Check Output Parameter Result"
-					sessionKey1="countAfter"
-					sessionKey2="SP2Result"
-			>
+			<CompareIntegerPipe name="Check Output Parameter Result">
+				<param name="operand1" sessionKey="countAfter"/>
+				<param name="operand2" sessionKey="ERRSP2ResultOR"/>
+
 				<forward name="lessthan" path="ERROR"/>
 				<forward name="greaterthan" path="ERROR"/>
 				<forward name="equals" path="Calculate Nr of Rows Inserted"/>
