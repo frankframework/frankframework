@@ -16,6 +16,8 @@
 package nl.nn.adapterframework.senders;
 
 import jcifs.smb.SmbFile;
+import nl.nn.adapterframework.configuration.ConfigurationWarning;
+import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 
@@ -25,37 +27,50 @@ public class Samba1Sender extends FileSystemSender<SmbFile, Samba1FileSystem> {
 		setFileSystem(new Samba1FileSystem());
 	}
 
-	/** Shared folder name in the samba server */
+	@ReferTo(Samba1FileSystem.class)
 	public void setShare(String share) {
 		getFileSystem().setShare(share);
 	}
 
-	/** the smb share username */
+	@ReferTo(Samba1FileSystem.class)
 	public void setUsername(String username) {
 		getFileSystem().setUsername(username);
 	}
 
-	/** the smb share password */
+	@ReferTo(Samba1FileSystem.class)
 	public void setPassword(String password) {
 		getFileSystem().setPassword(password);
 	}
 
-	/** alias used to obtain credentials for the smb share */
+	@ReferTo(Samba1FileSystem.class)
 	public void setAuthAlias(String authAlias) {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	/** in case the user account is bound to a domain */
+	@ReferTo(Samba1FileSystem.class)
+	@Deprecated
+	@ConfigurationWarning("Please use attribute domainName instead")
 	public void setDomain(String domain) {
-		getFileSystem().setDomain(domain);
+		getFileSystem().setDomainName(domain);
+	}
+	@Deprecated
+	@ReferTo(Samba1FileSystem.class)
+	@ConfigurationWarning("Please use attribute domainName instead")
+	public void setAuthenticationDomain(String domain) {
+		getFileSystem().setDomainName(domain);
+	}
+	@ReferTo(Samba1FileSystem.class)
+	public void setDomainName(String domain) {
+		getFileSystem().setDomainName(domain);
 	}
 
-	/**
-	 * controls whether hidden files are seen or not
-	 * @ff.default false
-	 */
+	@ReferTo(Samba1FileSystem.class)
 	public void setForce(boolean force) {
 		getFileSystem().setForce(force);
 	}
 
+	@ReferTo(Samba1FileSystem.class)
+	public void setListHiddenFiles(boolean listHiddenFiles) {
+		getFileSystem().setListHiddenFiles(listHiddenFiles);
+	}
 }
