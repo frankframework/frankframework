@@ -90,7 +90,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	private @Getter Samba2AuthType authType = Samba2AuthType.SPNEGO;
 	private @Getter String share = null;
 	private String hostname;
-	private int port;
+	private int port = 445;
 
 	private @Getter String domainName = null;
 	private @Getter String kdc = null;
@@ -483,10 +483,18 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		this.realm = realm;
 	}
 
+	/**
+	 * Hostname of the SMB share.
+	 * @ff.mandatory
+	 */
 	public void setHostname(String hostname) {
 		this.hostname = hostname;
 	}
 
+	/**
+	 * Port to connect to.
+	 * @ff.default 445
+	 */
 	public void setPort(int port) {
 		this.port = port;
 	}
