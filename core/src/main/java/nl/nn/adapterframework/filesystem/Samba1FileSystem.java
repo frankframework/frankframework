@@ -37,9 +37,9 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
- *
- * Uses the SMB 1 protocol
- *
+ * Uses the (old) SMB 1 protocol.
+ * <br/>
+ * Only supports NTLM authentication.
  */
 public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritableFileSystem<SmbFile> {
 	private final @Getter(onMethod = @__(@Override)) String domain = "SMB";
@@ -320,28 +320,28 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 		return null;
 	}
 
-	/** the destination, aka smb://xxx/yyy share */
+	/** The destination, aka smb://xxx/yyy share */
 	public void setShare(String share) {
 		this.share = share;
 	}
 
-	/** the smb share username */
+	/** The SMB share username */
 	public void setUsername(String username) {
 		this.username = username;
 	}
 
-	/** the smb share password */
+	/** The SMB share password */
 	public void setPassword(String password) {
 		this.password = password;
 	}
 
-	/** alias used to obtain credentials for the smb share */
+	/** Alias used to obtain credentials for the SMB share */
 	public void setAuthAlias(String authAlias) {
 		this.authAlias = authAlias;
 	}
 
-	/** domain, in case the user account is bound to a domain */
-	public void setAuthenticationDomain(String domain) {
+	/** logon/authentication domain, in case the user account is bound to a domain such as Active Directory. */
+	public void setDomainName(String domain) {
 		this.authenticationDomain = domain;
 	}
 
