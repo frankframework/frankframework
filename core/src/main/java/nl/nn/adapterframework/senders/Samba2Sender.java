@@ -26,7 +26,7 @@ import nl.nn.adapterframework.filesystem.smb.SmbFileRef;
 *
 * Possible error codes:
 * <br/>
-* Pre-authentication information was invalid (24) / Idenitfier doesn't match expected value (906):  login information is incorrect
+* Pre-authentication information was invalid (24) or Identifier doesn't match expected value (906): login information is incorrect
 * Server not found in Kerberos database (7): Verify that the hostname is the FQDN and the server is using a valid SPN.
 *
 * @author Niels Meijer

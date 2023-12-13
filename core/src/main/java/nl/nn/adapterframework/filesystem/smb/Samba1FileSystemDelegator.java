@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.filesystem.smb;
 
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.doc.ReferTo;
 import nl.nn.adapterframework.filesystem.Samba1FileSystem;
 
@@ -43,18 +42,6 @@ public interface Samba1FileSystemDelegator {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@ReferTo(Samba1FileSystem.class)
-	@Deprecated
-	@ConfigurationWarning("Please use attribute domainName instead")
-	default void setDomain(String domain) {
-		getFileSystem().setDomainName(domain);
-	}
-	@Deprecated
-	@ReferTo(Samba1FileSystem.class)
-	@ConfigurationWarning("Please use attribute domainName instead")
-	default void setAuthenticationDomain(String domain) {
-		getFileSystem().setDomainName(domain);
-	}
 	@ReferTo(Samba1FileSystem.class)
 	default void setDomainName(String domain) {
 		getFileSystem().setDomainName(domain);
