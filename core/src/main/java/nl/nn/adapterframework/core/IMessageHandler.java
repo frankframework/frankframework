@@ -36,7 +36,7 @@ public interface IMessageHandler<M> {
 	/**
 	 * Same as {@link #processRawMessage(IListener,RawMessageWrapper,PipeLineSession, boolean)}, but now updates IdleStatistics too
 	 */
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException;
+	void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, long waitingTime, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
 	 * Alternative to functions above, will NOT use {@link IListener#extractMessage}. Used by PushingListeners.

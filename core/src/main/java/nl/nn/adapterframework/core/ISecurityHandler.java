@@ -21,13 +21,14 @@ import org.apache.commons.lang3.NotImplementedException;
 
 /**
  * Defines behaviour that can be used to assert identity of callers of a pipeline.
- * 
+ *
  * @author Gerrit van Brakel
  * @since  4.3
  */
 public interface ISecurityHandler {
 
-	public boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException;
-	public Principal getPrincipal(PipeLineSession session) throws NotImplementedException;
+	boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException;
+
+	Principal getPrincipal(PipeLineSession session) throws NotImplementedException;
 
 }

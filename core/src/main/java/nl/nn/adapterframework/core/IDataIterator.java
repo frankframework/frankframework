@@ -17,16 +17,15 @@ package nl.nn.adapterframework.core;
 
 /**
  * Interface to handle generic iterations.
- * 
- * 
- * @author  Gerrit van Brakel
- * @since   6.4.1
+ *
+ * @author Gerrit van Brakel
+ * @since 6.4.1
  */
 public interface IDataIterator<T> extends AutoCloseable {
 
-	public boolean hasNext() throws SenderException;
-	public T next() throws SenderException;
+	boolean hasNext() throws SenderException;
+	T next() throws SenderException;
 
 	@Override
-	public void close() throws SenderException;
+	void close() throws SenderException;
 }
