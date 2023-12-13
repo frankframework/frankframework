@@ -154,7 +154,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			} else {
 				typeNr = JdbcUtil.mapParameterTypeToSqlType(param.getType()).getVendorTypeNumber();
 			}
-			callableStatement.setNull(position, typeNr);
+//			callableStatement.setNull(position, typeNr);
 			callableStatement.registerOutParameter(position, typeNr);
 		}
 		return callableStatement;

@@ -870,14 +870,21 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterValueList parameters, PipeLineSession session) throws SQLException, JdbcException {
+	public static void applyParameters(IDbmsSupport dbmsSupport, PreparedStatement statement, ParameterValueList parameters, PipeLineSession session) throws JdbcException {
 		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
 		if (parameters != null) {
 			for (int i = 0; i < parameters.size(); i++) {
-				if (parameters.getParameterValue(i).getDefinition().getMode() == Parameter.ParameterMode.OUTPUT) {
+				ParameterValue parameterValue = parameters.getParameterValue(i);
+				if (parameterValue.getDefinition().getMode() == Parameter.ParameterMode.OUTPUT) {
 					continue;
 				}
-				applyParameter(statement, parameters.getParameterValue(i), i + 1, parameterTypeMatchRequired, session);
+				try {
+					applyParameter(statement, parameterValue, i + 1, parameterTypeMatchRequired, session);
+				} catch (SQLException | IOException e) {
+					throw new JdbcException("Could not set parameter [" + parameterValue.getName() +
+							"] with type [" + parameterValue.getDefinition().getType() +
+							"] at position " + i + ", exception: " + e.getMessage(), e);
+				}
 			}
 		}
 	}
@@ -909,7 +916,7 @@ public class JdbcUtil {
 		}
 	}
 
-	private static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired, PipeLineSession session) throws SQLException, JdbcException {
+	private static void applyParameter(PreparedStatement statement, ParameterValue pv, int parameterIndex, boolean parameterTypeMatchRequired, PipeLineSession session) throws SQLException, IOException {
 		String paramName=pv.getDefinition().getName();
 		ParameterType paramType = pv.getDefinition().getType();
 		Object value = pv.getValue();
@@ -961,60 +968,34 @@ public class JdbcUtil {
 				break;
 			//noinspection deprecation
 			case INPUTSTREAM:
-			case BINARY:
-				try {
-					Message message = Message.asMessage(value);
-					message.closeOnCloseOf(session, "JDBC Blob Parameter");
-					long len = message.size();
-					if(message.requiresStream()) {
-						if(len != -1) {
-							statement.setBinaryStream(parameterIndex, message.asInputStream(), len);
-						} else {
-							statement.setBinaryStream(parameterIndex, message.asInputStream());
-						}
-					}
-					else {
-						statement.setBytes(parameterIndex, message.asByteArray());
-					}
-				} catch(IOException e) {
-					throw new JdbcException("applying the parameter ["+paramName+"] failed", e);
+			case BINARY: {
+				Message message = Message.asMessage(value);
+				message.closeOnCloseOf(session, "JDBC Blob Parameter");
+				if (message.requiresStream()) {
+					statement.setBinaryStream(parameterIndex, message.asInputStream());
+				} else {
+					statement.setBytes(parameterIndex, message.asByteArray());
 				}
 				break;
-			case CHARACTER:
-				try {
-					Message message = Message.asMessage(value);
-					message.closeOnCloseOf(session, "JDBC Clob Parameter");
-					long len = message.size();
-					if(message.requiresStream()) {
-						if(len != -1) {
-							statement.setCharacterStream(parameterIndex, message.asReader(), len);
-						} else {
-							statement.setCharacterStream(parameterIndex, message.asReader());
-						}
-					}
-					else {
-						statement.setString(parameterIndex, message.asString());
-					}
-				} catch(IOException e) {
-					throw new JdbcException("applying the parameter ["+paramName+"] failed", e);
+			}
+			case CHARACTER: {
+				Message message = Message.asMessage(value);
+				message.closeOnCloseOf(session, "JDBC Clob Parameter");
+				if (message.requiresStream()) {
+					statement.setCharacterStream(parameterIndex, message.asReader());
+				} else {
+					statement.setString(parameterIndex, message.asString());
 				}
 				break;
+			}
 			//noinspection deprecation
 			case BYTES:
-				try {
-					statement.setBytes(parameterIndex, Message.asByteArray(value));
-				} catch (IOException e) {
-					throw new JdbcException("Failed to get bytes for the parameter ["+paramName+"]", e);
-				}
+				statement.setBytes(parameterIndex, Message.asByteArray(value));
 				break;
 			default:
-				try {
-					Message message = Message.asMessage(value);
-					message.closeOnCloseOf(session, "JDBC Parameter");
-					setParameter(statement, parameterIndex, message.asString(), parameterTypeMatchRequired);
-				} catch (IOException e) {
-					throw new JdbcException("applying the parameter ["+paramName+"] failed", e);
-				}
+				Message message = Message.asMessage(value);
+				message.closeOnCloseOf(session, "JDBC Parameter");
+				setParameter(statement, parameterIndex, message.asString(), parameterTypeMatchRequired);
 		}
 	}
 
