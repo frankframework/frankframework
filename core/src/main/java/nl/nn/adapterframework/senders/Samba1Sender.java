@@ -47,14 +47,12 @@ public class Samba1Sender extends FileSystemSender<SmbFile, Samba1FileSystem> {
 		getFileSystem().setAuthAlias(authAlias);
 	}
 
-	@ReferTo(Samba1FileSystem.class)
 	@Deprecated
 	@ConfigurationWarning("Please use attribute domainName instead")
 	public void setDomain(String domain) {
 		getFileSystem().setDomainName(domain);
 	}
 	@Deprecated
-	@ReferTo(Samba1FileSystem.class)
 	@ConfigurationWarning("Please use attribute domainName instead")
 	public void setAuthenticationDomain(String domain) {
 		getFileSystem().setDomainName(domain);
