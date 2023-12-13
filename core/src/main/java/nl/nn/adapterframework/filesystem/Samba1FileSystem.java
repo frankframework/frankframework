@@ -32,7 +32,6 @@ import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.FilenameUtils;
@@ -342,13 +341,8 @@ public class Samba1FileSystem extends FileSystemBase<SmbFile> implements IWritab
 	}
 
 	/** domain, in case the user account is bound to a domain */
-	public void setAuthenticationDomain(String domain) {
+	public void setDomainName(String domain) {
 		this.authenticationDomain = domain;
-	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute authenticationDomain instead")
-	public void setDomain(String domain) {
-		setAuthenticationDomain(domain);
 	}
 
 	/**
