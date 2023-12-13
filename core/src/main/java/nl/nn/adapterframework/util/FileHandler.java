@@ -371,7 +371,7 @@ public class FileHandler implements IScopeProvider {
 			}
 			// Use tmpFile.getPath() instead of tmpFile to be WAS 5.0 / Java 1.3 compatible
 			try(FileOutputStream fos = new FileOutputStream(tmpFile.getPath(), append)){
-				Misc.streamToStream(in, fos, isWriteLineSeparator() ? eolArray : null);
+				Misc.streamToStream(in, fos, isWriteLineSeparator() ? eolArray : null, true);
 			}
 			return tmpFile.getPath().getBytes();
 		}

@@ -258,7 +258,7 @@ public class Misc {
 	}
 
 	public static void streamToStream(InputStream input, OutputStream output) throws IOException {
-		streamToStream(input, output, null);
+		streamToStream(input, output, null, true);
 	}
 
 	/**
@@ -277,7 +277,7 @@ public class Misc {
 	 * </p>
 	 * @throws IOException  exception to be thrown if an I/O exception occurs
 	 */
-	public static void streamToStream(InputStream input, OutputStream output, byte[] eof) throws IOException {
+	public static void streamToStream(InputStream input, OutputStream output, byte[] eof, boolean close) throws IOException {
 		if (input!=null) {
 			try {
 				byte[] buffer=new byte[BUFFERSIZE];
@@ -289,7 +289,8 @@ public class Misc {
 					output.write(eof);
 				}
 			} finally {
-				input.close();
+				if (close)
+					input.close();
 			}
 		}
 	}

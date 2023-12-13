@@ -41,13 +41,13 @@ import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Pipe that creates a ZipStream.
- * 
+ *
  * For action=open, the Pipe will create a new zip, that will be written to a file or stream specified by the input message, that must be a:<ul>
  * <li>String specifying a filename</li>
  * <li>OutputStream</li>
  * <li>HttpResponse</li>
  * </ul>
- * 
+ *
  * @ff.parameter filename specifies the filename if the input is a HttpResponse
  *
  * @author  Gerrit van Brakel
@@ -197,6 +197,7 @@ public class ZipWriterPipe extends FixedForwardPipe {
 			}
 			if (ACTION_WRITE.equals(getAction())) {
 				try {
+					input.preserve();
 					if (isCompleteFileHeader()) {
 						sessionData.writeEntryWithCompletedHeader(filename, input, isCloseInputstreamOnExit(), getCharset());
 					} else {
