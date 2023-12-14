@@ -231,6 +231,14 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	/**
+	 * Convenience method to set required parameters from listeners. Will not update messageId and correlationId when NULL.
+	 * Sets the current date-time as TS-Received.
+	 */
+	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId) {
+		updateListenerParameters(map, messageId, correlationId, Instant.now(), null);
+	}
+
+	/**
 	 * Convenience method to set required parameters from listeners. Will not update messageId and
 	 * correlationId when NULL. Will use current date-time for TS-Received if null.
 	 */

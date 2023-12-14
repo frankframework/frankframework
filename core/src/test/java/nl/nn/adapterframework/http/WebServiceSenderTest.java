@@ -85,7 +85,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 
 			sender.setMethodType(HttpMethod.POST);
 			sender.setParamsInUrl(false);
-			sender.setInputMessageParam("request");
+			sender.setFirstBodyPartName("request");
 
 			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 					+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -115,7 +115,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 
 			sender.setMethodType(HttpMethod.POST);
 			sender.setParamsInUrl(false);
-			sender.setInputMessageParam("request");
+			sender.setFirstBodyPartName("request");
 
 			String xmlMultipart = "<parts>"
 					+ "<part type=\"file\" name=\"document1.pdf\" sessionKey=\"part_file1\" mimeType=\"application/pdf\"/>"
@@ -147,7 +147,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 
 			sender.setMethodType(HttpMethod.POST);
 			sender.setParamsInUrl(false);
-			sender.setInputMessageParam("request");
+			sender.setFirstBodyPartName("request");
 
 			String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 					+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -155,7 +155,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-			sender.setMtomEnabled(true);
+			sender.setPostType(HttpSender.PostType.MTOM);
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
@@ -177,11 +177,11 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 			PipeLineSession pls = new PipeLineSession(session);
 
 			sender.setParamsInUrl(false);
-			sender.setInputMessageParam("file");
-			sender.setMultipart(true);
+			sender.setFirstBodyPartName("file");
+			sender.setPostType(HttpSender.PostType.FORMDATA);
 			sender.setAllowSelfSignedCertificates(true);
 			sender.setVerifyHostname(false);
-			sender.setMtomEnabled(true);
+			sender.setPostType(HttpSender.PostType.MTOM);
 
 			sender.addParameter(new Parameter("file", "<xml>I just sent some text! :)</xml>"));
 

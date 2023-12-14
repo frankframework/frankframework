@@ -10,6 +10,11 @@
 	<artifactId>ibis-adapterframework-console-frontend</artifactId>
 	<name>Frank Console Frontend</name>
 
+	<properties>
+		<frontend.source.location>${project.basedir}/src/main/frontend</frontend.source.location>
+		<frontend.target.location>${project.build.directory}/frontend</frontend.target.location>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ibissource</groupId>
@@ -37,7 +42,6 @@
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
 				<artifactId>frontend-maven-plugin</artifactId>
-				<version>1.15.0</version>
 				<executions>
 					<execution>
 						<id>install node and npm</id>
@@ -57,18 +61,16 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>webpack build</id>
+						<id>npm build</id>
 						<goals>
-							<goal>webpack</goal>
+							<goal>npx</goal>
 						</goals>
 						<phase>generate-resources</phase>
+						<configuration>
+							<arguments>ng build -c development</arguments>
+						</configuration>
 					</execution>
 				</executions>
-				<configuration>
-					<nodeVersion>v16.20.0</nodeVersion>
-					<workingDirectory>src/main/frontend</workingDirectory>
-					<installDirectory>target</installDirectory>
-				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
@@ -84,7 +86,7 @@
 							<outputDirectory>${project.build.outputDirectory}/console</outputDirectory>
 							<resources>
 								<resource>
-									<directory>${basedir}/target/frontend</directory>
+									<directory>${frontend.target.location}</directory>
 									<filtering>false</filtering>
 								</resource>
 							</resources>
@@ -95,7 +97,7 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-			<!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself -->
+				<!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -110,8 +112,8 @@
 										<versionRange>[1.12,)</versionRange>
 										<goals>
 											<goal>install-node-and-npm</goal>
-											<goal>webpack</goal>
 											<goal>npm</goal>
+											<goal>npx</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
@@ -133,6 +135,16 @@
 								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>com.github.eirslett</groupId>
+					<artifactId>frontend-maven-plugin</artifactId>
+					<version>1.15.0</version>
+					<configuration>
+						<nodeVersion>v16.20.0</nodeVersion>
+						<workingDirectory>${frontend.source.location}</workingDirectory><!-- frontend resources -->
+						<installDirectory>${project.build.directory}</installDirectory><!-- npm + npx install folder -->
 					</configuration>
 				</plugin>
 				<plugin>
@@ -223,16 +235,43 @@
 					<plugin>
 						<groupId>com.github.eirslett</groupId>
 						<artifactId>frontend-maven-plugin</artifactId>
-						<version>1.15.0</version>
+						<configuration>
+							<skip>true</skip>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>exec-maven-plugin</artifactId>
+						<version>3.1.1</version>
+						<configuration>
+							<workingDirectory>${frontend.source.location}</workingDirectory>
+						</configuration>
 						<executions>
 							<execution>
-								<id>webpack build</id>
+								<id>npm install</id>
 								<goals>
-									<goal>webpack</goal>
+									<goal>exec</goal>
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>--mode production</arguments>
+									<executable>npm</executable>
+									<arguments>
+										<argument>install</argument>
+									</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>ng build</id>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+								<phase>generate-resources</phase>
+								<configuration>
+									<executable>npx</executable>
+									<arguments>
+										<argument>ng</argument>
+										<argument>build</argument>
+									</arguments>
 								</configuration>
 							</execution>
 						</executions>

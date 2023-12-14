@@ -19,5 +19,5 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 
 public interface IConfigurable extends INamedObject, IConfigurationAware {
 
-	public void configure() throws ConfigurationException;
+	void configure() throws ConfigurationException;
 }

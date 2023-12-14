@@ -13,7 +13,7 @@
 				serviceName="ibis4test-TransactionHandlingNotSupportedSubAdapterException"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				slotId="${applicationId}/GenericReceiverTransactionHandlingNotSupportedSubAdapterException"
+				slotId="${applicationId}/ReceiverTransactionHandlingNotSupportedSubAdapterException"
 			/>
 		</receiver>
 
@@ -52,7 +52,7 @@
 		<receiver
 			transactionAttribute="NotSupported"
 		>
-			<listener 
+			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="TransactionHandlingNotSupportedSubAdapterThrowException"
 			/>

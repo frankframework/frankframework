@@ -35,8 +35,8 @@ public enum ProcessState {
 	@Getter @Setter
 	private String name;
 
-	private ProcessState(String name) {
-		this.name=name;
+	ProcessState(String name) {
+		this.name = name;
 	}
 
 	public static Set<ProcessState> getMandatoryKnownStates() {

@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.management.bus.endpoints;
 
-import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -99,8 +98,7 @@ public class TestPipeline extends BusEndpointBase {
 				pls.putAll(threadContext);
 			}
 
-			Instant now = Instant.now();
-			PipeLineSession.updateListenerParameters(pls, messageId, correlationId, now, now);
+			PipeLineSession.updateListenerParameters(pls, messageId, correlationId);
 
 			secLog.info("testing pipeline of adapter [{}] {}", adapter.getName(), (writeSecurityLogMessage ? "message [" + payload + "]" : ""));
 

@@ -3,7 +3,7 @@
 		name="SendersExceptionInSenderWithExceptionForward"
 		description="Senders Exception In Sender With Failure Forward"
 		>
-		<receiver name="GenericReceiverSendersExceptionInSenderWithExceptionForward">
+		<receiver name="ReceiverSendersExceptionInSenderWithExceptionForward">
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="SendersExceptionInSenderWithExceptionForward"
@@ -47,7 +47,7 @@
 
 	<adapter name="SendersExceptionInSubAdapter" description="Senders Exception In Sub Adapter">
 
-		<receiver name="GenericReceiverTestToolExceptionInSubAdapter">
+		<receiver name="ReceiverTestToolExceptionInSubAdapter">
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="SendersExceptionInSubAdapter"
@@ -90,7 +90,7 @@
 
 	<adapter name="SendersParallelSenders" description="Senders Parallel Senders">
 
-		<receiver name="GenericReceiverTestToolParallelSenders">
+		<receiver name="ReceiverTestToolParallelSenders">
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="SendersParallelSenders"
@@ -200,7 +200,7 @@
 
 	<adapter name="SendersIsolated" description="Senders Isolated">
 
-		<receiver name="GenericReceiverTestIsolated">
+		<receiver name="ReceiverTestIsolated">
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="SendersIsolated"

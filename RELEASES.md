@@ -12,6 +12,7 @@ Upcoming (8.0)
 - CreateRestViewPipe has been removed. It is no longer possible to open the old (blue) user interface.
 - IBulkDataListener has been removed. This feature was only supported through custom listeners and not tested.
 - IbisTester class has been moved from the CORE module to LARVA
+- IteratingPipes with `parallel=true` now throws exceptions. In order to suppress this behaviour please set `ignoreExceptions=true`.
 
 
 7.9

@@ -13,7 +13,7 @@
 				serviceName="ibis4test-TransactionHandlingMultiAdapter"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				slotId="${applicationId}/GenericReceiverTransactionHandlingMultiAdapter"
+				slotId="${applicationId}/ReceiverTransactionHandlingMultiAdapter"
 			/>
 		</receiver>
 
@@ -64,7 +64,7 @@
 
 			<pipe name="this should fail because of a tx error" className="nl.nn.adapterframework.pipes.EchoPipe"
 				getInputFromFixedValue="&lt;transacted&gt;exception&lt;/transacted&gt;">
-				
+
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
@@ -77,7 +77,7 @@
 		<receiver
 			transactionAttribute="NotSupported"
 		>
-			<listener 
+			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="TransactionHandlingMultiAdapterNotSupportedThrowException"
 			/>
@@ -105,7 +105,7 @@
 		<receiver
 			transactionAttribute="Required"
 		>
-			<listener 
+			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="TransactionHandlingMultiAdapterRequiredThrowException"
 			/>

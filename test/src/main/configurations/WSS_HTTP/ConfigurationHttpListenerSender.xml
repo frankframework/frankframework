@@ -26,7 +26,7 @@
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListener"
-					inputMessageParam="request" />
+					firstBodyPartName="request" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -59,7 +59,7 @@
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/HttpListener?service=LocalHttpListenerTimeout"
-					timeout="1000" inputMessageParam="request" />
+					timeout="1000" firstBodyPartName="request" />
 				<forward name="timeout" path="error_timeout" />
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -70,15 +70,4 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-	<!--adapter description="Actuver Http" name="StartActuverHttp"> <receiver> 
-		<listener className="nl.nn.adapterframework.receivers.JavaListener" name="StartActuverHttp"/> 
-		</receiver> <pipeline firstPipe="ActuverHttpSend"> <exits> <exit path="READY" 
-		state="success"/> </exits> <pipe className="nl.nn.adapterframework.pipes.SenderPipe" 
-		name="ActuverHttpSend"> <sender className="nl.nn.adapterframework.http.HttpSender" 
-		methodType="POST" paramsInUrl="false" ignoreRedirects="true" timeout="15000" 
-		url="http://rn0903r.itc.intranet/actuver/ActuverServlet"> <param name="datasource" 
-		value="java:comp/env/jdbc/ActuverDS"/> <param name="stand_soort" value="M"/> 
-		<param name="xml_input" value="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&lt;workload&gt;&lt;proces&gt;&lt;param 
-		waarde=&quot;M&quot; naam=&quot;stand_soort&quot;/&gt;&lt;/proces&gt;&lt;/workload&gt;"/> 
-		</sender> <forward name="success" path="READY"/> </pipe> </pipeline> </adapter -->
 </module>

@@ -239,12 +239,6 @@ public class Stub4TesttoolTest {
 	}
 
 	@Test
-	public void stub4testtoolGenericMessageSendingPipe() throws Exception {
-		String directory = STUB4TESTTOOL_DIRECTORY + "/GenericMessageSendingPipe";
-		stub4testtoolTest(directory, false);
-	}
-
-	@Test
 	public void stub4testtoolForEachChildElementPipe() throws Exception {
 		String directory = STUB4TESTTOOL_DIRECTORY + "/ForEachChildElementPipe";
 		stub4testtoolTest(directory, false);
@@ -382,7 +376,7 @@ public class Stub4TesttoolTest {
 		} catch (SAXException|TransformerConfigurationException e) {
 			throw new ConfigurationException("got error creating transformer from file [" + xslt + "]", e);
 		} catch (TransformerException te) {
-			throw new ConfigurationException("got error transforming resource [" + xsltSource.toString() + "] from [" + xslt + "]", te);
+			throw new ConfigurationException("got error transforming resource [" + xsltSource + "] from [" + xslt + "]", te);
 		}
 	}
 }

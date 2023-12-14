@@ -152,7 +152,7 @@ public class FileHandler implements IScopeProvider {
 				throw new ConfigurationException(getLogPrefix(null)+"Action [" + token + "] is not supported");
 		}
 
-		if (transformers.size() == 0)
+		if (transformers.isEmpty())
 			throw new ConfigurationException(getLogPrefix(null)+"should at least define one action");
 		if (!outputType.equalsIgnoreCase("string")
 				&& !outputType.equalsIgnoreCase("bytes")
@@ -167,10 +167,6 @@ public class FileHandler implements IScopeProvider {
 		}
 		eolArray = System.getProperty("line.separator").getBytes();
 	}
-
-//	public Object handle(Object input, PipeLineSession session) throws Exception {
-//		return handle(input, session, null);
-//	}
 
 	public Object handle(Message input, PipeLineSession session, ParameterList paramList) throws Exception {
 		Object output = null;
@@ -291,8 +287,7 @@ public class FileHandler implements IScopeProvider {
 		return name;
 	}
 
-	private Object getEffectiveFile(byte[] in, PipeLineSession session)
-			throws IOException {
+	private Object getEffectiveFile(byte[] in, PipeLineSession session) {
 		String name = getEffectiveFileName(in, session);
 		if (fileSource.equals("classpath")) {
 			return ClassLoaderUtils.getResourceURL(this, name);
@@ -305,18 +300,16 @@ public class FileHandler implements IScopeProvider {
 		}
 	}
 
-	private File createFile(byte[] in, PipeLineSession session, ParameterList paramList) throws IOException, ParameterException {
+	private File createFile(PipeLineSession session, ParameterList paramList) throws IOException, ParameterException {
 		File tmpFile;
 
 		String writeSuffix_work = null;
 		if (paramList != null) {
 			ParameterValueList pvl = paramList.getValues(null, session);
 			if (pvl != null) {
-				ParameterValue writeSuffixParamValue = pvl
-						.getParameterValue("writeSuffix");
+				ParameterValue writeSuffixParamValue = pvl.getParameterValue("writeSuffix");
 				if (writeSuffixParamValue != null) {
-					writeSuffix_work = (String) writeSuffixParamValue
-							.getValue();
+					writeSuffix_work = (String) writeSuffixParamValue.getValue();
 				}
 			}
 		}
@@ -365,7 +358,7 @@ public class FileHandler implements IScopeProvider {
 		}
 		@Override
 		public byte[] go(InputStream in, PipeLineSession session, ParameterList paramList) throws Exception {
-			File tmpFile=createFile(null, session, paramList);
+			File tmpFile=createFile(session, paramList);
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (tmpFile.getParentFile().mkdirs()) {
@@ -401,7 +394,7 @@ public class FileHandler implements IScopeProvider {
 		}
 		@Override
 		public byte[] go(byte[] in, PipeLineSession session, ParameterList paramList) throws Exception {
-			File tmpFile=createFile(in, session, paramList);
+			File tmpFile=createFile(session, paramList);
 			if (!tmpFile.getParentFile().exists()) {
 				if (isCreateDirectory()) {
 					if (tmpFile.getParentFile().mkdirs()) {

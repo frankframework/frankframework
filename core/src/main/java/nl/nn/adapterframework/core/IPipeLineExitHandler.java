@@ -18,18 +18,18 @@ package nl.nn.adapterframework.core;
 /**
  * Interface that allows a Pipe to register an exit handler.
  * This handler will be called <i>always</i> after PipeLine-processing has finished
- * 
+ *
  * @author  Gerrit van Brakel
- * @since   4.6.0  
+ * @since   4.6.0
  */
 public interface IPipeLineExitHandler extends INamedObject {
 
 	/**
 	 * Called to allow registered handler to perform cleanup or commit/rollback.
-	 * 
-	 * @param correlationId	 correlationId of current session
-	 * @param pipeLineResult the result of the PipeLine 
-	 * @param session		 the PipeLineSession
+	 *
+	 * @param correlationId  correlationId of current session
+	 * @param pipeLineResult the result of the PipeLine
+	 * @param session        the PipeLineSession
 	 */
-	public void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, PipeLineSession session) throws PipeRunException;
+	void atEndOfPipeLine(String correlationId, PipeLineResult pipeLineResult, PipeLineSession session) throws PipeRunException;
 }

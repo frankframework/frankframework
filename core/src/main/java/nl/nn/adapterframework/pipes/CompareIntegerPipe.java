@@ -15,10 +15,7 @@
 */
 package nl.nn.adapterframework.pipes;
 
-import org.apache.commons.lang3.StringUtils;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -53,30 +50,25 @@ public class CompareIntegerPipe extends AbstractPipe {
 	private static final String GREATERTHANFORWARD = "greaterthan";
 	private static final String EQUALSFORWARD = "equals";
 
-	private static final String OPERAND1 = "operand1";
-	private static final String OPERAND2 = "operand2";
-
-	private String sessionKey1 = null;
-	private String sessionKey2 = null;
+	protected static final String OPERAND1 = "operand1";
+	protected static final String OPERAND2 = "operand2";
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
 		if (null == findForward(LESSTHANFORWARD))
-			throw new ConfigurationException("forward ["+ LESSTHANFORWARD+ "] is not defined");
+			throw new ConfigurationException("forward [" + LESSTHANFORWARD + "] is not defined");
 
 		if (null == findForward(GREATERTHANFORWARD))
-			throw new ConfigurationException("forward ["+ GREATERTHANFORWARD+ "] is not defined");
+			throw new ConfigurationException("forward [" + GREATERTHANFORWARD + "] is not defined");
 
 		if (null == findForward(EQUALSFORWARD))
-			throw new ConfigurationException("forward ["+ EQUALSFORWARD+ "] is not defined");
+			throw new ConfigurationException("forward [" + EQUALSFORWARD + "] is not defined");
 
-		if (StringUtils.isEmpty(getSessionKey1()) && StringUtils.isEmpty(getSessionKey2())) {
-			ParameterList parameterList = getParameterList();
-			if (parameterList.findParameter(OPERAND1) == null && parameterList.findParameter(OPERAND2) == null) {
-				throw new ConfigurationException("has neither parameter [" + OPERAND1 + "] nor parameter [" + OPERAND2 + "] specified");
-			}
+		ParameterList parameterList = getParameterList();
+		if (parameterList.findParameter(OPERAND1) == null && parameterList.findParameter(OPERAND2) == null) {
+			throw new ConfigurationException("has neither parameter [" + OPERAND1 + "] nor parameter [" + OPERAND2 + "] specified");
 		}
 	}
 
@@ -90,10 +82,10 @@ public class CompareIntegerPipe extends AbstractPipe {
 				throw new PipeRunException(this, "exception extracting parameters", e);
 			}
 		}
-		Integer operand1 = getOperandValue(pvl, OPERAND1, getSessionKey1(), message, session);
-		Integer operand2 = getOperandValue(pvl, OPERAND2, getSessionKey2(), message, session);
+		Integer operand1 = getOperandValue(pvl, OPERAND1, message);
+		Integer operand2 = getOperandValue(pvl, OPERAND2, message);
 
-		int comparison=operand1.compareTo(operand2);
+		int comparison = operand1.compareTo(operand2);
 		if (comparison == 0)
 			return new PipeRunResult(findForward(EQUALSFORWARD), message);
 		else if (comparison < 0)
@@ -103,25 +95,18 @@ public class CompareIntegerPipe extends AbstractPipe {
 
 	}
 
-	private Integer getOperandValue(ParameterValueList pvl, String operandName, String sessionkey, Message message, PipeLineSession session) throws PipeRunException {
+	private Integer getOperandValue(ParameterValueList pvl, String operandName, Message message) throws PipeRunException {
 		ParameterValue pv = pvl.get(operandName);
 		Integer operand = null;
-		if(pv != null && pv.getValue() != null) {
+		if (pv != null && pv.getValue() != null) {
 			operand = pv.asIntegerValue(0);
 		}
 
 		if (operand == null) {
-			if (StringUtils.isNotEmpty(sessionkey)) {
-				operand = session.getInteger(sessionkey);
-				if (operand == null) {
-					throw new PipeRunException(this, "Exception on getting [" + operandName + "] from session key ["+sessionkey+"]");
-				}
-			} else {
-				try {
-					operand = new Integer(message.asString());
-				} catch (Exception e) {
-					throw new PipeRunException(this, "Exception on getting [" + operandName + "] from input message", e);
-				}
+			try {
+				operand = Integer.valueOf(message.asString());
+			} catch (Exception e) {
+				throw new PipeRunException(this, "Exception on getting [" + operandName + "] from input message", e);
 			}
 		}
 		return operand;
@@ -129,28 +114,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
-		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey1()) || sessionKey.equals(getSessionKey2());
-	}
-
-
-	@Deprecated
-	/** reference to one of the session variables to be compared */
-	@ConfigurationWarning("Please use the parameter operand1")
-	public void setSessionKey1(String string) {
-		sessionKey1 = string;
-	}
-	public String getSessionKey1() {
-		return sessionKey1;
-	}
-
-	@Deprecated
-	/** reference to the other session variables to be compared */
-	@ConfigurationWarning("Please use the parameter operand2")
-	public void setSessionKey2(String string) {
-		sessionKey2 = string;
-	}
-	public String getSessionKey2() {
-		return sessionKey2;
+		return super.consumesSessionVariable(sessionKey);
 	}
 
 }

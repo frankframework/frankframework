@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.XmlEncodingUtils;
  *
  * @author Gerrit van Brakel
  */
-public class StringIteratorPipe extends IteratingPipe<String> {
+public abstract class StringIteratorPipe extends IteratingPipe<String> {
 
 	private @Getter int stringIteratorPipeBlockSize=0;
 	private @Getter int startPosition=-1;

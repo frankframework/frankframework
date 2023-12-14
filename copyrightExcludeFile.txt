@@ -4,6 +4,8 @@ src/test/
 src\test\
 webapp/
 webapp\
+.angular/
+.angular\
 overlays/
 overlays\
 docker/
@@ -45,6 +47,7 @@ LICENSE
 .pfx
 .asc
 .js
+.ts
 .json
 .xsl
 .xsd
@@ -53,6 +56,7 @@ LICENSE
 .yml
 .txt
 .css
+.scss
 .properties
 .log
 .xml

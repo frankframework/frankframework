@@ -44,7 +44,6 @@ import nl.nn.adapterframework.xml.IXmlDebugger;
  *
  * @author Gerrit van Brakel
  */
-
 public class JsonXsltSender extends XsltSender {
 
 	private boolean jsonResult=true;
@@ -75,7 +74,6 @@ public class JsonXsltSender extends XsltSender {
 		}
 	}
 
-
 	@Override
 	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler) {
 		if (getXmlDebugger()!=null) {
@@ -95,11 +93,11 @@ public class JsonXsltSender extends XsltSender {
 		return jsonResult;
 	}
 
-	@Override
 	/**
-	 * Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions
+	 * Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions
 	 * @ff.default j=http://www.w3.org/2013/XSL/json
 	 */
+	@Override
 	public void setNamespaceDefs(String namespaceDefs) {
 		super.setNamespaceDefs(namespaceDefs);
 	}

@@ -1,9 +1,9 @@
 <configuration>
-	<adapter name="GenericMessageSendingPipe">
-		<receiver name="GenericMessageSendingPipe">
+	<adapter name="SenderPipe">
+		<receiver name="SenderPipe">
 			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
-				name="GenericMessageSendingPipe"
+				name="SenderPipe"
 			/>
 		</receiver>
 
@@ -13,7 +13,7 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				>
 				<sender
 					className="nl.nn.adapterframework.senders.IbisLocalSender"

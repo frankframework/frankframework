@@ -18,44 +18,16 @@ package nl.nn.adapterframework.pipes;
 import jcifs.smb.SmbFile;
 import nl.nn.adapterframework.filesystem.FileSystemPipe;
 import nl.nn.adapterframework.filesystem.Samba1FileSystem;
+import nl.nn.adapterframework.filesystem.smb.Samba1FileSystemDelegator;
 
-public class Samba1Pipe extends FileSystemPipe<SmbFile, Samba1FileSystem> {
+/**
+ * Uses the (old) SMB 1 protocol.
+ * <br/>
+ * Only supports NTLM authentication.
+ */
+public class Samba1Pipe extends FileSystemPipe<SmbFile, Samba1FileSystem> implements Samba1FileSystemDelegator {
 
 	public Samba1Pipe() {
 		setFileSystem(new Samba1FileSystem());
 	}
-
-	/** Shared folder name in the samba server */
-	public void setShare(String share) {
-		getFileSystem().setShare(share);
-	}
-
-	/** the smb share username */
-	public void setUsername(String username) {
-		getFileSystem().setUsername(username);
-	}
-
-	/** the smb share password */
-	public void setPassword(String password) {
-		getFileSystem().setPassword(password);
-	}
-
-	/** alias used to obtain credentials for the smb share */
-	public void setAuthAlias(String authAlias) {
-		getFileSystem().setAuthAlias(authAlias);
-	}
-
-	/** in case the user account is bound to a domain */
-	public void setDomain(String domain) {
-		getFileSystem().setAuthenticationDomain(domain);
-	}
-
-	/**
-	 * controls whether hidden files are seen or not
-	 * @ff.default false
-	 */
-	public void setForce(boolean force) {
-		getFileSystem().setForce(force);
-	}
-
 }

@@ -1,0 +1,119 @@
+<nav class="navbar-default navbar-static-side" role="navigation">
+  <div class="sidebar-collapse">
+    <ul appSideNavigation class="nav metismenu" id="side-menu">
+      <li class="nav-header">
+
+        <div class="profile-element">
+          <object data="assets/images/frank-framework-logo.svg" id="logo" type="image/svg+xml">
+            <img src="assets/images/frank-framework-logo.svg" alt="Logo">
+          </object>
+        </div>
+        <div class="logo-element">
+          <object data="assets/images/frank-exclamation.svg" id="logo" type="image/svg+xml">
+            <img src="assets/images/frank-exclamation.svg" alt="Logo">
+          </object>
+        </div>
+      </li>
+
+      <app-custom-views></app-custom-views>
+
+      <li routerLinkActive="active">
+        <a routerLink="/status"><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a>
+      </li>
+      <li [ngClass]="getClassByRoute('active', 'configuration')" class="nav-group">
+        <a href=""><i class="fa fa-cogs"></i> <span class="nav-label">Configurations</span> <span
+            class="fa arrow"></span></a>
+        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'configuration')">
+          <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><a routerLink="/configurations">Show Configurations</a></li>
+          <li routerLinkActive="active"><a routerLink="/configurations/manage">Manage Configurations</a></li>
+        </ul>
+      </li>
+      <li [ngClass]="getClassByRoute('active', 'logging')" class="nav-group">
+        <a href=""><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span> <span
+            class="fa arrow"></span></a>
+        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'logging')">
+          <li
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', matrixParams: 'exact', fragment: 'ignored' }"
+          ><a routerLink="/logging">Log Files</a></li>
+          <li routerLinkActive="active"><a routerLink="/logging/settings">Log Settings</a></li>
+        </ul>
+      </li>
+      <li [ngClass]="getClassByRoute('active', 'testing')" class="nav-group">
+        <a href=""><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span></a>
+        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'testing')">
+          <li routerLinkActive="active"><a routerLink="/testing/larva">Larva</a></li>
+          <li routerLinkActive="active"><a routerLink="/testing/ladybug">Ladybug</a></li>
+          <li routerLinkActive="active"><a routerLink="/testing/ladybug-beta">Ladybug (beta)</a></li>
+          <li routerLinkActive="active"><a routerLink="/test-pipeline">Test a Pipeline</a></li>
+          <li routerLinkActive="active"><a routerLink="/test-service-listener">Test a ServiceListener</a></li>
+        </ul>
+      </li>
+      <li [ngClass]="getClassByRoute('active', 'jdbc')" class="nav-group">
+        <a href=""><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span></a>
+        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'jdbc')">
+          <li routerLinkActive="active"><a routerLink="/jdbc/execute-query">Execute Query</a></li>
+          <li routerLinkActive="active"><a routerLink="/jdbc/browse-tables">Browse Tables</a></li>
+          <li routerLinkActive="active"><a routerLink="/liquibase">Liquibase Script</a></li>
+        </ul>
+      </li>
+      <li [ngClass]="getClassByRoute('active', 'jms')" class="nav-group">
+        <a href=""><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span> <span class="fa arrow"></span></a>
+        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'jms')">
+          <li routerLinkActive="active"><a routerLink="/jms/browse-queue">Browse Queue</a></li>
+          <li routerLinkActive="active"><a routerLink="/jms/send-message">Send Message</a></li>
+        </ul>
+      </li>
+      <li routerLinkActive="active">
+        <a routerLink="/webservices"><i class="fa fa-paper-plane-o"></i> <span class="nav-label">Webservices</span></a>
+      </li>
+      <li routerLinkActive="active">
+        <a routerLink="/scheduler"><i class="fa fa-calendar"></i> <span class="nav-label">Scheduler</span></a>
+      </li>
+      <li routerLinkActive="active">
+        <a routerLink="/monitors"><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a>
+      </li>
+      <li routerLinkActive="active">
+        <a routerLink="/environment-variables"><i class="fa fa-language"></i> <span class="nav-label">Environment
+            Variables</span></a>
+      </li>
+      <li class="nav-group">
+        <a href=""><i class="fa fa-sitemap"></i> <span class="nav-label">Overview</span> <span
+            class="fa arrow"></span></a>
+        <ul class="nav nav-second-level">
+          <li routerLinkActive="active"><a routerLink="/connections">Connection Overview</a></li>
+          <li routerLinkActive="active"><a routerLink="/ibisstore-summary">Ibisstore Summary</a></li>
+          <li routerLinkActive="active"><a routerLink="/inlinestores/overview">InlineStore Overview</a></li>
+        </ul>
+      </li>
+      <li routerLinkActive="active">
+        <a routerLink="/security-items"><i class="fa fa-lock"></i> <span class="nav-label">Security Items</span></a>
+      </li>
+      <li>
+        <a (click)="openInfo()" class="pointer"><i class="fa fa-info-circle"></i> <span
+            class="nav-label">Information</span></a>
+      </li>
+      <li style="border-top: 1px solid #19aa8d;">
+        <a target="_blank" href="http://frank-manual.readthedocs.io/" alt="Frank!Manual" rel="noopener noreferrer"><i
+            class="fa fa-book"></i> <span class="nav-label">Frank!Manual</span></a>
+      </li>
+      <li>
+        <a target="_blank" href="../frankdoc" alt="Frank!Doc"><i class="fa fa-book"></i> <span
+            class="nav-label">Frank!Doc</span></a>
+      </li>
+      <li>
+        <a (click)="openFeedback()" class="pointer"><i class="fa fa-commenting-o"></i> <span class="nav-label">Send
+            Feedback!</span></a>
+      </li>
+      <li>
+        <a target="_blank" href="https://github.com/frankframework/frankframework" alt="github.com/frankframework/frankframework"><i
+            class="fa fa-github"></i> <span class="nav-label">GitHub SourceCode</span></a>
+      </li>
+
+      <li>
+        <app-scroll-to-top />
+      </li>
+      <app-minimaliza-sidebar />
+    </ul>
+  </div>
+</nav>

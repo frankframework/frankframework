@@ -13,7 +13,7 @@
 				serviceName="ibis4test-TransactionHandlingNotSupported"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				slotId="${applicationId}/GenericReceiverTransactionHandlingNotSupported"
+				slotId="${applicationId}/ReceiverTransactionHandlingNotSupported"
 			/>
 		</receiver>
 
@@ -39,11 +39,11 @@
 	<adapter
 		name="TransactionHandlingNotSupportedSubAdapter"
 		description="First SubAdapter for Transaction Handling">
-	
+
 		<receiver
 			transactionAttribute="NotSupported"
 		>
-			<listener 
+			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="TransactionHandlingNotSupportedSubAdapter"
 			/>
@@ -71,11 +71,11 @@
 	<adapter
 		name="TransactionHandlingNeverSubAdapter"
 		description="First SubAdapter for Transaction Handling">
-	
+
 		<receiver
 			transactionAttribute="NotSupported"
 		>
-			<listener 
+			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="TransactionHandlingNeverSubAdapter"
 			/>
@@ -88,7 +88,7 @@
 
 			<pipe name="Continue if this call was not transacted" className="nl.nn.adapterframework.pipes.EchoPipe"
 				getInputFromFixedValue="&lt;transacted&gt;never&lt;/transacted&gt;">
-				
+
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

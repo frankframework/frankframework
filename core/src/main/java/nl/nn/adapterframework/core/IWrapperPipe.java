@@ -22,18 +22,16 @@ import nl.nn.adapterframework.doc.Optional;
 
 /**
  * Marker interface for Wrappers
- * 
- * * @author Gerrit van Brakel
- * 
+ * @author Gerrit van Brakel
  */
 @FrankDocGroup(order = 50, name = "Wrappers")
 @ElementType(ElementTypes.WRAPPER)
 public interface IWrapperPipe extends IPipe {
 
-	enum Direction { WRAP, UNWRAP; };
+	enum Direction {WRAP, UNWRAP}
 
 	/** The functional name of this pipe, is not required when used as a Wrapper */
 	@Override
 	@Optional
-	public void setName(String name);
+	void setName(String name);
 }

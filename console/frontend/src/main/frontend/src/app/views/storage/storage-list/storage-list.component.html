@@ -1,0 +1,177 @@
+<div class="wrapper wrapper-content animated fadeInRight">
+  <ngb-alert *ngFor="let alert of getNotes() | orderby:'type'; index as $index" [type]="alert.type"
+    (closed)="closeNote($index)" [dismissible]="false">{{alert.message}}</ngb-alert>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins">
+        <div (click)="filterBoxExpanded = !filterBoxExpanded" class="ibox-title pointer">
+          <div class="ibox-tools pull-right">
+            <a> <i class="fa fa-chevron-{{(filterBoxExpanded) ? 'up' : 'down' }}"></i></a>
+          </div>
+          <div class="row full-width">
+            <div class="col-lg-6 col-md-12 clear">
+              <h4>Display and Search Filters</h4>
+            </div>
+          </div>
+        </div>
+        <div class="ibox-content p-w-sm" *ngIf="filterBoxExpanded">
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <td></td>
+                  <td>Display Column</td>
+                  <td>Search Filter</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th>Storage ID</th>
+                  <td><input disabled icheck type="checkbox" name="id" (change)="updateFilter('id')"
+                      [(ngModel)]="displayColumn.id" /></td>
+                  <td><input type="text" class="full-width" [(ngModel)]="search['id']" /></td>
+                </tr>
+                <tr>
+                  <th>Timestamp (From)</th>
+                  <td><input icheck type="checkbox" (change)="updateFilter('insertDate')"
+                      [(ngModel)]="displayColumn.insertDate" /></td>
+                  <td><input type="text" class="full-width" [(ngModel)]="search['startDate']"
+                      title="Expects a timestamp with at least yyyy-mm" /></td>
+                </tr>
+                <tr>
+                  <th>Timestamp (To)</th>
+                  <td>&nbsp;</td>
+                  <td><input type="text" class="full-width" [(ngModel)]="search['endDate']"
+                      title="Expects a timestamp with at least yyyy-mm" /></td>
+                </tr>
+                <tr>
+                  <th>Host</th>
+                  <td><input icheck type="checkbox" (change)="updateFilter('host')" [(ngModel)]="displayColumn.host" />
+                  </td>
+                  <td><input type="text" class="full-width" [(ngModel)]="search['host']" /></td>
+                </tr>
+                <tr>
+                  <th>Original ID</th>
+                  <td><input icheck type="checkbox" (change)="updateFilter('originalId')"
+                      [(ngModel)]="displayColumn.originalId" /></td>
+                  <td><input type="text" class="full-width" [(ngModel)]="search['messageId']" /></td>
+                </tr>
+                <tr>
+                  <th>Correlation ID</th>
+                  <td><input icheck type="checkbox" (change)="updateFilter('correlationId')"
+                      [(ngModel)]="displayColumn.correlationId" /></td>
+                  <td><input type="text" class="full-width" [(ngModel)]="search['correlationId']" /></td>
+                </tr>
+                <tr>
+                  <th>Comment</th>
+                  <td><input icheck type="checkbox" (change)="updateFilter('comment')"
+                      [(ngModel)]="displayColumn.comment" /></td>
+                  <td><input type="text" class="full-width" [(ngModel)]="search['comment']" /></td>
+                </tr>
+                <tr>
+                  <th>Expires</th>
+                  <td><input icheck type="checkbox" (change)="updateFilter('expiryDate')"
+                      [(ngModel)]="displayColumn.expiryDate" /></td>
+                  <td>&nbsp;</td>
+                </tr>
+                <tr>
+                  <th>Label</th>
+                  <td><input icheck type="checkbox" (change)="updateFilter('label')"
+                      [(ngModel)]="displayColumn.label" /></td>
+                  <td><input type="text" class="full-width" [(ngModel)]="search['label']" /></td>
+                </tr>
+                <tr>
+                  <th>Message</th>
+                  <td>&nbsp;</td>
+                  <td><input type="text" class="full-width" [(ngModel)]="search['message']" /></td>
+                </tr>
+                <tr>
+                  <th>&nbsp;</th>
+                  <td>&nbsp;</td>
+                  <td>
+                    <button [ladda]="searching" (click)="searchUpdated()" class="btn btn-info btn-sm" type="button"><i
+                        class="fa fa-search" aria-hidden="true"></i> Search</button>
+                    <button [ladda]="clearSearchLadda" (click)="clearSearch()" class="btn btn-warning btn-sm"
+                      type="button"><i class="fa fa-times" aria-hidden="true"></i> Clear</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins">
+        <div class="ibox-title">
+          <div class="pull-right">
+            <button [routerLink]="['/status']" [queryParams]="{ adapter:storageParams.adapterName }"
+              class="btn btn-xs pull-right btn-info" type="button"><i class="fa fa-arrow-circle-o-left"
+                aria-hidden="true"></i> <span> Back</span></button>
+          </div>
+          <h4>Browse messages<span *ngIf="storageParams.storageSource != 'pipes'"> in state
+              [{{storageParams.processState}}]</span> of
+            {{storageParams.storageSource | dropLastChar}} [{{storageParams.storageSourceName}}] of adapter
+            [{{storageParams.adapterName}}]</h4>
+        </div>
+        <div class="ibox-content">
+          <div class="pull-right">
+            <button [title]="truncateButtonText" (click)="truncate()"
+              [ngClass]="truncated ? 'btn btn-info btn-sm space-it-out' : 'btn btn-default btn-sm space-it-out'"
+              type="button">{{truncateButtonText}}</button>
+            <button title="Select All Messages" (click)="selectAll()" class="btn btn-default btn-sm space-it-out"
+              type="button">Select All</button>
+            <button title="Unselect All Messages" (click)="unselectAll()" class="btn btn-default btn-sm space-it-out"
+              type="button">Unselect All</button>
+            <span *ngFor="let targetState of targetStates">
+              <button [ladda]="changingProcessState" data-style="slide-right"
+                (click)="changeProcessState(targetState.name)"
+                class="btn btn-default btn-sm space-it-out" type="button"><i
+                  class="fa {{getProcessStateIcon(targetState.name)}}"></i> Move to
+                {{targetState.name}}</button>
+            </span>
+            <button [ladda]="messagesDownloading" data-style="slide-right" title="Download Selected Messages"
+              (click)="downloadMessages()" class="btn btn-info btn-sm space-it-out" type="button"><i
+                class="fa fa-arrow-circle-o-down"></i> Download Selected</button>
+            <button *ngIf="storageParams.processState=='Error'" [ladda]="messagesResending" data-style="slide-right"
+              title="Resend Selected Messages" (click)="resendMessages()" class="btn btn-warning btn-sm space-it-out"
+              type="button"><i class="fa fa-repeat"></i> Resend Selected</button>
+            <button *ngIf="storageParams.processState=='Error'" [ladda]="messagesDeleting" data-style="slide-right"
+              title="Delete Selected Messages" (click)="deleteMessages()" class="btn btn-danger btn-sm" type="button"><i
+                class="fa fa-times"></i> Delete Selected</button>
+          </div>
+          <ng-template #storageListDt let-data="adtData" let-emitter="captureEvents" let-userData="userData">
+            <app-storage-list-dt [message]="data" [userData]="userData"
+              (emitter)="emitter($event)"></app-storage-list-dt>
+          </ng-template>
+          <ng-template #dateDt let-data="adtData" let-columnId="userData.column">
+            <span *ngIf="data[columnId]" appToDate [time]="data[columnId]">{{data[columnId]}}</span>
+          </ng-template>
+          <!-- <table id="datatable" class="table table-striped table-hover" #datatable> -->
+          <table id="datatable" class="table table-striped table-hover" datatable [dtOptions]="dtOptions"
+            [dtTrigger]="dtTrigger">
+            <thead>
+              <tr>
+                <th style="width:120px;">&nbsp;</th>
+                <th>No.</th>
+                <th>Storage ID</th>
+                <th>Timestamp</th>
+                <th>Host</th>
+                <th>Original ID</th>
+                <th>Correlation ID</th>
+                <th>Comment</th>
+                <th>Expires</th>
+                <th>Label</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -17,7 +17,7 @@ package nl.nn.adapterframework.core;
 
 /**
  * IForwardTarget represents the destination of a PipeForward, so a {@link IPipe} or {@link PipeLineExit}.
- * 
+ *
  * @author Gerrit van Brakel
  */
 public interface IForwardTarget {
@@ -25,6 +25,6 @@ public interface IForwardTarget {
 	/**
 	 * The part of the object that identifies its destination: The {@link IPipe#getName() name} of the Pipe or the {@link PipeLineExit#setPath(String) path} of the PipeLineExit.
 	 */
-	public String getName();
+	String getName();
 
 }

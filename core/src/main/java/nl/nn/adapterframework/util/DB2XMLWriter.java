@@ -140,7 +140,7 @@ public class DB2XMLWriter {
 					}
 				}
 			} catch (Exception e) {
-				log.error("Error occured at row [" + rowCounter+"]", e);
+				log.error("Error occurred at row [" + rowCounter+"]", e);
 			}
 		}
 	}

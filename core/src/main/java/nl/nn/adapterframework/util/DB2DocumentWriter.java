@@ -91,7 +91,7 @@ public class DB2DocumentWriter {
 				}
 			}
 		} catch (Exception e) {
-			log.error("Error occured at row [" + rowCounter+"]", e);
+			log.error("Error occurred at row [" + rowCounter+"]", e);
 		}
 	}
 

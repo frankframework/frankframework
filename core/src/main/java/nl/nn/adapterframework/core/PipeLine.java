@@ -673,9 +673,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	@Deprecated
-	public void registerForward(PipeForward forward){
+	public void registerForward(PipeForward forward) {
 		globalForwards.put(forward.getName(), forward);
-		log.debug("registered global PipeForward "+forward.toString());
+		log.debug("registered global PipeForward {}", forward);
 	}
 
 	/**
@@ -690,19 +690,20 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/** Cache of results */
 	@Override
-	public void setCache(ICache<String,String> cache) {
-		this.cache=cache;
+	public void setCache(ICache<String, String> cache) {
+		this.cache = cache;
 	}
 
 	/**
-	 * Register an Pipe at this pipeline.
+	 * Register a Pipe at this pipeline.
 	 * The name is also put in the globalForwards table (with
 	 * forward-name=pipename and forward-path=pipename, so that
 	 * pipe can look for a specific pipe-name. If already a globalForward
 	 * exists under that name, the pipe is NOT added, allowing globalForwards
 	 * to prevail.
-	 * @see AbstractPipe
+	 *
 	 * @ff.mandatory
+	 * @see AbstractPipe
 	 **/
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
@@ -710,7 +711,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 		String name = pipe.getName();
 		if (StringUtils.isEmpty(name)) {
-			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe)+"] to be added has no name, pipelineTable size ["+pipesByName.size()+"]");
+			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe) + "] to be added has no name, pipelineTable size [" + pipesByName.size() + "]");
 		}
 		IPipe current = getPipe(name);
 		if (current != null) {
@@ -721,7 +722,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (pipe.getMaxThreads() > 0) {
 			pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
 		}
-		log.debug("added pipe [" + pipe.toString() + "]");
+		log.debug("added pipe [" + pipe + "]");
 	}
 
 	/**

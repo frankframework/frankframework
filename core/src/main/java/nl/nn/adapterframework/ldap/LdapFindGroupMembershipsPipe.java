@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
+import lombok.Getter;
 import nl.nn.adapterframework.cache.ICache;
 import nl.nn.adapterframework.cache.ICacheEnabled;
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -60,7 +61,7 @@ import nl.nn.adapterframework.util.XmlBuilder;
  */
 public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements ICacheEnabled<String,Set<String>> {
 
-	private boolean recursiveSearch = true;
+	private @Getter boolean recursiveSearch = true;
 
 	private LdapClient ldapClient;
 	private ICache<String, Set<String>> cache;
@@ -146,9 +147,6 @@ public class LdapFindGroupMembershipsPipe extends LdapQueryPipeBase implements I
 	 */
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
-	}
-	public boolean isRecursiveSearch() {
-		return recursiveSearch;
 	}
 
 }

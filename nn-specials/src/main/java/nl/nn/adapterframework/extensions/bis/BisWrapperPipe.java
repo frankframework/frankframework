@@ -300,7 +300,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 						bisDetailText = (String) session.get(getBisErrorReasonSessionKey());
 					}
 					if (isOmitResult()) {
-						throw new PipeRunException(this, "bisError occured: errorCode [" + bisErrorCode + "], errorText [" + bisErrorText + "]");
+						throw new PipeRunException(this, "bisError occurred: errorCode [" + bisErrorCode + "], errorText [" + bisErrorText + "]");
 					}
 				}
 				String bisResult = prepareResult(bisErrorCode, bisErrorText, getBisServiceName(), getBisActionName(), bisDetailText);

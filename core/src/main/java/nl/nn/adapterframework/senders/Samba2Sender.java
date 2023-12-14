@@ -17,10 +17,21 @@ package nl.nn.adapterframework.senders;
 
 import nl.nn.adapterframework.filesystem.FileSystemSender;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
-import nl.nn.adapterframework.filesystem.smb.SambaFileSystemDelegator;
+import nl.nn.adapterframework.filesystem.smb.Samba2FileSystemDelegator;
 import nl.nn.adapterframework.filesystem.smb.SmbFileRef;
 
-public class Samba2Sender extends FileSystemSender<SmbFileRef, Samba2FileSystem> implements SambaFileSystemDelegator {
+/**
+*
+* Uses the (newer) SMB 2 and 3 protocol.
+*
+* Possible error codes:
+* <br/>
+* Pre-authentication information was invalid (24) or Identifier doesn't match expected value (906): login information is incorrect
+* Server not found in Kerberos database (7): Verify that the hostname is the FQDN and the server is using a valid SPN.
+*
+* @author Niels Meijer
+*/
+public class Samba2Sender extends FileSystemSender<SmbFileRef, Samba2FileSystem> implements Samba2FileSystemDelegator {
 
 	public Samba2Sender() {
 		setFileSystem(new Samba2FileSystem());

@@ -13,7 +13,7 @@
 				serviceName="ibis4test-TransactionHandlingRequiredSubAdapterException"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				slotId="${applicationId}/GenericReceiverTransactionHandlingRequiredSubAdapterException"
+				slotId="${applicationId}/ReceiverTransactionHandlingRequiredSubAdapterException"
 			/>
 		</receiver>
 
@@ -51,7 +51,7 @@
 		<receiver
 			transactionAttribute="Required"
 		>
-			<listener 
+			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="TransactionHandlingRequiredSubAdapterThrowException"
 			/>

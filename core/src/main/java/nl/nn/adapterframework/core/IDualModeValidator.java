@@ -17,5 +17,5 @@ package nl.nn.adapterframework.core;
 
 public interface IDualModeValidator extends IValidator {
 
-	public IValidator getResponseValidator();
+	IValidator getResponseValidator();
 }

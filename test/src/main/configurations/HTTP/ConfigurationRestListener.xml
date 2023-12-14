@@ -156,9 +156,7 @@
 			<pipe name="callRest"
 				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
-					urlParam="url_param" streamResultToServlet="true"
-					sharedResourceRef="SharedHttpSession"
-				>
+					urlParam="url_param" sharedResourceRef="SharedHttpSession">
 					<param name="url_param" sessionKey="url" />
 				</sender>
 				<forward name="success" path="EXIT" />

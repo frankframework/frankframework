@@ -16,17 +16,17 @@
 package nl.nn.adapterframework.core;
 
 /**
- * Indicates a Pipe, Sender or Listener to be capable of supporting XA-transactions. 
+ * Indicates a Pipe, Sender or Listener to be capable of supporting XA-transactions.
  * When isTransacted() returns true, alternative XA enabled versions of resources like
- * connectionfactories should be used by implementing classes.
+ * connection factories should be used by implementing classes.
  * @author Gerrit van Brakel
  * @since  4.1
  */
 public interface IXAEnabled {
 
 	/**
-	 *  indicates implementing object is under transaction control, using XA-transactions
+	 * indicates implementing object is under transaction control, using XA-transactions
 	 */
-	public boolean isTransacted();
+	boolean isTransacted();
 
 }

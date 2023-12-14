@@ -61,7 +61,7 @@ public class EsbJmsSender extends JmsSender {
 			Parameter p = SpringUtils.createBean(getApplicationContext(), Parameter.class);
 			p.setName("SoapAction");
 			p.setStyleSheetName("/xml/xsl/esb/soapAction.xsl");
-			//p.setXslt2(true);
+			p.setXsltVersion(2);
 			p.setRemoveNamespaces(true);
 			addParameter(p);
 		}
@@ -73,8 +73,10 @@ public class EsbJmsSender extends JmsSender {
 		messageProtocol = protocol;
 	}
 
-	/** receiver timeout, in milliseconds
-	 * ff.default 20000 (20s) */
+	/**
+	 * receiver timeout, in milliseconds
+	 * @ff.default 20000 (20s)
+	 */
 	public void setTimeOut(long l) {
 		timeOut = l;
 	}

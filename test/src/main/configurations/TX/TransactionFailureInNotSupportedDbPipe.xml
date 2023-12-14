@@ -1,0 +1,66 @@
+<module>
+	<adapter
+		name="TransactionHandlingWithAnExceptionInNotSupportedDbPipe"
+		description="Tests 'Exception is not correctly handled (#5203)'"
+	>
+		<receiver
+			transactionTimeout="2"
+			transactionAttribute="Required"
+		>
+			<listener
+				className="nl.nn.adapterframework.receivers.JavaListener"
+				name="TransactionExceptionInNonDbPipe"
+				serviceName="ibis4test-TransactionFailureInNotSupportedDbPipe"
+			/>
+			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+				slotId="${applicationId}/TransactionFailureInNotSupportedDbPipe"
+			/>
+		</receiver>
+
+		<pipeline firstPipe="fixedInsert" transactionAttribute="Required">
+			<exits>
+				<exit path="EXIT" state="success"/>
+				<exit path="ERROR" state="error"/>
+			</exits>
+
+			<pipe name="fixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('LASTNAME',?)" queryType="insert">
+					<param name="value" value="test1" />
+				</sender>
+				<forward name="success" path="fixedInsert3" />
+			</pipe>
+
+			<pipe name="fixedInsert3" className="nl.nn.adapterframework.pipes.SenderPipe" transactionAttribute="NotSupported">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE2) VALUES ('this-column-does-not-exist')" queryType="insert"/>
+				<forward name="success" path="fail"/>
+				<forward name="exception" path="This PutInSession should throw an exception but not trigger a rollback"/>
+			</pipe>
+
+			<pipe name="This PutInSession should throw an exception but not trigger a rollback"
+				className="nl.nn.adapterframework.pipes.PutInSession"
+				getInputFromFixedValue="tralala"
+				transactionAttribute="Mandatory"
+			>
+				<param name="keyOfParam" xpathExpression="/*[local-name()='not']/xml" />
+				<forward name="success" path="fail"/><!-- Expect an exception -->
+				<forward name="exception" path="fixedInsert4"/>
+			</pipe>
+
+			<!-- purposely change order of pipes to ensure we are don't just go to the next pipe -->
+			<pipe name="fail" className="nl.nn.adapterframework.pipes.EchoPipe"
+				getInputFromFixedValue="&lt;transacted&gt;failed&lt;/transacted&gt;">
+				<forward name="success" path="EXIT"/>
+			</pipe>
+			<pipe name="success" className="nl.nn.adapterframework.pipes.EchoPipe"
+				getInputFromFixedValue="&lt;transacted&gt;succeeded&lt;/transacted&gt;">
+				<forward name="success" path="EXIT"/>
+			</pipe>
+
+			<pipe name="fixedInsert4" className="nl.nn.adapterframework.pipes.SenderPipe">
+				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('SURNAME',?)" queryType="insert" />
+					<param name="value" value="test2" />
+				<forward name="success" path="success" />
+			</pipe>
+		</pipeline>
+	</adapter>
+</module>

@@ -1,0 +1,28 @@
+<div class="inmodal">
+  <div class="modal-header">
+    <h4 class="modal-title"><i class="fa fa-info-circle"></i> Information</h4>
+  </div>
+  <div class="modal-body" *ngIf="!error">
+    <h3 *ngIf="framework.name == ''">Loading...</h3>
+    <p>
+      <strong>{{framework.name}} {{framework.version}}</strong>: {{instance.name}} {{instance.version}}<br />
+      Running on <strong>{{machineName}}</strong> using <strong>{{applicationServer}}</strong><br />
+      Java Version: <strong>{{javaVersion}}</strong><br />
+      Heap size: <strong>{{processMetrics.heapSize}}</strong>, total JVM memory:
+      <strong>{{processMetrics.totalMemory}}</strong><br />
+      Free disk space: <strong>{{fileSystem.freeSpace}}</strong>, total disk space:
+      <strong>{{fileSystem.totalSpace}}</strong><br />
+      Up since: <strong><span appToDate [time]="uptime"></span></strong> (<span appTimeSince [time]="uptime"></span>)
+    </p>
+  </div>
+  <div class="modal-body" *ngIf="error">
+    <h3 class="text-center">Unable to fetch server information due to an unexpected error.</h3>
+  </div>
+  <div class="modal-footer">
+    <span class="pull-left p-xxs">
+      <a href="//github.com/frankframework/frankframework" target="_blank" alt="github.com/frankframework/frankframework">github.com/frankframework/frankframework</a> |
+      <a href="//frank-manual.readthedocs.io" target="_blank" alt="Frank!Manual">Frank!Manual</a>
+    </span>
+    <button type="button" class="btn btn-white" (click)="close()">Close</button>
+  </div>
+</div>

@@ -20,7 +20,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -66,12 +65,9 @@ public class CompareStringPipe extends AbstractPipe {
 	private static final String LESSTHANFORWARD = "lessthan";
 	private static final String GREATERTHANFORWARD = "greaterthan";
 	private static final String EQUALSFORWARD = "equals";
-	private static final String OPERAND1 = "operand1";
-	private static final String OPERAND2 = "operand2";
+	protected static final String OPERAND1 = "operand1";
+	protected static final String OPERAND2 = "operand2";
 	private static final String IGNOREPATTERNS = "ignorepatterns";
-
-	private String sessionKey1 = null;
-	private String sessionKey2 = null;
 	private boolean xml = false;
 
 	@Override
@@ -87,11 +83,9 @@ public class CompareStringPipe extends AbstractPipe {
 		if (null == findForward(EQUALSFORWARD))
 			throw new ConfigurationException("forward [" + EQUALSFORWARD + "] is not defined");
 
-		if (StringUtils.isEmpty(sessionKey1) && StringUtils.isEmpty(sessionKey2)) {
-			ParameterList parameterList = getParameterList();
-			if (parameterList.findParameter(OPERAND1) == null && parameterList.findParameter(OPERAND2) == null) {
-				throw new ConfigurationException("has neither parameter [" + OPERAND1 + "] nor parameter [" + OPERAND2 + "] specified");
-			}
+		ParameterList parameterList = getParameterList();
+		if (parameterList.findParameter(OPERAND1) == null && parameterList.findParameter(OPERAND2) == null) {
+			throw new ConfigurationException("has neither parameter [" + OPERAND1 + "] nor parameter [" + OPERAND2 + "] specified");
 		}
 	}
 
@@ -108,12 +102,7 @@ public class CompareStringPipe extends AbstractPipe {
 		String operand1 = getParameterValue(pvl, OPERAND1);
 		try {
 			if (operand1 == null) {
-				if (StringUtils.isNotEmpty(getSessionKey1())) {
-					operand1 = session.getString(getSessionKey1());
-				}
-				if (operand1 == null) {
-					operand1 = message.asString();
-				}
+				operand1 = message.asString();
 			}
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Exception on getting operand1 from input message", e);
@@ -121,12 +110,7 @@ public class CompareStringPipe extends AbstractPipe {
 		String operand2 = getParameterValue(pvl, OPERAND2);
 		try {
 			if (operand2 == null) {
-				if (StringUtils.isNotEmpty(getSessionKey2())) {
-					operand2 = session.getString(getSessionKey2());
-				}
-				if (operand2 == null) {
-					operand2 = message.asString();
-				}
+				operand2 = message.asString();
 			}
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Exception on getting operand2 from input message", e);
@@ -234,28 +218,7 @@ public class CompareStringPipe extends AbstractPipe {
 
 	@Override
 	public boolean consumesSessionVariable(String sessionKey) {
-		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey1()) || sessionKey.equals(getSessionKey2());
-	}
-
-
-	/** reference to one of the session variables to be compared. Do not use, but use Parameter operand1 instead */
-	@Deprecated
-	@ConfigurationWarning("Please use the parameter operand1")
-	public void setSessionKey1(String string) {
-		sessionKey1 = string;
-	}
-	public String getSessionKey1() {
-		return sessionKey1;
-	}
-
-	/** reference to the other session variables to be compared. Do not use, but use Parameter operand2 instead */
-	@Deprecated
-	@ConfigurationWarning("Please use the parameter operand2")
-	public void setSessionKey2(String string) {
-		sessionKey2 = string;
-	}
-	public String getSessionKey2() {
-		return sessionKey2;
+		return super.consumesSessionVariable(sessionKey);
 	}
 
 	public boolean isXml() {

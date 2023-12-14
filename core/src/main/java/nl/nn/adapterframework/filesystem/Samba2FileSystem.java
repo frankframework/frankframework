@@ -73,7 +73,7 @@ import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  *
- * Uses the SMB 2 and 3 protocol
+ * Uses the (newer) SMB 2 and 3 protocol.
  *
  * Possible error codes:
  * <br/>
@@ -90,7 +90,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 	private @Getter Samba2AuthType authType = Samba2AuthType.SPNEGO;
 	private @Getter String share = null;
 	private String hostname;
-	private int port;
+	private int port = 445;
 
 	private @Getter String domainName = null;
 	private @Getter String kdc = null;
@@ -434,7 +434,10 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		return "host "+authType.name()+":["+hostname+"/"+getShare()+"]";
 	}
 
-	/** @ff.optional the destination, aka smb://xxx/yyy share */
+	/** 
+	 * May not contain '\\' characters. The destination share, aka smb://xxx/yyy share.
+	 * @ff.optional
+	 */
 	public void setShare(String share) {
 		this.share = share;
 	}
@@ -454,7 +457,7 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		this.authAlias = authAlias;
 	}
 
-	/** NTLM: logon domain */
+	/** NTLM only: logon/authentication domain, in case the user account is bound to a domain such as Active Directory. */
 	public void setDomainName(String domain) {
 		this.domainName = domain;
 	}
@@ -468,13 +471,16 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		this.authType = authType;
 	}
 
-	/** Key Distribution Center, typically hosted on a domain controller.
-	 * Stored in <code>java.security.krb5.kdc</code> */
+	/** SPNEGO only:
+	 * Key Distribution Center, typically hosted on a domain controller.
+	 * Stored in <code>java.security.krb5.kdc</code>
+	 */
 	public void setKdc(String kdc) {
 		this.kdc = kdc;
 	}
 
 	/**
+	 * SPNEGO only:
 	 * Kerberos Realm, case sensitive. Typically upper case and the same as the domain name.
 	 * An Active Directory domain acts as a Kerberos Realm.
 	 * Stored in <code>java.security.krb5.realm</code>
@@ -483,10 +489,18 @@ public class Samba2FileSystem extends FileSystemBase<SmbFileRef> implements IWri
 		this.realm = realm;
 	}
 
+	/**
+	 * Hostname of the SMB share.
+	 * @ff.mandatory
+	 */
 	public void setHostname(String hostname) {
 		this.hostname = hostname;
 	}
 
+	/**
+	 * Port to connect to.
+	 * @ff.default 445
+	 */
 	public void setPort(int port) {
 		this.port = port;
 	}

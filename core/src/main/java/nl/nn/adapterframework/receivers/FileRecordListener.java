@@ -205,7 +205,7 @@ public class FileRecordListener implements IPullingListener<String> {
 		if (recordIterator != null && recordIterator.hasNext()) {
 			recordNo += 1;
 			String id = constructMessageId();
-			PipeLineSession.updateListenerParameters(threadContext, id, id, null, null);
+			PipeLineSession.updateListenerParameters(threadContext, id, id);
 			return new RawMessageWrapper<>(recordIterator.next(), id, id);
 		}
 		if (getFileToProcess() != null) {
@@ -232,7 +232,7 @@ public class FileRecordListener implements IPullingListener<String> {
 			if (recordIterator.hasNext()) {
 				recordNo += 1;
 				String id = constructMessageId();
-				PipeLineSession.updateListenerParameters(threadContext, id, id, null, null);
+				PipeLineSession.updateListenerParameters(threadContext, id, id);
 				return new RawMessageWrapper<>(recordIterator.next(), id, id);
 			}
 		}

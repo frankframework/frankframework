@@ -599,7 +599,7 @@ public class Adapter implements IAdapter, NamedBean {
 					String msg = "Illegal exception ["+t.getClass().getName()+"]";
 					INamedObject objectInError = null;
 					if (t instanceof ListenerException) {
-						Throwable cause = ((ListenerException) t).getCause();
+						Throwable cause = t.getCause();
 						if  (cause instanceof PipeRunException) {
 							PipeRunException pre = (PipeRunException) cause;
 							msg = "error during pipeline processing";
@@ -1036,9 +1036,9 @@ public class Adapter implements IAdapter, NamedBean {
 		@Deprecated
 		TERSE(Level.DEBUG);
 
-		private @Getter Level effectiveLevel;
+		private final @Getter Level effectiveLevel;
 
-		private MessageLogLevel(Level effectiveLevel) {
+		MessageLogLevel(Level effectiveLevel) {
 			this.effectiveLevel = effectiveLevel;
 		}
 	}

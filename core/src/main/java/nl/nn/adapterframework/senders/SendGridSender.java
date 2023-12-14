@@ -97,7 +97,7 @@ public class SendGridSender extends MailSenderBase implements HasKeystore, HasTr
 		try {
 			mail = createEmail((GridMailSession)mailSession);
 		} catch (Exception e) {
-			throw new SenderException("Exception occured while composing email", e);
+			throw new SenderException("Exception occurred while composing email", e);
 		}
 
 		if (mailSession.hasWhitelistedRecipients()) {

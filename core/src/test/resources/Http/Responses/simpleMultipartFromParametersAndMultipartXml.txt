@@ -29,7 +29,7 @@ Content-Transfer-Encoding: binary
 
 <dummy xml file/>
 --IGNORE
-Content-Disposition: form-data; name="string.txt"; filename="string.txt"
+Content-Disposition: form-data; name="string.txt"
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 

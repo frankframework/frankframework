@@ -36,9 +36,9 @@ public interface IMessageBrowser<M> extends IXAEnabled {
 		MESSAGESTORAGE("M"),
 		HOLDSTORAGE("H");
 
-		private String code;
+		private final String code;
 
-		private StorageType(String code) {
+		StorageType(String code) {
 			this.code = code;
 		}
 

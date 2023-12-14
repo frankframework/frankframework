@@ -137,7 +137,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-			sender.setMtomEnabled(true);
+			sender.setPostType(HttpSender.PostType.MTOM);
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
@@ -168,7 +168,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-			sender.setMtomEnabled(true);
+			sender.setPostType(HttpSender.PostType.MTOM);
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();
@@ -199,7 +199,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 			pls.put("multipartXml", xmlMultipart);
 			pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-			sender.setMtomEnabled(true);
+			sender.setPostType(HttpSender.PostType.MTOM);
 			sender.setMultipartXmlSessionKey("multipartXml");
 
 			sender.configure();

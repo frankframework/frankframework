@@ -17,10 +17,10 @@ package nl.nn.adapterframework.receivers;
 
 import nl.nn.adapterframework.filesystem.FileSystemListener;
 import nl.nn.adapterframework.filesystem.Samba2FileSystem;
-import nl.nn.adapterframework.filesystem.smb.SambaFileSystemDelegator;
+import nl.nn.adapterframework.filesystem.smb.Samba2FileSystemDelegator;
 import nl.nn.adapterframework.filesystem.smb.SmbFileRef;
 
-public class Samba2Listener extends FileSystemListener<SmbFileRef, Samba2FileSystem> implements SambaFileSystemDelegator {
+public class Samba2Listener extends FileSystemListener<SmbFileRef, Samba2FileSystem> implements Samba2FileSystemDelegator {
 
 	@Override
 	protected Samba2FileSystem createFileSystem() {

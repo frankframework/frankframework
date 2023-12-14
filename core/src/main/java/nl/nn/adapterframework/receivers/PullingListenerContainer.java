@@ -260,7 +260,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (receiver.isOnErrorContinue()) {
 									increaseRetryIntervalAndWait(e);
 								} else {
-									receiver.exceptionThrown("exception occured while retrieving message", e); //actually use ON_ERROR and don't just stop the receiver
+									receiver.exceptionThrown("exception occurred while retrieving message", e); //actually use ON_ERROR and don't just stop the receiver
 									return;
 								}
 							}
@@ -355,7 +355,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (receiver.isOnErrorContinue()) {
 									receiver.error("caught Exception processing message, will continue processing next message", e);
 								} else {
-									receiver.exceptionThrown("exception occured while processing message", e); //actually use ON_ERROR and don't just stop the receiver
+									receiver.exceptionThrown("exception occurred while processing message", e); //actually use ON_ERROR and don't just stop the receiver
 								}
 							}
 						}

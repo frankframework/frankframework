@@ -57,16 +57,16 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 		pipe.setRemoveNamespaces(removeNamespaces);
 	}
 
-	@Override
-	protected void setXslt2(boolean xslt2) {
-		pipe.setXslt2(xslt2);
-	}
 
 	@Override
 	protected void setHandleLexicalEvents(boolean handleLexicalEvents) {
 		pipe.setHandleLexicalEvents(handleLexicalEvents);
 	}
 
+	@Override
+	protected void setXsltVersion(int xsltVersion) {
+		pipe.setXsltVersion(xsltVersion);
+	}
 
 	@Test
 	void testSessionKey() throws Exception {

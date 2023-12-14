@@ -23,18 +23,18 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Marker interface for Validators
- * 
+ *
  * @author Gerrit van Brakel
  */
 @FrankDocGroup(order = 40, name = "Validators")
 @ElementType(ElementTypes.VALIDATOR)
 public interface IValidator extends IPipe {
 
-	public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException;
+	PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException;
 
 	/** The functional name of this pipe, is not required when used as a Validator */
 	@Override
 	@Optional
-	public void setName(String name);
+	void setName(String name);
 
 }

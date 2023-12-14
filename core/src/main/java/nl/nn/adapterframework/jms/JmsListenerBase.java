@@ -188,7 +188,7 @@ public abstract class JmsListenerBase extends JMSFacade implements HasSender, IW
 				+ "] got message with JMSDeliveryMode=[" + mode
 				+ "] \n  JMSMessageID=[" + id
 				+ "] \n  JMSCorrelationID=[" + cid
-				+ "] \n  Timestamp Sent=[" + DateFormatUtils.format(tsSent)
+				+ "] \n  Timestamp Sent=[" + tsSent!=null ? DateFormatUtils.format(tsSent) : null
 				+ "] \n  ReplyTo=[" + ((replyTo==null)?"none" : replyTo.toString())
 				+ "] \n Message=[" + rawMessage
 				+ "]");
