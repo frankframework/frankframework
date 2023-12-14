@@ -22,12 +22,8 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Queue;
-import javax.jms.QueueConnection;
-import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
 import javax.jms.TemporaryQueue;
-import javax.jms.TopicConnection;
-import javax.jms.TopicConnectionFactory;
 import javax.naming.Context;
 
 import org.apache.commons.lang3.StringUtils;
@@ -62,7 +58,6 @@ public class MessagingSource  {
 	private final boolean useSingleDynamicReplyQueueStore = AppConstants.getInstance().getBoolean("jms.useSingleDynamicReplyQueue", true);
 	private final boolean cleanUpOnClose = AppConstants.getInstance().getBoolean("jms.cleanUpOnClose", true);
 	private final boolean createDestination;
-	private final boolean useJms102;
 
 	private @Getter @Setter String authAlias;
 
@@ -80,7 +75,7 @@ public class MessagingSource  {
 
 	private Queue globalDynamicReplyQueue = null;
 
-	protected MessagingSource(String id, Context context, ConnectionFactory connectionFactory, Map<String,MessagingSource> siblingMap, String authAlias, boolean createDestination, boolean useJms102) {
+	protected MessagingSource(String id, Context context, ConnectionFactory connectionFactory, Map<String,MessagingSource> siblingMap, String authAlias, boolean createDestination) {
 		super();
 		referenceCount=0;
 		this.id=id;
@@ -90,7 +85,6 @@ public class MessagingSource  {
 		siblingMap.put(id, this);
 		this.authAlias=authAlias;
 		this.createDestination=createDestination;
-		this.useJms102=useJms102;
 		if (connectionsArePooled()) {
 			connectionTable = new Hashtable<>();
 		}
@@ -210,7 +204,7 @@ public class MessagingSource  {
 		if (qcfd instanceof PoolingConnectionFactory) {
 			PoolingConnectionFactory poolcf = ((PoolingConnectionFactory)qcfd);
 			result.append("min poolsize [").append(poolcf.getMinPoolSize()).append("] ");
-			result.append("max poolsize ["+poolcf.getMaxPoolSize()).append("] ");
+			result.append("max poolsize [").append(poolcf.getMaxPoolSize()).append("] ");
 			result.append("number of idle connections [").append(poolcf.getInPoolSize()).append("] ");
 			result.append("max idle time [").append(poolcf.getMaxIdleTime()).append("] ");
 			result.append("max life time [").append(poolcf.getMaxLifeTime()).append("] ");
@@ -232,27 +226,13 @@ public class MessagingSource  {
 		if (StringUtils.isNotEmpty(authAlias)) {
 			CredentialFactory cf = new CredentialFactory(authAlias);
 			if (log.isDebugEnabled()) log.debug("using userId ["+cf.getUsername()+"] to create Connection");
-			if (useJms102()) {
-				if (connectionFactory instanceof QueueConnectionFactory) {
-					return ((QueueConnectionFactory)connectionFactory).createQueueConnection(cf.getUsername(),cf.getPassword());
-				}
-				return ((TopicConnectionFactory)connectionFactory).createTopicConnection(cf.getUsername(),cf.getPassword());
-			}
 			return connectionFactory.createConnection(cf.getUsername(),cf.getPassword());
-		}
-		if (useJms102()) {
-			if (connectionFactory instanceof QueueConnectionFactory) {
-				return ((QueueConnectionFactory)connectionFactory).createQueueConnection();
-			}
-			return ((TopicConnectionFactory)connectionFactory).createTopicConnection();
 		}
 		return connectionFactory.createConnection();
 	}
 
 	private Connection createAndStartConnection() throws JMSException {
 		Connection connection;
-		// do not log, as this may happen very often
-//		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"creating Connection, openConnectionCount before ["+openConnectionCount.getValue()+"]");
 		connection = createConnection();
 		openConnectionCount.increase();
 		connection.start();
@@ -287,7 +267,7 @@ public class MessagingSource  {
 	}
 
 	public Session createSession(boolean transacted, int acknowledgeMode) throws IbisException {
-		Connection connection=null;
+		Connection connection;
 		Session session;
 		try {
 			connection = getConnection();
@@ -295,17 +275,7 @@ public class MessagingSource  {
 			throw new JmsException("could not obtain Connection", e);
 		}
 		try {
-			// do not log, as this may happen very often
-//			if (log.isDebugEnabled()) log.debug(getLogPrefix()+"creating Session, openSessionCount before ["+openSessionCount.getValue()+"]");
-			if (useJms102()) {
-				if (connection instanceof QueueConnection) {
-					session = ((QueueConnection)connection).createQueueSession(transacted, acknowledgeMode);
-				} else {
-					session = ((TopicConnection)connection).createTopicSession(transacted, acknowledgeMode);
-				}
-			} else {
-				session = connection.createSession(transacted, acknowledgeMode);
-			}
+			session = connection.createSession(transacted, acknowledgeMode);
 			openSessionCount.increase();
 			if (connectionsArePooled()) {
 				connectionTable.put(session,connection);
@@ -322,8 +292,6 @@ public class MessagingSource  {
 			if (connectionsArePooled()) {
 				Connection connection = connectionTable.remove(session);
 				try {
-					// do not log, as this may happen very often
-//					if (log.isDebugEnabled()) log.debug(getLogPrefix()+"closing Session, openSessionCount will become ["+(openSessionCount.getValue()-1)+"]");
 					session.close();
 					openSessionCount.decrease();
 				} catch (JMSException e) {
@@ -365,10 +333,6 @@ public class MessagingSource  {
 		return createDestination;
 	}
 
-	public boolean useJms102() {
-		return useJms102;
-	}
-
 	private void deleteDynamicQueue(Queue queue) throws JmsException {
 		if (queue!=null) {
 			try {
@@ -406,7 +370,6 @@ public class MessagingSource  {
 			deleteDynamicQueue(replyQueue);
 		}
 	}
-
 
 	protected String getLogPrefix() {
 		return "["+getId()+"] ";

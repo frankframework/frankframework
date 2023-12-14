@@ -262,7 +262,7 @@
 		name="messageListenerClassName"
 		class="java.lang.String"
 		>
-		<constructor-arg value="${jms.messageListenerClassName}"/>
+		<constructor-arg value="nl.nn.adapterframework.jms.IbisMessageListenerContainer"/>
 	</bean>
 
 	<bean

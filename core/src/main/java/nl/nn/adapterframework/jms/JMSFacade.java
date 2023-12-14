@@ -92,7 +92,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 
 	private final @Getter(onMethod = @__(@Override)) String domain = "JMS";
 	private final boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", false);
-	private final boolean useJms102 = AppConstants.getInstance().getBoolean("jms.useJms102", false);
 	private final MessageClass messageClassDefault = AppConstants.getInstance().getOrDefault(JMS_MESSAGECLASS_KEY, MessageClass.AUTO);
 	private @Getter MessageClass messageClass = messageClassDefault;
 
@@ -224,10 +223,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		return "["+getName()+"] ";
 	}
 
-	public boolean useJms102() {
-		return useJms102;
-	}
-
 	@Override
 	public void configure() throws ConfigurationException {
 		if(connectionFactoryFactory == null) {
@@ -285,7 +280,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 					try {
 						String connectionFactoryName = getConnectionFactoryName();
 						log.debug("creating MessagingSource");
-						messagingSource = messagingSourceFactory.getMessagingSource(connectionFactoryName, getAuthAlias(), createDestination, useJms102);
+						messagingSource = messagingSourceFactory.getMessagingSource(connectionFactoryName, getAuthAlias(), createDestination);
 					} catch (IbisException e) {
 						if (e instanceof JmsException) {
 							throw (JmsException) e;
@@ -486,20 +481,13 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	public MessageConsumer getMessageConsumer(Session session, Destination destination, String selector) throws JMSException {
 		if (useTopicFunctions) {
-			if (useJms102()) {
-				return getTopicSubscriber((TopicSession)session, (Topic)destination, selector);
-			}
 			return getTopicSubscriber(session, (Topic)destination, selector);
-		}
-		if (useJms102()) {
-			return getQueueReceiver((QueueSession)session, (Queue)destination, selector);
 		}
 		return session.createConsumer(destination, selector);
 	}
 	/**
 	 * Create a MessageConsumer, on a specific session and for a specific destination.
-	 * This functions hides wether we work via Topics or Queues and wether or not a
-	 * messageSelector is set.
+	 * This functions hides wether we work via Topics or Queues and whether a messageSelector is set.
 	 * @param session the Session
 	 * @param destination the Destination
 	 * @return the MessageConsumer
@@ -509,17 +497,8 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	public MessageProducer getMessageProducer(Session session, Destination destination) throws JMSException {
-		MessageProducer mp;
-		if (useJms102()) {
-			if (useTopicFunctions) {
-				mp = getTopicPublisher((TopicSession)session, (Topic)destination);
-			} else {
-				mp = getQueueSender((QueueSession)session, (Queue)destination);
-			}
-		} else {
-			mp = session.createProducer(destination);
-		}
-		if (getMessageTimeToLive()>0)
+		MessageProducer mp = session.createProducer(destination);
+		if (getMessageTimeToLive() > 0)
 			mp.setTimeToLive(getMessageTimeToLive());
 		return mp;
 	}
@@ -571,14 +550,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 
 	/**
-	 * Gets a queueReceiver value
-	 * @see QueueReceiver
-	 */
-	private QueueReceiver getQueueReceiver(QueueSession session, Queue destination, String selector) throws JMSException {
-		return session.createReceiver(destination, selector);
-	}
-
-	/**
 	  * Gets the queueSender for a specific queue, not the one in <code>destination</code>
 	  * @see QueueSender
 	  * @return The queueReceiver value
@@ -592,23 +563,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	private TopicPublisher getTopicPublisher(TopicSession session, Topic topic) throws JMSException {
 		return session.createPublisher(topic);
-	}
-
-	private TopicSubscriber getTopicSubscriber(TopicSession session, Topic topic, String selector) throws JMSException {
-		TopicSubscriber topicSubscriber;
-		switch (subscriberType) {
-		case DURABLE:
-			topicSubscriber = session.createDurableSubscriber(topic, destinationName, selector, false);
-			if (log.isDebugEnabled()) log.debug("[" + getName() + "] got durable subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
-			break;
-		case TRANSIENT:
-			topicSubscriber = session.createSubscriber(topic, selector, false);
-			if (log.isDebugEnabled()) log.debug("[" + getName() + "] got transient subscriber for topic [" + destinationName + "] with selector [" + selector + "]");
-			break;
-		default:
-			throw new IllegalStateException("Unexpected subscriberType ["+subscriberType+"]");
-		}
-		return topicSubscriber;
 	}
 
 	private MessageConsumer getTopicSubscriber(Session session, Topic topic, String selector) throws JMSException {
@@ -638,19 +592,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		javax.jms.Message msg = createMessage(session, correlationId, message, messageClass);
 		MessageProducer mp;
 		try {
-			if (useJms102()) {
-				if ((session instanceof TopicSession) && (dest instanceof Topic)) {
-					mp = getTopicPublisher((TopicSession)session, (Topic)dest);
-				} else {
-					if ((session instanceof QueueSession) && (dest instanceof Queue)) {
-						mp = getQueueSender((QueueSession)session, (Queue)dest);
-					} else {
-						throw new SenderException("classes of Session ["+session.getClass().getName()+"] and Destination ["+dest.getClass().getName()+"] do not match (Queue vs Topic)");
-					}
-				}
-			} else {
-				mp = session.createProducer(dest);
-			}
+			mp = session.createProducer(dest);
 		} catch (InvalidDestinationException e) {
 			if (ignoreInvalidDestinationException) {
 				log.warn("queue [{}] doesn't exist", dest);
@@ -700,14 +642,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	public String send(MessageProducer messageProducer, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
 		logMessageDetails(message, messageProducer);
 		try {
-			if (useJms102()) {
-				if (messageProducer instanceof TopicPublisher) {
-					((TopicPublisher) messageProducer).publish(message);
-				} else {
-					messageProducer.send(message);
-				}
-				return message.getJMSMessageID();
-			}
 			messageProducer.send(message);
 			return message.getJMSMessageID();
 		} catch (InvalidDestinationException e) {
@@ -756,14 +690,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	}
 	public String send(Session session, Destination dest, javax.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
 		try {
-			if (useJms102()) {
-				if (dest instanceof Topic) {
-					logMessageDetails(message, null);
-					return sendByTopic((TopicSession)session, (Topic)dest, message);
-				}
-				logMessageDetails(message, null);
-				return sendByQueue((QueueSession)session, (Queue)dest, message);
-			}
 			MessageProducer mp = session.createProducer(dest);
 			logMessageDetails(message, mp);
 			mp.send(message);
@@ -884,7 +810,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 			sb.append("[queueName=").append(destinationName).append("]");
 			sb.append("[queueConnectionFactoryName=").append(queueConnectionFactoryName).append("]");
 		}
-		// sb.append("[physicalDestinationName="+getPhysicalDestinationName()+"]");
 		sb.append("[ackMode=").append(getAcknowledgeModeEnum()).append("]");
 		sb.append("[persistent=").append(isPersistent()).append("]");
 		sb.append("[transacted=").append(transacted).append("]");
