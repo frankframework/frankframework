@@ -368,7 +368,7 @@ public class StatisticsKeeper<B extends IBasics<S>, S> implements ItemList {
 			item.addAttribute("index",""+i);
 			item.addAttribute("name", XmlEncodingUtils.encodeChars(getItemName(i)));
 			item.addAttribute("type", getItemType(i).name());
-			item.addAttribute("value",ItemUtil.getItemValueFormated(this,i));
+			item.addAttribute("value",ItemUtil.getItemValueFormatted(this,i));
 		}
 		XmlBuilder item = new XmlBuilder("item");
 		items.addSubElement(item);

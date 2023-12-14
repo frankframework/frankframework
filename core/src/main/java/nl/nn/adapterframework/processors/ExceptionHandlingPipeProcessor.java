@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 */
 package nl.nn.adapterframework.processors;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Map;
 
 import nl.nn.adapterframework.core.IPipe;
@@ -39,14 +39,15 @@ public class ExceptionHandlingPipeProcessor extends PipeProcessorBase {
 			Map<String, PipeForward> forwards = pipe.getForwards();
 			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME) && !(pipe instanceof ExceptionPipe)) {
 
-				Date tsReceivedDate = pipeLineSession.getTsReceived();
+				Instant tsReceivedDate = pipeLineSession.getTsReceived();
 				long tsReceivedLong = 0L;
 				if(tsReceivedDate != null) {
-					tsReceivedLong = tsReceivedDate.getTime();
+					tsReceivedLong = tsReceivedDate.toEpochMilli();
 				}
 
 				ErrorMessageFormatter emf = new ErrorMessageFormatter();
 				Message errorMessage = emf.format(e.getMessage(), e.getCause(), pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
+				log.info("exception occured, forwarding to exception-forward [{}], exception:\n", PipeForward.EXCEPTION_FORWARD_NAME, e);
 				return new PipeRunResult(pipe.getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), errorMessage);
 			}
 			throw e;

@@ -17,8 +17,6 @@ package nl.nn.adapterframework.soap;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -38,10 +36,8 @@ import org.apache.logging.log4j.Logger;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IListener;
-import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.IXmlValidator;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
 import nl.nn.adapterframework.http.WebServiceListener;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.receivers.JavaListener;
@@ -76,12 +72,7 @@ public class WsdlGenerator {
 	protected static final String WSDL_SOAP12_NAMESPACE_PREFIX   = "soap12";
 	protected static final String SOAP_HTTP_NAMESPACE			= "http://schemas.xmlsoap.org/soap/http";
 	protected static final String SOAP_JMS_NAMESPACE			 = "http://www.w3.org/2010/soapjms/";
-	protected static final String SOAP_JMS_NAMESPACE_PREFIX	  = "jms";
-	// Tibco BW will not detect the transport when SOAP_JMS_NAMESPACE is being used instead of ESB_SOAP_JMS_NAMESPACE.
-	protected static final String ESB_SOAP_JMS_NAMESPACE		 = "http://www.tibco.com/namespaces/ws/2004/soap/binding/JMS";
-	protected static final String ESB_SOAP_JNDI_NAMESPACE		= "http://www.tibco.com/namespaces/ws/2004/soap/apis/jndi";
-	protected static final String ESB_SOAP_JNDI_NAMESPACE_PREFIX = "jndi";
-	protected static final String ESB_SOAP_TNS_BASE_URI		  = "http://nn.nl/WSDL";
+	public static final String SOAP_JMS_NAMESPACE_PREFIX	  = "jms";
 	protected static final String TARGET_NAMESPACE_PREFIX		= "tns";
 
 	public static final String WSDL_EXTENSION					= ".wsdl";
@@ -123,13 +114,7 @@ public class WsdlGenerator {
 	private String wsdlSoapNamespace = WSDL_SOAP_NAMESPACE;
 	private String wsdlSoapPrefix = WSDL_SOAP_NAMESPACE_PREFIX;
 
-	private boolean esbSoap = false;
-	private String esbSoapBusinessDomain;
-	private String esbSoapServiceName;
-	private String esbSoapServiceContext;
-	private String esbSoapServiceContextVersion;
-	private String esbSoapOperationName;
-	private String esbSoapOperationVersion;
+	private WsdlGeneratorExtensionContext extensionContext = null;
 
 	private String documentation;
 
@@ -170,106 +155,13 @@ public class WsdlGenerator {
 			tns = appConstants.getProperty("wsdl.targetNamespace");
 		}
 		if (tns == null) {
-			boolean esb = ClassUtils.isClassPresent("nl.nn.adapterframework.extensions.esb.EsbSoapValidator");
-			if (esb && "nl.nn.adapterframework.extensions.esb.EsbSoapValidator".equals(inputValidator.getClass().getCanonicalName())) {
-				esbSoap = true;
-				boolean esbNamespaceWithoutServiceContext = false;
-				String schemaLocation = WsdlGeneratorUtils.getFirstNamespaceFromSchemaLocation(inputValidator);
-				if (EsbSoapWrapperPipe.isValidNamespace(schemaLocation)) {
-					String s = WsdlGeneratorUtils.getFirstNamespaceFromSchemaLocation(inputValidator);
-					esbNamespaceWithoutServiceContext = EsbSoapWrapperPipe.isEsbNamespaceWithoutServiceContext(s);
-					int i = s.lastIndexOf('/');
-					esbSoapOperationVersion = s.substring(i + 1);
-					s = s.substring(0, i);
-					i = s.lastIndexOf('/');
-					esbSoapOperationName = s.substring(i + 1);
-					s = s.substring(0, i);
-					i = s.lastIndexOf('/');
-					esbSoapServiceContextVersion = s.substring(i + 1);
-					s = s.substring(0, i);
-					i = s.lastIndexOf('/');
-					if (!esbNamespaceWithoutServiceContext) {
-						esbSoapServiceContext = s.substring(i + 1);
-						s = s.substring(0, i);
-						i = s.lastIndexOf('/');
-					}
-					esbSoapServiceName = s.substring(i + 1);
-					s = s.substring(0, i);
-					i = s.lastIndexOf('/');
-					esbSoapBusinessDomain = s.substring(i + 1);
-				} else {
-					warn("Namespace '" + schemaLocation + "' invalid according to ESB SOAP standard");
-					IPipe outputWrapper = pipeLine.getOutputWrapper();
-					if (outputWrapper instanceof EsbSoapWrapperPipe) {
-						EsbSoapWrapperPipe esbSoapWrapper = (EsbSoapWrapperPipe)outputWrapper;
-						esbSoapBusinessDomain = esbSoapWrapper.getBusinessDomain();
-						esbSoapServiceName = esbSoapWrapper.getServiceName();
-						esbSoapServiceContext = esbSoapWrapper.getServiceContext();
-						esbSoapServiceContextVersion = esbSoapWrapper.getServiceContextVersion();
-						esbSoapOperationName = esbSoapWrapper.getOperationName();
-						esbSoapOperationVersion = esbSoapWrapper.getOperationVersion();
-					}
-				}
-				if (esbSoapBusinessDomain == null) {
-					warn("Could not determine business domain");
-				} else if (esbSoapServiceName == null) {
-					warn("Could not determine service name");
-				} else if (esbSoapServiceContext == null && !esbNamespaceWithoutServiceContext) {
-					warn("Could not determine service context");
-				} else if (esbSoapServiceContextVersion == null) {
-					warn("Could not determine service context version");
-				} else if (esbSoapOperationName == null) {
-					warn("Could not determine operation name");
-				} else if (esbSoapOperationVersion == null) {
-					warn("Could not determine operation version");
-				} else {
-					String wsdlType = "abstract";
-					for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
-						if (listener instanceof WebServiceListener
-								|| listener instanceof JmsListener) {
-							wsdlType = "concrete";
-							break;
-						}
-					}
-					fileName = esbSoapBusinessDomain + "_"
-							+ esbSoapServiceName + "_"
-							+ (esbSoapServiceContext == null ? "" : esbSoapServiceContext + "_")
-							+ esbSoapServiceContextVersion + "_"
-							+ esbSoapOperationName + "_"
-							+ esbSoapOperationVersion + "_"
-							+ wsdlType;
-					tns = ESB_SOAP_TNS_BASE_URI + "/"
-							+ esbSoapBusinessDomain + "/"
-							+ esbSoapServiceName + "/"
-							+ (esbSoapServiceContext == null ? "" : esbSoapServiceContext + "/")
-							+ esbSoapServiceContextVersion + "/"
-							+ esbSoapOperationName + "/"
-							+ esbSoapOperationVersion;
-					String inputParadigm = WsdlGeneratorUtils.getEsbSoapParadigm(inputValidator);
-					if (inputParadigm != null) {
-						if (!"Action".equals(inputParadigm)
-								&& !"Event".equals(inputParadigm)
-								&& !"Request".equals(inputParadigm)
-								&& !"Solicit".equals(inputParadigm)) {
-							warn("Paradigm for input message which was extracted from soapBody should be on of Action, Event, Request or Solicit instead of '"
-									+ inputParadigm + "'");
-						}
-					} else {
-						warn("Could not extract paradigm from soapBody attribute of inputValidator (should end with _Action, _Event, _Request or _Solicit)");
-					}
-//					if (outputValidator != null || isMixedValidator) {
-					if (outputValidator != null) {
-						String outputParadigm = WsdlGeneratorUtils.getEsbSoapParadigm(outputValidator);
-						if (outputParadigm != null) {
-							if (!"Response".equals(outputParadigm)) {
-								warn("Paradigm for output message which was extracted from soapBody should be Response instead of '"
-										+ outputParadigm + "'");
-							}
-						} else {
-							warn("Could not extract paradigm from soapBody attribute of outputValidator (should end with _Response)");
-						}
-					}
-				}
+			if (inputValidator instanceof WsdlGeneratorExtension) {
+				WsdlGeneratorExtension<?> wsdlGeneratorExtension = (WsdlGeneratorExtension<?>) inputValidator;
+				extensionContext = wsdlGeneratorExtension.buildExtensionContext(pipeLine);
+
+				fileName = extensionContext.getFilename();
+				tns = extensionContext.getTNS();
+				warnings.addAll(extensionContext.getWarnings());
 			}
 			if (tns == null) {
 				for(IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
@@ -506,9 +398,8 @@ public class WsdlGenerator {
 		w.setPrefix(XSD_NAMESPACE_PREFIX, XSD_NAMESPACE);
 		w.setPrefix(wsdlSoapPrefix, wsdlSoapNamespace);
 		if (jmsActive) {
-			if (esbSoap) {
-				w.setPrefix(SOAP_JMS_NAMESPACE_PREFIX, ESB_SOAP_JMS_NAMESPACE);
-				w.setPrefix(ESB_SOAP_JNDI_NAMESPACE_PREFIX, ESB_SOAP_JNDI_NAMESPACE);
+			if (extensionContext != null) {
+				extensionContext.setExtensionNamespacePrefixes(w);
 			} else {
 				w.setPrefix(SOAP_JMS_NAMESPACE_PREFIX, SOAP_JMS_NAMESPACE);
 			}
@@ -521,8 +412,8 @@ public class WsdlGenerator {
 			w.writeNamespace(WSDL_NAMESPACE_PREFIX, WSDL_NAMESPACE);
 			w.writeNamespace(XSD_NAMESPACE_PREFIX, XSD_NAMESPACE);
 			w.writeNamespace(wsdlSoapPrefix, wsdlSoapNamespace);
-			if (esbSoap) {
-				w.writeNamespace(ESB_SOAP_JNDI_NAMESPACE_PREFIX, ESB_SOAP_JNDI_NAMESPACE);
+			if (extensionContext != null) {
+				extensionContext.addExtensionNamespaces(w);
 			}
 			w.writeNamespace(getTargetNamespacePrefix(), getTargetNamespace());
 			for (Map.Entry<String, String> entry: namespaceByPrefix.entrySet()) {
@@ -655,8 +546,8 @@ public class WsdlGenerator {
 		if (sa != null) {
 			return sa;
 		}
-		if (esbSoapOperationName != null && esbSoapOperationVersion != null) {
-			return esbSoapOperationName + "_" + esbSoapOperationVersion;
+		if (extensionContext != null && extensionContext.hasSOAPActionName()) {
+			return extensionContext.getSOAPActionName();
 		}
 		return "${wsdl." + getName() + "." + listener.getName() + ".soapAction}";
 	}
@@ -705,7 +596,7 @@ public class WsdlGenerator {
 		w.writeEndElement();
 	}
 
-	protected void writeSoapOperation(XMLStreamWriter w, IListener<?> listener) throws XMLStreamException {
+	public void writeSoapOperation(XMLStreamWriter w, IListener<?> listener) throws XMLStreamException {
 		w.writeStartElement(WSDL_NAMESPACE, "operation");
 		String soapAction = getSoapAction(listener);
 		w.writeAttribute("name", "Operation_" + WsdlGeneratorUtils.getNCName(soapAction)); {
@@ -753,15 +644,8 @@ public class WsdlGenerator {
 		w.writeAttribute("type", getTargetNamespacePrefix() + ":" + "PortType_" + getName()); {
 			w.writeEmptyElement(wsdlSoapNamespace, "binding");
 			w.writeAttribute("style", "document");
-			if (esbSoap) {
-				w.writeAttribute("transport", ESB_SOAP_JMS_NAMESPACE);
-				w.writeEmptyElement(ESB_SOAP_JMS_NAMESPACE, "binding");
-				w.writeAttribute("messageFormat", "Text");
-				for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
-					if (listener instanceof JmsListener) {
-						writeSoapOperation(w, listener);
-					}
-				}
+			if (extensionContext != null) {
+				extensionContext.addJmsBindingInfo(w, this, pipeLine);
 			} else {
 				w.writeAttribute("transport", SOAP_JMS_NAMESPACE);
 			}
@@ -805,7 +689,7 @@ public class WsdlGenerator {
 	protected void jmsService(XMLStreamWriter w, JmsListener listener, String namePrefix) throws XMLStreamException {
 		w.writeStartElement(WSDL_NAMESPACE, "service");
 		w.writeAttribute("name", "Service_" + WsdlGeneratorUtils.getNCName(getName())); {
-			if (!esbSoap) {
+			if (extensionContext == null) {
 				// Per example of https://docs.jboss.org/author/display/JBWS/SOAP+over+JMS
 				w.writeStartElement(SOAP_JMS_NAMESPACE, "jndiConnectionFactoryName");
 				w.writeCharacters(listener.getQueueConnectionFactoryName());
@@ -818,73 +702,11 @@ public class WsdlGenerator {
 				if (destinationName != null) {
 					w.writeAttribute("location", getLocation(destinationName));
 				}
-				if (esbSoap) {
-					writeEsbSoapJndiContext(w, listener);
-					w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "connectionFactory"); {
-						w.writeCharacters("externalJndiName-for-"
-								+ listener.getQueueConnectionFactoryName()
-								+ "-on-"
-								+ AppConstants.getInstance().getProperty("dtap.stage"));
-						w.writeEndElement();
-					}
-					w.writeStartElement(ESB_SOAP_JMS_NAMESPACE, "targetAddress"); {
-						w.writeAttribute("destination", listener.getDestinationType().name().toLowerCase());
-						String queueName = listener.getPhysicalDestinationShortName();
-						if (queueName == null) {
-							queueName = "queueName-for-"
-									+ listener.getDestinationName() + "-on-"
-									+ AppConstants.getInstance().getProperty("dtap.stage");
-						}
-						w.writeCharacters(queueName);
-						w.writeEndElement();
-					}
+				if (extensionContext != null) {
+					extensionContext.addJmsServiceInfo(w, listener);
 				}
 			}
 			w.writeEndElement();
-		}
-		w.writeEndElement();
-	}
-
-	protected void writeEsbSoapJndiContext(XMLStreamWriter w, JmsListener listener) throws XMLStreamException {
-		w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "context"); {
-			w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "property"); {
-				w.writeAttribute("name", "java.naming.factory.initial");
-				w.writeAttribute("type", "java.lang.String");
-				w.writeCharacters("com.tibco.tibjms.naming.TibjmsInitialContextFactory");
-				w.writeEndElement();
-			}
-			w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "property"); {
-				w.writeAttribute("name", "java.naming.provider.url");
-				w.writeAttribute("type", "java.lang.String");
-				String qcf = listener.getQueueConnectionFactoryName();
-				if (StringUtils.isEmpty(qcf)) {
-					warn("Attribute queueConnectionFactoryName empty for listener '" + listener.getName() + "'");
-				} else {
-					try {
-						qcf = URLEncoder.encode(qcf, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-					} catch (UnsupportedEncodingException e) {
-						warn("Could not encode queueConnectionFactoryName for listener '" + listener.getName() + "'", e);
-					}
-				}
-				String stage = AppConstants.getInstance().getProperty("dtap.stage");
-				if (StringUtils.isEmpty(stage)) {
-					warn("Property dtap.stage empty");
-				} else {
-					try {
-						stage = URLEncoder.encode(stage, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
-					} catch (UnsupportedEncodingException e) {
-						warn("Could not encode property dtap.stage", e);
-					}
-				}
-				w.writeCharacters("tibjmsnaming://host-for-" + qcf + "-on-" + stage + ":37222");
-				w.writeEndElement();
-			}
-			w.writeStartElement(ESB_SOAP_JNDI_NAMESPACE, "property"); {
-				w.writeAttribute("name", "java.naming.factory.object");
-				w.writeAttribute("type", "java.lang.String");
-				w.writeCharacters("com.tibco.tibjms.custom.CustomObjectFactory");
-				w.writeEndElement();
-			}
 		}
 		w.writeEndElement();
 	}
@@ -913,17 +735,16 @@ public class WsdlGenerator {
 	}
 
 	protected QName getRootElement(Set<IXSD> xsds, String root, String namespace) {
-		String firstRoot = null;
-		if (root.trim().length() > 0) {
+		String firstRoot;
+		if (!root.trim().isEmpty()) {
 			String[] roots = root.trim().split(",", -1);
 			firstRoot = roots[0].trim();
 			for (IXSD xsd : xsds) {
 				for (String rootTag : xsd.getRootTags()) {
-					if (firstRoot.equals(rootTag)) {
-						if (StringUtils.isEmpty(namespace) || namespace.equals(xsd.getNamespace())) {
+					if (firstRoot.equals(rootTag) && (StringUtils.isEmpty(namespace) || namespace.equals(xsd.getNamespace()))) {
 							String prefix = prefixByXsd.get(xsd);
 							return new QName(namespaceByPrefix.get(prefix), firstRoot, prefix);
-						}
+
 					}
 				}
 			}

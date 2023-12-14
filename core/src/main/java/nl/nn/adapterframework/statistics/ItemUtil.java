@@ -62,11 +62,11 @@ public class ItemUtil {
 			if (item==null) {
 				addItem(stats, il.getItemName(i), ItemList.ITEM_VALUE_NAN);
 			} else {
-				String value = "";
+				String value;
 				switch (il.getItemType(i)) {
 					case INTEGER:
 						if (countFormat==null) {
-							value = ""+ (Long)item;
+							value = ""+ item;
 						} else {
 							value = countFormat.format(item);
 						}
@@ -75,8 +75,10 @@ public class ItemUtil {
 						value = timeFormat.format(item);
 						break;
 					case FRACTION:
-						value = percentageFormat.format(((Double)item).doubleValue()*100)+ "%";
+						value = percentageFormat.format((Double) item *100)+ "%";
 						break;
+					default:
+						value = "";
 				}
 				addItem(stats, il.getItemName(i), value);
 			}
@@ -84,20 +86,20 @@ public class ItemUtil {
 		return container;
 	}
 
-	public static String getItemValueFormated(ItemList il, int index) {
+	public static String getItemValueFormatted(ItemList il, int index) {
 		Object item = il.getItemValue(index);
 		if (item==null) {
 			return ItemList.ITEM_VALUE_NAN;
 		}
 		switch (il.getItemType(index)) {
 			case INTEGER:
-				return ""+ (Long)item;
+				return ""+ item;
 			case TIME:
 				DecimalFormat df=new DecimalFormat(ItemList.ITEM_FORMAT_TIME);
 				return df.format(item);
 			case FRACTION:
 				DecimalFormat pf=new DecimalFormat(ItemList.ITEM_FORMAT_PERC);
-				return ""+pf.format(((Double)item).doubleValue()*100);
+				return pf.format((Double) item * 100);
 			default:
 				return item.toString();
 		}

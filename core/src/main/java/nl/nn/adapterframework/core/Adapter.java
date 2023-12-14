@@ -365,16 +365,14 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@JmxAttribute(description = "The date/time of the last processed message")
 	public String getLastMessageDate() {
-		return getLastMessageDate(DateFormatUtils.FORMAT_FULL_GENERIC);
-	}
-	public String getLastMessageDate(String dateFormat) {
 		String result;
 		if (lastMessageDate != 0)
-			result = DateFormatUtils.format(new Date(lastMessageDate), dateFormat);
+			result = DateFormatUtils.format(lastMessageDate, DateFormatUtils.FULL_GENERIC_FORMATTER);
 		else
 			result = "-";
 		return result;
 	}
+
 	public Date getLastMessageDateDate() {
 		Date result = null;
 		if (lastMessageDate != 0) {
@@ -570,11 +568,9 @@ public class Adapter implements IAdapter, NamedBean {
 	 */
 	@JmxAttribute(description = "Up Since")
 	public String getStatsUpSince() {
-		return getStatsUpSince(DateFormatUtils.FORMAT_FULL_GENERIC);
+		return DateFormatUtils.format(statsUpSince, DateFormatUtils.FULL_GENERIC_FORMATTER);
 	}
-	public String getStatsUpSince(String dateFormat) {
-		return DateFormatUtils.format(new Date(statsUpSince), dateFormat);
-	}
+
 	public Date getStatsUpSinceDate() {
 		return new Date(statsUpSince);
 	}
@@ -603,7 +599,7 @@ public class Adapter implements IAdapter, NamedBean {
 					String msg = "Illegal exception ["+t.getClass().getName()+"]";
 					INamedObject objectInError = null;
 					if (t instanceof ListenerException) {
-						Throwable cause = ((ListenerException) t).getCause();
+						Throwable cause = t.getCause();
 						if  (cause instanceof PipeRunException) {
 							PipeRunException pre = (PipeRunException) cause;
 							msg = "error during pipeline processing";
@@ -689,8 +685,8 @@ public class Adapter implements IAdapter, NamedBean {
 			if (log.isDebugEnabled()) {
 				log.debug("Adapter: [{}] STAT: Pipeline finished processing message with messageId [{}] exit-state [{}] started {} finished {} total duration: {} ms",
 						getName(), messageId, result.getState(),
-						DateFormatUtils.format(new Date(startTime), DateFormatUtils.FORMAT_FULL_GENERIC),
-						DateFormatUtils.format(new Date(endTime), DateFormatUtils.FORMAT_FULL_GENERIC),
+						DateFormatUtils.format(startTime, DateFormatUtils.FULL_GENERIC_FORMATTER),
+						DateFormatUtils.format(endTime, DateFormatUtils.FULL_GENERIC_FORMATTER),
 						duration);
 			} else {
 				log.info("Adapter [{}] Pipeline finished processing message with messageId [{}] with exit-state [{}]", getName(), messageId, result.getState());
@@ -1040,9 +1036,9 @@ public class Adapter implements IAdapter, NamedBean {
 		@Deprecated
 		TERSE(Level.DEBUG);
 
-		private @Getter Level effectiveLevel;
+		private final @Getter Level effectiveLevel;
 
-		private MessageLogLevel(Level effectiveLevel) {
+		MessageLogLevel(Level effectiveLevel) {
 			this.effectiveLevel = effectiveLevel;
 		}
 	}

@@ -17,22 +17,22 @@ package nl.nn.adapterframework.core;
 
 /**
  * Interface to be implemented by classes of which the number of threads can be controlled at runtime.
- * 
+ * <p>
  * Implementing this class results in receivers that have a number of threads that can be controlled
- * from the ibisconsole.
- * 
- * @author  Gerrit van Brakel
- * @since  
+ * from the console.
+ *
+ * @author Gerrit van Brakel
+ * @since
  */
 public interface IThreadCountControllable {
 
-	public boolean isThreadCountReadable();
-	public boolean isThreadCountControllable();
+	boolean isThreadCountReadable();
+	boolean isThreadCountControllable();
 
-	public int getCurrentThreadCount();
-	public int getMaxThreadCount();
+	int getCurrentThreadCount();
+	int getMaxThreadCount();
 
-	public void increaseThreadCount();
-	public void decreaseThreadCount();
+	void increaseThreadCount();
+	void decreaseThreadCount();
 
 }

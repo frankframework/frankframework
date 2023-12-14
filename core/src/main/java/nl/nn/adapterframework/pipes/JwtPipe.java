@@ -37,6 +37,8 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTClaimsSet.Builder;
 import com.nimbusds.jwt.SignedJWT;
 
+import lombok.AccessLevel;
+import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -46,19 +48,22 @@ import nl.nn.adapterframework.doc.Category;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.Message;
+import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 
 /**
  * Creates a JWT with a shared secret using the HmacSHA256 algorithm.
  *
  * @ff.parameter {@value #SHARED_SECRET_PARAMETER_NAME} overrides attribute <code>sharedSecret</code>
- * 
+ *
  * @author Niels Meijer
  * @since 7.9
  */
 @Category("Basic")
 public class JwtPipe extends FixedForwardPipe {
 	private static final String SHARED_SECRET_PARAMETER_NAME = "sharedSecret";
+
+	private @Setter(AccessLevel.PACKAGE) boolean jwtAllowWeakSecrets = AppConstants.getInstance().getBoolean("application.security.jwt.allowWeakSecrets", false);
 
 	private JWSHeader jwtHeader;
 	private JWSSigner globalSigner;
@@ -73,6 +78,10 @@ public class JwtPipe extends FixedForwardPipe {
 		super.configure();
 
 		jwtHeader = new JWSHeader.Builder(JWSAlgorithm.HS256).type(JOSEObjectType.JWT).build();
+
+		if (jwtAllowWeakSecrets && StringUtils.isNotEmpty(sharedSecret)) {
+			sharedSecret = StringUtils.rightPad(sharedSecret, 32, "\0");
+		}
 
 		if(StringUtils.isNotEmpty(sharedSecret) || StringUtils.isNotEmpty(sharedSecretAlias)) {
 			try {
@@ -153,6 +162,7 @@ public class JwtPipe extends FixedForwardPipe {
 	public void setAuthAlias(String alias) {
 		this.sharedSecretAlias = alias;
 	}
+
 	/** Shared secret to be used when signing the JWT (using the HmacSHA256 algorithm) */
 	public void setSharedSecret(String sharedSecret) {
 		this.sharedSecret = sharedSecret;

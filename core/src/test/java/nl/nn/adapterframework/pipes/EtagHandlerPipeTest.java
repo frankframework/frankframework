@@ -1,9 +1,10 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -36,39 +37,39 @@ public class EtagHandlerPipeTest extends PipeTestBase<EtagHandlerPipe> {
 		assertNull(pipe.getRestPath());
 	}
 
-	@Test(expected = ConfigurationException.class)
-	public void testNoActionGiven() throws ConfigurationException {
+	@Test
+	public void testNoActionGiven() {
 		pipe.setAction(null);
-		pipe.configure();
+		assertThrows(ConfigurationException.class, () -> pipe.configure());
 	}
 
-	@Test(expected = ConfigurationException.class)
-	public void testNoUriPatternGiven() throws ConfigurationException {
+	@Test
+	public void testNoUriPatternGiven() {
 		pipe.setAction(EtagAction.GENERATE);
-		pipe.configure();
+		assertThrows(ConfigurationException.class, () -> pipe.configure());
 	}
 
-	@Test(expected = PipeRunException.class)
-	public void testInputNull() throws PipeRunException {
-		doPipe(pipe, null, session);
+	@Test
+	public void testInputNull() {
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, null, session));
 	}
 
-	@Test(expected = PipeRunException.class)
-	public void testWrongInputFormat() throws PipeRunException {
-		doPipe(pipe, 5000, session);
+	@Test
+	public void testWrongInputFormat() {
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, 5000, session));
 	}
 
-	@Test(expected = PipeRunException.class)
-	public void testFailedToLocateCache() throws PipeRunException {
-		doPipe(pipe, "dummyString", session);
+	@Test
+	public void testFailedToLocateCache()  {
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "dummyString", session));
 	}
 
-	@Test(expected = PipeRunException.class)
-	public void testFailedToLocateEtag() throws PipeRunException, ConfigurationException {
+	@Test
+	public void testFailedToLocateEtag() throws ConfigurationException {
 		pipe.setAction(EtagAction.GENERATE);
 		pipe.setUriPattern("dummyPattern");
 		pipe.configure();
-		doPipe(pipe, "dummyString", session);
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "dummyString", session));
 	}
 
 }

@@ -112,7 +112,7 @@ public class BrowseQueue extends BusEndpointBase {
 			return new JsonResponseMessage(returnMap);
 		}
 		catch (Exception e) {
-			throw new BusException("Error occured browsing messages", e);
+			throw new BusException("Error occurred browsing messages", e);
 		}
 	}
 

@@ -109,22 +109,22 @@ public class Dir2Xml  {
 		fileXml.addAttribute("name", nameShown);
 		long fileSize = file.length();
 		fileXml.addAttribute("size", "" + fileSize);
-		fileXml.addAttribute("fSize", "" + Misc.toFileSize(fileSize,true));
+		fileXml.addAttribute("fSize", Misc.toFileSize(fileSize, true));
 		fileXml.addAttribute("directory", "" + file.isDirectory());
 		try {
 			fileXml.addAttribute("canonicalName", file.getCanonicalPath());
 		} catch (IOException e) {
-			log.warn("cannot get canonicalName for file ["+nameShown+"]",e);
+			log.warn("cannot get canonicalName for file [{}]", nameShown, e);
 			fileXml.addAttribute("canonicalName", nameShown);
 		}
 		// Get the modification date of the file
 		Date modificationDate = new Date(file.lastModified());
 		//add date
-		String date = DateFormatUtils.format(modificationDate, DateFormatUtils.FORMAT_DATE);
+		String date = DateFormatUtils.format(modificationDate, DateFormatUtils.SHORT_DATE_FORMATTER);
 		fileXml.addAttribute("modificationDate", date);
 
 		// add the time
-		String time = DateFormatUtils.format(modificationDate, DateFormatUtils.FORMAT_TIME_HMS);
+		String time = DateFormatUtils.format(modificationDate, DateFormatUtils.TIME_HMS_FORMATTER);
 		fileXml.addAttribute("modificationTime", time);
 
 		return fileXml;

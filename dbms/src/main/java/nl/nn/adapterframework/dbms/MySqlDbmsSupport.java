@@ -48,7 +48,7 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 
 	@Override
 	public String getDatetimeLiteral(Date date) {
-		SimpleDateFormat formatter = new SimpleDateFormat(DateFormatUtils.FORMAT_GENERICDATETIME);
+		SimpleDateFormat formatter = new SimpleDateFormat(DateFormatUtils.FORMAT_DATETIME_GENERIC);
 		String formattedDate = formatter.format(date);
 		return "TIMESTAMP('" + formattedDate + "')";
 	}

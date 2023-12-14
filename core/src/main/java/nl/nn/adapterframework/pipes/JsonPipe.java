@@ -97,7 +97,7 @@ public class JsonPipe extends FixedForwardPipe {
 					}
 					String root="root";
 					StringWriter writer = new StringWriter();
-					if (jValue instanceof JsonObject) {
+					if (jValue instanceof JsonObject) { //{"d":{"convert":{"__metadata":{"type":"ZCD_API_FCC_SRV.convertcurrencys"},"amount":"0.000000000","currency":"EUR"}}}
 						if (!addXmlRootElement) {
 							JsonObject jObj = (JsonObject)jValue;
 							if (jObj.size()>1) {

@@ -37,7 +37,6 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 import nl.nn.adapterframework.ftp.FTPFileRef;
-import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.FtpSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.SerializableFileReference;
@@ -59,11 +58,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public void open() throws FileSystemException {
-		try {
-			ftpClient = openClient(remoteDirectory);
-		} catch (FtpConnectException e) {
-			throw new FileSystemException("Cannot connect to the FTP server with domain ["+getHost()+"]", e);
-		}
+		ftpClient = openClient(remoteDirectory);
 	}
 
 	@Override

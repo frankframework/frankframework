@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.management.bus.endpoints;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -99,8 +98,7 @@ public class TestPipeline extends BusEndpointBase {
 				pls.putAll(threadContext);
 			}
 
-			Date now = new Date();
-			PipeLineSession.updateListenerParameters(pls, messageId, correlationId, now, now);
+			PipeLineSession.updateListenerParameters(pls, messageId, correlationId);
 
 			secLog.info("testing pipeline of adapter [{}] {}", adapter.getName(), (writeSecurityLogMessage ? "message [" + payload + "]" : ""));
 

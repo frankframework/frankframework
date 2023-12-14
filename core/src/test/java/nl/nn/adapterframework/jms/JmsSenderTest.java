@@ -2,6 +2,7 @@ package nl.nn.adapterframework.jms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -22,6 +23,8 @@ import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.mock.MockRunnerConnectionFactoryFactory;
+import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.EnumUtils;
 
 class JmsSenderTest {
 
@@ -56,9 +59,22 @@ class JmsSenderTest {
 	}
 
 	@Test
+	void testJmsSenderCopiesDefaultMessageClass() {
+		// Assure that for the test, the default message class is not "AUTO"
+		JMSFacade.MessageClass defaultMessageClass = EnumUtils.parse(JMSFacade.MessageClass.class, AppConstants.getInstance().getProperty("jms.messageClass.default"));
+
+		assertNotNull(defaultMessageClass);
+		assertNotEquals(JMSFacade.MessageClass.AUTO, defaultMessageClass);
+
+		// Assert that the sender has same messageClass as the default is
+		assertEquals(defaultMessageClass, jmsSender.getMessageClass());
+	}
+
+	@Test
 	void testSendMessageModeAutoWithTextMessage() throws Exception {
 		// Arrange
 		Message message = Message.asMessage("A Textual Message");
+		jmsSender.setMessageClass(JMSFacade.MessageClass.AUTO);
 
 		// Act
 		jmsSender.sendMessage(message, pipeLineSession);
@@ -66,7 +82,7 @@ class JmsSenderTest {
 		// Assert
 		javax.jms.Message jmsMessage = mockQueue.getMessage();
 		assertNotNull(jmsMessage);
-		assertTrue(jmsMessage instanceof TextMessage);
+		assertInstanceOf(TextMessage.class, jmsMessage);
 
 		TextMessage textMessage = (TextMessage) jmsMessage;
 		assertEquals("A Textual Message", textMessage.getText());
@@ -77,6 +93,7 @@ class JmsSenderTest {
 	void testSendMessageModeAutoWithBinaryMessage(MessageTestUtils.MessageType messageType) throws Exception {
 		// Arrange
 		Message message = MessageTestUtils.getMessage(messageType);
+		jmsSender.setMessageClass(JMSFacade.MessageClass.AUTO);
 
 		// Act
 		jmsSender.sendMessage(message, pipeLineSession);

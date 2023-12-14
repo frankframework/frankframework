@@ -36,7 +36,6 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
 import lombok.Getter;
-import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.SftpFileRef;
 import nl.nn.adapterframework.ftp.SftpSession;
 import nl.nn.adapterframework.stream.Message;
@@ -58,11 +57,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public void open() throws FileSystemException {
-		try {
-			ftpClient = openClient(remoteDirectory);
-		} catch (FtpConnectException e) {
-			throw new FileSystemException("Cannot connect to the FTP server with domain ["+getHost()+"]", e);
-		}
+		ftpClient = openClient(remoteDirectory);
 	}
 
 	@Override

@@ -300,7 +300,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 						bisDetailText = (String) session.get(getBisErrorReasonSessionKey());
 					}
 					if (isOmitResult()) {
-						throw new PipeRunException(this, "bisError occured: errorCode [" + bisErrorCode + "], errorText [" + bisErrorText + "]");
+						throw new PipeRunException(this, "bisError occurred: errorCode [" + bisErrorCode + "], errorText [" + bisErrorText + "]");
 					}
 				}
 				String bisResult = prepareResult(bisErrorCode, bisErrorText, getBisServiceName(), getBisActionName(), bisDetailText);
@@ -387,7 +387,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		}
 		headerFieldsElement.addSubElement(externalRefToMessageIdElement);
 		XmlBuilder timestampElement = new XmlBuilder("Timestamp");
-		timestampElement.setValue(DateFormatUtils.now(DateFormatUtils.FORMAT_FULL_ISO));
+		timestampElement.setValue(DateFormatUtils.now(DateFormatUtils.FULL_ISO_FORMATTER));
 		headerFieldsElement.addSubElement(timestampElement);
 		messageHeaderElement.addSubElement(headerFieldsElement);
 		return messageHeaderElement.toXML();

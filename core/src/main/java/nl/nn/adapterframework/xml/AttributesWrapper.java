@@ -35,7 +35,7 @@ public class AttributesWrapper implements Attributes {
 	private final Map<String, Integer> indexByUriAndLocalName = new LinkedHashMap<>();
 	private final List<Attribute> attributes = new ArrayList<>();
 
-	private static class Attribute {
+	protected static class Attribute {
 		String uri;
 		String localName;
 		String qName;
@@ -94,12 +94,19 @@ public class AttributesWrapper implements Attributes {
 
 	@Override
 	public int getIndex(String qName) {
+		if (!indexByQName.containsKey(qName)) {
+			return -1;
+		}
 		return indexByQName.get(qName);
 	}
 
 	@Override
 	public int getIndex(String uri, String localName) {
-		return indexByUriAndLocalName.get(uri + ":" + localName);
+		String key = uri + ":" + localName;
+		if (!indexByUriAndLocalName.containsKey(key)) {
+			return -1;
+		}
+		return indexByUriAndLocalName.get(key);
 	}
 
 	@Override
@@ -109,47 +116,78 @@ public class AttributesWrapper implements Attributes {
 
 	@Override
 	public String getLocalName(int i) {
+		if (i < 0 || i >= attributes.size()) {
+			return null;
+		}
 		return attributes.get(i).localName;
 	}
 
 	@Override
 	public String getQName(int i) {
+		if (i < 0 || i >= attributes.size()) {
+			return null;
+		}
 		return attributes.get(i).qName;
 	}
 
 	@Override
 	public String getType(int i) {
+		if (i < 0 || i >= attributes.size()) {
+			return null;
+		}
 		return attributes.get(i).type;
 	}
 
 	@Override
 	public String getType(String qName) {
-		return attributes.get(getIndex(qName)).type;
+		int index = getIndex(qName);
+		if (index == -1) {
+			return null;
+		}
+		return attributes.get(index).type;
 	}
 
 	@Override
 	public String getType(String uri, String localName) {
-		return attributes.get(getIndex(uri, localName)).type;
+		int index = getIndex(uri, localName);
+		if (index == -1) {
+			return null;
+		}
+		return attributes.get(index).type;
 	}
 
 	@Override
 	public String getURI(int i) {
+		if (i < 0 || i >= attributes.size()) {
+			return null;
+		}
 		return attributes.get(i).uri;
 	}
 
 	@Override
 	public String getValue(int i) {
+		if (i < 0 || i >= attributes.size()) {
+			return null;
+		}
 		return attributes.get(i).value;
 	}
 
 	@Override
 	public String getValue(String qName) {
-		return attributes.get(getIndex(qName)).value;
+		int index = getIndex(qName);
+		if (index == -1) {
+			return null;
+		}
+		return attributes.get(index).value;
 	}
 
 	@Override
 	public String getValue(String uri, String localName) {
-		return attributes.get(getIndex(uri, localName)).value;
+		int index = getIndex(uri, localName);
+		if (index == -1) {
+			return null;
+		}
+		return attributes.get(index).value;
 	}
 
 	public void remove(String uri, String localName) {
@@ -157,5 +195,9 @@ public class AttributesWrapper implements Attributes {
 		if (i >= 0) {
 			attributes.remove(i);
 		}
+	}
+
+	protected List<Attribute> getAttributes() {
+		return attributes;
 	}
 }

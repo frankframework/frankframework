@@ -30,13 +30,15 @@ import nl.nn.adapterframework.receivers.Receiver;
  */
 public interface IPortConnectedListener<M> extends IPushingListener<M> {
 
-	public IbisExceptionListener getExceptionListener();
-	public IMessageHandler<M> getHandler();
+	IbisExceptionListener getExceptionListener();
 
-	public void setReceiver(Receiver<M> receiver);
-	public Receiver<M> getReceiver();
+	IMessageHandler<M> getHandler();
 
-	public IListenerConnector<M> getListenerPortConnector();
+	void setReceiver(Receiver<M> receiver);
+	Receiver<M> getReceiver();
 
-	default void checkTransactionManagerValidity() {}
+	IListenerConnector<M> getListenerPortConnector();
+
+	default void checkTransactionManagerValidity() {
+	}
 }

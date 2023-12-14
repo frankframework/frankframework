@@ -29,6 +29,12 @@
 				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${transactionmanager.log.dir}</prop>
 				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${transactionmanager.log.dir}</prop>
 				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${transactionmanager.log.dir}</prop>
+
+				<prop key="ObjectStoreEnvironmentBean.objectStoreType">${transactionmanager.narayana.objectStoreType}</prop>
+				<prop key="ObjectStoreEnvironmentBean.dropTable">${transactionmanager.narayana.dropTable}</prop>
+				<prop key="ObjectStoreEnvironmentBean.createTable">${transactionmanager.narayana.createTable}</prop>
+
+
 				<prop key="CoordinatorEnvironmentBean.defaultTimeout">${transactionmanager.defaultTransactionTimeout}</prop>
 
 				<prop key="CoordinatorEnvironmentBean.txReaperTimeout">${transactionmanager.narayana.reapTime}</prop>

@@ -12,7 +12,6 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpException;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.ftp.FtpConnectException;
 import nl.nn.adapterframework.ftp.SftpSession;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -83,12 +82,9 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 		ftpSession.setStrictHostKeyChecking(false);
 		ftpSession.configure();
 
-		try {
-			ftpClient = ftpSession.openClient(remoteDirectory);
-		} catch (FtpConnectException e) {
-			throw new FileSystemException("Cannot connect to the FTP server with domain [" + host + "]", e);
-		}
+		ftpClient = ftpSession.openClient(remoteDirectory);
 	}
+
 	@Override
 	public boolean _fileExists(String folder, String filename) throws FileSystemException {
 		try {

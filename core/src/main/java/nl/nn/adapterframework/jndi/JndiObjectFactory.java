@@ -70,7 +70,7 @@ public class JndiObjectFactory<O,L> extends ObjectFactoryBase<O,L> implements Ap
 			}
 		}
 
-		log.debug("located Object with JNDI name [" + prefixedJndiName + "]"); //No exceptions during lookup means we found something!
+		log.debug("located Object with JNDI name [{}]", prefixedJndiName); //No exceptions during lookup means we found something!
 		return object;
 	}
 

@@ -61,8 +61,6 @@ public class TestPipeline extends FrankApiBase {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postTestPipeLine(MultipartBody inputDataMap) throws ApiException {
-		String message = null;
-
 		RequestMessageBuilder builder = RequestMessageBuilder.create(this, BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
 		String configuration = RequestUtils.resolveStringFromMap(inputDataMap, "configuration");
 		builder.addHeader("configuration", configuration);
@@ -77,6 +75,7 @@ public class TestPipeline extends FrankApiBase {
 
 		String fileEncoding = RequestUtils.resolveTypeFromMap(inputDataMap, "encoding", String.class, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
+		String message;
 		Attachment filePart = inputDataMap.getAttachment("file");
 		if(filePart != null) {
 			String fileName = filePart.getContentDisposition().getParameter("filename");
@@ -121,7 +120,8 @@ public class TestPipeline extends FrankApiBase {
 			return new String((byte[]) payload);
 		} else if(payload instanceof InputStream) {
 			try {
-				return StreamUtil.streamToString((InputStream) payload);
+				// Convert line endings to \n to show them in the browser as real line feeds
+				return StreamUtil.streamToString((InputStream) payload,  "\n", false);
 			} catch (IOException e) {
 				throw new ApiException("unable to read response payload", e);
 			}
@@ -153,7 +153,7 @@ public class TestPipeline extends FrankApiBase {
 			if (size>0) {
 				byte[] b=new byte[size];
 				int rb=0;
-				int chunk=0;
+				int chunk;
 				while ((size - rb) > 0) {
 					chunk=archive.read(b,rb,size - rb);
 					if (chunk==-1) {

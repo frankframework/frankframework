@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -518,7 +517,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 				final String messageId = getHeaderOrDefault(request, listener.getMessageIdHeader(), null);
 				final String correlationId = getHeaderOrDefault(request, listener.getCorrelationIdHeader(), messageId);
-				PipeLineSession.updateListenerParameters(messageContext, messageId, correlationId, null, null); //We're only using this method to keep setting mid/cid uniform
+				PipeLineSession.updateListenerParameters(messageContext, messageId, correlationId);
 
 				/*
 				 * Do the actual request processing by the ApiListener
@@ -561,9 +560,9 @@ public class ApiListenerServlet extends HttpServletBase {
 				if(!Message.isEmpty(result)) {
 					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
 					if(StringUtils.isNotEmpty(lastModified)) {
-						Date date = DateFormatUtils.parseToDate(lastModified, DateFormatUtils.FORMAT_FULL_GENERIC);
+						Instant date = DateFormatUtils.parseToInstant(lastModified, DateFormatUtils.FULL_GENERIC_FORMATTER);
 						if(date != null) {
-							lastModDate = date.getTime();
+							lastModDate = date.toEpochMilli();
 						}
 					}
 				}

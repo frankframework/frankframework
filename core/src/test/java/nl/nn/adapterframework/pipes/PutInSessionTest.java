@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
-
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * PutInSession Tester.

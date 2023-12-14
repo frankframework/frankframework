@@ -66,16 +66,16 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters {
 	private @Getter String replyToName = null;
 	private @Getter DeliveryMode deliveryMode = DeliveryMode.NOT_SET;
 	private @Getter String messageType = null;
-	private @Getter int priority=-1;
-	private @Getter boolean synchronous=false;
-	private @Getter int replyTimeout=5000;
-	private @Getter String replySoapHeaderSessionKey="replySoapHeader";
-	private @Getter boolean soap=false;
-	private @Getter String encodingStyleURI=null;
-	private @Getter String serviceNamespaceURI=null;
-	private @Getter String soapAction=null;
-	private @Getter String soapHeaderParam="soapHeader";
-	private @Getter LinkMethod linkMethod=LinkMethod.MESSAGEID;
+	private @Getter int priority = -1;
+	private @Getter boolean synchronous = false;
+	private @Getter int replyTimeout = 5000;
+	private @Getter String replySoapHeaderSessionKey = "replySoapHeader";
+	private @Getter boolean soap = false;
+	private @Getter String encodingStyleURI = null;
+	private @Getter String serviceNamespaceURI = null;
+	private @Getter String soapAction = null;
+	private @Getter String soapHeaderParam = "soapHeader";
+	private @Getter LinkMethod linkMethod = LinkMethod.MESSAGEID;
 	private @Getter String destinationParam = null;
 
 	protected ParameterList paramList = null;

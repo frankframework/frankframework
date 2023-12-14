@@ -39,13 +39,10 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
-import nl.nn.adapterframework.jms.JmsException;
 import nl.nn.adapterframework.pipes.AbstractPipe;
 import nl.nn.adapterframework.pipes.FixedForwardPipe;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.processors.PipeLineProcessor;
-import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.statistics.HasStatistics;
 import nl.nn.adapterframework.statistics.SizeStatisticsKeeper;
 import nl.nn.adapterframework.statistics.StatisticsKeeper;
@@ -252,8 +249,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		IWrapperPipe outputWrapper = getOutputWrapper();
 		if (outputWrapper != null) {
 			log.debug("configuring OutputWrapper");
-			if (outputWrapper instanceof EsbSoapWrapperPipe) {
-				validatePhysicalDestination((EsbSoapWrapperPipe) outputWrapper);
+			if (outputWrapper instanceof DestinationValidator) {
+				((DestinationValidator) outputWrapper).validateListenerDestinations(this);
 			}
 			configurationException = configureSpecialPipe(outputWrapper, OUTPUT_WRAPPER_NAME, configurationException);
 		}
@@ -288,24 +285,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			return suppressException(configurationException, e);
 		}
 		return configurationException;
-	}
-
-	private void validatePhysicalDestination(final EsbSoapWrapperPipe eswPipe) throws ConfigurationException {
-		INamedObject owner = getOwner();
-		if (owner instanceof Adapter) {
-			Adapter owningAdapter = (Adapter) owner;
-
-			for (Receiver<?> receiver : owningAdapter.getReceivers()) {
-				IListener<?> listener = receiver.getListener();
-				try {
-					if (eswPipe.retrievePhysicalDestinationFromListener(listener)) {
-						break;
-					}
-				} catch (JmsException e) {
-					throw new ConfigurationException(e);
-				}
-			}
-		}
 	}
 
 	@Nonnull
@@ -694,9 +673,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	@Deprecated
-	public void registerForward(PipeForward forward){
+	public void registerForward(PipeForward forward) {
 		globalForwards.put(forward.getName(), forward);
-		log.debug("registered global PipeForward "+forward.toString());
+		log.debug("registered global PipeForward {}", forward);
 	}
 
 	/**
@@ -711,19 +690,20 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 	/** Cache of results */
 	@Override
-	public void setCache(ICache<String,String> cache) {
-		this.cache=cache;
+	public void setCache(ICache<String, String> cache) {
+		this.cache = cache;
 	}
 
 	/**
-	 * Register an Pipe at this pipeline.
+	 * Register a Pipe at this pipeline.
 	 * The name is also put in the globalForwards table (with
 	 * forward-name=pipename and forward-path=pipename, so that
 	 * pipe can look for a specific pipe-name. If already a globalForward
 	 * exists under that name, the pipe is NOT added, allowing globalForwards
 	 * to prevail.
-	 * @see AbstractPipe
+	 *
 	 * @ff.mandatory
+	 * @see AbstractPipe
 	 **/
 	public void addPipe(IPipe pipe) throws ConfigurationException {
 		if (pipe == null) {
@@ -731,7 +711,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 		String name = pipe.getName();
 		if (StringUtils.isEmpty(name)) {
-			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe)+"] to be added has no name, pipelineTable size ["+pipesByName.size()+"]");
+			throw new ConfigurationException("pipe [" + ClassUtils.nameOf(pipe) + "] to be added has no name, pipelineTable size [" + pipesByName.size() + "]");
 		}
 		IPipe current = getPipe(name);
 		if (current != null) {
@@ -742,7 +722,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		if (pipe.getMaxThreads() > 0) {
 			pipeWaitingStatistics.put(name, new StatisticsKeeper(name));
 		}
-		log.debug("added pipe [" + pipe.toString() + "]");
+		log.debug("added pipe [" + pipe + "]");
 	}
 
 	/**

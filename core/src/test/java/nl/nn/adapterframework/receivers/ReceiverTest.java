@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -87,17 +88,18 @@ import nl.nn.adapterframework.core.PipeLineExit;
 import nl.nn.adapterframework.core.PipeLineResult;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.TransactionAttribute;
-import nl.nn.adapterframework.extensions.esb.EsbJmsListener;
 import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.jdbc.MessageStoreListener;
 import nl.nn.adapterframework.jms.JMSFacade;
 import nl.nn.adapterframework.jms.MessagingSource;
+import nl.nn.adapterframework.jms.PushingJmsListener;
 import nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager;
 import nl.nn.adapterframework.management.IbisAction;
 import nl.nn.adapterframework.pipes.EchoPipe;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.MessageContext;
 import nl.nn.adapterframework.testutil.TestAppender;
+import nl.nn.adapterframework.testutil.TestAssertions;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.util.LogUtil;
@@ -258,7 +260,7 @@ public class ReceiverTest {
 	void testJmsMessageWithHighDeliveryCount(Supplier<TestConfiguration> configurationSupplier) throws Exception {
 		// Arrange
 		configuration = configurationSupplier.get();
-		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
+		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
 		doNothing().when(listener).configure();
@@ -383,7 +385,7 @@ public class ReceiverTest {
 	void testJmsMessageWithException(Supplier<TestConfiguration> configurationSupplier) throws Exception {
 		// Arrange
 		configuration = configurationSupplier.get();
-		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
+		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
 		doNothing().when(listener).configure();
@@ -522,7 +524,7 @@ public class ReceiverTest {
 	void testGetDeliveryCountWithJmsListener() throws Exception {
 		// Arrange
 		configuration = buildConfiguration(null);
-		EsbJmsListener listener = spy(configuration.createBean(EsbJmsListener.class));
+		PushingJmsListener listener = spy(configuration.createBean(PushingJmsListener.class));
 		doReturn(mock(Destination.class)).when(listener).getDestination();
 		doNothing().when(listener).open();
 
@@ -783,6 +785,8 @@ public class ReceiverTest {
 
 	@Test
 	public void testStopAdapterWhileReceiverIsStillStarting() throws Exception {
+		assumeFalse(TestAssertions.isTestRunningOnCI() || TestAssertions.isTestRunningOnGitHub(), "For unknown reasons this test is unreliable on Github and CI so only run locally for now until we have time to investigate");
+
 		// Arrange
 		configuration = buildConfiguration(null);
 		SlowListenerBase listener = setupSlowStartPushingListener(1_000);

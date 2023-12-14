@@ -33,9 +33,7 @@ import nl.nn.adapterframework.receivers.RawMessageWrapper;
 @FrankDocGroup(order = 55, name = "TransactionalStorages")
 public interface ITransactionalStorage<S extends Serializable> extends IMessageBrowser<S>, INamedObject {
 
-	public static final int MAXCOMMENTLEN=1000;
-
-
+	int MAXCOMMENTLEN = 1000;
 
 	/**
 	 * Prepares the object for operation. After this

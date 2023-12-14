@@ -38,7 +38,7 @@ public enum TransactionAttribute implements DocumentedEnum {
 
 	private final @Getter int transactionAttributeNum;
 
-	private TransactionAttribute(int transactionAttributeNum) {
+	TransactionAttribute(int transactionAttributeNum) {
 		this.transactionAttributeNum=transactionAttributeNum;
 	}
 }

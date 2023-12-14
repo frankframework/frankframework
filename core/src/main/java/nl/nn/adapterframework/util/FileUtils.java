@@ -55,8 +55,6 @@ import nl.nn.adapterframework.parameters.ParameterValueList;
  */
 @Log4j2
 public class FileUtils {
-	protected static final String WEEKLY_ROLLING_FILENAME_DATE_FORMAT = "YYYY'W'ww";
-	protected static final String DAILY_ROLLING_FILENAME_DATE_FORMAT = "yyyy-MM-dd";
 
 	/**
 	 * Construct a filename from a pattern and session variables.
@@ -352,57 +350,10 @@ public class FileUtils {
 				curFile=srcFile;
 			}
 		}
-		// move current file to backup
+		// move current file to back up
 		String backupFilename=targetFile.getPath()+".1";
 		File backupFile=new File(backupFilename);
 		targetFile.renameTo(backupFile);
-	}
-
-	public static File getWeeklyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
-		return getRollingFile(directory, filenamePrefix, WEEKLY_ROLLING_FILENAME_DATE_FORMAT, filenameSuffix, retentionDays);
-	}
-
-	public static File getDailyRollingFile(String directory, String filenamePrefix, String filenameSuffix, int retentionDays) {
-		return getRollingFile(directory, filenamePrefix, DAILY_ROLLING_FILENAME_DATE_FORMAT, filenameSuffix, retentionDays);
-	}
-
-	private static File getRollingFile(String directory, String filenamePrefix, String dateformat, String filenameSuffix, int retentionDays) {
-		return getRollingFile(directory, filenamePrefix, dateformat, filenameSuffix, retentionDays, null);
-	}
-
-	protected static File getRollingFile(String directory, String filenamePrefix, String dateformat, String filenameSuffix, int retentionDays, Date date) {
-
-		final long millisPerDay = 24 * 60 * 60 * 1000L;
-
-		if (directory == null) {
-			return null;
-		}
-
-		Date dateInFileName = date != null ? date : new Date();
-
-		String filename=filenamePrefix+ DateFormatUtils.format(dateInFileName,dateformat)+filenameSuffix;
-		File result = new File(directory, filename);
-		if (!result.exists()) {
-			long thisMorning = dateInFileName.getTime();
-
-			long deleteBefore = thisMorning - retentionDays * millisPerDay;
-
-			WildCardFilter filter = new WildCardFilter(filenamePrefix+"*"+filenameSuffix);
-			File dir = new File(directory);
-			File[] files = dir.listFiles(filter);
-
-			int count = (files == null ? 0 : files.length);
-			for (int i = 0; i < count; i++) {
-				File file = files[i];
-				if (file.isDirectory()) {
-					continue;
-				}
-				if (file.lastModified()<deleteBefore) {
-					file.delete();
-				}
-			}
-		}
-		return result;
 	}
 
 	public static File[] getFiles(String directory, String wildcard, String excludeWildcard, long minStability) {
@@ -531,12 +482,12 @@ public class FileUtils {
 		}
 	}
 
-	/*
+	/**
 	 * create a filled array
 	 */
-	public static char[] getFilledArray(int length, char fillchar) {
+	public static char[] getFilledArray(int length, char fillChar) {
 		char[] fill = new char[length];
-		Arrays.fill(fill, fillchar);
+		Arrays.fill(fill, fillChar);
 		return fill;
 	}
 

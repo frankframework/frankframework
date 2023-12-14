@@ -24,11 +24,11 @@
 
 		<narayana.version>5.13.1.Final</narayana.version>
 		<jboss-logging.version>3.4.3.Final</jboss-logging.version>
-		<micrometer.version>1.12.0</micrometer.version>
+		<micrometer.version>1.12.1</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
-		<javadoc-plugin.version>3.6.2</javadoc-plugin.version>
+		<javadoc-plugin.version>3.6.3</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.2.224</h2.driver.version>
@@ -38,8 +38,8 @@
 		<mssql.driver.version>12.4.2.jre11</mssql.driver.version>
 		<mysql.driver.version>8.2.0</mysql.driver.version>
 		<!-- Should upgrade to new MariaDB driver 3.1.4, 3.2.0 or newer for JDK17 support but currently not working with XA transaction managers in the framework. -->
-		<mariadb.driver.version>3.3.0</mariadb.driver.version>
-		<postgresql.driver.version>42.7.0</postgresql.driver.version>
+		<mariadb.driver.version>3.3.1</mariadb.driver.version>
+		<postgresql.driver.version>42.7.1</postgresql.driver.version>
 		<mongodb.driver.version>4.11.1</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
@@ -130,7 +130,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-transport-native-epoll</artifactId>
-				<version>4.1.101.Final</version>
+				<version>4.1.103.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -292,12 +292,10 @@
 				<type>pom</type>
 			</dependency>
 
-
-			<!-- explicit dependency to force version 1.1.1 -->
-			<dependency><!-- this dependency handles javax.activation.* imports, compatible with the IBM JRE -->
-				<groupId>javax.activation</groupId>
-				<artifactId>activation</artifactId>
-				<version>1.1.1</version>
+			<dependency><!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
+				<groupId>jakarta.activation</groupId>
+				<artifactId>jakarta.activation-api</artifactId>
+				<version>1.2.2</version>
 			</dependency>
 			<dependency><!-- this dependency handles jakarta.activation.* imports -->
 				<groupId>com.sun.activation</groupId>
@@ -522,7 +520,7 @@
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.15.0</version>
+				<version>2.15.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.sun.mail</groupId>
@@ -556,7 +554,7 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>5.7.0</version>
+				<version>5.8.0</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
@@ -570,6 +568,22 @@
 				<artifactId>awaitility</artifactId>
 				<version>4.2.0</version>
 				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.mockrunner</groupId>
+				<artifactId>mockrunner-jms</artifactId>
+				<version>2.0.7</version>
+				<scope>test</scope>
+				<exclusions>
+					<exclusion>
+						<groupId>xerces</groupId>
+						<artifactId>xercesImpl</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>ant</groupId>
+						<artifactId>ant</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -1036,15 +1050,9 @@
 										<excludes>
 											<exclude>javax.activation:javax.activation-api</exclude>
 											<exclude>com.sun.activation:javax.activation</exclude>
-									<!-- 	<exclude>javax.activation:activation</exclude> -->
+											<exclude>javax.activation:activation</exclude>
 										</excludes>
-										<message>use com.sun.activation:jakarta.activation instead of jakarta.activation:jakarta.activation-api</message>
-									</bannedDependencies>
-									<bannedDependencies>
-										<excludes>
-											<exclude>jakarta.activation:jakarta.activation-api</exclude>
-										</excludes>
-										<message>the implementation com.sun.activation:jakarta.activation is included and it contains the api classes too</message>
+										<message>Don't though versions, we should use javax.activation:1.2.2 and jakarta.activation:2.0.1</message>
 									</bannedDependencies>
 									<bannedDependencies>
 										<excludes>
@@ -1071,6 +1079,7 @@
 								<rules>
 									<bannedDependencies>
 										<excludes>
+											<exclude>ant:ant</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_1.1_spec:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.specs:geronimo-jms_2.0_spec:*:jar:compile</exclude>
 											<exclude>org.apache.geronimo.javamail:geronimo-javamail_1.4_mail:*:jar:compile</exclude>
@@ -1349,9 +1358,9 @@
 						<artifactId>lombok-maven-plugin</artifactId>
 					</plugin>
 					<plugin>
-						<groupId>org.ibissource</groupId>
+						<groupId>org.frankframework</groupId>
 						<artifactId>frank-doc-plugin</artifactId>
-						<version>0.3</version>
+						<version>1.0</version>
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>

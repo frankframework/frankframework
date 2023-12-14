@@ -55,7 +55,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.IXAEnabled;
@@ -95,7 +94,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private final boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", false);
 	private final boolean useJms102 = AppConstants.getInstance().getBoolean("jms.useJms102", false);
 	private final MessageClass messageClassDefault = AppConstants.getInstance().getOrDefault(JMS_MESSAGECLASS_KEY, MessageClass.AUTO);
-	private @Getter MessageClass messageClass = MessageClass.AUTO;
+	private @Getter MessageClass messageClass = messageClassDefault;
 
 	private @Getter boolean transacted = false;
 	private @Getter boolean jmsTransacted = false;
@@ -134,13 +133,16 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	private @Getter String correlationIdToHexPrefix = "ID:";
 	private @Getter int correlationIdMaxLength = -1;
 	private @Getter @Setter PlatformTransactionManager txManager;
-	private boolean skipCheckForTransactionManagerValidity=false;
+	private boolean skipCheckForTransactionManagerValidity = false;
 
 	/**
 	 * The JMS {@link javax.jms.Message} class for the outgoing message.
 	 * Currently supported are {@link MessageClass#TEXT} for JMS {@link TextMessage},
-	 * {@link MessageClass#BYTES} for JMS {@link BytesMessage}, or AUTO for auto-determination
+	 * {@link MessageClass#BYTES} for JMS {@link BytesMessage}, or {@link MessageClass#AUTO} for auto-determination
 	 * based on whether the input {@link Message} is binary or character.
+	 * <p>
+	 * Defaults to {@link MessageClass#AUTO}, unless the default is overridden in {@link AppConstants} with property {@code jms.messageClass.default}
+	 * </p>
 	 */
 	public void setMessageClass(MessageClass messageClass) {
 		this.messageClass = messageClass;
@@ -163,7 +165,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		  * of messages to the server until a convenient time; meanwhile the server might redeliver messages.
 		  * This mode reduces the session overhead. If JMS fails, the consumer may receive duplicate messages. */
 		@EnumLabel("dups") DUPS_OK_ACKNOWLEDGE(Session.DUPS_OK_ACKNOWLEDGE);
-		private @Getter int acknowledgeMode;
+		private final @Getter int acknowledgeMode;
 
 		private AcknowledgeMode(int acknowledgeMode) {
 			this.acknowledgeMode = acknowledgeMode;
@@ -175,13 +177,14 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		PERSISTENT(javax.jms.DeliveryMode.PERSISTENT),
 		NON_PERSISTENT(javax.jms.DeliveryMode.NON_PERSISTENT);
 
-		private @Getter int deliveryMode;
-		private DeliveryMode(int deliveryMode) {
+		private final @Getter int deliveryMode;
+
+		DeliveryMode(int deliveryMode) {
 			this.deliveryMode = deliveryMode;
 		}
 
 		public static DeliveryMode parse(int deliveryMode) {
-			return EnumUtils.parseFromField(DeliveryMode.class, "DeliveryMode", deliveryMode, d -> d.getDeliveryMode());
+			return EnumUtils.parseFromField(DeliveryMode.class, "DeliveryMode", deliveryMode, DeliveryMode::getDeliveryMode);
 		}
 	}
 
@@ -301,10 +304,9 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	protected Session createSession() throws JmsException {
 		try {
 			return getMessagingSource().createSession(isJmsTransacted(), getAcknowledgeModeEnum().getAcknowledgeMode());
-		} catch (IbisException e) {
-			if (e instanceof JmsException) {
-				throw (JmsException)e;
-			}
+		} catch (JmsException e) {
+			throw e;
+		} catch (Exception e) {
 			throw new JmsException(e);
 		}
 	}
@@ -312,7 +314,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	protected void closeSession(Session session) {
 		try {
 			getMessagingSource().releaseSession(session);
-		} catch (JmsException e) {
+		} catch (Exception e) {
 			log.warn("Exception releasing session", e);
 		}
 	}
@@ -904,17 +906,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		this.destinationType=destinationType;
 		useTopicFunctions = this.destinationType==DestinationType.TOPIC;
 	}
-
-	/**
-	 * Sets the JMS-acknowledge mode. This controls for non transacted listeners the way messages are acknowledged.
-	 * See the jms-documentation.
-	 */
-	@Deprecated
-	@ConfigurationWarning("please use attribute acknowledgeMode instead")
-	public void setAckMode(int ackMode) {
-		this.acknowledgeMode = EnumUtils.parseFromField(AcknowledgeMode.class, "ackMode", ackMode, a -> a.getAcknowledgeMode());
-	}
-
 
 	/**
 	 * If not transacted, the way the application informs the JMS provider that it has successfully received a message.

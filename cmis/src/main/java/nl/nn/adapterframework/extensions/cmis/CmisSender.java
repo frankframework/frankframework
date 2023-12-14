@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.cmis;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -28,8 +27,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
@@ -53,7 +50,6 @@ import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -83,7 +79,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EnumUtils;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -201,7 +196,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  */
 public class CmisSender extends SenderWithParametersBase implements HasKeystore, HasTruststore {
 
-	private final String NOT_FOUND_FORWARD_NAME="notFound";
+	private static final String NOT_FOUND_FORWARD_NAME="notFound";
 
 	public enum CmisAction {
 		/** Create a document */
@@ -225,7 +220,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	private @Getter String password;
 	private @Getter String filenameSessionKey;
 	private @Getter String defaultMediaType = "application/octet-stream";
-	private @Getter boolean streamResultToServlet = false;
 	private @Getter boolean getProperties = false;
 	private @Getter boolean getDocumentContent = true;
 	private @Getter boolean useRootFolder = true;
@@ -237,26 +231,20 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	private Session globalSession;
 
-	private final CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
+	private final @Getter CmisSessionBuilder sessionBuilder = new CmisSessionBuilder(this);
 
-	//TODO remove this when fileContentSessionKey gets removed
-	private @Getter boolean convert2Base64 = false;
 	private @Getter String fileSessionKey;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if(convert2Base64) {
-			ConfigurationWarnings.add(this, log, "the use of Base64 is deprecated. Please use attribute [fileSessionKey] or set property [CmisSender.Base64FileContent] to false");
-		}
-
 		if (getAction()==CmisAction.CREATE){
 			checkStringAttributeOrParameter("fileSessionKey", getFileSessionKey(), "fileSessionKey");
 		}
 
 		if (getAction()== CmisAction.GET && isGetProperties() && isGetDocumentContent() && StringUtils.isEmpty(getFileSessionKey())) {
-			throw new ConfigurationException("fileInputStreamSessionKey or fileContentSessionKey should be specified");
+			throw new ConfigurationException("FileSessionKey should be specified");
 		}
 
 		if (getParameterList() != null) {
@@ -319,10 +307,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		}
 	}
 
-	public CmisSessionBuilder getSessionBuilder() {
-		return sessionBuilder;
-	}
-
 	@Override
 	public void open() throws SenderException {
 		// If we don't need to create the session at JVM runtime, create to test the connection
@@ -337,7 +321,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	@Override
-	public void close() throws SenderException {
+	public void close() {
 		if (globalSession != null) {
 			globalSession.clear();
 			globalSession = null;
@@ -409,77 +393,42 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		Document document = (Document) object;
 
-		try {
-			boolean getProperties = isGetProperties();
-			boolean getDocumentContent = isGetDocumentContent();
-			if (pvl != null) {
-				if(pvl.contains("getProperties"))
-					getProperties = pvl.get("getProperties").asBooleanValue(isGetProperties());
-				if(pvl.contains("getDocumentContent"))
-					getDocumentContent = pvl.get("getDocumentContent").asBooleanValue(isGetDocumentContent());
-			}
-
-			if (isStreamResultToServlet()) {
-				HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-
-				ContentStream contentStream = document.getContentStream();
-				InputStream inputStream = contentStream.getStream();
-				String contentType = contentStream.getMimeType();
-				if (StringUtils.isNotEmpty(contentType)) {
-					log.debug(getLogPrefix() + "setting response Content-Type header [" + contentType + "]");
-					response.setHeader("Content-Type", contentType);
-				}
-				String contentDisposition = "attachment; filename=\"" + contentStream.getFileName() + "\"";
-				log.debug(getLogPrefix() + "setting response Content-Disposition header [" + contentDisposition + "]");
-				response.setHeader("Content-Disposition", contentDisposition);
-				OutputStream outputStream;
-				outputStream = response.getOutputStream();
-				StreamUtil.streamToStream(inputStream, outputStream);
-				log.debug(getLogPrefix() + "copied document content input stream [" + inputStream + "] to output stream [" + outputStream + "]");
-
-				return new SenderResult(Message.nullMessage());
-			}
-			else if (getProperties) {
-				if(getDocumentContent) {
-					Message content = getMessageFromContentStream(document.getContentStream());
-
-					if(convert2Base64) {
-						session.put(getFileSessionKey(), Base64.encodeBase64String(content.asByteArray()));
-					}
-					else {
-						content.closeOnCloseOf(session, this);
-						session.put(getFileSessionKey(), content);
-					}
-				}
-
-				XmlBuilder cmisXml = new XmlBuilder("cmis");
-				XmlBuilder propertiesXml = new XmlBuilder("properties");
-				for (Iterator<Property<?>> it = document.getProperties().iterator(); it.hasNext();) {
-					Property<?> property = it.next();
-					propertiesXml.addSubElement(CmisUtils.getPropertyXml(property));
-				}
-				cmisXml.addSubElement(propertiesXml);
-
-				return new SenderResult(cmisXml.toXML());
-			}
-			else {
-				Message content = getMessageFromContentStream(document.getContentStream());
-				content.closeOnCloseOf(session, this);
-
-				if (StringUtils.isNotEmpty(getFileSessionKey())) {
-					if(convert2Base64) {
-						session.put(getFileSessionKey(), Base64.encodeBase64String(content.asByteArray()));
-					} else {
-						session.put(getFileSessionKey(), content);
-					}
-					return new SenderResult(Message.nullMessage());
-				}
-
-				return new SenderResult(content);
-			}
-		} catch (IOException e) {
-			throw new SenderException(e);
+		boolean getProperties = isGetProperties();
+		boolean getDocumentContent = isGetDocumentContent();
+		if (pvl != null) {
+			if(pvl.contains("getProperties"))
+				getProperties = pvl.get("getProperties").asBooleanValue(isGetProperties());
+			if(pvl.contains("getDocumentContent"))
+				getDocumentContent = pvl.get("getDocumentContent").asBooleanValue(isGetDocumentContent());
 		}
+
+		if (getProperties) {
+			if (getDocumentContent) {
+				Message content = getMessageFromContentStream(document.getContentStream());
+
+				content.closeOnCloseOf(session, this);
+				session.put(getFileSessionKey(), content);
+			}
+
+			XmlBuilder propertiesXml = new XmlBuilder("properties");
+			for (Iterator<Property<?>> it = document.getProperties().iterator(); it.hasNext();) {
+				Property<?> property = it.next();
+				propertiesXml.addSubElement(CmisUtils.getPropertyXml(property));
+			}
+			XmlBuilder cmisXml = new XmlBuilder("cmis");
+			cmisXml.addSubElement(propertiesXml);
+			return new SenderResult(cmisXml.toXML());
+		}
+
+		Message content = getMessageFromContentStream(document.getContentStream());
+		content.closeOnCloseOf(session, this);
+
+		if (StringUtils.isNotEmpty(getFileSessionKey())) {
+			session.put(getFileSessionKey(), content);
+			return new SenderResult(Message.nullMessage());
+		}
+
+		return new SenderResult(content);
 	}
 
 	private Message getMessageFromContentStream(ContentStream contentStream) {
@@ -535,10 +484,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		ContentStream contentStream;
 		try {
 			Message inputFromSessionKey = session.getMessage( getParameterOverriddenAttributeValue(pvl, "fileSessionKey", getFileSessionKey()) );
-
-			if(convert2Base64 && !inputFromSessionKey.isBinary()) {
-				inputFromSessionKey = new Message(Base64.decodeBase64(inputFromSessionKey.asByteArray()));
-			}
 
 			long fileLength = inputFromSessionKey.size();
 			contentStream = cmisSession.getObjectFactory().createContentStream(fileName, fileLength, mediaType, inputFromSessionKey.asInputStream());
@@ -1011,11 +956,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		sessionBuilder.setUsername(userName);
 		this.username = userName;
 	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute username instead")
-	public void setUserName(String userName) {
-		setUsername(userName);
-	}
 
 	/** Password used in authentication to host */
 	public void setPassword(String password) {
@@ -1041,27 +981,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		filenameSessionKey = string;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("attribute 'fileNameSessionKey' is replaced with 'filenameSessionKey'")
-	public void setFileNameSessionKey(String string) {
-		setFilenameSessionKey(string);
-	}
-
-	@Deprecated
-	@ConfigurationWarning("attribute 'fileInputStreamSessionKey' is replaced with 'fileSessionKey'")
-	/** If <code>action</code>=<code>create</code> the session key that contains the input stream of the file to use. When <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code>: the session key in which the input stream of the document is stored */
-	public void setFileInputStreamSessionKey(String string) {
-		setFileSessionKey(string);
-	}
-
-	/** If <code>action</code>=<code>create</code> the session key that contains the base64 encoded content of the file to use. When <code>action</code>=<code>get</code> and <code>getProperties</code>=<code>true</code>: the session key in which the base64 encoded content of the document is stored */
-	@ConfigurationWarning("attribute 'fileContentSessionKey' is replaced with 'fileSessionKey', please note that the 'fileSessionKey' result will not BASE64 encode the content")
-	@Deprecated
-	public void setFileContentSessionKey(String string) {
-		setFileSessionKey(string);
-		convert2Base64 = AppConstants.getInstance().getBoolean("CmisSender.Base64FileContent", true);
-	}
-
 	/**
 	 * If <code>action</code>=<code>create</code> the mime type used to store the document when it's not set in the input message by a property
 	 * @ff.default 'application/octet-stream'
@@ -1070,27 +989,16 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		defaultMediaType = string;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Please return document content (as sender output) to the listener, ensure the pipeline exit is able to return data")
 	/**
-	 * (Only used when <code>action</code>=<code>get</code>). If true, the content of the document is streamed to the HttpServletResponse object of the restservicedispatcher
-	 * @ff.default false
-	 */
-	public void setStreamResultToServlet(boolean b) {
-		streamResultToServlet = b;
-	}
-
-	/**
-	 * (Only used when <code>action</code>=<code>get</code>). If true, the content of the document is streamed to <code>fileInputStreamSessionKey</code> and all document properties are put in the result as a xml string
+	 * (Only used when <code>action</code>=<code>get</code>). If true, the content of the document is put to <code>FileSessionKey</code> and all document properties are put in the result as a xml string
 	 * @ff.default false
 	 */
 	public void setGetProperties(boolean b) {
 		getProperties = b;
 	}
 
-
 	/**
-	 * (Only used when <code>action</code>=<code>get</code>). If true, the attachment for the document is the sender result or, if set, stored in <code>fileInputStreamSessionKey</code>. If false, only the properties are returned
+	 * (Only used when <code>action</code>=<code>get</code>). If true, the attachment for the document is the sender result or, if set, stored in <code>FileSessionKey</code>. If false, only the properties are returned
 	 * @ff.default true
 	 */
 	public void setGetDocumentContent(boolean getDocumentContent) {
@@ -1123,24 +1031,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	/** Override entrypoint WSDL by reading it from the classpath, overrides url attribute */
 	public void setOverrideEntryPointWSDL(String overrideEntryPointWSDL) {
 		sessionBuilder.setOverrideEntryPointWSDL(overrideEntryPointWSDL);
-	}
-
-	@Deprecated
-	@ConfigurationWarning("replaced with 'keystore'")
-	public void setCertificateUrl(String certificate) {
-		setKeystore(certificate);
-	}
-
-	@Deprecated
-	@ConfigurationWarning("replaced with 'keystoreAuthAlias'")
-	public void setCertificateAuthAlias(String certificateAuthAlias) {
-		setKeystoreAuthAlias(certificateAuthAlias);
-	}
-
-	@Deprecated
-	@ConfigurationWarning("replaced with 'keystorePassword'")
-	public void setCertificatePassword(String certificatePassword) {
-		setKeystorePassword(certificatePassword);
 	}
 
 	@Override
@@ -1310,11 +1200,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	/** Proxy Username */
 	public void setProxyUsername(String proxyUsername) {
 		sessionBuilder.setProxyUsername(proxyUsername);
-	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute proxyUsername instead")
-	public void setProxyUserName(String proxyUsername) {
-		setProxyUsername(proxyUsername);
 	}
 	/** Proxy Password */
 	public void setProxyPassword(String proxyPassword) {

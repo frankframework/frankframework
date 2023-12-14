@@ -21,7 +21,6 @@ import org.springframework.beans.factory.InitializingBean;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -107,17 +106,12 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 			if (StringUtils.isNotEmpty(getSessionKey())) {
 				input.preserve();
 			}
-			PipeRunResult prr = sender.sendMessage(input, session, null);
-			Message result = prr.getResult();
-			PipeForward forward = prr.getPipeForward();
-			if (forward.getPath() == null) {
-				forward = getSuccessForward();
-			}
+			Message result = sender.sendMessage(input, session).getResult();
 			if (StringUtils.isNotEmpty(getSessionKey())) {
 				session.put(getSessionKey(), result.asString());
-				return new PipeRunResult(forward, input);
+				return new PipeRunResult(getSuccessForward(), input);
 			}
-			return new PipeRunResult(forward, result);
+			return new PipeRunResult(getSuccessForward(), result);
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Exception on transforming input", e);
 		}
@@ -210,16 +204,6 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	@ReferTo(XsltSender.class)
 	public void setXsltVersion(int xsltVersion) {
 		sender.setXsltVersion(xsltVersion);
-	}
-
-	/**
-	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
-	 */
-	@Deprecated
-	@ReferTo(XsltSender.class)
-	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
-	public void setXslt2(boolean b) {
-		sender.setXslt2(b);
 	}
 
 	@Deprecated

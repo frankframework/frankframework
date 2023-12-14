@@ -1,16 +1,16 @@
 package nl.nn.adapterframework.extensions.fxf;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
-
-import org.junit.Test;
 
 import nl.nn.adapterframework.core.IWrapperPipe.Direction;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.PipeTestBase;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.AppConstants;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FxfWrapperPipeTest extends PipeTestBase<FxfWrapperPipe> {
 

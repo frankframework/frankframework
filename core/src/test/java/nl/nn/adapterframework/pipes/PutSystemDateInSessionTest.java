@@ -1,16 +1,17 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -43,7 +44,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 	public void testFixedDateTimeFormatInvalid() throws Exception {
 		configureAndStartPipe();
 		pipe.setReturnFixedDate(true);
-		pipe.setDateFormat(DateFormatUtils.FORMAT_GENERICDATETIME);
+		pipe.setDateFormat(DateFormatUtils.FORMAT_DATETIME_GENERIC);
 		pipe.setSessionKey("first");
 		session.put("stub4testtool.fixeddate", "22331");
 
@@ -66,27 +67,27 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String result = (String) session.get("first");
 
-		DateFormat parser = DateFormatUtils.GENERIC_DATETIME_FORMATTER;
-		DateFormat formatter = DateFormatUtils.FULL_ISO_FORMATTER;
+		DateTimeFormatter parser = DateFormatUtils.GENERIC_DATETIME_FORMATTER;
+		DateTimeFormatter formatter = DateFormatUtils.FULL_ISO_FORMATTER;
 
-		Date date = parser.parse(fixedDate);
+		ZonedDateTime date = ZonedDateTime.from(parser.parse(fixedDate));
 		assertEquals(formatter.format(date), result);
 
 		pipe.setSessionKey("second");
 		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
-		Date first = formatter.parse(result);
-		Date second = formatter.parse(secondResult);
+		Instant first = Instant.from(formatter.parse(result));
+		Instant second = Instant.from(formatter.parse(secondResult));
 
-		long timeDifference = second.getTime()-first.getTime();
+		long timeDifference = second.toEpochMilli()-first.toEpochMilli();
 		assertEquals(0, timeDifference);
 	}
 
 	@Test
 	public void testReturnFixedDate() throws Exception {
 		pipe.setSessionKey("first");
-		pipe.setDateFormat(DateFormatUtils.FORMAT_GENERICDATETIME);
+		pipe.setDateFormat(DateFormatUtils.FORMAT_DATETIME_GENERIC);
 		configureAndStartPipe();
 		// TODO : this field must be set before configure
 		// but setting stub mod from AppConstants does not work
@@ -100,11 +101,11 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
-		DateFormat formatter = DateFormatUtils.GENERIC_DATETIME_FORMATTER;
-		Date first = formatter.parse(result);
-		Date second = formatter.parse(secondResult);
+		DateTimeFormatter formatter = DateFormatUtils.GENERIC_DATETIME_FORMATTER;
+		Instant first = Instant.from(formatter.parse(result));
+		Instant second = Instant.from(formatter.parse(secondResult));
 
-		long timeDifference = second.getTime()-first.getTime();
+		long timeDifference = second.toEpochMilli()-first.toEpochMilli();
 		assertEquals(PutSystemDateInSession.FIXEDDATETIME, result);
 		assertEquals(0, timeDifference);
 	}
@@ -127,7 +128,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		long timeStampInMillis = new Date().getTime();
 		String timeStampInMillisFromSessionKey = (String) session.get("dummy");
 		//Compare timestamp put in session key with the actual timestamp fail if it is bigger than 1 sec.
-		assertFalse("Time stamp difference cannot be bigger than 1 s", timeStampInMillis - new Long(timeStampInMillisFromSessionKey)>1000);
+		assertFalse(timeStampInMillis - Long.parseLong(timeStampInMillisFromSessionKey) > 1000, "Time stamp difference cannot be bigger than 1 s");
 	}
 
 	@Test
@@ -153,13 +154,13 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		doPipe(pipe, "dummy", session);
 		String secondResult = (String) session.get("second");
 
-		SimpleDateFormat format = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_ISO);
-		Date first = format.parse(result);
-		Date second = format.parse(secondResult);
+		DateTimeFormatter format = DateFormatUtils.FULL_ISO_FORMATTER;
+		Instant first = Instant.from(format.parse(result));
+		Instant second = Instant.from(format.parse(secondResult));
 
-		long timeDifference = second.getTime()-first.getTime();
+		long timeDifference = second.toEpochMilli()-first.toEpochMilli();
 
-		assertEquals("Timestamps should be different", 1000L, timeDifference);
+		assertEquals(1000L, timeDifference);
 	}
 
 }

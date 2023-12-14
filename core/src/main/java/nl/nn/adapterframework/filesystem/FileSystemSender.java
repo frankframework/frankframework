@@ -19,22 +19,18 @@ import java.util.List;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
-import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.ElementType;
 import nl.nn.adapterframework.doc.ElementType.ElementTypes;
 import nl.nn.adapterframework.doc.ReferTo;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.filesystem.FileSystemActor.FileSystemAction;
 import nl.nn.adapterframework.parameters.ParameterValueList;
+import nl.nn.adapterframework.senders.SenderWithParametersBase;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
-import nl.nn.adapterframework.stream.StreamingException;
-import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.util.SpringUtils;
 
@@ -52,8 +48,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  * @author Gerrit van Brakel
  */
 @ElementType(ElementTypes.ENDPOINT)
-@SupportsOutputStreaming
-public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends StreamingSenderBase implements HasPhysicalDestination {
+public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extends SenderWithParametersBase implements HasPhysicalDestination {
 
 	private FS fileSystem;
 	private FileSystemActor<F,FS> actor = new FileSystemActor<>();
@@ -92,12 +87,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 	}
 
 	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
-		return actor.provideOutputStream(session, next);
-	}
-
-	@Override
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = null;
 
 		try {
@@ -111,7 +101,7 @@ public abstract class FileSystemSender<F, FS extends IBasicFileSystem<F>> extend
 
 		try {
 			Message result = actor.doAction(message, pvl, session);
-			return new PipeRunResult(null, result);
+			return new SenderResult(result);
 		} catch (FileSystemException e) {
 			throw new SenderException(e);
 		}

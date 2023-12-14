@@ -16,6 +16,7 @@
 package nl.nn.adapterframework.filesystem;
 
 import java.io.IOException;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -66,7 +67,7 @@ import nl.nn.adapterframework.util.SpringUtils;
  */
 public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F> {
 	protected Logger log = LogUtil.getLogger(this);
-	private @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	public static final String ORIGINAL_FILENAME_KEY = "originalFilename";
@@ -107,10 +108,10 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 	private @Getter long minStableTime = 1000;
 	private @Getter DocumentFormat outputFormat=DocumentFormat.XML;
 
-	private @Getter FS fileSystem;
+	private final @Getter FS fileSystem;
 
 	private Set<ProcessState> knownProcessStates;
-	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
+	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new EnumMap<>(ProcessState.class);
 
 	protected abstract FS createFileSystem();
 
@@ -339,10 +340,9 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 		Map<String, Object> messageProperties = new HashMap<>();
 		String filename=null;
 		try {
-			FS fileSystem = getFileSystem();
-			F file = rawMessage;
-			filename = fileSystem.getName(rawMessage);
-			Map <String,Object> attributes = fileSystem.getAdditionalFileProperties(rawMessage);
+			FS fs = getFileSystem();
+			filename = fs.getName(rawMessage);
+			Map <String,Object> attributes = fs.getAdditionalFileProperties(rawMessage);
 			String messageId = null;
 			if (StringUtils.isNotEmpty(getMessageIdPropertyKey())) {
 				if (attributes != null) {
@@ -356,20 +356,20 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 				messageId = originalFilename;
 			}
 			if (StringUtils.isEmpty(messageId)) {
-				messageId = fileSystem.getName(rawMessage);
+				messageId = fs.getName(rawMessage);
 			}
 			if (isFileTimeSensitive()) {
-				messageId += "-" + DateFormatUtils.format(fileSystem.getModificationTime(file));
+				messageId += "-" + DateFormatUtils.format(fs.getModificationTime(rawMessage), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER);
 			}
-			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId, null, null);
+			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId);
 			if (attributes!=null) {
 				messageProperties.putAll(attributes);
 			}
 			if (!"path".equals(getMessageType())) {
-				messageProperties.put(FILEPATH_KEY, fileSystem.getCanonicalName(rawMessage));
+				messageProperties.put(FILEPATH_KEY, fs.getCanonicalName(rawMessage));
 			}
 			if (!"name".equals(getMessageType())) {
-				messageProperties.put(FILENAME_KEY, fileSystem.getName(rawMessage));
+				messageProperties.put(FILENAME_KEY, fs.getName(rawMessage));
 			}
 			if (StringUtils.isNotEmpty(getStoreMetadataInSessionKey())) {
 				ObjectBuilder metadataBuilder = DocumentBuilderFactory.startObjectDocument(DocumentFormat.XML, "metadata");
@@ -406,13 +406,13 @@ public abstract class FileSystemListener<F, FS extends IBasicFileSystem<F>> impl
 			}
 			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
 				F movedFile = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false, true);
-				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateFormatUtils.format(getFileSystem().getModificationTime(movedFile)).replace(":", "_"));
+				String newName = getFileSystem().getCanonicalName(movedFile)+"-"+(DateFormatUtils.format(getFileSystem().getModificationTime(movedFile), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER).replace(":", "_"));
 				F renamedFile = getFileSystem().toFile(newName);
 				int i=1;
 				while(getFileSystem().exists(renamedFile)) {
 					renamedFile=getFileSystem().toFile(newName+"-"+i);
 					if(i>5) {
-						log.warn("Cannot rename file ["+message+"] with the timestamp suffix. File moved to ["+getStateFolder(toState)+"] folder with the original name");
+						log.warn("Cannot rename file [{}] with the timestamp suffix. File moved to [{}] folder with the original name", ()->message, ()->getStateFolder(toState));
 						return wrap(movedFile, message);
 					}
 					i++;

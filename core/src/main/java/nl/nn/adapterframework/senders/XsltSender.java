@@ -15,10 +15,11 @@
 */
 package nl.nn.adapterframework.senders;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.BiConsumer;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -33,12 +34,9 @@ import org.xml.sax.XMLReader;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
-import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.Parameter.ParameterType;
@@ -46,14 +44,14 @@ import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.parameters.ParameterValueList;
 import nl.nn.adapterframework.stream.IThreadCreator;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.MessageOutputStream;
+import nl.nn.adapterframework.stream.PathMessage;
 import nl.nn.adapterframework.stream.StreamingException;
-import nl.nn.adapterframework.stream.StreamingSenderBase;
 import nl.nn.adapterframework.stream.ThreadConnector;
 import nl.nn.adapterframework.stream.ThreadLifeCycleEventListener;
 import nl.nn.adapterframework.stream.xml.XmlTap;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.EnumUtils;
+import nl.nn.adapterframework.util.FileUtils;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlUtils;
@@ -70,8 +68,7 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @author  Gerrit van Brakel
  * @since   4.9
  */
-@SupportsOutputStreaming
-public class XsltSender extends StreamingSenderBase implements IThreadCreator {
+public class XsltSender extends SenderWithParametersBase implements IThreadCreator {
 
 	public final OutputType DEFAULT_OUTPUT_METHOD=OutputType.XML;
 	public final OutputType DEFAULT_XPATH_OUTPUT_METHOD=OutputType.TEXT;
@@ -89,7 +86,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	private @Getter boolean handleLexicalEvents=false;
 	private @Getter boolean removeNamespaces=false;
 	private @Getter boolean skipEmptyTags=false;
-	private @Getter int xsltVersion=0; // set to 0 for auto detect.
+	private @Getter int xsltVersion=0; // set to 0 for auto-detect.
 	private @Getter boolean debugInput = false;
 
 	private TransformerPool transformerPool;
@@ -174,24 +171,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 
-	@Override
-	public MessageOutputStream provideOutputStream(PipeLineSession session, IForwardTarget next) throws StreamingException {
-		if (!canProvideOutputStream()) {
-			log.debug("sender [{}] cannot provide outputstream", () -> getName());
-			return null;
-		}
-		try {
-			TransformerPool poolToUse = getTransformerPoolToUse(session);
-			boolean canStreamOut = streamingXslt && !isDisableOutputEscaping(poolToUse); // TODO fix problem in TransactionConnecor that currently inhibits streaming out when disable-output-escaping is used
-			ThreadConnector threadConnector = canStreamOut ? new ThreadConnector(this, "provideOutputStream", threadLifeCycleEventListener, txManager, session) : null;
-			MessageOutputStream target = MessageOutputStream.getTargetStream(this, session, next);
-			ContentHandler handler = createHandler(null, threadConnector, session, poolToUse, target);
-			return new MessageOutputStream(this, handler, target, threadLifeCycleEventListener, txManager, session, threadConnector);
-		} catch (SenderException | ConfigurationException | IOException | TransformerException e) {
-			throw new StreamingException(e);
-		}
-	}
-
 	protected boolean isDisableOutputEscaping(TransformerPool poolToUse) throws TransformerException, IOException {
 		Boolean disableOutputEscaping = getDisableOutputEscaping();
 		if (log.isTraceEnabled()) log.trace("Configured disableOutputEscaping ["+disableOutputEscaping+"]");
@@ -225,9 +204,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 		return poolToUse;
 	}
 
-	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, MessageOutputStream target) throws StreamingException {
-		ContentHandler handler = null;
-
+	protected ContentHandler createHandler(Message input, ThreadConnector threadConnector, PipeLineSession session, TransformerPool poolToUse, ContentHandler handler, File tempFile) throws StreamingException {
 		try {
 			ParameterValueList pvl=null;
 			if (paramList!=null) {
@@ -261,21 +238,18 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				if (log.isTraceEnabled()) log.trace("Default indentXml ["+indentXml+"]");
 			}
 
-			Object targetStream = target.asNative();
-			if (targetStream instanceof ContentHandler && !disableOutputEscaping) {
-				handler = (ContentHandler)targetStream;
-			} else {
-				XmlWriter xmlWriter = new XmlWriter(target.asWriter());
+			if (handler == null || disableOutputEscaping) {
+				XmlWriter xmlWriter = new XmlWriter(Files.newBufferedWriter(tempFile.toPath()));
 				xmlWriter.setCloseWriterOnEndDocument(true);
 				Boolean omitXmlDeclaration = getOmitXmlDeclaration();
-				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration ["+omitXmlDeclaration+"]");
+				if (log.isTraceEnabled()) log.trace("Configured omitXmlDeclaration [" + omitXmlDeclaration + "]");
 				if (outputType == OutputType.XML) {
-					if (omitXmlDeclaration==null) {
+					if (omitXmlDeclaration == null) {
 						omitXmlDeclaration = poolToUse.getOmitXmlDeclaration();
-						if (log.isTraceEnabled()) log.trace("Detected omitXmlDeclaration ["+omitXmlDeclaration+"]");
-						if (omitXmlDeclaration==null) {
-							omitXmlDeclaration=DEFAULT_OMIT_XML_DECLARATION;
-							if (log.isTraceEnabled()) log.trace("Default omitXmlDeclaration ["+omitXmlDeclaration+"]");
+						if (log.isTraceEnabled()) log.trace("Detected omitXmlDeclaration [" + omitXmlDeclaration + "]");
+						if (omitXmlDeclaration == null) {
+							omitXmlDeclaration = DEFAULT_OMIT_XML_DECLARATION;
+							if (log.isTraceEnabled()) log.trace("Default omitXmlDeclaration [" + omitXmlDeclaration + "]");
 						}
 					}
 					xmlWriter.setIncludeXmlDeclaration(!omitXmlDeclaration);
@@ -295,7 +269,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 				handler = new SkipEmptyTagsFilter(handler);
 			}
 
-
 			TransformerFilter mainFilter = poolToUse.getTransformerFilter(threadConnector, handler, isRemoveNamespaces(), isHandleLexicalEvents());
 			if (pvl!=null) {
 				XmlUtils.setTransformerParameters(mainFilter.getTransformer(), pvl.getValueMap());
@@ -304,46 +277,44 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 
 			return handler;
 		} catch (Exception e) {
-			//log.warn(getLogPrefix()+"intermediate exception logging",e);
 			throw new StreamingException(getLogPrefix()+"Exception on creating transformerHandler chain", e);
 		}
 	}
 
 
-	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler, BiConsumer<AutoCloseable,String> closeOnCloseRegister) throws ParserConfigurationException, SAXException {
+	protected XMLReader getXmlReader(PipeLineSession session, ContentHandler handler) throws ParserConfigurationException, SAXException {
 		return XmlUtils.getXMLReader(handler);
 	}
 
 
-	/*
+	/**
 	 * alternative implementation of send message, that should do the same as the original, but reuses the streaming content handler
 	 */
 	@Override
-	public PipeRunResult sendMessage(Message message, PipeLineSession session, IForwardTarget next) throws SenderException {
-		if (message==null) {
-			throw new SenderException(getLogPrefix()+"got null input");
+	public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+		if (message == null) {
+			throw new SenderException(getLogPrefix() + "got null input");
 		}
 
 		try (ThreadConnector threadConnector = streamingXslt ? new ThreadConnector(this, "sendMessage", threadLifeCycleEventListener, txManager, session) : null) {
-			try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
-				TransformerPool poolToUse = getTransformerPoolToUse(session);
-				ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, target);
-				if (isDebugInput() && log.isDebugEnabled()) {
-					handler = new XmlTap(handler) {
-						@Override
-						public void endDocument() throws SAXException {
-							super.endDocument();
-							log.debug(getLogPrefix()+" xml input ["+getWriter()+"]");
-						}
-					};
-				}
-				XMLReader reader = getXmlReader(session, handler, (resource,label)->target.closeOnClose(resource));
-				InputSource source = message.asInputSource();
-				reader.parse(source);
-				return target.getPipeRunResult();
+			TransformerPool poolToUse = getTransformerPoolToUse(session);
+			File tempFile = FileUtils.createTempFile();
+			ContentHandler handler = createHandler(message, threadConnector, session, poolToUse, null, tempFile);
+			if (isDebugInput() && log.isDebugEnabled()) {
+				handler = new XmlTap(handler) {
+					@Override
+					public void endDocument() throws SAXException {
+						super.endDocument();
+						log.debug(getLogPrefix() + " xml input [" + getWriter() + "]");
+					}
+				};
 			}
+			XMLReader reader = getXmlReader(session, handler);
+			InputSource source = message.asInputSource();
+			reader.parse(source);
+			return new SenderResult(PathMessage.asTemporaryMessage(tempFile.toPath()));
 		} catch (Exception e) {
-			throw new SenderException(getLogPrefix()+"Cannot transform input", e);
+			throw new SenderException(getLogPrefix() + "Cannot transform input", e);
 		}
 	}
 
@@ -449,7 +420,7 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	}
 
 	/**
-	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect
+	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto-detect
 	 * @ff.default 0
 	 */
 	public void setXsltVersion(int xsltVersion) {
@@ -462,19 +433,6 @@ public class XsltSender extends StreamingSenderBase implements IThreadCreator {
 	 */
 	public void setDebugInput(boolean debugInput) {
 		this.debugInput = debugInput;
-	}
-
-	/**
-	 * If set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)
-	 * @ff.default false
-	 */
-	/**
-	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
-	 */
-	@Deprecated
-	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
-	public void setXslt2(boolean b) {
-		xsltVersion=b?2:1;
 	}
 
 }

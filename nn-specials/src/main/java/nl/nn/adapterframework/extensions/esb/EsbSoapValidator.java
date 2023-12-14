@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,8 +25,16 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.core.IListener;
+import nl.nn.adapterframework.core.IPipe;
+import nl.nn.adapterframework.core.IXmlValidator;
+import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.doc.Category;
+import nl.nn.adapterframework.http.WebServiceListener;
+import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.soap.SoapValidator;
+import nl.nn.adapterframework.soap.WsdlGeneratorExtension;
+import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
 
 /**
  * XmlValidator that will automatically add the SOAP envelope XSD and the ESB XSD (e.g. a CommonMessageHeader.xsd)
@@ -36,7 +44,7 @@ import nl.nn.adapterframework.soap.SoapValidator;
  * @author Jaco de Groot
  */
 @Category("NN-Special")
-public class EsbSoapValidator extends SoapValidator {
+public class EsbSoapValidator extends SoapValidator implements WsdlGeneratorExtension<EsbSoapWsdlGeneratorContext> {
 
 	private @Getter Direction direction = null;
 	private @Getter EsbSoapWrapperPipe.Mode mode = EsbSoapWrapperPipe.Mode.REG;
@@ -136,4 +144,96 @@ public class EsbSoapValidator extends SoapValidator {
 		cmhVersion = i;
 	}
 
+	@Override
+	public EsbSoapWsdlGeneratorContext buildExtensionContext(PipeLine pipeLine) {
+		EsbSoapWsdlGeneratorContext context = new EsbSoapWsdlGeneratorContext();
+
+		boolean esbNamespaceWithoutServiceContext = false;
+		String schemaLocation = WsdlGeneratorUtils.getFirstNamespaceFromSchemaLocation(this);
+		if (EsbSoapWrapperPipe.isValidNamespace(schemaLocation)) {
+			String s = schemaLocation;
+			esbNamespaceWithoutServiceContext = EsbSoapWrapperPipe.isEsbNamespaceWithoutServiceContext(s);
+			int i = s.lastIndexOf('/');
+			context.esbSoapOperationVersion = s.substring(i + 1);
+			s = s.substring(0, i);
+			i = s.lastIndexOf('/');
+			context.esbSoapOperationName = s.substring(i + 1);
+			s = s.substring(0, i);
+			i = s.lastIndexOf('/');
+			context.esbSoapServiceContextVersion = s.substring(i + 1);
+			s = s.substring(0, i);
+			i = s.lastIndexOf('/');
+			if (!esbNamespaceWithoutServiceContext) {
+				context.esbSoapServiceContext = s.substring(i + 1);
+				s = s.substring(0, i);
+				i = s.lastIndexOf('/');
+			}
+			context.esbSoapServiceName = s.substring(i + 1);
+			s = s.substring(0, i);
+			i = s.lastIndexOf('/');
+			context.esbSoapBusinessDomain = s.substring(i + 1);
+		} else {
+			context.warn("Namespace '" + schemaLocation + "' invalid according to ESB SOAP standard");
+			IPipe outputWrapper = pipeLine.getOutputWrapper();
+			if (outputWrapper instanceof EsbSoapWrapperPipe) {
+				EsbSoapWrapperPipe esbSoapWrapper = (EsbSoapWrapperPipe)outputWrapper;
+				context.esbSoapBusinessDomain = esbSoapWrapper.getBusinessDomain();
+				context.esbSoapServiceName = esbSoapWrapper.getServiceName();
+				context.esbSoapServiceContext = esbSoapWrapper.getServiceContext();
+				context.esbSoapServiceContextVersion = esbSoapWrapper.getServiceContextVersion();
+				context.esbSoapOperationName = esbSoapWrapper.getOperationName();
+				context.esbSoapOperationVersion = esbSoapWrapper.getOperationVersion();
+			}
+		}
+		if (context.esbSoapBusinessDomain == null) {
+			context.warn("Could not determine business domain");
+		} else if (context.esbSoapServiceName == null) {
+			context.warn("Could not determine service name");
+		} else if (context.esbSoapServiceContext == null && !esbNamespaceWithoutServiceContext) {
+			context.warn("Could not determine service context");
+		} else if (context.esbSoapServiceContextVersion == null) {
+			context.warn("Could not determine service context version");
+		} else if (context.esbSoapOperationName == null) {
+			context.warn("Could not determine operation name");
+		} else if (context.esbSoapOperationVersion == null) {
+			context.warn("Could not determine operation version");
+		} else {
+			context.wsdlType = "abstract";
+			for (IListener<?> listener : WsdlGeneratorUtils.getListeners(pipeLine.getAdapter())) {
+				if (listener instanceof WebServiceListener
+						|| listener instanceof JmsListener) {
+					context.wsdlType = "concrete";
+					break;
+				}
+			}
+
+
+			String inputParadigm = WsdlGeneratorUtils.getEsbSoapParadigm(this);
+			if (inputParadigm != null) {
+				if (!"Action".equals(inputParadigm)
+						&& !"Event".equals(inputParadigm)
+						&& !"Request".equals(inputParadigm)
+						&& !"Solicit".equals(inputParadigm)) {
+					context.warn("Paradigm for input message which was extracted from soapBody should be on of Action, Event, Request or Solicit instead of '"
+							+ inputParadigm + "'");
+				}
+			} else {
+				context.warn("Could not extract paradigm from soapBody attribute of inputValidator (should end with _Action, _Event, _Request or _Solicit)");
+			}
+//					if (outputValidator != null || isMixedValidator) {
+			IXmlValidator outputValidator = (IXmlValidator) pipeLine.getOutputValidator();
+			if (outputValidator != null) {
+				String outputParadigm = WsdlGeneratorUtils.getEsbSoapParadigm(outputValidator);
+				if (outputParadigm != null) {
+					if (!"Response".equals(outputParadigm)) {
+						context.warn("Paradigm for output message which was extracted from soapBody should be Response instead of '"
+								+ outputParadigm + "'");
+					}
+				} else {
+					context.warn("Could not extract paradigm from soapBody attribute of outputValidator (should end with _Response)");
+				}
+			}
+		}
+		return context;
+	}
 }

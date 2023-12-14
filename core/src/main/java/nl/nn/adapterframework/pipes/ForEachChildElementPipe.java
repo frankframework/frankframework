@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
 
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -44,7 +43,6 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.doc.Category;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.jta.IThreadConnectableTransactionManager;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.IThreadCreator;
@@ -79,7 +77,6 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @since 4.6.1
  */
 @Category("Basic")
-@SupportsOutputStreaming
 public class ForEachChildElementPipe extends StringIteratorPipe implements IThreadCreator {
 
 	public static final int DEFAULT_XSLT_VERSION = 1; // currently only Xalan supports XSLT Streaming
@@ -164,7 +161,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	private static class ItemCallbackCallingHandler extends NodeSetFilter {
-		private ItemCallback callback;
+		private final ItemCallback callback;
 
 		private XmlWriter xmlWriter;
 		private Exception rootException=null;
@@ -282,7 +279,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 	private static class StopSensor extends FullXmlFilter {
 
-		private ItemCallbackCallingHandler itemHandler;
+		private final ItemCallbackCallingHandler itemHandler;
 
 		public StopSensor(ItemCallbackCallingHandler itemHandler, ContentHandler handler) {
 			super(handler);
@@ -304,7 +301,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		private TransformerErrorListener transformerErrorListener=null;
 	}
 
-	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, Message input, PipeLineSession session, ItemCallback callback, BiConsumer<AutoCloseable,String> closeOnCloseRegister) throws TransformerConfigurationException {
+	protected void createHandler(HandlerRecord result, ThreadConnector<?> threadConnector, Message input, PipeLineSession session, ItemCallback callback) throws TransformerConfigurationException {
 		result.itemHandler = new ItemCallbackCallingHandler(callback);
 		result.inputHandler=result.itemHandler;
 
@@ -313,7 +310,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 			String targetElementString = StringUtils.isNotEmpty(getTargetElement()) ? "filter to targetElement '"+getTargetElement()+"'" :null;
 			String xpathString = getExtractElementsTp()!=null ? "filter XPath '"+getElementXPathExpression()+"'": null;
 			String label = "XML after preprocessing: " + StringUtil.concat(", ",containerElementString, targetElementString, xpathString);
-			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler, closeOnCloseRegister);
+			result.inputHandler=getXmlDebugger().inspectXml(session, label, result.inputHandler);
 		}
 
 		if (isRemoveNamespaces()) {
@@ -399,7 +396,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		SenderException mainException = null;
 		try (ThreadConnector<?> threadConnector = streamingXslt ? new ThreadConnector<>(this, "iterateOverInput", threadLifeCycleEventListener, txManager, session) : null) {
 			try {
-				createHandler(handlerRecord, threadConnector, input, session, callback, closeables::put);
+				createHandler(handlerRecord, threadConnector, input, session, callback);
 			} catch (TransformerException e) {
 				throw new SenderException(handlerRecord.errorMessage, e);
 			}
@@ -450,8 +447,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		return extractElementsTp;
 	}
 
-
-
 	/**
 	 * When set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed. The character encoding will be read from the XML declaration
 	 * @ff.default false
@@ -492,12 +487,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
-	public void setXslt2(boolean b) {
-		setXsltVersion(b?2:1);
 	}
 
 	/** If set <code>true</code> namespaces (and prefixes) are removed from the items just before forwarding them to the sender. N.B. This takes place <strong>after</strong> the transformation for <code>elementXPathExpression</code> if that is specified */

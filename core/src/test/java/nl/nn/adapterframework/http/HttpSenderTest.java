@@ -514,7 +514,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
-		sender.setInputMessageParam("nameOfTheFirstContentId");
+		sender.setFirstBodyPartName("nameOfTheFirstContentId");
 
 		sender.configure();
 		sender.open();
@@ -536,7 +536,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setPostType(PostType.URLENCODED);
-		sender.setInputMessageParam("nameOfTheFirstContentId");
+		sender.setFirstBodyPartName("nameOfTheFirstContentId");
 
 		sender.configure();
 		sender.open();
@@ -646,7 +646,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
-		sender.setInputMessageParam("request");
+		sender.setFirstBodyPartName("request");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 				+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -672,7 +672,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setPostType(PostType.FORMDATA);
-		sender.setInputMessageParam("request");
+		sender.setFirstBodyPartName("request");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 				+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -698,7 +698,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
-		sender.setInputMessageParam("request");
+		sender.setFirstBodyPartName("request");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 				+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -706,7 +706,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-		sender.setMtomEnabled(true);
+		sender.setPostType(PostType.MTOM);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
 		sender.configure();
@@ -757,7 +757,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-		sender.setMtomEnabled(true);
+		sender.setPostType(PostType.MTOM);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
 		sender.configure();
@@ -774,7 +774,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
-		sender.setInputMessageParam("request");
+		sender.setFirstBodyPartName("request");
 		sender.setMtomContentTransferEncoding("binary");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
@@ -807,7 +807,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
-		sender.setInputMessageParam("request");
+		sender.setFirstBodyPartName("request");
 		sender.setPostType(PostType.MTOM);
 		sender.setMtomContentTransferEncoding("base64");
 
@@ -841,7 +841,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
-		sender.setInputMessageParam("request");
+		sender.setFirstBodyPartName("request");
 		sender.setMtomContentTransferEncoding("binary");
 
 		String xmlMultipart = "<parts><part type=\"file\" "
@@ -873,7 +873,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
-		sender.setInputMessageParam("request");
+		sender.setFirstBodyPartName("request");
 		sender.setPostType(PostType.MTOM);
 		sender.setMtomContentTransferEncoding("base64");
 
@@ -909,7 +909,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setPostType(PostType.MTOM);
-		sender.setInputMessageParam("request");
+		sender.setFirstBodyPartName("request");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 				+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -917,7 +917,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-		sender.setMtomEnabled(true);
+		sender.setPostType(PostType.MTOM);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
 		sender.configure();
@@ -936,7 +936,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
-		sender.setInputMessageParam("request");
+		sender.setFirstBodyPartName("request");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
 				+ "sessionKey=\"part_file\" size=\"72833\" "
@@ -944,7 +944,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-		sender.setMtomEnabled(true);
+		sender.setPostType(PostType.MTOM);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
 		sender.addParameter(new Parameter("url", "http://ignore.me")); //skip this
@@ -967,7 +967,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
-		sender.setInputMessageParam("request");
+		sender.setFirstBodyPartName("request");
 		sender.setParametersToSkipWhenEmpty("empty-param");
 
 		String xmlMultipart = "<parts><part type=\"file\" name=\"document.pdf\" "
@@ -976,7 +976,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		pls.put("multipartXml", xmlMultipart);
 		pls.put("part_file", new ByteArrayInputStream("<dummy xml file/>".getBytes()));
 
-		sender.setMtomEnabled(true);
+		sender.setPostType(PostType.MTOM);
 		sender.setMultipartXmlSessionKey("multipartXml");
 
 		sender.addParameter(new Parameter("url", "http://ignore.me")); //skip this
@@ -1000,7 +1000,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.POST);
 		sender.setParamsInUrl(false);
-		sender.setInputMessageParam("request");
+		sender.setFirstBodyPartName("request");
 		sender.setParametersToSkipWhenEmpty("empty-param");
 
 		session.put("multipartXml", ""); //empty!
@@ -1176,7 +1176,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 	@Test
 	public void testWithKeystoreHavingMultipleEntriesAndEachWithDifferentPasswords() throws Throwable {
-		// It would be difficult to provide password for each entry in a keystore 
+		// It would be difficult to provide password for each entry in a keystore
 		//which has multiple entries each with a different password
 
 		String keystore = "/Signature/ks_multientry_differentpassword.jks";

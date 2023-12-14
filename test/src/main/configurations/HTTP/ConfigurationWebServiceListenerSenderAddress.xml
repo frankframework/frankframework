@@ -295,7 +295,7 @@
 			/>
 			<pipe
 				name="base64tostream2" className="nl.nn.adapterframework.pipes.Base64Pipe"
-				direction="ENCODE" getInputFromSessionKey="FileContent" preserveInput="true"
+				getInputFromSessionKey="FileContent" preserveInput="true"
 				storeResultInSessionKey="multipart1"
 			/>
 

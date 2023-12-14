@@ -39,6 +39,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -910,14 +911,14 @@ public class JdbcUtil {
 					statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
 					break;
 				default:
-					log.warn("parameter type [" + JDBCType.valueOf(sqlTYpe).getName() + "] handled as String");
+					log.warn("parameter type [{}] handled as String", ()-> JDBCType.valueOf(sqlTYpe).getName());
 					//$FALL-THROUGH$
 				case Types.CHAR:
 				case Types.VARCHAR:
 					statement.setString(parameterIndex, value);
 					break;
 			}
-		} catch (CalendarParserException e) { // thrown by parseAnyDate in case DATE and TIMESTAMP
+		} catch (DateTimeParseException | IllegalArgumentException e) { // thrown by parseAnyDate in case DATE and TIMESTAMP
 			throw new SQLException("Could not convert [" + value + "] for parameter [" + parameterIndex + "]", e);
 		}
 	}

@@ -143,7 +143,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private Number maxInclusive;
 	private @Getter boolean hidden = false;
 	private @Getter boolean removeNamespaces=false;
-	private @Getter int xsltVersion=0; // set to 0 for auto detect.
+	private @Getter int xsltVersion = 0; // set to 0 for auto-detect.
 
 	private @Getter DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
@@ -792,7 +792,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			if (rawValue instanceof Date) {
 				return rawValue;
 			}
-			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_GENERICDATETIME);
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
 			try {
 				return df.parse(Message.asString(rawValue));
 			} catch (ParseException | IOException e) {
@@ -800,7 +800,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 			}
 		}
 		if (rawValue instanceof Date) {
-			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_GENERICDATETIME);
+			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
 			return df.format(rawValue);
 		}
 		try {
@@ -855,7 +855,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 					}
 					Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
 					if (fixedDateTime == null) {
-						DateFormat df = new SimpleDateFormat(DateFormatUtils.FORMAT_GENERICDATETIME);
+						DateFormat df = new SimpleDateFormat(DateFormatUtils.FORMAT_DATETIME_GENERIC);
 						try {
 							fixedDateTime = df.parse(PutSystemDateInSession.FIXEDDATETIME);
 						} catch (ParseException e) {
@@ -955,16 +955,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 	}
 
 	/**
-	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect	 * @ff.default 0
+	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto-detect
+	 * @ff.default 0
 	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("Its value is now auto detected. If necessary, replace with a setting of xsltVersion")
-	public void setXslt2(boolean b) {
-		xsltVersion=b?2:1;
 	}
 
 	/**
@@ -998,8 +993,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 	/**
 	 * Value of parameter is determined using substitution and formatting, following MessageFormat syntax with named parameters. The expression can contain references
-	 * to session-variables or other parameters using {name-of-parameter} and is formatted using java.text.MessageFormat.
-	 * <br/>If for instance <code>fname</code> is a parameter or session variable that resolves to Eric, then the pattern
+	 * to <code>session-variables</code> or other <code>parameters</code> using the {name-of-parameter} and is formatted using java.text.MessageFormat.
+	 * <br/><b>NB: When referencing other <code>parameters</code> these MUST be defined before the parameter using pattern substitution.</b>
+	 * <br/>
+	 * <br/>
+	 * If for instance <code>fname</code> is a parameter or session-variable that resolves to Eric, then the pattern
 	 * 'Hi {fname}, how do you do?' resolves to 'Hi Eric, do you do?'.<br/>
 	 * The following predefined reference can be used in the expression too:<ul>
 	 * <li>{now}: the current system time</li>

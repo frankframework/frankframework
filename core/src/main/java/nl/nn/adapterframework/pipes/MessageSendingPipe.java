@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.pipes;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -26,7 +25,6 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.xml.transform.TransformerException;
 
-import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
@@ -37,10 +35,10 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.Adapter;
+import nl.nn.adapterframework.core.DestinationValidator;
 import nl.nn.adapterframework.core.HasPhysicalDestination;
 import nl.nn.adapterframework.core.HasSender;
 import nl.nn.adapterframework.core.ICorrelatedPullingListener;
@@ -63,10 +61,7 @@ import nl.nn.adapterframework.core.PipeStartException;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
-import nl.nn.adapterframework.doc.SupportsOutputStreaming;
 import nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter;
-import nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe;
-import nl.nn.adapterframework.http.RestListenerUtils;
 import nl.nn.adapterframework.jdbc.DirectQuerySender;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
@@ -105,7 +100,6 @@ import nl.nn.adapterframework.util.XmlUtils;
  *
  * @author  Gerrit van Brakel
  */
-@SupportsOutputStreaming
 public class MessageSendingPipe extends FixedForwardPipe implements HasSender, HasStatistics {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
@@ -148,8 +142,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	private @Getter String retryXPath;
 	private @Getter String retryNamespaceDefs;
 	private @Getter int presumedTimeOutInterval=0;
-
-	private @Getter boolean streamResultToServlet=false;
 
 	private @Getter String stubFilename;
 	private @Getter String timeOutOnResult;
@@ -340,10 +332,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			configureElement(outputValidator);
 		}
 		IWrapperPipe inputWrapper = getInputWrapper();
-		if (inputWrapper instanceof EsbSoapWrapperPipe) {
-			EsbSoapWrapperPipe eswPipe = (EsbSoapWrapperPipe) inputWrapper;
-			ISender sender = getSender();
-			eswPipe.retrievePhysicalDestinationFromSender(sender);
+		if (inputWrapper instanceof DestinationValidator) {
+			DestinationValidator destinationValidator = (DestinationValidator) inputWrapper;
+			destinationValidator.validateSenderDestination(getSender());
 		}
 		if (inputWrapper != null) {
 			configureElement(inputWrapper);
@@ -455,15 +446,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 				}
 				throw new PipeRunException(this, "caught timeout-exception", toe);
 
-			} catch (Throwable t) {
+			} catch (Exception e) {
 				throwEvent(PIPE_EXCEPTION_MONITOR_EVENT);
-				PipeForward exceptionForward = findForward(PipeForward.EXCEPTION_FORWARD_NAME);
-				if (exceptionForward != null) {
-					log.warn("exception occured, forwarding to exception-forward ["+exceptionForward.getPath()+"], exception:\n", t);
-					return new PipeRunResult(exceptionForward, new ErrorMessageFormatter().format(null,t,this,input,session.getMessageId(),0));
-				}
-				throw new PipeRunException(this, "caught exception", t);
+				throw new PipeRunException(this, "caught exception", e);
 			}
+
 			result = sendResult.getResult();
 			if (sendResult.getPipeForward() != null) {
 				forward = sendResult.getPipeForward();
@@ -483,21 +470,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 			return postProcessingResult;
 		}
 		result = postProcessingResult.getResult();
-
-		if (isStreamResultToServlet()) {
-			try (Message mia = result;
-				 InputStream resultStream=new Base64InputStream(mia.asInputStream(),false);) {
-
-				String contentType = session.getString("contentType");
-				if (StringUtils.isNotEmpty(contentType)) {
-					RestListenerUtils.setResponseContentType(session, contentType);
-				}
-				RestListenerUtils.writeToResponseOutputStream(session, resultStream);
-			} catch (IOException e) {
-				throw new PipeRunException(this, "caught exception", e);
-			}
-			return new PipeRunResult(forward, "");
-		}
 		return new PipeRunResult(forward, result);
 	}
 
@@ -642,7 +614,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	}
 
 	private Message getStubbedResult(final Message input, final PipeLineSession session) throws PipeRunException {
-		return getStubFileName(input, session)
+		return getStubFilename(input, session)
 				.map(stubFileName -> {
 					Message result = loadMessageFromClasspathResource(stubFileName);
 					log.info("returning result from dynamic stub [{}]", stubFileName);
@@ -665,7 +637,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 		return result;
 	}
 
-	private Optional<String> getStubFileName(final Message input, final PipeLineSession session) throws PipeRunException {
+	private Optional<String> getStubFilename(final Message input, final PipeLineSession session) throws PipeRunException {
 		ParameterList pl = getParameterList();
 		if (pl == null) {
 			return Optional.empty();
@@ -1199,22 +1171,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender, H
 	 */
 	public void setPresumedTimeOutInterval(int i) {
 		presumedTimeOutInterval = i;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("Please use a base64pipe to decode the message and send the result to the pipeline exit")
-	/**
-	 * If set, the result is first base64 decoded and then streamed to the HttpServletResponse object
-	 * @ff.default false
-	 */
-	public void setStreamResultToServlet(boolean b) {
-		streamResultToServlet = b;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("attribute 'stubFileName' is replaced with 'stubFilename'")
-	public void setStubFileName(String fileName) {
-		setStubFilename(fileName);
 	}
 
 	/** If set, the pipe returns a message from a file, instead of doing the regular process */

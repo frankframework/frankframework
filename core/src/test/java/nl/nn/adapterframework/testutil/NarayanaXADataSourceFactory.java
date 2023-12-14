@@ -5,6 +5,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import lombok.Setter;
@@ -23,7 +24,12 @@ public class NarayanaXADataSourceFactory extends URLXADataSourceFactory {
 		properties.put("ObjectStoreEnvironmentBean.stateStore.objectStoreDir", "target/narayana");
 		properties.put("ObjectStoreEnvironmentBean.communicationStore.objectStoreDir", "target/narayana");
 		narayana.setProperties(properties);
-		narayana.afterPropertiesSet();
+
+		try {
+			narayana.afterPropertiesSet();
+		} catch (ObjectStoreException e) {
+			throw new IllegalStateException("unable to configure Narayana", e);
+		}
 	}
 
 	private @Setter NarayanaJtaTransactionManager txManagerReal;

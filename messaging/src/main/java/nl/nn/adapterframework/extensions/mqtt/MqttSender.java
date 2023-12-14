@@ -18,6 +18,7 @@ package nl.nn.adapterframework.extensions.mqtt;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ISenderWithParameters;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -36,6 +37,7 @@ import nl.nn.adapterframework.stream.Message;
  * @author Niels Meijer
  */
 
+@Log4j2
 public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	protected ParameterList paramList = null;
 

@@ -15,7 +15,6 @@
 */
 package nl.nn.adapterframework.http;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,7 +29,6 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -62,7 +60,6 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
 import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -82,7 +79,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * Sender for the HTTP protocol using {@link nl.nn.adapterframework.http.HttpSenderBase.HttpMethod HttpMethod}. By default, any response code outside the 2xx or 3xx range
  * is considered an error and the <code>exception</code> forward of the SenderPipe is followed if present and if there
  * is no forward for the specific HTTP status code. Forwards for specific HTTP codes (e.g. "200", "201", ...)
- * are returned by this sender so they are available to the SenderPipe.
+ * are returned by this sender, so they are available to the SenderPipe.
  *
  * <p><b>Expected message format:</b></p>
  * <p>GET methods expect a message looking like this:
@@ -104,20 +101,11 @@ import nl.nn.adapterframework.util.XmlUtils;
  * @since 7.0
  * @version 2.0
  */
-
 public class HttpSender extends HttpSenderBase {
-
-	@Deprecated private @Getter String streamResultToFileNameSessionKey = null;
-	@Deprecated private @Getter String storeResultAsStreamInSessionKey;
-	@Deprecated private @Getter String storeResultAsByteArrayInSessionKey;
-
-	private @Getter boolean base64=false;
-	private @Getter boolean streamResultToServlet=false;
 
 	private @Getter boolean paramsInUrl=true;
 	private @Getter String firstBodyPartName=null;
 
-	private @Getter Boolean multipartResponse=null;
 	private @Getter String multipartXmlSessionKey;
 	private @Getter String mtomContentTransferEncoding = null; //Defaults to 8-bit for normal String messages, 7-bit for e-mails and binary for streams
 	private @Getter boolean encodeMessages = false;
@@ -405,12 +393,13 @@ public class HttpSender extends HttpSenderBase {
 				}
 			}
 		}
-
 		return entity.build();
 	}
 
 	protected FormBodyPart elementToFormBodyPart(Element element, PipeLineSession session) throws IOException {
-		String partName = element.getAttribute("name"); //Name of the part
+		String part = element.getAttribute("name"); //Name of the part
+		boolean isFile = "file".equals(element.getAttribute("type")); //text of file, empty == text
+		String filename = element.getAttribute("filename"); //if type == file, the filename
 		String partSessionKey = element.getAttribute("sessionKey"); //SessionKey to retrieve data from
 		String partMimeType = element.getAttribute("mimeType"); //MimeType of the part
 		Message partObject = session.getMessage(partSessionKey);
@@ -419,9 +408,16 @@ public class HttpSender extends HttpSenderBase {
 			mimeType = MimeType.valueOf(partMimeType);
 		}
 
-		String name = partObject.isBinary() || StringUtils.isBlank(partName) ? partSessionKey : partName;
-		String filename = StringUtils.isNotBlank(partName) ? partName : null;
-		return FormBodyPartBuilder.create(name, new MessageContentBody(partObject, mimeType, filename)).build();
+		final String filenameToUse;
+		if(isFile || StringUtils.isNotBlank(filename)) {
+			String filenamebackup = StringUtils.isBlank(part) ? partSessionKey : part;
+			filenameToUse = StringUtils.isNotBlank(filename) ? filename : filenamebackup;
+		} else {
+			filenameToUse = null;
+		}
+
+		String partname = isFile || StringUtils.isBlank(part) ? partSessionKey : part;
+		return FormBodyPartBuilder.create(partname, new MessageContentBody(partObject, mimeType, filenameToUse)).build();
 	}
 
 	@Override
@@ -443,44 +439,16 @@ public class HttpSender extends HttpSenderBase {
 			return new Message(body);
 		}
 
-		HttpServletResponse response = null;
-		if (isStreamResultToServlet())
-			response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-
-		if (response==null) {
-			Message responseMessage = responseHandler.getResponseMessage();
-			if(!Message.isEmpty(responseMessage)) {
-				responseMessage.closeOnCloseOf(session, this);
-			}
-
-			if (StringUtils.isNotEmpty(getStreamResultToFileNameSessionKey())) {
-				try {
-					String fileName = session.getString(getStreamResultToFileNameSessionKey());
-					File file = new File(fileName);
-					StreamUtil.streamToFile(responseMessage.asInputStream(), file);
-					return new Message(fileName);
-				} catch (IOException e) {
-					throw new SenderException("cannot find filename to stream result to", e);
-				}
-			} else if (isBase64()) { //This should be removed in a future iteration
-				return getResponseBodyAsBase64(responseMessage.asInputStream());
-			} else if (StringUtils.isNotEmpty(getStoreResultAsStreamInSessionKey())) {
-				session.put(getStoreResultAsStreamInSessionKey(), responseMessage.asInputStream());
-				return Message.nullMessage();
-			} else if (StringUtils.isNotEmpty(getStoreResultAsByteArrayInSessionKey())) {
-				session.put(getStoreResultAsByteArrayInSessionKey(), responseMessage.asByteArray());
-				return Message.nullMessage();
-			} else if (BooleanUtils.isTrue(getMultipartResponse()) || responseHandler.isMultipart()) {
-				if(BooleanUtils.isFalse(getMultipartResponse())) {
-					log.warn("multipart response was set to false, but the response is multipart!");
-				}
-				return handleMultipartResponse(responseHandler, session);
-			} else {
-				return getResponseBody(responseHandler);
-			}
+		Message responseMessage = responseHandler.getResponseMessage();
+		if (!Message.isEmpty(responseMessage)) {
+			responseMessage.closeOnCloseOf(session, this);
 		}
-		streamResponseBody(responseHandler, response);
-		return Message.nullMessage();
+
+		if (responseHandler.isMultipart()) {
+			return handleMultipartResponse(responseHandler, session);
+		} else {
+			return getResponseBody(responseHandler);
+		}
 	}
 
 	public Message getResponseBody(HttpResponseHandler responseHandler) {
@@ -497,11 +465,6 @@ public class HttpSender extends HttpSenderBase {
 		}
 
 		return responseHandler.getResponseMessage();
-	}
-
-	public Message getResponseBodyAsBase64(InputStream is) {
-		if (log.isDebugEnabled()) log.debug(getLogPrefix()+"base64 encodes response body");
-		return new Message( new Base64InputStream(is, true) );
 	}
 
 	/**
@@ -531,14 +494,6 @@ public class HttpSender extends HttpSenderBase {
 			throw new IOException("Could not read mime multipart response", e);
 		}
 		return result;
-	}
-
-	private void streamResponseBody(HttpResponseHandler responseHandler, HttpServletResponse response) throws IOException {
-		streamResponseBody(responseHandler.getResponse(), responseHandler.getHeader("Content-Type"), responseHandler.getHeader("Content-Disposition"), response, log, getLogPrefix());
-	}
-
-	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix) throws IOException {
-		streamResponseBody(is, contentType, contentDisposition, response, log, logPrefix, null);
 	}
 
 	public static void streamResponseBody(InputStream is, String contentType, String contentDisposition, HttpServletResponse response, Logger log, String logPrefix, String redirectLocation) throws IOException {
@@ -584,74 +539,9 @@ public class HttpSender extends HttpSenderBase {
 		paramsInUrl = b;
 	}
 
-	@Deprecated
-	@ConfigurationWarning("Use the firstBodyPartName attribute instead")
-	public void setInputMessageParam(String inputMessageParam) {
-		setFirstBodyPartName(inputMessageParam);
-	}
 	/** (Only used when <code>methodType</code>=<code>POST</code> and <code>postType</code>=<code>URLENCODED</code>, <code>FORM-DATA</code> or <code>MTOM</code>) Prepends a new BodyPart using the specified name and uses the input of the Sender as content */
 	public void setFirstBodyPartName(String firstBodyPartName) {
 		this.firstBodyPartName = firstBodyPartName;
-	}
-
-	/** If set, the result is streamed to a file (instead of passed as a string) */
-	@Deprecated
-	@ConfigurationWarning("no longer required to store the result as a file in the PipeLineSession, the sender can return binary data")
-	public void setStreamResultToFileNameSessionKey(String string) {
-		streamResultToFileNameSessionKey = string;
-	}
-
-	/** If set, a pointer to an input stream of the result is put in the specified sessionkey (as the sender interface only allows a sender to return a string a sessionkey is used instead to return the stream) */
-	@Deprecated
-	@ConfigurationWarning("no longer required to store the result as a stream in the PipeLineSession, the sender can return binary data")
-	public void setStoreResultAsStreamInSessionKey(String storeResultAsStreamInSessionKey) {
-		this.storeResultAsStreamInSessionKey = storeResultAsStreamInSessionKey;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("no longer required to store the result as a byte array in the PipeLineSession, the sender can return binary data")
-	public void setStoreResultAsByteArrayInSessionKey(String storeResultAsByteArrayInSessionKey) {
-		this.storeResultAsByteArrayInSessionKey = storeResultAsByteArrayInSessionKey;
-	}
-
-	/**
-	 * If true, the result is Base64 encoded
-	 * @ff.default false
-	 */
-	@Deprecated
-	@ConfigurationWarning("use Base64Pipe instead")
-	public void setBase64(boolean b) {
-		base64 = b;
-	}
-
-	/**
-	 * If set, the result is streamed to the HhttpServletResponse object of the RestServiceDispatcher (instead of passed as a string)
-	 * @ff.default false
-	 */
-	public void setStreamResultToServlet(boolean b) {
-		streamResultToServlet = b;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("multipart has been replaced by postType='formdata'")
-	/**
-	 * If true and <code>methodType<code>=<code>POST</code> and <code>paramsInUrl</code>=<code>false</code>, request parameters are put in a multipart/form-data entity instead of in the request body
-	 * @ff.default false
-	 */
-	public void setMultipart(boolean b) {
-		if(b && postType != PostType.MTOM) {
-			postType = PostType.FORMDATA;
-		}
-	}
-
-	@Deprecated
-	@ConfigurationWarning("Unless set explicitly multipart response will be detected automatically")
-	/**
-	 * If true the response body is expected to be in mime multipart which is the case when a soap message with attachments is received (see also <a href=\"https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html\">https://docs.oracle.com/javaee/7/api/javax/xml/soap/soapmessage.html</a>). the first part will be returned as result of this sender. other parts are returned as streams in sessionkeys with names multipart1, multipart2, etc. the http connection is held open until the last stream is read.
-	 * @ff.default false
-	 */
-	public void setMultipartResponse(Boolean b) {
-		multipartResponse = b;
 	}
 
 	/**
@@ -666,12 +556,6 @@ public class HttpSender extends HttpSenderBase {
 	 */
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("mtomEnabled has been replaced by postType='mtom'")
-	public void setMtomEnabled(boolean b) {
-		if(b) postType = PostType.MTOM;
 	}
 
 	public void setMtomContentTransferEncoding(String mtomContentTransferEncoding) {

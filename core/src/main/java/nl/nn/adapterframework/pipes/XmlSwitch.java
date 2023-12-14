@@ -61,7 +61,7 @@ public class XmlSwitch extends AbstractPipe {
 	private @Getter String storeForwardInSessionKey = null;
 	private @Getter String notFoundForwardName = null;
 	private @Getter String emptyForwardName = null;
-	private @Getter int xsltVersion = 0; // set to 0 for auto detect.
+	private @Getter int xsltVersion = 0; // set to 0 for auto-detect.
 	private @Getter String forwardNameSessionKey = null;
 	private @Getter boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
 
@@ -235,21 +235,11 @@ public class XmlSwitch extends AbstractPipe {
 	}
 
 	/**
-	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect
+	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto-detect
 	 * @ff.default 0
 	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
-	}
-
-	/**
-	 * when set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)
-	 * @ff.default false
-	 */
-	@Deprecated
-	@ConfigurationWarning("Its value is now auto detected. If necessary, replace with a setting of xsltVersion")
-	public void setXslt2(boolean b) {
-		xsltVersion=b?2:1;
 	}
 
 	/** Selected forward name will be stored in the specified session key. */

@@ -17,7 +17,6 @@ package nl.nn.adapterframework.http.cxf;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -89,8 +88,8 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 		Message response;
 		try (PipeLineSession pipelineSession = new PipeLineSession()) {
 			String messageId = UUIDUtil.createSimpleUUID();
-			PipeLineSession.updateListenerParameters(pipelineSession, messageId, messageId, new Date(), null);
-			log.debug((messageId)+"received message");
+			PipeLineSession.updateListenerParameters(pipelineSession, messageId, messageId);
+			log.debug("{} received message", messageId);
 			String soapProtocol = SOAPConstants.SOAP_1_1_PROTOCOL;
 
 			if (request == null) {
@@ -214,7 +213,7 @@ public abstract class SOAPProviderBase implements Provider<SOAPMessage> {
 							Message partObject = pipelineSession.getMessage(partSessionKey);
 
 							if (!partObject.isNull()) {
-								String mimeType = partElement.getAttribute("mimeType"); //Optional, auto detected if not set
+								String mimeType = partElement.getAttribute("mimeType"); //Optional, auto-detected if not set
 								partObject.unscheduleFromCloseOnExitOf(pipelineSession); // Closed by the SourceClosingDataHandler
 								MessageDataSource ds = new MessageDataSource(partObject, mimeType);
 								SourceClosingDataHandler dataHander = new SourceClosingDataHandler(ds);

@@ -47,5 +47,10 @@
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.mockrunner</groupId>
+			<artifactId>mockrunner-jms</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

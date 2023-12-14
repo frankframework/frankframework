@@ -42,7 +42,7 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable {
 	private @Getter @Setter String name;
 
 	private String filename;
-	private int xsltVersion=0; // set to 0 for auto detect.
+	private int xsltVersion=0; // set to 0 for auto-detect.
 	private boolean namespaceAware = true;
 	private TransformerPool transformerPool = null;
 	private String result;
@@ -90,7 +90,7 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable {
 	}
 
 	/**
-	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
+	 * @deprecated Please remove setting of xslt2, it will be auto-detected. Or use xsltVersion.
 	 */
 	@Deprecated
 	public void setXslt2(boolean b) {

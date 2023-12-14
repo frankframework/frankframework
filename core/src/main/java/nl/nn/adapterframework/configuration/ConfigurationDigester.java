@@ -42,6 +42,7 @@ import org.xml.sax.XMLReader;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.configuration.digester.FrankDigesterRules;
 import nl.nn.adapterframework.configuration.digester.IncludeFilter;
 import nl.nn.adapterframework.configuration.filters.ElementRoleFilter;
@@ -53,6 +54,7 @@ import nl.nn.adapterframework.stream.xml.XmlTee;
 import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.ClassLoaderUtils;
 import nl.nn.adapterframework.util.LogUtil;
+import nl.nn.adapterframework.util.PropertyLoader;
 import nl.nn.adapterframework.util.SpringUtils;
 import nl.nn.adapterframework.util.StringResolver;
 import nl.nn.adapterframework.util.TransformerPool;
@@ -92,8 +94,9 @@ import nl.nn.adapterframework.xml.XmlWriter;
  * @author Johan Verrips
  * @see Configuration
  */
+@Log4j2
 public class ConfigurationDigester implements ApplicationContextAware {
-	private final Logger log = LogUtil.getLogger(ConfigurationDigester.class);
+	public static final String MIGRATION_REWRITE_LEGACY_CLASS_NAMES_KEY = "migration.rewriteLegacyClassNames";
 	private final Logger configLogger = LogUtil.getLogger("CONFIG");
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Setter ConfigurationWarnings configurationWarnings;
@@ -221,18 +224,23 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * Performs an Identity-transform, which resolves entities with content from files found on the ClassPath.
 	 * Resolve all non-attribute properties
 	 */
-	public void parseAndResolveEntitiesAndProperties(ContentHandler digester, Configuration configuration, Resource resource, Properties appConstants) throws IOException, SAXException, TransformerConfigurationException {
+	public void parseAndResolveEntitiesAndProperties(ContentHandler digester, Configuration configuration, Resource resource, PropertyLoader properties) throws IOException, SAXException, TransformerConfigurationException {
 		ContentHandler handler;
 
 		XmlWriter loadedHiddenWriter = new XmlWriter();
 		handler = new PrettyPrintFilter(loadedHiddenWriter);
-		handler = new AttributePropertyResolver(handler, appConstants, getPropsToHide(appConstants));
+		handler = new AttributePropertyResolver(handler, properties, getPropsToHide(properties));
 		handler = new XmlTee(digester, handler);
 
-		handler = getStub4TesttoolContentHandler(handler, appConstants);
+		handler = getStub4TesttoolContentHandler(handler, properties);
 		handler = getConfigurationCanonicalizer(handler);
-		handler = new OnlyActiveFilter(handler, appConstants);
-		handler = new ElementPropertyResolver(handler, appConstants);
+		handler = new OnlyActiveFilter(handler, properties);
+		handler = new ElementPropertyResolver(handler, properties);
+
+		boolean rewriteLegacyClassNames = properties.getBoolean(MIGRATION_REWRITE_LEGACY_CLASS_NAMES_KEY, false);
+		if (rewriteLegacyClassNames) {
+			handler = new ClassNameRewriter(handler);
+		}
 
 		XmlWriter originalConfigWriter = new XmlWriter();
 		handler = new XmlTee(handler, originalConfigWriter);
@@ -278,8 +286,8 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	 * Get the contenthandler to stub configurations
 	 * If stubbing is disabled, the input ContentHandler is returned as-is
 	 */
-	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, Properties properties) throws IOException, TransformerConfigurationException {
-		if (Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "false"))) {
+	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, PropertyLoader properties) throws IOException, TransformerConfigurationException {
+		if (properties.getBoolean(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, false)) {
 			Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT);
 			TransformerPool tp = TransformerPool.getInstance(xslt);
 

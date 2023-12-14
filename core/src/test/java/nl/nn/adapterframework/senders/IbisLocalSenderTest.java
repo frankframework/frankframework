@@ -118,7 +118,7 @@ class IbisLocalSenderTest {
 
 		// Act
 		PipeLineSession session = new PipeLineSession();
-		PipeLineSession.updateListenerParameters(session, "m-id", "c-id", null, null);
+		PipeLineSession.updateListenerParameters(session, "m-id", "c-id");
 
 		log.info("**>>> Calling Local Sender");
 		Message message = createVirtualInputStream(EXPECTED_BYTE_COUNT);

@@ -1,15 +1,15 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.PipeRunResult;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * RemoveFromSession Tester.
- * 
+ *
  * @author <Sina Sen>
  */
 public class RemoveFromSessionTest extends PipeTestBase<RemoveFromSession> {
