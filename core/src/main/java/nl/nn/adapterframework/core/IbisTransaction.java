@@ -127,7 +127,7 @@ public class IbisTransaction {
 	 * In case a rollback is performed, a successful rollback will not raise an exception.
 	 */
 	public void complete() {
-		boolean mustRollback = txStatus.isRollbackOnly();
+		boolean mustRollback = isRollbackOnly();
 		if (txIsNew) {
 			if (mustRollback) {
 				log.debug("Transaction [{}] marked for rollback, so transaction manager [{}] is rolling back the transaction for {}", ()->txName, this::getRealTransactionManagerName, ()->object);

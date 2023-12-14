@@ -16,7 +16,7 @@
 				serviceName="ibis4test-TransactionTimeoutHandlingTransacted"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				slotId="${applicationId}/GenericReceiverTransactionTimeoutHandlingTransacted"
+				slotId="${applicationId}/ReceiverTransactionTimeoutHandlingTransacted"
 			/>
 		</receiver>
 
@@ -40,14 +40,14 @@
 			>
 				<forward name="success" path="delay"/>
 			</pipe>
-			
+
 			<!-- put dummy looping and waiting code here... -->
 			<pipe name="delay"
 				className="nl.nn.adapterframework.pipes.DelayPipe"
 				delayTime="3000"
 			>
 				<forward name="success" path="increment index"/>
-			</pipe>			
+			</pipe>
 
 			<pipe name="increment index"
 				className="nl.nn.adapterframework.pipes.IncreaseIntegerPipe"
@@ -62,7 +62,7 @@
 			>
 				<param name="operand1" sessionKey="index"/>
 				<param name="operand2" sessionKey="endIndex"/>
-				
+
 				<forward name="lessthan" path="delay"/>
 				<forward name="equals" path="READY"/>
 				<forward name="greaterthan" path="READY"/>
@@ -105,7 +105,7 @@
 			>
 				<forward name="success" path="delay"/>
 			</pipe>
-			
+
 			<!-- put dummy looping and waiting code here... -->
 			<pipe name="delay"
 				className="nl.nn.adapterframework.pipes.DelayPipe"
@@ -121,13 +121,13 @@
 				<forward name="success" path="compare values"/>
 			</pipe>
 			<!-- /put dummy looping and waiting code here... -->
-			
+
 			<pipe name="compare values"
 				className="nl.nn.adapterframework.pipes.CompareIntegerPipe"
 			>
 				<param name="operand1" sessionKey="index"/>
 				<param name="operand2" sessionKey="endIndex"/>
-				
+
 				<forward name="lessthan" path="delay"/>
 				<forward name="equals" path="READY"/>
 				<forward name="greaterthan" path="READY"/>

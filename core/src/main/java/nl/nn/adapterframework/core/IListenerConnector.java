@@ -46,11 +46,11 @@ public interface IListenerConnector<M> {
 	 */
 	void stop() throws ListenerException;
 
-	public enum CacheMode {
+	enum CacheMode {
 		CACHE_NONE,
 		CACHE_CONNECTION,
 		CACHE_SESSION,
-		CACHE_CONSUMER;
+		CACHE_CONSUMER
 	}
 
 }

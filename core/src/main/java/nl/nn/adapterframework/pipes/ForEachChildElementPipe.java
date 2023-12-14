@@ -161,7 +161,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	}
 
 	private static class ItemCallbackCallingHandler extends NodeSetFilter {
-		private ItemCallback callback;
+		private final ItemCallback callback;
 
 		private XmlWriter xmlWriter;
 		private Exception rootException=null;
@@ -279,7 +279,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 	private static class StopSensor extends FullXmlFilter {
 
-		private ItemCallbackCallingHandler itemHandler;
+		private final ItemCallbackCallingHandler itemHandler;
 
 		public StopSensor(ItemCallbackCallingHandler itemHandler, ContentHandler handler) {
 			super(handler);
@@ -447,8 +447,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 		return extractElementsTp;
 	}
 
-
-
 	/**
 	 * When set <code>true</code>, the input is assumed to be the name of a file to be processed. Otherwise, the input itself is transformed. The character encoding will be read from the XML declaration
 	 * @ff.default false
@@ -489,12 +487,6 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
-	public void setXslt2(boolean b) {
-		setXsltVersion(b?2:1);
 	}
 
 	/** If set <code>true</code> namespaces (and prefixes) are removed from the items just before forwarding them to the sender. N.B. This takes place <strong>after</strong> the transformation for <code>elementXPathExpression</code> if that is specified */

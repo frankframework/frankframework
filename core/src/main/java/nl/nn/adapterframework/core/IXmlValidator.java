@@ -22,21 +22,21 @@ import nl.nn.adapterframework.validation.IXSD;
 
 public interface IXmlValidator extends IValidator {
 
-	public ConfigurationException getConfigurationException();
+	ConfigurationException getConfigurationException();
 
-	public String getMessageRoot();
+	String getMessageRoot();
 
 	/**
 	 * @return noNamespaceSchemalocation, if specified
 	 */
-	public String getSchema();
-	public String getSchemaLocation();
-	public Set<IXSD> getXsds() throws ConfigurationException;
+	String getSchema();
+	String getSchemaLocation();
+	Set<IXSD> getXsds() throws ConfigurationException;
 
 	/**
 	 * Provide additional generic documentation on the validation of the
 	 * subsequent processing. This documentation will be included in generated
 	 * schema's like WSDL or OpenApi
 	 */
-	public String getDocumentation();
+	String getDocumentation();
 }

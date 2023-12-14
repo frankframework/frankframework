@@ -36,7 +36,7 @@ public interface IAdapter extends IManagable, HasStatistics {
 	 * Instruct the adapter to configure itself. The adapter will call the pipeline
 	 * to configure itself, the pipeline will call the individual pipes to configure
 	 * themselves.
-	 * 
+	 *
 	 * @see nl.nn.adapterframework.pipes.AbstractPipe#configure()
 	 * @see PipeLine#configure()
 	 */
@@ -47,20 +47,20 @@ public interface IAdapter extends IManagable, HasStatistics {
 	 * The messagekeeper is used to keep the last x messages, relevant to display in
 	 * the web-functions.
 	 */
-	public MessageKeeper getMessageKeeper();
-	public Receiver<?> getReceiverByName(String receiverName);
-	public Iterable<Receiver<?>> getReceivers();
-	public PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession);
-	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException;
+	MessageKeeper getMessageKeeper();
+	Receiver<?> getReceiverByName(String receiverName);
+	Iterable<Receiver<?>> getReceivers();
+	PipeLineResult processMessage(String messageId, Message message, PipeLineSession pipeLineSession);
+	PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException;
 
-	public void setPipeLine (PipeLine pipeline) throws ConfigurationException;
-	public PipeLine getPipeLine();
-	public void setConfiguration(Configuration configuration);
-	public Configuration getConfiguration();
-	public boolean isAutoStart();
+	void setPipeLine(PipeLine pipeline) throws ConfigurationException;
+	PipeLine getPipeLine();
+	void setConfiguration(Configuration configuration);
+	Configuration getConfiguration();
+	boolean isAutoStart();
 
-	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime);
+	Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, INamedObject objectInError, long receivedTime);
 
 	@JmxAttribute(description = "Return the Adapter description")
-	public String getDescription();
+	String getDescription();
 }

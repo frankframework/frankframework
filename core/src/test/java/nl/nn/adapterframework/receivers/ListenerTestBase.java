@@ -54,7 +54,7 @@ public abstract class ListenerTestBase<M extends Object, S extends IListener<M>>
 			threadContext = new HashMap<>();
 		}
 
-		PipeLineSession.updateListenerParameters(threadContext, ConfiguredTestBase.testMessageId, ConfiguredTestBase.testCorrelationId, null, null);
+		PipeLineSession.updateListenerParameters(threadContext, ConfiguredTestBase.testMessageId, ConfiguredTestBase.testCorrelationId);
 		listener = createListener();
 	}
 

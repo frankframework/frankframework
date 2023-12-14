@@ -22,7 +22,7 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 /**
  * The <code>HasTransactionAttribute</code> allows Pipes to declare transaction and isolation behavior.
  * The pipeline uses this to start a new transaction or suspend the current one when required.
- * 
+ *
  * @author  Gerrit van Brakel
  * @since   4.5
  */
@@ -50,15 +50,15 @@ public interface HasTransactionAttribute {
 	 *   </table>
 	 * @ff.default Supports
 	 */
-	public void setTransactionAttribute(TransactionAttribute attribute) throws ConfigurationException;
-	public TransactionAttribute getTransactionAttribute();
+	void setTransactionAttribute(TransactionAttribute attribute) throws ConfigurationException;
+	TransactionAttribute getTransactionAttribute();
 
 	/**
 	 * Timeout (in seconds) of transaction started to process a message.
 	 * @ff.default <code>0</code> (use system default)
 	 */ //TODO use Integer and set to NULL by default
-	public void setTransactionTimeout(int i);
-	public int getTransactionTimeout();
+	void setTransactionTimeout(int i);
+	int getTransactionTimeout();
 
-	public TransactionDefinition getTxDef();
+	TransactionDefinition getTxDef();
 }

@@ -82,7 +82,7 @@ import nl.nn.adapterframework.util.XmlUtils;
  * in order: The n-th questionmark is replaced by the value of the n-th parameter.
  *
  * <h3>Note on using packages</h3>
- * The package processor makes some assumptions about the datatypes:
+ * The package processor makes some assumptions about the data types:
  * <ul>
  *   <li>elements that start with a single quote are assumed to be Strings</li>
  *   <li>elements that contain a dash ('-') are assumed to be dates (yyyy-MM-dd) or timestamps (yyyy-MM-dd HH:mm:ss)</li>
@@ -132,7 +132,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	private @Getter String rowIdSessionKey=null;
 	private @Getter String packageContent = "db2";
 	private @Getter String[] columnsReturnedList=null;
-	private @Getter boolean streamResultToServlet=false;
+	private @Getter boolean streamResultToServlet = false; //TODO: remove stream result to servlet
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	private @Getter boolean lockRows=false;
 	private @Getter int lockWait=-1;
@@ -447,7 +447,6 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		if (isScalar()) {
 			String result=null;
 			if (resultset.next()) {
-				//result = resultset.getString(1);
 				ResultSetMetaData rsmeta = resultset.getMetaData();
 				int numberOfColumns = rsmeta.getColumnCount();
 				if(numberOfColumns > 1) {
@@ -645,38 +644,38 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 				pstmt.setMaxRows(
 					getMaxRows() + (getStartRow() > 1 ? getStartRow() - 1 : 0));
 			}
-			int var = 1;
+			int parameterIndex = 1;
 			for (final Object o : paramArray) {
 				if (o instanceof Timestamp) {
-					pstmt.setTimestamp(var, (Timestamp) o);
-					var++;
+					pstmt.setTimestamp(parameterIndex, (Timestamp) o);
+					parameterIndex++;
 				}
 				if (o instanceof java.sql.Date) {
-					pstmt.setDate(var, (java.sql.Date) o);
-					var++;
+					pstmt.setDate(parameterIndex, (java.sql.Date) o);
+					parameterIndex++;
 				}
 				if (o instanceof String) {
-					pstmt.setString(var, (String) o);
-					var++;
+					pstmt.setString(parameterIndex, (String) o);
+					parameterIndex++;
 				}
 				if (o instanceof Integer) {
 					int x = Integer.parseInt(o.toString());
-					pstmt.setInt(var, x);
-					var++;
+					pstmt.setInt(parameterIndex, x);
+					parameterIndex++;
 				}
 				if (o instanceof Float) {
 					float x = Float.parseFloat(o.toString());
-					pstmt.setFloat(var, x);
-					var++;
+					pstmt.setFloat(parameterIndex, x);
+					parameterIndex++;
 				}
 			}
 			if (query.indexOf('?') != -1) {
-				pstmt.registerOutParameter(var, Types.CLOB); // make sure enough space is available for result...
+				pstmt.registerOutParameter(parameterIndex, Types.CLOB); // make sure enough space is available for result...
 			}
 			if ("xml".equalsIgnoreCase(getPackageContent())) {
 				log.debug(getLogPrefix() + "executing a package SQL command");
 				pstmt.executeUpdate();
-				String pUitvoer = pstmt.getString(var);
+				String pUitvoer = pstmt.getString(parameterIndex);
 				return new Message(pUitvoer);
 			}
 			log.debug(getLogPrefix() + "executing a package SQL command");
@@ -807,9 +806,9 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 								}
 							} else {
 								if (element.contains(".")) {
-									paramArray[idx] = new Float(element);
+									paramArray[idx] = Float.parseFloat(element);
 								} else {
-									paramArray[idx] = new Integer(element);
+									paramArray[idx] = Integer.parseInt(element);
 								}
 							}
 						}
@@ -922,7 +921,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 	}
 
 	/**
-	 * Named parameters will be auto detected by default. Every string in the query which equals <code>{@value #UNP_START}paramname{@value #UNP_END}</code> will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.
+	 * Named parameters will be auto-detected by default. Every string in the query which equals <code>{@value #UNP_START}paramname{@value #UNP_END}</code> will be replaced by the value of the corresponding parameter. The parameters don't need to be in the correct order and unused parameters are skipped.
 	 * @ff.default null
 	 */
 	public void setUseNamedParams(Boolean b) {

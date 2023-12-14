@@ -27,7 +27,7 @@
 			/>
 			<pipe
 				name="Call IFSA"
-				className="nl.nn.adapterframework.pipes.GenericMessageSendingPipe">
+				className="nl.nn.adapterframework.pipes.SenderPipe">
 				<sender
 					className="nl.nn.adapterframework.senders.EchoSender"
 					applicationId="1"

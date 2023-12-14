@@ -1,0 +1,102 @@
+<!-- Angular ui-router hack-->
+<div ui-view></div>
+
+<div class="wrapper wrapper-content animated fadeInRight">
+  <div class="row">
+    <div class="col-lg-12 tabs-container">
+      <ul class="nav nav-tabs" role="menu" uib-dropdown-menu="">
+        <li [ngClass]="{active : selectedConfiguration == 'All'}">
+          <a (click)="changeConfiguration('All')">Global</a>
+        </li>
+        <ng-container *ngFor="let configuration of this.configurations">
+          <li [ngClass]="{active : selectedConfiguration == configuration.name}">
+            <a (click)="changeConfiguration(configuration.name)">{{configuration.name}}</a>
+          </li>
+        </ng-container>
+      </ul>
+    </div>
+    <div class="col-lg-12">
+      <div class="ibox float-e-margins">
+        <div class="ibox-title summary">
+          <h4>Environment Variables</h4>
+        </div>
+        <div class="ibox-content">
+          <div class="col-md-12 m-b-lg">
+            <div class="input-group" id="searchbar">
+              <input type="text" class="form-control" placeholder="Search ... (Ctrl + Shift + F)"
+                [(ngModel)]="searchFilter" name="search" />
+              <i class="fa fa-times input-group-closeSearch" *ngIf="searchFilter.length" (click)="searchFilter = ''"
+                aria-hidden="true"></i>
+              <span class="input-group-addon">
+                <i class="fa fa-search" aria-hidden="true"></i>
+              </span>
+            </div>
+          </div>
+          <div>
+            <h2>Application Constants <small class="m-l-sm">&nbsp;({{(configProperties | variablesFilter :
+                this.searchFilter).length}})</small></h2>
+            <table class="table">
+              <thead>
+                <tr>
+                  <td><strong>Property</strong></td>
+                  <td><strong>Value</strong></td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let vari of configProperties | variablesFilter : this.searchFilter | orderby: 'key'">
+                  <td class="col-lg-3">{{vari.key}}</td>
+                  <td class="col-lg-9">{{vari.value}}</td>
+                </tr>
+                <tr *ngIf="(configProperties | variablesFilter : this.searchFilter).length == 0">
+                  <td colspan="2">No variables found matching '{{searchFilter}}'</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h2>Environment Variables <small class="m-l-sm">&nbsp;({{(environmentProperties | variablesFilter :
+                this.searchFilter).length}})</small></h2>
+            <table class="table">
+              <thead>
+                <tr>
+                  <td><strong>Property</strong></td>
+                  <td><strong>Value</strong></td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let vari of environmentProperties | variablesFilter : this.searchFilter | orderby: 'key'">
+                  <td class="col-lg-3">{{vari.key}}</td>
+                  <td class="col-lg-9">{{vari.value}}</td>
+                </tr>
+                <tr *ngIf="(environmentProperties | variablesFilter : this.searchFilter).length == 0">
+                  <td colspan="2">No variables found matching '{{searchFilter}}'</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h2>System Properties <small class="m-l-sm">&nbsp;({{(systemProperties | variablesFilter :
+                this.searchFilter).length}})</small></h2>
+            <table class="table">
+              <thead>
+                <tr>
+                  <td><strong>Property</strong></td>
+                  <td><strong>Value</strong></td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let vari of systemProperties | variablesFilter : this.searchFilter | orderby: 'key'">
+                  <td class=" col-lg-3">{{vari.key}}</td>
+                  <td class="col-lg-9">{{vari.value}}</td>
+                </tr>
+                <tr *ngIf="(systemProperties | variablesFilter : this.searchFilter).length == 0">
+                  <td colspan="2">No variables found matching '{{searchFilter}}'</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

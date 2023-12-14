@@ -17,7 +17,6 @@ package nl.nn.adapterframework.extensions.cmis;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -28,8 +27,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
@@ -82,7 +79,6 @@ import nl.nn.adapterframework.util.AppConstants;
 import nl.nn.adapterframework.util.CredentialFactory;
 import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.EnumUtils;
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.XmlBuilder;
 import nl.nn.adapterframework.util.XmlUtils;
 
@@ -224,7 +220,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	private @Getter String password;
 	private @Getter String filenameSessionKey;
 	private @Getter String defaultMediaType = "application/octet-stream";
-	private @Getter boolean streamResultToServlet = false;
 	private @Getter boolean getProperties = false;
 	private @Getter boolean getDocumentContent = true;
 	private @Getter boolean useRootFolder = true;
@@ -398,67 +393,42 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 		Document document = (Document) object;
 
-		try {
-			boolean getProperties = isGetProperties();
-			boolean getDocumentContent = isGetDocumentContent();
-			if (pvl != null) {
-				if(pvl.contains("getProperties"))
-					getProperties = pvl.get("getProperties").asBooleanValue(isGetProperties());
-				if(pvl.contains("getDocumentContent"))
-					getDocumentContent = pvl.get("getDocumentContent").asBooleanValue(isGetDocumentContent());
-			}
-
-			if (isStreamResultToServlet()) {
-				HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-
-				ContentStream contentStream = document.getContentStream();
-				InputStream inputStream = contentStream.getStream();
-				String contentType = contentStream.getMimeType();
-				if (StringUtils.isNotEmpty(contentType)) {
-					log.debug(getLogPrefix() + "setting response Content-Type header [" + contentType + "]");
-					response.setHeader("Content-Type", contentType);
-				}
-				String contentDisposition = "attachment; filename=\"" + contentStream.getFileName() + "\"";
-				log.debug(getLogPrefix() + "setting response Content-Disposition header [" + contentDisposition + "]");
-				response.setHeader("Content-Disposition", contentDisposition);
-				OutputStream outputStream;
-				outputStream = response.getOutputStream();
-				StreamUtil.streamToStream(inputStream, outputStream);
-				log.debug(getLogPrefix() + "copied document content input stream [" + inputStream + "] to output stream [" + outputStream + "]");
-
-				return new SenderResult(Message.nullMessage());
-			} else if (getProperties) {
-				if (getDocumentContent) {
-					Message content = getMessageFromContentStream(document.getContentStream());
-
-					content.closeOnCloseOf(session, this);
-					session.put(getFileSessionKey(), content);
-				}
-
-				XmlBuilder propertiesXml = new XmlBuilder("properties");
-				for (Iterator<Property<?>> it = document.getProperties().iterator(); it.hasNext();) {
-					Property<?> property = it.next();
-					propertiesXml.addSubElement(CmisUtils.getPropertyXml(property));
-				}
-				XmlBuilder cmisXml = new XmlBuilder("cmis");
-				cmisXml.addSubElement(propertiesXml);
-
-				return new SenderResult(cmisXml.toXML());
-			}
-			else {
-				Message content = getMessageFromContentStream(document.getContentStream());
-				content.closeOnCloseOf(session, this);
-
-				if (StringUtils.isNotEmpty(getFileSessionKey())) {
-					session.put(getFileSessionKey(), content);
-					return new SenderResult(Message.nullMessage());
-				}
-
-				return new SenderResult(content);
-			}
-		} catch (IOException e) {
-			throw new SenderException(e);
+		boolean getProperties = isGetProperties();
+		boolean getDocumentContent = isGetDocumentContent();
+		if (pvl != null) {
+			if(pvl.contains("getProperties"))
+				getProperties = pvl.get("getProperties").asBooleanValue(isGetProperties());
+			if(pvl.contains("getDocumentContent"))
+				getDocumentContent = pvl.get("getDocumentContent").asBooleanValue(isGetDocumentContent());
 		}
+
+		if (getProperties) {
+			if (getDocumentContent) {
+				Message content = getMessageFromContentStream(document.getContentStream());
+
+				content.closeOnCloseOf(session, this);
+				session.put(getFileSessionKey(), content);
+			}
+
+			XmlBuilder propertiesXml = new XmlBuilder("properties");
+			for (Iterator<Property<?>> it = document.getProperties().iterator(); it.hasNext();) {
+				Property<?> property = it.next();
+				propertiesXml.addSubElement(CmisUtils.getPropertyXml(property));
+			}
+			XmlBuilder cmisXml = new XmlBuilder("cmis");
+			cmisXml.addSubElement(propertiesXml);
+			return new SenderResult(cmisXml.toXML());
+		}
+
+		Message content = getMessageFromContentStream(document.getContentStream());
+		content.closeOnCloseOf(session, this);
+
+		if (StringUtils.isNotEmpty(getFileSessionKey())) {
+			session.put(getFileSessionKey(), content);
+			return new SenderResult(Message.nullMessage());
+		}
+
+		return new SenderResult(content);
 	}
 
 	private Message getMessageFromContentStream(ContentStream contentStream) {
@@ -986,11 +956,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		sessionBuilder.setUsername(userName);
 		this.username = userName;
 	}
-	@Deprecated
-	@ConfigurationWarning("Please use attribute username instead")
-	public void setUserName(String userName) {
-		setUsername(userName);
-	}
 
 	/** Password used in authentication to host */
 	public void setPassword(String password) {
@@ -1025,23 +990,12 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	/**
-	 * (Only used when <code>action</code>=<code>get</code>). If true, the content of the document is streamed to the HttpServletResponse object of the restservicedispatcher
-	 * @ff.default false
-	 */
-	@Deprecated
-	@ConfigurationWarning("Please return document content (as sender output) to the listener, ensure the pipeline exit is able to return data")
-	public void setStreamResultToServlet(boolean b) {
-		streamResultToServlet = b;
-	}
-
-	/**
 	 * (Only used when <code>action</code>=<code>get</code>). If true, the content of the document is put to <code>FileSessionKey</code> and all document properties are put in the result as a xml string
 	 * @ff.default false
 	 */
 	public void setGetProperties(boolean b) {
 		getProperties = b;
 	}
-
 
 	/**
 	 * (Only used when <code>action</code>=<code>get</code>). If true, the attachment for the document is the sender result or, if set, stored in <code>FileSessionKey</code>. If false, only the properties are returned

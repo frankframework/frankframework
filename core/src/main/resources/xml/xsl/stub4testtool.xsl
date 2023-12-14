@@ -18,18 +18,18 @@
 		- stub the pipe element IsUserInRolePipe by a pipe element EchoPipe
 		- stub the pipe element UUIDGeneratorPipe by a pipe element FixedResultPipe with attribute returnString set to 1234567890123456789012345678901 if type='numeric' and 0a4544b6-37489ec0_15ad0f006ae_-7ff3 otherwise
 		- stub the pipe element FtpFileRetrieverPipe, LdapFindMemberPipe, LdapFindGroupMembershipsPipe and SendTibcoMessage by a pipe element SenderPipe (and copy the attributes name, storeResultInSessionKey, getInputFromSessionKey and getInputFromFixedValue) with a child Ibis4JavaSender (serviceName="testtool-[pipe name]")
-		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements SenderPipe, GenericMessageSendingPipe and ForEachChildElementPipe
-		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Request/Action' to all pipe and inputWrapper elements SoapWrapperPipe with attribute direction=wrap 
-		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Response' to all outputWrapper elements SoapWrapperPipe with attribute direction=wrap 
+		- add the attribute timeOutOnResult with value '[timeout]' and attribute exceptionOnResult with value '[error]' to all pipe elements SenderPipe and ForEachChildElementPipe
+		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Request/Action' to all pipe and inputWrapper elements SoapWrapperPipe with attribute direction=wrap
+		- add, if not available, the parameter destination with value 'P2P.Infrastructure.Ibis4TestTool.Stub.Response' to all outputWrapper elements SoapWrapperPipe with attribute direction=wrap
 	-->
 	<xsl:template match="/">
 		<xsl:apply-templates select="*|comment()|processing-instruction()" />
 	</xsl:template>
-	
+
 	<xsl:template match="*|@*|comment()|processing-instruction()">
 		<xsl:call-template name="copy" />
 	</xsl:template>
-	
+
 	<xsl:template match="adapter">
 		<xsl:element name="adapter">
 			<xsl:apply-templates select="@*" />
@@ -37,7 +37,7 @@
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
-	
+
 	<!-- All receivers are disabled except those with listeners in the list below -->
 	<xsl:template match="receiver[listener[@className='nl.nn.adapterframework.jdbc.JdbcQueryListener'
 										or @className='nl.nn.adapterframework.jdbc.JdbcTableListener'
@@ -50,12 +50,12 @@
 		<xsl:call-template name="copy" />
 		<xsl:call-template name="stubReceiver"/>
 	</xsl:template>
-	
+
 	<xsl:template match="receiver">
 		<xsl:call-template name="disable" />
 		<xsl:call-template name="stubReceiver"/>
-	</xsl:template>	
-	
+	</xsl:template>
+
 	<xsl:template name="stubAdapterReceiver">
 		<xsl:variable name="receiverName" select="concat('testtool-',@name)"/>
 		<xsl:variable name="baseReceiver" select="receiver[1]"/>
@@ -83,10 +83,10 @@
 			</xsl:call-template>
 		</xsl:element>
 	</xsl:template>
-	
+
 	<xsl:template name="stubReceiver">
 		<xsl:variable name="receiverName" select="string-join(('testtool',(parent::adapter/@name,xs:string(count(preceding-sibling::receiver)+1))),'-')"/>
-		
+
 		<xsl:element name="receiver">
 			<xsl:attribute name="name">
 				<xsl:value-of select="$receiverName" />
@@ -114,7 +114,7 @@
 
 	<xsl:template name="stubNameForStorage">
 		<xsl:param name="store"/>
-		
+
 		<xsl:if test="not(empty($store))">
 			<xsl:variable name="elementName" select="name($store)"/>
 			<xsl:element name="{$elementName}">
@@ -131,13 +131,13 @@
 			</xsl:element>
 		</xsl:if>
 	</xsl:template>
-	
+
 	<xsl:template match="receiver/@transactionAttribute" mode="stub">
 		<xsl:attribute name="transactionAttribute">
 			<xsl:value-of select="if (.='Mandatory') then 'Required' else ."/>
 		</xsl:attribute>
 	</xsl:template>
-	
+
 	<!-- All senders are stubbed except those in the list below -->
 	<xsl:template match="sender[   @className='nl.nn.adapterframework.jdbc.ResultSet2FileSender'
 								or @className='nl.nn.adapterframework.jdbc.DirectQuerySender'
@@ -160,10 +160,10 @@
 								or @className='nl.nn.adapterframework.senders.LocalFileSystemSender']">
 		<xsl:call-template name="copy" />
 	</xsl:template>
-	
+
 	<xsl:template match="sender">
 		<xsl:call-template name="disable" />
-		
+
 		<xsl:element name="sender">
 			<xsl:if test="string-length(@name)&gt;0">
 				<xsl:attribute name="name">
@@ -214,20 +214,20 @@
 				</xsl:element>
 			</xsl:otherwise>
 		</xsl:choose>
-	</xsl:template>	
-	
+	</xsl:template>
+
 	<xsl:template match="pipe/listener">
 		<xsl:call-template name="disable" />
 	</xsl:template>
-	
+
 	<xsl:template match="listener">
 		<xsl:call-template name="copy" />
 	</xsl:template>
-	
+
 	<xsl:template match="sapSystems">
 		<xsl:call-template name="disable" />
 	</xsl:template>
-	
+
 	<xsl:template match="jmsRealm[@queueConnectionFactoryName]">
 		<xsl:call-template name="disable" />
 		<xsl:if test="@datasourceName">
@@ -241,7 +241,7 @@
 			</xsl:element>
 		</xsl:if>
 	</xsl:template>
-	
+
 	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.PutSystemDateInSession']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
@@ -249,7 +249,7 @@
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
-	
+
 	<xsl:template match="pipe[@className='nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
@@ -263,7 +263,7 @@
 			</xsl:if>
 		</xsl:element>
 	</xsl:template>
-	
+
 	<xsl:template match="inputWrapper[@className='nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe']">
 		<xsl:element name="inputWrapper">
 			<xsl:apply-templates select="@*" />
@@ -284,7 +284,7 @@
 			</xsl:if>
 		</xsl:element>
 	</xsl:template>
-	
+
 	<xsl:template match="outputWrapper[@className='nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe']">
 		<xsl:element name="outputWrapper">
 			<xsl:apply-templates select="@*" />
@@ -298,7 +298,7 @@
 			</xsl:if>
 		</xsl:element>
 	</xsl:template>
-	
+
 	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.GetPrincipalPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
@@ -307,7 +307,7 @@
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
-	
+
 	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.IsUserInRolePipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
@@ -315,7 +315,7 @@
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
-	
+
 	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.UUIDGeneratorPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*[name()!='type']" />
@@ -331,7 +331,7 @@
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
-	
+
 	<xsl:template match="pipe[ @className='nl.nn.adapterframework.pipes.Samba2Pipe' ]">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@name|@action|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
@@ -340,10 +340,10 @@
 				select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
-	
-	<xsl:template match="pipe[ @className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe' 
-							or @className='nl.nn.adapterframework.extensions.tibco.SendTibcoMessage' 
-							or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe' 
+
+	<xsl:template match="pipe[ @className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe'
+							or @className='nl.nn.adapterframework.extensions.tibco.SendTibcoMessage'
+							or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe'
 							or @className='nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@name|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
@@ -357,10 +357,9 @@
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
-	
-	<xsl:template match="pipe[ @className='nl.nn.adapterframework.pipes.GenericMessageSendingPipe' 
-							or @className='nl.nn.adapterframework.pipes.ForEachChildElementPipe'
-							or @className='nl.nn.adapterframework.pipes.SenderPipe']">
+
+	<xsl:template match="pipe[ @className='nl.nn.adapterframework.pipes.SenderPipe'
+							or @className='nl.nn.adapterframework.pipes.ForEachChildElementPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="timeOutOnResult">[timeout]</xsl:attribute>
@@ -368,20 +367,20 @@
 			<xsl:apply-templates select="*|comment()|processing-instruction()|text()" />
 		</xsl:element>
 	</xsl:template>
-	
+
 	<xsl:template match="param/@pattern[contains(.,'{now,') or contains(.,'{now}')]">
 		<xsl:attribute name="pattern"><xsl:value-of select="replace(.,'\{now','{fixedDate')"/></xsl:attribute>
 	</xsl:template>
-	
-	<xsl:template match="pipe/*[local-name()='errorStorage' or local-name()='messageLog'][@className!='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' 
+
+	<xsl:template match="pipe/*[local-name()='errorStorage' or local-name()='messageLog'][@className!='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage'
 																					  and @className!='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']">
 		<xsl:call-template name="disable" />
 	</xsl:template>
-	
+
 	<xsl:template match="inputValidator[$disableValidators]|outputValidator[$disableValidators]">
 		<xsl:call-template name="disable" />
 	</xsl:template>
-	
+
 	<xsl:template name="copy">
 		<xsl:copy>
 			<xsl:apply-templates select="*|@*|comment()|processing-instruction()|text()" />

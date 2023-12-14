@@ -20,13 +20,13 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * An <code>errorMessageFormatter</code> is responsible for returning a string
- * describing the error at hand in a format that the receiver expects. 
+ * describing the error at hand in a format that the receiver expects.
  * By implementing this interface, it is possible to customize messages.
- * 
+ *
  * @author Johan Verrips
  */
 @FrankDocGroup(order = 60, name = "ErrorMessageFormatters")
 public interface IErrorMessageFormatter {
 
-	public Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime);
+	Message format(String errorMessage, Throwable t, INamedObject location, Message originalMessage, String messageId, long receivedTime);
 }
