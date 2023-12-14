@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9-RC1">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.0">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -3378,6 +3378,7 @@
     <xs:attribute ref="connectionTimeToLive" />
     <xs:attribute ref="connectionIdleTimeout" />
     <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -3443,6 +3444,7 @@
     <xs:attribute ref="connectionTimeToLive" />
     <xs:attribute ref="connectionIdleTimeout" />
     <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute name="name" type="xs:string" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -4804,6 +4806,7 @@
     <xs:attribute ref="connectionTimeToLive" />
     <xs:attribute ref="connectionIdleTimeout" />
     <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -4916,7 +4919,7 @@
   <xs:attributeGroup name="Samba1SenderDeclaredAttributeGroup">
     <xs:attribute name="share" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Shared folder name in the samba server</xs:documentation>
+        <xs:documentation>the destination, aka smb://xxx/yyy share</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="username" type="xs:string">
@@ -4934,12 +4937,19 @@
         <xs:documentation>alias used to obtain credentials for the smb share</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="domain" type="xs:string">
+    <xs:attribute name="domain" type="xs:string" />
+    <xs:attribute name="authenticationDomain" type="xs:string" />
+    <xs:attribute name="domainName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>in case the user account is bound to a domain</xs:documentation>
+        <xs:documentation>domain, in case the user account is bound to a domain</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="force" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, intermediate directories are created also Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="listHiddenFiles" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>controls whether hidden files are seen or not Default: false</xs:documentation>
       </xs:annotation>
@@ -4964,8 +4974,16 @@
         <xs:documentation>DEPRECATED</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="hostname" type="xs:string" />
-    <xs:attribute name="port" type="frankInt" />
+    <xs:attribute name="hostname" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Hostname of the SMB share.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="port" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Port to connect to. Default: 445</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="authType">
       <xs:annotation>
         <xs:documentation>Type of the authentication either 'NTLM' or 'SPNEGO'.
@@ -5305,7 +5323,7 @@
     </xs:attribute>
     <xs:attribute name="protocol" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. Default: SSL</xs:documentation>
+        <xs:documentation>Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated. Default: TLSv1.2</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6419,7 +6437,12 @@
     </xs:attribute>
     <xs:attribute name="exactMatchClaims" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Comma separated key value pairs to match with JWT payload. e.g. "sub=UnitTest, aud=test"</xs:documentation>
+        <xs:documentation>Comma separated key value pairs to exactly match with JWT payload. e.g. "sub=UnitTest, aud=test"</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="anyMatchClaims" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Comma separated key value pairs to one-of match with JWT payload. e.g. "appid=a,appid=b"</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="roleClaim" type="xs:string">
@@ -7785,8 +7808,16 @@
         <xs:documentation>DEPRECATED</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="hostname" type="xs:string" />
-    <xs:attribute name="port" type="frankInt" />
+    <xs:attribute name="hostname" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Hostname of the SMB share.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="port" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Port to connect to. Default: 445</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="authType">
       <xs:annotation>
         <xs:documentation>Type of the authentication either 'NTLM' or 'SPNEGO'.
@@ -14868,6 +14899,37 @@
         <xs:documentation>session key that contains the document that the attachments will be attached to. Only used when action is set to 'combine' Default: defaultMainDocumentSessionKey</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="conversionResultDocumentSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The session key used to store the main conversion result document. Only to be
+ used when action is set to 'convert'.
+
+ ff.default documents</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="conversionResultFilesSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The session-key in which result files are stored when documents are converted to PDF.
+
+ &lt;p&gt;
+ Conversion result files are stored as messages in the session, under keys numbered based
+ on the value set here. If #isSaveSeparate() is {@code false} then only the main
+ document is stored in the session, if it is {@code true} then each attachment is stored
+ separately.
+ &lt;/p&gt;
+ &lt;p&gt;
+     For example, if a file is converted that has 2 attachments and #setSaveSeparate(boolean)
+     is set to {@code true} then there will be the following 3 session keys (assuming the default value
+     is unchanged):
+     &lt;ol&gt;
+         &lt;li&gt;{@code pdfConversionResultFiles1}&lt;/li&gt;
+         &lt;li&gt;{@code pdfConversionResultFiles2}&lt;/li&gt;
+         &lt;li&gt;{@code pdfConversionResultFiles3}&lt;/li&gt;
+     &lt;/ol&gt;
+     Each session key will contain a FileMessage referencing the contents of that PDF.
+ &lt;/p&gt; Default: pdfConversionResultFiles</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="fileNameToAttachSessionKey" type="xs:string" />
     <xs:attribute name="filenameToAttachSessionKey" type="xs:string">
       <xs:annotation>
@@ -15314,7 +15376,7 @@
   <xs:attributeGroup name="Samba1PipeDeclaredAttributeGroup">
     <xs:attribute name="share" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Shared folder name in the samba server</xs:documentation>
+        <xs:documentation>the destination, aka smb://xxx/yyy share</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="username" type="xs:string">
@@ -15332,12 +15394,19 @@
         <xs:documentation>alias used to obtain credentials for the smb share</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="domain" type="xs:string">
+    <xs:attribute name="domain" type="xs:string" />
+    <xs:attribute name="authenticationDomain" type="xs:string" />
+    <xs:attribute name="domainName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>in case the user account is bound to a domain</xs:documentation>
+        <xs:documentation>domain, in case the user account is bound to a domain</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="force" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, intermediate directories are created also Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="listHiddenFiles" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>controls whether hidden files are seen or not Default: false</xs:documentation>
       </xs:annotation>
@@ -15362,8 +15431,16 @@
         <xs:documentation>DEPRECATED</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="hostname" type="xs:string" />
-    <xs:attribute name="port" type="frankInt" />
+    <xs:attribute name="hostname" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Hostname of the SMB share.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="port" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Port to connect to. Default: 445</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="authType">
       <xs:annotation>
         <xs:documentation>Type of the authentication either 'NTLM' or 'SPNEGO'.
@@ -16122,7 +16199,7 @@
   <xs:attributeGroup name="ZipWriterPipeDeclaredAttributeGroup">
     <xs:attribute name="zipWriterHandle" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested Default: zipwriterhandle</xs:documentation>
+        <xs:documentation>Session key used to refer to zip session. Must be specified with another value if ZipWriterPipes are nested. Deprecated, use collectionName instead. Default: zipwriterhandle</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="completeFileHeader" type="frankBoolean">
@@ -16767,6 +16844,7 @@
     <xs:attribute ref="connectionTimeToLive" />
     <xs:attribute ref="connectionIdleTimeout" />
     <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -17447,8 +17525,11 @@
     <xs:annotation>
       <xs:documentation>The JMS javax.jms.Message class for the outgoing message.
  Currently supported are MessageClass#TEXT for JMS TextMessage,
- MessageClass#BYTES for JMS BytesMessage, or AUTO for auto-determination
- based on whether the input Message is binary or character.</xs:documentation>
+ MessageClass#BYTES for JMS BytesMessage, or MessageClass#AUTO for auto-determination
+ based on whether the input Message is binary or character.
+ &lt;p&gt;
+ Defaults to MessageClass#AUTO, unless the default is overridden in AppConstants with property {@code jms.messageClass.default}
+ &lt;/p&gt;</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
       <xs:union memberTypes="MessageClassAttributeValuesType variableRef" />
@@ -17965,7 +18046,13 @@
   </xs:attribute>
   <xs:attribute name="protocol" type="xs:string">
     <xs:annotation>
-      <xs:documentation>Secure socket protocol (such as 'SSL' and 'TLS') to use when a SSLContext object is generated. Default: SSL</xs:documentation>
+      <xs:documentation>Secure socket protocol (such as 'TLSv1.2') to use when a SSLContext object is generated. Default: TLSv1.2</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="supportedCipherSuites" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with {@code protocol} as the provided Suite may not be valid for the provided Protocol
+ See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="correlationIdFieldIndex" type="frankInt">
