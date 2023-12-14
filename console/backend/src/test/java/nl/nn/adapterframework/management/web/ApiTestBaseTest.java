@@ -33,6 +33,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -69,7 +70,8 @@ public class ApiTestBaseTest extends FrankApiBase {
 		return Response.ok().entity(response).build();
 	}
 
-	public static class TestApi extends FrankApiTestBase<ApiTestBaseTest> {
+	@Nested
+	public class TestApi extends FrankApiTestBase<ApiTestBaseTest> {
 
 		@Override
 		public ApiTestBaseTest createJaxRsResource() {

@@ -3,8 +3,6 @@ package nl.nn.adapterframework.mailsenders;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.SenderException;
 
 public class SendGridSenderTest extends MailSenderTestBase<SendGridSenderWrapper> {

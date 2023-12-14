@@ -3,10 +3,8 @@ package nl.nn.adapterframework.filesystem;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Vector;
-
-import org.junit.After;
-import org.junit.Before;
-
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpException;
@@ -34,14 +32,14 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 	}
 
 	@Override
-	@Before
+	@BeforeEach
 	public void setUp() throws ConfigurationException, FileSystemException {
 		open();
 		cleanFolder();
 	}
 
 	@Override
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		SftpSession.close(ftpClient);
 	}

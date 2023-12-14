@@ -7,17 +7,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer.MethodName;
 import org.junit.jupiter.api.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.TestMethodOrder;
 
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodName.class)
 public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSystem<F>> extends HelperedFileSystemTestBase {
 
 	protected FileSystemMessageBrowser<F, FS> browser;

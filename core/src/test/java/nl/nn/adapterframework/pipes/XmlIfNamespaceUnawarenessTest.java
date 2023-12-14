@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import nl.nn.adapterframework.core.PipeForward;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.TransformerPoolNamespaceUnawarenessTest;
 
@@ -32,12 +32,12 @@ public class XmlIfNamespaceUnawarenessTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void testNamespaceAwareWithXpath() throws Exception {
+	void testNamespaceAwareWithXpath() throws Exception {
 		testNamespaceUnawareness(true, pipeForwardThen);
 	}
 
 	@Test
-	public void testNotNamespaceAwareWithXpath() throws Exception {
+	void testNotNamespaceAwareWithXpath() throws Exception {
 		testNamespaceUnawareness(false, pipeForwardThen);
 	}
 
@@ -52,7 +52,7 @@ public class XmlIfNamespaceUnawarenessTest extends PipeTestBase<XmlIf>{
 	}
 
 	@Test
-	public void test3156() throws Exception {
+	void test3156() throws Exception {
 		pipe.setXpathExpression("root/code = 'OK'");
 		pipe.setNamespaceAware(false);
 		configureAdapter();

@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import nl.nn.adapterframework.configuration.ApplicationWarnings;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.PipeForward;
@@ -19,7 +19,7 @@ public class ForwardHandlingTest extends ConfiguredTestBase {
 	}
 
 	@Test
-	public void testFindForwardToPipeExplicit() throws ConfigurationException {
+	void testFindForwardToPipeExplicit() throws ConfigurationException {
 		XmlSwitch pipe1 = new XmlSwitch();
 		pipe1.setName("pipe1");
 		pipe1.registerForward(new PipeForward("fakeForward", "pipe3"));
@@ -42,7 +42,7 @@ public class ForwardHandlingTest extends ConfiguredTestBase {
 	}
 
 	@Test
-	public void testFindForwardToPipeImplicit() throws ConfigurationException {
+	void testFindForwardToPipeImplicit() throws ConfigurationException {
 		XmlSwitch pipe1 = new XmlSwitch();
 		pipe1.setName("pipe1");
 		pipeline.addPipe(pipe1);
@@ -64,7 +64,7 @@ public class ForwardHandlingTest extends ConfiguredTestBase {
 	}
 
 	@Test
-	public void testFindForwardToNextPipeImplicit() throws ConfigurationException {
+	void testFindForwardToNextPipeImplicit() throws ConfigurationException {
 		XmlSwitch pipe1 = new XmlSwitch();
 		pipe1.setName("pipe1");
 		pipeline.addPipe(pipe1);
@@ -87,7 +87,7 @@ public class ForwardHandlingTest extends ConfiguredTestBase {
 
 
 	@Test
-	public void testFindForwardToExitExplicit() throws ConfigurationException {
+	void testFindForwardToExitExplicit() throws ConfigurationException {
 		XmlSwitch pipe1 = new XmlSwitch();
 		pipe1.setName("pipe1");
 		pipe1.registerForward(new PipeForward("ready", "READY"));
@@ -107,7 +107,7 @@ public class ForwardHandlingTest extends ConfiguredTestBase {
 
 
 	@Test
-	public void testFindForwardToExitImplicit() throws ConfigurationException {
+	void testFindForwardToExitImplicit() throws ConfigurationException {
 		XmlSwitch pipe1 = new XmlSwitch();
 		pipe1.setName("pipe1");
 		pipeline.addPipe(pipe1);

@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -40,14 +40,14 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void basic() throws Exception {
+	void basic() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		Message input=MessageTestUtils.getMessage("/XmlSwitch/in.xml");
 		testSwitch(input,"Envelope");
 	}
 
 	@Test
-	public void basicXpath1() throws Exception {
+	void basicXpath1() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.setXpathExpression("name(/node()[position()=last()])");
 		Message input=MessageTestUtils.getMessage("/XmlSwitch/in.xml");
@@ -55,7 +55,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void basicXpath3() throws Exception {
+	void basicXpath3() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.registerForward(new PipeForward("SetRequest","SetRequest-Path"));
 		pipe.setXpathExpression("name(/Envelope/Body/*[name()!='MessageHeader'])");
@@ -65,7 +65,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void xPathFromParameter() throws Exception {
+	void xPathFromParameter() throws Exception {
 		pipe.registerForward(new PipeForward("1","Path1"));
 		pipe.registerForward(new PipeForward("2","Path2"));
 
@@ -83,7 +83,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void xPathFromParameterWildCardNamespaced() throws Exception {
+	void xPathFromParameterWildCardNamespaced() throws Exception {
 		pipe.registerForward(new PipeForward("1","Path1"));
 		pipe.registerForward(new PipeForward("2","Path2"));
 
@@ -96,7 +96,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void xPathFromParameterNamespaced() throws Exception {
+	void xPathFromParameterNamespaced() throws Exception {
 		pipe.registerForward(new PipeForward("1","Path1"));
 		pipe.registerForward(new PipeForward("2","Path2"));
 
@@ -109,7 +109,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void testSettingXsltVersion1() throws Exception {
+	void testSettingXsltVersion1() throws Exception {
 		String message = "<root>2</root>";
 
 		pipe.setXpathExpression("$param1 = 2");
@@ -132,7 +132,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void testXsltVersionAutoDetect() throws Exception {
+	void testXsltVersionAutoDetect() throws Exception {
 		String message = "<root>2</root>";
 
 		pipe.setXpathExpression("$param1 = 2");
@@ -155,7 +155,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void xPathFromParameterWithXpath() throws Exception {
+	void xPathFromParameterWithXpath() throws Exception {
 		pipe.registerForward(new PipeForward("1","Path1"));
 		pipe.registerForward(new PipeForward("2","Path2"));
 
@@ -172,7 +172,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void withSessionKey() throws Exception {
+	void withSessionKey() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.registerForward(new PipeForward("selectValue","SelectValue-Path"));
 		pipe.setSessionKey("selectKey");
@@ -183,7 +183,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void storeForwardInSessionKey() throws Exception {
+	void storeForwardInSessionKey() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.registerForward(new PipeForward("selectValue","SelectValue-Path"));
 		pipe.setSessionKey("selectKey");
@@ -197,7 +197,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void basicSelectionWithStylesheet() throws Exception {
+	void basicSelectionWithStylesheet() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.registerForward(new PipeForward("SetRequest","SetRequest-Path"));
 		pipe.setStyleSheetName("/XmlSwitch/selection.xsl");
@@ -207,7 +207,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void basicSelectionWithStylesheetXslt3() throws Exception {
+	void basicSelectionWithStylesheetXslt3() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.registerForward(new PipeForward("SetRequest","SetRequest-Path"));
 		pipe.setXsltVersion(3);
@@ -218,7 +218,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void testForwardNameFromSessionKey() throws Exception {
+	void testForwardNameFromSessionKey() throws Exception {
 		pipe.registerForward(new PipeForward("forwardName","Envelope-Path"));
 		pipe.setForwardNameSessionKey("forwardNameSessionKey");
 		session=new PipeLineSession();
@@ -228,7 +228,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void basicXpathSessionKeyUsedAsInput() throws Exception {
+	void basicXpathSessionKeyUsedAsInput() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.setSessionKey("sessionKey");
 		pipe.setXpathExpression("name(/node()[position()=last()])");
@@ -239,13 +239,13 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void emptyParameterList() throws Exception {
+	void emptyParameterList() throws Exception {
 		pipe.setSessionKey("sessionKey");
-		Assert.assertThrows("cannot find forward or pipe named", PipeRunException.class, () -> testSwitch(new Message("dummy"),"Envelope"));
+		assertThrows(PipeRunException.class, () -> testSwitch(new Message("dummy"), "Envelope"), "cannot find forward or pipe named");
 	}
 
 	@Test
-	public void emptyForward() throws Exception {
+	void emptyForward() throws Exception {
 		pipe.setEmptyForwardName("emptyForward");
 		pipe.setSessionKey("sessionKey");
 		pipe.registerForward(new PipeForward("emptyForward", "test"));
@@ -253,7 +253,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void notFoundForward() throws Exception {
+	void notFoundForward() throws Exception {
 		pipe.setNotFoundForwardName("notFound");
 		pipe.setSessionKey("sessionKey");
 		session=new PipeLineSession();
@@ -263,7 +263,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void withSessionKeyOverridesGetInputFromSessionKey() throws Exception {
+	void withSessionKeyOverridesGetInputFromSessionKey() throws Exception {
 		pipe.registerForward(new PipeForward("Envelope","Envelope-Path"));
 		pipe.registerForward(new PipeForward("dummy","dummy-Path"));
 		pipe.setGetInputFromSessionKey("input");
@@ -277,15 +277,15 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void configureNotFoundForwardNotRegistered() throws Exception {
+	void configureNotFoundForwardNotRegistered() throws Exception {
 		pipe.setXpathExpression("name(/node()[position()=last()])");
 		pipe.setStyleSheetName("/XmlSwitch/selection.xsl");
-		Assert.assertThrows("cannot have both an xpathExpression and a styleSheetName specified", ConfigurationException.class, () -> pipe.configure());
+		assertThrows(ConfigurationException.class, () -> pipe.configure(), "cannot have both an xpathExpression and a styleSheetName specified");
 	}
 
 	@Test
-	public void styleSheetNotExists() throws Exception {
+	void styleSheetNotExists() throws Exception {
 		pipe.setStyleSheetName("/XmlSwitch/dummy.xsl");
-		Assert.assertThrows("cannot find stylesheet", ConfigurationException.class, () -> pipe.configure());
+		assertThrows(ConfigurationException.class, () -> pipe.configure(), "cannot find stylesheet");
 	}
 }

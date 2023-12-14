@@ -1,14 +1,14 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.PipeLineSession;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.core.TimeoutException;
@@ -31,7 +31,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 			} catch (NumberFormatException | IOException e) {
 				throw new PipeRunException(this, "error parsing input", e);
 			} catch (InterruptedException e) {
-				//Verify that pipe run thread has been aborted. 
+				//Verify that pipe run thread has been aborted.
 //				throw new PipeRunException(this, "timed out");
 			}
 			fail("this should not happen");
@@ -45,7 +45,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 	}
 
 	@Test
-	public void doesNotTimeout() throws Exception {
+	void doesNotTimeout() throws Exception {
 		configureAndStartPipe();
 		Message input = new Message("500");
 		PipeRunResult result = doPipe(input);
@@ -54,7 +54,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 	}
 
 	@Test
-	public void doesTimeoutWithException() throws Exception {
+	void doesTimeoutWithException() throws Exception {
 		configureAndStartPipe();
 		Message input = new Message("1500");
 		try {
@@ -67,7 +67,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 	}
 
 	@Test
-	public void doesTimeoutWithoutException() throws Exception {
+	void doesTimeoutWithoutException() throws Exception {
 		pipe.setThrowException(false);
 		configureAndStartPipe();
 		Message input = new Message("1500");

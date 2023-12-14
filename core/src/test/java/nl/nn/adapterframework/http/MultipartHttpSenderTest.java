@@ -20,9 +20,9 @@ import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.PipeLineSession;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.stream.Message;
 
@@ -34,7 +34,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 	}
 
 	@Test
-	public void simpleMockedMultipartHttp1() throws Throwable {
+	void simpleMockedMultipartHttp1() throws Throwable {
 		MultipartHttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
@@ -64,7 +64,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 	}
 
 	@Test
-	public void simpleMockedMultipartHttp2() throws Throwable {
+	void simpleMockedMultipartHttp2() throws Throwable {
 		MultipartHttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
@@ -94,7 +94,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 	}
 
 	@Test
-	public void simpleMockedMultipartHttp3() throws Throwable {
+	void simpleMockedMultipartHttp3() throws Throwable {
 		MultipartHttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
@@ -124,7 +124,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 	}
 
 	@Test
-	public void simpleMockedMultipartMtom1() throws Throwable {
+	void simpleMockedMultipartMtom1() throws Throwable {
 		MultipartHttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
@@ -155,7 +155,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 	}
 
 	@Test
-	public void simpleMockedMultipartMtom2() throws Throwable {
+	void simpleMockedMultipartMtom2() throws Throwable {
 		MultipartHttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
@@ -186,7 +186,7 @@ public class MultipartHttpSenderTest extends HttpSenderTestBase<MultipartHttpSen
 	}
 
 	@Test
-	public void simpleMockedMultipartMtom3() throws Throwable {
+	void simpleMockedMultipartMtom3() throws Throwable {
 		MultipartHttpSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 

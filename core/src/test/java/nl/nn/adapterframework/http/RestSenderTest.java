@@ -36,7 +36,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 	}
 
 	@Test
-	public void relativeUrl() throws Throwable {
+	void relativeUrl() throws Throwable {
 		RestSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 
 		sender.setMethodType(HttpMethod.GET);
@@ -47,7 +47,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 	}
 
 	@Test
-	public void simpleMockedHttpGet() throws Throwable {
+	void simpleMockedHttpGet() throws Throwable {
 		RestSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
 
@@ -63,7 +63,7 @@ public class RestSenderTest extends HttpSenderTestBase<RestSender> {
 	}
 
 	@Test
-	public void simpleMockedHttpPost() throws Throwable {
+	void simpleMockedHttpPost() throws Throwable {
 		RestSender sender = getSender(false); //Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo this is my message");
 

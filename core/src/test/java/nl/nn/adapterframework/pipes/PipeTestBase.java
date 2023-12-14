@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -113,11 +113,11 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 				base = superClass.getSimpleName();
 			}
 		}
-		assertTrue("unable to determine ["+pipe+"] name", StringUtils.isNotEmpty(base));
+		assertTrue(StringUtils.isNotEmpty(base), "unable to determine ["+pipe+"] name");
 		String relativeUrl = FilenameUtils.normalize("/Pipes/" + base + "/" + resource, true);
 
 		URL url = PipeTestBase.class.getResource(relativeUrl);
-		assertNotNull("unable to find resource ["+resource+"] in path ["+relativeUrl+"]", url);
+		assertNotNull(url, "unable to find resource ["+resource+"] in path ["+relativeUrl+"]");
 		return new UrlMessage(url);
 	}
 }

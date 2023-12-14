@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.compression;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -10,7 +10,7 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.util.MimeType;
 
 import nl.nn.adapterframework.collection.Collection;
@@ -50,14 +50,14 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 	}
 
 	@Test
-	public void testCollectionName() throws Exception {
+	void testCollectionName() throws Exception {
 		pipe.setAction(Action.OPEN);
 		configureAndStartPipe();
 		assertEquals("zipwriterhandle", pipe.getCollectionName());
 	}
 
 	@Test
-	public void testChangeCollectionName() throws Exception {
+	void testChangeCollectionName() throws Exception {
 		pipe.setZipWriterHandle("test123");
 		pipe.setAction(Action.OPEN);
 		configureAndStartPipe();
@@ -65,7 +65,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 	}
 
 	@Test
-	public void testOpenCollection() throws Exception {
+	void testOpenCollection() throws Exception {
 		pipe.setAction(Action.OPEN);
 		configureAndStartPipe();
 
@@ -85,7 +85,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 	}
 
 	@Test
-	public void testWrite() throws Exception {
+	void testWrite() throws Exception {
 		createCollector();
 		pipe.setAction(Action.WRITE);
 		pipe.addParameter(new Parameter("filename", "fakeFilename"));
@@ -106,7 +106,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 	}
 
 	@Test
-	public void testLast() throws Exception {
+	void testLast() throws Exception {
 		createCollector();
 		pipe.setAction(Action.LAST);
 		pipe.addParameter(new Parameter("filename","fakeFilename"));
@@ -126,7 +126,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 	}
 
 	@Test
-	public void testDoubleWrite() throws Exception {
+	void testDoubleWrite() throws Exception {
 		createCollector();
 		pipe.setAction(Action.WRITE);
 		pipe.addParameter(ParameterBuilder.create().withName("filename").withSessionKey("filename"));
@@ -161,7 +161,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 	}
 
 	@Test
-	public void testWriteWithFileHeaders() throws Exception {
+	void testWriteWithFileHeaders() throws Exception {
 		pipe.setCompleteFileHeader(true);
 		createCollector();
 		pipe.setAction(Action.WRITE);
@@ -203,7 +203,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 	}
 
 	@Test
-	public void testClose() throws Exception {
+	void testClose() throws Exception {
 		createCollector();
 		pipe.setAction(Action.CLOSE);
 		configureAndStartPipe();

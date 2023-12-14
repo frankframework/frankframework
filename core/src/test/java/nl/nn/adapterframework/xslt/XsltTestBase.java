@@ -2,16 +2,16 @@ package nl.nn.adapterframework.xslt;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Properties;
 
 import org.hamcrest.core.StringContains;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.configuration.ConfigurationWarnings;
@@ -75,7 +75,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void basic() throws Exception {
+	void basic() throws Exception {
 		String styleSheetName=  "/Xslt3/orgchart.xslt";
 		String input   =TestFileUtils.getTestFile("/Xslt3/employees.xml");
 		String expected=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
@@ -88,7 +88,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void basicIndent() throws Exception {
+	void basicIndent() throws Exception {
 		String styleSheetName=  "/Xslt3/orgchart.xslt";
 		String input   =TestFileUtils.getTestFile("/Xslt3/employees.xml");
 		String expected=TestFileUtils.getTestFile("/Xslt3/orgchart.xml");
@@ -101,7 +101,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void basicNoIndent() throws Exception {
+	void basicNoIndent() throws Exception {
 		String styleSheetName=  "/Xslt3/orgchart.xslt";
 		String input   =TestFileUtils.getTestFile("/Xslt3/employees.xml");
 		String expected=TestFileUtils.getTestFile("/Xslt3/orgchart-noindent.xml");
@@ -117,7 +117,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	 * Beware, this test could fail when run multithreaded
 	 */
 	@Test
-	public void testConfigWarnings() throws ConfigurationException {
+	void testConfigWarnings() throws ConfigurationException {
 		ConfigurationWarnings warnings = getConfigurationWarnings();
 		String styleSheetName = "/Xslt3/orgchart.xslt";
 		setStyleSheetName(styleSheetName);
@@ -126,7 +126,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 		for (int i = 0; i < warnings.size(); i++) {
 			System.out.println(i + " " + warnings.get(i));
 		}
-		assertTrue("Expected at least one config warnings", warnings.size() > 0);
+		assertTrue(warnings.size()>0,"Expected at least one config warnings");
 		int nextPos = 0;//warnings.size()>4?warnings.size()-2:1;
 		assertThat(warnings.get(nextPos), StringContains.containsString("configured xsltVersion [1] does not match xslt version [2] declared in stylesheet"));
 		assertThat(warnings.get(nextPos), StringContains.containsString(styleSheetName));
@@ -141,35 +141,35 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void testSkipEmptyTagsNoOmitNoIndent() throws Exception {
+	void testSkipEmptyTagsNoOmitNoIndent() throws Exception {
 		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a></root>",false,false);
 	}
 
 	@Test
-	public void testSkipEmptyTagsNoOmitIndent() throws Exception {
+	void testSkipEmptyTagsNoOmitIndent() throws Exception {
 		String lineSeparator="\n";
 		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+lineSeparator+"<root>"+lineSeparator+"\t<a>a</a>"+lineSeparator+"</root>",false,true);
 	}
 
 	@Test
-	public void testSkipEmptyTagsOmitNoIndent() throws Exception {
+	void testSkipEmptyTagsOmitNoIndent() throws Exception {
 		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<root><a>a</a></root>",true,false);
 	}
 
 	@Test
-	public void testSkipEmptyTagsOmitIndent() throws Exception {
+	void testSkipEmptyTagsOmitIndent() throws Exception {
 		String lineSeparator="\n";
 		testSkipEmptyTags("<root><a>a</a><b></b><c/></root>","<root>"+lineSeparator+"\t<a>a</a>"+lineSeparator+"</root>",true,true);
 	}
 
 	@Test
-	public void testRemoveNamespacesNoOmitNoIndent() throws Exception {
+	void testRemoveNamespacesNoOmitNoIndent() throws Exception {
 		testRemoveNamespaces("<root xmlns=\"urn:fakenamespace\"><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false);
 	}
 
 	@Test
-	@Ignore("Indent appears not to work in combination with Streaming and RemoveNamespaces. Ignore the test for now...")
-	public void testRemoveNamespacesNoOmitIndent() throws Exception {
+	@Disabled("Indent appears not to work in combination with Streaming and RemoveNamespaces. Ignore the test for now...")
+	void testRemoveNamespacesNoOmitIndent() throws Exception {
 		String lineSeparator=System.getProperty("line.separator");
 		testRemoveNamespaces("<ns:root xmlns:ns=\"urn:fakenamespace\"><ns:a>a</ns:a><ns:b></ns:b><c/></ns:root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>"+lineSeparator+"\t<a>a</a>"+lineSeparator+"\t<b/>"+lineSeparator+"\t<c/>"+lineSeparator+"</root>",false,true);
 	}
@@ -179,12 +179,12 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void testBasicNoOmitNoIndent() throws Exception {
+	void testBasicNoOmitNoIndent() throws Exception {
 		testBasic("<root><a>a</a><b></b><c/></root>","<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><a>a</a><b/><c/></root>",false,false);
 	}
 
 	@Test
-	public void documentIncludedInSourceRelativeXslt1() throws Exception {
+	void documentIncludedInSourceRelativeXslt1() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importLookupRelative1.xsl");
 		setXsltVersion(1);
 		setRemoveNamespaces(true);
@@ -200,7 +200,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void documentIncludedInSourceRelativeXslt2() throws Exception {
+	void documentIncludedInSourceRelativeXslt2() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importLookupRelative2.xsl");
 		setXsltVersion(1);
 		setRemoveNamespaces(true);
@@ -217,7 +217,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void documentIncludedInSourceRelativeWithDynamicStylesheetXslt1() throws Exception {
+	void documentIncludedInSourceRelativeWithDynamicStylesheetXslt1() throws Exception {
 		String stylesheetname="/Xslt/importDocument/importLookupRelative1.xsl";
 		session.put("Stylesheet", stylesheetname);
 		setStyleSheetNameSessionKey("Stylesheet");
@@ -235,7 +235,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void documentIncludedInSourceRelativeWithDynamicStylesheetXslt2() throws Exception {
+	void documentIncludedInSourceRelativeWithDynamicStylesheetXslt2() throws Exception {
 		String stylesheetname="/Xslt/importDocument/importLookupRelative1.xsl";
 		session.put("Stylesheet", stylesheetname);
 		setStyleSheetNameSessionKey("Stylesheet");
@@ -253,7 +253,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void documentIncludedInSourceAbsoluteXslt1() throws Exception {
+	void documentIncludedInSourceAbsoluteXslt1() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importLookupAbsolute1.xsl");
 		setXsltVersion(1);
 		setRemoveNamespaces(true);
@@ -269,7 +269,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void documentIncludedInSourceAbsoluteXslt2() throws Exception {
+	void documentIncludedInSourceAbsoluteXslt2() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importLookupAbsolute2.xsl");
 		setXsltVersion(1);
 		setRemoveNamespaces(true);
@@ -286,7 +286,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void xPathFromParameter() throws Exception {
+	void xPathFromParameter() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 
 		pipe.addParameter(ParameterBuilder.create("source", input).withType(ParameterType.DOMDOC));
@@ -317,7 +317,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void xpathAttrText() throws Exception {
+	void xpathAttrText() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = "Euro € single quote ' double quote escaped \" newline escaped \n";
 
@@ -332,7 +332,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void xpathNodeXml() throws Exception {
+	void xpathNodeXml() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = "<g attr=\"Euro € single quote ' double quote escaped &quot; newline escaped &#10;\">Euro € single quote ' double quote \"</g>";
 
@@ -348,7 +348,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void anyXmlBasic() throws Exception {
+	void anyXmlBasic() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/Escaped2.xml");
 
@@ -365,7 +365,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void anyXmlNoMethodConfigured() throws Exception {
+	void anyXmlNoMethodConfigured() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/Escaped.xml");
 
@@ -382,7 +382,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void anyXmlIndent() throws Exception {
+	void anyXmlIndent() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/PrettyPrintedEscaped.xml");
 
@@ -400,7 +400,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void anyXmlAsText() throws Exception {
+	void anyXmlAsText() throws Exception {
 		Properties prop = System.getProperties();
 		String vendor = prop.getProperty("java.vendor");
 		System.out.println("JVM Vendor : " + vendor);
@@ -421,7 +421,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void anyXmlDisableOutputEscaping() throws Exception {
+	void anyXmlDisableOutputEscaping() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/OutputEscapingDisabled.xml");
 
@@ -436,7 +436,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void skipEmptyTagsXslt1() throws Exception {
+	void skipEmptyTagsXslt1() throws Exception {
 		String input = TestFileUtils.getTestFile("/Xslt/AnyXml/in.xml");
 		String expected = TestFileUtils.getTestFile("/Xslt/AnyXml/SkipEmptyTagsIndent.xml");
 
@@ -456,7 +456,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	}
 
 	@Test
-	public void skipEmptyTagsXslt2() throws Exception {
+	void skipEmptyTagsXslt2() throws Exception {
 		setStyleSheetName("/Xslt/AnyXml/Copy.xsl");
 		setXsltVersion(2);
 		setSkipEmptyTags(true);
