@@ -15,7 +15,7 @@
 		name="testSpringXmlPropertyResolver"
 		class="java.lang.String"
 		>
-		<constructor-arg value="nl.nn.adapterframework.jms.IbisMessageListenerContainer"/>
+		<constructor-arg value="${console.location}"/>
 	</bean>
 
 	<bean name="ibisManager" class="nl.nn.adapterframework.testutil.mock.MockIbisManager" />
