@@ -22,7 +22,7 @@
 					<row number="0">
 						<field name="MESSAGEKEY">158</field>
 						<field name="TYPE">A</field>
-						<field name="SLOTID">IFSA://NLIBIS4TEST/AwsSqsJmsFFListener</field>
+						<field name="SLOTID">FF4TEST/AwsSqsJmsFFListener</field>
 						<field name="HOST">LPZWNL000040524</field>
 						<field name="MESSAGEID">ID:c83233c2-fd84-4c9c-afbd-f29d10de0c6d</field>
 						<field name="CORRELATIONID">Test Tool correlation id(15)</field>
@@ -35,7 +35,7 @@
 					<row number="1">
 						<field name="MESSAGEKEY">157</field>
 						<field name="TYPE">L</field>
-						<field name="SLOTID">IFSA://NLIBIS4TEST/AwsSqsJmsFFSender</field>
+						<field name="SLOTID">FF4TEST/AwsSqsJmsFFSender</field>
 						<field name="HOST">LPZWNL000040524</field>
 						<field name="MESSAGEID">ID:c83233c2-fd84-4c9c-afbd-f29d10de0c6d</field>
 						<field name="CORRELATIONID">Test Tool correlation id(15)</field>
