@@ -7,38 +7,64 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeThat;
-import static org.junit.Assume.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 import java.io.StringReader;
 
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 
+import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.functional.ThrowingConsumer;
 import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
+import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.testutil.TransactionManagerType;
+import nl.nn.adapterframework.testutil.junit.DatabaseTest;
+import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
+import nl.nn.adapterframework.testutil.junit.WithLiquibase;
 
-public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
+@WithLiquibase(tableName = FixedQuerySenderTest.tableName, file = "Migrator/JdbcTestBaseQuery.xml")
+public class FixedQuerySenderTest {
 
-	private final String resultColumnsReturned = "<result><rowset><row number=\"0\"><field name=\"TKEY\">1</field><field name=\"TVARCHAR\">value</field></row></rowset></result>";
+	private FixedQuerySender fixedQuerySender;
+	protected static final String tableName = "FQS_TABLE";
 
-	@Override
-	public FixedQuerySender createSender() throws Exception {
-		FixedQuerySender sender = new FixedQuerySender();
-		sender.setIncludeFieldDefinition(false);
-		return sender;
+	private JdbcTransactionalStorage<Serializable> storage;
+
+	private PipeLineSession session = new PipeLineSession();
+
+	@DatabaseTest.Parameter(0)
+	private TransactionManagerType transactionManagerType;
+
+	@DatabaseTest.Parameter(1)
+	private String dataSourceName;
+
+	private TestConfiguration getConfiguration() {
+		return transactionManagerType.getConfigurationContext(dataSourceName);
 	}
 
-	private void assertSenderException(SenderException ex) {
-		switch (getDataSourceName()) {
+	@BeforeEach
+	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+
+		fixedQuerySender = new FixedQuerySender();
+		fixedQuerySender.setDatasourceName(dataSourceName);
+		fixedQuerySender.setName("FQS_TABLE");
+		getConfiguration().autowireByName(fixedQuerySender);
+
+		getConfiguration().getIbisManager();
+		getConfiguration().autowireByName(fixedQuerySender);
+	}
+
+	private void assertSenderException(String dataSourceName, SenderException ex) {
+		switch (dataSourceName) {
 			case "H2":
 				assertThat(ex.getMessage(), containsString("Syntax error in SQL statement"));
 				break;
@@ -66,213 +92,214 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 	private void assertColumnsReturned(Message response) throws Exception {
 		String result = response.asString();
 
+		String resultColumnsReturned = "<result><fielddefinition><field name=\"TKEY\" type=\"BIGINT\" columnDisplaySize=\"20\" precision=\"64\" scale=\"0\" isCurrency=\"false\" columnTypeName=\"BIGINT\" columnClassName=\"java.lang.Long\"/><field name=\"TVARCHAR\" type=\"VARCHAR\" columnDisplaySize=\"100\" precision=\"100\" scale=\"0\" isCurrency=\"false\" columnTypeName=\"CHARACTER VARYING\" columnClassName=\"java.lang.String\"/></fielddefinition><rowset><row number=\"0\"><field name=\"TKEY\">1</field><field name=\"TVARCHAR\">value</field></row></rowset></result>";
 		assertEquals(resultColumnsReturned, result);
 	}
 
-	@Test
+	@DatabaseTest
 	public void testNamedParametersTrue() throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', ?{namedParam1})");
-		sender.addParameter(new Parameter("namedParam1", "value"));
-		sender.setUseNamedParams(true);
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?{namedParam1})");
+		fixedQuerySender.addParameter(new Parameter("namedParam1", "value"));
+		fixedQuerySender.setUseNamedParams(true);
 
-		sender.configure();
-		sender.open();
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
-		Message result = sendMessage("dummy");
+		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testNamedParameters() throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', ?{param})");
-		sender.addParameter(new Parameter("param", "value"));
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
+		fixedQuerySender.addParameter(new Parameter("param", "value"));
 
-		sender.configure();
-		assertTrue(sender.getUseNamedParams());
-		sender.open();
+		fixedQuerySender.configure();
+		assertTrue(fixedQuerySender.getUseNamedParams());
+		fixedQuerySender.open();
 
-		Message result = sendMessage("dummy");
+		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testUseNamedParametersStringValueContains_unp_start() throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('3', '?{param}')");
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('3', '?{param}')");
 
-		sender.configure();
-		sender.open();
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
-		Message result = sendMessage("dummy");
+		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 
-		sender.setQuery("SELECT tVARCHAR FROM "+JdbcTestBase.TEST_TABLE+" WHERE tKEY='3'");
-		sender.setQueryType("select");
-		sender.setScalar(true);
+		fixedQuerySender.setQuery("SELECT tVARCHAR FROM " + tableName + " WHERE tKEY='3'");
+		fixedQuerySender.setQueryType("select");
+		fixedQuerySender.setScalar(true);
 
-		result = sendMessage("dummy");
+		result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 
 		assertEquals("?{param}", result.asString());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testUseNamedParametersStringValueContains_unp_start_resolveParam() throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', '?{param}')");
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', '?{param}')");
 
-		sender.addParameter(new Parameter("param", "value"));
+		fixedQuerySender.addParameter(new Parameter("param", "value"));
 
-		sender.configure();
-		sender.open();
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
-		assertThrows(SenderException.class, () -> sendMessage("dummy"));
+		assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testUseNamedParametersWithoutNamedParam() throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', 'text')");
-		sender.setUseNamedParams(true);
-		sender.configure();
-		sender.open();
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', 'text')");
+		fixedQuerySender.setUseNamedParams(true);
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
-		Message result = sendMessage("dummy");
+		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
 
-	@Test
-	public void testUseNamedParametersWithoutParam() throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', ?{param})");
-		sender.setUseNamedParams(true);
-		sender.configure();
-		sender.open();
+	@DatabaseTest
+	public void testUseNamedParametersWithoutParam(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
+		fixedQuerySender.setUseNamedParams(true);
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
-		SenderException ex = assertThrows(SenderException.class, () -> sendMessage("dummy"));
+		SenderException ex = assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
 
-		assertSenderException(ex);
+		assertSenderException(databaseTestEnvironment.getDataSourceName(), ex);
 	}
 
-	@Test
-	public void testNamedParamInQueryFlagFalse() throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', ?{param})");
-		sender.setUseNamedParams(false);
-		sender.configure();
-		sender.open();
+	@DatabaseTest
+	public void testNamedParamInQueryFlagFalse(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
+		fixedQuerySender.setUseNamedParams(false);
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
-		SenderException ex = assertThrows(SenderException.class, () -> sendMessage("dummy"));
+		SenderException ex = assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
 
-		assertSenderException(ex);
+		assertSenderException(databaseTestEnvironment.getDataSourceName(), ex);
 	}
 
-	@Test
-	public void testIncompleteNamedParamInQuery() throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', ?{param)");
-		sender.configure();
-		sender.open();
+	@DatabaseTest
+	public void testIncompleteNamedParamInQuery(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?{param)");
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
-		SenderException ex = assertThrows(SenderException.class, () -> sendMessage("dummy") );
+		SenderException ex = assertThrows(SenderException.class, () -> fixedQuerySender.sendMessage(new Message("dummy"), session));
 
-		assertSenderException(ex);
+		assertSenderException(databaseTestEnvironment.getDataSourceName(), ex);
 	}
 
-	@Test
+	@DatabaseTest
 	public void testMultipleColumnsReturnedWithSpaceBetween() throws Exception {
-		assumeThat(productKey, anyOf(is("H2"),is("Oracle")));
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', ?)");
-		sender.addParameter(new Parameter("param1", "value"));
+		assertThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?)");
+		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
-		sender.setColumnsReturned("tKEY, tVARCHAR");
+		fixedQuerySender.setColumnsReturned("tKEY, tVARCHAR");
 
-		sender.configure();
-		sender.open();
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
-		Message result=sendMessage("dummy");
+		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertColumnsReturned(result);
 	}
 
-	@Test
+	@DatabaseTest
 	public void testMultipleColumnsReturnedWithDoubleSpace() throws Exception {
-		assumeThat(productKey, anyOf(is("H2"),is("Oracle")));
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', ?)");
-		sender.addParameter(new Parameter("param1", "value"));
+		assertThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?)");
+		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
-		sender.setColumnsReturned("  tKEY,  tVARCHAR  ");
+		fixedQuerySender.setColumnsReturned("  tKEY,  tVARCHAR  ");
 
-		sender.configure();
-		sender.open();
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
-		Message result=sendMessage("dummy");
+		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertColumnsReturned(result);
 	}
 
-	@Test
+	@DatabaseTest
 	public void testMultipleColumnsReturned() throws Exception {
-		assumeThat(productKey, anyOf(is("H2"),is("Oracle")));
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tVARCHAR) VALUES ('1', ?)");
-		sender.addParameter(new Parameter("param1", "value"));
+		assertThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?)");
+		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
-		sender.setColumnsReturned("tKEY,tVARCHAR");
-		sender.configure();
-		sender.open();
+		fixedQuerySender.setColumnsReturned("tKEY,tVARCHAR");
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
-		Message result=sendMessage("dummy");
+		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertColumnsReturned(result);
 	}
 
-	@Test
+	@DatabaseTest
 	public void testAddMonth() throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tDATE) VALUES ('1', ADD_MONTHS(SYSTIMESTAMP,?))");
-		sender.addParameter(ParameterBuilder.create("param", "7").withType(ParameterType.INTEGER));
-		sender.setSqlDialect("Oracle");
-		sender.configure();
-		sender.open();
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tDATE) VALUES ('1', ADD_MONTHS(SYSTIMESTAMP,?))");
+		fixedQuerySender.addParameter(ParameterBuilder.create("param", "7").withType(Parameter.ParameterType.INTEGER));
+		fixedQuerySender.setSqlDialect("Oracle");
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
-		Message result=sendMessage("dummy");
+		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
 
 
 	public void testOutputFormat(DocumentFormat outputFormat, boolean includeFieldDefinition, ThrowingConsumer<String, Exception> asserter) throws Exception {
-		assumeTrue(getDataSourceName().equals("H2"));
-		sender.setQuery("SELECT COUNT(*) as CNT, 'string' as STR, 5 as NUM, null as NULLCOL FROM "+JdbcTestBase.TEST_TABLE+" WHERE 1=0");
-		sender.setOutputFormat(outputFormat);
-		sender.setIncludeFieldDefinition(includeFieldDefinition);
-		sender.setQueryType("select");
-		sender.configure();
-		sender.open();
+		assumeTrue(dataSourceName.equals("H2"));
+		fixedQuerySender.setQuery("SELECT COUNT(*) as CNT, 'string' as STR, 5 as NUM, null as NULLCOL FROM " + tableName + " WHERE 1=0");
+		fixedQuerySender.setOutputFormat(outputFormat);
+		fixedQuerySender.setIncludeFieldDefinition(includeFieldDefinition);
+		fixedQuerySender.setQueryType("select");
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
-		Message result = sendMessage("dummy");
+		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		asserter.accept(result.asString());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testOutputFormatDefault() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default.xml");
 		testOutputFormat(null, true, r-> assertXmlEquals(expected, r));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testOutputFormatXml() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml.xml");
 		testOutputFormat(DocumentFormat.XML, true, r-> assertXmlEquals(expected, r));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testOutputFormatJson() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json.json");
 		testOutputFormat(DocumentFormat.JSON, true, r-> assertJsonEquals(expected, r));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testOutputFormatDefaultNoFieldDefinitions() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default-nofielddef.xml");
 		testOutputFormat(null, false, r-> assertXmlEquals(expected, r));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testOutputFormatXmlNoFieldDefinitions() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml-nofielddef.xml");
-		testOutputFormat(DocumentFormat.XML, false, r-> assertXmlEquals(expected, r));
+		testOutputFormat(DocumentFormat.XML, false, r -> assertXmlEquals(expected, r));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testOutputFormatJsonNoFieldDefinitions() throws Exception {
 		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json-nofielddef.json");
 		testOutputFormat(DocumentFormat.JSON, false, r-> assertJsonEquals(expected, r));
@@ -290,30 +317,30 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		return result.toString();
 	}
 
-	@Test
+	@DatabaseTest
 	public void testParameterTypeDefault() throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tCLOB) VALUES ('1', ?)");
-		sender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob"));
-		sender.setSqlDialect("Oracle");
-		sender.configure();
-		sender.open();
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tCLOB) VALUES ('1', ?)");
+		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob"));
+		fixedQuerySender.setSqlDialect("Oracle");
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
 		String block = getLongString(10);
 
 		session.put("clob", new Message(new StringReader(block)));
 
-		Message result=sendMessage("dummy");
+		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testParameterTypeLobStream() throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
-		sender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(ParameterType.CHARACTER));
-		sender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(ParameterType.BINARY));
-		sender.setSqlDialect("Oracle");
-		sender.configure();
-		sender.open();
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
+		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(Parameter.ParameterType.CHARACTER));
+		fixedQuerySender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(Parameter.ParameterType.BINARY));
+		fixedQuerySender.setSqlDialect("Oracle");
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
 		String block = getLongString(10000);
 
@@ -321,18 +348,18 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		session.put("blob", new Message(new ByteArrayInputStream(block.getBytes())));
 		session.put("varchar", new Message(new ByteArrayInputStream(block.getBytes())));
 
-		Message result=sendMessage("dummy");
+		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testParameterTypeLobArray() throws Exception {
-		sender.setQuery("INSERT INTO "+JdbcTestBase.TEST_TABLE+" (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
-		sender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(ParameterType.CHARACTER));
-		sender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(ParameterType.BINARY));
-		sender.setSqlDialect("Oracle");
-		sender.configure();
-		sender.open();
+		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
+		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(Parameter.ParameterType.CHARACTER));
+		fixedQuerySender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(Parameter.ParameterType.BINARY));
+		fixedQuerySender.setSqlDialect("Oracle");
+		fixedQuerySender.configure();
+		fixedQuerySender.open();
 
 		String block = getLongString(1000);
 
@@ -340,10 +367,7 @@ public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 		session.put("blob", new Message(block.getBytes()));
 		session.put("varchar", new Message(block.getBytes()));
 
-		Message result=sendMessage("dummy");
+		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 	}
-
-
-
 }

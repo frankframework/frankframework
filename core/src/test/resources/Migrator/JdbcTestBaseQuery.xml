@@ -1,0 +1,33 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+	<changeSet id="IAF_Util:1:${tableName}" author="Niels Meijer">
+		<comment>Add ${tableName} Table</comment>
+		<createTable tableName="${tableName}">
+			<column name="tKEY" type="BIGINT">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_${tableName}"/>
+			</column>
+			<column name="tVARCHAR" type="java.sql.Types.VARCHAR(100)"/>
+			<column name="tINT" type="java.sql.Types.INTEGER"/>
+			<column name="tNUMBER" type="java.sql.Types.NUMERIC(10, 5)"/>
+			<column name="tDATE" type="DATE"/>
+			<column name="tDATETIME" type="DATETIME"/>
+			<column name="tBOOLEAN" type="java.sql.Types.BOOLEAN"/>
+			<column name="tCLOB" type="CLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
+			<column name="tBLOB" type="LONGBLOB"/>
+		</createTable>
+		<createIndex tableName="${tableName}" indexName="IX_${tableName}">
+			<column name="tKEY"/>
+		</createIndex>
+		<createIndex tableName="${tableName}" indexName="IX_${tableName}_02">
+			<column name="tINT"/>
+			<column name="tDATE"/>
+		</createIndex>
+	</changeSet>
+	<changeSet id="IAF_Util:2:${tableName}" author="Niels Meijer" onValidationFail="MARK_RAN">
+		<comment>Set sequence for ${tableName} Table</comment>
+		<createSequence sequenceName="SEQ_${tableName}" startValue="161332"/>
+	</changeSet>
+</databaseChangeLog>
