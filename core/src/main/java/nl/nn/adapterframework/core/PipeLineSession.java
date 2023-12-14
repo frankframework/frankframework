@@ -18,7 +18,6 @@ package nl.nn.adapterframework.core;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
