@@ -44,11 +44,13 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.util.JdbcUtil;
 
-class StoredProcedureResultWrapper implements ResultSet {
+public class StoredProcedureResultWrapper implements ResultSet {
 
+	@Nonnull private final IDbmsSupport dbmsSupport;
 	@Nonnull private final CallableStatement delegate;
 	@Nonnull private final ParameterMetaData parameterMetaData;
 	@Nonnull private final List<Map.Entry<Integer, Parameter>> parameterPositions;
@@ -62,7 +64,10 @@ class StoredProcedureResultWrapper implements ResultSet {
 	 * @param delegate The {@link CallableStatement} to be wrapped
 	 * @param parameterPositions The position of each output-parameter in the overal list of stored procedure parameters
 	 */
-	StoredProcedureResultWrapper(@Nonnull CallableStatement delegate, @Nonnull ParameterMetaData parameterMetaData, @Nonnull Map<Integer, Parameter> parameterPositions) {
+	public StoredProcedureResultWrapper(
+			@Nonnull IDbmsSupport dbmsSupport,
+			@Nonnull CallableStatement delegate, @Nonnull ParameterMetaData parameterMetaData, @Nonnull Map<Integer, Parameter> parameterPositions) {
+		this.dbmsSupport = dbmsSupport;
 		this.delegate = delegate;
 		this.parameterMetaData = parameterMetaData;
 		this.parameterPositions = parameterPositions.entrySet()
@@ -1049,13 +1054,10 @@ class StoredProcedureResultWrapper implements ResultSet {
 				.orElseThrow(() -> new SQLException("Cannot find parameter with label [" + columnLabel + "]"));
 	}
 
-	private SQLType getSqlType(final int column) {
-		return JdbcUtil.mapParameterTypeToSqlType(parameterPositions.get(column - 1).getValue().getType());
-	}
-
 	private class MyResultSetMetaData implements ResultSetMetaData {
 
-		public MyResultSetMetaData() {
+		private SQLType getSqlType(final int column) {
+			return JdbcUtil.mapParameterTypeToSqlType(dbmsSupport, parameterPositions.get(column - 1).getValue().getType());
 		}
 
 		@Override

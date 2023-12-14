@@ -32,12 +32,12 @@ import java.util.regex.Pattern;
 
 import javax.jms.JMSException;
 
-import nl.nn.adapterframework.dbms.JdbcException;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.parameters.ParameterList;
 import nl.nn.adapterframework.pipes.Base64Pipe;
@@ -71,6 +71,10 @@ import nl.nn.adapterframework.util.JdbcUtil;
  */
 public class StoredProcedureQuerySender extends FixedQuerySender {
 
+	/**
+	 * All stored procedure OUT parameters indexed by their position
+	 * in the query parameter list (1-based).
+	 */
 	private Map<Integer, Parameter> outputParameters;
 
 	@Override
@@ -94,10 +98,8 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		}
 
 		outputParameters = buildOutputParameterMap(getParameterList(), getQuery());
-		if (!outputParameters.isEmpty()) {
-			if (!getDbmsSupport().isStoredProcedureOutParametersSupported()) {
-				throw new ConfigurationException("Stored Procedure OUT parameters are not supported for database " + getDbmsSupport().getDbmsName());
-			}
+		if (!outputParameters.isEmpty() && (!getDbmsSupport().isStoredProcedureOutParametersSupported())) {
+			throw new ConfigurationException("Stored Procedure OUT parameters are not supported for database " + getDbmsSupport().getDbmsName());
 		}
 
 		if (isScalar() && outputParameters.size() > 1) {
@@ -109,6 +111,14 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		}
 	}
 
+	/**
+	 * Build a map of all output-parameters for the stored procedure, indexed by
+	 * their parameter-position (1-based) in the parameter list of the call.
+	 *
+	 * @param parameterList Full list of all parameters configured on the StoredProcedureSender.
+	 * @param query The query that is configured
+	 * @return Output-parameters indexed by position in the query parameter-list.
+	 */
 	private Map<Integer, Parameter> buildOutputParameterMap(ParameterList parameterList, String query) {
 		if (parameterList == null) {
 			return Collections.emptyMap();
@@ -153,9 +163,8 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			if (getDbmsSupport().canFetchStatementParameterMetaData()) {
 				typeNr = parameterMetaData.getParameterType(position);
 			} else {
-				typeNr = JdbcUtil.mapParameterTypeToSqlType(param.getType()).getVendorTypeNumber();
+				typeNr = JdbcUtil.mapParameterTypeToSqlType(getDbmsSupport(), param.getType()).getVendorTypeNumber();
 			}
-			callableStatement.setNull(position, typeNr);
 			callableStatement.registerOutParameter(position, typeNr);
 		}
 		return callableStatement;
@@ -168,15 +177,26 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 
 	@Override
 	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, String resultQuery, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
-		Message result = super.executeOtherQuery(connection, statement, query, resultQuery, resStmt, message, session, parameterList);
-		if (outputParameters.isEmpty()) {
-			return result;
-		}
 		try {
-			return getResult(new StoredProcedureResultWrapper((CallableStatement) statement, statement.getParameterMetaData(), outputParameters));
+			CallableStatement callableStatement = (CallableStatement) statement;
+			boolean alsoGetResultSets = callableStatement.execute();
+			return getResult(callableStatement, alsoGetResultSets, resultQuery, resStmt);
 		} catch (JdbcException | JMSException | IOException | SQLException e) {
 			throw new SenderException(e);
 		}
+	}
+
+	private Message getResult(CallableStatement callableStatement, boolean alsoGetResultSets, String resultQuery, PreparedStatement resStmt) throws SQLException, JMSException, IOException, JdbcException {
+		if (outputParameters.isEmpty() && !alsoGetResultSets) {
+			return getUpdateStatementResult(callableStatement, resultQuery, resStmt, callableStatement.getUpdateCount());
+		}
+		if (isScalar() || isScalarExtended()) {
+			return getResult(new StoredProcedureResultWrapper(getDbmsSupport(), callableStatement, callableStatement.getParameterMetaData(), outputParameters));
+		}
+
+		DB2XMLWriter db2xml = buildDb2XMLWriter();
+		String result = db2xml.getXML(getDbmsSupport(), callableStatement, alsoGetResultSets, outputParameters, getMaxRows(), isIncludeFieldDefinition());
+		return Message.asMessage(result);
 	}
 
 	/**

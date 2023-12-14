@@ -224,8 +224,10 @@ public class Parameter implements IConfigurable, IWithParameters {
 		 * When applied as a JDBC parameter, the method setCharacterStream() or setString() is used */
 		CHARACTER,
 
-		/** (Used in larva only) Converts a List to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
-		@Deprecated LIST,
+		/**
+		 * TODO: StoredProcedure OUT parameters when the type is a CURSOR or REFCURSOR
+		 * (Used in larva only) Converts a List to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
+		LIST,
 
 		/** (Used in larva only) Converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
 		@Deprecated MAP;
