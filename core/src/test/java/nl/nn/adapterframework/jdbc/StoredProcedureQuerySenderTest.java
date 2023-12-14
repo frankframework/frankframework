@@ -206,6 +206,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		String clobValue = getClobValueAsString(id);
 		assertEquals(TEST_DATA_STRING, clobValue);
 	}
+
 	@Test
 	public void testSimpleStoredProcedureClobInputParameter2() throws Exception {
 		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL", "DB2")));
