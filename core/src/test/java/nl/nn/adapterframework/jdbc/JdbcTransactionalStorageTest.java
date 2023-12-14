@@ -200,12 +200,12 @@ public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 
 	@Test
 	public void testRetrieveObjectWithADifferentColumnNotCompressed() throws Exception {
-		assertThrows(JdbcException.class, () -> testRetrieveObjectWithADifferentColumnHelper(false));
+		assertThrows(JdbcException.class, () -> testRetrieveObjectWithADifferentColumnHelper(false), "unknown compression method");
 	}
 
 	@Test
 	public void testRetrieveObjectWithADifferentColumn() throws Exception {
-		assertThrows(JdbcException.class, () -> testRetrieveObjectWithADifferentColumnHelper(true));
+		assertThrows(JdbcException.class, () -> testRetrieveObjectWithADifferentColumnHelper(true), "invalid stream header");
 	}
 
 	public void testRetrieveObjectWithADifferentColumnHelper(boolean blobsCompressed) throws Exception {
