@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8.4">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.8.5">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -13805,7 +13805,7 @@
       <xs:element name="ZipWriterPipe">
         <xs:annotation>
           <xs:documentation>Pipe that creates a ZipStream.
- 
+
  For action=open, the Pipe will create a new zip, that will be written to a file or stream specified by the input message, that must be a:&lt;ul&gt;
  &lt;li&gt;String specifying a filename&lt;/li&gt;
  &lt;li&gt;OutputStream&lt;/li&gt;
