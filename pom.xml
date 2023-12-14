@@ -167,11 +167,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ibissource</groupId>
-				<artifactId>ibis-adapterframework-ifsa</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.ibissource</groupId>
 				<artifactId>ibis-adapterframework-tibco</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -599,7 +594,6 @@
 				<version>2.0.0</version>
 				<configuration>
 					<excludedModules>
-						<excludedModule>ibis-adapterframework-ifsa</excludedModule>
 						<excludedModule>ibis-adapterframework-sap</excludedModule>
 						<excludedModule>ibis-adapterframework-tibco</excludedModule>
 						<excludedModule>ibis-adapterframework-idin</excludedModule>
@@ -1289,7 +1283,6 @@
 				</property>
 			</activation>
 			<modules>
-				<module>ifsa</module>
 				<module>sap</module>
 				<module>tibco</module>
 				<module>idin</module>

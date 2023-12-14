@@ -38,7 +38,7 @@ import nl.nn.adapterframework.soap.WsdlGeneratorUtils;
 
 /**
  * XmlValidator that will automatically add the SOAP envelope XSD and the ESB XSD (e.g. a CommonMessageHeader.xsd)
- * to the set of XSD's used for validation.
+ * to the set of XSDs used for validation.
  *
  * @author Michiel Meeuwissen
  * @author Jaco de Groot

@@ -50,11 +50,6 @@
     <ClassName>nl.nn.adapterframework.http.HttpListener</ClassName>
   </Element>
   <Element>
-    <Name>IfsaSimulatorJmsListener</Name>
-    <Type>listener</Type>
-    <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsListener</ClassName>
-  </Element>
-  <Element>
     <Name>JavaListener</Name>
     <Type>listener</Type>
     <ClassName>nl.nn.adapterframework.receivers.JavaListener</ClassName>
@@ -253,11 +248,6 @@
     <Name>IbisWebServiceSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.http.IbisWebServiceSender</ClassName>
-  </Element>
-  <Element>
-    <Name>IfsaSimulatorJmsSender</Name>
-    <Type>sender</Type>
-    <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsSender</ClassName>
   </Element>
   <Element>
     <Name>JavascriptSender</Name>
@@ -1118,11 +1108,6 @@
     <Name>IbisWebServiceErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.http.IbisWebServiceSender</ClassName>
-  </Element>
-  <Element>
-    <Name>IfsaSimulatorJmsErrorSender</Name>
-    <Type>errorSender</Type>
-    <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsSender</ClassName>
   </Element>
   <Element>
     <Name>JavascriptErrorSender</Name>
