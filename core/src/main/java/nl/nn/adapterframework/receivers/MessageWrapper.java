@@ -63,7 +63,6 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		this.message = message;
 		this.context.putAll(rawMessageWrapper.getContext());
 		this.context.remove(PipeLineSession.ORIGINAL_MESSAGE_KEY);
-		this.context.remove("originalRawMessage");
 	}
 
 	/*

@@ -75,10 +75,8 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	private @Getter @Setter PlatformTransactionManager txManager;
 	private @Setter BeanFactory beanFactory;
 	private @Getter DefaultMessageListenerContainer jmsContainer;
-	private @Getter @Setter String messageListenerClassName;
 
 	public static final int DEFAULT_CACHE_LEVEL_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
-//	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_CONSUMER;
 	public static final int DEFAULT_CACHE_LEVEL_NON_TRANSACTED=DefaultMessageListenerContainer.CACHE_NONE;
 
 	public static final int IDLE_TASK_EXECUTION_LIMIT=1000;
@@ -97,15 +95,6 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 	private @Getter @Setter long lastPollFinishedTime;
 	private long pollGuardInterval;
 	private Timer pollGuardTimer;
-
-	protected DefaultMessageListenerContainer createMessageListenerContainer() throws ConfigurationException {
-		try {
-			Class<?> klass = Class.forName(messageListenerClassName);
-			return (DefaultMessageListenerContainer) klass.newInstance();
-		} catch (Exception e) {
-			throw new ConfigurationException(getLogPrefix()+"error creating instance of MessageListenerContainer ["+messageListenerClassName+"]", e);
-		}
-	}
 
 	/* (non-Javadoc)
 	 * @see nl.nn.adapterframework.configuration.IListenerConnector#configureReceiver(nl.nn.adapterframework.jms.PushingJmsListener)
@@ -132,12 +121,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		// call afterPropertiesSet() on the object which will validate
 		// that all required properties are set before we get a chance
 		// to insert our dynamic values from the config. file.
-		jmsContainer = createMessageListenerContainer();
-
-		if (jmsContainer instanceof IbisMessageListenerContainer) {
-			IbisMessageListenerContainer ibisMessageListenerContainer = (IbisMessageListenerContainer)jmsContainer;
-			ibisMessageListenerContainer.setCredentialFactory(credentialFactory);
-		}
+		jmsContainer = new IbisMessageListenerContainer();
+		IbisMessageListenerContainer ibisMessageListenerContainer = (IbisMessageListenerContainer)jmsContainer;
+		ibisMessageListenerContainer.setCredentialFactory(credentialFactory);
 
 		if (getReceiver().isTransacted()) {
 			log.debug("{} setting transaction manager to [{}]", this::getLogPrefix, ()->txManager);
@@ -155,7 +141,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 			log.debug("{} setting no transaction manager", this::getLogPrefix);
 		}
 		if (sessionTransacted) {
-			jmsContainer.setSessionTransacted(sessionTransacted);
+			jmsContainer.setSessionTransacted(true);
 		}
 		if (StringUtils.isNotEmpty(messageSelector)) {
 			jmsContainer.setMessageSelector(messageSelector);

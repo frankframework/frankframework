@@ -164,6 +164,13 @@ import nl.nn.adapterframework.util.XmlUtils;
  * <tr><td>{@link #setBisServiceName(String) bisServiceName}</td><td>(only used when direction=wrap) name of the bis service; used in the bis error response</td><td>&nbsp;</td></tr>
  * <tr><td>{@link #setBisActionName(String) bisActionName}</td><td>(only used when direction=wrap) name of the bis operation; used in the bis error response</td><td>&nbsp;</td></tr>
  * </table></p>
+ * <p><b>The following attributes are created for the purpose of the migration from IFSA to TIBCO (and will be removed afterwards):</b>
+ * <table border="1">
+ * <tr><th>attributes</th><th>description</th><th>default</th></tr>
+ * <tr><td>{@link #setRemoveOutputNamespaces(boolean) removeOutputNamespaces}</td><td>(only used when direction=unwrap) when set <code>true</code> namespaces (and prefixes) in the output are removed</td><td>false</td></tr>
+ * <tr><td>{@link #setOmitResult(boolean) omitResult}</td><td>(only used when direction=wrap) when <code>true</code>, the Result is omitted and instead of Result/Status 'ERROR' a PipeRunException is thrown</td><td><code>false</code></td></tr>
+ * <tr><td>{@link #setAddOutputNamespace(boolean) addOutputNamespace}</td><td>(only used when direction=unwrap) when set <code>true</code> the <code>outputNamespace</code> is added to the output root element in the SOAP body</td><td>false</td></tr>
+ * </table></p>
  * @author Peter Leeuwenburgh
  * @deprecated Please replace with nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe (not 1:1)
  */
