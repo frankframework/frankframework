@@ -6,8 +6,6 @@ import static org.junit.Assert.fail;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
-
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.PropertyUtil;

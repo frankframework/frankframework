@@ -1,15 +1,15 @@
 package nl.nn.adapterframework.http.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
@@ -21,18 +21,18 @@ public class ApiServiceDispatcherTest {
 	private ApiServiceDispatcher dispatcher = null;
 	private final int amount = 100;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		dispatcher = new ApiServiceDispatcher();
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() {
 		dispatcher = null;
 	}
 
 	@Test
-	public void testAddManyConcurrentSimultaneousListeners() throws InterruptedException {
+	void testAddManyConcurrentSimultaneousListeners() throws InterruptedException {
 		List<Thread> list = new ArrayList<>();
 
 		// Spin up many simultaneous threads to 'bomb' the dispatcher with many concurrent requests
@@ -91,7 +91,7 @@ public class ApiServiceDispatcherTest {
 	}
 
 	@Test
-	public void testMultipleMethodsSameEndpoint() throws Exception {
+	void testMultipleMethodsSameEndpoint() throws Exception {
 		String uri = "testEndpoint1";
 		dispatcher.registerServiceClient(createServiceClient(Methods.GET, uri));
 		dispatcher.registerServiceClient(createServiceClient(Methods.POST, uri));

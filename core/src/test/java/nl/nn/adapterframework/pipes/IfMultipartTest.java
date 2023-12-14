@@ -1,12 +1,12 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -15,7 +15,7 @@ import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
 
 /**
- * 
+ *
  * IfMultipart Tester.
  *
  * @author <Sina Sen>
@@ -24,7 +24,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart> {
 
 	private MockHttpServletRequest request;
 
-	@Before
+	@BeforeEach
 	public void before() {
 		request = new MockHttpServletRequest();
 		MockitoAnnotations.initMocks(this);
@@ -36,7 +36,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart> {
 	}
 
 	@Test
-	public void testInputNullElseForwardNull() throws Exception {
+	void testInputNullElseForwardNull() throws Exception {
 		pipe.setElseForwardName(null);
 		configureAndStartPipe();
 
@@ -45,7 +45,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart> {
 	}
 
 	@Test
-	public void testInputNotHTTPRequest() throws Exception {
+	void testInputNotHTTPRequest() throws Exception {
 		configureAndStartPipe();
 
 		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "i am a string not a http req", session));
@@ -53,7 +53,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart> {
 	}
 
 	@Test
-	public void testRequestUsesElseForward() throws Exception {
+	void testRequestUsesElseForward() throws Exception {
 		PipeForward forw = new PipeForward("custom_else", "random/path");
 		pipe.registerForward(forw);
 		pipe.setElseForwardName("custom_else");
@@ -65,7 +65,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart> {
 	}
 
 	@Test
-	public void testRequestUsesThenForward() throws Exception {
+	void testRequestUsesThenForward() throws Exception {
 		request.setContentType("multipartofx");
 		pipe.setThenForwardName("success");
 		configureAndStartPipe();
@@ -76,7 +76,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart> {
 	}
 
 	@Test
-	public void testRequestContentTypeWrong() throws Exception {
+	void testRequestContentTypeWrong() throws Exception {
 		request.setContentType("aamultipartofx");
 		pipe.setThenForwardName("success");
 		configureAndStartPipe();
@@ -85,7 +85,7 @@ public class IfMultipartTest extends PipeTestBase<IfMultipart> {
 	}
 
 	@Test
-	public void testCannotFindForward() throws Exception {
+	void testCannotFindForward() throws Exception {
 		pipe.setElseForwardName("elsee");
 		configureAndStartPipe();
 

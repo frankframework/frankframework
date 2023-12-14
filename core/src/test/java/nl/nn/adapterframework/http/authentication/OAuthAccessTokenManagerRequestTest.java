@@ -1,15 +1,14 @@
 package nl.nn.adapterframework.http.authentication;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.apache.http.Header;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 
@@ -29,7 +28,7 @@ public class OAuthAccessTokenManagerRequestTest {
 
 
 	@Test
-	public void testRetrieveAccessTokenWithClientCredentialsGrantInRequestParameters() throws Exception {
+	void testRetrieveAccessTokenWithClientCredentialsGrantInRequestParameters() throws Exception {
 		Credentials credentials = new UsernamePasswordCredentials("fakeCredentialUserName", "fakeCredentialPassword");
 
 		tokenManager = new TestableOAuthAccessTokenManager(true, false);
@@ -49,7 +48,7 @@ public class OAuthAccessTokenManagerRequestTest {
 	}
 
 	@Test
-	public void testRetrieveAccessTokenWithClientCredentialsGrantInBasicAuthentication() throws Exception {
+	void testRetrieveAccessTokenWithClientCredentialsGrantInBasicAuthentication() throws Exception {
 		Credentials credentials = new UsernamePasswordCredentials("fakeCredentialUserName", "fakeCredentialPassword");
 
 		tokenManager = new TestableOAuthAccessTokenManager(true, true);
@@ -69,7 +68,7 @@ public class OAuthAccessTokenManagerRequestTest {
 	}
 
 	@Test
-	public void testRetrieveAccessTokenWithResourceOwnerPasswordGrantUsingRequestParameters() throws Exception {
+	void testRetrieveAccessTokenWithResourceOwnerPasswordGrantUsingRequestParameters() throws Exception {
 		Credentials credentials = new UsernamePasswordCredentials("fakeCredentialUserName", "fakeCredentialPassword");
 
 		tokenManager = new TestableOAuthAccessTokenManager(false, false);
@@ -87,8 +86,9 @@ public class OAuthAccessTokenManagerRequestTest {
 		assertEquals("password=fakeCredentialPassword&grant_type=password&username=fakeCredentialUserName&scope=email&client_id=fakeClientId&client_secret=fakeClientSecret", StreamUtil.streamToString(apacheRequest.getEntity().getContent(), "\n", "UTF-8"));
 		assertEquals("[Content-Type: text/plain; charset=ISO-8859-1,Content-Length: 149,Chunked: false]", apacheRequest.getEntity().toString());
 	}
+
 	@Test
-	public void testRetrieveAccessTokenWithResourceOwnerPasswordGrantUsingBasicAuthentication() throws Exception {
+	void testRetrieveAccessTokenWithResourceOwnerPasswordGrantUsingBasicAuthentication() throws Exception {
 		Credentials credentials = new UsernamePasswordCredentials("fakeCredentialUserName", "fakeCredentialPassword");
 
 		tokenManager = new TestableOAuthAccessTokenManager(false, true);

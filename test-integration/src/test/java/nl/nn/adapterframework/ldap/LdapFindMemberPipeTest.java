@@ -1,7 +1,6 @@
 package nl.nn.adapterframework.ldap;
 
 import org.junit.Before;
-import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;

@@ -26,5 +26,4 @@ public class FileHandlerTest extends FileHandlerTestBase {
 	protected IFileHandler createFileHandler() throws IllegalAccessException, InstantiationException {
 		return implementation.newInstance();
 	}
-
 }

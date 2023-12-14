@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.UUIDGeneratorPipe.Type;
 
@@ -19,13 +19,13 @@ public class UUIDGeneratorPipeTest extends PipeTestBase<UUIDGeneratorPipe> {
 	}
 
 	@Test
-	public void testTypeIsNormal() throws ConfigurationException {
+	void testTypeIsNormal() throws ConfigurationException {
 		pipe.setType(Type.NUMERIC);
 		pipe.configure();
 	}
 
 	@Test
-	public void checkResultNotRightType() throws Exception {
+	void checkResultNotRightType() throws Exception {
 		pipe.setType(Type.NUMERIC);
 		pipe.configure();
 		pipe.start();
@@ -36,7 +36,7 @@ public class UUIDGeneratorPipeTest extends PipeTestBase<UUIDGeneratorPipe> {
 	}
 
 	@Test
-	public void checkResultRightType() throws Exception {
+	void checkResultRightType() throws Exception {
 		pipe.setType(Type.ALPHANUMERIC);
 		pipe.configure();
 		pipe.start();

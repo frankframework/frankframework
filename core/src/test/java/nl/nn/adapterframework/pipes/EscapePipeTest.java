@@ -1,13 +1,13 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import org.junit.jupiter.api.Test;
-
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.EscapePipe.Direction;
 import nl.nn.adapterframework.testutil.TestAssertions;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 

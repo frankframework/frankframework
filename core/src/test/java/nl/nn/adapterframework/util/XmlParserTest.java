@@ -3,10 +3,10 @@ package nl.nn.adapterframework.util;
 import java.io.IOException;
 import java.net.URL;
 
-import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.MethodOrderer.MethodName;
 import org.junit.jupiter.api.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -16,7 +16,7 @@ import nl.nn.adapterframework.testutil.MatchUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.xml.XmlWriter;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodName.class)
 public class XmlParserTest {
 
 	protected String getInputAsString(String file) throws IOException {
@@ -34,8 +34,8 @@ public class XmlParserTest {
 
 		XmlWriter writer = new XmlWriter();
 		XmlUtils.parseXml(input, writer);
-		
-		MatchUtils.assertXmlEquals(expected,writer.toString());		
+
+		MatchUtils.assertXmlEquals(expected,writer.toString());
 	}
 
 	@Test
@@ -45,9 +45,9 @@ public class XmlParserTest {
 
 		XmlWriter writer = new XmlWriter();
 		InputSource source = Message.asInputSource(input);
-		
+
 		XmlUtils.parseXml(source, writer);
-		
+
 		MatchUtils.assertXmlEquals(expected,writer.toString());
 	}
 
@@ -68,10 +68,10 @@ public class XmlParserTest {
 	public void testParseXmlResourceWithExternalEntityInjection() throws IOException, SAXException {
 		Resource input  = Resource.getResource("/XmlUtils/EntityResolution/in-file-entity-c-temp.xml");
 		String expected = TestFileUtils.getTestFile("/XmlUtils/EntityResolution/out-resolved.xml");
-		
+
 		XmlWriter writer = new XmlWriter();
 		XmlUtils.parseXml(input, writer);
-		
+
 		MatchUtils.assertXmlEquals(expected,writer.toString());
 	}
 }

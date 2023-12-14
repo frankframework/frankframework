@@ -10,6 +10,12 @@ import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.pipes.EtagHandlerPipe.EtagAction;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class EtagHandlerPipeTest extends PipeTestBase<EtagHandlerPipe> {
 
 	@Override

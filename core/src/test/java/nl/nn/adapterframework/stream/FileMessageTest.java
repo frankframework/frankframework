@@ -4,16 +4,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.nio.file.Path;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.io.TempDir;
 
 import nl.nn.adapterframework.testutil.SerializationTester;
 import nl.nn.adapterframework.util.LogUtil;
 
 public class FileMessageTest {
+	@TempDir
+	public static Path testFolder;
+
 	protected Logger log = LogUtil.getLogger(this);
 
 	protected String testString = MessageTest.testString;
@@ -27,9 +31,8 @@ public class FileMessageTest {
 
 	@Test
 	public void testSerialize() throws Exception {
-		TemporaryFolder folder = new TemporaryFolder();
-		folder.create();
-		File source = folder.newFile();
+		File folder = new File(String.valueOf(testFolder));
+		File source = File.createTempFile("junit", null, folder);
 		MessageTest.writeContentsToFile(source, testString);
 
 		Message in = new FileMessage(source, "UTF-8");

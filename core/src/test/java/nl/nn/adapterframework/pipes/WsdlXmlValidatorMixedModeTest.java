@@ -1,15 +1,15 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.IDualModeValidator;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.core.IPipe;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -89,7 +89,7 @@ public class WsdlXmlValidatorMixedModeTest {
 	protected void validate(IPipe val, String msg, String failureReason) throws Exception {
 		Message messageToValidate = getTestXml(msg);
 		if (failureReason!=null) {
-			assertThrows(failureReason, Exception.class, () -> val.doPipe(messageToValidate, session));
+			assertThrows(Exception.class, () -> val.doPipe(messageToValidate, session), failureReason);
 		} else {
 			val.doPipe(messageToValidate, session);
 		}
@@ -108,21 +108,21 @@ public class WsdlXmlValidatorMixedModeTest {
 	}
 
 	@Test
-	public void testInputValidator() throws Exception {
+	void testInputValidator() throws Exception {
 		WsdlXmlValidator val = getInputValidator();
 		validate(val,REQUEST,null);
 		validate(val,RESPONSE,"Illegal element");
 	}
 
 	@Test
-	public void testOutputValidator() throws Exception {
+	void testOutputValidator() throws Exception {
 		WsdlXmlValidator val = getOutputValidator();
 		validate(val,RESPONSE,null);
 		validate(val,REQUEST,"Illegal element");
 	}
 
 	@Test
-	public void testMixedValidator() throws Exception {
+	void testMixedValidator() throws Exception {
 		WsdlXmlValidator val = getMixedValidator();
 		IPipe outputValidator =val.getResponseValidator();
 		validate(val,REQUEST,null);
@@ -135,7 +135,7 @@ public class WsdlXmlValidatorMixedModeTest {
 
 
 	@Test
-	public void testPipelineProcessorInputValidator() throws Exception {
+	void testPipelineProcessorInputValidator() throws Exception {
 		WsdlXmlValidator inputValidator = getInputValidator();
 		WsdlXmlValidator outputValidator = null;
 		testPipeLineProcessorProcessOutputValidation(inputValidator,outputValidator,REQUEST,null);
@@ -143,7 +143,7 @@ public class WsdlXmlValidatorMixedModeTest {
 	}
 
 	@Test
-	public void testPipelineProcessorOutputValidator() throws Exception {
+	void testPipelineProcessorOutputValidator() throws Exception {
 		WsdlXmlValidator inputValidator = null;
 		WsdlXmlValidator outputValidator = getOutputValidator();
 		testPipeLineProcessorProcessOutputValidation(inputValidator,outputValidator,REQUEST,"Illegal element");
@@ -151,7 +151,7 @@ public class WsdlXmlValidatorMixedModeTest {
 	}
 
 	@Test
-	public void testPipelineProcessorMixedValidator() throws Exception {
+	void testPipelineProcessorMixedValidator() throws Exception {
 		WsdlXmlValidator inputValidator = getMixedValidator();
 		WsdlXmlValidator outputValidator = null;
 		testPipeLineProcessorProcessOutputValidation(inputValidator,outputValidator,REQUEST,"Illegal element");
@@ -159,7 +159,7 @@ public class WsdlXmlValidatorMixedModeTest {
 	}
 
 	@Test
-	public void testPipelineProcessorMixedPlusOutputValidator() throws Exception {
+	void testPipelineProcessorMixedPlusOutputValidator() throws Exception {
 		WsdlXmlValidator inputValidator = getMixedValidator();
 		WsdlXmlValidator outputValidator = getInputValidator(); // use input to make the difference visible
 		testPipeLineProcessorProcessOutputValidation(inputValidator,outputValidator,REQUEST,null);

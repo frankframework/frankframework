@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.soap;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -16,10 +16,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -41,16 +40,14 @@ import nl.nn.adapterframework.validation.XercesXmlValidator;
 /**
  * @author Michiel Meeuwissen
  */
-@RunWith(value = Parameterized.class)
 public class WsdlTest {
 
-	private final  Class<AbstractXmlValidator> implementation;
+	private  Class<AbstractXmlValidator> implementation;
 
-	public WsdlTest(Class<AbstractXmlValidator> implementation) {
+	public void initWsdlTest(Class<AbstractXmlValidator> implementation) {
 		this.implementation = implementation;
 	}
 
-	@Parameterized.Parameters
 	public static Collection<Object[]> data() {
 		Object[][] data = new Object[][]{
 			{XercesXmlValidator.class},
@@ -60,8 +57,10 @@ public class WsdlTest {
 	}
 
 
-	@Test
-	public void basic() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void basic(Class<AbstractXmlValidator> implementation) throws Exception {
+		initWsdlTest(implementation);
 		PipeLine simple = mockPipeLine(
 				getXmlValidatorInstance("a", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "Test1");
@@ -70,8 +69,10 @@ public class WsdlTest {
 		test(wsdl, "WsdlTest/webservice1.test.wsdl");
 	}
 
-	@Test
-	public void basicMultipleRootTagsAllowed() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void basicMultipleRootTagsAllowed(Class<AbstractXmlValidator> implementation) throws Exception {
+		initWsdlTest(implementation);
 		PipeLine simple = mockPipeLine(
 				getXmlValidatorInstance("a,x,y", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b,p,q", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "Test1");
@@ -80,8 +81,10 @@ public class WsdlTest {
 		test(wsdl, "WsdlTest/webservice1.test.wsdl");
 	}
 
-	@Test
-	public void basicMixed() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void basicMixed(Class<AbstractXmlValidator> implementation) throws Exception {
+		initWsdlTest(implementation);
 		XmlValidator inputValidator=getXmlValidatorInstance("a", "b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd");
 		IValidator outputValidator=inputValidator.getResponseValidator();
 		PipeLine simple = mockPipeLine(inputValidator, outputValidator, "urn:webservice1", "Test1");
@@ -90,8 +93,10 @@ public class WsdlTest {
 		test(wsdl, "WsdlTest/webservice1.test.wsdl");
 	}
 
-	@Test
-	public void includeXsdInWsdl() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void includeXsdInWsdl(Class<AbstractXmlValidator> implementation) throws Exception {
+		initWsdlTest(implementation);
 		PipeLine simple = mockPipeLine(
 				getXmlValidatorInstance("a", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "IncludeXsds");
@@ -103,8 +108,10 @@ public class WsdlTest {
 	}
 
 
-	@Test
-	public void includeXsdInWsdlMixed() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void includeXsdInWsdlMixed(Class<AbstractXmlValidator> implementation) throws Exception {
+		initWsdlTest(implementation);
 		XmlValidator inputValidator=getXmlValidatorInstance("a", "b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd");
 		IValidator outputValidator=inputValidator.getResponseValidator();
 		PipeLine simple = mockPipeLine(inputValidator, outputValidator, "urn:webservice1", "IncludeXsds");
@@ -116,9 +123,11 @@ public class WsdlTest {
 	}
 
 
-	@Test
-	@Ignore("not finished, but would fail, you must specify root tag now.")
-	public void noroottagAndInclude() throws Exception {
+	@ParameterizedTest
+	@Disabled("not finished, but would fail, you must specify root tag now.")
+	@MethodSource("data")
+	void noroottagAndInclude(Class<AbstractXmlValidator> implementation) throws Exception {
+		initWsdlTest(implementation);
 		PipeLine simple = mockPipeLine(
 				getXmlValidatorInstance(null, "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 				getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "TestRootTag");
@@ -128,8 +137,10 @@ public class WsdlTest {
 		test(wsdl, "WsdlTest/noroottag.test.wsdl");
 	}
 
-	@Test
-	public void noroottag() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void noroottag(Class<AbstractXmlValidator> implementation) throws Exception {
+		initWsdlTest(implementation);
 		PipeLine simple = mockPipeLine(
 			getXmlValidatorInstance(null, "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"),
 			getXmlValidatorInstance("b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd"), "urn:webservice1", "TestRootTag");
@@ -138,8 +149,10 @@ public class WsdlTest {
 		test(wsdl, "WsdlTest/noroottag.test.wsdl");
 	}
 
-	@Test
-	public void noroottagMixed() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void noroottagMixed(Class<AbstractXmlValidator> implementation) throws Exception {
+		initWsdlTest(implementation);
 		XmlValidator inputValidator=getXmlValidatorInstance(null, "b", "WsdlTest/test.xsd", "urn:webservice1 WsdlTest/test.xsd");
 		IValidator outputValidator=inputValidator.getResponseValidator();
 		PipeLine simple = mockPipeLine(inputValidator, outputValidator, "urn:webservice1", "TestRootTag");
@@ -149,10 +162,10 @@ public class WsdlTest {
 	}
 
 
-
-
-	@Test
-	public void wubCalculateQuoteAndPolicyValuesLifeRetail() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void wubCalculateQuoteAndPolicyValuesLifeRetail(Class<AbstractXmlValidator> implementation) throws Exception {
+		initWsdlTest(implementation);
 		PipeLine pipe = mockPipeLine(
 			getXmlValidatorInstance("CalculationRequest", null, null,
 				"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail " +
@@ -167,8 +180,10 @@ public class WsdlTest {
 		test(wsdl, "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail.test.wsdl");
 	}
 
-	@Test
-	public void wubCalculateQuoteAndPolicyValuesLifeRetailMixed() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void wubCalculateQuoteAndPolicyValuesLifeRetailMixed(Class<AbstractXmlValidator> implementation) throws Exception {
+		initWsdlTest(implementation);
 		XmlValidator inputValidator=getXmlValidatorInstance("CalculationRequest", "CalculationResponse", null,
 				"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRequestv2.1.xsd "+
 				"http://wub2nn.nn.nl/CalculateQuoteAndPolicyValuesLifeRetail_response  WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail/xsd/CalculationRespons.xsd");
@@ -182,8 +197,10 @@ public class WsdlTest {
 		test(wsdl, "WsdlTest/CalculateQuoteAndPolicyValuesLifeRetail.test.wsdl");
 	}
 
-	@Test
-	public void wubFindIntermediary() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void wubFindIntermediary(Class<AbstractXmlValidator> implementation) throws Exception {
+		initWsdlTest(implementation);
 		PipeLine pipe = mockPipeLine(
 			getXmlValidatorInstance("FindIntermediaryREQ", null, null,
 				"http://wub2nn.nn.nl/FindIntermediary WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd"),
@@ -199,8 +216,10 @@ public class WsdlTest {
 		// assertEquals(2, wsdl.getXSDs(true).size()); TODO?
 	}
 
-	@Test
-	public void wubFindIntermediaryMixed() throws Exception {
+	@MethodSource("data")
+	@ParameterizedTest
+	void wubFindIntermediaryMixed(Class<AbstractXmlValidator> implementation) throws Exception {
+		initWsdlTest(implementation);
 		XmlValidator inputValidator=getXmlValidatorInstance("FindIntermediaryREQ", "FindIntermediaryRLY", null,
 						"http://wub2nn.nn.nl/FindIntermediary WsdlTest/FindIntermediary/xsd/XSD_FindIntermediary_v1.1_r1.0.xsd");
 		IValidator outputValidator = inputValidator.getResponseValidator();

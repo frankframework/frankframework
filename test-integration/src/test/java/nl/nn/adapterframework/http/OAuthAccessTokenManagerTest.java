@@ -6,7 +6,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import org.junit.Before;
-import org.junit.Test;
 
 import nl.nn.adapterframework.http.authentication.HttpAuthenticationException;
 import nl.nn.adapterframework.http.authentication.OAuthAccessTokenManager;

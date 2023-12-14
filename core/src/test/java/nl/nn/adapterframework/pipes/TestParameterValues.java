@@ -1,10 +1,10 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.testutil.ParameterBuilder;
@@ -20,7 +20,7 @@ public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe>{
 	}
 
 	@Test
-	public void testParameterValue() throws Exception {
+	void testParameterValue() throws Exception {
 		pipe.addParameter(new Parameter("param1", "my-value"));
 		pipe.configure();
 
@@ -29,7 +29,7 @@ public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe>{
 	}
 
 	@Test
-	public void testParameterWithoutValue() throws Exception {
+	void testParameterWithoutValue() throws Exception {
 		pipe.addParameter(ParameterBuilder.create().withName("param1"));
 		pipe.configure();
 
@@ -38,7 +38,7 @@ public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe>{
 	}
 
 	@Test
-	public void testParameterWithDefaultValue() throws Exception {
+	void testParameterWithDefaultValue() throws Exception {
 		pipe.addParameter(new Parameter("param2", "other-value"));
 		pipe.configure();
 
@@ -47,7 +47,7 @@ public class TestParameterValues extends PipeTestBase<ParameterValueTestPipe>{
 	}
 
 	@Test
-	public void testParameterWithoutValueAndDefaultValue() throws Exception {
+	void testParameterWithoutValueAndDefaultValue() throws Exception {
 		pipe.addParameter(new Parameter("param1", "fallback-value"));
 		pipe.addParameter(ParameterBuilder.create().withName("param2"));
 		pipe.configure();

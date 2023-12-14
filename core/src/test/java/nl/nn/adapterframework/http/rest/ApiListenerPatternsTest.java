@@ -15,27 +15,23 @@ limitations under the License.
 */
 package nl.nn.adapterframework.http.rest;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
-
 import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@RunWith(Parameterized.class)
+
 public class ApiListenerPatternsTest {
 
 	private ApiListener listener;
 	private String expectedUriPattern;
 	private String expectedCleanPattern;
 
-	@Parameters(name = "inputUriPattern[{0}] -> expectedUriPattern[{1}] -> expectedCleanPattern[{2}]")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 				{ "*", "/*", "/*" },
@@ -59,7 +55,7 @@ public class ApiListenerPatternsTest {
 		});
 	}
 
-	public ApiListenerPatternsTest(String pattern, String expectedUriPattern, String expectedCleanPattern) {
+	public void initApiListenerPatternsTest(String pattern, String expectedUriPattern, String expectedCleanPattern) {
 		listener = new ApiListener();
 		listener.setName("my-api-listener");
 		listener.setMethod(HttpMethod.PUT);
@@ -68,13 +64,17 @@ public class ApiListenerPatternsTest {
 		this.expectedCleanPattern = expectedCleanPattern;
 	}
 
-	@Test
-	public void testUriPattern() {
+	@MethodSource("data")
+	@ParameterizedTest(name = "inputUriPattern[{0}] -> expectedUriPattern[{1}] -> expectedCleanPattern[{2}]")
+	void testUriPattern(String pattern, String expectedUriPattern, String expectedCleanPattern) {
+		initApiListenerPatternsTest(pattern, expectedUriPattern, expectedCleanPattern);
 		assertEquals(expectedUriPattern, listener.getUriPattern());
 	}
 
-	@Test
-	public void testCleanPattern() {
+	@MethodSource("data")
+	@ParameterizedTest(name = "inputUriPattern[{0}] -> expectedUriPattern[{1}] -> expectedCleanPattern[{2}]")
+	void testCleanPattern(String pattern, String expectedUriPattern, String expectedCleanPattern) {
+		initApiListenerPatternsTest(pattern, expectedUriPattern, expectedCleanPattern);
 		assertEquals(expectedCleanPattern, listener.getCleanPattern());
 	}
 }

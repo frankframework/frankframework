@@ -19,9 +19,7 @@ import java.util.UUID;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 
-import org.junit.Rule;
 import org.junit.jupiter.api.Test;
-import org.junit.rules.ExpectedException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -47,9 +45,6 @@ import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
 public class ParameterTest {
-
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 
 	@Test
 	public void testPatternUsername() throws ConfigurationException, ParameterException {

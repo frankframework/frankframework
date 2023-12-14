@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.soap;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -32,7 +32,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test
-	public void validate1Basic() throws Exception {
+	void validate1Basic() throws Exception {
 		configureSoapValidator(true);
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapBody("Request");
@@ -46,7 +46,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test
-	public void validate12Explicitversion() throws Exception {
+	void validate12Explicitversion() throws Exception {
 		configureSoapValidator(true, SoapVersion.SOAP12);
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapBody("Request");
@@ -59,8 +59,8 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		MatchUtils.assertXmlEquals(expected, prr.getResult().asString());
 	}
 
-	@Test(expected = PipeRunException.class)
-	public void validate12Invalid() throws Exception {
+	@Test
+	void validate12Invalid() throws Exception {
 		configureSoapValidator();
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapVersion(SoapVersion.SOAP12);
@@ -70,12 +70,12 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP;
 		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
-		PipeRunResult prr = doPipe(input);
-		assertEquals(expected, prr.getResult().asString());
+
+		assertThrows(PipeRunException.class, () -> doPipe(input));
 	}
 
-	@Test(expected = PipeRunException.class)
-	public void validate12Invalid_body() throws Exception {
+	@Test
+	void validate12Invalid_body() throws Exception {
 		configureSoapValidator();
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapVersion(SoapVersion.SOAP11);
@@ -85,12 +85,12 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP_BODY;
 		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
-		PipeRunResult prr = doPipe(input);
-		assertEquals(expected, prr.getResult().asString());
+
+		assertThrows(PipeRunException.class, () -> doPipe(input));
 	}
 
-	@Test(expected = PipeRunException.class)
-	public void validate12Unknown_namespace_body() throws Exception {
+	@Test
+	void validate12Unknown_namespace_body() throws Exception {
 		configureSoapValidator();
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapVersion(SoapVersion.SOAP11);
@@ -100,12 +100,12 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		String inputFile = INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY;
 		Message input = MessageTestUtils.getMessage(inputFile);
 		String expected = TestFileUtils.getTestFile(inputFile);
-		PipeRunResult prr = doPipe(input);
-		assertEquals(expected, prr.getResult().asString());
+
+		assertThrows(PipeRunException.class, () -> doPipe(input));
 	}
 
 	@Test
-	public void validateMultiSoapBody() throws Exception {
+	void validateMultiSoapBody() throws Exception {
 		configureSoapValidator(true);
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapBody("Request,Response");
@@ -119,7 +119,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test
-	public void validateMultiSoapBodyOnMultipleLines1() throws Exception {
+	void validateMultiSoapBodyOnMultipleLines1() throws Exception {
 		configureSoapValidator(true);
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapBody("\nRequest,\nResponse\n");
@@ -133,7 +133,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test
-	public void validateMultiSoapBodyOnMultipleLines2() throws Exception {
+	void validateMultiSoapBodyOnMultipleLines2() throws Exception {
 		configureSoapValidator(true);
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapBody("\nResponse,\nRequest\n");
@@ -147,7 +147,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test
-	public void issue4183CharsetProblemInXSD() throws Exception {
+	void issue4183CharsetProblemInXSD() throws Exception {
 		configureSoapValidator(false);
 		pipe.setSchemaLocation("urn:namespacer Validation/CharsetProblem/non-utf8.xsd");
 		pipe.configure();

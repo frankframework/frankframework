@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.jta.narayana;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;

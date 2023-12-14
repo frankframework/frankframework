@@ -10,7 +10,6 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 
 import org.hamcrest.core.StringContains;
-import org.junit.Test;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;

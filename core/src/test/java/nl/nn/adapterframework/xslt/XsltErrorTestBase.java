@@ -3,18 +3,17 @@ package nl.nn.adapterframework.xslt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
 
 import org.apache.logging.log4j.Level;
-import org.junit.After;
 import org.junit.AssumptionViolatedException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -28,13 +27,9 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	protected TestAppender testAppender;
 	private ErrorOutputStream errorOutputStream;
 	private PrintStream prevStdErr;
-	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS=0;
-
-	private final String FILE_NOT_FOUND_EXCEPTION="Cannot get resource for href [";
-	private final String FILE_NOT_FOUND_EXCEPTION_SAXON_10="WARN Fatal transformation error: Exception thrown by URIResolver resolving `";
-
-	private final boolean testForEmptyOutputStream=false;
-
+	public static int EXPECTED_NUMBER_OF_DUPLICATE_LOGGINGS = 0;
+	private final String FILE_NOT_FOUND_EXCEPTION = "Cannot get resource for href [";
+	private final boolean testForEmptyOutputStream = false;
 	protected int getMultiplicity() {
 		return 1;
 	}
@@ -51,13 +46,9 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		public String toString() {
 			return line.toString();
 		}
-
-		public boolean isEmpty() {
-			return toString().isEmpty();
-		}
 	}
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		// Force reconfigure to clean list appender.
 		testAppender = TestAppender.newBuilder()
@@ -74,7 +65,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Override
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		TestAppender.removeAppender(testAppender);
 		if (testForEmptyOutputStream) {
@@ -94,7 +85,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 
 	// detect duplicate imports in configure()
 	@Test
-	public void duplicateImportErrorAlertsXslt1() throws Exception {
+	void duplicateImportErrorAlertsXslt1() throws Exception {
 		// this condition appears to result in a warning only for XSLT 2.0 using Saxon
 		setStyleSheetName("/Xslt/duplicateImport/root.xsl");
 		setXsltVersion(1);
@@ -104,7 +95,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 
 	// detect duplicate imports in configure()
 	@Test
-	public void duplicateImportErrorAlertsXslt2() throws Exception {
+	void duplicateImportErrorAlertsXslt2() throws Exception {
 		setStyleSheetName("/Xslt/duplicateImport/root2.xsl");
 		setXsltVersion(2);
 		pipe.configure();
@@ -130,17 +121,17 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void duplicateImportErrorProcessingXslt1() throws Exception {
+	void duplicateImportErrorProcessingXslt1() throws Exception {
 		duplicateImportErrorProcessing(false);
 	}
 
 	@Test
-	public void duplicateImportErrorProcessingXslt2() throws Exception {
+	void duplicateImportErrorProcessingXslt2() throws Exception {
 		duplicateImportErrorProcessing(true);
 	}
 
 	@Test
-	public void documentIncludedInSourceNotFoundXslt1() throws Exception {
+	void documentIncludedInSourceNotFoundXslt1() throws Exception {
 		setStyleSheetName("/Xslt/importDocument/importNotFound1.xsl");
 		setXsltVersion(1);
 		setIndent(true);
@@ -151,10 +142,9 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		try {
 			doPipe(pipe, input, session);
 		} catch (AssumptionViolatedException e) {
-			assumeTrue("assumption violated:"+e.getMessage(),false);
+			throw e;
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
-			//System.out.println("ErrorMessage: "+errorMessage);
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
 		assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION));
@@ -167,7 +157,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void documentIncludedInSourceNotFoundXslt2() throws Exception {
+	void documentIncludedInSourceNotFoundXslt2() throws Exception {
 		// error not during configure(), but during doPipe()
 		setStyleSheetName("/Xslt/importDocument/importNotFound2.xsl");
 		setXsltVersion(2);
@@ -178,13 +168,14 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 		try {
 			doPipe(pipe, input, session);
 		} catch (AssumptionViolatedException e) {
-			assumeTrue("assumption violated:"+e.getMessage(),false);
+			throw e;
 		} catch (Exception e) {
 			errorMessage = e.getMessage();
 			assertThat(errorMessage,containsString(FILE_NOT_FOUND_EXCEPTION));
 		}
 		// Saxon 9.8 no longer considers a missing import to be fatal. This is similar to Xalan
-		assertThat(testAppender.toString(),containsString(FILE_NOT_FOUND_EXCEPTION_SAXON_10));
+		String FILE_NOT_FOUND_EXCEPTION_SAXON_10 = "WARN Fatal transformation error: Exception thrown by URIResolver resolving `";
+		assertThat(testAppender.toString(), containsString(FILE_NOT_FOUND_EXCEPTION_SAXON_10));
 
 		System.out.println("ErrorMessage: "+errorMessage);
 		if (testForEmptyOutputStream) {
@@ -195,7 +186,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void importNotFoundXslt1() {
+	void importNotFoundXslt1() {
 		setStyleSheetName("/Xslt/importNotFound/root.no-validate-xsl");
 		setXsltVersion(1);
 		String errorMessage;
@@ -210,7 +201,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void importNotFoundXslt2() {
+	void importNotFoundXslt2() {
 		setStyleSheetName("/Xslt/importNotFound/root2.no-validate-xsl");
 		setXsltVersion(2);
 		String errorMessage;
@@ -225,7 +216,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void notifyXalanExtensionsIllegalForSaxon() {
+	void notifyXalanExtensionsIllegalForSaxon() {
 		setStyleSheetName("/Xslt/XalanExtension/XalanExtension.xsl");
 		setXsltVersion(2);
 		String errorMessage;
@@ -242,7 +233,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void illegalXPathExpressionXslt2() {
+	void illegalXPathExpressionXslt2() {
 		// error not during configure(), but during doPipe()
 		setXpathExpression("position()='1'");
 		setXsltVersion(2);
@@ -264,7 +255,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void illegalXPathExpression2Xslt1() {
+	void illegalXPathExpression2Xslt1() {
 		// error not during configure(), but during doPipe()
 		setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
 		setXsltVersion(1);
@@ -287,7 +278,7 @@ public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends Xslt
 	}
 
 	@Test
-	public void illegalXPathExpression2Xslt2() {
+	void illegalXPathExpression2Xslt2() {
 		// error not during configure(), but during doPipe()
 		setXpathExpression("<result><status>invalid</status><message>$failureReason</message></result>");
 		setXsltVersion(2);

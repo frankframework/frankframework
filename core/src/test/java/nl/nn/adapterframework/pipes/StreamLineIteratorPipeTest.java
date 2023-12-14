@@ -1,13 +1,15 @@
 package nl.nn.adapterframework.pipes;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.ISender;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -42,26 +44,27 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
-		assertEquals(expectedLogFile, expectedLog, resultLog.toString().trim());
+		assertEquals(expectedLog, resultLog.toString().trim(), expectedLogFile);
 		assertEquals(expected, actual);
 	}
 
 	@Test
-	public void testBasicWithLinePrefixAndSuffix() throws Exception {
+	void testBasicWithLinePrefixAndSuffix() throws Exception {
 		testBasicWithLinePrefixAndSuffix(false, false, "/IteratingPipe/TenLinesLogPlainWithLineFixes.txt");
 	}
+
 	@Test
-	public void testBasicWithLinePrefixAndSuffixCombined() throws Exception {
+	void testBasicWithLinePrefixAndSuffixCombined() throws Exception {
 		testBasicWithLinePrefixAndSuffix(false, true, "/IteratingPipe/TenLinesLogPlainWithLineFixes.txt");
 	}
 
 	@Test
-	public void testBasicWithLinePrefixAndSuffixBlockEnabled() throws Exception {
+	void testBasicWithLinePrefixAndSuffixBlockEnabled() throws Exception {
 		testBasicWithLinePrefixAndSuffix(true, false, "/IteratingPipe/TenLinesLogPlainWithLineFixesBlockEnabled.txt");
 	}
 
 	@Test
-	public void testBasicWithLinePrefixAndSuffixBlockEnabledCombined() throws Exception {
+	void testBasicWithLinePrefixAndSuffixBlockEnabledCombined() throws Exception {
 		testBasicWithLinePrefixAndSuffix(true, true, "/IteratingPipe/TenLinesLogPlainWithLineFixesBlockEnabled.txt");
 	}
 
@@ -82,47 +85,52 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = Message.asString(prr.getResult());
 
-		assertEquals(expectedLogFile, expectedLog, resultLog.toString().trim());
-		assertEquals(expectedFile, expected, actual);
+		assertEquals(expectedLog, resultLog.toString().trim(), expectedLogFile);
+		assertEquals(expected, actual, expectedFile);
 	}
 
 	@Test
-	public void testFullBlocksWithCombineOff() throws Exception {
+	void testFullBlocksWithCombineOff() throws Exception {
 		testBlocksWithCombine(false, false, 5, "/IteratingPipe/TenLinesResultWithLineFixes.xml", "/IteratingPipe/TenLinesLogPlainWithLineFixes.txt");
 	}
+
 	@Test
-	public void testFullBlocksWithCombineOn() throws Exception {
+	void testFullBlocksWithCombineOn() throws Exception {
 		testBlocksWithCombine(false, true, 5, "/IteratingPipe/TenLinesResultCombinedInBlocksOfFiveWithLineFixes.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfFiveWithLineFixes.txt");
 	}
+
 	@Test
-	public void testFullBlocksWithCombineOffBlockEnabled() throws Exception {
+	void testFullBlocksWithCombineOffBlockEnabled() throws Exception {
 		testBlocksWithCombine(true, false, 5, "/IteratingPipe/TenLinesResultWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogInBlocksOfFiveWithLineFixesBlockEnabled.txt");
 	}
+
 	@Test
-	public void testFullBlocksWithCombineOnBlockEnabled() throws Exception {
+	void testFullBlocksWithCombineOnBlockEnabled() throws Exception {
 		testBlocksWithCombine(true, true, 5, "/IteratingPipe/TenLinesResultCombinedInBlocksOfFiveWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfFiveWithLineFixesBlockEnabled.txt");
 	}
 
 	@Test
-	public void testBlocksOf1WithCombineOff() throws Exception {
+	void testBlocksOf1WithCombineOff() throws Exception {
 		testBlocksWithCombine(false, false, 1, "/IteratingPipe/TenLinesResultWithLineFixes.xml", "/IteratingPipe/TenLinesLogPlainWithLineFixes.txt");
 	}
+
 	@Test
-	public void testBlocksOf1WithCombineOn() throws Exception {
+	void testBlocksOf1WithCombineOn() throws Exception {
 		testBlocksWithCombine(false, true, 1, "/IteratingPipe/TenLinesResultCombinedInBlocksOfOneWithLineFixes.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfOneWithLineFixes.txt");
 	}
 
 	@Test
-	public void testBlocksOf1WithCombineOffBlockEnabled() throws Exception {
+	void testBlocksOf1WithCombineOffBlockEnabled() throws Exception {
 		testBlocksWithCombine(true, false, 1, "/IteratingPipe/TenLinesResultWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogInBlocksOfOneWithLineFixesBlockEnabled.txt");
 	}
+
 	@Test
-	public void testBlocksOf1WithCombineOnBlockEnabled() throws Exception {
+	void testBlocksOf1WithCombineOnBlockEnabled() throws Exception {
 		testBlocksWithCombine(true, true, 1, "/IteratingPipe/TenLinesResultCombinedInBlocksOfOneWithLineFixesBlockEnabled.xml", "/IteratingPipe/TenLinesLogCombinedInBlocksOfOneWithLineFixesBlockEnabled.txt");
 	}
 
 	@Test
-	public void testPartialFinalBlockWithLinePrefixAndSuffix() throws Exception {
+	void testPartialFinalBlockWithLinePrefixAndSuffix() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setBlockSize(4);
 		pipe.setLinePrefix("{");
@@ -141,7 +149,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 	}
 
 	@Test
-	public void testPartialFinalBlockMaxItemsWithLinePrefixAndSuffix() throws Exception {
+	void testPartialFinalBlockMaxItemsWithLinePrefixAndSuffix() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setBlockSize(4);
 		pipe.setMaxItems(7);
@@ -161,7 +169,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 	}
 
 	@Test
-	public void testMaxItemsWithSpecialForward() throws Exception {
+	void testMaxItemsWithSpecialForward() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setBlockSize(4);
 		pipe.setMaxItems(7);
@@ -183,7 +191,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 	}
 
 	@Test
-	public void testMaxItemsReachedWithoutSpecialForwardRegistered() throws Exception {
+	void testMaxItemsReachedWithoutSpecialForwardRegistered() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setBlockSize(4);
 		pipe.setMaxItems(7);
@@ -204,7 +212,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 	}
 
 	@Test
-	public void testBlocksByKey() throws Exception {
+	void testBlocksByKey() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setStartPosition(4);
 		pipe.setEndPosition(5);
@@ -224,7 +232,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 	}
 
 	@Test
-	public void testBlocksByKeyWithStopConditionXpath() throws Exception {
+	void testBlocksByKeyWithStopConditionXpath() throws Exception {
 		pipe.setSender(getElementRenderer());
 		pipe.setStartPosition(4);
 		pipe.setEndPosition(5);
@@ -245,7 +253,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 	}
 
 	@Test
-	public void testBasicWithoutXmlEscaping() throws Exception {
+	void testBasicWithoutXmlEscaping() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		configurePipe();
 		pipe.start();
@@ -260,7 +268,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 	}
 
 	@Test
-	public void testBasicWithXmlEscaping() throws Exception {
+	void testBasicWithXmlEscaping() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setEscapeXml(true);
 		configurePipe();
@@ -276,7 +284,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 	}
 
 	@Test
-	public void testEndOfLineString() throws Exception {
+	void testEndOfLineString() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setEndOfLineString("EOL");
 		configurePipe();
@@ -292,7 +300,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 	}
 
 	@Test
-	public void testStartOfLineStringAndItemNoSessionKey() throws Exception {
+	void testStartOfLineStringAndItemNoSessionKey() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setStartOfLineString("BOL");
 		pipe.setItemNoSessionKey("itemNo");
@@ -310,7 +318,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 	}
 
 	@Test
-	public void testItemNoSessionKeyEmptyInput() throws Exception {
+	void testItemNoSessionKeyEmptyInput() throws Exception {
 		pipe.setSender(getElementRenderer(false));
 		pipe.setItemNoSessionKey("itemNo");
 		configurePipe();

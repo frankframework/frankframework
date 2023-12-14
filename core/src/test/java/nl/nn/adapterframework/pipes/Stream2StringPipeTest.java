@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.stream.Message;
@@ -16,24 +16,16 @@ import nl.nn.adapterframework.stream.Message;
  * @author <Sina Sen>
  */
 public class Stream2StringPipeTest extends PipeTestBase<Stream2StringPipe> {
-
-    /**
-     * Method: doPipe(Object input, PipeLineSession session)
-     */
-    @Test
-    public void testDoPipeSuccess() throws Exception {
+	@Test
+	void testDoPipeSuccess() throws Exception {
         String myString = "testString";
         InputStream is = new ByteArrayInputStream(myString.getBytes());
         Message m = new Message(is);
         PipeRunResult res = doPipe(pipe, m, session);
         assertEquals("testString", res.getResult().asString());
     }
-  
-    /**
-     * Method: doPipe(Object input, PipeLineSession session)
-     */
-    @Test
-    public void testDoPipeFail() throws Exception {
+	@Test
+	void testDoPipeFail() throws Exception {
         String myString = "testString";
         Message m = new Message(myString);
         PipeRunResult res = doPipe(pipe, m, session);
