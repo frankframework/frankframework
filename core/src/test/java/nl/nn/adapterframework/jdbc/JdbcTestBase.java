@@ -44,7 +44,6 @@ import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
-import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -273,8 +272,8 @@ public abstract class JdbcTestBase {
 		return dataSource.getConnection();
 	}
 
-	protected PreparedStatement executeTranslatedQuery(DatabaseTestEnvironment databaseTestEnvironment, String query, QueryType queryType) throws JdbcException, SQLException {
-		return executeTranslatedQuery(databaseTestEnvironment.getConnection(), query, queryType, false);
+	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {
+		return executeTranslatedQuery(connection, query, queryType, false);
 	}
 
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {

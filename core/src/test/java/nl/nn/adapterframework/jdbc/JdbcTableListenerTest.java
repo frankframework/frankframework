@@ -64,7 +64,6 @@ public class JdbcTableListenerTest {
 
 	private JdbcTableListener listener;
 	protected static final String TABLE_NAME = "JTL_TABLE";
-	private @Getter TestConfiguration configuration;
 	protected static Logger log = LogUtil.getLogger(JdbcTableListenerTest.class);
 
 	/*
@@ -90,7 +89,7 @@ public class JdbcTableListenerTest {
 		listener = new JdbcTableListener();
 		listener.setTableName(TABLE_NAME);
 		listener.setDatasourceName(dataSourceName);
-		listener.setName("JTL_TABLE");
+		listener.setName(TABLE_NAME);
 		listener.setKeyField("TKEY");
 		listener.setStatusField("TINT");
 		listener.setStatusValueAvailable("1");
@@ -111,7 +110,7 @@ public class JdbcTableListenerTest {
 	}
 
 	protected void autowire(JdbcFacade jdbcFacade) {
-		configuration.autowireByName(jdbcFacade);
+		getConfiguration().autowireByName(jdbcFacade);
 		jdbcFacade.setDatasourceName(dataSourceName);
 	}
 
@@ -485,7 +484,7 @@ public class JdbcTableListenerTest {
 
 		JdbcUtil.executeStatement(databaseTestEnvironment.getDbmsSupport(), databaseTestEnvironment.getConnection(), "DELETE FROM " + TABLE_NAME + " WHERE TKEY=10", null, new PipeLineSession());
 		JdbcUtil.executeStatement(databaseTestEnvironment.getDbmsSupport(), databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TINT) VALUES (10,1)", null, new PipeLineSession());
-		ChangeProcessStateTester changeProcessStateTester = new ChangeProcessStateTester(databaseTestEnvironment::getConnection);
+		ChangeProcessStateTester changeProcessStateTester = new ChangeProcessStateTester(databaseTestEnvironment::getConnection, databaseTestEnvironment);
 		RawMessageWrapper rawMessage1;
 		Semaphore waitBeforeUpdate = new Semaphore();
 		Semaphore updateDone = new Semaphore();
@@ -536,32 +535,34 @@ public class JdbcTableListenerTest {
 		testParallelChangeProcessState(false, databaseTestEnvironment);
 	}
 
-	private static class ChangeProcessStateTester extends ConcurrentJdbcActionTester {
+	private class ChangeProcessStateTester extends ConcurrentJdbcActionTester {
 
 		private @Getter int numRowsUpdated=-1;
 		private String query;
+		private DatabaseTestEnvironment databaseTestEnvironment;
 
-		public ChangeProcessStateTester(ThrowingSupplier<Connection,SQLException> connectionSupplier) {
+		public ChangeProcessStateTester(ThrowingSupplier<Connection, SQLException> connectionSupplier, DatabaseTestEnvironment databaseTestEnvironment) {
 			super(connectionSupplier);
+			this.databaseTestEnvironment = databaseTestEnvironment;
 		}
 
 		@Override
-		public void initAction(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, DbmsException {
+		public void initAction(Connection conn) throws SQLException, DbmsException {
 			String rawQuery = "UPDATE " + TABLE_NAME + " SET TINT=3 WHERE TINT!=3 AND TKEY=10";
 			query = databaseTestEnvironment.getDbmsSupport().convertQuery(rawQuery, "Oracle");
-			databaseTestEnvironment.getConnection().setAutoCommit(false);
+			conn.setAutoCommit(false);
 		}
 
 		@Override
-		public void action(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
-			try (PreparedStatement statement = databaseTestEnvironment.getConnection().prepareStatement(query)) {
+		public void action(Connection conn) throws SQLException {
+			try (PreparedStatement statement = conn.prepareStatement(query)) {
 				numRowsUpdated = statement.executeUpdate();
 			}
 		}
 
 		@Override
-		public void finalizeAction(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
-			databaseTestEnvironment.getConnection().commit();
+		public void finalizeAction(Connection conn) throws SQLException {
+			conn.commit();
 		}
 	}
 

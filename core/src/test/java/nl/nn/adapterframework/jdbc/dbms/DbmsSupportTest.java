@@ -114,11 +114,6 @@ public class DbmsSupportTest {
 		assertEquals(4, DbmsUtil.executeIntQuery(databaseTestEnvironment.getConnection(), "SELECT 1+? " + databaseTestEnvironment.getDbmsSupport().getFromForTablelessSelect(), 3));
 	}
 
-//	@Test
-//	public void testTableLessSelectWithStringParam() throws JdbcException {
-//		assertEquals(3, JdbcUtil.executeIntQuery(connection,"SELECT ''||? "+dbmsSupport.getFromForTablelessSelect(), 3));
-//	}
-
 	@DatabaseTest
 	public void testInsertSelect(DatabaseTestEnvironment databaseTestEnvironment) throws JdbcException, SQLException {
 		JdbcUtil.executeStatement(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY, TINT) SELECT 11, 2+2 " + databaseTestEnvironment.getDbmsSupport().getFromForTablelessSelect() + " WHERE 1=1");
@@ -727,13 +722,13 @@ public class DbmsSupportTest {
 		}
 
 		@Override
-		public void initAction(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
-			databaseTestEnvironment.getConnection().setAutoCommit(false);
+		public void initAction(Connection conn) throws SQLException {
+			conn.setAutoCommit(false);
 		}
 
 		@Override
-		public void action(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
-			try (Statement stmt2 = databaseTestEnvironment.getConnection().createStatement()) {
+		public void action(Connection conn) throws SQLException {
+			try (Statement stmt2 = conn.createStatement()) {
 				stmt2.setFetchSize(1);
 				try (ResultSet rs2 = stmt2.executeQuery(query)) {
 					assertTrue(rs2.next());
@@ -744,8 +739,8 @@ public class DbmsSupportTest {
 		}
 
 		@Override
-		public void finalizeAction(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
-			databaseTestEnvironment.getConnection().rollback();
+		public void finalizeAction(Connection conn) throws SQLException {
+			conn.rollback();
 		}
 	}
 

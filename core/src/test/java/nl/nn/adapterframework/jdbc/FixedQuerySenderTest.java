@@ -2,6 +2,7 @@ package nl.nn.adapterframework.jdbc;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertJsonEquals;
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
+import static nl.nn.adapterframework.testutil.ParameterBuilder.create;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -23,7 +24,6 @@ import nl.nn.adapterframework.functional.ThrowingConsumer;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.document.DocumentFormat;
-import nl.nn.adapterframework.testutil.ParameterBuilder;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
@@ -56,7 +56,7 @@ public class FixedQuerySenderTest {
 
 		fixedQuerySender = new FixedQuerySender();
 		fixedQuerySender.setDatasourceName(dataSourceName);
-		fixedQuerySender.setName("FQS_TABLE");
+		fixedQuerySender.setName(TABLE_NAME);
 		getConfiguration().autowireByName(fixedQuerySender);
 
 		getConfiguration().getIbisManager();
@@ -246,7 +246,7 @@ public class FixedQuerySenderTest {
 	@DatabaseTest
 	public void testAddMonth() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tDATE) VALUES ('1', ADD_MONTHS(SYSTIMESTAMP,?))");
-		fixedQuerySender.addParameter(ParameterBuilder.create("param", "7").withType(Parameter.ParameterType.INTEGER));
+		fixedQuerySender.addParameter(create("param", "7").withType(Parameter.ParameterType.INTEGER));
 		fixedQuerySender.setSqlDialect("Oracle");
 		fixedQuerySender.configure();
 		fixedQuerySender.open();
@@ -320,7 +320,7 @@ public class FixedQuerySenderTest {
 	@DatabaseTest
 	public void testParameterTypeDefault() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tCLOB) VALUES ('1', ?)");
-		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob"));
+		fixedQuerySender.addParameter(create().withName("clob").withSessionKey("clob"));
 		fixedQuerySender.setSqlDialect("Oracle");
 		fixedQuerySender.configure();
 		fixedQuerySender.open();
@@ -336,8 +336,8 @@ public class FixedQuerySenderTest {
 	@DatabaseTest
 	public void testParameterTypeLobStream() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
-		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(Parameter.ParameterType.CHARACTER));
-		fixedQuerySender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(Parameter.ParameterType.BINARY));
+		fixedQuerySender.addParameter(create().withName("clob").withSessionKey("clob").withType(Parameter.ParameterType.CHARACTER));
+		fixedQuerySender.addParameter(create().withName("blob").withSessionKey("blob").withType(Parameter.ParameterType.BINARY));
 		fixedQuerySender.setSqlDialect("Oracle");
 		fixedQuerySender.configure();
 		fixedQuerySender.open();
@@ -355,8 +355,8 @@ public class FixedQuerySenderTest {
 	@DatabaseTest
 	public void testParameterTypeLobArray() throws Exception {
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
-		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(Parameter.ParameterType.CHARACTER));
-		fixedQuerySender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(Parameter.ParameterType.BINARY));
+		fixedQuerySender.addParameter(create().withName("clob").withSessionKey("clob").withType(Parameter.ParameterType.CHARACTER));
+		fixedQuerySender.addParameter(create().withName("blob").withSessionKey("blob").withType(Parameter.ParameterType.BINARY));
 		fixedQuerySender.setSqlDialect("Oracle");
 		fixedQuerySender.configure();
 		fixedQuerySender.open();
