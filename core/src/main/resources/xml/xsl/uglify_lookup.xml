@@ -120,11 +120,6 @@
     <ClassName>nl.nn.adapterframework.jdbc.SimpleJdbcListener</ClassName>
   </Element>
   <Element>
-    <Name>TibcoListener</Name>
-    <Type>listener</Type>
-    <ClassName>nl.nn.adapterframework.extensions.tibco.TibcoListener</ClassName>
-  </Element>
-  <Element>
     <Name>TibcoLogJmsListener</Name>
     <Type>listener</Type>
     <ClassName>nl.nn.adapterframework.extensions.tibco.TibcoLogJmsListener</ClassName>
@@ -378,11 +373,6 @@
     <Name>ShadowSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.senders.ShadowSender</ClassName>
-  </Element>
-  <Element>
-    <Name>TibcoSender</Name>
-    <Type>sender</Type>
-    <ClassName>nl.nn.adapterframework.extensions.tibco.TibcoSender</ClassName>
   </Element>
   <Element>
     <Name>WebServiceNtlmSender</Name>
@@ -1218,11 +1208,6 @@
     <Name>ShadowErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.senders.ShadowSender</ClassName>
-  </Element>
-  <Element>
-    <Name>TibcoErrorSender</Name>
-    <Type>errorSender</Type>
-    <ClassName>nl.nn.adapterframework.extensions.tibco.TibcoSender</ClassName>
   </Element>
   <Element>
     <Name>WebServiceErrorSender</Name>
