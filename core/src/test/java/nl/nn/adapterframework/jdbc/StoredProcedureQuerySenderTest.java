@@ -1,12 +1,16 @@
 package nl.nn.adapterframework.jdbc;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.oneOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
@@ -33,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -714,6 +719,39 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		final String actual = cleanActualOutput(result);
 
 		assertXmlEquals(expectedOutput, actual);
+	}
+
+	@Test
+	public void testStoredProcedureReturningCursorNotSupported() throws Exception {
+		assumeThat(productKey, is(equalTo("MS_SQL")));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		sender.setQuery("CALL GET_MESSAGES_CURSOR(?,?,?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+
+		Parameter parameter = new Parameter("content", value);
+		sender.addParameter(parameter);
+		Parameter countParam = new Parameter();
+		countParam.setName("count");
+		countParam.setType(Parameter.ParameterType.INTEGER);
+		countParam.setMode(Parameter.ParameterMode.OUTPUT);
+		sender.addParameter(countParam);
+		Parameter cursorParam = new Parameter();
+    	cursorParam.setName("cursor1");
+    	cursorParam.setType(Parameter.ParameterType.LIST);
+    	cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
+    	sender.addParameter(cursorParam);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act // Assert
+		SenderException exception = assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
+
+		assertThat(exception.getMessage(), containsString("REF_CURSOR is not supported"));
 	}
 
 	@Test

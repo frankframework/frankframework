@@ -35,6 +35,8 @@ import javax.jms.JMSException;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.dbms.JdbcException;
@@ -85,34 +87,25 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		if (getQueryTypeEnum() != QueryType.SELECT && getQueryTypeEnum() != QueryType.OTHER) {
 			throw new ConfigurationException("For StoredProcedureSender, queryType can only be 'SELECT' or 'OTHER'");
 		}
-		if (getQueryTypeEnum() == QueryType.SELECT && !getDbmsSupport().isStoredProcedureResultSetSupported()) {
-			throw new ConfigurationException("QueryType SELECT for Stored Procedures is not supported for database " + getDbmsSupport().getDbmsName());
-		}
 
 		super.configure();
 
 		// Have to check this after "super.configure()" b/c otherwise the datasource-name is not set
 		// and cannot check DMBS support features.
-		if (!getDbmsSupport().isStoredProceduresSupported()) {
-			throw new ConfigurationException("Stored Procedures are not supported for database " + getDbmsSupport().getDbmsName());
+		if (getQueryTypeEnum() == QueryType.SELECT && !getDbmsSupport().isStoredProcedureResultSetSupported()) {
+			throw new ConfigurationException("QueryType SELECT for Stored Procedures is not supported for database " + getDbmsSupport().getDbmsName());
 		}
 
 		outputParameters = buildOutputParameterMap(getParameterList(), getQuery());
-		if (!outputParameters.isEmpty() && (!getDbmsSupport().isStoredProcedureOutParametersSupported())) {
-			throw new ConfigurationException("Stored Procedure OUT parameters are not supported for database " + getDbmsSupport().getDbmsName());
-		}
-		boolean hasCursorOutParam = outputParameters.values().stream()
-				.anyMatch(p -> p.getType() == Parameter.ParameterType.LIST);
-		if (hasCursorOutParam && !getDbmsSupport().isStoredProcedureRefCursorOutParameterSupported()) {
-			throw new ConfigurationException("Cursor or Ref Cursor OUT parameters for stored procedures are not supported for " + getDbmsSupport().getDbmsName());
-		}
-
 		if (isScalar() && outputParameters.size() > 1) {
-			throw new ConfigurationException("When result should be scalar, only a single output can be returned from the stored procedure.");
+			ConfigurationWarnings.add(this, log, "When result should be scalar, only the first output parameter is used. Others are ignored.", SuppressKeys.CONFIGURATION_VALIDATION);
+		}
+		if (getQueryTypeEnum() == QueryType.SELECT && !outputParameters.isEmpty()) {
+			ConfigurationWarnings.add(this, log, "OUT parameters are ignored when QueryType = SELECT", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 
 		if (!getQuery().matches("(?i)^\\s*(call|exec|\\{\\s*\\?(\\{\\w+\\})?\\s*=\\s*call)\\s+.*")) {
-			throw new ConfigurationException("Stored Procedure query should start with CALL or EXEC SQL statement");
+			ConfigurationWarnings.add(this, log, "Stored Procedure query should start with CALL or EXEC SQL statement", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 	}
 

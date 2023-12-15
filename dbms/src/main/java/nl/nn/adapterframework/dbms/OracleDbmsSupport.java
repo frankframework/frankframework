@@ -274,11 +274,6 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
-	public boolean isStoredProcedureRefCursorOutParameterSupported() {
-		return true;
-	}
-
-	@Override
 	public SQLType getCursorSqlType() {
 		return ORACLE_CURSOR_TYPE_DEF;
 	}
