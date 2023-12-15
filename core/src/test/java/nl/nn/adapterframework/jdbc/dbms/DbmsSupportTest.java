@@ -723,13 +723,13 @@ public class DbmsSupportTest {
 		}
 
 		@Override
-		public void initAction(Connection conn) throws SQLException {
-			conn.setAutoCommit(false);
+		public void initAction(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
+			databaseTestEnvironment.getConnection().setAutoCommit(false);
 		}
 
 		@Override
-		public void action(Connection conn) throws SQLException {
-			try (Statement stmt2 = conn.createStatement()) {
+		public void action(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
+			try (Statement stmt2 = databaseTestEnvironment.getConnection().createStatement()) {
 				stmt2.setFetchSize(1);
 				try (ResultSet rs2 = stmt2.executeQuery(query)) {
 					assertTrue(rs2.next());
@@ -740,8 +740,8 @@ public class DbmsSupportTest {
 		}
 
 		@Override
-		public void finalizeAction(Connection conn) throws SQLException {
-			conn.rollback();
+		public void finalizeAction(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
+			databaseTestEnvironment.getConnection().rollback();
 		}
 	}
 
