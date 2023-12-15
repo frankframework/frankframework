@@ -1,19 +1,29 @@
 package nl.nn.adapterframework.jdbc;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 
+import java.io.StringWriter;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Date;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 
+import liquibase.Contexts;
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.resource.ClassLoaderResourceAccessor;
+import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowsingIterator;
 import nl.nn.adapterframework.core.IMessageBrowsingIteratorItem;
@@ -24,44 +34,88 @@ import nl.nn.adapterframework.dbms.Dbms;
 import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.receivers.MessageWrapper;
 import nl.nn.adapterframework.receivers.RawMessageWrapper;
+import nl.nn.adapterframework.testutil.TestConfiguration;
+import nl.nn.adapterframework.testutil.TransactionManagerType;
+import nl.nn.adapterframework.testutil.junit.DatabaseTest;
+import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
+import nl.nn.adapterframework.testutil.junit.WithLiquibase;
+import nl.nn.adapterframework.util.LogUtil;
 
-public class MessageStoreListenerTest extends JdbcTestBase {
+@WithLiquibase(tableName = MessageStoreListenerTest.tableName, file = "Migrator/JdbcTestBaseQuery.xml")
+public class MessageStoreListenerTest {
 
 	private MessageStoreListener listener;
+	protected static final String tableName = "MSLT_TABLE";
+	protected Liquibase liquibase;
+	protected static Logger log = LogUtil.getLogger(MessageStoreListenerTest.class);
+	private @Getter TestConfiguration configuration;
 	private JdbcTransactionalStorage<String> storage;
-	private final String tableName = "JDBCTRANSACTIONALSTORAGETEST";
 	private final String slotId = "slot";
 	private final String messageIdField = "MESSAGEID";
 
+	@DatabaseTest.Parameter(0)
+	private TransactionManagerType transactionManagerType;
 
-	@Before
-	@Override
-	public void setup() throws Exception {
-		super.setup();
-		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2)); // tests are based on H2 syntax queries
+	@DatabaseTest.Parameter(1)
+	private String dataSourceName;
+
+	private TestConfiguration getConfiguration() {
+		return transactionManagerType.getConfigurationContext(dataSourceName);
+	}
+
+	@BeforeEach
+	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2)); // tests are based on H2 syntax queries
+		listener = new MessageStoreListener();
 		listener = getConfiguration().createBean(MessageStoreListener.class);
-		autowire(listener);
 		listener.setTableName(tableName);
 		listener.setMessageIdField(messageIdField);
 		listener.setSlotId(slotId);
+		autowire(listener);
+		getConfiguration().getIbisManager();
+		getConfiguration().autowireByName(listener);
 
 		storage = getConfiguration().createBean(JdbcTransactionalStorage.class);
-		autowire(storage);
 		storage.setTableName(tableName);
 		storage.setIdField(messageIdField);
 		storage.setSlotId(slotId);
 		System.setProperty("tableName", tableName);
+		autowire(storage);
 
-		runMigrator(TEST_CHANGESET_PATH);
+		runMigrator("Migrator/Ibisstore_4_unittests_changeset.xml", databaseTestEnvironment);
 	}
 
-	@After
-	@Override
-	public void teardown() throws Exception {
+	@AfterEach
+	public void teardown(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
 		if(listener != null) {
 			listener.close();
 		}
-		super.teardown();
+		databaseTestEnvironment.close();
+	}
+
+	protected final Connection createNonTransactionalConnection(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
+		Connection connection = databaseTestEnvironment.getConnection();
+		connection.setAutoCommit(true); //Ensure this connection is NOT transactional!
+		return connection;
+	}
+
+	//IBISSTORE_CHANGESET_PATH
+	protected void runMigrator(String changeLogFile, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(createNonTransactionalConnection(databaseTestEnvironment)));
+		liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
+		liquibase.forceReleaseLocks();
+		StringWriter out = new StringWriter(2048);
+		liquibase.reportStatus(true, new Contexts(), out);
+		log.info("Liquibase Database: {}, {}", liquibase.getDatabase().getDatabaseProductName(), liquibase.getDatabase().getDatabaseProductVersion());
+		log.info("Liquibase Database connection: {}", liquibase.getDatabase());
+		log.info("Liquibase changeset status:");
+		log.info(out.toString());
+		liquibase.update(new Contexts());
+	}
+
+	protected void autowire(JdbcFacade jdbcFacade) {
+		configuration.autowireByName(jdbcFacade);
+		jdbcFacade.setDatasourceName(dataSourceName);
 	}
 
 
@@ -76,13 +130,13 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 	}
 
 
-	@Test
+	@DatabaseTest
 	public void testSetup() throws ConfigurationException, ListenerException {
 		listener.configure();
 		listener.open();
 	}
 
-	@Test
+	@DatabaseTest
 	public void testSelectQuery() throws ConfigurationException {
 		listener.configure();
 
@@ -91,7 +145,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals(expected, listener.getSelectQuery());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testSelectQueryNoSlotId() throws ConfigurationException {
 		listener.setSlotId(null);
 		listener.configure();
@@ -101,7 +155,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals(expected, listener.getSelectQuery());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testSelectQueryWithSelectCondition() throws ConfigurationException {
 		listener.setSelectCondition("t.TVARCHAR='x'");
 		listener.configure();
@@ -111,7 +165,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals(expected, listener.getSelectQuery());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testSelectQueryWithSelectConditionNoSlotId() throws ConfigurationException {
 		listener.setSlotId(null);
 		listener.setSelectCondition("t.TVARCHAR='x'");
@@ -122,7 +176,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals(expected, listener.getSelectQuery());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testUpdateStatusQueryDone() throws ConfigurationException {
 		listener.configure();
 
@@ -131,7 +185,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.DONE));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testUpdateStatusQueryDoneNoMoveToMessageLog() throws ConfigurationException {
 		listener.setMoveToMessageLog(false);
 		listener.configure();
@@ -141,7 +195,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.DONE));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testUpdateStatusQueryError() throws ConfigurationException {
 		listener.configure();
 
@@ -150,7 +204,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testUpdateStatusQueryWithSelectCondition() throws ConfigurationException {
 		listener.setSelectCondition("1=1");
 		listener.configure();
@@ -160,9 +214,9 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals(expected, listener.getUpdateStatusQuery(ProcessState.ERROR));
 	}
 
-	@Test
-	public void testGetMessageCountQueryAvailable() throws Exception {
-		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+	@DatabaseTest
+	public void testGetMessageCountQueryAvailable(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2));
 		listener.configure();
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
@@ -172,9 +226,9 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
 
-	@Test
-	public void testGetMessageCountQueryError() throws Exception {
-		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+	@DatabaseTest
+	public void testGetMessageCountQueryError(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2));
 		listener.configure();
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.ERROR);
@@ -184,10 +238,10 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
 
-	@Test
-	public void testGetMessageCountQueryAvailableWithSelectCondition() throws Exception {
+	@DatabaseTest
+	public void testGetMessageCountQueryAvailableWithSelectCondition(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		listener.setSelectCondition("t.VARCHAR='A'");
-		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2));
 		listener.configure();
 
 		JdbcTableMessageBrowser browser = getMessageBrowser(ProcessState.AVAILABLE);
@@ -197,9 +251,9 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
 
-	@Test
-	public void testGetMessageCountQueryErrorSelectCondition() throws Exception {
-		assumeThat(dbmsSupport.getDbms(),equalTo(Dbms.H2));
+	@DatabaseTest
+	public void testGetMessageCountQueryErrorSelectCondition(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeThat(databaseTestEnvironment.getDbmsSupport().getDbms(), equalTo(Dbms.H2));
 		listener.setSelectCondition("t.VARCHAR='A'");
 		listener.configure();
 
@@ -210,7 +264,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertEquals(expected, browser.getMessageCountQuery);
 	}
 
-	@Test
+	@DatabaseTest
 	public void testMessageBrowserContainsMessageId() throws Exception {
 		listener.configure();
 		listener.open();
@@ -223,7 +277,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertTrue(browser.containsMessageId("fakeMid"));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testMessageBrowserContainsCorrelationId() throws Exception {
 		listener.configure();
 		listener.open();
@@ -236,7 +290,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		assertTrue(browser.containsCorrelationId("fakeCid"));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testMessageBrowserBrowseMessage() throws Exception {
 		listener.configure();
 		listener.open();
@@ -260,7 +314,7 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 		}
 	}
 
-	@Test
+	@DatabaseTest
 	public void testMessageBrowserIterator() throws Exception {
 		listener.configure();
 		listener.open();
@@ -295,5 +349,4 @@ public class MessageStoreListenerTest extends JdbcTestBase {
 			storage.close();
 		}
 	}
-
 }
