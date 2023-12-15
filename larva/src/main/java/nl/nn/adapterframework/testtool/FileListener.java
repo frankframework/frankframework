@@ -140,18 +140,18 @@ public class FileListener implements IConfigurable, AutoCloseable {
 				}
 			}
 			if (file != null && file.exists()) {
-				StringBuilder stringBuffer = new StringBuilder();
+				StringBuilder stringBuilder = new StringBuilder();
 				try (InputStream fileInputStream = new FileInputStream(file)) {
 					byte[] buffer = new byte[StreamUtil.BUFFERSIZE];
 					int length = fileInputStream.read(buffer);
 					while (length != -1) {
-						stringBuffer.append(new String(buffer, 0, length, StandardCharsets.UTF_8));
+						stringBuilder.append(new String(buffer, 0, length, StandardCharsets.UTF_8));
 						length = fileInputStream.read(buffer);
 					}
 				} catch(IOException e) {
 					throw new ListenerException("Exception reading file '" + file.getAbsolutePath() + "': " + e.getMessage(), e);
 				}
-				result = stringBuffer.toString();
+				result = stringBuilder.toString();
 				try {
 					Files.delete(file.toPath());
 				} catch (IOException e) {

@@ -33,11 +33,11 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderResult;
+import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.util.StreamUtil;
-import nl.nn.adapterframework.dbms.JdbcException;
 
 public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
@@ -726,7 +726,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	private static String loadOutputExpectation(final String file, final String value, final long[] ids) throws IOException {
 		String expectedOutput = loadOutputExpectation(file, value);
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		Matcher matcher = Pattern.compile("MSG-ID").matcher(expectedOutput);
 		int idx = 0;
 		while (matcher.find()) {
