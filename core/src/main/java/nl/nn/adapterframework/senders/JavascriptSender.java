@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.ISender;
 import nl.nn.adapterframework.core.ParameterException;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -71,7 +70,7 @@ public class JavascriptSender extends SenderSeries {
 		J2V8(J2V8.class);
 
 		private final Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
-		private JavaScriptEngines(Class<? extends JavascriptEngine<?>> engine) {
+		JavaScriptEngines(Class<? extends JavascriptEngine<?>> engine) {
 			this.engine = engine;
 		}
 
@@ -184,7 +183,7 @@ public class JavascriptSender extends SenderSeries {
 	 **/
 	private String adaptES6Literals(final String source) {
 		Matcher m = es6VarPattern.matcher(source);
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		while (m.find()) {
 			StringBuilder buf = new StringBuilder(m.group());
 			buf.replace(m.start(1) - m.start(), m.end(1) - m.start(), "var");
@@ -208,11 +207,8 @@ public class JavascriptSender extends SenderSeries {
 
 	/**
 	 * the name of the JavaScript engine to be used.
-	 * @deprecated Both Nashorn and Rhino are deprecated. Use J2V8 instead.
 	 * @ff.default J2V8
 	 */
-	@Deprecated
-	@ConfigurationWarning("JavaScript engines Nashorn and Rhino deprecated. Use \"J2V8\" instead")
 	public void setEngineName(JavaScriptEngines engineName) {
 		this.engine = engineName;
 	}

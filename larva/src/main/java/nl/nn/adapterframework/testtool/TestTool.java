@@ -28,6 +28,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.ParsePosition;
@@ -1724,15 +1725,15 @@ public class TestTool {
 		if (encoding != null) {
 			Reader inputStreamReader = null;
 			try {
-				StringBuilder stringBuffer = new StringBuilder();
+				StringBuilder stringBuilder = new StringBuilder();
 				inputStreamReader = StreamUtil.getCharsetDetectingInputStreamReader(new FileInputStream(fileName), encoding);
 				char[] cbuf = new char[4096];
 				int len = inputStreamReader.read(cbuf);
 				while (len != -1) {
-					stringBuffer.append(cbuf, 0, len);
+					stringBuilder.append(cbuf, 0, len);
 					len = inputStreamReader.read(cbuf);
 				}
-				result = stringBuffer.toString();
+				result = stringBuilder.toString();
 			} catch (Exception e) {
 				errorMessage("Could not read file '" + fileName + "': " + e.getMessage(), e, writers);
 			} finally {
@@ -2170,36 +2171,33 @@ public class TestTool {
 			if (j != -1) {
 				debugMessage("Key 2 found", writers);
 				String encoded = result.substring(i + key1.length(), j);
-				String unzipped = null;
-				byte[] decodedBytes = null;
-				Base64 decoder = new Base64();
+				String unzipped;
+				byte[] decodedBytes;
 				debugMessage("Decode", writers);
-				decodedBytes = decoder.decodeBase64(encoded);
-				if (unzipped == null) {
-					try {
-						debugMessage("Unzip", writers);
-						StringBuilder stringBuffer = new StringBuilder();
-						stringBuffer.append("<tt:file xmlns:tt=\"testtool\">");
-						ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(decodedBytes));
-						stringBuffer.append("<tt:name>" + zipInputStream.getNextEntry().getName() + "</tt:name>");
-						stringBuffer.append("<tt:content>");
-						byte[] buffer = new byte[1024];
-						int readLength = zipInputStream.read(buffer);
-						while (readLength != -1) {
-							String part = new String(buffer, 0, readLength, "UTF-8");
-							if (replaceNewlines) {
-								part = StringUtils.replace(StringUtils.replace(part, "\r", "[CARRIAGE RETURN]"), "\n", "[LINE FEED]");
-							}
-							stringBuffer.append(part);
-							readLength = zipInputStream.read(buffer);
+				decodedBytes = Base64.decodeBase64(encoded);
+				try {
+					debugMessage("Unzip", writers);
+					StringBuilder stringBuilder = new StringBuilder();
+					stringBuilder.append("<tt:file xmlns:tt=\"testtool\">");
+					ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(decodedBytes));
+					stringBuilder.append("<tt:name>").append(zipInputStream.getNextEntry().getName()).append("</tt:name>");
+					stringBuilder.append("<tt:content>");
+					byte[] buffer = new byte[1024];
+					int readLength = zipInputStream.read(buffer);
+					while (readLength != -1) {
+						String part = new String(buffer, 0, readLength, StandardCharsets.UTF_8);
+						if (replaceNewlines) {
+							part = StringUtils.replace(StringUtils.replace(part, "\r", "[CARRIAGE RETURN]"), "\n", "[LINE FEED]");
 						}
-						stringBuffer.append("</tt:content>");
-						stringBuffer.append("</tt:file>");
-						unzipped = stringBuffer.toString();
-					} catch(Exception e) {
-						errorMessage("Could not unzip: " + e.getMessage(), e, writers);
-						unzipped = encoded;
+						stringBuilder.append(part);
+						readLength = zipInputStream.read(buffer);
 					}
+					stringBuilder.append("</tt:content>");
+					stringBuilder.append("</tt:file>");
+					unzipped = stringBuilder.toString();
+				} catch (Exception e) {
+					errorMessage("Could not unzip: " + e.getMessage(), e, writers);
+					unzipped = encoded;
 				}
 				result = result.substring(0, i) + key1 + unzipped + result.substring(j);
 				i = result.indexOf(key1, i + key1.length() + unzipped.length() + key2.length());
