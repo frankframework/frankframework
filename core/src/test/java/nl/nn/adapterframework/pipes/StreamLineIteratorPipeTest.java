@@ -8,8 +8,6 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.ISender;
-
-import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -20,7 +18,7 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 
-public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIteratorPipe> {
+class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLineIteratorPipe> {
 
 	@Override
 	public StreamLineIteratorPipe createPipe() {
@@ -342,7 +340,7 @@ public class StreamLineIteratorPipeTest extends IteratingPipeTestBase<StreamLine
 			public SenderResult sendMessage(String blockHandle, Message message, PipeLineSession session) throws SenderException {
 				try {
 					String result = message.asString();
-					resultLog.append(result+"\n");
+					resultLog.append(result).append("\n");
 					return new SenderResult(result);
 				} catch (IOException e) {
 					throw new SenderException(e);

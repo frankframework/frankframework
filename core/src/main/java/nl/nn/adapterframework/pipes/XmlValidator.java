@@ -75,7 +75,7 @@ import nl.nn.adapterframework.xml.RootElementToSessionKeyFilter;
 
 
 /**
- * Pipe that validates the input message against a XML Schema.
+ * Pipe that validates the input message against an XML Schema.
  *
  * @ff.forward parserError a parser exception occurred, probably caused by non-well-formed XML. If not specified, <code>failure</code> is used in such a case.
  * @ff.forward failure The document is not valid according to the configured schema.

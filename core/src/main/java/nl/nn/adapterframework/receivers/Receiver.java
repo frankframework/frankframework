@@ -2054,7 +2054,7 @@ public class Receiver<M> extends TransactionAttributes implements IManagable, IR
 	}
 
 	/**
-	 * The number of seconds waited after an unsuccessful poll attempt, before another poll attempt is made. Only for polling listeners, not for e.g. ifsa, jms, webservice or javaListeners
+	 * The number of seconds waited after an unsuccessful poll attempt, before another poll attempt is made. Only for polling listeners, not for e.g. jms, webservice or javaListeners
 	 * @ff.default 10
 	 */
 	public void setPollInterval(int i) {

@@ -5,10 +5,10 @@
 		This XSLT transforms the entire IBIS configuration to a flowchart in dot format:
 		- every adapter in the flow is represented by a box
 		- every listener (in a receiver) is represented by an ellipse; excepting an interal JavaListener which is represented by a point
-		- the following listeners are recognized: JAVA (interal/external) (JavaListener), FILE (DirectoryListener), FXF (FxfListener), IFSA (IfsaProviderListener),JDBC (JdbcQueryListener), JMS (JmsListener), SAP (SapListener), TIBCO (EsbJmsListener) and WEB (WebServiceListener)
+		- the following listeners are recognized: JAVA (interal/external) (JavaListener), FILE (DirectoryListener), FXF (FxfListener), JDBC (JdbcQueryListener), JMS (JmsListener), SAP (SapListener), TIBCO (EsbJmsListener) and WEB (WebServiceListener)
 		- for every listener (in a receiver) a line (with arrowhead) is drawn between the listener and the adapter
 		- every sender (in a pipe) is represented by an ellipse; by class and adapter only one sender is included in the flow
-		- the following senders are recognized: JAVA (internal) (IbisLocalSender), JAVA (external) (IbisJavaSender), FXF (FxfSender), IFSA (IIfsaRequesterSender), JDBC (JdbcQueryListener/DirectQuerySender/XmlQuerySender), JMS (JmsSender), LDAP (LdapSender), LOG (LogSender), SAP (SapSender), TIBCO (EsbJmsSender) and WEB (WebServiceSender)
+		- the following senders are recognized: JAVA (internal) (IbisLocalSender), JAVA (external) (IbisJavaSender), FXF (FxfSender), JDBC (JdbcQueryListener/DirectQuerySender/XmlQuerySender), JMS (JmsSender), LDAP (LdapSender), LOG (LogSender), SAP (SapSender), TIBCO (EsbJmsSender) and WEB (WebServiceSender)
 		- for every sender (in a pipe) a line (with arrowhead) is drawn between the adapter and the sender
 		- every job (in a scheduler) is represented by a octagon
 		- if a job has function 'sendMessage' then a line (with arrowhead) is drawn between the job and concerned listener
@@ -100,9 +100,6 @@
 					<xsl:when test="$class='FxfListener'">
 						<xsl:text>FXF</xsl:text>
 					</xsl:when>
-					<xsl:when test="$class='IfsaProviderListener'">
-						<xsl:text>IFSA</xsl:text>
-					</xsl:when>
 					<xsl:when test="$class='JdbcQueryListener'">
 						<xsl:text>JDBC</xsl:text>
 					</xsl:when>
@@ -189,9 +186,6 @@
 							<xsl:text>&quot;</xsl:text>
 							<xsl:text>JAVA\n(external)</xsl:text>
 							<xsl:text>&quot;</xsl:text>
-						</xsl:when>
-						<xsl:when test="$class='IfsaRequesterSender'">
-							<xsl:text>IFSA</xsl:text>
 						</xsl:when>
 						<xsl:when test="$class='FixedQuerySender' or $class='DirectQuerySender' or $class='XmlQuerySender'">
 							<xsl:text>JDBC</xsl:text>

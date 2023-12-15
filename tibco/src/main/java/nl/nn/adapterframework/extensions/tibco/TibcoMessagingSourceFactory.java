@@ -55,8 +55,8 @@ public class TibcoMessagingSourceFactory extends JmsMessagingSourceFactory {
 	}
 
 	@Override
-	protected MessagingSource createMessagingSource(String serverUrl, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
-		ConnectionFactory connectionFactory = getConnectionFactory(null, serverUrl, createDestination, useJms102);
+	protected MessagingSource createMessagingSource(String serverUrl, String authAlias, boolean createDestination) throws IbisException {
+		ConnectionFactory connectionFactory = getConnectionFactory(null, serverUrl, createDestination);
 		return new TibcoMessagingSource(serverUrl, null, connectionFactory, getMessagingSourceMap(),authAlias);
 	}
 

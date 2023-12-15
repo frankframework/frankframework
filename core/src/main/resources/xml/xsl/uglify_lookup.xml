@@ -50,11 +50,6 @@
     <ClassName>nl.nn.adapterframework.http.HttpListener</ClassName>
   </Element>
   <Element>
-    <Name>IfsaSimulatorJmsListener</Name>
-    <Type>listener</Type>
-    <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsListener</ClassName>
-  </Element>
-  <Element>
     <Name>JavaListener</Name>
     <Type>listener</Type>
     <ClassName>nl.nn.adapterframework.receivers.JavaListener</ClassName>
@@ -123,11 +118,6 @@
     <Name>SimpleJdbcListener</Name>
     <Type>listener</Type>
     <ClassName>nl.nn.adapterframework.jdbc.SimpleJdbcListener</ClassName>
-  </Element>
-  <Element>
-    <Name>TibcoListener</Name>
-    <Type>listener</Type>
-    <ClassName>nl.nn.adapterframework.extensions.tibco.TibcoListener</ClassName>
   </Element>
   <Element>
     <Name>TibcoLogJmsListener</Name>
@@ -253,11 +243,6 @@
     <Name>IbisWebServiceSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.http.IbisWebServiceSender</ClassName>
-  </Element>
-  <Element>
-    <Name>IfsaSimulatorJmsSender</Name>
-    <Type>sender</Type>
-    <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsSender</ClassName>
   </Element>
   <Element>
     <Name>JavascriptSender</Name>
@@ -388,11 +373,6 @@
     <Name>ShadowSender</Name>
     <Type>sender</Type>
     <ClassName>nl.nn.adapterframework.senders.ShadowSender</ClassName>
-  </Element>
-  <Element>
-    <Name>TibcoSender</Name>
-    <Type>sender</Type>
-    <ClassName>nl.nn.adapterframework.extensions.tibco.TibcoSender</ClassName>
   </Element>
   <Element>
     <Name>WebServiceNtlmSender</Name>
@@ -1120,11 +1100,6 @@
     <ClassName>nl.nn.adapterframework.http.IbisWebServiceSender</ClassName>
   </Element>
   <Element>
-    <Name>IfsaSimulatorJmsErrorSender</Name>
-    <Type>errorSender</Type>
-    <ClassName>nl.nn.adapterframework.extensions.ifsa.IfsaSimulatorJmsSender</ClassName>
-  </Element>
-  <Element>
     <Name>JavascriptErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.senders.JavascriptSender</ClassName>
@@ -1233,11 +1208,6 @@
     <Name>ShadowErrorSender</Name>
     <Type>errorSender</Type>
     <ClassName>nl.nn.adapterframework.senders.ShadowSender</ClassName>
-  </Element>
-  <Element>
-    <Name>TibcoErrorSender</Name>
-    <Type>errorSender</Type>
-    <ClassName>nl.nn.adapterframework.extensions.tibco.TibcoSender</ClassName>
   </Element>
   <Element>
     <Name>WebServiceErrorSender</Name>

@@ -16,7 +16,6 @@
 package nl.nn.adapterframework.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

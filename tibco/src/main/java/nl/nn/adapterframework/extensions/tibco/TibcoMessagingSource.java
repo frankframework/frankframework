@@ -21,34 +21,33 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.jms.TopicSession;
 import javax.naming.Context;
-
-import nl.nn.adapterframework.jms.JmsException;
-import nl.nn.adapterframework.jms.JmsMessagingSource;
-import nl.nn.adapterframework.jms.MessagingSource;
 
 import org.apache.commons.lang3.StringUtils;
 
 import com.tibco.tibjms.TibjmsConnectionFactory;
 
+import nl.nn.adapterframework.jms.JmsException;
+import nl.nn.adapterframework.jms.JmsMessagingSource;
+import nl.nn.adapterframework.jms.MessagingSource;
+
 /**
  * {@link MessagingSource} for Tibco connections.
- * 
+ *
  * @author 	Gerrit van Brakel
  * @since   4.9
  */
 public class TibcoMessagingSource extends JmsMessagingSource {
 
 	private final TibjmsConnectionFactory connectionFactory;
-	
+
 	public TibcoMessagingSource(String connectionFactoryName, Context context,
 			ConnectionFactory connectionFactory, Map<String, MessagingSource> messagingSourceMap,
 			String authAlias) {
 		super(connectionFactoryName, "", context, connectionFactory,
-				messagingSourceMap, authAlias, false, null, true);
+				messagingSourceMap, authAlias, false, null);
 		this.connectionFactory=(TibjmsConnectionFactory)connectionFactory;
 	}
 
@@ -57,9 +56,7 @@ public class TibcoMessagingSource extends JmsMessagingSource {
 		if (StringUtils.isNotEmpty(getAuthAlias())) {
 			return super.createConnection();
 		}
-		String userName=null;
-		String password=null;
-		return connectionFactory.createConnection(userName,password);
+		return connectionFactory.createConnection(null, null);
 	}
 
 
@@ -73,9 +70,9 @@ public class TibcoMessagingSource extends JmsMessagingSource {
 
 			/* create the destination */
 			if (session instanceof TopicSession) {
-				destination = ((TopicSession)session).createTopic(destinationName);
+				destination = session.createTopic(destinationName);
 			} else {
-				destination = ((QueueSession)session).createQueue(destinationName);
+				destination = session.createQueue(destinationName);
 			}
 
 			return destination;
@@ -85,5 +82,5 @@ public class TibcoMessagingSource extends JmsMessagingSource {
 			releaseSession(session);
 		}
 	}
-	
+
 }
