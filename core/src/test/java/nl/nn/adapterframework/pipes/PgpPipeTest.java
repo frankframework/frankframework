@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -88,7 +90,7 @@ public class PgpPipeTest {
 			byte[] result = decryptionResult.getResult().asByteArray();
 
 			// Assert decrypted message equals to the original message
-			assert result != null;
+			assertNotNull(result);
 			assertEquals(MESSAGE, new String(result));
 			assertEquals("success", expectation);
 		} catch (Exception e) {
