@@ -6,13 +6,12 @@ import java.sql.SQLException;
 import nl.nn.adapterframework.dbms.DbmsException;
 import nl.nn.adapterframework.functional.ThrowingSupplier;
 import nl.nn.adapterframework.testutil.ConcurrentActionTester;
-import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
 
 public abstract class ConcurrentJdbcActionTester extends ConcurrentActionTester {
 
 	private final ThrowingSupplier<Connection, SQLException> connectionSupplier;
 
-	private DatabaseTestEnvironment databaseTestEnvironment;
+	private Connection connection;
 
 	public ConcurrentJdbcActionTester(ThrowingSupplier<Connection,SQLException> connectionSupplier) {
 		super();
@@ -21,34 +20,34 @@ public abstract class ConcurrentJdbcActionTester extends ConcurrentActionTester 
 
 	@Override
 	public final void initAction() throws SQLException, DbmsException {
-		initAction(databaseTestEnvironment);
+		connection = connectionSupplier.get();
+		initAction(connection);
 	}
 
-	public void initAction(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, DbmsException {
+	public void initAction(Connection conn) throws SQLException, DbmsException {
 	}
-
 
 	@Override
 	public final void action() throws SQLException {
-		action(databaseTestEnvironment);
+		action(connection);
 	}
 
-	public void action(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
+	public void action(Connection conn) throws SQLException {
 	}
 
 
 	@Override
 	public final void finalizeAction() throws SQLException {
 		try {
-			finalizeAction(databaseTestEnvironment);
+			finalizeAction(connection);
 		} finally {
-			if (databaseTestEnvironment.getConnection() != null) {
-				databaseTestEnvironment.getConnection().close();
+			if (connection != null) {
+				connection.close();
 			}
 		}
 	}
 
-	public void finalizeAction(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
+	public void finalizeAction(Connection conn) throws SQLException {
 	}
 
 }
