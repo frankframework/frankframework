@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
@@ -55,6 +56,7 @@ import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
 import nl.nn.adapterframework.testutil.junit.WithLiquibase;
 import nl.nn.adapterframework.util.DbmsUtil;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Semaphore;
 
 @WithLiquibase(tableName = JdbcTableListenerTest.tableName, file = "Migrator/JdbcTestBaseQuery.xml")
@@ -63,6 +65,7 @@ public class JdbcTableListenerTest {
 	private JdbcTableListener listener;
 	protected static final String tableName = "JTL_TABLE";
 	private @Getter TestConfiguration configuration;
+	protected static Logger log = LogUtil.getLogger(JdbcTableListenerTest.class);
 
 	/*
 	 * set testNegativePeekWhileGet=true to test that peek does not see new records when there is a record in process.
@@ -650,6 +653,7 @@ public class JdbcTableListenerTest {
 			JdbcUtil.executeStatement(databaseTestEnvironment.getDbmsSupport(), databaseTestEnvironment.getConnection(), "UPDATE " + tableName + " SET TINT=4 WHERE TKEY=10", null, new PipeLineSession());
 		} catch (Exception e) {
 			if (databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.MSSQL) {
+				log.info("Allow MSSQL to fail concurrent update with an exception (happens in case 3, 4 and 5): " + e.getMessage());
 				return false;
 			}
 			fail("Got the message, but cannot update the row: "+e.getMessage());
@@ -682,6 +686,7 @@ public class JdbcTableListenerTest {
 				if (checkpoint == 1) secondaryRead = getMessageInParallel(databaseTestEnvironment);
 
 				String query = databaseTestEnvironment.getDbmsSupport().prepareQueryTextForWorkQueueReading(1, "SELECT TKEY,TINT FROM " + tableName + " WHERE TINT='1'");
+				log.debug("prepare query [" + query + "]");
 				try (PreparedStatement stmt = connection.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE)) {
 
 					if (checkpoint == 2) secondaryRead = getMessageInParallel(databaseTestEnvironment);

@@ -62,18 +62,15 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-		<dependency>
-			<!-- LOG4J SLF4J Binding -->
+		<dependency><!-- LOG4J SLF4J Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j-impl</artifactId>
 		</dependency>
-		<dependency>
-			<!-- Apache Commons Logging Binding -->
+		<dependency><!-- Apache Commons Logging Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jcl</artifactId>
 		</dependency>
-		<dependency>
-			<!-- Java Util Logging Binding -->
+		<dependency><!-- Java Util Logging Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jul</artifactId>
 		</dependency>
@@ -104,18 +101,15 @@
 			<version>${micrometer.version}</version>
 		</dependency>
 
-		<dependency>
-			<!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
+		<dependency><!-- explicit dependency to force version 1.2.2 which handles javax.activation.* imports, compatible with the IBM JRE -->
 			<groupId>jakarta.activation</groupId>
 			<artifactId>jakarta.activation-api</artifactId>
 		</dependency>
-		<dependency>
-			<!-- this dependency handles jakarta.activation.* imports -->
+		<dependency><!-- this dependency handles jakarta.activation.* imports -->
 			<groupId>com.sun.activation</groupId>
 			<artifactId>jakarta.activation</artifactId>
 		</dependency>
-		<dependency>
-			<!-- javax based dependency -->
+		<dependency><!-- javax based dependency -->
 			<groupId>jakarta.xml.soap</groupId>
 			<artifactId>jakarta.xml.soap-api</artifactId>
 			<version>3.0.1</version>
@@ -323,14 +317,12 @@
 			<artifactId>mongodb-driver-sync</artifactId>
 			<version>${mongodb.driver.version}</version>
 		</dependency>
-		<dependency>
-			<!-- Needed for WsdlUtils, for cosmeticly better wsdls. Woodstox messes up attribute order, and namespace definitions -->
+		<dependency><!-- Needed for WsdlUtils, for cosmeticly better wsdls. Woodstox messes up attribute order, and namespace definitions -->
 			<groupId>com.sun.xml.stream</groupId>
 			<artifactId>sjsxp</artifactId>
 			<version>1.0.2</version>
 			<exclusions>
-				<exclusion>
-					<!-- excluded because we want the stax2 api -->
+				<exclusion><!-- excluded because we want the stax2 api -->
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
 				</exclusion>
@@ -362,8 +354,7 @@
 					<groupId>org.apache.geronimo.javamail</groupId>
 					<artifactId>geronimo-javamail_1.4_mail</artifactId>
 				</exclusion>
-				<exclusion>
-					<!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
+				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
@@ -475,8 +466,7 @@
 			<artifactId>xmlbeans</artifactId>
 			<version>5.2.0</version>
 			<exclusions>
-				<exclusion>
-					<!-- Java 8 scoped profile -->
+				<exclusion><!-- Java 8 scoped profile -->
 					<groupId>xml-apis</groupId>
 					<artifactId>xml-apis</artifactId>
 				</exclusion>
@@ -528,8 +518,7 @@
 			<version>4.5.14</version>
 		</dependency>
 
-		<dependency>
-			<!-- Only used in XmlUtils.toXhtml -->
+		<dependency> <!-- Only used in XmlUtils.toXhtml -->
 			<groupId>net.sourceforge.htmlcleaner</groupId>
 			<artifactId>htmlcleaner</artifactId>
 			<version>2.29</version>
@@ -640,8 +629,7 @@
 					<groupId>org.apache.geronimo.specs</groupId>
 					<artifactId>geronimo-jta_1.1_spec</artifactId>
 				</exclusion>
-				<exclusion>
-					<!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
+				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
@@ -795,8 +783,7 @@
 			<artifactId>tika-core</artifactId>
 			<version>1.28.5</version>
 			<exclusions>
-				<exclusion>
-					<!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
+				<exclusion><!-- excluded because we want to ignore this (1.2.2) version! this dependency handles javax.activation.* imports, and is NOT compatible with the IBM JRE -->
 					<groupId>jakarta.activation</groupId>
 					<artifactId>jakarta.activation-api</artifactId>
 				</exclusion>
