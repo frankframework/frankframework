@@ -206,16 +206,6 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 		sender.setXsltVersion(xsltVersion);
 	}
 
-	/**
-	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
-	 */
-	@Deprecated
-	@ReferTo(XsltSender.class)
-	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
-	public void setXslt2(boolean b) {
-		sender.setXslt2(b);
-	}
-
 	@Deprecated
 	@ConfigurationWarning("Please use 'storeResultInSessionKey' with preserveInput=true")
 	/** If set, then the XsltPipe stores it result in the session using the supplied sessionKey, and returns its input as result */

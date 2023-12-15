@@ -107,7 +107,7 @@ public class IfsaRequesterSender extends IfsaFacade implements ISenderWithParame
 		try {
 			closeService();
 		} catch (Throwable e) {
-			throw new SenderException(getLogPrefix() + "got error occured stopping sender", e);
+			throw new SenderException(getLogPrefix() + "got error occurred stopping sender", e);
 		}
 	}
 

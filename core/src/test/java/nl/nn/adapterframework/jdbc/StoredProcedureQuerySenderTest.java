@@ -41,6 +41,7 @@ import nl.nn.adapterframework.dbms.JdbcException;
 
 public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
+	public static final String TEST_DATA_STRING = "tést-data";
 	StoredProcedureQuerySender sender;
 
 	PipeLineSession session;
@@ -157,7 +158,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		p2.setSessionKey("data");
 		p2.setType(Parameter.ParameterType.BINARY);
 		sender.addParameter(p2);
-		session.put("data", new ByteArrayInputStream("test-data".getBytes(StandardCharsets.UTF_8)));
+		session.put("data", new ByteArrayInputStream(TEST_DATA_STRING.getBytes(StandardCharsets.UTF_8)));
 
 		sender.configure();
 		sender.open();
@@ -170,7 +171,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		// Assert
 		assertTrue(result.isSuccess());
 		String blobValue = getBlobValueAsString(id);
-		assertEquals("test-data", blobValue);
+		assertEquals(TEST_DATA_STRING, blobValue);
 	}
 
 	@Test
@@ -191,7 +192,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		p2.setSessionKey("data");
 		p2.setType(Parameter.ParameterType.CHARACTER);
 		sender.addParameter(p2);
-		session.put("data", new StringReader("test-data"));
+		session.put("data", new StringReader(TEST_DATA_STRING));
 
 		sender.configure();
 		sender.open();
@@ -204,7 +205,43 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		// Assert
 		assertTrue(result.isSuccess());
 		String clobValue = getClobValueAsString(id);
-		assertEquals("test-data", clobValue);
+		assertEquals(TEST_DATA_STRING, clobValue);
+	}
+
+	@Test
+	public void testSimpleStoredProcedureClobInputParameter2() throws Exception {
+		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL", "DB2")));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long id = insertRowWithMessageValue(value);
+		sender.setQuery("CALL SET_CLOB(?, ?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+		sender.setScalar(true);
+
+		Parameter p1 = new Parameter("id", String.valueOf(id));
+		p1.setType(Parameter.ParameterType.NUMBER);
+		sender.addParameter(p1);
+		Parameter p2 = new Parameter("data", null);
+		p2.setSessionKey("data");
+		p2.setType(Parameter.ParameterType.CHARACTER);
+		sender.addParameter(p2);
+		Message message1 = Message.asMessage(new StringReader(TEST_DATA_STRING));
+		message1.getContext().withSize(TEST_DATA_STRING.getBytes().length);
+		session.put("data", message1);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+		String clobValue = getClobValueAsString(id);
+		assertEquals(TEST_DATA_STRING, clobValue);
 	}
 
 	@Test

@@ -143,7 +143,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 	private Number maxInclusive;
 	private @Getter boolean hidden = false;
 	private @Getter boolean removeNamespaces=false;
-	private @Getter int xsltVersion=0; // set to 0 for auto detect.
+	private @Getter int xsltVersion = 0; // set to 0 for auto-detect.
 
 	private @Getter DecimalFormatSymbols decimalFormatSymbols = null;
 	private TransformerPool transformerPool = null;
@@ -955,16 +955,11 @@ public class Parameter implements IConfigurable, IWithParameters {
 	}
 
 	/**
-	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect	 * @ff.default 0
+	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto-detect
+	 * @ff.default 0
 	 */
 	public void setXsltVersion(int xsltVersion) {
 		this.xsltVersion=xsltVersion;
-	}
-
-	@Deprecated
-	@ConfigurationWarning("Its value is now auto detected. If necessary, replace with a setting of xsltVersion")
-	public void setXslt2(boolean b) {
-		xsltVersion=b?2:1;
 	}
 
 	/**

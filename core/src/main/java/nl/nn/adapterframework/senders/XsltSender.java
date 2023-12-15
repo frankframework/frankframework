@@ -34,7 +34,6 @@ import org.xml.sax.XMLReader;
 import lombok.Getter;
 import lombok.Setter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
-import nl.nn.adapterframework.configuration.ConfigurationWarning;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
@@ -87,7 +86,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	private @Getter boolean handleLexicalEvents=false;
 	private @Getter boolean removeNamespaces=false;
 	private @Getter boolean skipEmptyTags=false;
-	private @Getter int xsltVersion=0; // set to 0 for auto detect.
+	private @Getter int xsltVersion=0; // set to 0 for auto-detect.
 	private @Getter boolean debugInput = false;
 
 	private TransformerPool transformerPool;
@@ -421,7 +420,7 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	}
 
 	/**
-	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto detect
+	 * If set to <code>2</code> or <code>3</code> a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). <code>0</code> will auto-detect
 	 * @ff.default 0
 	 */
 	public void setXsltVersion(int xsltVersion) {
@@ -434,19 +433,6 @@ public class XsltSender extends SenderWithParametersBase implements IThreadCreat
 	 */
 	public void setDebugInput(boolean debugInput) {
 		this.debugInput = debugInput;
-	}
-
-	/**
-	 * If set <code>true</code> xslt processor 2.0 (net.sf.saxon) will be used, otherwise xslt processor 1.0 (org.apache.xalan)
-	 * @ff.default false
-	 */
-	/**
-	 * @deprecated Please remove setting of xslt2, it will be auto detected. Or use xsltVersion.
-	 */
-	@Deprecated
-	@ConfigurationWarning("It's value is now auto detected. If necessary, replace with a setting of xsltVersion")
-	public void setXslt2(boolean b) {
-		xsltVersion=b?2:1;
 	}
 
 }

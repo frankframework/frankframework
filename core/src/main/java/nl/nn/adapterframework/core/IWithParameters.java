@@ -20,13 +20,13 @@ import nl.nn.adapterframework.parameters.ParameterList;
 
 
 /**
- * Base interface to allow objects to declare that they accept paramters. 
- * 
- * @author  Gerrit van Brakel
+ * Base interface to allow objects to declare that they accept parameters.
+ *
+ * @author Gerrit van Brakel
  */
 public interface IWithParameters {
 
-	public void addParameter(Parameter p);
-	public ParameterList getParameterList(); // used by debugger, to show resolved values of parameters
+	void addParameter(Parameter p);
+	ParameterList getParameterList(); // used by debugger, to show resolved values of parameters
 
 }

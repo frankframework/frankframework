@@ -13,7 +13,7 @@
 				serviceName="ibis4test-TransactionHandlingMandatory"
 			/>
 			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
-				slotId="${applicationId}/GenericReceiverTransactionHandlingMandatory"
+				slotId="${applicationId}/ReceiverTransactionHandlingMandatory"
 			/>
 		</receiver>
 
@@ -39,11 +39,11 @@
 	<adapter
 		name="TransactionHandlingMandatorySubAdapter"
 		description="First SubAdapter for Transaction Handling">
-	
+
 		<receiver
 			transactionAttribute="Mandatory"
 		>
-			<listener 
+			<listener
 				className="nl.nn.adapterframework.receivers.JavaListener"
 				name="TransactionHandlingMandatorySubAdapter"
 			/>
@@ -56,7 +56,7 @@
 
 			<pipe name="Continue if this call was transacted" className="nl.nn.adapterframework.pipes.EchoPipe"
 				getInputFromFixedValue="&lt;transacted&gt;true&lt;/transacted&gt;">
-				
+
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

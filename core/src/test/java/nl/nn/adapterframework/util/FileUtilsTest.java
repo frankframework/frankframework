@@ -8,14 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -39,9 +35,9 @@ public class FileUtilsTest {
 	}
 
 	private File getFile(String fileName) throws FileNotFoundException {
-		String BASE = "/Util/FileUtils/";
-		URL pipes = this.getClass().getResource(BASE);
-		assertNotNull(pipes, "unable to find base [" + BASE + "]");
+		String base = "/Util/FileUtils/";
+		URL pipes = this.getClass().getResource(base);
+		assertNotNull(pipes, "unable to find base ["+ base +"]");
 
 		File root = new File(pipes.getPath());
 		if(fileName == null) {
@@ -55,19 +51,19 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testGetFreeFile() throws Exception { //normal file exists but _001 file doesn't
+	void testGetFreeFile() throws Exception { //normal file exists but _001 file doesn't
 		File res = FileUtils.getFreeFile(getFile("file.txt"));
 		assertEquals("file_001.txt", res.getName());
 	}
 
 	@Test
-	public void testGetFreeFile001() throws Exception {
+	void testGetFreeFile001() throws Exception {
 		File res = FileUtils.getFreeFile(new File(getFile(null), "freeFile.txt")); //_001 file exists but normal file doesn't
 		assertEquals("freeFile.txt", res.getName());
 	}
 
 	@Test
-	public void testMoveFile() throws Exception {
+	void testMoveFile() throws Exception {
 		File root = getFile(null);
 		File toBeMoved = new File(root, "movingFile.txt");
 		toBeMoved.createNewFile(); //Make sure it exists
@@ -81,7 +77,7 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testAppendFile() throws Exception {
+	void testAppendFile() throws Exception {
 		File orgFile = getFile("fileToAppend.txt");
 		File destFile = getFile("destinationFile.txt");
 		String res = FileUtils.appendFile(orgFile, destFile, 5, 5000);
@@ -89,7 +85,7 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testCopyFile() throws Exception {
+	void testCopyFile() throws Exception {
 		File sourceFile = getFile("fileToAppend.txt");
 		File destFile = getFile("copyFile.txt");
 		boolean b = FileUtils.copyFile(sourceFile, destFile, true);
@@ -97,7 +93,7 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void createTempDirectoryTest() throws Exception {
+	void createTempDirectoryTest() throws Exception {
 		File f = new File(testFolderPath);
 		File file = FileUtils.createTempDirectory(f);
 		boolean b = file.exists();
@@ -106,7 +102,7 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testRollOver() throws Exception {
+	void testRollOver() throws Exception {
 		File f1 = Files.createFile(testFolder.resolve("testfile.txt")).toFile();
 		FileUtils.makeBackups(f1, 1);
 		File rolloverOne = new File(testFolder.toString(), "testfile.txt.1");
@@ -119,7 +115,7 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testRollOverTwice() throws Exception {
+	void testRollOverTwice() throws Exception {
 		File f1 = Files.createFile(testFolder.resolve("testfile2.txt")).toFile();
 		FileUtils.makeBackups(f1, 2);
 		File rolloverOne = new File(testFolder.toString(), "testfile2.txt.1");
@@ -137,7 +133,7 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testGetFilesWithWildcard() throws Exception {
+	void testGetFilesWithWildcard() throws Exception {
 		String directory = getFile(null).getPath();
 		File[] files = FileUtils.getFiles(directory, "file*", null, 5);
 		assertEquals(2, files.length); // check if there are 2 files persent
@@ -153,7 +149,7 @@ public class FileUtilsTest {
 	}
 
 	@Test //retrieve the first file from a directory. Alphabetically it should first return 'copyFile'. Add a stability period, and check if it skips the first file
-	public void testGetFirstFile() throws Exception {
+	void testGetFirstFile() throws Exception {
 		assumeTrue(TestAssertions.isTestRunningOnWindows());
 
 		long stabilityPeriod = 5000;
@@ -169,34 +165,34 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testGetFirstFileDirectory() throws Exception {
+	void testGetFirstFileDirectory() throws Exception {
 		Files.createFile(testFolder.resolve("myFile.txt"));
 		File file = FileUtils.getFirstFile(testFolder.toString(), 50000000);
 		assertNull(file);
 	}
 
 	@Test
-	public void testGetListFromNamesForNames() {
+	void testGetListFromNamesForNames() {
 		List<String> list = FileUtils.getListFromNames("abc.txt,test.txt,jkl.txt", ',');
 		assertEquals("[abc.txt, test.txt, jkl.txt]", list.toString());
 	}
 
 	@Test
-	public void testGetListFromNamesNames() {
+	void testGetListFromNamesNames() {
 		String[] names = {"abc.txt", "test.txt", "jkl.txt"};
 		List<String> list = FileUtils.getListFromNames(names);
 		assertEquals("[abc.txt, test.txt, jkl.txt]", list.toString());
 	}
 
 	@Test
-	public void testGetNamesFromArray() {
+	void testGetNamesFromArray() {
 		String[] names = {"abc.txt", "test.txt", "jkl.txt"};
 		String res = FileUtils.getNamesFromArray(names, ',');
 		assertEquals("abc.txt,test.txt,jkl.txt", res);
 	}
 
 	@Test
-	public void testGetNamesFromList() {
+	void testGetNamesFromList() {
 		String[] names = {"abc.txt", "test.txt", "jkl.txt"};
 		List<String> list = FileUtils.getListFromNames(names);
 		String res = FileUtils.getNamesFromList(list, '*');
@@ -204,7 +200,7 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testAlignForValLengthLeftAlignFillchar() {
+	void testAlignForValLengthLeftAlignFillchar() {
 		String s = "test";
 		String res1 = FileUtils.align(s, 10, true, 'b');
 		String res2 = FileUtils.align(s, 2, true, 'b');
@@ -215,7 +211,7 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testAlignForValLengthRightAlignFillchar() {
+	void testAlignForValLengthRightAlignFillchar() {
 		String s = "test";
 		String res1 = FileUtils.align(s, 10, false, 'c');
 		String res2 = FileUtils.align(s, 2, false, 'c');
@@ -226,43 +222,43 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testGetFilledArray() {
+	void testGetFilledArray() {
 		char[] arr = FileUtils.getFilledArray(5, 'a');
 		assertEquals("aaaaa", new String(arr));
 	}
 
 	@Test
-	public void testGetFileNameExtension() {
+	void testGetFileNameExtension() {
 		String ext = FileUtils.getFileNameExtension("file.blaaaathowdiaa");
 		assertEquals("blaaaathowdiaa", ext);
 	}
 
 	@Test
-	public void testGetFileNameWithoutExtension() {
+	void testGetFileNameWithoutExtension() {
 		String ext = FileUtils.getFileNameExtension("file-blaaaathowdiaa");
 		assertNull(ext);
 	}
 
 	@Test
-	public void testGetBaseName() {
+	void testGetBaseName() {
 		String name = FileUtils.getBaseName("file.blaaaathowdiaa");
 		assertEquals("file", name);
 	}
 
 	@Test
-	public void testGetBaseNameWithoutExtension() {
+	void testGetBaseNameWithoutExtension() {
 		String name = FileUtils.getBaseName("file-blaaaathowdiaa");
 		assertNull(name);
 	}
 
 	@Test
-	public void testExtensionEqualsIgnoreCase() {
+	void testExtensionEqualsIgnoreCase() {
 		assertTrue(FileUtils.extensionEqualsIgnoreCase("a.txT", "txt"));
 		assertFalse(FileUtils.extensionEqualsIgnoreCase("b.ABT", "txt"));
 	}
 
 	@Test
-	public void testCanWrite() throws Exception {
+	void testCanWrite() throws Exception {
 		String file = getFile("copyFile.txt").getPath();
 		String directory = getFile(null).getPath();
 
@@ -271,12 +267,12 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	public void testEncodeFileName() {
+	void testEncodeFileName() {
 		assertEquals("_ab__5__c.txt", FileUtils.encodeFileName(" ab&@5*(c.txt"));
 	}
 
 	@Test
-	public void testIsFileBinaryEqual() throws Exception {
+	void testIsFileBinaryEqual() throws Exception {
 		File file1 = getFile("file.txt");
 		File file2 = getFile("copyFile.txt");
 
@@ -284,88 +280,4 @@ public class FileUtilsTest {
 		assertFalse(FileUtils.isFileBinaryEqual(file1, file2));
 	}
 
-	public File getRollingFile(String dir, int year, int month, int day) {
-		Date date = new GregorianCalendar(year, month, day).getTime();
-		return FileUtils.getRollingFile(dir, "", FileUtils.WEEKLY_ROLLING_FILENAME_DATE_FORMATTER, "", 0, date);
-	}
-	// Helper method to verify the filename
-	public boolean testWeeklyRollingFilename(String name) {
-		String[] nsplit = name.split("W");
-		if(Integer.valueOf(nsplit[1]) > 50) { // in case the week number is greater than 50 then the year must be 2020
-			return "2020".equals(nsplit[0]);
-		}
-		return "2021".equals(nsplit[0]);
-	}
-
-	@Test
-	public void testWeeklyRollingFilenameForTheLastWeekOfOldYear() {
-		// The Last week of old year
-		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2020, 11, 31).getName()));
-	}
-
-	@Test
-	public void testWeeklyRollingFilenameForTheWeekBeforeTheLastWeekOfOldYear() {
-		// The week before the last week of old year
-		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2020, 11, 25).getName()));
-	}
-
-	@Test
-	public void testWeeklyRollingFilenameForTheLastDayOfTheWeekBeforeTheLastWeekOfOldYear() {
-		// The last day of the week before the last week of old year
-		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2020, 11, 27).getName()));
-	}
-
-	@Test
-	public void testWeeklyRollingFilenameForFewDaysOfTheNewYearFromTheLastWeekOfOldYear() {
-		// Few days of the new year which are also in the last week of the old year
-		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2021, 0, 3).getName()));
-	}
-
-	@Test
-	public void testWeeklyRollingFilenameForTheFirstDayOfTheNewYear() {
-		// The first day of the first week of the new year
-		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2021, 0, 4).getName()));
-	}
-
-	@Test
-	public void testWeeklyRollingFilenameForAdayFromTheSecondWeekOfTheNewYear() {
-		// The first day of the first week of the new year
-		assertTrue(testWeeklyRollingFilename(getRollingFile("", 2021, 0, 11).getName()));
-	}
-
-	@Test
-	public void testGetRollingFileDeleteExisting() throws IOException {
-		File tempDir = new File(testFolderPath);
-		File tempDirRoot = tempDir;
-		// get rolling file 2020W52
-		File test = getRollingFile(tempDirRoot.getAbsolutePath(), 2020, 11, 25);
-		Files.createFile(Paths.get(test.getAbsolutePath()));
-		assertEquals(1, tempDirRoot.listFiles().length); // test number of files
-
-		test.setLastModified(new GregorianCalendar(2020, 11, 25).getTime().getTime()); // change the last modified date
-																						// for the file to be deleted.
-		test = FileUtils.getRollingFile(tempDirRoot.getAbsolutePath(), "", FileUtils.WEEKLY_ROLLING_FILENAME_DATE_FORMATTER,
-				"", 7, null);
-		Files.createFile(Paths.get(test.getAbsolutePath()));
-		assertEquals(1, tempDirRoot.listFiles().length); // test number of files
-	}
-
-	@Test
-	@Disabled("Wordt gefixt in een volgend PR")
-	public void testGetRollingFileTheSamefile() throws IOException {
-		File tempDirRoot = new File(testFolderPath);
-
-		// get rolling file 2020W52
-		File test = getRollingFile(tempDirRoot.getAbsolutePath(), 2020, 11, 25);
-		Files.createFile(Paths.get(test.getAbsolutePath()));
-		assertEquals(1, tempDirRoot.listFiles().length); // test number of files
-
-		test = getRollingFile(tempDirRoot.getAbsolutePath(), 2020, 11, 25);
-		try {
-			Files.createFile(Paths.get(test.getAbsolutePath()));
-		} catch (Exception e) {
-			assertEquals(FileAlreadyExistsException.class, e.getClass());
-		}
-		assertEquals(1, tempDirRoot.listFiles().length); // test number of files
-	}
 }

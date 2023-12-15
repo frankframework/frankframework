@@ -348,7 +348,7 @@ public class TransformerPool {
 	protected void invalidateTransformerNoThrow(Transformer transformer) {
 		try {
 			invalidateTransformer(transformer);
-			log.debug("Transformer was removed from pool as an error occured on the last transformation");
+			log.debug("Transformer was removed from pool as an error occurred on the last transformation");
 		} catch (Throwable t) {
 			log.error("Error on removing transformer from pool", t);
 		}

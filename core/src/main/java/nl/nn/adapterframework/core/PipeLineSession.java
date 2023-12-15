@@ -18,7 +18,6 @@ package nl.nn.adapterframework.core;
 import java.security.Principal;
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -33,6 +32,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.util.Supplier;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -228,6 +228,14 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			return DateFormatUtils.parseToInstant((String) tsSent, DateFormatUtils.FULL_GENERIC_FORMATTER);
 		}
 		return null;
+	}
+
+	/**
+	 * Convenience method to set required parameters from listeners. Will not update messageId and correlationId when NULL.
+	 * Sets the current date-time as TS-Received.
+	 */
+	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId) {
+		updateListenerParameters(map, messageId, correlationId, Instant.now(), null);
 	}
 
 	/**
@@ -436,17 +444,16 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Override
 	public void close() {
 		LOG.debug("Closing PipeLineSession");
-		while (!closeables.isEmpty()) {
-			Iterator<Entry<AutoCloseable, String>> it = closeables.entrySet().iterator();
-			Entry<AutoCloseable, String> entry = it.next();
+		// We create a copy of the instance variable so that we are protected from changes done in other methods.
+		Map<AutoCloseable, String> copy = new HashMap<>(closeables);
+		closeables.clear();
+		for (Entry<AutoCloseable, String> entry : copy.entrySet()) {
 			AutoCloseable closeable = entry.getKey();
 			try {
 				LOG.debug("messageId [{}] auto closing resource [{}]", this::getMessageId, entry::getValue);
 				closeable.close();
 			} catch (Exception e) {
-				LOG.warn("Exception closing resource, messageId [" + getMessageId() + "], resource [" + entry.getKey() + "] " + entry.getValue(), e);
-			} finally {
-				closeables.remove(closeable);
+				LOG.warn("Exception closing resource, messageId [{}], resource [{}] {}", (Supplier<?>) this::getMessageId, (Supplier<?>) entry::getKey, (Supplier<?>) entry::getValue, e);
 			}
 		}
 	}

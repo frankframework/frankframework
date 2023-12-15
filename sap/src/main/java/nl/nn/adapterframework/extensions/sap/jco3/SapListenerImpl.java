@@ -62,9 +62,9 @@ import nl.nn.adapterframework.stream.Message;
 
 /**
  * Implementation of a {@link IPushingListener},
- * that enables a GenericReceiver to receive messages from SAP-systems.
+ * that enables a Receiver to receive messages from SAP-systems.
  *
- * In SAP the function to be called is a RFC-function to the destination that is registered using <code>progid</code>.
+ * In SAP, the function to be called is an RFC-function to the destination that is registered using <code>progid</code>.
  * </b>
  * N.B. If no requestFieldIndex or requestFieldName is specified, input is converted to xml;
  * If no replyFieldIndex or replyFieldName is specified, output is converted from xml.
