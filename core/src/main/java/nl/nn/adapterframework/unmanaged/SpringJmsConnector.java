@@ -140,9 +140,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 		} else {
 			log.debug("{} setting no transaction manager", this::getLogPrefix);
 		}
-		if (sessionTransacted) {
-			jmsContainer.setSessionTransacted(true);
-		}
+		jmsContainer.setSessionTransacted(sessionTransacted);
 		if (StringUtils.isNotEmpty(messageSelector)) {
 			jmsContainer.setMessageSelector(messageSelector);
 		}

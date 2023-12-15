@@ -58,7 +58,7 @@ public class ApiListenerPatternsTest {
 		listener.setName("my-api-listener");
 		listener.setMethod(HttpMethod.PUT);
 		listener.setUriPattern(pattern);
-  }
+	}
 
 	@MethodSource("data")
 	@ParameterizedTest(name = "inputUriPattern[{0}] -> expectedUriPattern[{1}] -> expectedCleanPattern[{2}]")
