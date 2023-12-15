@@ -1376,6 +1376,10 @@
 								<artifactId>frank-doc-frontend</artifactId>
 								<version>${frankdoc.version}</version>
 							</frontendArtifact>
+							<additionalJOptions>
+								<additionalJOption>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</additionalJOption>
+								<additionalJOption>-J--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</additionalJOption>
+							</additionalJOptions>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
 								<additionalOption>${project.build.directory}/frankdoc</additionalOption>
