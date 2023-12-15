@@ -218,7 +218,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testSimpleStoredProcedureClobInputParameter2() throws Exception {
-		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL", "DB2")));
+		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, not(is(oneOf("H2", "PostgreSQL", "DB2"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
