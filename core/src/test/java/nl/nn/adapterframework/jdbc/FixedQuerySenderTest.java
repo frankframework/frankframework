@@ -31,11 +31,11 @@ import nl.nn.adapterframework.testutil.junit.DatabaseTest;
 import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
 import nl.nn.adapterframework.testutil.junit.WithLiquibase;
 
-@WithLiquibase(tableName = FixedQuerySenderTest.tableName, file = "Migrator/JdbcTestBaseQuery.xml")
+@WithLiquibase(tableName = FixedQuerySenderTest.TABLE_NAME, file = "Migrator/JdbcTestBaseQuery.xml")
 public class FixedQuerySenderTest {
 
 	private FixedQuerySender fixedQuerySender;
-	protected static final String tableName = "FQS_TABLE";
+	protected static final String TABLE_NAME = "FQS_TABLE";
 
 	private JdbcTransactionalStorage<Serializable> storage;
 
@@ -98,7 +98,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testNamedParametersTrue() throws Exception {
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?{namedParam1})");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{namedParam1})");
 		fixedQuerySender.addParameter(new Parameter("namedParam1", "value"));
 		fixedQuerySender.setUseNamedParams(true);
 
@@ -111,7 +111,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testNamedParameters() throws Exception {
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
 		fixedQuerySender.addParameter(new Parameter("param", "value"));
 
 		fixedQuerySender.configure();
@@ -124,7 +124,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testUseNamedParametersStringValueContains_unp_start() throws Exception {
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('3', '?{param}')");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('3', '?{param}')");
 
 		fixedQuerySender.configure();
 		fixedQuerySender.open();
@@ -132,7 +132,7 @@ public class FixedQuerySenderTest {
 		Message result = fixedQuerySender.sendMessage(new Message("dummy"), session).getResult();
 		assertEquals("<result><rowsupdated>1</rowsupdated></result>", result.asString());
 
-		fixedQuerySender.setQuery("SELECT tVARCHAR FROM " + tableName + " WHERE tKEY='3'");
+		fixedQuerySender.setQuery("SELECT tVARCHAR FROM " + TABLE_NAME + " WHERE tKEY='3'");
 		fixedQuerySender.setQueryType("select");
 		fixedQuerySender.setScalar(true);
 
@@ -143,7 +143,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testUseNamedParametersStringValueContains_unp_start_resolveParam() throws Exception {
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', '?{param}')");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', '?{param}')");
 
 		fixedQuerySender.addParameter(new Parameter("param", "value"));
 
@@ -155,7 +155,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testUseNamedParametersWithoutNamedParam() throws Exception {
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', 'text')");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', 'text')");
 		fixedQuerySender.setUseNamedParams(true);
 		fixedQuerySender.configure();
 		fixedQuerySender.open();
@@ -166,7 +166,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testUseNamedParametersWithoutParam(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
 		fixedQuerySender.setUseNamedParams(true);
 		fixedQuerySender.configure();
 		fixedQuerySender.open();
@@ -178,7 +178,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testNamedParamInQueryFlagFalse(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{param})");
 		fixedQuerySender.setUseNamedParams(false);
 		fixedQuerySender.configure();
 		fixedQuerySender.open();
@@ -190,7 +190,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testIncompleteNamedParamInQuery(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?{param)");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?{param)");
 		fixedQuerySender.configure();
 		fixedQuerySender.open();
 
@@ -202,7 +202,7 @@ public class FixedQuerySenderTest {
 	@DatabaseTest
 	public void testMultipleColumnsReturnedWithSpaceBetween() throws Exception {
 		assertThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?)");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
 		fixedQuerySender.setColumnsReturned("tKEY, tVARCHAR");
@@ -217,7 +217,7 @@ public class FixedQuerySenderTest {
 	@DatabaseTest
 	public void testMultipleColumnsReturnedWithDoubleSpace() throws Exception {
 		assertThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?)");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
 		fixedQuerySender.setColumnsReturned("  tKEY,  tVARCHAR  ");
@@ -232,7 +232,7 @@ public class FixedQuerySenderTest {
 	@DatabaseTest
 	public void testMultipleColumnsReturned() throws Exception {
 		assertThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tVARCHAR) VALUES ('1', ?)");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
 		fixedQuerySender.setColumnsReturned("tKEY,tVARCHAR");
@@ -245,7 +245,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testAddMonth() throws Exception {
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tDATE) VALUES ('1', ADD_MONTHS(SYSTIMESTAMP,?))");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tDATE) VALUES ('1', ADD_MONTHS(SYSTIMESTAMP,?))");
 		fixedQuerySender.addParameter(ParameterBuilder.create("param", "7").withType(Parameter.ParameterType.INTEGER));
 		fixedQuerySender.setSqlDialect("Oracle");
 		fixedQuerySender.configure();
@@ -258,7 +258,7 @@ public class FixedQuerySenderTest {
 
 	public void testOutputFormat(DocumentFormat outputFormat, boolean includeFieldDefinition, ThrowingConsumer<String, Exception> asserter) throws Exception {
 		assumeTrue(dataSourceName.equals("H2"));
-		fixedQuerySender.setQuery("SELECT COUNT(*) as CNT, 'string' as STR, 5 as NUM, null as NULLCOL FROM " + tableName + " WHERE 1=0");
+		fixedQuerySender.setQuery("SELECT COUNT(*) as CNT, 'string' as STR, 5 as NUM, null as NULLCOL FROM " + TABLE_NAME + " WHERE 1=0");
 		fixedQuerySender.setOutputFormat(outputFormat);
 		fixedQuerySender.setIncludeFieldDefinition(includeFieldDefinition);
 		fixedQuerySender.setQueryType("select");
@@ -319,7 +319,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testParameterTypeDefault() throws Exception {
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tCLOB) VALUES ('1', ?)");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tCLOB) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob"));
 		fixedQuerySender.setSqlDialect("Oracle");
 		fixedQuerySender.configure();
@@ -335,7 +335,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testParameterTypeLobStream() throws Exception {
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(Parameter.ParameterType.CHARACTER));
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(Parameter.ParameterType.BINARY));
 		fixedQuerySender.setSqlDialect("Oracle");
@@ -354,7 +354,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testParameterTypeLobArray() throws Exception {
-		fixedQuerySender.setQuery("INSERT INTO " + tableName + " (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
+		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tCLOB, tBLOB) VALUES ('1', ?, ?)");
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("clob").withSessionKey("clob").withType(Parameter.ParameterType.CHARACTER));
 		fixedQuerySender.addParameter(ParameterBuilder.create().withName("blob").withSessionKey("blob").withType(Parameter.ParameterType.BINARY));
 		fixedQuerySender.setSqlDialect("Oracle");

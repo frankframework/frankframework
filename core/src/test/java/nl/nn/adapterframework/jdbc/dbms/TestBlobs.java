@@ -19,9 +19,9 @@ import java.sql.SQLException;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.input.ReaderInputStream;
-import org.junit.Ignore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 
 import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
@@ -33,11 +33,11 @@ import nl.nn.adapterframework.testutil.junit.WithLiquibase;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
-@Ignore("Tests for Blobs take too much time and memory to test regularly")
-@WithLiquibase(tableName = TestBlobs.tableName, file = "Migrator/JdbcTestBaseQuery.xml")
+@Disabled("Tests for Blobs take too much time and memory to test regularly")
+@WithLiquibase(tableName = TestBlobs.TABLE_NAME, file = "Migrator/JdbcTestBaseQuery.xml")
 public class TestBlobs {
 
-	protected static final String tableName = "testBlobs_TABLE";
+	protected static final String TABLE_NAME = "testBlobs_TABLE";
 	boolean testBigBlobs = false;
 
 	@DatabaseTest.Parameter(0)
@@ -89,8 +89,8 @@ public class TestBlobs {
 
 	public void testWriteAndReadBlobUsingSetBinaryStream(int numBlocks, int blockSize, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String blobContents = getBigString(numBlocks, blockSize);
-		String insertQuery = "INSERT INTO " + tableName + " (TKEY,TBLOB) VALUES (20,?)";
-		String selectQuery = "SELECT TBLOB FROM " + tableName + " WHERE TKEY=20";
+		String insertQuery = "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (20,?)";
+		String selectQuery = "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=20";
 //		String deleteQuery = "DELETE FROM IBISCONFIG WHERE NAME='X'";
 //		String insertQuery = "INSERT INTO IBISCONFIG (NAME,VERSION,CONFIG) VALUES ('X','X',?)";
 //		String selectQuery = "SELECT CONFIG FROM IBISCONFIG WHERE NAME='X'";
@@ -124,14 +124,14 @@ public class TestBlobs {
 
 	public void testWriteAndReadBlobUsingSetBytes(int numBlocks, int blockSize, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String blobContents = getBigString(numBlocks, blockSize);
-		String query = "INSERT INTO " + tableName + " (TKEY,TBLOB) VALUES (20,?)";
+		String query = "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (20,?)";
 		String translatedQuery = databaseTestEnvironment.getDbmsSupport().convertQuery(query, "Oracle");
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(translatedQuery)) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
 			stmt.execute();
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + tableName + " WHERE TKEY=20", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=20", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				InputStream blobStream = databaseTestEnvironment.getDbmsSupport().getBlobInputStream(resultSet, 1);
@@ -155,7 +155,7 @@ public class TestBlobs {
 
 	public void testWriteAndReadBlobUsingDbmsSupport(int numOfBlocks, int blockSize, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String block = getBigString(1,blockSize);
-		String query = "INSERT INTO " + tableName + " (TKEY,TBLOB) VALUES (20,?)";
+		String query = "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (20,?)";
 		String translatedQuery = databaseTestEnvironment.getDbmsSupport().convertQuery(query, "Oracle");
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(translatedQuery)) {
 			Object blobInsertHandle = databaseTestEnvironment.getDbmsSupport().getBlobHandle(stmt, 1);
@@ -168,7 +168,7 @@ public class TestBlobs {
 			stmt.execute();
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + tableName + " WHERE TKEY=20", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=20", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				try (InputStream blobStream = databaseTestEnvironment.getDbmsSupport().getBlobInputStream(resultSet, 1)) {
@@ -182,8 +182,8 @@ public class TestBlobs {
 
 	public void testWriteAndReadClobUsingDbmsSupport(int numOfBlocks, int blockSize, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String block = getBigString(1,blockSize);
-		String insertQuery = "INSERT INTO " + tableName + " (TKEY,TCLOB) VALUES (20,?)";
-		String selectQuery = "SELECT TCLOB FROM " + tableName + " WHERE TKEY=20";
+		String insertQuery = "INSERT INTO " + TABLE_NAME + " (TKEY,TCLOB) VALUES (20,?)";
+		String selectQuery = "SELECT TCLOB FROM " + TABLE_NAME + " WHERE TKEY=20";
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(insertQuery)) {
 			Object clobInsertHandle = databaseTestEnvironment.getDbmsSupport().getClobHandle(stmt, 1);
 			try (Writer clobWriter = databaseTestEnvironment.getDbmsSupport().getClobWriter(stmt, 1, clobInsertHandle)) {

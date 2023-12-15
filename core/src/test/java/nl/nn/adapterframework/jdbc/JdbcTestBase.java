@@ -17,8 +17,6 @@ import java.util.Properties;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import nl.nn.adapterframework.dbms.DbmsSupportFactory;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -38,13 +36,15 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.Getter;
-import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
+import nl.nn.adapterframework.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
+import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.LogUtil;
 
@@ -273,8 +273,8 @@ public abstract class JdbcTestBase {
 		return dataSource.getConnection();
 	}
 
-	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType) throws JdbcException, SQLException {
-		return executeTranslatedQuery(connection, query, queryType, false);
+	protected PreparedStatement executeTranslatedQuery(DatabaseTestEnvironment databaseTestEnvironment, String query, QueryType queryType) throws JdbcException, SQLException {
+		return executeTranslatedQuery(databaseTestEnvironment.getConnection(), query, queryType, false);
 	}
 
 	protected PreparedStatement executeTranslatedQuery(Connection connection, String query, QueryType queryType, boolean selectForUpdate) throws JdbcException, SQLException {

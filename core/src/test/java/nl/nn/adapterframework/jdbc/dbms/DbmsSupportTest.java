@@ -56,10 +56,10 @@ import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StreamUtil;
 
-@WithLiquibase(tableName = DbmsSupportTest.tableName, file = "Migrator/JdbcTestBaseQuery.xml")
+@WithLiquibase(tableName = DbmsSupportTest.TABLE_NAME, file = "Migrator/JdbcTestBaseQuery.xml")
 public class DbmsSupportTest {
 	private final boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
-	protected static final String tableName = "DST_TABLE";
+	protected static final String TABLE_NAME = "DST_TABLE";
 	protected static Logger log = LogUtil.getLogger(DbmsSupportTest.class);
 	protected Properties dataSourceInfo;
 	private DataSource dataSource;
@@ -121,61 +121,61 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testInsertSelect(DatabaseTestEnvironment databaseTestEnvironment) throws JdbcException, SQLException {
-		JdbcUtil.executeStatement(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY, TINT) SELECT 11, 2+2 " + databaseTestEnvironment.getDbmsSupport().getFromForTablelessSelect() + " WHERE 1=1");
+		JdbcUtil.executeStatement(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY, TINT) SELECT 11, 2+2 " + databaseTestEnvironment.getDbmsSupport().getFromForTablelessSelect() + " WHERE 1=1");
 	}
 
 	@DatabaseTest
 	public void testIsTablePresent(DatabaseTestEnvironment databaseTestEnvironment) throws JdbcException, SQLException {
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), tableName), "Should have found existing table");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), TABLE_NAME), "Should have found existing table");
 		assertFalse(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), "XXXX"));
 		assumeThat(dataSourceName, not(anyOf(equalTo("MariaDB"), equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), tableName.toLowerCase()), "Should have found existing table");
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), tableName.toUpperCase()), "Should have found existing table");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), TABLE_NAME.toLowerCase()), "Should have found existing table");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), TABLE_NAME.toUpperCase()), "Should have found existing table");
 	}
 
 	@DatabaseTest
 	public void testIsTablePresentInSchema(DatabaseTestEnvironment databaseTestEnvironment) throws JdbcException, SQLException {
 		String schema = databaseTestEnvironment.getDbmsSupport().getSchema(databaseTestEnvironment.getConnection());
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), schema, tableName), "Should have found existing table in schema");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), schema, TABLE_NAME), "Should have found existing table in schema");
 		assertFalse(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), "XXXX"));
 		assumeThat(dataSourceName, not(anyOf(equalTo("MariaDB"), equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), schema, tableName.toLowerCase()), "Should have found existing table in schema");
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), schema, tableName.toUpperCase()), "Should have found existing table in schema");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), schema, TABLE_NAME.toLowerCase()), "Should have found existing table in schema");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isTablePresent(databaseTestEnvironment.getConnection(), schema, TABLE_NAME.toUpperCase()), "Should have found existing table in schema");
 	}
 
 	@DatabaseTest
 	public void testIsColumnPresent(DatabaseTestEnvironment databaseTestEnvironment) throws JdbcException, SQLException {
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), tableName, "TINT"), "Should have found existing column");
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), tableName, "tint"), "Should have found existing column");
-		assertFalse(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), tableName, "XXXX"));
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), TABLE_NAME, "TINT"), "Should have found existing column");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), TABLE_NAME, "tint"), "Should have found existing column");
+		assertFalse(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), TABLE_NAME, "XXXX"));
 		assertFalse(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), "XXXX", "XXXX"));
 		assumeThat(dataSourceName, not(anyOf(equalTo("MariaDB"), equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), tableName.toLowerCase(), "TINT"), "Should have found existing column");
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), tableName.toUpperCase(), "TINT"), "Should have found existing column");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), TABLE_NAME.toLowerCase(), "TINT"), "Should have found existing column");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), TABLE_NAME.toUpperCase(), "TINT"), "Should have found existing column");
 	}
 
 	@DatabaseTest
 	public void testIsColumnPresentInSchema(DatabaseTestEnvironment databaseTestEnvironment) throws JdbcException, SQLException {
 		String schema = databaseTestEnvironment.getDbmsSupport().getSchema(databaseTestEnvironment.getConnection());
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), schema, tableName, "TINT"), "Should have found existing column in schema [" + schema + "]");
-		assertFalse(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), schema, tableName, "XXXX"));
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), schema, TABLE_NAME, "TINT"), "Should have found existing column in schema [" + schema + "]");
+		assertFalse(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), schema, TABLE_NAME, "XXXX"));
 		assertFalse(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), schema, "XXXX", "XXXX"));
 		assumeThat(dataSourceName, not(anyOf(equalTo("MariaDB"), equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), schema, tableName.toLowerCase(), "TINT"), "Should have found existing column in schema [" + schema + "]");
-		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), schema, tableName.toUpperCase(), "TINT"), "Should have found existing column in schema [" + schema + "]");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), schema, TABLE_NAME.toLowerCase(), "TINT"), "Should have found existing column in schema [" + schema + "]");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().isColumnPresent(databaseTestEnvironment.getConnection(), schema, TABLE_NAME.toUpperCase(), "TINT"), "Should have found existing column in schema [" + schema + "]");
 	}
 
 	@DatabaseTest
 	public void testHasIndexOnColumn(DatabaseTestEnvironment databaseTestEnvironment) throws JdbcException, SQLException {
 		String schema = databaseTestEnvironment.getDbmsSupport().getSchema(databaseTestEnvironment.getConnection());
-		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, tableName, "TKEY"), "Should have been index on primary key column");
-		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, tableName, "tkey"), "Should have been index on primary key column");
-		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, tableName, "tINT"), "Should have been index on column"); // also check first column of multi column index
-		assertFalse(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, tableName, "TBOOLEAN"), "Should not have been index on column");
-		assertFalse(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, tableName, "tboolean"), "Should not have been index on column");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, TABLE_NAME, "TKEY"), "Should have been index on primary key column");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, TABLE_NAME, "tkey"), "Should have been index on primary key column");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, TABLE_NAME, "tINT"), "Should have been index on column"); // also check first column of multi column index
+		assertFalse(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, TABLE_NAME, "TBOOLEAN"), "Should not have been index on column");
+		assertFalse(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, TABLE_NAME, "tboolean"), "Should not have been index on column");
 		assumeThat(dataSourceName, not(anyOf(equalTo("MariaDB"), equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
-		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, tableName.toLowerCase(), "TKEY"), "Should have been index on primary key column");
-		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, tableName.toUpperCase(), "TKEY"), "Should have been index on primary key column");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, TABLE_NAME.toLowerCase(), "TKEY"), "Should have been index on primary key column");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumn(databaseTestEnvironment.getConnection(), schema, TABLE_NAME.toUpperCase(), "TKEY"), "Should have been index on primary key column");
 	}
 
 	@DatabaseTest
@@ -193,13 +193,13 @@ public class DbmsSupportTest {
 		List<String> indexedColumsWrongOrder = new ArrayList<>();
 		indexedColumsWrongOrder.add("tDATE");
 		indexedColumsWrongOrder.add("tINT");
-		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumns(databaseTestEnvironment.getConnection(), schema, tableName, indexedColums), "Should have been index on columns");
-		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumns(databaseTestEnvironment.getConnection(), schema, tableName, indexedColumsUC), "Should have been index on columns");
-		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumns(databaseTestEnvironment.getConnection(), schema, tableName, indexedColumsLC), "Should have been index on columns");
-		assertFalse(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumns(databaseTestEnvironment.getConnection(), schema, tableName, indexedColumsWrongOrder), "Should not have been index on columns");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumns(databaseTestEnvironment.getConnection(), schema, TABLE_NAME, indexedColums), "Should have been index on columns");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumns(databaseTestEnvironment.getConnection(), schema, TABLE_NAME, indexedColumsUC), "Should have been index on columns");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumns(databaseTestEnvironment.getConnection(), schema, TABLE_NAME, indexedColumsLC), "Should have been index on columns");
+		assertFalse(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumns(databaseTestEnvironment.getConnection(), schema, TABLE_NAME, indexedColumsWrongOrder), "Should not have been index on columns");
 		assumeThat(dataSourceName, not(anyOf(equalTo("MariaDB"), equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
-		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumns(databaseTestEnvironment.getConnection(), schema, tableName.toLowerCase(), indexedColums), "Should have been index on columns");
-		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumns(databaseTestEnvironment.getConnection(), schema, tableName.toUpperCase(), indexedColums), "Should have been index on columns");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumns(databaseTestEnvironment.getConnection(), schema, TABLE_NAME.toLowerCase(), indexedColums), "Should have been index on columns");
+		assertTrue(databaseTestEnvironment.getDbmsSupport().hasIndexOnColumns(databaseTestEnvironment.getConnection(), schema, TABLE_NAME.toUpperCase(), indexedColums), "Should have been index on columns");
 	}
 
 	public void testGetTableColumns(String tableName, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
@@ -220,10 +220,10 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testGetTableColumns(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		testGetTableColumns(tableName, databaseTestEnvironment);
+		testGetTableColumns(TABLE_NAME, databaseTestEnvironment);
 		assumeThat(dataSourceName, not(anyOf(equalTo("MariaDB"), equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
-		testGetTableColumns(tableName.toLowerCase(), databaseTestEnvironment);
-		testGetTableColumns(tableName.toUpperCase(), databaseTestEnvironment);
+		testGetTableColumns(TABLE_NAME.toLowerCase(), databaseTestEnvironment);
+		testGetTableColumns(TABLE_NAME.toUpperCase(), databaseTestEnvironment);
 	}
 
 	public void testGetTableColumnsInSchema(String tableName, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
@@ -245,10 +245,10 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testGetTableColumnsInSchema(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		testGetTableColumnsInSchema(tableName, databaseTestEnvironment);
+		testGetTableColumnsInSchema(TABLE_NAME, databaseTestEnvironment);
 		assumeThat(dataSourceName, not(anyOf(equalTo("MariaDB"), equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
-		testGetTableColumnsInSchema(tableName.toLowerCase(), databaseTestEnvironment);
-		testGetTableColumnsInSchema(tableName.toUpperCase(), databaseTestEnvironment);
+		testGetTableColumnsInSchema(TABLE_NAME.toLowerCase(), databaseTestEnvironment);
+		testGetTableColumnsInSchema(TABLE_NAME.toUpperCase(), databaseTestEnvironment);
 	}
 
 	public void testGetTableColumnsSpecific(String tableName, String columNamePattern, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
@@ -276,31 +276,31 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testGetTableColumnsSpecific(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		testGetTableColumnsSpecific(tableName, "TINT", databaseTestEnvironment);
-		testGetTableColumnsSpecific(tableName, "tint", databaseTestEnvironment);
+		testGetTableColumnsSpecific(TABLE_NAME, "TINT", databaseTestEnvironment);
+		testGetTableColumnsSpecific(TABLE_NAME, "tint", databaseTestEnvironment);
 		assumeThat(dataSourceName, not(anyOf(equalTo("MariaDB"), equalTo("MySQL")))); // MariaDB and MySQL require exact case for table name parameters
-		testGetTableColumnsSpecific(tableName.toLowerCase(), "TINT", databaseTestEnvironment);
-		testGetTableColumnsSpecific(tableName.toUpperCase(), "TINT", databaseTestEnvironment);
+		testGetTableColumnsSpecific(TABLE_NAME.toLowerCase(), "TINT", databaseTestEnvironment);
+		testGetTableColumnsSpecific(TABLE_NAME.toUpperCase(), "TINT", databaseTestEnvironment);
 	}
 
 	@DatabaseTest
 	public void testGetDateTimeLiteral(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		JdbcUtil.executeStatement(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3," + databaseTestEnvironment.getDbmsSupport().getDateAndOffset(databaseTestEnvironment.getDbmsSupport().getDatetimeLiteral(new Date()), 4) + "," + databaseTestEnvironment.getDbmsSupport().getDatetimeLiteral(new Date()) + ")");
-		Object result = JdbcUtil.executeQuery(databaseTestEnvironment.getDbmsSupport(), databaseTestEnvironment.getConnection(), "SELECT " + databaseTestEnvironment.getDbmsSupport().getTimestampAsDate("TDATETIME") + " FROM " + tableName + " WHERE TKEY=1", null, new PipeLineSession());
+		JdbcUtil.executeStatement(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3," + databaseTestEnvironment.getDbmsSupport().getDateAndOffset(databaseTestEnvironment.getDbmsSupport().getDatetimeLiteral(new Date()), 4) + "," + databaseTestEnvironment.getDbmsSupport().getDatetimeLiteral(new Date()) + ")");
+		Object result = JdbcUtil.executeQuery(databaseTestEnvironment.getDbmsSupport(), databaseTestEnvironment.getConnection(), "SELECT " + databaseTestEnvironment.getDbmsSupport().getTimestampAsDate("TDATETIME") + " FROM " + TABLE_NAME + " WHERE TKEY=1", null, new PipeLineSession());
 		System.out.println("result:" + result);
 	}
 
 	@DatabaseTest
 	public void testSysDate(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		JdbcUtil.executeStatement(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (2,'xxx',3," + databaseTestEnvironment.getDbmsSupport().getSysDate() + "," + databaseTestEnvironment.getDbmsSupport().getSysDate() + ")");
-		Object result = JdbcUtil.executeQuery(databaseTestEnvironment.getDbmsSupport(), databaseTestEnvironment.getConnection(), "SELECT " + databaseTestEnvironment.getDbmsSupport().getTimestampAsDate("TDATETIME") + " FROM " + tableName + " WHERE TKEY=2", null, new PipeLineSession());
+		JdbcUtil.executeStatement(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (2,'xxx',3," + databaseTestEnvironment.getDbmsSupport().getSysDate() + "," + databaseTestEnvironment.getDbmsSupport().getSysDate() + ")");
+		Object result = JdbcUtil.executeQuery(databaseTestEnvironment.getDbmsSupport(), databaseTestEnvironment.getConnection(), "SELECT " + databaseTestEnvironment.getDbmsSupport().getTimestampAsDate("TDATETIME") + " FROM " + TABLE_NAME + " WHERE TKEY=2", null, new PipeLineSession());
 		System.out.println("result:" + result);
 	}
 
 	@DatabaseTest
 	public void testNumericAsDouble(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String number = "1234.5678";
-		String query = "INSERT INTO " + tableName + "(TKEY, TNUMBER) VALUES (3,?)";
+		String query = "INSERT INTO " + TABLE_NAME + "(TKEY, TNUMBER) VALUES (3,?)";
 		String translatedQuery = databaseTestEnvironment.getDbmsSupport().convertQuery(query, "Oracle");
 		System.out.println("executing query [" + translatedQuery + "]");
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(translatedQuery)) {
@@ -308,7 +308,7 @@ public class DbmsSupportTest {
 			stmt.execute();
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TNUMBER FROM " + tableName + " WHERE TKEY=3", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TNUMBER FROM " + TABLE_NAME + " WHERE TKEY=3", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertThat(resultSet.getString(1), StringStartsWith.startsWith(number));
@@ -320,7 +320,7 @@ public class DbmsSupportTest {
 	public void testNumericAsFloat(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbms() == Dbms.POSTGRESQL); // This fails on PostgreSQL, precision of setFloat appears to be too low"
 		float number = 1234.5677F;
-		String query = "INSERT INTO " + tableName + "(TKEY, TNUMBER) VALUES (4,?)";
+		String query = "INSERT INTO " + TABLE_NAME + "(TKEY, TNUMBER) VALUES (4,?)";
 		String translatedQuery = databaseTestEnvironment.getDbmsSupport().convertQuery(query, "Oracle");
 		System.out.println("executing query [" + translatedQuery + "]");
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(translatedQuery)) {
@@ -328,7 +328,7 @@ public class DbmsSupportTest {
 			stmt.execute();
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TNUMBER FROM " + tableName + " WHERE TKEY=4", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TNUMBER FROM " + TABLE_NAME + " WHERE TKEY=4", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertEquals(number, resultSet.getFloat(1), 0.01);
@@ -340,8 +340,8 @@ public class DbmsSupportTest {
 	// test the alias functionality as used in JdbcTableListener.
 	// Asserts that columns can be identified with and without alias.
 	public void testSelectWithAlias(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		String insertQuery = "INSERT INTO " + tableName + "(TKEY, TNUMBER, TVARCHAR) VALUES (5,5,'A')";
-		String selectQuery = "SELECT TNUMBER FROM " + tableName + " t WHERE TKEY=5 AND t.TVARCHAR='A'";
+		String insertQuery = "INSERT INTO " + TABLE_NAME + "(TKEY, TNUMBER, TVARCHAR) VALUES (5,5,'A')";
+		String selectQuery = "SELECT TNUMBER FROM " + TABLE_NAME + " t WHERE TKEY=5 AND t.TVARCHAR='A'";
 		System.out.println("executing query [" + insertQuery + "]");
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(insertQuery)) {
 			stmt.execute();
@@ -362,7 +362,7 @@ public class DbmsSupportTest {
 		String date = DateFormatUtils.now(DateFormatUtils.ISO_DATE_FORMATTER);
 
 		assumeFalse(databaseTestEnvironment.getDbmsSupport().getDbmsName().equals("Oracle")); // This fails on Oracle, cannot set a non-integer number via setString()
-		String query = "INSERT INTO " + tableName + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)";
+		String query = "INSERT INTO " + TABLE_NAME + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)";
 		String translatedQuery = databaseTestEnvironment.getDbmsSupport().convertQuery(query, "Oracle");
 		System.out.println("executing query [" + translatedQuery + "]");
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(translatedQuery)) {
@@ -373,7 +373,7 @@ public class DbmsSupportTest {
 			stmt.execute();
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TNUMBER, TDATE, TDATETIME FROM " + tableName + " WHERE TKEY=5", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TNUMBER, TDATE, TDATETIME FROM " + TABLE_NAME + " WHERE TKEY=5", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertThat(resultSet.getString(1), StringStartsWith.startsWith(number));
@@ -388,8 +388,8 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testWriteAndReadClob(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String clobContents = "Dit is de content van de clob";
-		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY,TCLOB) VALUES (10,EMPTY_CLOB())", QueryType.OTHER, databaseTestEnvironment);
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TCLOB FROM " + tableName + " WHERE TKEY=10 FOR UPDATE", QueryType.SELECT, true, databaseTestEnvironment)) {
+		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TCLOB) VALUES (10,EMPTY_CLOB())", QueryType.OTHER, databaseTestEnvironment);
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TCLOB FROM " + TABLE_NAME + " WHERE TKEY=10 FOR UPDATE", QueryType.SELECT, true, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				Object clobHandle = databaseTestEnvironment.getDbmsSupport().getClobHandle(resultSet, 1);
@@ -401,7 +401,7 @@ public class DbmsSupportTest {
 			}
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TCLOB FROM " + tableName + " WHERE TKEY=10", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TCLOB FROM " + TABLE_NAME + " WHERE TKEY=10", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				Reader clobReader = databaseTestEnvironment.getDbmsSupport().getClobReader(resultSet, 1);
@@ -414,9 +414,9 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testReadEmptyClob(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY,TCLOB) VALUES (11,EMPTY_CLOB())", QueryType.OTHER, databaseTestEnvironment);
+		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TCLOB) VALUES (11,EMPTY_CLOB())", QueryType.OTHER, databaseTestEnvironment);
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TCLOB FROM " + tableName + " WHERE TKEY=11", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TCLOB FROM " + TABLE_NAME + " WHERE TKEY=11", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				Reader clobReader = databaseTestEnvironment.getDbmsSupport().getClobReader(resultSet, 1);
@@ -428,9 +428,9 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testReadNullClob(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY) VALUES (11)", QueryType.OTHER, databaseTestEnvironment);
+		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY) VALUES (11)", QueryType.OTHER, databaseTestEnvironment);
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TCLOB FROM " + tableName + " WHERE TKEY=11", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TCLOB FROM " + TABLE_NAME + " WHERE TKEY=11", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertNull(databaseTestEnvironment.getDbmsSupport().getClobReader(resultSet, 1));
@@ -443,14 +443,14 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testWriteClobInOneStep(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String clobContents = "Dit is de content van de clob";
-		String query = "INSERT INTO " + tableName + " (TKEY,TCLOB) VALUES (12,?)";
+		String query = "INSERT INTO " + TABLE_NAME + " (TKEY,TCLOB) VALUES (12,?)";
 		String translatedQuery = databaseTestEnvironment.getDbmsSupport().convertQuery(query, "Oracle");
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(translatedQuery);) {
 			stmt.setString(1, clobContents);
 			stmt.execute();
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TCLOB FROM " + tableName + " WHERE TKEY=12", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TCLOB FROM " + TABLE_NAME + " WHERE TKEY=12", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				Reader clobReader = databaseTestEnvironment.getDbmsSupport().getClobReader(resultSet, 1);
@@ -464,9 +464,9 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testInsertEmptyClobUsingDbmsSupport(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		JdbcUtil.executeStatement(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY,TCLOB) VALUES (13," + databaseTestEnvironment.getDbmsSupport().emptyClobValue() + ")");
+		JdbcUtil.executeStatement(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TCLOB) VALUES (13," + databaseTestEnvironment.getDbmsSupport().emptyClobValue() + ")");
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TCLOB FROM " + tableName + " WHERE TKEY=13", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TCLOB FROM " + TABLE_NAME + " WHERE TKEY=13", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertThat(JdbcUtil.getClobAsString(databaseTestEnvironment.getDbmsSupport(), resultSet, 1, false), IsEmptyString.isEmptyOrNullString());
@@ -478,8 +478,8 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testWriteAndReadBlob(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String blobContents = "Dit is de content van de blob";
-		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY,TBLOB) VALUES (20,EMPTY_BLOB())", QueryType.OTHER, databaseTestEnvironment);
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + tableName + " WHERE TKEY=20 FOR UPDATE", QueryType.SELECT, true, databaseTestEnvironment)) {
+		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (20,EMPTY_BLOB())", QueryType.OTHER, databaseTestEnvironment);
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=20 FOR UPDATE", QueryType.SELECT, true, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				Object blobHandle = databaseTestEnvironment.getDbmsSupport().getBlobHandle(resultSet, 1);
@@ -490,7 +490,7 @@ public class DbmsSupportTest {
 				resultSet.updateRow();
 			}
 		}
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + tableName + " WHERE TKEY=20", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=20", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				InputStream blobStream = databaseTestEnvironment.getDbmsSupport().getBlobInputStream(resultSet, 1);
@@ -505,8 +505,8 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testWriteAndReadBlobCompressed(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String blobContents = "Dit is de content van de blob";
-		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY,TBLOB) VALUES (21,EMPTY_BLOB())", QueryType.OTHER, databaseTestEnvironment);
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + tableName + " WHERE TKEY=21 FOR UPDATE", QueryType.SELECT, true, databaseTestEnvironment)) {
+		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (21,EMPTY_BLOB())", QueryType.OTHER, databaseTestEnvironment);
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=21 FOR UPDATE", QueryType.SELECT, true, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				Object blobHandle = databaseTestEnvironment.getDbmsSupport().getBlobHandle(resultSet, 1);
@@ -518,7 +518,7 @@ public class DbmsSupportTest {
 				resultSet.updateRow();
 			}
 		}
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + tableName + " WHERE TKEY=21", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=21", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				String actual = JdbcUtil.getBlobAsString(databaseTestEnvironment.getDbmsSupport(), resultSet, 1, "UTF-8", true, false, false);
@@ -530,9 +530,9 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testReadEmptyBlob(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY,TBLOB) VALUES (22,EMPTY_BLOB())", QueryType.OTHER, databaseTestEnvironment);
+		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (22,EMPTY_BLOB())", QueryType.OTHER, databaseTestEnvironment);
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + tableName + " WHERE TKEY=22", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=22", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				InputStream inputStream = databaseTestEnvironment.getDbmsSupport().getBlobInputStream(resultSet, 1);
@@ -544,9 +544,9 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testReadNullBlob(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY) VALUES (23)", QueryType.OTHER, databaseTestEnvironment);
+		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY) VALUES (23)", QueryType.OTHER, databaseTestEnvironment);
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + tableName + " WHERE TKEY=23", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=23", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertNull(databaseTestEnvironment.getDbmsSupport().getClobReader(resultSet, 1));
@@ -558,14 +558,14 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testWriteBlobInOneStep(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String blobContents = "Dit is de content van de blob";
-		String query = "INSERT INTO " + tableName + " (TKEY,TBLOB) VALUES (24,?)";
+		String query = "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (24,?)";
 		String translatedQuery = databaseTestEnvironment.getDbmsSupport().convertQuery(query, "Oracle");
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(translatedQuery);) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
 			stmt.execute();
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + tableName + " WHERE TKEY=24", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=24", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				String actual = JdbcUtil.getBlobAsString(databaseTestEnvironment.getDbmsSupport(), resultSet, 1, "UTF-8", false, false, false);
@@ -578,9 +578,9 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testInsertEmptyBlobUsingDbmsSupport(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		JdbcUtil.executeStatement(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY,TBLOB) VALUES (25," + databaseTestEnvironment.getDbmsSupport().emptyBlobValue() + ")");
+		JdbcUtil.executeStatement(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (25," + databaseTestEnvironment.getDbmsSupport().emptyBlobValue() + ")");
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + tableName + " WHERE TKEY=25", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=25", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertThat(JdbcUtil.getBlobAsString(databaseTestEnvironment.getDbmsSupport(), resultSet, 1, "UTF-8", false, false, false), IsEmptyString.isEmptyOrNullString());
@@ -592,7 +592,7 @@ public class DbmsSupportTest {
 	public void testReadBlobAndCLobUsingJdbcUtilGetValue(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String blobContents = "Dit is de content van de blob";
 		String clobContents = "Dit is de content van de clob";
-		String query = "INSERT INTO " + tableName + " (TKEY,TBLOB,TCLOB) VALUES (24,?,?)";
+		String query = "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB,TCLOB) VALUES (24,?,?)";
 		String translatedQuery = databaseTestEnvironment.getDbmsSupport().convertQuery(query, "Oracle");
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(translatedQuery);) {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
@@ -600,7 +600,7 @@ public class DbmsSupportTest {
 			stmt.execute();
 		}
 
-		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB,TCLOB FROM " + tableName + " WHERE TKEY=24", QueryType.SELECT, databaseTestEnvironment)) {
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), "SELECT TBLOB,TCLOB FROM " + TABLE_NAME + " WHERE TKEY=24", QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				ResultSetMetaData rsmeta = resultSet.getMetaData();
 				resultSet.next();
@@ -615,11 +615,11 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testBooleanHandling(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY,TINT,TBOOLEAN) VALUES (30,99," + databaseTestEnvironment.getDbmsSupport().getBooleanValue(false) + ")", QueryType.OTHER, databaseTestEnvironment);
-		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY,TINT,TBOOLEAN) VALUES (31,99," + databaseTestEnvironment.getDbmsSupport().getBooleanValue(true) + ")", QueryType.OTHER, databaseTestEnvironment);
+		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TINT,TBOOLEAN) VALUES (30,99," + databaseTestEnvironment.getDbmsSupport().getBooleanValue(false) + ")", QueryType.OTHER, databaseTestEnvironment);
+		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TINT,TBOOLEAN) VALUES (31,99," + databaseTestEnvironment.getDbmsSupport().getBooleanValue(true) + ")", QueryType.OTHER, databaseTestEnvironment);
 
-		assertEquals(30, DbmsUtil.executeIntQuery(databaseTestEnvironment.getConnection(), "SELECT TKEY FROM " + tableName + " WHERE TINT=99 AND TBOOLEAN=" + databaseTestEnvironment.getDbmsSupport().getBooleanValue(false)));
-		assertEquals(31, DbmsUtil.executeIntQuery(databaseTestEnvironment.getConnection(), "SELECT TKEY FROM " + tableName + " WHERE TINT=99 AND TBOOLEAN=" + databaseTestEnvironment.getDbmsSupport().getBooleanValue(true)));
+		assertEquals(30, DbmsUtil.executeIntQuery(databaseTestEnvironment.getConnection(), "SELECT TKEY FROM " + TABLE_NAME + " WHERE TINT=99 AND TBOOLEAN=" + databaseTestEnvironment.getDbmsSupport().getBooleanValue(false)));
+		assertEquals(31, DbmsUtil.executeIntQuery(databaseTestEnvironment.getConnection(), "SELECT TKEY FROM " + TABLE_NAME + " WHERE TINT=99 AND TBOOLEAN=" + databaseTestEnvironment.getDbmsSupport().getBooleanValue(true)));
 
 	}
 
@@ -631,9 +631,9 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testQueueHandling(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY,TINT) VALUES (40,100)", QueryType.OTHER, databaseTestEnvironment);
+		executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TINT) VALUES (40,100)", QueryType.OTHER, databaseTestEnvironment);
 
-		String selectQuery = "SELECT TKEY FROM " + tableName + " WHERE TINT=100";
+		String selectQuery = "SELECT TKEY FROM " + TABLE_NAME + " WHERE TINT=100";
 		assertEquals(40, DbmsUtil.executeIntQuery(databaseTestEnvironment.getConnection(), selectQuery));
 
 		String readQueueQuery = databaseTestEnvironment.getDbmsSupport().prepareQueryTextForWorkQueueReading(1, selectQuery);
@@ -672,7 +672,7 @@ public class DbmsSupportTest {
 						}
 
 						// insert another record
-						executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY,TINT) VALUES (41,100)", QueryType.OTHER, databaseTestEnvironment);
+						executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TINT) VALUES (41,100)", QueryType.OTHER, databaseTestEnvironment);
 						if (testPeekFindsRecordsWhenTheyAreAvailable)
 							assertTrue(peek(peekQueueQuery, databaseTestEnvironment), "second record should have been seen by peek query");// assert that record is seen
 
@@ -691,7 +691,7 @@ public class DbmsSupportTest {
 						// Next best behaviour for DBMSes that have no skip lock functionality (like MariaDB):
 						// another thread must find the next record when the thread that has the current record moves it out of the way
 
-						executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + tableName + " (TKEY,TINT) VALUES (41,100)", QueryType.OTHER, databaseTestEnvironment);
+						executeTranslatedQuery(databaseTestEnvironment.getConnection(), "INSERT INTO " + TABLE_NAME + " (TKEY,TINT) VALUES (41,100)", QueryType.OTHER, databaseTestEnvironment);
 
 						actionFinished = new Semaphore();
 						nextRecordTester = new ReadNextRecordConcurrentlyTester((ThrowingSupplier<Connection, SQLException>) databaseTestEnvironment.getConnection(), readQueueQuery);
@@ -700,7 +700,7 @@ public class DbmsSupportTest {
 
 						Thread.sleep(500);
 
-						executeTranslatedQuery(workConn1, "UPDATE " + tableName + " SET TINT=101  WHERE TKEY=40", QueryType.OTHER, databaseTestEnvironment);
+						executeTranslatedQuery(workConn1, "UPDATE " + TABLE_NAME + " SET TINT=101  WHERE TKEY=40", QueryType.OTHER, databaseTestEnvironment);
 
 						workConn1.commit();
 
@@ -752,7 +752,7 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testIsBlobType(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
 		try (Connection connection = databaseTestEnvironment.getConnection()) {
-			try (PreparedStatement stmt = connection.prepareStatement("SELECT TKEY, TINT, TVARCHAR, TNUMBER, TDATE, TDATETIME, TBOOLEAN, TBLOB, TCLOB FROM " + tableName)) {
+			try (PreparedStatement stmt = connection.prepareStatement("SELECT TKEY, TINT, TVARCHAR, TNUMBER, TDATE, TDATETIME, TBOOLEAN, TBLOB, TCLOB FROM " + TABLE_NAME)) {
 				try (ResultSet rs = stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = rs.getMetaData();
 					for (int i = 1; i <= 9; i++) {
@@ -767,7 +767,7 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testIsClobType(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException {
 		try (Connection connection = databaseTestEnvironment.getConnection()) {
-			try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement("SELECT TKEY, TINT, TVARCHAR, TNUMBER, TDATE, TDATETIME, TBOOLEAN, TBLOB, TCLOB FROM " + tableName)) {
+			try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement("SELECT TKEY, TINT, TVARCHAR, TNUMBER, TDATE, TDATETIME, TBOOLEAN, TBLOB, TCLOB FROM " + TABLE_NAME)) {
 				try (ResultSet rs = stmt.executeQuery()) {
 					ResultSetMetaData rsmeta = rs.getMetaData();
 					for (int i = 1; i <= 9; i++) {
