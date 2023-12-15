@@ -65,7 +65,9 @@ import nl.nn.adapterframework.util.JdbcUtil;
  *     have a corresponding {@link Parameter} entry. Output parameters should have {@code mode="OUTPUT"}, or
  *     {@code mode="INOUT"} depending on how the stored procedure is defined.
  * </p>
- * <p><b>NOTE:</b> See {@link DB2XMLWriter} for ResultSet!</p>
+ * <p><em>NOTE 1:</em> Support for stored procedures is currently experimental and changes in the currently produced output-format
+ * are expected.</p>
+ * <p><b>NOTE 2:</b> For the current version see {@link DB2XMLWriter} for ResultSet output format.</p>
  *
  * @ff.parameters All parameters present are applied to the query to be executed.
  *

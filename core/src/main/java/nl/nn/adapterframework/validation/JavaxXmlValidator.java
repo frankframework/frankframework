@@ -61,15 +61,6 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	public static final String PARSING_FEATURE_EXTERNAL_PARAMETER_ENTITIES="http://xml.org/sax/features/external-parameter-entities";
 	public static final String PARSING_FEATURE_DISALLOW_INLINE_DOCTYPE="http://apache.org/xml/features/disallow-doctype-decl";
 
-	// TODO I think many (if not all) schemas can simply be registered globally, because xmlns should be uniquely defined.
-	// missing a generic generic mechanism for now
-//	private static final Map<String, URL> globalRegistry = new HashMap<String, URL>();
-//
-//	static {
-//		globalRegistry.put("http://schemas.xmlsoap.org/soap/envelope/", ClassLoaderUtils.getResourceURL("/Tibco/xsd/soap/envelope.xsd"));
-//		//globalRegistry.put("http://ing.nn.afd/AFDTypes",                ClassLoaderUtils.getResourceURL("/Tibco/wsdl/BankingCustomer_01_GetPartyBasicDataBanking_01_concrete1/AFDTypes.xsd"));
-//	}
-
 	private final Map<String, Schema> javaxSchemas = new LinkedHashMap<>();
 
 	@Override

@@ -7,7 +7,6 @@ import static org.junit.Assert.assertEquals;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
-import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;

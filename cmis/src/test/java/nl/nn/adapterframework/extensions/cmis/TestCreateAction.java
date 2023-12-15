@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.apache.commons.codec.binary.Base64;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -51,6 +52,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 
 	@ParameterizedTest(name = "{0} - {1}")
 	@MethodSource("allImplementations")
+	@Nested
 	@Retention(RetentionPolicy.RUNTIME)
 	private @interface TestAllImplementations {
 	}

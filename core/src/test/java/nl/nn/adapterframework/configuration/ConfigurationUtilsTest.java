@@ -1,5 +1,6 @@
 package nl.nn.adapterframework.configuration;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -13,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -219,7 +219,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
 		List<String> configs = ConfigurationUtils.retrieveConfigNamesFromDatabase(applicationContext);
 
-		MatcherAssert.assertThat(configs, IsIterableContainingInOrder.contains("config1", "config2", "config3", "config4", "config5")); //checks order!
+		assertThat(configs, IsIterableContainingInOrder.contains("config1", "config2", "config3", "config4", "config5")); //checks order!
 	}
 
 	@Test
@@ -234,7 +234,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
 		Map<String, Class<? extends IConfigurationClassLoader>> configs = ConfigurationUtils.retrieveAllConfigNames(applicationContext, false, true);
 
-		MatcherAssert.assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); //checks order!
+		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); //checks order!
 
 		assertNull(configs.get("IAF_Util"));
 		assertNull(configs.get("TestConfiguration"));
@@ -255,7 +255,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
 		Map<String, Class<? extends IConfigurationClassLoader>> configs = ConfigurationUtils.retrieveAllConfigNames(applicationContext, true, true);
 
-		MatcherAssert.assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); //checks order!
+		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); //checks order!
 
 		assertNull(configs.get("IAF_Util"));
 		assertNull(configs.get("TestConfiguration"));

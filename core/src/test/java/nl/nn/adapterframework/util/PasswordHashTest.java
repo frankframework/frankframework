@@ -2,7 +2,7 @@ package nl.nn.adapterframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ public class PasswordHashTest {
 			String password = "" + i;
 			String hash = PasswordHash.createHash(password);
 			String secondHash = PasswordHash.createHash(password);
-			assertNotEquals("TWO HASHES ARE EQUAL", hash, secondHash);
+			assertNotEquals(hash, secondHash, "TWO HASHES ARE EQUAL");
 
 			String wrongPassword = "" + (i + 1);
 			assertFalse(PasswordHash.validatePassword(wrongPassword, hash), "WRONG PASSWORD ACCEPTED");

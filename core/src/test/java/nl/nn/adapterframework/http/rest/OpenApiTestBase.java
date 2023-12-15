@@ -1,8 +1,8 @@
 package nl.nn.adapterframework.http.rest;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URL;
@@ -16,10 +16,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
@@ -53,26 +53,26 @@ public class OpenApiTestBase extends Mockito {
 	private final ThreadLocalServlet servlets = new ThreadLocalServlet();
 	protected final Logger log = LogUtil.getLogger(this);
 
-	@BeforeClass
+	@BeforeAll
 	public static void beforeClass() {
 		ApiServiceDispatcher.getInstance().clear();
 	}
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		AppConstants.getInstance().setProperty("hostname", "hostname");
 		AppConstants.getInstance().setProperty("dtap.stage", "xxx");
 		configuration = new TestConfiguration();
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() {
 		servlets.remove();
 
 		configuration.close();
 	}
 
-	@AfterClass
+	@AfterAll
 	public static void afterClass() {
 		ApiServiceDispatcher.getInstance().clear();
 	}
@@ -137,7 +137,7 @@ public class OpenApiTestBase extends Mockito {
 		try {
 			MockHttpServletResponse response = new MockHttpServletResponse();
 			ApiListenerServlet servlet = servlets.get();
-			assertNotNull("Servlet cannot be found!??", servlet);
+			assertNotNull(servlet, "Servlet cannot be found!??");
 
 			servlet.service(request, response);
 
@@ -145,7 +145,7 @@ public class OpenApiTestBase extends Mockito {
 			return res.replaceFirst("auto-generated at .* for", "auto-generated at -timestamp- for");
 		} catch (Throwable t) {
 			//Silly hack to try and make the error visible in Travis.
-			assertTrue(ExceptionUtils.getStackTrace(t), false);
+			assertTrue(false, ExceptionUtils.getStackTrace(t));
 		}
 
 		//This should never happen because of the assertTrue(false) statement in the catch cause.
@@ -202,7 +202,7 @@ public class OpenApiTestBase extends Mockito {
 			inputValidator.setName(ref);
 			String xsd = "/OpenApi/"+xsdSchema;
 			URL url = this.getClass().getResource(xsd);
-			assertNotNull("xsd ["+xsdSchema+"] not found", url);
+			assertNotNull(url, "xsd ["+xsdSchema+"] not found");
 			inputValidator.setSchema(xsd);
 			if (requestRoot!=null) {
 				inputValidator.setRoot(requestRoot);
@@ -221,7 +221,7 @@ public class OpenApiTestBase extends Mockito {
 			outputValidator.setName(ref);
 			String xsd = "/OpenApi/"+xsdSchema;
 			URL url = this.getClass().getResource(xsd);
-			assertNotNull("xsd ["+xsdSchema+"] not found", url);
+			assertNotNull(url, "xsd ["+xsdSchema+"] not found");
 			outputValidator.setSchema(xsd);
 			outputValidator.setThrowException(true);
 			if (root!=null) {
@@ -278,8 +278,8 @@ public class OpenApiTestBase extends Mockito {
 			adapter.registerReceiver(receiver);
 
 			adapter.configure();
-			assertTrue("adapter failed to configure!?", adapter.configurationSucceeded());
-			assertTrue("receiver failed to configure!?", receiver.configurationSucceeded());
+			assertTrue(adapter.configurationSucceeded(), "adapter failed to configure!?");
+			assertTrue(receiver.configurationSucceeded(), "receiver failed to configure!?");
 
 			if(start) {
 				start(adapter);

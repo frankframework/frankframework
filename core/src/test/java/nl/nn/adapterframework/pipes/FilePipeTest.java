@@ -1,14 +1,15 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.io.File;
 
 import org.hamcrest.Matchers;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import nl.nn.adapterframework.core.PipeForward;
 import nl.nn.adapterframework.core.PipeRunException;
@@ -21,8 +22,8 @@ import nl.nn.adapterframework.core.PipeRunResult;
  */
 public class FilePipeTest extends PipeTestBase<FilePipe> {
 
-	@ClassRule
-	public static TemporaryFolder testFolderSource = new TemporaryFolder();
+	@TempDir
+	public static File testFolderSource;
 
 	private static String sourceFolderPath;
 
@@ -33,15 +34,15 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
 		return new FilePipe();
 	}
 
-	@BeforeClass
+	@BeforeAll
 	public static void before() throws Exception {
-		testFolderSource.newFile("1.txt");
-		sourceFolderPath = testFolderSource.getRoot().getPath();
+		File.createTempFile("1.txt", null, testFolderSource);
+		sourceFolderPath = testFolderSource.getPath();
 
 	}
 
 	@Test
-	public void doTestSuccess() throws Exception {
+	void doTestSuccess() throws Exception {
 		PipeForward fw = new PipeForward();
 		fw.setName("test");
 		pipe.registerForward(fw);
@@ -59,7 +60,7 @@ public class FilePipeTest extends PipeTestBase<FilePipe> {
 	}
 
 	@Test
-	public void doTestFailAsEncodingNotSupportedBase64() throws Exception {
+	void doTestFailAsEncodingNotSupportedBase64() throws Exception {
 		PipeForward fw = new PipeForward();
 		fw.setName("test");
 		pipe.registerForward(fw);

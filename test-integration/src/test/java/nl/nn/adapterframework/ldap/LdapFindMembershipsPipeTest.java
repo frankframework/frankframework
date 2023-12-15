@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.Set;
 
 import org.junit.Before;
-import org.junit.Test;
 
 import nl.nn.adapterframework.cache.EhCache;
 import nl.nn.adapterframework.configuration.ConfigurationException;

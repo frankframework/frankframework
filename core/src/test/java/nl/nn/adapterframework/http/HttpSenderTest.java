@@ -17,8 +17,8 @@ package nl.nn.adapterframework.http;
 
 import static nl.nn.adapterframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;

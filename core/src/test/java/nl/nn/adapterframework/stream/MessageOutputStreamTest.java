@@ -33,10 +33,10 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.hamcrest.core.StringContains;
-import org.junit.FixMethodOrder;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.MethodOrderer.MethodName;
 import org.junit.jupiter.api.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 
@@ -44,20 +44,19 @@ import nl.nn.adapterframework.core.IForwardTarget;
 import nl.nn.adapterframework.stream.json.JsonUtils;
 import nl.nn.adapterframework.util.XmlUtils;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodName.class)
 public class MessageOutputStreamTest {
 
-	private boolean TEST_CDATA=true;
-	private String CDATA_START=TEST_CDATA?"<![CDATA[":"";
-	private String CDATA_END=TEST_CDATA?"]]>":"";
+	private final boolean TEST_CDATA = true;
+	private final String CDATA_START = TEST_CDATA ? "<![CDATA[" : "";
+	private final String CDATA_END = TEST_CDATA ? "]]>" : "";
 
 	protected String testString="<root><sub>abc&amp;&lt;&gt;</sub><sub>"+CDATA_START+"<a>a&amp;b</a>"+CDATA_END+"</sub></root>";
 	protected String testJson="{\"key1\":\"string\",\"key2\":12,\"key3\":[1,2,3]}";
-	
-	
+
 	@Test
 	public void test11StreamAsStream() throws Exception {
-		
+
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
@@ -66,149 +65,133 @@ public class MessageOutputStreamTest {
 				outputstream.write(testString.getBytes());
 			}
 		}
-		
-		String actual = new String (target.toByteArray());
+		String actual = target.toString();
 		assertEquals(testString, actual);
 		assertTrue(target.isCloseCalled());
 	}
-	
+
 	@Test
 	public void test12StreamAsWriter() throws Exception {
-		
+
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
-		
+
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
-		
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
 			}
-			
 		}
-		String actual = new String (target.toByteArray());
+		String actual = target.toString();
 		assertEquals(testString, actual);
 		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
 	public void test13StreamAsContentHandler() throws Exception {
-		
+
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			ContentHandler handler = stream.asContentHandler();
 
-			InputSource inputSource = new InputSource(new StringReader(testString)); 
+			InputSource inputSource = new InputSource(new StringReader(testString));
 			XmlUtils.parseXml(inputSource, handler);
-			
 		}
-		String actual = new String (target.toString());
+		String actual = target.toString();
 		assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
 		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
 	public void test14StreamAsJson() throws Exception {
-		
+
 		CloseObservableOutputStream target = new CloseObservableOutputStream();
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
-
 			JsonEventHandler handler = stream.asJsonEventHandler();
 			JsonUtils.parseJson(testJson, handler);
-			
 		}
-		String actual = new String (target.toString());
+		String actual = target.toString();
 		assertEquals(testJson, actual);
 		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
 	public void test21WriterAsStream() throws Exception {
-		
+
 		CloseObservableWriter target = new CloseObservableWriter();
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
-			
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
 			}
-			
 		}
-		String actual = new String (target.toString());
+		String actual = target.toString();
 		assertEquals(testString, actual);
 		assertTrue(target.isCloseCalled());
 	}
 
-	
 	@Test
 	public void test22WriterAsWriter() throws Exception {
-		
+
 		CloseObservableWriter target = new CloseObservableWriter();
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
-
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
 			}
-			
 		}
-		String actual = new String (target.toString());
+		String actual = target.toString();
 		assertEquals(testString, actual);
 		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
 	public void test23WriterAsContentHandler() throws Exception {
-		
+
 		CloseObservableWriter target = new CloseObservableWriter();
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			ContentHandler handler = stream.asContentHandler();
-	
-			InputSource inputSource = new InputSource(new StringReader(testString)); 
-			XmlUtils.parseXml(inputSource, handler);
 
+			InputSource inputSource = new InputSource(new StringReader(testString));
+			XmlUtils.parseXml(inputSource, handler);
 		}
-		String actual = new String (target.toString());
-		//assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
+		String actual = target.toString();
 		assertEquals(testString, actual);
 		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
 	public void test24WriterAsJson() throws Exception {
-		
+
 		CloseObservableWriter target = new CloseObservableWriter();
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
-
 			JsonEventHandler handler = stream.asJsonEventHandler();
 			JsonUtils.parseJson(testJson, handler);
-			
 		}
-		String actual = new String (target.toString());
+		String actual = target.toString();
 		assertEquals(testJson, actual);
 		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
 	public void testX21WriterAsStreamError() throws Exception {
-		
+
 		CloseObservableWriter target = new CloseObservableWriter() {
 
 			@Override
 			public void write(char[] arg0, int arg1, int arg2) {
 				throw new RuntimeException("fakeFailure");
 			}
-			
 		};
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			try {
-				try (OutputStream outputstream = stream.asStream()) { 
+				try (OutputStream outputstream = stream.asStream()) {
 					outputstream.write(testString.getBytes());
 				}
 				fail("exception should be thrown");
@@ -219,90 +202,83 @@ public class MessageOutputStreamTest {
 		assertTrue(target.isCloseCalled());
 	}
 
-	
-	
+
+
 	@Test
 	public void test31ContentHandlerAsStream() throws Exception {
-		
+
 		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
 
 		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testString.getBytes());
 			}
-		
 		}
-		String actual = new String (target.toString());
+		String actual = target.toString();
 		assertEquals(testString, actual);
 		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
 	public void test32ContentHandlerAsWriter() throws Exception {
-		
+
 		CloseObservableXmlWriter target = new CloseObservableXmlWriter();
 
 		try (MessageOutputStream stream = new MessageOutputStream(target)) {
-		
+
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testString);
 			}
-
 		}
-		String actual = new String (target.toString());
-		//assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
+		String actual = target.toString();
 		assertEquals(testString, actual);
 		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
 	public void test41JsonAsStream() throws Exception {
-		
+
 		CloseObservableJsonWriter target = new CloseObservableJsonWriter();
 
 		try (MessageOutputStream stream = new MessageOutputStream(target)) {
 			try (OutputStream outputstream = stream.asStream()) {
 				outputstream.write(testJson.getBytes());
 			}
-		
 		}
-		String actual = new String (target.toString());
+		String actual = target.toString();
 		assertEquals(testJson, actual);
 		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
 	public void test42JsonAsWriter() throws Exception {
-		
+
 		CloseObservableJsonWriter target = new CloseObservableJsonWriter();
 
 		try (MessageOutputStream stream = new MessageOutputStream(target)) {
-		
+
 			try (Writer writer = stream.asWriter()) {
 				writer.write(testJson);
 			}
-
 		}
-		String actual = new String (target.toString());
-		//assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"+testString, actual);
+		String actual = target.toString();
 		assertEquals(testJson, actual);
 		assertTrue(target.isCloseCalled());
 	}
 
 	@Test
 	public void testX12StreamAsWriterError() throws Exception {
-		
+
 		CloseObservableOutputStream target = new CloseObservableOutputStream() {
 
 			@Override
 			public synchronized void write(byte[] arg0, int arg1, int arg2) {
 				throw new RuntimeException("fakeFailure");
 			}
-			
 		};
-		
+
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
-		
+
 			try {
 				try (Writer writer = stream.asWriter()) {
 					writer.write(testString);
@@ -311,7 +287,6 @@ public class MessageOutputStreamTest {
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
 			}
-			
 		}
 		assertTrue(target.isCloseCalled());
 	}
@@ -319,14 +294,14 @@ public class MessageOutputStreamTest {
 	@Test
 	@Disabled("No contract to call endDocument() in case of an Exception")
 	public void testX32ContentHandlerAsWriterError() throws Exception {
-		
+
 		CloseObservableWriter cow = new CloseObservableWriter() {
 
 			@Override
 			public void write(char[] arg0, int arg1, int arg2) {
 				throw new RuntimeException("fakeFailure");
 			}
-			
+
 		};
 		Result result = new StreamResult(cow);
 		SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
@@ -334,7 +309,7 @@ public class MessageOutputStreamTest {
 		transformerHandler.setResult(result);
 
 		try (MessageOutputStream stream = new MessageOutputStream(transformerHandler)) {
-		
+
 			try {
 				try (Writer writer = stream.asWriter()) {
 					writer.write(testString);
@@ -343,7 +318,6 @@ public class MessageOutputStreamTest {
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
 			}
-			
 		}
 		assertTrue(cow.isCloseCalled());
 	}
@@ -351,14 +325,14 @@ public class MessageOutputStreamTest {
 	@Test
 	@Disabled("No contract to call endDocument() in case of an Exception")
 	public void testX31ContentHandlerAsStreamError() throws Exception {
-		
+
 		CloseObservableOutputStream cos = new CloseObservableOutputStream() {
 
 			@Override
 			public void write(byte[] arg0, int arg1, int arg2) {
 				throw new RuntimeException("fakeFailure");
 			}
-			
+
 		};
 		Result result = new StreamResult(cos);
 		SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
@@ -366,7 +340,6 @@ public class MessageOutputStreamTest {
 		transformerHandler.setResult(result);
 
 		try (MessageOutputStream stream = new MessageOutputStream(transformerHandler)) {
-
 			try {
 				try (Writer writer = stream.asWriter()) {
 					writer.write(testString);
@@ -375,14 +348,13 @@ public class MessageOutputStreamTest {
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
 			}
-
 		}
 		assertTrue(cos.isCloseCalled());
 	}
 
 	@Test
 	public void testX13StreamAsContentHandlerError() throws Exception {
-		
+
 		CloseObservableOutputStream target = new CloseObservableOutputStream() {
 
 			@Override
@@ -394,29 +366,27 @@ public class MessageOutputStreamTest {
 			public void write(byte[] b) throws IOException {
 				throw new RuntimeException("fakeFailure 2");
 			}
-			
+
 		};
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			ContentHandler handler = stream.asContentHandler();
-	
+
 			try {
-				InputSource inputSource = new InputSource(new StringReader(testString)); 
+				InputSource inputSource = new InputSource(new StringReader(testString));
 				XmlUtils.parseXml(inputSource, handler);
 				fail("exception should be thrown");
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
 			}
-
 		}
 		assertTrue(target.isCloseCalled());
-		
 	}
 
 	@Test
 	public void testX14StreamAsJsonError() throws Exception {
-		
+
 		CloseObservableOutputStream target = new CloseObservableOutputStream() {
 
 			@Override
@@ -428,28 +398,25 @@ public class MessageOutputStreamTest {
 			public void write(byte[] b) throws IOException {
 				throw new RuntimeException("fakeFailure 2");
 			}
-			
 		};
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			JsonEventHandler handler = stream.asJsonEventHandler();
-	
+
 			try {
 				JsonUtils.parseJson(testJson, handler);
 				fail("exception should be thrown");
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
 			}
-
 		}
 		assertTrue(target.isCloseCalled());
-		
 	}
 
 	@Test
 	public void testX23WriterAsContentHandlerError() throws Exception {
-		
+
 		CloseObservableWriter target = new CloseObservableWriter() {
 
 			@Override
@@ -481,29 +448,26 @@ public class MessageOutputStreamTest {
 			public void write(String arg0) {
 				throw new RuntimeException("fakeFailure 6");
 			}
-			
 		};
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			ContentHandler handler = stream.asContentHandler();
-	
+
 			try {
-				InputSource inputSource = new InputSource(new StringReader(testString)); 
+				InputSource inputSource = new InputSource(new StringReader(testString));
 				XmlUtils.parseXml(inputSource, handler);
 				fail("exception should be thrown");
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
 			}
-
 		}
 		assertTrue(target.isCloseCalled());
-		
 	}
 
 	@Test
 	public void testX24WriterAsJsonError() throws Exception {
-		
+
 		CloseObservableWriter target = new CloseObservableWriter() {
 
 			@Override
@@ -535,25 +499,19 @@ public class MessageOutputStreamTest {
 			public void write(String arg0) {
 				throw new RuntimeException("fakeFailure 6");
 			}
-			
 		};
 
 		try (MessageOutputStream stream = new MessageOutputStream(null, target, (IForwardTarget)null)) {
 
 			JsonEventHandler handler = stream.asJsonEventHandler();
-	
+
 			try {
 				JsonUtils.parseJson(testJson, handler);
 				fail("exception should be thrown");
 			} catch (Exception e) {
 				assertThat(e.getMessage(),StringContains.containsString("fakeFailure"));
 			}
-
 		}
 		assertTrue(target.isCloseCalled());
-		
 	}
-	
-	
-	
 }

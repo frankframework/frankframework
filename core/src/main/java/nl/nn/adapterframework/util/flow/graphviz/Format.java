@@ -76,7 +76,7 @@ public enum Format {
 
 	private static String fontAdjusted(String svg, double fontAdjust) {
 		final Matcher m = FONT_PATTERN.matcher(svg);
-		final StringBuffer s = new StringBuffer();
+		final StringBuilder builder = new StringBuilder();
 		while (m.find()) {
 			String rep;
 			try {
@@ -84,9 +84,9 @@ public enum Format {
 			} catch (NumberFormatException e) {
 				rep = m.group();
 			}
-			m.appendReplacement(s, rep);
+			m.appendReplacement(builder, rep);
 		}
-		m.appendTail(s);
-		return s.toString();
+		m.appendTail(builder);
+		return builder.toString();
 	}
 }

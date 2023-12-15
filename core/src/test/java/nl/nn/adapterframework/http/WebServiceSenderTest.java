@@ -20,9 +20,9 @@ import static org.mockito.Mockito.spy;
 
 import java.io.ByteArrayInputStream;
 
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.PipeLineSession;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.http.HttpSenderBase.HttpMethod;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -38,7 +38,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 	}
 
 	@Test
-	public void simpleMockedWss() throws Throwable {
+	void simpleMockedWss() throws Throwable {
 		WebServiceSender sender = getSender();
 		Message input = new Message("<hallo/>");
 
@@ -56,7 +56,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 	}
 
 	@Test
-	public void simpleMockedWssSoapAction() throws Throwable {
+	void simpleMockedWssSoapAction() throws Throwable {
 		WebServiceSender sender = getSender();
 		Message input = new Message("<hallo/>");
 
@@ -76,7 +76,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 	}
 
 	@Test
-	public void simpleMockedWssMultipart() throws Throwable {
+	void simpleMockedWssMultipart() throws Throwable {
 		WebServiceSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
@@ -106,7 +106,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 	}
 
 	@Test
-	public void simpleMockedWssMultipart2() throws Throwable {
+	void simpleMockedWssMultipart2() throws Throwable {
 		WebServiceSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
@@ -138,7 +138,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 	}
 
 	@Test
-	public void simpleMockedWssMtom() throws Throwable {
+	void simpleMockedWssMtom() throws Throwable {
 		WebServiceSender sender = getSender();
 		Message input = new Message("<xml>input</xml>");
 
@@ -169,7 +169,7 @@ public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 	}
 
 	@Test
-	public void simpleMockedWssMultipartMtomWithParameter() throws Throwable {
+	void simpleMockedWssMultipartMtomWithParameter() throws Throwable {
 		WebServiceSender sender = getSender();
 		Message input = new Message("<xml>hello world</xml>");
 

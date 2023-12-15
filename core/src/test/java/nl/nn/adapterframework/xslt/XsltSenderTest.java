@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.xslt;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.pipes.SenderPipe;
@@ -32,7 +32,7 @@ public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 	 * It should not render namespace definitions multiple times
 	 */
 	@Test
-	public void multiNamespace() throws Exception {
+	void multiNamespace() throws Exception {
 		setStyleSheetName("/Xslt/MultiNamespace/toText.xsl");
 		setIndent(true);
 		pipe.configure();

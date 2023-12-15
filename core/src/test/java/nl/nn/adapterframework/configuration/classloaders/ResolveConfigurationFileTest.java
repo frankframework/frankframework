@@ -7,16 +7,16 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 
-import nl.nn.adapterframework.configuration.ConfigurationUtils;
-import nl.nn.adapterframework.configuration.IbisContext;
-import nl.nn.adapterframework.util.AppConstants;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mockito;
+
+import nl.nn.adapterframework.configuration.ConfigurationUtils;
+import nl.nn.adapterframework.configuration.IbisContext;
+import nl.nn.adapterframework.util.AppConstants;
 
 @RunWith(Parameterized.class)
 public class ResolveConfigurationFileTest extends Mockito {

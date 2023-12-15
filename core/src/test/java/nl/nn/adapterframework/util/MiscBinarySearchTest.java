@@ -1,7 +1,7 @@
 package nl.nn.adapterframework.util;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import java.util.ArrayList;
 import java.util.Collection;

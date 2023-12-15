@@ -1,15 +1,15 @@
 package nl.nn.ibistesttool;
 
-import static org.junit.Assert.assertNotNull;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import nl.nn.testtool.Checkpoint;
+
+import org.junit.jupiter.api.Test;
 
 public class MessageEncoderTest {
 
 	@Test
-	public void testToObject() {
+	void testToObject() {
 		Checkpoint cpt = new Checkpoint();
 
 		MessageEncoder encoder = new MessageEncoder();

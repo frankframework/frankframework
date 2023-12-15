@@ -1,11 +1,11 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import nl.nn.adapterframework.core.PipeForward;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.core.PipeRunResult;
 import nl.nn.adapterframework.util.TransformerPoolNamespaceUnawarenessTest;
 
@@ -66,62 +66,62 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	@Test
-	public void testNamespaceAwareWithStylesheetXslt2() throws Exception {
+	void testNamespaceAwareWithStylesheetXslt2() throws Exception {
 		testNamespaceAwarenessWithStylesheet(2, true, "NF");
 	}
 
 	@Test
-	public void testNamespaceAwareWithXPathXslt2() throws Exception {
+	void testNamespaceAwareWithXPathXslt2() throws Exception {
 		testNamespaceAwarenessWithXpath(2, true, xslt2_XPath_result); // Will return 1, as Xslt 2.0 stylesheet generated from XPath will ignore namespaces in input, as no namespaceDefs were specified
 	}
 
 	@Test
-	public void testNamespaceUnawareWithStylesheetXslt2() throws Exception {
+	void testNamespaceUnawareWithStylesheetXslt2() throws Exception {
 		testNamespaceAwarenessWithStylesheet(2, false, "NF"); // should not set XsltVersion=2 explicitly if you want a namespace unaware XSLT 1.0 stylesheet transformation.
 	}
 
 	@Test
-	public void testNamespaceUnawareWithXPathXslt2() throws Exception {
+	void testNamespaceUnawareWithXPathXslt2() throws Exception {
 		testNamespaceAwarenessWithXpath(2, false, xslt2_XPath_result);
 	}
 
 	@Test
-	public void testNamespaceAwareWithStylesheetXslt1() throws Exception {
+	void testNamespaceAwareWithStylesheetXslt1() throws Exception {
 		testNamespaceAwarenessWithStylesheet(1, true, "NF");
 	}
 
 	@Test
-	public void testNamespaceAwareWithXPathXslt1() throws Exception {
+	void testNamespaceAwareWithXPathXslt1() throws Exception {
 		testNamespaceAwarenessWithXpath(1, true, "NF");
 	}
 
 	@Test
-	public void testNamespaceUnawareWithStylesheetXslt1() throws Exception {
+	void testNamespaceUnawareWithStylesheetXslt1() throws Exception {
 		testNamespaceAwarenessWithStylesheet(1, false, namespaceUnaware_Xslt1_result);
 	}
 
 	@Test
-	public void testNamespaceUnawareWithXPathXslt1() throws Exception {
+	void testNamespaceUnawareWithXPathXslt1() throws Exception {
 		testNamespaceAwarenessWithXpath(1, false, namespaceUnaware_Xslt1_result);
 	}
 
 	@Test
-	public void testNamespaceAwareWithStylesheetXsltVersionAutoDetect() throws Exception {
+	void testNamespaceAwareWithStylesheetXsltVersionAutoDetect() throws Exception {
 		testNamespaceAwarenessWithStylesheet(0, true, "NF");
 	}
 
 	@Test
-	public void testNamespaceAwareWithXPathXsltVersionAutoDetect() throws Exception {
+	void testNamespaceAwareWithXPathXsltVersionAutoDetect() throws Exception {
 		testNamespaceAwarenessWithXpath(0, true, xslt2_XPath_result);  // Will return 1, as Xslt 2.0 stylesheet generated from XPath will ignore namespaces in input, as no namespaceDefs were specified
 	}
 
 	@Test
-	public void testNamespaceUnawareWithStylesheetXsltVersionAutoDetect() throws Exception {
+	void testNamespaceUnawareWithStylesheetXsltVersionAutoDetect() throws Exception {
 		testNamespaceAwarenessWithStylesheet(0, false, namespaceUnaware_Xslt1_result);
 	}
 
 	@Test
-	public void testNamespaceUnawareWithXPathXsltVersionAutoDetect() throws Exception {
+	void testNamespaceUnawareWithXPathXsltVersionAutoDetect() throws Exception {
 		testNamespaceAwarenessWithXpath(0, false, "1");
 	}
 

@@ -62,10 +62,10 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	}
 
 	@Override
-	protected MessagingSource createMessagingSource(String jmsConnectionFactoryName, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
+	protected MessagingSource createMessagingSource(String jmsConnectionFactoryName, String authAlias, boolean createDestination) throws IbisException {
 		Context context = getContext();
-		ConnectionFactory connectionFactory = getConnectionFactory(context, jmsConnectionFactoryName, createDestination, useJms102);
-		return new JmsMessagingSource(jmsConnectionFactoryName, jmsFacade.getJndiContextPrefix(), context, connectionFactory, getMessagingSourceMap(), authAlias, createDestination, jmsFacade.getProxiedDestinationNames(), useJms102);
+		ConnectionFactory connectionFactory = getConnectionFactory(context, jmsConnectionFactoryName, createDestination);
+		return new JmsMessagingSource(jmsConnectionFactoryName, jmsFacade.getJndiContextPrefix(), context, connectionFactory, getMessagingSourceMap(), authAlias, createDestination, jmsFacade.getProxiedDestinationNames());
 	}
 
 	@Override
@@ -79,7 +79,7 @@ public class JmsMessagingSourceFactory extends MessagingSourceFactory {
 	 * see https://web.archive.org/web/20130510092515/http://forum.springsource.org/archive/index.php/t-43700.html
 	 */
 	@Override
-	protected ConnectionFactory createConnectionFactory(Context context, String cfName, boolean createDestination, boolean useJms102) throws IbisException {
+	protected ConnectionFactory createConnectionFactory(Context context, String cfName, boolean createDestination) throws IbisException {
 		IConnectionFactoryFactory connectionFactoryFactory = jmsFacade.getConnectionFactoryFactory();
 		if (connectionFactoryFactory == null) {
 			throw new ConfigurationException("No ConnectionFactoryFactory was configured");

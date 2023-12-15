@@ -1,13 +1,13 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
-import org.junit.Test;
-
 import nl.nn.adapterframework.core.PipeForward;
+
+import org.junit.jupiter.api.Test;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.PipeRunException;
 import nl.nn.adapterframework.core.PipeRunResult;
@@ -106,7 +106,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	}
 
 	@Test
-	public void wsdlJsonValidate() throws Exception {
+	void wsdlJsonValidate() throws Exception {
 		String wsdl = BASE_DIR_VALIDATION + "/Wsdl/GetPolicyDetailsTravel/GetPolicyDetailsTravel.wsdl";
 		String soapBody = "GetPolicyDetailsTravel_Response";
 		String soapFile = BASE_DIR_VALIDATION + "/Wsdl/GetPolicyDetailsTravel/response1soap.xml";
@@ -147,7 +147,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	}
 
 	@Test
-	public void validatePlainText() throws Exception {
+	void validatePlainText() throws Exception {
 		validatePlainText("plain text", "message is not XML or JSON");
 		validatePlainText("[ \"jsonarrayelemen\" ]", "Cannot align JSON");
 		validatePlainText("< dit is helemaal geen xml>", "failed");
@@ -161,7 +161,7 @@ public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 	}
 
 	@Test
-	public void testAddNamespace() {
+	void testAddNamespace() {
 		String tail = "<elem1>content</elem></root>";
 		testAddNamespace("<root>" + tail, "<root xmlns=\"xxx\">" + tail);
 		testAddNamespace("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root>" + tail,

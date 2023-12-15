@@ -1,14 +1,17 @@
 package nl.nn.adapterframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.PipeForward;
@@ -18,24 +21,17 @@ import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.StringUtil;
 
-@RunWith(Parameterized.class)
 public class PgpPipeTest {
 
 	private PipeLineSession session;
-
 	protected PGPPipe encryptPipe;
 	protected PGPPipe decryptPipe;
-
-	private String expectation;
-	private String[] encryptParams, decryptParams;
-
 	private final String MESSAGE = "My Secret!!";
 	private final String PGP_FOLDER = "PGP/";
 
 	private static final String[] sender = {"test@ibissource.org", "ibistest", "first/private.asc", "first/public.asc", "first/public.asc;second/public.asc"};
 	private static final String[] recipient = {"second@ibissource.org", "secondtest", "second/private.asc", "second/public.asc", "first/public.asc;second/public.asc"};
 
-	@Parameterized.Parameters(name = "{index} - {0} - {1}")
 	public static Collection<Object[]> data() {
 		// List of the parameters for pipes is as follows:
 		// action, secretkey, password, publickey, senders, recipients
@@ -67,14 +63,13 @@ public class PgpPipeTest {
 		});
 	}
 
-	public PgpPipeTest(String name, String expectation, String[] encryptParams, String[] decryptParams) {
-		this.expectation = expectation;
-		this.encryptParams = encryptParams;
-		this.decryptParams = decryptParams;
+	public void initPgpPipeTest(String name, String expectation, String[] encryptParams, String[] decryptParams) {
 	}
 
-	@Test
-	public void testAllMessages() throws Throwable {
+	@MethodSource("data")
+	@ParameterizedTest(name = "{index} - {0} - {1}")
+	void testAllMessages(String name, String expectation, String[] encryptParams, String[] decryptParams) throws Throwable {
+		initPgpPipeTest(name, expectation, encryptParams, decryptParams);
 		try {
 			// Configure pipes
 			configurePipe(encryptPipe, encryptParams);
@@ -94,11 +89,12 @@ public class PgpPipeTest {
 			byte[] result = decryptionResult.getResult().asByteArray();
 
 			// Assert decrypted message equals to the original message
-			Assert.assertEquals(MESSAGE, new String(result));
-			Assert.assertEquals("success", expectation);
+			assertNotNull(result);
+			assertEquals(MESSAGE, new String(result));
+			assertEquals("success", expectation);
 		} catch (Exception e) {
 			if (checkExceptionClass(e, expectation)) {
-				Assert.assertTrue(true);
+				assertTrue(true);
 			} else {
 				throw e;
 			}
@@ -108,7 +104,7 @@ public class PgpPipeTest {
 	/**
 	 * Creates pipes and pipeline session base for testing.
 	 */
-	@Before
+	@BeforeEach
 	public void setup() throws ConfigurationException {
 		session = new PipeLineSession();
 
@@ -191,7 +187,7 @@ public class PgpPipeTest {
 	 * @param secretMessage Plaintext of the same message.
 	 */
 	private void assertMessage(String message, String secretMessage) {
-		Assert.assertTrue("Message does not comply with PGP message beginning.", message.startsWith("-----BEGIN PGP MESSAGE-----"));
-		Assert.assertFalse("Encrypted version contains the secret message.", message.contains(secretMessage));
+		assertTrue(message.startsWith("-----BEGIN PGP MESSAGE-----"), "Message does not comply with PGP message beginning.");
+		assertFalse(message.contains(secretMessage), "Encrypted version contains the secret message.");
 	}
 }

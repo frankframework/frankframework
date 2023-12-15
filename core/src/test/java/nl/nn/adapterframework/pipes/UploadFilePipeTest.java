@@ -2,7 +2,7 @@ package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -23,7 +23,7 @@ import nl.nn.adapterframework.core.PipeRunResult;
  * UploadFilePipe Tester.
  *
  * @author <Sina Sen>
- * 
+ *
  */
 public class UploadFilePipeTest extends PipeTestBase<UploadFilePipe> {
 

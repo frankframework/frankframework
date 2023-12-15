@@ -1,6 +1,6 @@
 package nl.nn.adapterframework.pipes;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -9,7 +9,7 @@ import java.net.URL;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 import nl.nn.adapterframework.core.PipeForward;
@@ -34,7 +34,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	}
 
 	@Test
-	public void doPipeHttpRequestTest() throws Exception {
+	void doPipeHttpRequestTest() throws Exception {
 		MockMultipartHttpServletRequest request = createMultipartHttpRequest();
 		pipe.addParameter(createHttpRequestParameter(request, session));
 		pipe.configure();
@@ -50,7 +50,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	}
 
 	@Test
-	public void doPipeHttpRequestAntiVirusTest() throws Exception {
+	void doPipeHttpRequestAntiVirusTest() throws Exception {
 		MockMultipartHttpServletRequest request = createMultipartHttpRequest(pipe, true);
 		pipe.addParameter(createHttpRequestParameter(request, session));
 		pipe.configure();
@@ -68,7 +68,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	}
 
 	@Test
-	public void doPipeHttpRequestCheckAntiVirusPassedTest() throws Exception {
+	void doPipeHttpRequestCheckAntiVirusPassedTest() throws Exception {
 		pipe.setCheckAntiVirus(true);
 		MockMultipartHttpServletRequest request = createMultipartHttpRequest(pipe, true);
 		pipe.addParameter(createHttpRequestParameter(request, session));
@@ -85,7 +85,7 @@ public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 	}
 
 	@Test
-	public void doPipeHttpRequestCheckAntiVirusFailedTest() throws Exception {
+	void doPipeHttpRequestCheckAntiVirusFailedTest() throws Exception {
 		pipe.setCheckAntiVirus(true);
 		PipeForward pipeAntiVirusFailedForward = new PipeForward();
 		pipeAntiVirusFailedForward.setName(StreamPipe.ANTIVIRUS_FAILED_FORWARD);

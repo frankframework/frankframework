@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.junit.Ignore;
-import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.IMessageBrowser;

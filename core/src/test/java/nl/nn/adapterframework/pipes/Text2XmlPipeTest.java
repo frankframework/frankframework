@@ -2,11 +2,11 @@ package nl.nn.adapterframework.pipes;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
@@ -24,7 +24,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testSuccessCDataAndReplaceNonXMLSplitLines() throws Exception {
+	void testSuccessCDataAndReplaceNonXMLSplitLines() throws Exception {
 		pipe.setXmlTag("address");
 		pipe.setSplitLines(true);
 		configureAndStartPipe();
@@ -39,7 +39,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testSuccessCDataAndXMLDeclaration() throws Exception {
+	void testSuccessCDataAndXMLDeclaration() throws Exception {
 		pipe.setXmlTag("address");
 		pipe.setSplitLines(false);
 		pipe.setUseCdataSection(false);
@@ -52,7 +52,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testWithoutXmlDeclarationAndCDATA() throws Exception {
+	void testWithoutXmlDeclarationAndCDATA() throws Exception {
 		pipe.setXmlTag("address");
 		pipe.setSplitLines(false);
 		pipe.setUseCdataSection(false);
@@ -65,7 +65,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testSplitLinesWithoutCDATA() throws Exception {
+	void testSplitLinesWithoutCDATA() throws Exception {
 		pipe.setXmlTag("address");
 		pipe.setSplitLines(true);
 		pipe.setUseCdataSection(false);
@@ -81,7 +81,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testXmlInput() throws Exception {
+	void testXmlInput() throws Exception {
 		pipe.setXmlTag("root");
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
@@ -95,7 +95,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testMultilineXmlInput() throws Exception {
+	void testMultilineXmlInput() throws Exception {
 		pipe.setXmlTag("root");
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
@@ -109,7 +109,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testInvalidMultilineXmlInput() throws Exception {
+	void testInvalidMultilineXmlInput() throws Exception {
 		pipe.setXmlTag("root");
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
@@ -119,7 +119,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testInvalidXmlInput() throws Exception {
+	void testInvalidXmlInput() throws Exception {
 		pipe.setXmlTag("root");
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
@@ -129,7 +129,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testInvalidXmlCharsReplacedWithoutCDATA() throws Exception {
+	void testInvalidXmlCharsReplacedWithoutCDATA() throws Exception {
 		pipe.setXmlTag("address");
 		pipe.setUseCdataSection(false);
 		configureAndStartPipe();
@@ -141,7 +141,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testEmptyInputAndNoReplacementForInvalidXmlChars() throws Exception {
+	void testEmptyInputAndNoReplacementForInvalidXmlChars() throws Exception {
 		pipe.setXmlTag("address");
 		pipe.setUseCdataSection(false);
 		pipe.setReplaceNonXmlChars(false);
@@ -154,7 +154,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testSuccessWithoutAdditionalProperties() throws Exception {
+	void testSuccessWithoutAdditionalProperties() throws Exception {
 		pipe.setXmlTag("address");
 		configureAndStartPipe();
 
@@ -163,7 +163,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testSuccessSplitWithoutReplacingNonXMLChars() throws Exception {
+	void testSuccessSplitWithoutReplacingNonXMLChars() throws Exception {
 		pipe.setXmlTag("address");
 		pipe.setSplitLines(true);
 		pipe.setUseCdataSection(true);
@@ -178,7 +178,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testCdataWithoutReplacingNonXMLChars() throws Exception {
+	void testCdataWithoutReplacingNonXMLChars() throws Exception {
 		pipe.setXmlTag("address");
 		pipe.setUseCdataSection(true);
 		pipe.setReplaceNonXmlChars(false);
@@ -191,7 +191,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testCdataWithReplacingNonXMLChars() throws Exception {
+	void testCdataWithReplacingNonXMLChars() throws Exception {
 		pipe.setXmlTag("address");
 		pipe.setUseCdataSection(true);
 		configureAndStartPipe();
@@ -203,13 +203,13 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testEmptyXmlTag() {
+	void testEmptyXmlTag() {
 		ConfigurationException e = assertThrows(ConfigurationException.class, this::configureAndStartPipe);
 		assertThat(e.getMessage(), Matchers.containsString("Attribute [xmlTag] must be specified"));
 	}
 
 	@Test
-	public void testEmptyInput() throws Exception {
+	void testEmptyInput() throws Exception {
 		pipe.setXmlTag("tests");
 		pipe.setUseCdataSection(false);
 		pipe.setSplitLines(true);
@@ -220,7 +220,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testEmptyInputInCDATA() throws Exception {
+	void testEmptyInputInCDATA() throws Exception {
 		pipe.setXmlTag("tests");
 		configureAndStartPipe();
 
@@ -229,7 +229,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 	}
 
 	@Test
-	public void testNullInput() throws Exception {
+	void testNullInput() throws Exception {
 		pipe.setXmlTag("tests");
 		pipe.setSplitLines(true);
 		pipe.setUseCdataSection(false);
