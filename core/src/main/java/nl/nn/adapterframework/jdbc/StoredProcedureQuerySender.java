@@ -101,6 +101,11 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		if (!outputParameters.isEmpty() && (!getDbmsSupport().isStoredProcedureOutParametersSupported())) {
 			throw new ConfigurationException("Stored Procedure OUT parameters are not supported for database " + getDbmsSupport().getDbmsName());
 		}
+		boolean hasCursorOutParam = outputParameters.values().stream()
+				.anyMatch(p -> p.getType() == Parameter.ParameterType.LIST);
+		if (hasCursorOutParam && !getDbmsSupport().isStoredProcedureRefCursorOutParameterSupported()) {
+			throw new ConfigurationException("Cursor or Ref Cursor OUT parameters for stored procedures are not supported for " + getDbmsSupport().getDbmsName());
+		}
 
 		if (isScalar() && outputParameters.size() > 1) {
 			throw new ConfigurationException("When result should be scalar, only a single output can be returned from the stored procedure.");
@@ -160,7 +165,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			// Parameter metadata are more accurate than our parameter type mapping and
 			// for some databases, this can cause exceptions.
 			// But for Oracle we do need our own mapping.
-			if (getDbmsSupport().canFetchStatementParameterMetaData()) {
+			if (getDbmsSupport().canFetchStatementParameterMetaData() && param.getType() != Parameter.ParameterType.LIST) {
 				typeNr = parameterMetaData.getParameterType(position);
 			} else {
 				typeNr = JdbcUtil.mapParameterTypeToSqlType(getDbmsSupport(), param.getType()).getVendorTypeNumber();
@@ -187,8 +192,9 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	}
 
 	private Message getResult(CallableStatement callableStatement, boolean alsoGetResultSets, String resultQuery, PreparedStatement resStmt) throws SQLException, JMSException, IOException, JdbcException {
-		if (outputParameters.isEmpty() && !alsoGetResultSets) {
-			return getUpdateStatementResult(callableStatement, resultQuery, resStmt, callableStatement.getUpdateCount());
+		int updateCount = callableStatement.getUpdateCount();
+		if (resStmt != null || outputParameters.isEmpty() && (!alsoGetResultSets || updateCount != -1)) {
+			return getUpdateStatementResult(callableStatement, resultQuery, resStmt, updateCount);
 		}
 		if (isScalar() || isScalarExtended()) {
 			return getResult(new StoredProcedureResultWrapper(getDbmsSupport(), callableStatement, callableStatement.getParameterMetaData(), outputParameters));

@@ -174,6 +174,9 @@ public class DB2XMLWriter {
 	}
 
 	private void processOutputParameters(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, @Nonnull Map<Integer, Parameter> outputParameters, int maxRows, boolean includeFieldDefinition, @Nonnull SaxElementBuilder parent) throws SAXException {
+		if (outputParameters.isEmpty()) {
+			return;
+		}
 		StoredProcedureResultWrapper resultWrapper;
 		ResultSetMetaData metaData;
 		try {
@@ -193,7 +196,10 @@ public class DB2XMLWriter {
 			resultElement.addAttribute("type", param.getType().toString());
 
 			try {
-				if (param.getType() == Parameter.ParameterType.LIST) {
+				callableStatement.getObject(position);
+				if (callableStatement.wasNull()) {
+					resultElement.addAttribute("null", "true");
+				} else if (param.getType() == Parameter.ParameterType.LIST) {
 					ResultSet resultSet = callableStatement.getObject(position, ResultSet.class);
 					processResultSet(dbmsSupport, resultSet, maxRows, includeFieldDefinition, resultElement);
 				} else {

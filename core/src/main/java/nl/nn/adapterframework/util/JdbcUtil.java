@@ -75,7 +75,6 @@ import nl.nn.adapterframework.stream.document.ArrayBuilder;
 import nl.nn.adapterframework.stream.document.INodeBuilder;
 import nl.nn.adapterframework.stream.document.ObjectBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
-import oracle.jdbc.OracleTypes;
 
 /**
  * Database-oriented utility functions.
@@ -771,25 +770,7 @@ public class JdbcUtil {
 			case BINARY:
 				return JDBCType.BLOB;
 			case LIST:
-				if (dbmsSupport.getDbmsName().equals("Oracle")) {
-					return new SQLType() {
-						@Override
-						public String getName() {
-							return "CURSOR";
-						}
-
-						@Override
-						public String getVendor() {
-							return "Oracle";
-						}
-
-						@Override
-						public Integer getVendorTypeNumber() {
-							return OracleTypes.CURSOR;
-						}
-					};
-				}
-				return JDBCType.REF_CURSOR;
+				return dbmsSupport.getCursorSqlType();
 			default:
 				throw new IllegalArgumentException("Parameter type [" + parameterType + "] cannot be mapped to a SQL type");
 		}
@@ -990,4 +971,5 @@ public class JdbcUtil {
 			throw fnfe;
 		}
 	}
+
 }

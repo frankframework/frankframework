@@ -55,7 +55,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	@Nonnull private final ParameterMetaData parameterMetaData;
 	@Nonnull private final List<Map.Entry<Integer, Parameter>> parameterPositions;
 
-	private boolean hasNext = true;
+	private boolean hasNext;
 
 	/**
 	 * Class that wraps a CallableStatement to present its output-parameters as if they were
@@ -74,6 +74,7 @@ public class StoredProcedureResultWrapper implements ResultSet {
 				.stream()
 				.sorted(Map.Entry.comparingByKey())
 				.collect(Collectors.toList());
+		this.hasNext = !parameterPositions.isEmpty();
 	}
 
 	@Override

@@ -20,10 +20,12 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.util.Date;
 import java.util.List;
 
@@ -241,12 +243,15 @@ public interface IDbmsSupport {
 	 * DBMS Feature flag: is it possible to return a DB CURSOR in an OUT parameter, as a means to
 	 * return results of a SELECT statement.
 	 * <br/>
-	 * Currently, not yet supported on any database, planned for future for PostgreSQL and Oracle.
 	 *
 	 * @return false for all databases currently. Future support planned for Oracle and PostgreSQL.
 	 */
 	default boolean isStoredProcedureRefCursorOutParameterSupported() {
 		return false;
+	}
+
+	default SQLType getCursorSqlType() {
+		return JDBCType.REF_CURSOR;
 	}
 
 	default boolean canFetchStatementParameterMetaData() {
