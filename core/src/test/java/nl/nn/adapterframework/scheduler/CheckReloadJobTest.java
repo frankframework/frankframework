@@ -50,7 +50,6 @@ public class CheckReloadJobTest {
 
 		jobDef.execute();
 
-		//assertEquals(1, jobDef.getMessageKeeper().size());
 		assertTrue(jobDef.getMessageKeeper().getMessage(0).getMessageText().contains("job successfully configured"));
 	}
 

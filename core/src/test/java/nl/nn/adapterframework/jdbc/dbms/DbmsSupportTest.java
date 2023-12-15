@@ -31,6 +31,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.logging.log4j.Logger;
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
 import org.junit.jupiter.api.AfterEach;
@@ -51,6 +52,7 @@ import nl.nn.adapterframework.testutil.junit.WithLiquibase;
 import nl.nn.adapterframework.util.DateFormatUtils;
 import nl.nn.adapterframework.util.DbmsUtil;
 import nl.nn.adapterframework.util.JdbcUtil;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.Semaphore;
 import nl.nn.adapterframework.util.StreamUtil;
 
@@ -58,6 +60,7 @@ import nl.nn.adapterframework.util.StreamUtil;
 public class DbmsSupportTest {
 	private final boolean testPeekFindsRecordsWhenTheyAreAvailable = true;
 	protected static final String tableName = "DST_TABLE";
+	protected static Logger log = LogUtil.getLogger(DbmsSupportTest.class);
 	protected Properties dataSourceInfo;
 	private DataSource dataSource;
 	protected boolean testPeekShouldSkipRecordsAlreadyLocked = false;
@@ -647,6 +650,7 @@ public class DbmsSupportTest {
 			workConn1.setAutoCommit(false);
 			try (Statement stmt1 = workConn1.createStatement()) {
 				stmt1.setFetchSize(1);
+				log.debug("Read queue using query [" + readQueueQuery + "]");
 				try (ResultSet rs1 = stmt1.executeQuery(readQueueQuery)) {
 					assertTrue(rs1.next());
 					assertEquals(40, rs1.getInt(1));            // find the first record
