@@ -30,7 +30,7 @@ public class ApiListenerPatternsTest {
 
 	private ApiListener listener;
 
-  public static Collection<Object[]> data() {
+	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
 				{ "*", "/*", "/*" },
 				{ "test", "/test", "/test" },
