@@ -112,7 +112,7 @@ public class DB2XMLWriter {
 	}
 
 	public void getXML(@Nonnull IDbmsSupport dbmsSupport, @Nullable ResultSet rs, int maxRows, boolean includeFieldDefinition, ContentHandler handler, boolean prettyPrint) throws SAXException {
-
+		// If a negative value is passed, retrieve all rows of each result set
 		if (maxRows < 0) {
 			maxRows = Integer.MAX_VALUE;
 		}
@@ -155,6 +155,7 @@ public class DB2XMLWriter {
 	}
 
 	public void getXML(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, boolean alsoGetResultSets, @Nonnull Map<Integer, Parameter> outputParameters, int maxRows, boolean includeFieldDefinition, @Nonnull ContentHandler handler, boolean prettyPrint) throws SAXException {
+		// If a negative value is passed, retrieve all rows of each result set
 		if (maxRows < 0) {
 			maxRows = Integer.MAX_VALUE;
 		}

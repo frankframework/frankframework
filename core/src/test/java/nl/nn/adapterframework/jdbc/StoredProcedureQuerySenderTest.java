@@ -72,7 +72,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testSimpleStoredProcedureNoResultNoParameters() throws Exception {
-		assumeThat("H2 driver gives incorrect results for this test case", productKey, not(is("H2")));
+		assumeThat("H2 driver gives incorrect results for this test case", productKey, is(not("H2")));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -150,7 +150,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testSimpleStoredProcedureBlobInputParameter() throws Exception {
-		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, not(is(oneOf("H2", "PostgreSQL", "DB2"))));
+		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL", "DB2"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -184,7 +184,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testSimpleStoredProcedureClobInputParameter() throws Exception {
-		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, not(is(oneOf("H2", "PostgreSQL", "DB2"))));
+		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL", "DB2"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -218,7 +218,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testSimpleStoredProcedureClobInputParameter2() throws Exception {
-		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, not(is(oneOf("H2", "PostgreSQL", "DB2"))));
+		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL", "DB2"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -338,7 +338,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	private void testStoredProcedureBlobOutputParameter(boolean blobSmartGet, boolean compressed, String charSet) throws Exception {
 
-		assumeThat("H2, PSQL not supported for this test case", productKey, not(is(oneOf("H2", "PostgreSQL"))));
+		assumeThat("H2, PSQL not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -374,7 +374,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	@Test
 	public void testStoredProcedureClobOutputParameter() throws Exception {
 
-		assumeThat("H2, PSQL not supported for this test case", productKey, not(is(oneOf("H2", "PostgreSQL"))));
+		assumeThat("H2, PSQL not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -408,7 +408,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	@Test
 	public void testStoredProcedureBlobOutputParameterNullValue() throws Exception {
 
-		assumeThat("H2, PSQL not supported for this test case", productKey, not(is(oneOf("H2", "PostgreSQL"))));
+		assumeThat("H2, PSQL not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -445,7 +445,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	@Test
 	public void testStoredProcedureClobOutputParameterNullValue() throws Exception {
 
-		assumeThat("H2, PSQL not supported for this test case", productKey, not(is(oneOf("H2", "PostgreSQL"))));
+		assumeThat("H2, PSQL not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -568,7 +568,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testStoredProcedureReturningResultSetQueryTypeSelect() throws Exception {
-		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, not(is(oneOf("Oracle", "PostgreSQL"))));
+		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, is(not(oneOf("Oracle", "PostgreSQL"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -602,7 +602,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testStoredProcedureReturningResultSetQueryTypeOther() throws Exception {
-		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, not(is(oneOf("Oracle", "PostgreSQL"))));
+		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, is(not(oneOf("Oracle", "PostgreSQL"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -636,7 +636,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testStoredProcedureReturningResultSetAndOutParameters() throws Exception {
-		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, not(is(oneOf("H2", "Oracle", "PostgreSQL"))));
+		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, is(not(oneOf("H2", "Oracle", "PostgreSQL"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();

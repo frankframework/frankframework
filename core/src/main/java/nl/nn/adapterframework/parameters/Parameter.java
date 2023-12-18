@@ -225,8 +225,10 @@ public class Parameter implements IConfigurable, IWithParameters {
 		CHARACTER,
 
 		/**
-		 * TODO: StoredProcedure OUT parameters when the type is a CURSOR or REFCURSOR
-		 * (Used in larva only) Converts a List to a xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
+		 * Used for StoredProcedure OUT parameters when the database type is a {@code CURSOR} or {@link java.sql.JDBCType#REF_CURSOR}.
+		 * See also {@link nl.nn.adapterframework.jdbc.StoredProcedureQuerySender}.
+		 * <br/>
+		 * Type LIST can also be used in larva test to Convert a List to an xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
 		LIST,
 
 		/** (Used in larva only) Converts a Map&lt;String, String&gt; object to a xml-string (&lt;items&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;item name='...'&gt;...&lt;/item&gt;&lt;/items&gt;) */
