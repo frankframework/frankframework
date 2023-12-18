@@ -1,26 +1,26 @@
 <module>
 	<adapter name="DelayPipe" description="Test the functioning of the DelayPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-DelayPipe" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-DelayPipe" />
 		</receiver>
 		<pipeline firstPipe="DelayPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="DelayPipe" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="${delay.time}">
+			<pipe name="DelayPipe" className="org.frankframework.pipes.DelayPipe" delayTime="${delay.time}">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="DelayPipe5000" description="Test the functioning of the DelayPipe (5000ms)">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-DelayPipe-5000ms" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-DelayPipe-5000ms" />
 		</receiver>
 		<pipeline firstPipe="DelayPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="DelayPipe" className="nl.nn.adapterframework.pipes.DelayPipe">
+			<pipe name="DelayPipe" className="org.frankframework.pipes.DelayPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -17,8 +17,8 @@
 
 	<Loggers>
 		<Logger name="nl.nn" level="DEBUG" />
-		<Logger name="nl.nn.adapterframework.jdbc.migration.LiquibaseXmlChangeLogParser" level="INFO" /> <!-- to avoid stacktraces in DEBUG mode about "Cannot enable ACCESS_EXTERNAL_SCHEMA" -->
-		<Logger name="nl.nn.adapterframework.management.bus" level="DEBUG" />
+		<Logger name="org.frankframework.jdbc.migration.LiquibaseXmlChangeLogParser" level="INFO" /> <!-- to avoid stacktraces in DEBUG mode about "Cannot enable ACCESS_EXTERNAL_SCHEMA" -->
+		<Logger name="org.frankframework.management.bus" level="DEBUG" />
 
 		<Root level="INFO">
 			<AppenderRef ref="file"/>

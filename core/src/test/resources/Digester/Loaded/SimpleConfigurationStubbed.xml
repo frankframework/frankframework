@@ -1,17 +1,17 @@
 <configuration name="SimpleConfiguration">
 	<adapter name="HelloBeautifulWorld">
 		<receiver name="testtool-HelloBeautifulWorld">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-HelloBeautifulWorld"/>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-HelloBeautifulWorld"/>
 		</receiver>
 		<receiver name="HelloBeautifulWorld">
-			<listener name="HelloBeautifulWorld" className="nl.nn.adapterframework.receivers.JavaListener"/>
+			<listener name="HelloBeautifulWorld" className="org.frankframework.receivers.JavaListener"/>
 		</receiver>
 		<receiver name="testtool-HelloBeautifulWorld-1">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-HelloBeautifulWorld-1"/>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-HelloBeautifulWorld-1"/>
 		</receiver>
 		<pipeline firstPipe="HelloBeautifulWorld">
 			<exit name="EXIT" state="success"/>
-			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World ${digester.property} [${secret}] &lt;@quot;&gt;" className="nl.nn.adapterframework.pipes.FixedResultPipe">
+			<pipe name="HelloBeautifulWorld" returnString="Hello Beautiful World ${digester.property} [${secret}] &lt;@quot;&gt;" className="org.frankframework.pipes.FixedResultPipe">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

@@ -23,7 +23,7 @@
 		</receiver>
 		<pipeline firstPipe="HelloOtherWorld">
 			<exit name="EXIT" state="success"/>
-			<pipe name="HelloOtherWorld" returnString="Hello Other World [ &gt;&quot;&lt; ] [******] &lt;@quot;&gt;" className="nl.nn.adapterframework.pipes.FixedResultPipe">
+			<pipe name="HelloOtherWorld" returnString="Hello Other World [ &gt;&quot;&lt; ] [******] &lt;@quot;&gt;" className="org.frankframework.pipes.FixedResultPipe">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>

@@ -47,7 +47,7 @@
 		<property name="web.port" value="8080"/>
 		<property name="web.contextpath" value="/iaf-test"/>
 		<property name="credentialFactory.filesystem.root" value="/opt/frank/secrets"/>
-		<property name="credentialFactory.class" value="nl.nn.credentialprovider.WildFlyCredentialFactory"/>
+		<property name="credentialFactory.class" value="org.frankframework.WildFlyCredentialFactory"/>
 		<property name="authAliases.expansion.allowed" value="testalias"/>
 		<property name="scenariosroot1.directory" value="/opt/frank/testtool"/>
 		<property name="scenariosroot1.description" value="embedded testtool directory /opt/frank/testtool"/>

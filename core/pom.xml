@@ -948,7 +948,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>nl.nn.adapterframework.cmdline.StartIbis</mainClass>
+							<mainClass>org.frankframework.cmdline.StartIbis</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

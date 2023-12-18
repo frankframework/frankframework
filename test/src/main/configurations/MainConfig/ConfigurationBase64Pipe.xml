@@ -1,26 +1,26 @@
 <module>
 	<adapter name="Base64Pipe" description="Test the functioning of the Base64Pipe">
 		<receiver name="Base64Pipe">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-Base64Pipe" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Read" className="nl.nn.adapterframework.pipes.FilePipe"
+			<pipe name="Read" className="org.frankframework.pipes.FilePipe"
 				actions="read" outputType="bytes"/>
-			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe"
+			<pipe name="Encode" className="org.frankframework.pipes.Base64Pipe"
 				storeResultInSessionKey="base64"/>
 			<pipe name="Send"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				storeResultInSessionKey="fileOut" >
-				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+				<sender className="org.frankframework.senders.IbisJavaSender"
 					serviceName="testtool-base64pipe" />
 			</pipe>
-			<pipe name="Decode" className="nl.nn.adapterframework.pipes.Base64Pipe"
+			<pipe name="Decode" className="org.frankframework.pipes.Base64Pipe"
 				direction="decode"/>
-			<pipe name="Write" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+			<pipe name="Write" className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="write" filename="${testdata.dir}/b64/file_out.bin"/>
 		</pipeline>
 	</adapter>

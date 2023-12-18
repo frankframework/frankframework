@@ -8,11 +8,11 @@
 			transactionAttribute="Required"
 		>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="TransactionHandlingMultiAdapter"
 				serviceName="ibis4test-TransactionHandlingNotSupported"
 			/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/ReceiverTransactionHandlingNotSupported"
 			/>
 		</receiver>
@@ -24,11 +24,11 @@
 
 			<!-- The pipeline should have a TX, this subadapter should removed it -->
 			<pipe name="Send transacted message to not supported subadapter"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
-					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					className="org.frankframework.senders.IbisLocalSender"
 					javaListener="TransactionHandlingNotSupportedSubAdapter"
 				/>
 				<forward name="success" path="EXIT"/>
@@ -44,7 +44,7 @@
 			transactionAttribute="NotSupported"
 		>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="TransactionHandlingNotSupportedSubAdapter"
 			/>
 		</receiver>
@@ -56,11 +56,11 @@
 
 			<!-- Make sure there is no TX -->
 			<pipe name="Send transacted message to never subadapter"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
-					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					className="org.frankframework.senders.IbisLocalSender"
 					javaListener="TransactionHandlingNeverSubAdapter"
 				/>
 				<forward name="success" path="EXIT"/>
@@ -76,7 +76,7 @@
 			transactionAttribute="NotSupported"
 		>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="TransactionHandlingNeverSubAdapter"
 			/>
 		</receiver>
@@ -86,7 +86,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="Continue if this call was not transacted" className="nl.nn.adapterframework.pipes.EchoPipe"
+			<pipe name="Continue if this call was not transacted" className="org.frankframework.pipes.EchoPipe"
 				getInputFromFixedValue="&lt;transacted&gt;never&lt;/transacted&gt;">
 
 				<forward name="success" path="EXIT"/>

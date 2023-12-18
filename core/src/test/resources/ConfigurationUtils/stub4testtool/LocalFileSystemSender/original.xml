@@ -2,7 +2,7 @@
 	<adapter name="LocalFileSystemSender">
 		<receiver name="LocalFileSystemSender">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="LocalFileSystemSender"
 			/>
 		</receiver>
@@ -13,10 +13,10 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.LocalFileSystemSender"
+					className="org.frankframework.senders.LocalFileSystemSender"
 					root="C:\"
 				/>
 				<forward name="success" path="READY"/>

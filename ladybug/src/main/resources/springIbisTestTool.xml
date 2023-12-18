@@ -17,11 +17,11 @@
 
 	<bean
 		name="lowerCasePropertySourcePostProcessor"
-		class="nl.nn.adapterframework.configuration.LowerCasePropertySourcePostProcessor"
+		class="org.frankframework.configuration.LowerCasePropertySourcePostProcessor"
 		autowire="byName"
 	/>
 
-	<bean class="nl.nn.ibistesttool.DeploymentSpecificsBeanPostProcessor"/>
+	<bean class="org.frankframework.ibistesttool.DeploymentSpecificsBeanPostProcessor"/>
 
 	<bean name="maxCheckpoints" class="java.lang.Integer">
 		<constructor-arg value="${ibistesttool.maxCheckpoints}"/>
@@ -110,8 +110,8 @@
 		<property name="name" value="Gray box"/>
 		<property name="checkpointMatchers">
 			<list>
-				<bean class="nl.nn.ibistesttool.filter.GrayBox"/>
-				<bean class="nl.nn.ibistesttool.filter.FtpFileRetrieverPipe"/>
+				<bean class="org.frankframework.ibistesttool.filter.GrayBox"/>
+				<bean class="org.frankframework.ibistesttool.filter.FtpFileRetrieverPipe"/>
 			</list>
 		</property>
 	</bean>
@@ -120,8 +120,8 @@
 		<property name="name" value="Black box"/>
 		<property name="checkpointMatchers">
 			<list>
-				<bean class="nl.nn.ibistesttool.filter.BlackBox"/>
-				<bean class="nl.nn.ibistesttool.filter.FtpFileRetrieverPipe"/>
+				<bean class="org.frankframework.ibistesttool.filter.BlackBox"/>
+				<bean class="org.frankframework.ibistesttool.filter.FtpFileRetrieverPipe"/>
 			</list>
 		</property>
 	</bean>
@@ -140,7 +140,7 @@
 		<constructor-arg value="${ibistesttool.reportTransformation}"/>
 	</bean>
 
-	<bean name="pipeDescriptionProvider" class="nl.nn.ibistesttool.PipeDescriptionProvider" autowire="byName"/>
+	<bean name="pipeDescriptionProvider" class="org.frankframework.ibistesttool.PipeDescriptionProvider" autowire="byName"/>
 
 	<util:list id="observerRoles">
 		<value>IbisObserver</value>
@@ -159,12 +159,12 @@
 		<value>IbisTester</value>
 	</util:list>
 
-	<bean name="debugger,ibisDebugger" class="nl.nn.ibistesttool.Debugger" autowire="byName"/>
+	<bean name="debugger,ibisDebugger" class="org.frankframework.ibistesttool.Debugger" autowire="byName"/>
 
-	<bean name="messageEncoder" class="nl.nn.ibistesttool.MessageEncoder" autowire="byName"/>
+	<bean name="messageEncoder" class="org.frankframework.ibistesttool.MessageEncoder" autowire="byName"/>
 
-	<bean name="messageCapturer" class="nl.nn.ibistesttool.MessageCapturer" autowire="byName"/>
+	<bean name="messageCapturer" class="org.frankframework.ibistesttool.MessageCapturer" autowire="byName"/>
 
-	<bean name="messageTransformer" class="nl.nn.ibistesttool.transform.HideRegexMessageTransformer"/>
+	<bean name="messageTransformer" class="org.frankframework.ibistesttool.transform.HideRegexMessageTransformer"/>
 
 </beans>

@@ -1,7 +1,7 @@
 <module>
 	<adapter name="XsltPipe" description="Test the XsltPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-XsltPipe" />
 		</receiver>
 		<pipeline firstPipe="SwitchAction">
@@ -9,69 +9,69 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" notFoundForwardName="copy" />
 
-			<pipe name="genericFunctions" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="genericFunctions" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/TransformGenericFunctions.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="XSLT1" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="XSLT1" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/TransformXSLT1.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="XSLT2" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="XSLT2" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/TransformXSLT2.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="copyNamespace" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="copyNamespace" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/copyNamespace.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="multipleSelects" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="multipleSelects" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/multipleSelects.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="namespaceAware" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="namespaceAware" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/namespaceAware.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="passThrough" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="passThrough" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="copy" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="copy" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/copy.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="copySkipEmptyTags" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="copySkipEmptyTags" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/copy.xsl" skipEmptyTags="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="StylesheetNameSessionKey" className="nl.nn.adapterframework.pipes.PutInSession"
+			<pipe name="StylesheetNameSessionKey" className="org.frankframework.pipes.PutInSession"
 				sessionKey="stylesheetLocation" value="XsltPipe/GenericFunctions.xsl">
 				<forward name="success" path="SetSessionKeyName" />
 				<forward name="failure" path="EXIT" />
 			</pipe>
 
-			<pipe name="SetSessionKeyName" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="SetSessionKeyName" className="org.frankframework.pipes.XsltPipe"
 				styleSheetNameSessionKey="stylesheetLocation"
 				styleSheetName="XsltPipe/TransformXSLT1.xsl">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="DisableOutputEscaping" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="DisableOutputEscaping" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/disableOutputEscaping/extract.xslt">
 			</pipe>
-			<pipe name="DisableOutputEscaping-second" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="DisableOutputEscaping-second" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="XsltPipe/disableOutputEscaping/map.xslt">
 				<forward name="success" path="EXIT" />
 			</pipe>

@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="ResultSet2FileSender">
       <receiver name="testtool-ResultSet2FileSender">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-ResultSet2FileSender"/>
       </receiver>
 		    <receiver name="ResultSet2FileSender">
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="ResultSet2FileSender"/>
 		    </receiver>
       <receiver name="testtool-ResultSet2FileSender-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-ResultSet2FileSender-1"/>
       </receiver>
 
@@ -18,11 +18,11 @@
 				        <exit path="READY" state="success"/>
 			      </exits>
 			      <pipe name="Call Sender"
-               className="nl.nn.adapterframework.pipes.SenderPipe"
+               className="org.frankframework.pipes.SenderPipe"
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
-				<!--<sender className="nnl.nn.adapterframework.jdbc.ResultSet2FileSender"
-                    append="true"/>--><sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+				<!--<sender className="org.frankframework.jdbc.ResultSet2FileSender"
+                    append="true"/>--><sender className="org.frankframework.senders.IbisJavaSender"
                     serviceName="testtool-Call Sender"/>
 				        <forward name="success" path="READY"/>
 			      </pipe>

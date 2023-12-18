@@ -20,7 +20,7 @@
 	-->
 	<bean
 		id="txManagerReal"
-		class="nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager"
+		class="org.frankframework.jta.ThreadConnectableDataSourceTransactionManager"
 		>
 		<property name="dataSource">
 			<ref bean="defaultDataSource"/>

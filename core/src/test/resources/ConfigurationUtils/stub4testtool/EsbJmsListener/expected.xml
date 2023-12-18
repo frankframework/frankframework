@@ -1,33 +1,33 @@
 <module>
 	<adapter description="description" name="adapter">
 		<receiver maxRetries="${FXF_maxRetries}" name="testtool-adapter" transactionAttribute="Required" transactionTimeout="${FXF_TransactionTimeout}">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-adapter"/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="stubbed-slotId"/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="stubbed-slotId"/>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-adapter"/>
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="stubbed-slotId"/>
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="stubbed-slotId"/>
 		</receiver><!--<receiver name='receiver' transactionAttribute='Required' transactionTimeout='${FXF_TransactionTimeout}' maxRetries='${FXF_maxRetries}'>
-			<listener className='nl.nn.adapterframework.extensions.esb.EsbJmsListener' destinationName='P2P.General.LC_PDDS.FileTransfer.Action' lookupDestination='false' jmsRealm='qcf_tibco_p2p_ff' messageProtocol='FF'></listener>
-			<errorStorage className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' jmsRealm='jdbc' slotId='slotId'></errorStorage>
-			<messageLog className='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage' jmsRealm='jdbc' slotId='slotId'></messageLog>
+			<listener className='org.frankframework.extensions.esb.EsbJmsListener' destinationName='P2P.General.LC_PDDS.FileTransfer.Action' lookupDestination='false' jmsRealm='qcf_tibco_p2p_ff' messageProtocol='FF'></listener>
+			<errorStorage className='org.frankframework.jdbc.JdbcTransactionalStorage' jmsRealm='jdbc' slotId='slotId'></errorStorage>
+			<messageLog className='org.frankframework.jdbc.JdbcTransactionalStorage' jmsRealm='jdbc' slotId='slotId'></messageLog>
 			</receiver>-->
 		<receiver maxRetries="${FXF_maxRetries}" name="testtool-adapter-1" transactionAttribute="Required" transactionTimeout="${FXF_TransactionTimeout}">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-adapter-1"/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="stubbed-slotId"/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="stubbed-slotId"/>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-adapter-1"/>
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="stubbed-slotId"/>
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="stubbed-slotId"/>
 		</receiver>
 		<pipeline firstPipe="Store full File path and name" transactionAttribute="Required">
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
-			<inputValidator className="nl.nn.adapterframework.extensions.fxf.FxfXmlValidator" direction="receive"/>
-			<inputWrapper className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe" direction="unwrap"/>
-			<pipe className="nl.nn.adapterframework.pipes.PutInSession" name="Store full File path and name" sessionKey="filePathName">
+			<inputValidator className="org.frankframework.fxf.extensions.FxfXmlValidator" direction="receive"/>
+			<inputWrapper className="org.frankframework.fxf.extensions.FxfWrapperPipe" direction="unwrap"/>
+			<pipe className="org.frankframework.pipes.PutInSession" name="Store full File path and name" sessionKey="filePathName">
 				<forward name="success" path="Read input CSV file"/>
 			</pipe>
-			<pipe actions="read" className="nl.nn.adapterframework.pipes.FilePipe" name="Read input CSV file" outputType="stream">
+			<pipe actions="read" className="org.frankframework.pipes.FilePipe" name="Read input CSV file" outputType="stream">
 				<forward name="success" path="Process each Line"/>
 			</pipe>
-			<pipe className="nl.nn.adapterframework.pipes.StreamLineIteratorPipe" collectResults="false" ignoreExceptions="true" name="Process each Line">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="HandlePviewsStore"/>
+			<pipe className="org.frankframework.pipes.StreamLineIteratorPipe" collectResults="false" ignoreExceptions="true" name="Process each Line">
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="HandlePviewsStore"/>
 				<param name="TransactionId" sessionKey="TransactionId"/>
 				<param name="filePathName" sessionKey="filePathName"/>
 				<param name="flowId" sessionKey="flowId"/>

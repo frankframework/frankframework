@@ -12,7 +12,7 @@
 
 	<bean
 		name="ibisDebuggerAdvice,threadLifeCycleEventListener,xmlDebugger"
-		class="nl.nn.ibistesttool.IbisDebuggerAdvice"
+		class="org.frankframework.ibistesttool.IbisDebuggerAdvice"
 		autowire="byName"
 	/>
 
@@ -24,7 +24,7 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.processors.CorePipeLineProcessor.processPipeLine(
+						org.frankframework.processors.CorePipeLineProcessor.processPipeLine(
 							..
 						)
 					)
@@ -39,11 +39,11 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.processors.InputOutputPipeProcessor.processPipe(
-							nl.nn.adapterframework.core.PipeLine,
-							nl.nn.adapterframework.core.IPipe,
-							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.PipeLineSession
+						org.frankframework.processors.InputOutputPipeProcessor.processPipe(
+							org.frankframework.core.PipeLine,
+							org.frankframework.core.IPipe,
+							org.frankframework.stream.Message,
+							org.frankframework.core.PipeLineSession
 						)
 					)
 					and
@@ -57,11 +57,11 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor.processPipe(
-							nl.nn.adapterframework.core.PipeLine,
-							nl.nn.adapterframework.core.IPipe,
-							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.PipeLineSession
+						org.frankframework.processors.CheckSemaphorePipeProcessor.processPipe(
+							org.frankframework.core.PipeLine,
+							org.frankframework.core.IPipe,
+							org.frankframework.stream.Message,
+							org.frankframework.core.PipeLineSession
 						)
 					)
 					and
@@ -75,11 +75,11 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor.validate(
-							nl.nn.adapterframework.core.PipeLine,
-							nl.nn.adapterframework.core.IValidator,
-							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.PipeLineSession,
+						org.frankframework.processors.CheckSemaphorePipeProcessor.validate(
+							org.frankframework.core.PipeLine,
+							org.frankframework.core.IValidator,
+							org.frankframework.stream.Message,
+							org.frankframework.core.PipeLineSession,
 							String
 						)
 					)
@@ -94,9 +94,9 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.core.ISender.sendMessage(
-							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.PipeLineSession
+						org.frankframework.core.ISender.sendMessage(
+							org.frankframework.stream.Message,
+							org.frankframework.core.PipeLineSession
 						)
 					)
 					and
@@ -112,8 +112,8 @@
 						*
 						nl.nn.adapterframework.core.IBlockEnabledSender+.sendMessage(
 							*,
-							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.PipeLineSession
+							org.frankframework.stream.Message,
+							org.frankframework.core.PipeLineSession
 						)
 					)
 					and
@@ -127,9 +127,9 @@
 					"
 	 				execution(
 	 					*
-	 					nl.nn.adapterframework.stream.IOutputStreamingSupport.provideOutputStream(
-	 						nl.nn.adapterframework.core.PipeLineSession,
-	 						nl.nn.adapterframework.core.IForwardTarget
+	 					org.frankframework.stream.IOutputStreamingSupport.provideOutputStream(
+	 						org.frankframework.core.PipeLineSession,
+	 						org.frankframework.core.IForwardTarget
 	 					)
 	 				)
 	 				and
@@ -143,10 +143,10 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.processors.CacheSenderWrapperProcessor.sendMessage(
-							nl.nn.adapterframework.senders.SenderWrapperBase,
-							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.PipeLineSession
+						org.frankframework.processors.CacheSenderWrapperProcessor.sendMessage(
+							org.frankframework.senders.SenderWrapperBase,
+							org.frankframework.stream.Message,
+							org.frankframework.core.PipeLineSession
 						)
 					)
 					and
@@ -160,9 +160,9 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.processors.CoreListenerProcessor.getMessage(
-							nl.nn.adapterframework.core.ICorrelatedPullingListener,
-							String, nl.nn.adapterframework.core.PipeLineSession
+						org.frankframework.processors.CoreListenerProcessor.getMessage(
+							org.frankframework.core.ICorrelatedPullingListener,
+							String, org.frankframework.core.PipeLineSession
 						)
 					)
 					and
@@ -191,10 +191,10 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.parameters.Parameter.getValue(
-							nl.nn.adapterframework.parameters.ParameterValueList,
-							nl.nn.adapterframework.stream.Message,
-							nl.nn.adapterframework.core.PipeLineSession,
+						org.frankframework.parameters.Parameter.getValue(
+							org.frankframework.parameters.ParameterValueList,
+							org.frankframework.stream.Message,
+							org.frankframework.core.PipeLineSession,
 							boolean
 						)
 					)

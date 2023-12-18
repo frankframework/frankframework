@@ -2,7 +2,7 @@
 	<adapter name="FixedQuerySender">
 		<receiver name="FixedQuerySender">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="FixedQuerySender"
 			/>
 		</receiver>
@@ -13,10 +13,10 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+					className="org.frankframework.jdbc.FixedQuerySender"
 					queryType="select"
 					query="SELECT TKEY, TCLOB FROM IBISTEMP WHERE TCHAR = '1' AND TNUMBER=${jdbc.querylistener.key}"
 				/>

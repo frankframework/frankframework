@@ -1382,7 +1382,7 @@
 								<additionalOption>-digesterRulesPath</additionalOption>
 								<additionalOption>${project.basedir}/core/src/main/resources/digester-rules.xml</additionalOption>
 								<additionalOption>-rootClass</additionalOption>
-								<additionalOption>nl.nn.adapterframework.configuration.Configuration</additionalOption>
+								<additionalOption>org.frankframework.configuration.Configuration</additionalOption>
 								<additionalOption>-frankFrameworkVersion</additionalOption>
 								<additionalOption>${project.version}</additionalOption>
 							</additionalOptions>

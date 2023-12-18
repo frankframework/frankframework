@@ -5,12 +5,12 @@
 			transactionTimeout="${FXF_TransactionTimeout}"
 			maxRetries="${FXF_maxRetries}">
 			<listener
-				className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
+				className="org.frankframework.extensions.esb.EsbJmsListener"
 				destinationName="P2P.General.LC_PDDS.FileTransfer.Action"
 				lookupDestination="false" jmsRealm="qcf_tibco_p2p_ff"
 				messageProtocol="FF" />
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="slotId"/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="slotId" />
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="slotId"/>
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" jmsRealm="jdbc" slotId="slotId" />
 			</receiver>
 
 		<pipeline firstPipe="Store full File path and name"
@@ -21,30 +21,30 @@
 			</exits>
 
 			<inputValidator
-				className="nl.nn.adapterframework.extensions.fxf.FxfXmlValidator"
+				className="org.frankframework.fxf.extensions.FxfXmlValidator"
 				direction="receive" />
 
 			<inputWrapper
-				className="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe"
+				className="org.frankframework.fxf.extensions.FxfWrapperPipe"
 				direction="unwrap" />
 
 			<pipe name="Store full File path and name"
-				className="nl.nn.adapterframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSession"
 				sessionKey="filePathName">
 				<forward name="success" path="Read input CSV file" />
 			</pipe>
 
 			<pipe name="Read input CSV file"
-				className="nl.nn.adapterframework.pipes.FilePipe" actions="read"
-				outputType="stream">
+                  className="org.frankframework.pipes.FilePipe" actions="read"
+                  outputType="stream">
 				<forward name="success" path="Process each Line" />
 			</pipe>
 
 			<pipe name="Process each Line"
-				className="nl.nn.adapterframework.pipes.StreamLineIteratorPipe"
+				className="org.frankframework.pipes.StreamLineIteratorPipe"
 				ignoreExceptions="true" collectResults="false">
 				<sender
-					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					className="org.frankframework.senders.IbisLocalSender"
 					javaListener="HandlePviewsStore">
 				</sender>
 				<param name="TransactionId" sessionKey="TransactionId" />

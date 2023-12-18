@@ -1,15 +1,15 @@
 <configuration>
 	<adapter name="DirectoryListener">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.DirectoryListener"
-				name="DirectoryListener" 
+			<listener className="org.frankframework.receivers.DirectoryListener"
+				name="DirectoryListener"
 				wildcard="*" />
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

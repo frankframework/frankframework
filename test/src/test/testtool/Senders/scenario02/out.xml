@@ -1,29 +1,29 @@
 <throwable>
-  <class>nl.nn.adapterframework.core.SenderException</class>
+  <class>org.frankframework.core.SenderException</class>
   <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-SendersExceptionInSubAdapter]: (RequestProcessorException) RequestProcessor [ibis4test-SendersExceptionInSubAdapter] caught exception: Pipe [Call ExceptionPipe] caught exception: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;</message>
   <cause>
     <throwable>
-      <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
+      <class>org.frankframework.dispatcher.RequestProcessorException</class>
       <message>RequestProcessor [ibis4test-SendersExceptionInSubAdapter] caught exception</message>
       <cause>
         <throwable>
-          <class>nl.nn.adapterframework.core.ListenerException</class>
+          <class>org.frankframework.core.ListenerException</class>
           <message>Pipe [Call ExceptionPipe] caught exception: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;</message>
           <cause>
             <throwable>
-              <class>nl.nn.adapterframework.core.PipeRunException</class>
+              <class>org.frankframework.core.PipeRunException</class>
               <message>Pipe [Call ExceptionPipe] caught exception: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;</message>
               <cause>
                 <throwable>
-                  <class>nl.nn.adapterframework.core.SenderException</class>
+                  <class>org.frankframework.core.SenderException</class>
                   <message>IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;</message>
                   <cause>
                     <throwable>
-                      <class>nl.nn.adapterframework.core.ListenerException</class>
+                      <class>org.frankframework.core.ListenerException</class>
                       <message>Pipe [Generate exception] &lt;test/&gt;</message>
                       <cause>
                         <throwable>
-                          <class>nl.nn.adapterframework.core.PipeRunException</class>
+                          <class>org.frankframework.core.PipeRunException</class>
                           <message>Pipe [Generate exception] &lt;test/&gt;</message>
                         </throwable>
                       </cause>

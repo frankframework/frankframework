@@ -34,7 +34,7 @@
         <xs:documentation>reference to a configuration to be included in the current.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.Include" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.configuration.Include" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="include" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -103,7 +103,7 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="targetDesignDocument" type="xs:string" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.Adapter" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.Adapter" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="adapter" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -111,56 +111,69 @@
   <xs:complexType name="ReceiverType">
     <xs:annotation>
       <xs:documentation>Wrapper for a listener that specifies a channel for the incoming messages of a specific Adapter.
- By choosing a listener, the Frank developer determines how the messages are received.
- For example, an nl.nn.adapterframework.http.rest.ApiListener receives RESTful HTTP requests and a
- JavaListener receives messages from direct Java calls.
- &lt;br/&gt;&lt;br/&gt;
- Apart from wrapping the listener, a Receiver can be configured
- to store received messages and to keep track of the processed / failed
- status of these messages.
- &lt;br/&gt;&lt;br/&gt;
- There are two kinds of listeners: synchronous listeners and asynchronous listeners.
- Synchronous listeners are expected to return a response. The system that triggers the
- receiver typically waits for a response before proceeding its operation. When a
- nl.nn.adapterframework.http.rest.ApiListener receives a HTTP request, the listener is expected to return a
- HTTP response. Asynchronous listeners are not expected to return a response. The system that
- triggers the listener typically continues without waiting for the adapter to finish. When a
- receiver contains an asynchronous listener, it can have a sender that sends the transformed
- message to its destination. Receivers with an asynchronous listener can also have an error sender that is used
- by the receiver to send error messages. In other words: if the result state is SUCCESS then the
- message is sent by the ordinary sender, while the error sender is used if the result state
- is ERROR.
- &lt;br/&gt;&lt;br/&gt;
- &lt;b&gt;Transaction control&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;
- If transacted is set to &lt;code&gt;true&lt;/code&gt;, messages will be received and processed under transaction control.
- This means that after a message has been read and processed and the transaction has ended, one of the following apply:
- &lt;table border="1"&gt;
- &lt;tr&gt;&lt;th&gt;situation&lt;/th&gt;&lt;th&gt;input listener&lt;/th&gt;&lt;th&gt;Pipeline&lt;/th&gt;&lt;th&gt;inProcess storage&lt;/th&gt;&lt;th&gt;errorSender&lt;/th&gt;&lt;th&gt;summary of effect&lt;/th&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;successful&lt;/td&gt;&lt;td&gt;message read and committed&lt;/td&gt;&lt;td&gt;message processed&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;message processed&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;procesing failed&lt;/td&gt;&lt;td&gt;message read and committed&lt;/td&gt;&lt;td&gt;message processing failed and rolled back&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;message sent&lt;/td&gt;&lt;td&gt;message only transferred from listener to errroSender&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;listening failed&lt;/td&gt;&lt;td&gt;unchanged: listening rolled back&lt;/td&gt;&lt;td&gt;no processing performed&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;no changes, input message remains on input available for listener&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;transfer to inprocess storage failed&lt;/td&gt;&lt;td&gt;unchanged: listening rolled back&lt;/td&gt;&lt;td&gt;no processing performed&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;no changes, input message remains on input available for listener&lt;/td&gt;&lt;/tr&gt;
- &lt;tr&gt;&lt;td&gt;transfer to errorSender failed&lt;/td&gt;&lt;td&gt;message read and committed&lt;/td&gt;&lt;td&gt;message processing failed and rolled back&lt;/td&gt;&lt;td&gt;message present&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;message only transferred from listener to inProcess storage&lt;/td&gt;&lt;/tr&gt;
- &lt;/table&gt;
- If the application or the server crashes in the middle of one or more transactions, these transactions
- will be recovered and rolled back after the server/application is restarted. Then always exactly one of
- the following applies for any message touched at any time by Ibis by a transacted receiver:
- &lt;ul&gt;
- &lt;li&gt;It is processed correctly by the pipeline and removed from the input-queue,
-     not present in inProcess storage and not send to the errorSender&lt;/li&gt;
- &lt;li&gt;It is not processed at all by the pipeline, or processing by the pipeline has been rolled back;
-     the message is removed from the input queue and either (one of) still in inProcess storage &lt;i&gt;or&lt;/i&gt; sent to the errorSender&lt;/li&gt;
- &lt;/ul&gt;
+          By choosing a listener, the Frank developer determines how the messages are received.
+          For example, an org.frankframework.http.rest.ApiListener receives RESTful HTTP requests and a
+          JavaListener receives messages from direct Java calls.
+          &lt;br/&gt;&lt;br/&gt;
+          Apart from wrapping the listener, a Receiver can be configured
+          to store received messages and to keep track of the processed / failed
+          status of these messages.
+          &lt;br/&gt;&lt;br/&gt;
+          There are two kinds of listeners: synchronous listeners and asynchronous listeners.
+          Synchronous listeners are expected to return a response. The system that triggers the
+          receiver typically waits for a response before proceeding its operation. When a
+          org.frankframework.http.rest.ApiListener receives a HTTP request, the listener is expected to return a
+          HTTP response. Asynchronous listeners are not expected to return a response. The system that
+          triggers the listener typically continues without waiting for the adapter to finish. When a
+          receiver contains an asynchronous listener, it can have a sender that sends the transformed
+          message to its destination. Receivers with an asynchronous listener can also have an error sender that is used
+          by the receiver to send error messages. In other words: if the result state is SUCCESS then the
+          message is sent by the ordinary sender, while the error sender is used if the result state
+          is ERROR.
+          &lt;br/&gt;&lt;br/&gt;
+          &lt;b&gt;Transaction control&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;
+          If transacted is set to &lt;code&gt;true&lt;/code&gt;, messages will be received and processed under
+          transaction control.
+          This means that after a message has been read and processed and the transaction has ended, one of the
+          following apply:
+          &lt;table border="1"&gt;
+          &lt;tr&gt;&lt;th&gt;situation&lt;/th&gt;&lt;th&gt;input listener&lt;/th&gt;&lt;th&gt;Pipeline&lt;/th&gt;&lt;th&gt;inProcess
+          storage&lt;/th&gt;&lt;th&gt;errorSender&lt;/th&gt;&lt;th&gt;summary of effect&lt;/th&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td&gt;successful&lt;/td&gt;&lt;td&gt;message read and committed&lt;/td&gt;&lt;td&gt;message
+          processed&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;message processed&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td&gt;procesing failed&lt;/td&gt;&lt;td&gt;message read and committed&lt;/td&gt;&lt;td&gt;message
+          processing failed and rolled back&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;message sent&lt;/td&gt;&lt;td&gt;message
+          only transferred from listener to errroSender&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td&gt;listening failed&lt;/td&gt;&lt;td&gt;unchanged: listening rolled back&lt;/td&gt;&lt;td&gt;no
+          processing performed&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;no
+          changes, input message remains on input available for listener&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td&gt;transfer to inprocess storage failed&lt;/td&gt;&lt;td&gt;unchanged: listening rolled back&lt;/td&gt;&lt;td&gt;no
+          processing performed&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;no
+          changes, input message remains on input available for listener&lt;/td&gt;&lt;/tr&gt;
+          &lt;tr&gt;&lt;td&gt;transfer to errorSender failed&lt;/td&gt;&lt;td&gt;message read and committed&lt;/td&gt;&lt;td&gt;message
+          processing failed and rolled back&lt;/td&gt;&lt;td&gt;message present&lt;/td&gt;&lt;td&gt;unchanged&lt;/td&gt;&lt;td&gt;message
+          only transferred from listener to inProcess storage&lt;/td&gt;&lt;/tr&gt;
+          &lt;/table&gt;
+          If the application or the server crashes in the middle of one or more transactions, these transactions
+          will be recovered and rolled back after the server/application is restarted. Then always exactly one of
+          the following applies for any message touched at any time by Ibis by a transacted receiver:
+          &lt;ul&gt;
+          &lt;li&gt;It is processed correctly by the pipeline and removed from the input-queue,
+          not present in inProcess storage and not send to the errorSender&lt;/li&gt;
+          &lt;li&gt;It is not processed at all by the pipeline, or processing by the pipeline has been rolled back;
+          the message is removed from the input queue and either (one of) still in inProcess storage &lt;i&gt;or&lt;/i&gt;
+          sent to the errorSender&lt;/li&gt;
+          &lt;/ul&gt;
 
- &lt;p&gt;&lt;b&gt;commit or rollback&lt;/b&gt;&lt;br/&gt;
- If transacted is set to &lt;code&gt;true&lt;/code&gt;, messages will be either committed or rolled back.
- All message-processing transactions are committed, unless one or more of the following apply:
- &lt;ul&gt;
- &lt;li&gt;The PipeLine is transacted and the exitState of the pipeline is not equal to SUCCESS&lt;/li&gt;
- &lt;li&gt;a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine&lt;/li&gt;
- &lt;li&gt;the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)&lt;/li&gt;
- &lt;/ul&gt;
- &lt;/p&gt;</xs:documentation>
+          &lt;p&gt;&lt;b&gt;commit or rollback&lt;/b&gt;&lt;br/&gt;
+          If transacted is set to &lt;code&gt;true&lt;/code&gt;, messages will be either committed or rolled back.
+          All message-processing transactions are committed, unless one or more of the following apply:
+          &lt;ul&gt;
+          &lt;li&gt;The PipeLine is transacted and the exitState of the pipeline is not equal to SUCCESS&lt;/li&gt;
+          &lt;li&gt;a PipeRunException or another runtime-exception has been thrown by any Pipe or by the PipeLine&lt;/li&gt;
+          &lt;li&gt;the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)&lt;/li&gt;
+          &lt;/ul&gt;
+          &lt;/p&gt;</xs:documentation>
     </xs:annotation>
     <xs:sequence>
       <xs:group ref="ListenerElementGroup" minOccurs="1" maxOccurs="1" />
@@ -316,7 +329,7 @@
     </xs:attribute>
     <xs:attribute ref="transactionTimeout" />
     <xs:attribute ref="transactionAttribute" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.Receiver" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.Receiver" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="receiver" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -517,19 +530,20 @@
     </xs:attribute>
     <xs:attribute name="mode">
       <xs:annotation>
-        <xs:documentation>Set the mode of the parameter, which determines if the parameter is an INPUT, OUTPUT, or INOUT.
- This parameter only has effect for nl.nn.adapterframework.jdbc.StoredProcedureQuerySender.
- An OUTPUT parameter does not need to have a value specified, but does need to have the type specified.
- Parameter values will not be updated, but output values will be put into the result of the
- nl.nn.adapterframework.jdbc.StoredProcedureQuerySender.
- &lt;b/&gt;
- If not specified, the default is INPUT.</xs:documentation>
+        <xs:documentation>Set the mode of the parameter, which determines if the parameter is an INPUT, OUTPUT, or
+            INOUT.
+            This parameter only has effect for org.frankframework.jdbc.StoredProcedureQuerySender.
+            An OUTPUT parameter does not need to have a value specified, but does need to have the type specified.
+            Parameter values will not be updated, but output values will be put into the result of the
+            org.frankframework.jdbc.StoredProcedureQuerySender.
+            &lt;b/&gt;
+            If not specified, the default is INPUT.</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="ParameterModeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.parameters.Parameter" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.parameters.Parameter" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="param" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -609,7 +623,7 @@
     </xs:attribute>
     <xs:attribute ref="transactionTimeout" />
     <xs:attribute ref="transactionAttribute" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeLine" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.PipeLine" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="pipeline" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -641,7 +655,7 @@
  initialized with one Exit having name READY and state SUCCESS</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeForward" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.PipeForward" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="forward" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -790,7 +804,7 @@
         <xs:documentation>Name of the sender or the listener</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.util.Locker" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.util.Locker" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="locker" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -818,7 +832,7 @@
     <xs:sequence>
       <xs:element name="Exit" minOccurs="1" maxOccurs="unbounded" type="ExitType" />
     </xs:sequence>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeLineExits" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.PipeLineExits" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="exits" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -874,7 +888,7 @@
         <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the output will not be validated or transformed by the validator. Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeLineExit" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.PipeLineExit" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="exit" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -883,7 +897,7 @@
     <xs:sequence>
       <xs:element name="Forward" minOccurs="0" maxOccurs="unbounded" type="ForwardType" />
     </xs:sequence>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.PipeForwards" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.PipeForwards" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="globalForwards" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -948,7 +962,7 @@
         <xs:documentation>If &amp;gt;0 the &lt;code&gt;openBlockBeforeLine&lt;/code&gt; instruction is only performed when the current line number is a multiple of this value Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.RecordHandlingFlow" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.RecordHandlingFlow" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="flow" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -956,7 +970,7 @@
   <xs:complexType name="InputFieldsType">
     <xs:attribute name="value" type="xs:string" />
     <xs:attribute name="description" type="xs:string" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.InputfieldsPart" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.InputfieldsPart" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="inputFields" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -964,7 +978,7 @@
   <xs:complexType name="OutputFieldsType">
     <xs:attribute name="value" type="xs:string" />
     <xs:attribute name="description" type="xs:string" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.OutputfieldsPart" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.OutputfieldsPart" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="outputFields" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -976,7 +990,7 @@
     <xs:sequence>
       <xs:group ref="JobElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.ScheduleManager" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.configuration.ScheduleManager" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="scheduler" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -1010,7 +1024,7 @@
         <xs:documentation>when set &lt;code&gt;true&lt;/code&gt;, send warnings to logging and console about not existing directories Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.util.DirectoryCleaner" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.util.DirectoryCleaner" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="directoryCleaner" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -1019,7 +1033,7 @@
     <xs:sequence>
       <xs:group ref="SapSystemElementGroup" minOccurs="0" maxOccurs="unbounded" />
     </xs:sequence>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.extensions.SapSystems" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.configuration.extensions.SapSystems" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="sapSystems" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -1033,7 +1047,7 @@
     <xs:sequence>
       <xs:element name="JmsRealm" minOccurs="0" maxOccurs="unbounded" type="JmsRealmType" />
     </xs:sequence>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsRealmFactory" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JmsRealmFactory" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="jmsRealms" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -1081,7 +1095,7 @@
     <xs:attribute name="authAlias" type="xs:string" />
     <xs:attribute name="jndiContextPrefix" type="xs:string" />
     <xs:attribute name="jndiProperties" type="xs:string" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsRealm" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JmsRealm" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="jmsRealm" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -1094,7 +1108,7 @@
       <xs:group ref="DestinationElementGroup" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="Monitor" minOccurs="0" maxOccurs="unbounded" type="MonitorType" />
     </xs:sequence>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.MonitorManager" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.MonitorManager" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="monitoring" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -1105,10 +1119,10 @@
  &lt;pre&gt;&lt;code&gt;
  {@literal
  &lt;monitor name="Receiver Shutdown" destinations="MONITOR_LOG"&gt;
-    &lt;trigger className="nl.nn.adapterframework.monitoring.Alarm" severity="WARNING"&gt;
+    &lt;trigger className="org.frankframework.monitoring.Alarm" severity="WARNING"&gt;
         &lt;event&gt;Receiver Shutdown&lt;/event&gt;
     &lt;/trigger&gt;
-    &lt;trigger className="nl.nn.adapterframework.monitoring.Clearing" severity="WARNING"&gt;
+    &lt;trigger className="org.frankframework.monitoring.Clearing" severity="WARNING"&gt;
         &lt;event&gt;Receiver Shutdown&lt;/event&gt;
     &lt;/trigger&gt;
  &lt;/monitor&gt;
@@ -1137,7 +1151,7 @@
         <xs:union memberTypes="SeverityAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.Monitor" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.Monitor" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="monitor" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -1154,7 +1168,7 @@
         <xs:documentation>Set the name of the Adapter that this AdapterFilter filters on.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.AdapterFilter" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.AdapterFilter" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="adapterfilter" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -1164,7 +1178,7 @@
       <xs:group ref="SharedResourceElementGroup" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="HttpSession" minOccurs="0" maxOccurs="unbounded" type="HttpSessionType" />
     </xs:sequence>
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.SharedResources" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.configuration.SharedResources" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="sharedResources" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -1172,7 +1186,7 @@
   <xs:complexType name="ConfigurationType">
     <xs:group ref="ConfigurationDeclaredChildGroup" />
     <xs:attributeGroup ref="ConfigurationDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.configuration.Configuration" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.configuration.Configuration" use="prohibited" />
   </xs:complexType>
   <xs:group name="ConfigurationDeclaredChildGroup">
     <xs:sequence>
@@ -1821,7 +1835,7 @@
   </xs:group>
   <xs:complexType name="ApiListenerType">
     <xs:attributeGroup ref="ApiListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.rest.ApiListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.rest.ApiListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ApiListenerDeclaredAttributeGroup">
     <xs:attribute name="method">
@@ -1959,7 +1973,7 @@
   </xs:attributeGroup>
   <xs:complexType name="CmisEventListenerType">
     <xs:attributeGroup ref="CmisEventListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.cmis.CmisEventListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.cmis.CmisEventListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="CmisEventListenerDeclaredAttributeGroup">
     <xs:attribute name="eventListener" type="xs:string" />
@@ -1970,7 +1984,7 @@
   </xs:attributeGroup>
   <xs:complexType name="DirectoryListenerType">
     <xs:attributeGroup ref="DirectoryListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.DirectoryListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.DirectoryListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="DirectoryListenerDeclaredAttributeGroup">
     <xs:attribute name="root" type="xs:string">
@@ -2030,7 +2044,7 @@
   <xs:complexType name="EsbJmsListenerType">
     <xs:group ref="JmsListenerBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="EsbJmsListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.esb.EsbJmsListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.esb.EsbJmsListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="EsbJmsListenerDeclaredAttributeGroup">
     <xs:attribute name="messageProtocol" use="required">
@@ -2112,7 +2126,7 @@
   <xs:complexType name="JmsListenerBaseType">
     <xs:group ref="JmsListenerBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="JmsListenerBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsListenerBase" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JmsListenerBase" use="prohibited" />
   </xs:complexType>
   <xs:group name="JmsListenerBaseDeclaredChildGroup">
     <xs:sequence>
@@ -2157,7 +2171,7 @@
   </xs:attributeGroup>
   <xs:complexType name="JMSFacadeType">
     <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JMSFacade" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JMSFacade" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JMSFacadeDeclaredAttributeGroup">
     <xs:attribute name="destinationName" type="xs:string">
@@ -2194,7 +2208,7 @@
   </xs:attributeGroup>
   <xs:complexType name="JndiBaseType">
     <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jndi.JndiBase" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jndi.JndiBase" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JndiBaseDeclaredAttributeGroup">
     <xs:attribute ref="authentication" />
@@ -2223,7 +2237,7 @@
   <xs:complexType name="PushingJmsListenerType">
     <xs:group ref="JmsListenerBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="PushingJmsListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.PushingJmsListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.PushingJmsListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="PushingJmsListenerDeclaredAttributeGroup">
     <xs:attribute name="destinationName" type="xs:string" use="required">
@@ -2276,7 +2290,7 @@
   </xs:attributeGroup>
   <xs:complexType name="ExchangeMailListenerType">
     <xs:attributeGroup ref="ExchangeMailListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.ExchangeMailListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.ExchangeMailListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ExchangeMailListenerDeclaredAttributeGroup">
     <xs:attribute name="mailAddress" type="xs:string">
@@ -2509,7 +2523,7 @@
   </xs:attributeGroup>
   <xs:complexType name="FtpFileSystemListenerType">
     <xs:attributeGroup ref="FtpFileSystemListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.FtpFileSystemListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.FtpFileSystemListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FtpFileSystemListenerDeclaredAttributeGroup">
     <xs:attribute name="remoteDirectory" type="xs:string">
@@ -2680,7 +2694,7 @@
   <xs:complexType name="FxfListenerType">
     <xs:group ref="JmsListenerBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="FxfListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.fxf.FxfListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.fxf.extensions.FxfListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FxfListenerDeclaredAttributeGroup">
     <xs:attribute name="fxfFileSessionKey" type="xs:string">
@@ -2710,11 +2724,11 @@
   </xs:attributeGroup>
   <xs:complexType name="IfsaProviderListenerType">
     <xs:attributeGroup ref="PushingIfsaProviderListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.ifsa.IfsaProviderListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.ifsa.IfsaProviderListener" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="PushingIfsaProviderListenerType">
     <xs:attributeGroup ref="PushingIfsaProviderListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.ifsa.jms.PushingIfsaProviderListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.ifsa.jms.PushingIfsaProviderListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="PushingIfsaProviderListenerDeclaredAttributeGroup">
     <xs:attribute name="listenerPort" type="xs:string">
@@ -2742,7 +2756,7 @@
   </xs:attributeGroup>
   <xs:complexType name="IfsaFacadeType">
     <xs:attributeGroup ref="IfsaFacadeDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.ifsa.jms.IfsaFacade" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.ifsa.jms.IfsaFacade" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="IfsaFacadeDeclaredAttributeGroup">
     <xs:attribute name="messageProtocol">
@@ -2786,7 +2800,7 @@
   </xs:complexType>
   <xs:complexType name="ImapListenerType">
     <xs:attributeGroup ref="ImapListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.ImapListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.ImapListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ImapListenerDeclaredAttributeGroup">
     <xs:attribute name="host" type="xs:string" use="required">
@@ -2833,7 +2847,7 @@
   </xs:attributeGroup>
   <xs:complexType name="JavaListenerType">
     <xs:attributeGroup ref="JavaListenerDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.JavaListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.JavaListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JavaListenerDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string" use="required">
@@ -2867,7 +2881,7 @@
   </xs:attributeGroup>
   <xs:complexType name="JdbcListenerType">
     <xs:attributeGroup ref="JdbcListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.JdbcListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JdbcListenerDeclaredAttributeGroup">
     <xs:attribute ref="peekUntransacted" />
@@ -2923,7 +2937,7 @@
   </xs:attributeGroup>
   <xs:complexType name="JdbcFacadeType">
     <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.JdbcFacade" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcFacade" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JdbcFacadeDeclaredAttributeGroup">
     <xs:attribute ref="datasourceName" />
@@ -2971,7 +2985,7 @@
   </xs:attributeGroup>
   <xs:complexType name="JdbcTableListenerType">
     <xs:attributeGroup ref="JdbcTableListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.JdbcTableListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcTableListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JdbcTableListenerDeclaredAttributeGroup">
     <xs:attribute name="tableName" type="xs:string" use="required">
@@ -3031,11 +3045,11 @@
   <xs:complexType name="JmsListenerType">
     <xs:group ref="JmsListenerBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="PushingJmsListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JmsListener" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="MessageStoreListenerType">
     <xs:attributeGroup ref="MessageStoreListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.MessageStoreListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.MessageStoreListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="MessageStoreListenerDeclaredAttributeGroup">
     <xs:attribute name="slotId" type="xs:string">
@@ -3155,11 +3169,11 @@
   </xs:attributeGroup>
   <xs:complexType name="MqttListenerType">
     <xs:attributeGroup ref="MqttFacadeDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.mqtt.MqttListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.mqtt.extensions.MqttListener" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="MqttFacadeType">
     <xs:attributeGroup ref="MqttFacadeDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.mqtt.MqttFacade" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.mqtt.extensions.MqttFacade" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="MqttFacadeDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
@@ -3222,11 +3236,11 @@
   <xs:complexType name="PullingJmsListenerType">
     <xs:group ref="JmsListenerBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="JmsListenerBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.PullingJmsListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.PullingJmsListener" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="RestListenerType">
     <xs:attributeGroup ref="RestListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.RestListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.RestListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="RestListenerDeclaredAttributeGroup">
     <xs:attribute name="uriPattern" type="xs:string">
@@ -3304,7 +3318,7 @@
   </xs:attributeGroup>
   <xs:complexType name="Samba2ListenerType">
     <xs:attributeGroup ref="Samba2ListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.Samba2Listener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.Samba2Listener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Samba2ListenerDeclaredAttributeGroup">
     <xs:attribute name="hostname" type="xs:string" />
@@ -3359,11 +3373,11 @@
   </xs:attributeGroup>
   <xs:complexType name="SambaListenerType">
     <xs:attributeGroup ref="Samba2ListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.SambaListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.SambaListener" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="SapListenerType">
     <xs:attributeGroup ref="SapListenerImplCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.sap.SapListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.sap.extensions.SapListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SapListenerImplDeclaredAttributeGroup">
     <xs:attribute name="sapSystemName" type="xs:string" use="required">
@@ -3420,7 +3434,7 @@
   </xs:attributeGroup>
   <xs:complexType name="SftpFileSystemListenerType">
     <xs:attributeGroup ref="SftpFileSystemListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.receivers.SftpFileSystemListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.SftpFileSystemListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SftpFileSystemListenerDeclaredAttributeGroup">
     <xs:attribute name="remoteDirectory" type="xs:string">
@@ -3528,7 +3542,7 @@
   </xs:attributeGroup>
   <xs:complexType name="SimpleJdbcListenerType">
     <xs:attributeGroup ref="SimpleJdbcListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.SimpleJdbcListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.SimpleJdbcListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SimpleJdbcListenerDeclaredAttributeGroup">
     <xs:attribute name="selectQuery" type="xs:string">
@@ -3557,11 +3571,11 @@
   <xs:complexType name="TibcoLogJmsListenerType">
     <xs:group ref="JmsListenerBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="PushingJmsListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.tibco.TibcoLogJmsListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.tibco.extensions.TibcoLogJmsListener" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="WebServiceListenerType">
     <xs:attributeGroup ref="WebServiceListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.WebServiceListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.WebServiceListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="WebServiceListenerDeclaredAttributeGroup">
     <xs:attribute name="soap" type="frankBoolean">
@@ -3629,7 +3643,7 @@
         <xs:complexType>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="cache" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.cache.EhCache" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.cache.EhCache" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
@@ -3656,7 +3670,7 @@
   </xs:group>
   <xs:complexType name="EhCacheType">
     <xs:attributeGroup ref="EhCacheCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.cache.EhCache" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.cache.EhCache" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="EhCacheDeclaredAttributeGroup">
     <xs:attribute name="maxElementsInMemory" type="frankInt">
@@ -4116,52 +4130,51 @@
       <xs:element name="IbisLocalSender">
         <xs:annotation>
           <xs:documentation>Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &amp;lt;&lt;code&gt;exit&lt;/code&gt;&amp;gt;
- that has state nl.nn.adapterframework.core.PipeLine.ExitState#ERROR, an error is considered to happen
- in the caller which means that the &lt;code&gt;exception&lt;/code&gt; forward is followed if it is present.
- &lt;p/&gt;
- &lt;p/&gt;
- Returns exit.code as forward name to SenderPipe provided that exit.code can be parsed as integer.
- For example, if the called adapter has an exit state with code
- &lt;code&gt;2&lt;/code&gt;, then the nl.nn.adapterframework.pipes.SenderPipe supports a forward with name &lt;code&gt;2&lt;/code&gt;
- that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
- &lt;p/&gt;
- &lt;p/&gt;
- An IbisLocalSender makes a call to a Receiver with either a WebServiceListener
- or a JavaListener.
+			  that has state org.frankframework.core.PipeLine.ExitState#ERROR, an error is considered to happen
+			  in the caller which means that the &lt;code&gt;exception&lt;/code&gt; forward is followed if it is present.
+			  &lt;p/&gt;
+			  &lt;p/&gt;
+			  Returns exit.code as forward name to SenderPipe provided that exit.code can be parsed as integer.
+			  For example, if the called adapter has an exit state with code
+			  &lt;code&gt;2&lt;/code&gt;, then the org.frankframework.pipes.SenderPipe supports a forward with name &lt;code&gt;2&lt;/code&gt;
+			  that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
+			  &lt;p/&gt;
+			  &lt;p/&gt;
+			  An IbisLocalSender makes a call to a Receiver with either a WebServiceListener
+			  or a JavaListener.
 
 
+			  &lt;h3&gt;Configuration of the Adapter to be called&lt;/h3&gt;
+			  A call to another Adapter in the same IBIS instance is preferably made using the combination
+			  of an IbisLocalSender and a JavaListener. If,
+			  however, a Receiver with a WebServiceListener is already present, that can be used in some cases, too.
 
- &lt;h3&gt;Configuration of the Adapter to be called&lt;/h3&gt;
- A call to another Adapter in the same IBIS instance is preferably made using the combination
- of an IbisLocalSender and a JavaListener. If,
- however, a Receiver with a WebServiceListener is already present, that can be used in some cases, too.
+			  &lt;h4&gt;configuring IbisLocalSender and JavaListener&lt;/h4&gt;
+			  &lt;ul&gt;
+			  &lt;li&gt;Define a SenderPipe with an IbisLocalSender&lt;/li&gt;
+			  &lt;li&gt;Set the attribute &lt;code&gt;javaListener&lt;/code&gt; to &lt;i&gt;yourServiceName&lt;/i&gt;&lt;/li&gt;
+			  &lt;li&gt;Do not set the attribute &lt;code&gt;serviceName&lt;/code&gt;&lt;/li&gt;
+			  &lt;/ul&gt;
+			  In the Adapter to be called:
+			  &lt;ul&gt;
+			  &lt;li&gt;Define a Receiver with a JavaListener&lt;/li&gt;
+			  &lt;li&gt;Set the attribute &lt;code&gt;name&lt;/code&gt; to &lt;i&gt;yourServiceName&lt;/i&gt;&lt;/li&gt;
+			  &lt;li&gt;Do not set the attribute &lt;code&gt;serviceName&lt;/code&gt;, except if the service is to be called also
+			  from applications other than this IBIS-instance&lt;/li&gt;
+			  &lt;/ul&gt;
 
- &lt;h4&gt;configuring IbisLocalSender and JavaListener&lt;/h4&gt;
- &lt;ul&gt;
-   &lt;li&gt;Define a SenderPipe with an IbisLocalSender&lt;/li&gt;
-   &lt;li&gt;Set the attribute &lt;code&gt;javaListener&lt;/code&gt; to &lt;i&gt;yourServiceName&lt;/i&gt;&lt;/li&gt;
-   &lt;li&gt;Do not set the attribute &lt;code&gt;serviceName&lt;/code&gt;&lt;/li&gt;
- &lt;/ul&gt;
- In the Adapter to be called:
- &lt;ul&gt;
-   &lt;li&gt;Define a Receiver with a JavaListener&lt;/li&gt;
-   &lt;li&gt;Set the attribute &lt;code&gt;name&lt;/code&gt; to &lt;i&gt;yourServiceName&lt;/i&gt;&lt;/li&gt;
-   &lt;li&gt;Do not set the attribute &lt;code&gt;serviceName&lt;/code&gt;, except if the service is to be called also
-       from applications other than this IBIS-instance&lt;/li&gt;
- &lt;/ul&gt;
+			  &lt;h4&gt;configuring IbisLocalSender and WebServiceListener&lt;/h4&gt;
 
- &lt;h4&gt;configuring IbisLocalSender and WebServiceListener&lt;/h4&gt;
-
- &lt;ul&gt;
-   &lt;li&gt;Define a SenderPipe with an IbisLocalSender&lt;/li&gt;
-   &lt;li&gt;Set the attribute &lt;code&gt;serviceName&lt;/code&gt; to &lt;i&gt;yourIbisWebServiceName&lt;/i&gt;&lt;/li&gt;
-   &lt;li&gt;Do not set the attribute &lt;code&gt;javaListener&lt;/code&gt;&lt;/li&gt;
- &lt;/ul&gt;
- In the Adapter to be called:
- &lt;ul&gt;
-   &lt;li&gt;Define a Receiver with a WebServiceListener&lt;/li&gt;
-   &lt;li&gt;Set the attribute &lt;code&gt;name&lt;/code&gt; to &lt;i&gt;yourIbisWebServiceName&lt;/i&gt;&lt;/li&gt;
- &lt;/ul&gt;</xs:documentation>
+			  &lt;ul&gt;
+			  &lt;li&gt;Define a SenderPipe with an IbisLocalSender&lt;/li&gt;
+			  &lt;li&gt;Set the attribute &lt;code&gt;serviceName&lt;/code&gt; to &lt;i&gt;yourIbisWebServiceName&lt;/i&gt;&lt;/li&gt;
+			  &lt;li&gt;Do not set the attribute &lt;code&gt;javaListener&lt;/code&gt;&lt;/li&gt;
+			  &lt;/ul&gt;
+			  In the Adapter to be called:
+			  &lt;ul&gt;
+			  &lt;li&gt;Define a Receiver with a WebServiceListener&lt;/li&gt;
+			  &lt;li&gt;Set the attribute &lt;code&gt;name&lt;/code&gt; to &lt;i&gt;yourIbisWebServiceName&lt;/i&gt;&lt;/li&gt;
+			  &lt;/ul&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4995,7 +5008,7 @@
   </xs:group>
   <xs:complexType name="Afm2EdiFactSenderType">
     <xs:attributeGroup ref="Afm2EdiFactSenderDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.afm.Afm2EdiFactSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.afm.extensions.Afm2EdiFactSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Afm2EdiFactSenderDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
@@ -5397,7 +5410,7 @@
   <xs:complexType name="CommandSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="CommandSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.CommandSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.CommandSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="CommandSenderDeclaredAttributeGroup">
     <xs:attribute name="command" type="xs:string">
@@ -5422,7 +5435,7 @@
   </xs:attributeGroup>
   <xs:complexType name="DelaySenderType">
     <xs:attributeGroup ref="DelaySenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.DelaySender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.DelaySender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="DelaySenderDeclaredAttributeGroup">
     <xs:attribute name="delayTime" type="frankInt">
@@ -5438,7 +5451,7 @@
   <xs:complexType name="DirectQuerySenderType">
     <xs:group ref="JdbcSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="JdbcQuerySenderBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.DirectQuerySender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.DirectQuerySender" use="prohibited" />
   </xs:complexType>
   <xs:group name="JdbcSenderBaseDeclaredChildGroup">
     <xs:sequence>
@@ -5581,7 +5594,7 @@
   <xs:complexType name="EchoSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="EchoSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.EchoSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.EchoSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="EchoSenderDeclaredAttributeGroup">
     <xs:attribute name="synchronous" type="frankBoolean">
@@ -5597,7 +5610,7 @@
   <xs:complexType name="EsbJmsSenderType">
     <xs:group ref="JmsSenderDeclaredChildGroup" />
     <xs:attributeGroup ref="EsbJmsSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.esb.EsbJmsSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.esb.EsbJmsSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="EsbJmsSenderDeclaredAttributeGroup">
     <xs:attribute name="messageProtocol">
@@ -5660,7 +5673,7 @@
   <xs:complexType name="JmsSenderType">
     <xs:group ref="JmsSenderDeclaredChildGroup" />
     <xs:attributeGroup ref="JmsSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JmsSender" use="prohibited" />
   </xs:complexType>
   <xs:group name="JmsSenderDeclaredChildGroup">
     <xs:sequence>
@@ -5714,7 +5727,7 @@
   <xs:complexType name="ExchangeFolderSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="ExchangeFolderSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.ExchangeFolderSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.ExchangeFolderSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ExchangeFolderSenderDeclaredAttributeGroup">
     <xs:attribute name="mailAddress" type="xs:string">
@@ -5894,12 +5907,12 @@
   <xs:complexType name="FileSystemSenderWithAttachmentsType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="FileSystemSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.filesystem.FileSystemSenderWithAttachments" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.filesystem.FileSystemSenderWithAttachments" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="FixedQuerySenderType">
     <xs:group ref="JdbcSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="FixedQuerySenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.FixedQuerySender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.FixedQuerySender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FixedQuerySenderDeclaredAttributeGroup">
     <xs:attribute name="query" type="xs:string" use="required">
@@ -5916,7 +5929,7 @@
   <xs:complexType name="FixedResultSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="FixedResultSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.FixedResultSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.FixedResultSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FixedResultSenderDeclaredAttributeGroup">
     <xs:attribute name="substituteVars" type="frankBoolean">
@@ -5945,7 +5958,7 @@
   <xs:complexType name="FtpFileSystemSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="FtpFileSystemSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.FtpFileSystemSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.FtpFileSystemSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FtpFileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="remoteDirectory" type="xs:string">
@@ -6116,7 +6129,7 @@
   <xs:complexType name="HttpSenderType">
     <xs:group ref="HttpSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="HttpSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.HttpSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.HttpSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="HttpSenderDeclaredAttributeGroup">
     <xs:attribute name="postType">
@@ -6329,7 +6342,7 @@
   <xs:complexType name="IMSSenderType">
     <xs:group ref="JmsSenderDeclaredChildGroup" />
     <xs:attributeGroup ref="IMSSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.ibm.IMSSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.ibm.IMSSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="IMSSenderDeclaredAttributeGroup">
     <xs:attribute name="transactionCode" type="xs:string">
@@ -6345,7 +6358,7 @@
   <xs:complexType name="IbisJavaSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="IbisJavaSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.IbisJavaSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.IbisJavaSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="IbisJavaSenderDeclaredAttributeGroup">
     <xs:attribute name="serviceName" type="xs:string">
@@ -6382,7 +6395,7 @@
   <xs:complexType name="IbisLocalSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="IbisLocalSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.IbisLocalSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.IbisLocalSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="IbisLocalSenderDeclaredAttributeGroup">
     <xs:attribute name="javaListener" type="xs:string">
@@ -6541,7 +6554,7 @@
   <xs:complexType name="IdocSenderType">
     <xs:group ref="SapSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="SapSenderBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.sap.IdocSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.sap.extensions.IdocSender" use="prohibited" />
   </xs:complexType>
   <xs:group name="SapSenderBaseDeclaredChildGroup">
     <xs:sequence>
@@ -6590,7 +6603,7 @@
   <xs:complexType name="ImapSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="ImapSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.ImapSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.ImapSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ImapSenderDeclaredAttributeGroup">
     <xs:attribute name="host" type="xs:string" use="required">
@@ -6638,7 +6651,7 @@
   <xs:complexType name="JavascriptSenderType">
     <xs:group ref="SenderSeriesCumulativeChildGroup" />
     <xs:attributeGroup ref="JavascriptSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.JavascriptSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.JavascriptSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JavascriptSenderDeclaredAttributeGroup">
     <xs:attribute name="jsFileName" type="xs:string">
@@ -6667,7 +6680,7 @@
   <xs:complexType name="SenderSeriesType">
     <xs:group ref="SenderSeriesCumulativeChildGroup" />
     <xs:attributeGroup ref="SenderSeriesCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.SenderSeries" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.SenderSeries" use="prohibited" />
   </xs:complexType>
   <xs:group name="SenderSeriesDeclaredChildGroup">
     <xs:sequence>
@@ -6732,7 +6745,7 @@
   <xs:complexType name="JsonXsltSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="JsonXsltSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.JsonXsltSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.JsonXsltSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JsonXsltSenderDeclaredAttributeGroup">
     <xs:attribute name="jsonResult" type="frankBoolean">
@@ -6823,7 +6836,7 @@
   <xs:complexType name="XsltSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="XsltSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.XsltSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.XsltSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XsltSenderDeclaredAttributeGroup">
     <xs:attribute name="streamingXslt" type="frankBoolean">
@@ -6910,7 +6923,7 @@
   <xs:complexType name="LdapSenderType">
     <xs:group ref="LdapSenderDeclaredChildGroup" />
     <xs:attributeGroup ref="LdapSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.ldap.LdapSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.ldap.LdapSender" use="prohibited" />
   </xs:complexType>
   <xs:group name="LdapSenderDeclaredChildGroup">
     <xs:sequence>
@@ -6982,7 +6995,7 @@
   <xs:complexType name="LocalFileSystemSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="LocalFileSystemSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.LocalFileSystemSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.LocalFileSystemSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="LocalFileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="root" type="xs:string">
@@ -6998,7 +7011,7 @@
   <xs:complexType name="LogSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="LogSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.LogSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.LogSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="LogSenderDeclaredAttributeGroup">
     <xs:attribute name="logCategory" type="xs:string">
@@ -7019,12 +7032,12 @@
   <xs:complexType name="MQSenderType">
     <xs:group ref="JmsSenderDeclaredChildGroup" />
     <xs:attributeGroup ref="JmsSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.ibm.MQSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.ibm.MQSender" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="MailSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="MailSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.MailSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.MailSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="MailSenderDeclaredAttributeGroup">
     <xs:attribute name="smtpHost" type="xs:string">
@@ -7074,7 +7087,7 @@
   <xs:complexType name="MessageStoreSenderType">
     <xs:group ref="MessageStoreSenderDeclaredChildGroup" />
     <xs:attributeGroup ref="MessageStoreSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.MessageStoreSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.MessageStoreSender" use="prohibited" />
   </xs:complexType>
   <xs:group name="MessageStoreSenderDeclaredChildGroup">
     <xs:sequence>
@@ -7118,7 +7131,7 @@
   </xs:attributeGroup>
   <xs:complexType name="JdbcTransactionalStorageType">
     <xs:attributeGroup ref="JdbcTransactionalStorageCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcTransactionalStorage" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JdbcTransactionalStorageDeclaredAttributeGroup">
     <xs:attribute ref="slotId" />
@@ -7152,7 +7165,7 @@
   </xs:attributeGroup>
   <xs:complexType name="JdbcTableMessageBrowserType">
     <xs:attributeGroup ref="JdbcTableMessageBrowserCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.JdbcTableMessageBrowser" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcTableMessageBrowser" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JdbcTableMessageBrowserDeclaredAttributeGroup">
     <xs:attribute name="tableName" type="xs:string">
@@ -7242,7 +7255,7 @@
   <xs:complexType name="MongoDbSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="MongoDbSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.mongodb.MongoDbSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.mongodb.MongoDbSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="MongoDbSenderDeclaredAttributeGroup">
     <xs:attribute name="datasourceName" type="xs:string">
@@ -7304,7 +7317,7 @@
   <xs:complexType name="MqttSenderType">
     <xs:group ref="MqttSenderDeclaredChildGroup" />
     <xs:attributeGroup ref="MqttFacadeDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.mqtt.MqttSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.mqtt.extensions.MqttSender" use="prohibited" />
   </xs:complexType>
   <xs:group name="MqttSenderDeclaredChildGroup">
     <xs:sequence>
@@ -7456,7 +7469,7 @@
   <xs:complexType name="ParallelSendersType">
     <xs:group ref="ParallelSendersCumulativeChildGroup" />
     <xs:attributeGroup ref="ParallelSendersCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.ParallelSenders" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.ParallelSenders" use="prohibited" />
   </xs:complexType>
   <xs:group name="ParallelSendersDeclaredChildGroup">
     <xs:sequence>
@@ -7483,7 +7496,7 @@
   <xs:complexType name="ReloadSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="ReloadSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.ReloadSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.ReloadSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ReloadSenderDeclaredAttributeGroup">
     <xs:attribute name="forceReload" type="frankBoolean">
@@ -7499,7 +7512,7 @@
   <xs:complexType name="ResultSet2FileSenderType">
     <xs:group ref="JdbcSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="ResultSet2FileSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.ResultSet2FileSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.ResultSet2FileSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ResultSet2FileSenderDeclaredAttributeGroup">
     <xs:attribute name="statusFieldType" type="xs:string">
@@ -7531,7 +7544,7 @@
   <xs:complexType name="Samba1SenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="Samba1SenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.Samba1Sender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.Samba1Sender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Samba1SenderDeclaredAttributeGroup">
     <xs:attribute name="share" type="xs:string">
@@ -7572,7 +7585,7 @@
   <xs:complexType name="Samba2SenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="Samba2SenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.Samba2Sender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.Samba2Sender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Samba2SenderDeclaredAttributeGroup">
     <xs:attribute name="hostname" type="xs:string" />
@@ -7633,7 +7646,7 @@
   <xs:complexType name="SapSenderType">
     <xs:group ref="SapSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="SapSenderImplCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.sap.SapSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.sap.extensions.SapSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SapSenderImplDeclaredAttributeGroup">
     <xs:attribute name="synchronous" type="frankBoolean">
@@ -7659,7 +7672,7 @@
   <xs:complexType name="SchedulerSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="SchedulerSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.SchedulerSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.SchedulerSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SchedulerSenderDeclaredAttributeGroup">
     <xs:attribute name="cronExpressionPattern" type="xs:string">
@@ -7690,7 +7703,7 @@
   <xs:complexType name="SendGridSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="SendGridSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.SendGridSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.SendGridSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SendGridSenderDeclaredAttributeGroup">
     <xs:attribute name="timeout" type="frankInt">
@@ -7870,7 +7883,7 @@
   <xs:complexType name="SenderWrapperType">
     <xs:group ref="SenderWrapperCumulativeChildGroup" />
     <xs:attributeGroup ref="SenderWrapperBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.SenderWrapper" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.SenderWrapper" use="prohibited" />
   </xs:complexType>
   <xs:group name="SenderWrapperDeclaredChildGroup">
     <xs:sequence>
@@ -7886,7 +7899,7 @@
   <xs:complexType name="SftpFileSystemSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="SftpFileSystemSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.SftpFileSystemSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.SftpFileSystemSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SftpFileSystemSenderDeclaredAttributeGroup">
     <xs:attribute name="remoteDirectory" type="xs:string">
@@ -7995,7 +8008,7 @@
   <xs:complexType name="ShadowSenderType">
     <xs:group ref="ParallelSendersCumulativeChildGroup" />
     <xs:attributeGroup ref="ShadowSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.ShadowSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.ShadowSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ShadowSenderDeclaredAttributeGroup">
     <xs:attribute name="originalSender" type="xs:string">
@@ -8021,7 +8034,7 @@
   <xs:complexType name="StoredProcedureQuerySenderType">
     <xs:group ref="JdbcSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="StoredProcedureQuerySenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.StoredProcedureQuerySender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.StoredProcedureQuerySender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="StoredProcedureQuerySenderDeclaredAttributeGroup">
     <xs:attribute name="query" type="xs:string" use="required">
@@ -8094,7 +8107,7 @@
   <xs:complexType name="WebServiceNtlmSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="WebServiceNtlmSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.WebServiceNtlmSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.WebServiceNtlmSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="WebServiceNtlmSenderDeclaredAttributeGroup">
     <xs:attribute name="contentType" type="xs:string">
@@ -8152,7 +8165,7 @@
   <xs:complexType name="WebServiceSenderType">
     <xs:group ref="HttpSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="WebServiceSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.WebServiceSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.WebServiceSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="WebServiceSenderDeclaredAttributeGroup">
     <xs:attribute name="soap" type="frankBoolean">
@@ -8223,7 +8236,7 @@
   <xs:complexType name="XComSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="XComSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.xcom.XComSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.xcom.XComSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XComSenderDeclaredAttributeGroup">
     <xs:attribute name="fileOption">
@@ -8326,7 +8339,7 @@
   <xs:complexType name="XfbSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="XfbSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.xfb.XfbSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.xfb.extensions.XfbSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XfbSenderDeclaredAttributeGroup">
     <xs:attribute name="script" type="xs:string">
@@ -8359,17 +8372,17 @@
   <xs:complexType name="XmlJmsBrowserSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.XmlJmsBrowserSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.XmlJmsBrowserSender" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="XmlQuerySenderType">
     <xs:group ref="JdbcSenderBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="JdbcQuerySenderBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.XmlQuerySender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.XmlQuerySender" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="XmlValidatorSenderType">
     <xs:group ref="XmlValidatorSenderDeclaredChildGroup" />
     <xs:attributeGroup ref="XmlValidatorSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.senders.XmlValidatorSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.XmlValidatorSender" use="prohibited" />
   </xs:complexType>
   <xs:group name="XmlValidatorSenderDeclaredChildGroup">
     <xs:sequence>
@@ -8452,7 +8465,7 @@
   <xs:complexType name="ZipWriterSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="ZipWriterSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.compression.ZipWriterSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.compression.ZipWriterSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ZipWriterSenderDeclaredAttributeGroup" />
   <xs:attributeGroup name="ZipWriterSenderCumulativeAttributeGroup">
@@ -8824,52 +8837,51 @@
       <xs:element name="IbisLocalErrorSender">
         <xs:annotation>
           <xs:documentation>Posts a message to another IBIS-adapter in the same IBIS instance. If the callee exits with an &amp;lt;&lt;code&gt;exit&lt;/code&gt;&amp;gt;
- that has state nl.nn.adapterframework.core.PipeLine.ExitState#ERROR, an error is considered to happen
- in the caller which means that the &lt;code&gt;exception&lt;/code&gt; forward is followed if it is present.
- &lt;p/&gt;
- &lt;p/&gt;
- Returns exit.code as forward name to SenderPipe provided that exit.code can be parsed as integer.
- For example, if the called adapter has an exit state with code
- &lt;code&gt;2&lt;/code&gt;, then the nl.nn.adapterframework.pipes.SenderPipe supports a forward with name &lt;code&gt;2&lt;/code&gt;
- that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
- &lt;p/&gt;
- &lt;p/&gt;
- An IbisLocalSender makes a call to a Receiver with either a WebServiceListener
- or a JavaListener.
+			  that has state org.frankframework.core.PipeLine.ExitState#ERROR, an error is considered to happen
+			  in the caller which means that the &lt;code&gt;exception&lt;/code&gt; forward is followed if it is present.
+			  &lt;p/&gt;
+			  &lt;p/&gt;
+			  Returns exit.code as forward name to SenderPipe provided that exit.code can be parsed as integer.
+			  For example, if the called adapter has an exit state with code
+			  &lt;code&gt;2&lt;/code&gt;, then the org.frankframework.pipes.SenderPipe supports a forward with name &lt;code&gt;2&lt;/code&gt;
+			  that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
+			  &lt;p/&gt;
+			  &lt;p/&gt;
+			  An IbisLocalSender makes a call to a Receiver with either a WebServiceListener
+			  or a JavaListener.
 
 
+			  &lt;h3&gt;Configuration of the Adapter to be called&lt;/h3&gt;
+			  A call to another Adapter in the same IBIS instance is preferably made using the combination
+			  of an IbisLocalSender and a JavaListener. If,
+			  however, a Receiver with a WebServiceListener is already present, that can be used in some cases, too.
 
- &lt;h3&gt;Configuration of the Adapter to be called&lt;/h3&gt;
- A call to another Adapter in the same IBIS instance is preferably made using the combination
- of an IbisLocalSender and a JavaListener. If,
- however, a Receiver with a WebServiceListener is already present, that can be used in some cases, too.
+			  &lt;h4&gt;configuring IbisLocalSender and JavaListener&lt;/h4&gt;
+			  &lt;ul&gt;
+			  &lt;li&gt;Define a SenderPipe with an IbisLocalSender&lt;/li&gt;
+			  &lt;li&gt;Set the attribute &lt;code&gt;javaListener&lt;/code&gt; to &lt;i&gt;yourServiceName&lt;/i&gt;&lt;/li&gt;
+			  &lt;li&gt;Do not set the attribute &lt;code&gt;serviceName&lt;/code&gt;&lt;/li&gt;
+			  &lt;/ul&gt;
+			  In the Adapter to be called:
+			  &lt;ul&gt;
+			  &lt;li&gt;Define a Receiver with a JavaListener&lt;/li&gt;
+			  &lt;li&gt;Set the attribute &lt;code&gt;name&lt;/code&gt; to &lt;i&gt;yourServiceName&lt;/i&gt;&lt;/li&gt;
+			  &lt;li&gt;Do not set the attribute &lt;code&gt;serviceName&lt;/code&gt;, except if the service is to be called also
+			  from applications other than this IBIS-instance&lt;/li&gt;
+			  &lt;/ul&gt;
 
- &lt;h4&gt;configuring IbisLocalSender and JavaListener&lt;/h4&gt;
- &lt;ul&gt;
-   &lt;li&gt;Define a SenderPipe with an IbisLocalSender&lt;/li&gt;
-   &lt;li&gt;Set the attribute &lt;code&gt;javaListener&lt;/code&gt; to &lt;i&gt;yourServiceName&lt;/i&gt;&lt;/li&gt;
-   &lt;li&gt;Do not set the attribute &lt;code&gt;serviceName&lt;/code&gt;&lt;/li&gt;
- &lt;/ul&gt;
- In the Adapter to be called:
- &lt;ul&gt;
-   &lt;li&gt;Define a Receiver with a JavaListener&lt;/li&gt;
-   &lt;li&gt;Set the attribute &lt;code&gt;name&lt;/code&gt; to &lt;i&gt;yourServiceName&lt;/i&gt;&lt;/li&gt;
-   &lt;li&gt;Do not set the attribute &lt;code&gt;serviceName&lt;/code&gt;, except if the service is to be called also
-       from applications other than this IBIS-instance&lt;/li&gt;
- &lt;/ul&gt;
+			  &lt;h4&gt;configuring IbisLocalSender and WebServiceListener&lt;/h4&gt;
 
- &lt;h4&gt;configuring IbisLocalSender and WebServiceListener&lt;/h4&gt;
-
- &lt;ul&gt;
-   &lt;li&gt;Define a SenderPipe with an IbisLocalSender&lt;/li&gt;
-   &lt;li&gt;Set the attribute &lt;code&gt;serviceName&lt;/code&gt; to &lt;i&gt;yourIbisWebServiceName&lt;/i&gt;&lt;/li&gt;
-   &lt;li&gt;Do not set the attribute &lt;code&gt;javaListener&lt;/code&gt;&lt;/li&gt;
- &lt;/ul&gt;
- In the Adapter to be called:
- &lt;ul&gt;
-   &lt;li&gt;Define a Receiver with a WebServiceListener&lt;/li&gt;
-   &lt;li&gt;Set the attribute &lt;code&gt;name&lt;/code&gt; to &lt;i&gt;yourIbisWebServiceName&lt;/i&gt;&lt;/li&gt;
- &lt;/ul&gt;</xs:documentation>
+			  &lt;ul&gt;
+			  &lt;li&gt;Define a SenderPipe with an IbisLocalSender&lt;/li&gt;
+			  &lt;li&gt;Set the attribute &lt;code&gt;serviceName&lt;/code&gt; to &lt;i&gt;yourIbisWebServiceName&lt;/i&gt;&lt;/li&gt;
+			  &lt;li&gt;Do not set the attribute &lt;code&gt;javaListener&lt;/code&gt;&lt;/li&gt;
+			  &lt;/ul&gt;
+			  In the Adapter to be called:
+			  &lt;ul&gt;
+			  &lt;li&gt;Define a Receiver with a WebServiceListener&lt;/li&gt;
+			  &lt;li&gt;Set the attribute &lt;code&gt;name&lt;/code&gt; to &lt;i&gt;yourIbisWebServiceName&lt;/i&gt;&lt;/li&gt;
+			  &lt;/ul&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9824,11 +9836,11 @@
   </xs:group>
   <xs:complexType name="EsbJmsTransactionalStorageType">
     <xs:attributeGroup ref="JmsTransactionalStorageCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.esb.EsbJmsTransactionalStorage" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.esb.EsbJmsTransactionalStorage" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="JmsTransactionalStorageType">
     <xs:attributeGroup ref="JmsTransactionalStorageCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jms.JmsTransactionalStorage" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JmsTransactionalStorage" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JmsTransactionalStorageDeclaredAttributeGroup">
     <xs:attribute name="slotId" type="xs:string">
@@ -10004,7 +10016,7 @@
           </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.errormessageformatters.ErrorMessageFormatter" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.errormessageformatters.ErrorMessageFormatter" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
@@ -10057,7 +10069,7 @@
   </xs:group>
   <xs:complexType name="FixedErrorMessageFormatterType">
     <xs:attributeGroup ref="FixedErrorMessageFormatterDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.errormessageformatters.FixedErrorMessageFormatter" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.FixedErrorMessageFormatter" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FixedErrorMessageFormatterDeclaredAttributeGroup">
     <xs:attribute name="returnString" type="xs:string">
@@ -10077,14 +10089,14 @@
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="SoapErrorMessageFormatterType">
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.errormessageformatters.SoapErrorMessageFormatter" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
   <xs:complexType name="XslErrorMessageFormatterType">
     <xs:group ref="XslErrorMessageFormatterDeclaredChildGroup" />
     <xs:attributeGroup ref="XslErrorMessageFormatterDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.XslErrorMessageFormatter" use="prohibited" />
   </xs:complexType>
   <xs:group name="XslErrorMessageFormatterDeclaredChildGroup">
     <xs:sequence>
@@ -10268,7 +10280,7 @@
   <xs:complexType name="ApiWsdlXmlValidatorType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="ApiWsdlXmlValidatorCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.api.extensions.ApiWsdlXmlValidator" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ApiWsdlXmlValidatorDeclaredAttributeGroup">
     <xs:attribute name="multipart" type="frankBoolean">
@@ -10319,7 +10331,7 @@
   </xs:attributeGroup>
   <xs:complexType name="TransactionAttributesType">
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.core.TransactionAttributes" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.TransactionAttributes" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="TransactionAttributesDeclaredAttributeGroup">
     <xs:attribute ref="transactionTimeout" />
@@ -10330,7 +10342,7 @@
   <xs:complexType name="WsdlXmlValidatorType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="WsdlXmlValidatorCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.WsdlXmlValidator" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.WsdlXmlValidator" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="WsdlXmlValidatorDeclaredAttributeGroup">
     <xs:attribute name="wsdl" type="xs:string">
@@ -10415,7 +10427,7 @@
   <xs:complexType name="SoapValidatorType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="SoapValidatorCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.soap.SoapValidator" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.soap.SoapValidator" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SoapValidatorDeclaredAttributeGroup">
     <xs:attribute name="soapBody" type="xs:string">
@@ -10485,7 +10497,7 @@
   <xs:complexType name="Json2XmlValidatorType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="Json2XmlValidatorCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.Json2XmlValidator" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.Json2XmlValidator" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Json2XmlValidatorDeclaredAttributeGroup">
     <xs:attribute name="targetNamespace" type="xs:string">
@@ -10574,7 +10586,7 @@
   <xs:complexType name="XmlValidatorType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="XmlValidatorCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.XmlValidator" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlValidator" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XmlValidatorDeclaredAttributeGroup">
     <xs:attribute name="schema" type="xs:string">
@@ -10731,7 +10743,7 @@
   <xs:complexType name="EsbSoapValidatorType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="EsbSoapValidatorCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.esb.EsbSoapValidator" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.esb.EsbSoapValidator" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="EsbSoapValidatorDeclaredAttributeGroup">
     <xs:attribute name="direction">
@@ -10757,7 +10769,7 @@
   <xs:complexType name="FxfXmlValidatorType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="FxfXmlValidatorCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.fxf.FxfXmlValidator" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.fxf.extensions.FxfXmlValidator" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FxfXmlValidatorDeclaredAttributeGroup">
     <xs:attribute name="direction">
@@ -10778,7 +10790,7 @@
   <xs:complexType name="JsonValidatorType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="JsonValidatorCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.JsonValidator" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonValidator" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JsonValidatorDeclaredAttributeGroup">
     <xs:attribute name="schema" type="xs:string">
@@ -10804,7 +10816,7 @@
   <xs:complexType name="XmlWellFormedCheckerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="XmlWellFormedCheckerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.XmlWellFormedChecker" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlWellFormedChecker" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XmlWellFormedCheckerDeclaredAttributeGroup">
     <xs:attribute name="root" type="xs:string">
@@ -11307,12 +11319,12 @@
   <xs:complexType name="ApiSoapWrapperPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="SoapWrapperPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.api.extensions.ApiSoapWrapperPipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="SoapWrapperPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="SoapWrapperPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.soap.SoapWrapperPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.soap.SoapWrapperPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SoapWrapperPipeDeclaredAttributeGroup">
     <xs:attribute name="direction">
@@ -11448,7 +11460,7 @@
   <xs:complexType name="EsbSoapWrapperPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="EsbSoapWrapperPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.esb.EsbSoapWrapperPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="EsbSoapWrapperPipeDeclaredAttributeGroup">
     <xs:attribute name="mode">
@@ -11502,7 +11514,7 @@
   <xs:complexType name="FxfWrapperPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="FxfWrapperPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.fxf.FxfWrapperPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.fxf.extensions.FxfWrapperPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FxfWrapperPipeDeclaredAttributeGroup">
     <xs:attribute name="flowId" type="xs:string">
@@ -11874,7 +11886,7 @@
           </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.pipes.SenderPipe" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.pipes.SenderPipe" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
@@ -11962,7 +11974,7 @@
           </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="manager" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.batch.RecordHandlerManager" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.batch.RecordHandlerManager" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
@@ -12004,7 +12016,7 @@
   <xs:complexType name="FieldPositionRecordHandlerManagerType">
     <xs:group ref="RecordHandlerManagerDeclaredChildGroup" />
     <xs:attributeGroup ref="FieldPositionRecordHandlerManagerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.FieldPositionRecordHandlerManager" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FieldPositionRecordHandlerManagerDeclaredAttributeGroup">
     <xs:attribute name="fieldNr" type="frankInt">
@@ -12025,7 +12037,7 @@
   <xs:complexType name="RecordHandlerManagerType">
     <xs:group ref="RecordHandlerManagerDeclaredChildGroup" />
     <xs:attributeGroup ref="RecordHandlerManagerDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.RecordHandlerManager" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.RecordHandlerManager" use="prohibited" />
   </xs:complexType>
   <xs:group name="RecordHandlerManagerDeclaredChildGroup">
     <xs:sequence>
@@ -12049,7 +12061,7 @@
   <xs:complexType name="FixedPositionRecordHandlerManagerType">
     <xs:group ref="RecordHandlerManagerDeclaredChildGroup" />
     <xs:attributeGroup ref="FixedPositionRecordHandlerManagerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.FixedPositionRecordHandlerManager" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.FixedPositionRecordHandlerManager" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FixedPositionRecordHandlerManagerDeclaredAttributeGroup">
     <xs:attribute name="startPosition" type="frankInt">
@@ -12110,7 +12122,7 @@
   </xs:group>
   <xs:complexType name="DelphiStringRecordReaderFactoryType">
     <xs:attributeGroup ref="DelphiStringRecordReaderFactoryDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.DelphiStringRecordReaderFactory" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.DelphiStringRecordReaderFactory" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="DelphiStringRecordReaderFactoryDeclaredAttributeGroup">
     <xs:attribute name="separator" type="xs:string">
@@ -12137,7 +12149,7 @@
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="InputStreamReaderFactoryType">
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.InputStreamReaderFactory" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.InputStreamReaderFactory" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
@@ -12223,7 +12235,7 @@
   <xs:complexType name="RecordTransformerType">
     <xs:group ref="RecordTransformerCumulativeChildGroup" />
     <xs:attributeGroup ref="RecordTransformerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.RecordTransformer" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.RecordTransformer" use="prohibited" />
   </xs:complexType>
   <xs:group name="RecordTransformerDeclaredChildGroup">
     <xs:sequence>
@@ -12290,7 +12302,7 @@
   <xs:complexType name="RecordXml2SenderType">
     <xs:group ref="RecordXml2SenderCumulativeChildGroup" />
     <xs:attributeGroup ref="RecordXmlTransformerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.RecordXml2Sender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.RecordXml2Sender" use="prohibited" />
   </xs:complexType>
   <xs:group name="RecordXml2SenderDeclaredChildGroup">
     <xs:sequence>
@@ -12306,7 +12318,7 @@
   <xs:complexType name="RecordXmlTransformerType">
     <xs:group ref="AbstractRecordHandlerDeclaredChildGroup" />
     <xs:attributeGroup ref="RecordXmlTransformerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.RecordXmlTransformer" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.RecordXmlTransformer" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="RecordXmlTransformerDeclaredAttributeGroup">
     <xs:attribute name="outputFields" type="xs:string">
@@ -12562,7 +12574,7 @@
   <xs:complexType name="Result2FilewriterType">
     <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
     <xs:attributeGroup ref="Result2FilewriterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.Result2Filewriter" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.Result2Filewriter" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Result2FilewriterDeclaredAttributeGroup">
     <xs:attribute name="outputDirectory" type="xs:string">
@@ -12588,12 +12600,12 @@
   <xs:complexType name="Result2StringWriterType">
     <xs:group ref="AbstractResultHandlerDeclaredChildGroup" />
     <xs:attributeGroup ref="ResultWriterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.Result2StringWriter" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.Result2StringWriter" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="ResultBlock2SenderType">
     <xs:group ref="ResultBlock2SenderCumulativeChildGroup" />
     <xs:attributeGroup ref="ResultWriterCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.ResultBlock2Sender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.ResultBlock2Sender" use="prohibited" />
   </xs:complexType>
   <xs:group name="ResultBlock2SenderDeclaredChildGroup">
     <xs:sequence>
@@ -14382,7 +14394,7 @@
   <xs:complexType name="Adios2XmlPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="Adios2XmlPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.rekenbox.Adios2XmlPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.rekenbox.Adios2XmlPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Adios2XmlPipeDeclaredAttributeGroup">
     <xs:attribute name="adiosDefinities" type="xs:string">
@@ -14437,7 +14449,7 @@
   <xs:complexType name="ApiPrincipalPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="ApiPrincipalPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.rest.ApiPrincipalPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.rest.ApiPrincipalPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ApiPrincipalPipeDeclaredAttributeGroup">
     <xs:attribute name="action" type="xs:string" />
@@ -14450,7 +14462,7 @@
   <xs:complexType name="Base64PipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="Base64PipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.Base64Pipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.Base64Pipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Base64PipeDeclaredAttributeGroup">
     <xs:attribute name="direction">
@@ -14495,7 +14507,7 @@
   <xs:complexType name="BatchFileTransformerPipeType">
     <xs:group ref="StreamTransformerPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="BatchFileTransformerPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.BatchFileTransformerPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.BatchFileTransformerPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="BatchFileTransformerPipeDeclaredAttributeGroup">
     <xs:attribute name="move2dirAfterTransform" type="xs:string">
@@ -14531,7 +14543,7 @@
   <xs:complexType name="StreamTransformerPipeType">
     <xs:group ref="StreamTransformerPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="StreamTransformerPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.batch.StreamTransformerPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.batch.StreamTransformerPipe" use="prohibited" />
   </xs:complexType>
   <xs:group name="StreamTransformerPipeDeclaredChildGroup">
     <xs:sequence>
@@ -14571,7 +14583,7 @@
   <xs:complexType name="BlobLineIteratingPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="JdbcIteratingPipeBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.BlobLineIteratingPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.BlobLineIteratingPipe" use="prohibited" />
   </xs:complexType>
   <xs:group name="IteratingPipeDeclaredChildGroup">
     <xs:sequence>
@@ -14632,7 +14644,7 @@
   <xs:complexType name="MessageSendingPipeType">
     <xs:group ref="MessageSendingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="MessageSendingPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.MessageSendingPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.MessageSendingPipe" use="prohibited" />
   </xs:complexType>
   <xs:group name="MessageSendingPipeDeclaredChildGroup">
     <xs:sequence>
@@ -14876,7 +14888,7 @@
   <xs:complexType name="StringIteratorPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="StringIteratorPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.StringIteratorPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.StringIteratorPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="StringIteratorPipeDeclaredAttributeGroup">
     <xs:attribute name="blockSize" type="frankInt">
@@ -14967,12 +14979,12 @@
   <xs:complexType name="BytesOutputPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.BytesOutputPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.BytesOutputPipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="ChecksumPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="ChecksumPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.ChecksumPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.ChecksumPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ChecksumPipeDeclaredAttributeGroup">
     <xs:attribute name="charset" type="xs:string">
@@ -14996,7 +15008,7 @@
   <xs:complexType name="CleanupOldFilesPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="CleanupOldFilesPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.CleanupOldFilesPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.CleanupOldFilesPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="CleanupOldFilesPipeDeclaredAttributeGroup">
     <xs:attribute name="filePattern" type="xs:string">
@@ -15047,12 +15059,12 @@
   <xs:complexType name="ClobLineIteratingPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="JdbcIteratingPipeBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.ClobLineIteratingPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.ClobLineIteratingPipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="CompareIntegerPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="CompareIntegerPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.CompareIntegerPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.CompareIntegerPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="CompareIntegerPipeDeclaredAttributeGroup" />
   <xs:attributeGroup name="CompareIntegerPipeCumulativeAttributeGroup">
@@ -15061,7 +15073,7 @@
   <xs:complexType name="CompareStringPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="CompareStringPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.CompareStringPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.CompareStringPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="CompareStringPipeDeclaredAttributeGroup">
     <xs:attribute name="xml" type="frankBoolean">
@@ -15077,7 +15089,7 @@
   <xs:complexType name="CompressPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="CompressPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.CompressPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.CompressPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="CompressPipeDeclaredAttributeGroup">
     <xs:attribute name="compress" type="frankBoolean">
@@ -15160,7 +15172,7 @@
   <xs:complexType name="CounterSwitchPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="CounterSwitchPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.CounterSwitchPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.CounterSwitchPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="CounterSwitchPipeDeclaredAttributeGroup">
     <xs:attribute name="divisor" type="frankInt">
@@ -15176,7 +15188,7 @@
   <xs:complexType name="CredentialCheckingPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="CredentialCheckingPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.CredentialCheckingPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.CredentialCheckingPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="CredentialCheckingPipeDeclaredAttributeGroup">
     <xs:attribute name="authAlias" type="xs:string" />
@@ -15192,7 +15204,7 @@
   <xs:complexType name="CrlPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="CrlPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.CrlPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.CrlPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="CrlPipeDeclaredAttributeGroup">
     <xs:attribute name="issuerSessionKey" type="xs:string">
@@ -15208,7 +15220,7 @@
   <xs:complexType name="CsvParserPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="CsvParserPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.CsvParserPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.CsvParserPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="CsvParserPipeDeclaredAttributeGroup">
     <xs:attribute name="fileContainsHeader" type="frankBoolean">
@@ -15247,7 +15259,7 @@
   <xs:complexType name="DelayPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="DelayPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.DelayPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.DelayPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="DelayPipeDeclaredAttributeGroup">
     <xs:attribute name="delayTime" type="frankInt">
@@ -15263,7 +15275,7 @@
   <xs:complexType name="DirectWrapperPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="TimeoutGuardPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.esb.DirectWrapperPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.esb.DirectWrapperPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="TimeoutGuardPipeDeclaredAttributeGroup">
     <xs:attribute name="throwException" type="frankBoolean">
@@ -15284,7 +15296,7 @@
   <xs:complexType name="DomainTransformerPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="DomainTransformerPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.DomainTransformerPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.DomainTransformerPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="DomainTransformerPipeDeclaredAttributeGroup">
     <xs:attribute name="datasourceName" type="xs:string" />
@@ -15316,12 +15328,12 @@
   <xs:complexType name="EchoPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="StreamingPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.EchoPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.EchoPipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="EscapePipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="EscapePipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.EscapePipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.EscapePipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="EscapePipeDeclaredAttributeGroup">
     <xs:attribute name="substringStart" type="xs:string">
@@ -15352,7 +15364,7 @@
   <xs:complexType name="ExceptionPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="ExceptionPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.ExceptionPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.ExceptionPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ExceptionPipeDeclaredAttributeGroup">
     <xs:attribute name="throwException" type="frankBoolean">
@@ -15368,7 +15380,7 @@
   <xs:complexType name="FixedResultPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="FixedResultPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.FixedResultPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.FixedResultPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FixedResultPipeDeclaredAttributeGroup">
     <xs:attribute name="substituteVars" type="frankBoolean">
@@ -15420,7 +15432,7 @@
   <xs:complexType name="ForEachAttachmentPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="ForEachAttachmentPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.filesystem.ForEachAttachmentPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.filesystem.ForEachAttachmentPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ForEachAttachmentPipeDeclaredAttributeGroup">
     <xs:attribute name="onlyProperties" type="xs:string">
@@ -15441,7 +15453,7 @@
   <xs:complexType name="ForEachChildElementPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="ForEachChildElementPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.ForEachChildElementPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.ForEachChildElementPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ForEachChildElementPipeDeclaredAttributeGroup">
     <xs:attribute name="containerElement" type="xs:string">
@@ -15480,7 +15492,7 @@
   <xs:complexType name="GetFromSessionType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="GetFromSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.GetFromSession" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.GetFromSession" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="GetFromSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
@@ -15509,12 +15521,12 @@
   <xs:complexType name="GetPrincipalPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.GetPrincipalPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.GetPrincipalPipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="GetTibcoQueuesType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="GetTibcoQueuesCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.tibco.GetTibcoQueues" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.tibco.extensions.GetTibcoQueues" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="GetTibcoQueuesDeclaredAttributeGroup">
     <xs:attribute name="url" type="xs:string">
@@ -15556,7 +15568,7 @@
   <xs:complexType name="HashPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="HashPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.HashPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.HashPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="HashPipeDeclaredAttributeGroup">
     <xs:attribute name="algorithm">
@@ -15598,7 +15610,7 @@
   <xs:complexType name="IfMultipartType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="IfMultipartCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.IfMultipart" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.IfMultipart" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="IfMultipartDeclaredAttributeGroup">
     <xs:attribute name="thenForwardName" type="xs:string" />
@@ -15611,7 +15623,7 @@
   <xs:complexType name="IncreaseIntegerPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="IncreaseIntegerPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.IncreaseIntegerPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.IncreaseIntegerPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="IncreaseIntegerPipeDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string" use="required">
@@ -15632,7 +15644,7 @@
   <xs:complexType name="IsUserInRolePipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="IsUserInRolePipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.IsUserInRolePipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.IsUserInRolePipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="IsUserInRolePipeDeclaredAttributeGroup">
     <xs:attribute name="role" type="xs:string">
@@ -15648,7 +15660,7 @@
   <xs:complexType name="IsXmlPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="IsXmlPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.IsXmlPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.IsXmlPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="IsXmlPipeDeclaredAttributeGroup">
     <xs:attribute name="thenForwardName" type="xs:string">
@@ -15674,7 +15686,7 @@
   <xs:complexType name="JsonPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="JsonPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.JsonPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JsonPipeDeclaredAttributeGroup">
     <xs:attribute name="direction">
@@ -15703,12 +15715,12 @@
   <xs:complexType name="JsonWellFormedCheckerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.JsonWellFormedChecker" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonWellFormedChecker" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="JsonXsltPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="JsonXsltPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.JsonXsltPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonXsltPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JsonXsltPipeDeclaredAttributeGroup">
     <xs:attribute name="jsonResult" type="frankBoolean">
@@ -15798,7 +15810,7 @@
   <xs:complexType name="XsltPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="XsltPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.XsltPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XsltPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XsltPipeDeclaredAttributeGroup">
     <xs:attribute name="streamingXslt" type="frankBoolean">
@@ -15884,7 +15896,7 @@
   <xs:complexType name="LabelFormatType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="LabelFormatCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.rekenbox.LabelFormat" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.rekenbox.LabelFormat" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="LabelFormatDeclaredAttributeGroup">
     <xs:attribute name="direction" type="xs:string">
@@ -15905,7 +15917,7 @@
   <xs:complexType name="LadybugPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="LadybugPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.ibistesttool.LadybugPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.ibistesttool.LadybugPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="LadybugPipeDeclaredAttributeGroup">
     <xs:attribute name="writeToLog" type="frankBoolean">
@@ -15944,7 +15956,7 @@
   <xs:complexType name="LarvaPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="LarvaPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.LarvaPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.LarvaPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="LarvaPipeDeclaredAttributeGroup">
     <xs:attribute name="writeToLog" type="frankBoolean">
@@ -15985,7 +15997,7 @@
   <xs:complexType name="LdapFindGroupMembershipsPipeType">
     <xs:group ref="LdapFindGroupMembershipsPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="LdapFindGroupMembershipsPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.ldap.LdapFindGroupMembershipsPipe" use="prohibited" />
   </xs:complexType>
   <xs:group name="LdapFindGroupMembershipsPipeDeclaredChildGroup">
     <xs:sequence>
@@ -16064,7 +16076,7 @@
   <xs:complexType name="LdapFindMemberPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="LdapFindMemberPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.ldap.LdapFindMemberPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.ldap.LdapFindMemberPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="LdapFindMemberPipeDeclaredAttributeGroup">
     <xs:attribute name="dnSearchIn" type="xs:string">
@@ -16090,7 +16102,7 @@
   <xs:complexType name="LocalFileSystemPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="LocalFileSystemPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.LocalFileSystemPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.LocalFileSystemPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="LocalFileSystemPipeDeclaredAttributeGroup">
     <xs:attribute name="root" type="xs:string">
@@ -16198,7 +16210,7 @@
   <xs:complexType name="LogContextPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="LogContextPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.LogContextPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.LogContextPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="LogContextPipeDeclaredAttributeGroup">
     <xs:attribute name="export" type="frankBoolean">
@@ -16214,12 +16226,12 @@
   <xs:complexType name="MailSenderPipeType">
     <xs:group ref="MessageSendingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="MessageSendingPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.MailSenderPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.MailSenderPipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="PGPPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="PGPPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.PGPPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.PGPPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="PGPPipeDeclaredAttributeGroup">
     <xs:attribute name="action">
@@ -16266,7 +16278,7 @@
   <xs:complexType name="PasswordGeneratorPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="PasswordGeneratorPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.PasswordGeneratorPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.PasswordGeneratorPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="PasswordGeneratorPipeDeclaredAttributeGroup">
     <xs:attribute name="useSecureRandom" type="frankBoolean">
@@ -16322,7 +16334,7 @@
   <xs:complexType name="PasswordHashPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="PasswordHashPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.PasswordHashPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.PasswordHashPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="PasswordHashPipeDeclaredAttributeGroup">
     <xs:attribute name="hashSessionKey" type="xs:string">
@@ -16397,7 +16409,7 @@
   <xs:complexType name="PutInSessionType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="PutInSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.PutInSession" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.PutInSession" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="PutInSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
@@ -16418,7 +16430,7 @@
   <xs:complexType name="PutSystemDateInSessionType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="PutSystemDateInSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.PutSystemDateInSession" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.PutSystemDateInSession" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="PutSystemDateInSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
@@ -16463,7 +16475,7 @@
   <xs:complexType name="RekenBoxCallerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="RekenBoxCallerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.rekenbox.RekenBoxCaller" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.rekenbox.RekenBoxCaller" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="RekenBoxCallerDeclaredAttributeGroup">
     <xs:attribute name="rekenBoxName" type="xs:string">
@@ -16527,7 +16539,7 @@
   <xs:complexType name="RemoveCacheKeyPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="RemoveCacheKeyPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.cache.RemoveCacheKeyPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.cache.RemoveCacheKeyPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="RemoveCacheKeyPipeDeclaredAttributeGroup">
     <xs:attribute name="cacheName" type="xs:string">
@@ -16571,7 +16583,7 @@
   <xs:complexType name="RemoveFromSessionType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="RemoveFromSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.RemoveFromSession" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.RemoveFromSession" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="RemoveFromSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
@@ -16587,7 +16599,7 @@
   <xs:complexType name="ReplacerPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="ReplacerPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.ReplacerPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.ReplacerPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ReplacerPipeDeclaredAttributeGroup">
     <xs:attribute name="find" type="xs:string">
@@ -16628,12 +16640,12 @@
   <xs:complexType name="ResultSetIteratingPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="JdbcIteratingPipeBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.jdbc.ResultSetIteratingPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.ResultSetIteratingPipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="Samba1PipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="Samba1PipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.Samba1Pipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.Samba1Pipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Samba1PipeDeclaredAttributeGroup">
     <xs:attribute name="share" type="xs:string">
@@ -16674,7 +16686,7 @@
   <xs:complexType name="Samba2PipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="Samba2PipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.Samba2Pipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.Samba2Pipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Samba2PipeDeclaredAttributeGroup">
     <xs:attribute name="hostname" type="xs:string" />
@@ -16730,12 +16742,12 @@
   <xs:complexType name="SambaPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="Samba2PipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.SambaPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SambaPipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="SapLUWManagerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="SapLUWManagerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.sap.jco3.SapLUWManager" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jco3.sap.extensions.SapLUWManager" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SapLUWManagerDeclaredAttributeGroup">
     <xs:attribute name="sapSystemName" type="xs:string">
@@ -16761,7 +16773,7 @@
   <xs:complexType name="ScanTibcoSolutionPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="ScanTibcoSolutionPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.svn.ScanTibcoSolutionPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.svn.extensions.ScanTibcoSolutionPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ScanTibcoSolutionPipeDeclaredAttributeGroup">
     <xs:attribute name="url" type="xs:string" />
@@ -16774,7 +16786,7 @@
   <xs:complexType name="SendTibcoMessageType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="SendTibcoMessageCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.extensions.tibco.SendTibcoMessage" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.tibco.extensions.SendTibcoMessage" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SendTibcoMessageDeclaredAttributeGroup">
     <xs:attribute name="url" type="xs:string">
@@ -16828,7 +16840,7 @@
   <xs:complexType name="SenderPipeType">
     <xs:group ref="SenderPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="MessageSendingPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.SenderPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SenderPipe" use="prohibited" />
   </xs:complexType>
   <xs:group name="SenderPipeDeclaredChildGroup">
     <xs:sequence>
@@ -16850,7 +16862,7 @@
   <xs:complexType name="SignaturePipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="SignaturePipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.SignaturePipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SignaturePipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SignaturePipeDeclaredAttributeGroup">
     <xs:attribute name="action">
@@ -16927,12 +16939,12 @@
   <xs:complexType name="SizePipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.SizePipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SizePipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="SkipPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="SkipPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.SkipPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SkipPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SkipPipeDeclaredAttributeGroup">
     <xs:attribute name="skip" type="frankInt">
@@ -16953,7 +16965,7 @@
   <xs:complexType name="StreamLineIteratorPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="StreamLineIteratorPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.StreamLineIteratorPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.StreamLineIteratorPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="StreamLineIteratorPipeDeclaredAttributeGroup">
     <xs:attribute name="endOfLineString" type="xs:string">
@@ -16979,7 +16991,7 @@
   <xs:complexType name="StreamPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="StreamPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.StreamPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.StreamPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="StreamPipeDeclaredAttributeGroup">
     <xs:attribute name="extractFirstStringPart" type="frankBoolean">
@@ -17030,7 +17042,7 @@
   <xs:complexType name="Text2XmlPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="Text2XmlPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.Text2XmlPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.Text2XmlPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Text2XmlPipeDeclaredAttributeGroup">
     <xs:attribute name="xmlTag" type="xs:string" use="required">
@@ -17062,7 +17074,7 @@
   <xs:complexType name="TextSplitterPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="TextSplitterPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.TextSplitterPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.TextSplitterPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="TextSplitterPipeDeclaredAttributeGroup">
     <xs:attribute name="maxBlockLength" type="frankInt">
@@ -17083,7 +17095,7 @@
   <xs:complexType name="UUIDGeneratorPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="UUIDGeneratorPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.UUIDGeneratorPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.UUIDGeneratorPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="UUIDGeneratorPipeDeclaredAttributeGroup">
     <xs:attribute name="type">
@@ -17102,7 +17114,7 @@
   <xs:complexType name="UnzipPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="UnzipPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.UnzipPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.UnzipPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="UnzipPipeDeclaredAttributeGroup">
     <xs:attribute name="directory" type="xs:string">
@@ -17153,7 +17165,7 @@
   <xs:complexType name="WsdlGeneratorPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="WsdlGeneratorPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.WsdlGeneratorPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.WsdlGeneratorPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="WsdlGeneratorPipeDeclaredAttributeGroup">
     <xs:attribute name="from" type="xs:string">
@@ -17169,7 +17181,7 @@
   <xs:complexType name="XQueryPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="XQueryPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.XQueryPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XQueryPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XQueryPipeDeclaredAttributeGroup">
     <xs:attribute name="xqueryName" type="xs:string">
@@ -17190,7 +17202,7 @@
   <xs:complexType name="XmlIfType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="XmlIfCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.XmlIf" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlIf" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XmlIfDeclaredAttributeGroup">
     <xs:attribute name="expressionValue" type="xs:string">
@@ -17241,7 +17253,7 @@
   <xs:complexType name="XmlSwitchType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="XmlSwitchCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.pipes.XmlSwitch" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlSwitch" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XmlSwitchDeclaredAttributeGroup">
     <xs:attribute name="styleSheetName" type="xs:string">
@@ -17297,7 +17309,7 @@
   <xs:complexType name="ZipIteratorPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="ZipIteratorPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.compression.ZipIteratorPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.compression.ZipIteratorPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ZipIteratorPipeDeclaredAttributeGroup">
     <xs:attribute name="contentsSessionKey" type="xs:string">
@@ -17333,7 +17345,7 @@
   <xs:complexType name="ZipWriterPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="ZipWriterPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.compression.ZipWriterPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.compression.ZipWriterPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ZipWriterPipeDeclaredAttributeGroup">
     <xs:attribute name="completeFileHeader" type="frankBoolean">
@@ -17377,7 +17389,7 @@
           </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="job" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.scheduler.job.Job" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.scheduler.job.Job" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
@@ -17490,7 +17502,7 @@
   <xs:complexType name="CheckReloadJobType">
     <xs:group ref="JobDefDeclaredChildGroup" />
     <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.CheckReloadJob" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.CheckReloadJob" use="prohibited" />
   </xs:complexType>
   <xs:group name="JobDefDeclaredChildGroup">
     <xs:sequence>
@@ -17540,7 +17552,7 @@
   <xs:complexType name="CleanupDatabaseJobType">
     <xs:group ref="JobDefDeclaredChildGroup" />
     <xs:attributeGroup ref="CleanupDatabaseJobCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.CleanupDatabaseJob" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="CleanupDatabaseJobDeclaredAttributeGroup">
     <xs:attribute name="queryTimeout" type="frankInt">
@@ -17556,7 +17568,7 @@
   <xs:complexType name="CleanupFileSystemJobType">
     <xs:group ref="CleanupFileSystemJobCumulativeChildGroup" />
     <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.CleanupFileSystemJob" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.CleanupFileSystemJob" use="prohibited" />
   </xs:complexType>
   <xs:group name="CleanupFileSystemJobDeclaredChildGroup">
     <xs:sequence>
@@ -17582,7 +17594,7 @@
   <xs:complexType name="ExecuteQueryJobType">
     <xs:group ref="JobDefDeclaredChildGroup" />
     <xs:attributeGroup ref="ExecuteQueryJobCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.ExecuteQueryJob" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.ExecuteQueryJob" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ExecuteQueryJobDeclaredAttributeGroup">
     <xs:attribute name="query" type="xs:string">
@@ -17608,7 +17620,7 @@
   <xs:complexType name="IbisActionJobType">
     <xs:group ref="JobDefDeclaredChildGroup" />
     <xs:attributeGroup ref="IbisActionJobCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.IbisActionJob" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.IbisActionJob" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="IbisActionJobDeclaredAttributeGroup">
     <xs:attribute name="action" use="required">
@@ -17639,17 +17651,17 @@
   <xs:complexType name="LoadDatabaseSchedulesJobType">
     <xs:group ref="JobDefDeclaredChildGroup" />
     <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.LoadDatabaseSchedulesJob" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.LoadDatabaseSchedulesJob" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="RecoverAdaptersJobType">
     <xs:group ref="JobDefDeclaredChildGroup" />
     <xs:attributeGroup ref="JobDefCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.RecoverAdaptersJob" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.RecoverAdaptersJob" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="SendMessageJobType">
     <xs:group ref="JobDefDeclaredChildGroup" />
     <xs:attributeGroup ref="SendMessageJobCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.scheduler.job.SendMessageJob" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.scheduler.job.SendMessageJob" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SendMessageJobDeclaredAttributeGroup">
     <xs:attribute name="javaListener" type="xs:string" use="required">
@@ -17673,7 +17685,7 @@
         <xs:complexType>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="sapSystem" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.extensions.sap.SapSystem" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.sap.extensions.SapSystem" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
@@ -17720,7 +17732,7 @@
   <xs:complexType name="SenderMonitorAdapterType">
     <xs:group ref="SenderMonitorAdapterDeclaredChildGroup" />
     <xs:attributeGroup ref="MonitorDestinationBaseDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.SenderMonitorAdapter" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.SenderMonitorAdapter" use="prohibited" />
   </xs:complexType>
   <xs:group name="SenderMonitorAdapterDeclaredChildGroup">
     <xs:sequence>
@@ -17748,7 +17760,7 @@
           </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="trigger" use="prohibited" />
-          <xs:attribute name="className" type="xs:string" default="nl.nn.adapterframework.monitoring.Trigger" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.monitoring.Trigger" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
@@ -17786,12 +17798,12 @@
   <xs:complexType name="AlarmType">
     <xs:group ref="TriggerDeclaredChildGroup" />
     <xs:attributeGroup ref="TriggerDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.Alarm" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.Alarm" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="TriggerType">
     <xs:group ref="TriggerDeclaredChildGroup" />
     <xs:attributeGroup ref="TriggerDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.Trigger" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.Trigger" use="prohibited" />
   </xs:complexType>
   <xs:group name="TriggerDeclaredChildGroup">
     <xs:sequence>
@@ -17824,7 +17836,7 @@
   <xs:complexType name="ClearingType">
     <xs:group ref="TriggerDeclaredChildGroup" />
     <xs:attributeGroup ref="TriggerDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.monitoring.Clearing" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.monitoring.Clearing" use="prohibited" />
   </xs:complexType>
   <xs:group name="SharedResourceElementGroup">
     <xs:choice>
@@ -17857,7 +17869,7 @@
   </xs:group>
   <xs:complexType name="HttpSessionType">
     <xs:attributeGroup ref="HttpSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="nl.nn.adapterframework.http.HttpSession" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.HttpSession" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="HttpSessionDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">

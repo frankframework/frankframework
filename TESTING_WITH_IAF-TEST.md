@@ -31,7 +31,7 @@ The module's test scenarios can be run manually with the Larva testtool. This wi
 
    - `log.dir=c:/temp` (lower case 'c' is mandatory)
    - `dtap.stage=LOC`.
-   - `credentialFactory.class=nl.nn.credentialprovider.FileSystemCredentialFactory`
+   - `credentialFactory.class=org.frankframework.credentialprovider.FileSystemCredentialFactory`
    - `credentialFactory.filesystem.root=<path to your sources root>/test/src/main/secrets`
    - `authAliases.expansion.allowed=testalias`
 2. In the Tomcat Overview window, set the port number for HTTP/1.1 to 80. If you wish to use another port, please set the property `web.port` accordingly in catalina.properties.
@@ -61,7 +61,7 @@ parallel, so you can for instance run multiple debug sessions side by side to co
    - `-Ddtap.stage=LOC`
    - `-DauthAliases.expansion.allowed=testalias`
    - `-Dlog.dir=c:/temp` (lower case 'c' is mandatory) (or whatever works for your system, drive letters on Windows must be lowercase).
-   - `-DcredentialFactory.class=nl.nn.credentialprovider.FileSystemCredentialFactory`
+   - `-DcredentialFactory.class=org.frankframework.credentialprovider.FileSystemCredentialFactory`
    - `-DcredentialFactory.filesystem.root=<path to your sources root>/test/src/main/secrets`
 3. Set the Tomcat HTTP port to `80`
 NB: If you want to run on a different port, you also need to add to your VM options the option `-Dweb.port=8080` (or whatever port you chose).
