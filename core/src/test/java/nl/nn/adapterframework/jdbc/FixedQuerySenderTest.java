@@ -7,7 +7,8 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.junit.MatcherAssume.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -202,7 +203,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testMultipleColumnsReturnedWithSpaceBetween() throws Exception {
-		assertThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
+		assumeThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
@@ -217,7 +218,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testMultipleColumnsReturnedWithDoubleSpace() throws Exception {
-		assertThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
+		assumeThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
@@ -232,7 +233,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testMultipleColumnsReturned() throws Exception {
-		assertThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
+		assumeThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
