@@ -222,7 +222,7 @@ public class DB2XMLWriter {
 				SaxElementBuilder resultElement = parent.startElement(docname);
 				resultElement.addAttribute("resultNr", String.valueOf(resultNr));
 				processResultSet(dbmsSupport, statement.getResultSet(), maxRows, includeFieldDefinition, resultElement);
-				resultNr += 1;
+				resultNr++;
 				resultElement.endElement();
 			} while (statement.getMoreResults());
 		} catch (SQLException e) {
