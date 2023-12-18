@@ -62,6 +62,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.MessageUtils;
+import org.frankframework.util.RenamingObjectInputStream;
 import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
@@ -934,7 +935,7 @@ public class Message implements Serializable, Closeable {
 	 * this method is used by Serializable, to deserialize objects from a stream.
 	 */
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-//		stream = new RenamingObjectInputStream(stream);
+		stream = new RenamingObjectInputStream(stream); // Support old package names, already serialized in the database
 		String charset = (String) stream.readObject();
 		request = stream.readObject();
 		try {

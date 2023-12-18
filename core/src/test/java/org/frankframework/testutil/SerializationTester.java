@@ -11,6 +11,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.RenamingObjectInputStream;
 
 public class SerializationTester<T> {
 	private final Logger log = LogManager.getLogger(SerializationTester.class);
@@ -26,7 +27,7 @@ public class SerializationTester<T> {
 	}
 
 	public T deserialize(byte[] wire) throws Exception {
-		try (ByteArrayInputStream bais = new ByteArrayInputStream(wire); ObjectInputStream in = new ObjectInputStream(bais)) {
+		try (ByteArrayInputStream bais = new ByteArrayInputStream(wire); ObjectInputStream in = new RenamingObjectInputStream(bais)) {
 			Object obj = in.readObject();
 			return (T) obj;
 		} catch (Exception e) {
