@@ -22,6 +22,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
@@ -46,6 +47,7 @@ public class TestBlobs {
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		//We need this setup to use the DatabaseTestEnvironment
 	}
 
 	@AfterEach
@@ -167,28 +169,28 @@ public class TestBlobs {
 				}
 			}
 		}
-
 	}
 
 	public void testWriteAndReadClobUsingDbmsSupport(int numOfBlocks, int blockSize, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String block = getBigString(1,blockSize);
 		String insertQuery = "INSERT INTO " + TABLE_NAME + " (TKEY,TCLOB) VALUES (20,?)";
 		String selectQuery = "SELECT TCLOB FROM " + TABLE_NAME + " WHERE TKEY=20";
+		IDbmsSupport dbmsSupport = databaseTestEnvironment.getDbmsSupport();
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(insertQuery)) {
-			Object clobInsertHandle = databaseTestEnvironment.getDbmsSupport().getClobHandle(stmt, 1);
-			try (Writer clobWriter = databaseTestEnvironment.getDbmsSupport().getClobWriter(stmt, 1, clobInsertHandle)) {
+			Object clobInsertHandle = dbmsSupport.getClobHandle(stmt, 1);
+			try (Writer clobWriter = dbmsSupport.getClobWriter(stmt, 1, clobInsertHandle)) {
 				for (int i=0; i<numOfBlocks; i++) {
 					clobWriter.append(block);
 				}
 			}
-			databaseTestEnvironment.getDbmsSupport().applyClobParameter(stmt, 1, clobInsertHandle);
+			dbmsSupport.applyClobParameter(stmt, 1, clobInsertHandle);
 			stmt.execute();
 		}
 
 		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), selectQuery, QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				try (Reader clobReader = databaseTestEnvironment.getDbmsSupport().getClobReader(resultSet, 1)) {
+				try (Reader clobReader = dbmsSupport.getClobReader(resultSet, 1)) {
 					int length = readStream(new ReaderInputStream(clobReader));
 					assertEquals(blockSize*numOfBlocks, length);
 				}

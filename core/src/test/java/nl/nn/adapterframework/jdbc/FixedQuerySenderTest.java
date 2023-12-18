@@ -7,7 +7,7 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.junit.MatcherAssume.assumeThat;
+import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,8 +17,10 @@ import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
+import nl.nn.adapterframework.core.ConfiguredTestBase;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.functional.ThrowingConsumer;
@@ -37,11 +39,13 @@ import nl.nn.adapterframework.testutil.junit.WithLiquibase;
 public class FixedQuerySenderTest {
 
 	private FixedQuerySender fixedQuerySender;
+
+	private final String resultColumnsReturned = "<result><rowset><row number=\"0\"><field name=\"TKEY\">1</field><field name=\"TVARCHAR\">value</field></row></rowset></result>";
 	protected static final String TABLE_NAME = "FQS_TABLE";
 
 	private JdbcTransactionalStorage<Serializable> storage;
 
-	private PipeLineSession session = new PipeLineSession();
+	private PipeLineSession session;
 
 	@DatabaseTest.Parameter(0)
 	private TransactionManagerType transactionManagerType;
@@ -55,14 +59,23 @@ public class FixedQuerySenderTest {
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		session = new PipeLineSession();
+		session.put(PipeLineSession.MESSAGE_ID_KEY, ConfiguredTestBase.testMessageId);
+		session.put(PipeLineSession.CORRELATION_ID_KEY, ConfiguredTestBase.testCorrelationId);
 
 		fixedQuerySender = new FixedQuerySender();
 		fixedQuerySender.setDatasourceName(dataSourceName);
 		fixedQuerySender.setName("FQS_TABLE");
+		fixedQuerySender.setIncludeFieldDefinition(true);
 		getConfiguration().autowireByName(fixedQuerySender);
 
 		getConfiguration().getIbisManager();
 		getConfiguration().autowireByName(fixedQuerySender);
+	}
+
+	@AfterEach
+	public void teardown() {
+		session.close();
 	}
 
 	private void assertSenderException(String dataSourceName, SenderException ex) {
@@ -93,8 +106,6 @@ public class FixedQuerySenderTest {
 
 	private void assertColumnsReturned(Message response) throws Exception {
 		String result = response.asString();
-
-		String resultColumnsReturned = "<result><fielddefinition><field name=\"TKEY\" type=\"BIGINT\" columnDisplaySize=\"20\" precision=\"64\" scale=\"0\" isCurrency=\"false\" columnTypeName=\"BIGINT\" columnClassName=\"java.lang.Long\"/><field name=\"TVARCHAR\" type=\"VARCHAR\" columnDisplaySize=\"100\" precision=\"100\" scale=\"0\" isCurrency=\"false\" columnTypeName=\"CHARACTER VARYING\" columnClassName=\"java.lang.String\"/></fielddefinition><rowset><row number=\"0\"><field name=\"TKEY\">1</field><field name=\"TVARCHAR\">value</field></row></rowset></result>";
 		assertEquals(resultColumnsReturned, result);
 	}
 
