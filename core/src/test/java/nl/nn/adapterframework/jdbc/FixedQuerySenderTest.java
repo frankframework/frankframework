@@ -35,7 +35,7 @@ import nl.nn.adapterframework.testutil.junit.DatabaseTest;
 import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
 import nl.nn.adapterframework.testutil.junit.WithLiquibase;
 
-@WithLiquibase(tableName = FixedQuerySenderTest.TABLE_NAME, file = "Migrator/JdbcTestBaseQuery.xml")
+@WithLiquibase(tableName = FixedQuerySenderTest.TABLE_NAME, file = "Migrator/ChangelogBlobTests.xml")
 public class FixedQuerySenderTest {
 
 	private FixedQuerySender fixedQuerySender;
