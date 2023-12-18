@@ -1,8 +1,7 @@
 package nl.nn.adapterframework.jdbc.dbms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
@@ -23,9 +22,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 
+import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
-import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.junit.DatabaseTest;
 import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
@@ -46,12 +45,9 @@ public class TestBlobs {
 	@DatabaseTest.Parameter(1)
 	private String dataSourceName;
 
-	private TestConfiguration getConfiguration() {
-		return transactionManagerType.getConfigurationContext(dataSourceName);
-	}
-
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		//We need this setup to use the DatabaseTestEnvironment
 	}
 
 	@AfterEach
@@ -91,10 +87,6 @@ public class TestBlobs {
 		String blobContents = getBigString(numBlocks, blockSize);
 		String insertQuery = "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (20,?)";
 		String selectQuery = "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=20";
-//		String deleteQuery = "DELETE FROM IBISCONFIG WHERE NAME='X'";
-//		String insertQuery = "INSERT INTO IBISCONFIG (NAME,VERSION,CONFIG) VALUES ('X','X',?)";
-//		String selectQuery = "SELECT CONFIG FROM IBISCONFIG WHERE NAME='X'";
-//		JdbcUtil.executeStatement(dbmsSupport, connection, deleteQuery, null);
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(insertQuery)) {
 			stmt.setBinaryStream(1, new ByteArrayInputStream(blobContents.getBytes("UTF-8")));
 			stmt.execute();
@@ -118,7 +110,7 @@ public class TestBlobs {
 	@DatabaseTest
 	public void testWriteAndReadBlobUsingSetBinaryStream20MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assertFalse(dataSourceName.equals("MariaDB"), "MariaDb cannot handle statement packets> 16M");
+		assumeFalse(dataSourceName.equals("MariaDB"), "MariaDb cannot handle statement packets> 16M");
 		testWriteAndReadBlobUsingSetBinaryStream(1000, 20000, databaseTestEnvironment);
 	}
 
@@ -149,7 +141,7 @@ public class TestBlobs {
 	@DatabaseTest
 	public void testWriteAndReadBlobUsingBytes20MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assertFalse(dataSourceName.equals("MariaDB"), "MariaDb cannot handle statement packets> 16M");
+		assumeFalse(dataSourceName.equals("MariaDB"), "MariaDb cannot handle statement packets> 16M");
 		testWriteAndReadBlobUsingSetBytes(1000, 20000, databaseTestEnvironment);
 	}
 
@@ -177,28 +169,28 @@ public class TestBlobs {
 				}
 			}
 		}
-
 	}
 
 	public void testWriteAndReadClobUsingDbmsSupport(int numOfBlocks, int blockSize, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		String block = getBigString(1,blockSize);
 		String insertQuery = "INSERT INTO " + TABLE_NAME + " (TKEY,TCLOB) VALUES (20,?)";
 		String selectQuery = "SELECT TCLOB FROM " + TABLE_NAME + " WHERE TKEY=20";
+		IDbmsSupport dbmsSupport = databaseTestEnvironment.getDbmsSupport();
 		try (PreparedStatement stmt = databaseTestEnvironment.getConnection().prepareStatement(insertQuery)) {
-			Object clobInsertHandle = databaseTestEnvironment.getDbmsSupport().getClobHandle(stmt, 1);
-			try (Writer clobWriter = databaseTestEnvironment.getDbmsSupport().getClobWriter(stmt, 1, clobInsertHandle)) {
+			Object clobInsertHandle = dbmsSupport.getClobHandle(stmt, 1);
+			try (Writer clobWriter = dbmsSupport.getClobWriter(stmt, 1, clobInsertHandle)) {
 				for (int i=0; i<numOfBlocks; i++) {
 					clobWriter.append(block);
 				}
 			}
-			databaseTestEnvironment.getDbmsSupport().applyClobParameter(stmt, 1, clobInsertHandle);
+			dbmsSupport.applyClobParameter(stmt, 1, clobInsertHandle);
 			stmt.execute();
 		}
 
 		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment.getConnection(), selectQuery, QueryType.SELECT, databaseTestEnvironment)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
-				try (Reader clobReader = databaseTestEnvironment.getDbmsSupport().getClobReader(resultSet, 1)) {
+				try (Reader clobReader = dbmsSupport.getClobReader(resultSet, 1)) {
 					int length = readStream(new ReaderInputStream(clobReader));
 					assertEquals(blockSize*numOfBlocks, length);
 				}
@@ -215,14 +207,14 @@ public class TestBlobs {
 	@DatabaseTest
 	public void testWriteAndReadBlobUsingDbmsSupport20MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assertNotEquals("MariaDB", dataSourceName, "MariaDb cannot handle statement packets> 16M");
+		assumeFalse(dataSourceName.equals("MariaDB"), "MariaDb cannot handle statement packets> 16M");
 		testWriteAndReadBlobUsingDbmsSupport(10000, 2000, databaseTestEnvironment);
 	}
 
 	@DatabaseTest
 	public void testWriteAndReadBlobUsingDbmsSupport100MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assertFalse(dataSourceName.equals("MariaDB") || dataSourceName.equals("PostgreSQL"), "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
+		assumeFalse(dataSourceName.equals("MariaDB") || dataSourceName.equals("PostgreSQL"), "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
 		testWriteAndReadBlobUsingDbmsSupport(10000, 10000, databaseTestEnvironment);
 	}
 
@@ -234,14 +226,14 @@ public class TestBlobs {
 	@DatabaseTest
 	public void testWriteAndReadClobUsingDbmsSupport20MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assertNotEquals("MariaDB", dataSourceName, "MariaDb cannot handle statement packets> 16M");
+		assumeFalse(dataSourceName.equals("MariaDB"), "MariaDb cannot handle statement packets> 16M");
 		testWriteAndReadClobUsingDbmsSupport(10000, 2000, databaseTestEnvironment);
 	}
 
 	@DatabaseTest
 	public void testWriteAndReadClobUsingDbmsSupport100MB(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 		assumeTrue(testBigBlobs);
-		assertFalse(dataSourceName.equals("MariaDB") || dataSourceName.equals("PostgreSQL"), "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
+		assumeFalse(dataSourceName.equals("MariaDB") || dataSourceName.equals("PostgreSQL"), "MariaDb cannot handle statement packets> 16M, PostgreSQL uses ByteArray");
 		testWriteAndReadClobUsingDbmsSupport(10000, 10000, databaseTestEnvironment);
 	}
 
