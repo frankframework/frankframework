@@ -66,7 +66,7 @@ public class FixedQuerySenderTest {
 		fixedQuerySender = new FixedQuerySender();
 		fixedQuerySender.setDatasourceName(dataSourceName);
 		fixedQuerySender.setName("FQS_TABLE");
-		fixedQuerySender.setIncludeFieldDefinition(true);
+		fixedQuerySender.setIncludeFieldDefinition(false);
 		getConfiguration().autowireByName(fixedQuerySender);
 
 		getConfiguration().getIbisManager();
