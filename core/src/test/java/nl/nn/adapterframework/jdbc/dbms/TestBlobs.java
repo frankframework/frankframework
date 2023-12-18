@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Disabled;
 
 import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
-import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.junit.DatabaseTest;
 import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
@@ -44,10 +43,6 @@ public class TestBlobs {
 
 	@DatabaseTest.Parameter(1)
 	private String dataSourceName;
-
-	private TestConfiguration getConfiguration() {
-		return transactionManagerType.getConfigurationContext(dataSourceName);
-	}
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
