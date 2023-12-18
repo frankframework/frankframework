@@ -33,7 +33,7 @@ import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
 @Disabled("Tests for Blobs take too much time and memory to test regularly")
-@WithLiquibase(tableName = TestBlobs.TABLE_NAME, file = "Migrator/JdbcTestBaseQuery.xml")
+@WithLiquibase(tableName = TestBlobs.TABLE_NAME, file = "Migrator/ChangelogBlobTests.xml")
 public class TestBlobs {
 
 	protected static final String TABLE_NAME = "testBlobs_TABLE";
