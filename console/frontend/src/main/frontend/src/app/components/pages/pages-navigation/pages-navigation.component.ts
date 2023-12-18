@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ParamMap, Router, convertToParamMap } from '@angular/router';
 
 @Component({
   selector: 'app-pages-navigation',
@@ -7,20 +7,28 @@ import { Router } from '@angular/router';
   styleUrls: ['./pages-navigation.component.scss']
 })
 export class PagesNavigationComponent {
+  @Input() queryParams = convertToParamMap({});
   @Output() onOpenInfo = new EventEmitter<void>();
   @Output() onOpenFeedback = new EventEmitter<void>();
 
   constructor(private router: Router) { }
 
-  openInfo(){
+  openInfo() {
     this.onOpenInfo.emit();
   }
 
-  openFeedback(){
+  openFeedback() {
     this.onOpenFeedback.emit();
   }
 
-  getClassByRoute(className: string, routeState: string){
+  getClassByRoute(className: string, routeState: string) {
     return { [className]: this.router.url.split("?")[0].includes(routeState) }
+  }
+
+  getConfigurationsQueryParam() {
+    if (this.queryParams.has('configuration')){
+      return this.queryParams.get('configuration');
+    }
+    return null;
   }
 }

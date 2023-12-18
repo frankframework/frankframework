@@ -2,7 +2,11 @@
 <!-- Wrapper-->
 <div id="wrapper" *ngIf="!isLoginView; else loginWrapper">
   <!-- Navigation -->
-  <app-pages-navigation (onOpenInfo)="openInfoModel()" (onOpenFeedback)="sendFeedback()"></app-pages-navigation>
+  <app-pages-navigation
+    (onOpenInfo)="openInfoModel()"
+    (onOpenFeedback)="sendFeedback()"
+    [queryParams]="routeQueryParams"
+  ></app-pages-navigation>
 
   <!-- Page wraper -->
   <!-- ng-class with current state name give you the ability to extended customization your view -->
