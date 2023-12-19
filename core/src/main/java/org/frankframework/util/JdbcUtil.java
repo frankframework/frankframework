@@ -413,7 +413,7 @@ public class JdbcUtil {
 			Object result = null;
 			boolean objectOK = true;
 			try (ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
-				try (ObjectInputStream ois = new ObjectInputStream(bis)) {
+				try (ObjectInputStream ois = new RenamingObjectInputStream(bis)) {
 					result = ois.readObject();
 				} catch (Exception e) {
 					log.debug("message in column [" + column + "] is probably not a serialized object: " + e.getClass().getName());

@@ -59,6 +59,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.Misc;
+import org.frankframework.util.RenamingObjectInputStream;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
@@ -754,7 +755,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			if (blobInputStream == null) {
 				return null;
 			}
-			try (ObjectInputStream ois = new ObjectInputStream(blobInputStream)) {
+			try (ObjectInputStream ois = new RenamingObjectInputStream(blobInputStream)) {
 				Object s = ois.readObject();
 				if (s instanceof MessageWrapper<?>) {
 					return (MessageWrapper<S>) s;
