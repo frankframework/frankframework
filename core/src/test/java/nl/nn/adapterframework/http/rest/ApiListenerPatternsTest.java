@@ -20,17 +20,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Arrays;
 import java.util.Collection;
 
-import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
-
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import nl.nn.adapterframework.http.rest.ApiListener.HttpMethod;
 
 
 public class ApiListenerPatternsTest {
 
 	private ApiListener listener;
-	private String expectedUriPattern;
-	private String expectedCleanPattern;
 
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
@@ -60,8 +58,6 @@ public class ApiListenerPatternsTest {
 		listener.setName("my-api-listener");
 		listener.setMethod(HttpMethod.PUT);
 		listener.setUriPattern(pattern);
-		this.expectedUriPattern = expectedUriPattern;
-		this.expectedCleanPattern = expectedCleanPattern;
 	}
 
 	@MethodSource("data")

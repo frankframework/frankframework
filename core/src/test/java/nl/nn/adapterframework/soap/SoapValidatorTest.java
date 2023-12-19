@@ -14,7 +14,7 @@ import nl.nn.adapterframework.testutil.MessageTestUtils;
 import nl.nn.adapterframework.testutil.TestFileUtils;
 import nl.nn.adapterframework.validation.ValidatorTestBase;
 
-public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
+class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 
 	public String SCHEMALOCATION_SET_GPBDB = ValidatorTestBase.SCHEMA_LOCATION_GPBDB_MESSAGE+" "+
 			ValidatorTestBase.SCHEMA_LOCATION_GPBDB_GPBDB+" "+
@@ -75,7 +75,7 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	}
 
 	@Test
-	void validate12Invalid_body() throws Exception {
+	void validate12InvalidBody() throws Exception {
 		configureSoapValidator();
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapVersion(SoapVersion.SOAP11);
@@ -84,13 +84,12 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.start();
 		String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP_BODY;
 		Message input = MessageTestUtils.getMessage(inputFile);
-		String expected = TestFileUtils.getTestFile(inputFile);
 
 		assertThrows(PipeRunException.class, () -> doPipe(input));
 	}
 
 	@Test
-	void validate12Unknown_namespace_body() throws Exception {
+	void validate12UnknownNamespaceBody() throws Exception {
 		configureSoapValidator();
 		pipe.setSchemaLocation(SCHEMALOCATION_SET_GPBDB);
 		pipe.setSoapVersion(SoapVersion.SOAP11);
@@ -99,7 +98,6 @@ public class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.start();
 		String inputFile = INPUT_FILE_GPBDB_UNKNOWN_NAMESPACE_SOAP_BODY;
 		Message input = MessageTestUtils.getMessage(inputFile);
-		String expected = TestFileUtils.getTestFile(inputFile);
 
 		assertThrows(PipeRunException.class, () -> doPipe(input));
 	}

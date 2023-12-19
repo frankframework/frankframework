@@ -22,8 +22,7 @@ import nl.nn.adapterframework.receivers.Receiver;
  * ListenerPort or other type of named endpoint, from which they receive
  * their messages.
  *
- * Current implementations are PushingJmsListener and the EJB version of
- * IfsaProviderListener.
+ * Current implementation is the PushingJmsListener.
  *
  * @author Tim van der Leeuw
  *

@@ -30,7 +30,6 @@ import nl.nn.adapterframework.core.ListenerException;
 import nl.nn.adapterframework.jms.JmsListener;
 import nl.nn.adapterframework.soap.SoapWrapper;
 import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.util.DomBuilderException;
 import nl.nn.adapterframework.util.TransformerPool;
 import nl.nn.adapterframework.util.TransformerPool.OutputType;
 import nl.nn.adapterframework.util.XmlException;
@@ -233,7 +232,7 @@ public class BisJmsListener extends JmsListener {
 		}
 	}
 
-	public String prepareResult(String errorCode, Map<String,Object> threadContext) throws DomBuilderException, IOException, TransformerException {
+	public String prepareResult(String errorCode, Map<String,Object> threadContext) {
 		String errorText = null;
 		String serviceName = null;
 		String actionName = null;
