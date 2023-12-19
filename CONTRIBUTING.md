@@ -163,9 +163,9 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - Make sure Maven is able to access the internet. E.g. when behind a proxy: Window, Preferences, Maven, User Settings, settings.xml should exist and contain proxy configuration.
 - Window, Open Perspective, Other..., Git, OK, Clone a Git repository, URI: https://github.com/frankframework/frankframework.git, Next, Next, Finish.
 - Optionally (when you have access to the proprietary jars some modules depend on) add your Nexus credentials and enable the proprietary profile in your maven settings.xml
-- In the Git Perspective, right click the IAF Repository and click 'Import Projects...'
+- In the Git Perspective, right-click the IAF Repository and click 'Import Projects...'
 - The Import wizard appears which allows you to import many different kinds of projects.
-- **deselect**: iaf-ifsa, iaf-sap, iaf-tibco, iaf-idin, docker\* and ear (unless you have access to the proprietary repository), Finish.
+- **deselect**: iaf-sap, iaf-tibco, iaf-idin, docker\* and ear (unless you have access to the proprietary repository), Finish.
 - Window, Open Perspective, Other..., Java EE.
 - Right click iaf, Maven, Update Project..., OK. Now Eclipse will update the classpath settings according to the module pom file. (Updating the project may take a while!)
 

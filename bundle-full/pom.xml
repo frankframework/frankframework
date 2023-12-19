@@ -68,10 +68,6 @@
 					<groupId>org.ibissource</groupId>
 					<artifactId>ibis-adapterframework-idin</artifactId>
 				</dependency>
-				<dependency>
-					<groupId>org.ibissource</groupId>
-					<artifactId>ibis-adapterframework-ifsa</artifactId>
-				</dependency>
 			</dependencies>
 		</profile>
 	</profiles>

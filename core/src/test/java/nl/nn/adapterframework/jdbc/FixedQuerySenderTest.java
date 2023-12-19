@@ -3,11 +3,8 @@ package nl.nn.adapterframework.jdbc;
 import static nl.nn.adapterframework.parameters.Parameter.ParameterType;
 import static nl.nn.adapterframework.testutil.MatchUtils.assertJsonEquals;
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
-import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assume.assumeThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -214,7 +211,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testMultipleColumnsReturnedWithSpaceBetween() throws Exception {
-		assumeThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
+		assumeTrue(dataSourceName.equals("H2") || dataSourceName.equals("Oracle"));
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
@@ -229,7 +226,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testMultipleColumnsReturnedWithDoubleSpace() throws Exception {
-		assumeThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
+		assumeTrue(dataSourceName.equals("H2") || dataSourceName.equals("Oracle"));
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 
@@ -244,7 +241,7 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testMultipleColumnsReturned() throws Exception {
-		assumeThat(dataSourceName, anyOf(is("H2"), is("Oracle")));
+		assumeTrue(dataSourceName.equals("H2") || dataSourceName.equals("Oracle"));
 		fixedQuerySender.setQuery("INSERT INTO " + TABLE_NAME + " (tKEY, tVARCHAR) VALUES ('1', ?)");
 		fixedQuerySender.addParameter(new Parameter("param1", "value"));
 

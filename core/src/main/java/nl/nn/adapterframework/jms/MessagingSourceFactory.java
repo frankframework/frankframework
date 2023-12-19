@@ -36,20 +36,20 @@ public abstract class MessagingSourceFactory {
 
 	protected abstract Map<String,MessagingSource> getMessagingSourceMap();
 	protected abstract Context createContext() throws NamingException;
-	protected abstract ConnectionFactory createConnectionFactory(Context context, String id, boolean createDestination, boolean useJms102) throws IbisException, NamingException;
+	protected abstract ConnectionFactory createConnectionFactory(Context context, String id, boolean createDestination) throws IbisException, NamingException;
 
-	protected MessagingSource createMessagingSource(String id, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
+	protected MessagingSource createMessagingSource(String id, String authAlias, boolean createDestination) throws IbisException {
 		Context context = getContext();
-		ConnectionFactory connectionFactory = getConnectionFactory(context, id, createDestination, useJms102);
-		return new MessagingSource(id, context, connectionFactory, getMessagingSourceMap(), authAlias, createDestination, useJms102);
+		ConnectionFactory connectionFactory = getConnectionFactory(context, id, createDestination);
+		return new MessagingSource(id, context, connectionFactory, getMessagingSourceMap(), authAlias, createDestination);
 	}
 
-	public synchronized MessagingSource getMessagingSource(String id, String authAlias, boolean createDestination, boolean useJms102) throws IbisException {
+	public synchronized MessagingSource getMessagingSource(String id, String authAlias, boolean createDestination) throws IbisException {
 		Map<String, MessagingSource> messagingSourceMap = getMessagingSourceMap();
 
 		MessagingSource result = messagingSourceMap.get(id);
 		if (result == null) {
-			result = createMessagingSource(id, authAlias, createDestination, useJms102);
+			result = createMessagingSource(id, authAlias, createDestination);
 			log.debug("created new MessagingSource-object for [{}]", id);
 		}
 		result.increaseReferences();
@@ -64,9 +64,9 @@ public abstract class MessagingSourceFactory {
 		}
 	}
 
-	protected ConnectionFactory getConnectionFactory(Context context, String id, boolean createDestination, boolean useJms102) throws IbisException {
+	protected ConnectionFactory getConnectionFactory(Context context, String id, boolean createDestination) throws IbisException {
 		try {
-			return createConnectionFactory(context, id, createDestination, useJms102);
+			return createConnectionFactory(context, id, createDestination);
 		} catch (Throwable t) {
 			throw new IbisException("could not obtain connectionFactory ["+id+"]", t);
 		}

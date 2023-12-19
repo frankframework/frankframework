@@ -259,13 +259,6 @@
 	</bean>
 
 	<bean
-		name="messageListenerClassName"
-		class="java.lang.String"
-		>
-		<constructor-arg value="${jms.messageListenerClassName}"/>
-	</bean>
-
-	<bean
 		name="dbmsSupportFactory"
 		class="nl.nn.adapterframework.dbms.DbmsSupportFactory"
 		scope="singleton"
