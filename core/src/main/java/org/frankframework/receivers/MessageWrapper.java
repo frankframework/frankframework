@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
-import org.frankframework.util.RenamingObjectInputStream;
 
 import lombok.Getter;
 
@@ -78,7 +77,6 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 	}
 
 	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-		stream = new RenamingObjectInputStream(stream); // Support old package names, already serialized in the database
 		context = (Map<String, Object>) stream.readObject();
 		id = (String) stream.readObject();
 		message = (Message) stream.readObject();
