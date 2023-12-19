@@ -461,6 +461,7 @@
                     <tr>
                       <th>Name</th>
                       <th>Sender</th>
+                      <th>SlotId</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -470,6 +471,7 @@
                         <td>{{pipes.name}}</td>
                         <td>{{pipes.sender}}<span *ngIf="pipes.destination" title="{{pipes.destination}}" #pipeDestination>
                             ({{pipes.destination|truncate:150:pipeDestination}})</span></td>
+                        <td>{{pipes.message?.slotId}}</td>
                         <td>
                           <span class="pull-right">
                             <span [ngClass]="pipes.isSenderTransactionalStorage ? 'text-primary' : 'text-success'">
