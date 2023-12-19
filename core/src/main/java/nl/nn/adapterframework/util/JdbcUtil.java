@@ -777,6 +777,7 @@ public class JdbcUtil {
 			case BINARY:
 				return JDBCType.BLOB;
 			case LIST:
+				// Type 'LIST' is used for REF_CURSOR type OUTPUT parameters of stored procedures.
 				return dbmsSupport.getCursorSqlType();
 			default:
 				throw new IllegalArgumentException("Parameter type [" + parameterType + "] cannot be mapped to a SQL type");
