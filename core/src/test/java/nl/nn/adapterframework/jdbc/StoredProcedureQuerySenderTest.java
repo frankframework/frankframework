@@ -692,10 +692,10 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
 
 		Parameter cursorParam = new Parameter();
-    	cursorParam.setName("cursor1");
-    	cursorParam.setType(Parameter.ParameterType.LIST);
-    	cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
-    	sender.addParameter(cursorParam);
+		cursorParam.setName("cursor1");
+		cursorParam.setType(Parameter.ParameterType.LIST);
+		cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
+		sender.addParameter(cursorParam);
 
 		sender.configure();
 		sender.open();
