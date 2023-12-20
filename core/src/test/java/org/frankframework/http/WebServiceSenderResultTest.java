@@ -92,9 +92,9 @@ public class WebServiceSenderResultTest extends Mockito {
 		}
 	}
 
-	private final String BASEDIR = "/nl/nn/adapterframework/http/";
-	private InputStream getFile(String file) throws IOException {
-		URL url = this.getClass().getResource(BASEDIR+file);
+  private InputStream getFile(String file) throws IOException {
+    String baseDir = "/org/frankframework/http/";
+    URL url = this.getClass().getResource(baseDir +file);
 		if (url == null) {
 			throw new IOException("file not found");
 		}

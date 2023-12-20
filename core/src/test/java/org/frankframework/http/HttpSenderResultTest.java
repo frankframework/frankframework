@@ -115,7 +115,7 @@ public class HttpSenderResultTest extends Mockito {
 	}
 
 	private InputStream getFile(String file) throws IOException {
-		String baseDir = "/nl/nn/adapterframework/http/";
+		String baseDir = "/org/frankframework/http/";
 		URL url = this.getClass().getResource(baseDir + file);
 		if (url == null) {
 			throw new IOException("file not found");

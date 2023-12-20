@@ -318,7 +318,7 @@ public class MoveFilePipeTest extends PipeTestBase<MoveFilePipe>{
     public void cantDeleteDirectoryAsWrongName() throws ConfigurationException, PipeStartException, PipeRunException {
         exception.expect(PipeRunException.class);
         pipe.setMove2dir(destFolderPath);
-        pipe.setDirectory("/Users/apollo11/Desktop/iaf/core/src/test/java/nl/nn/adapterframework/pipes/cantbedeleteddd");// some random, wrong directory path
+        pipe.setDirectory("/Users/apollo11/Desktop/iaf/core/src/test/java/cantbedeleteddd");// some random, wrong directory path
         pipe.setDeleteEmptyDirectory(true);
         pipe.setFilename("deletable.sd");
         pipe.configure();
