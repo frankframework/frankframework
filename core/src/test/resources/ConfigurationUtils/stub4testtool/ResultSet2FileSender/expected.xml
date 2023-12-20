@@ -1,31 +1,33 @@
 <configuration>
-	  <adapter name="ResultSet2FileSender">
-      <receiver name="testtool-ResultSet2FileSender">
-         <listener className="org.frankframework.receivers.JavaListener"
-                   serviceName="testtool-ResultSet2FileSender"/>
-      </receiver>
-		    <receiver name="ResultSet2FileSender">
-			      <listener className="org.frankframework.receivers.JavaListener"
-                   name="ResultSet2FileSender"/>
-		    </receiver>
-      <receiver name="testtool-ResultSet2FileSender-1">
-         <listener className="org.frankframework.receivers.JavaListener"
-                   serviceName="testtool-ResultSet2FileSender-1"/>
-      </receiver>
+	<adapter name="ResultSet2FileSender">
+		<receiver name="testtool-ResultSet2FileSender">
+			<listener
+				className="org.frankframework.receivers.JavaListener"
+				serviceName="testtool-ResultSet2FileSender" />
+		</receiver>
+		<receiver name="ResultSet2FileSender">
+			<listener
+				className="org.frankframework.receivers.JavaListener"
+				name="ResultSet2FileSender" />
+		</receiver>
+		<receiver name="testtool-ResultSet2FileSender-1">
+			<listener
+				className="org.frankframework.receivers.JavaListener"
+				serviceName="testtool-ResultSet2FileSender-1" />
+		</receiver>
 
-		    <pipeline>
-			      <exits>
-				        <exit path="READY" state="success"/>
-			      </exits>
-			      <pipe name="Call Sender"
-               className="org.frankframework.pipes.SenderPipe"
-               timeOutOnResult="[timeout]"
-               exceptionOnResult="[error]">
-				<!--<sender className="org.frankframework.jdbc.ResultSet2FileSender"
-                    append="true"/>--><sender className="org.frankframework.senders.IbisJavaSender"
-                    serviceName="testtool-Call Sender"/>
-				        <forward name="success" path="READY"/>
-			      </pipe>
-		    </pipeline>
-	  </adapter>
+		<pipeline>
+			<exits>
+				<exit path="READY" state="success" />
+			</exits>
+			<pipe name="Call Sender"
+				className="org.frankframework.pipes.SenderPipe"
+				timeOutOnResult="[timeout]" exceptionOnResult="[error]">
+				<sender append="true"
+					className="org.frankframework.jdbc.ResultSet2FileSender" />
+
+				<forward name="success" path="READY" />
+			</pipe>
+		</pipeline>
+	</adapter>
 </configuration>
