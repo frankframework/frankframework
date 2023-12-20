@@ -692,7 +692,7 @@ public class ApiListenerServletTest extends Mockito {
 		MatchUtils.assertXmlEquals("<parts>\n"
 				+ "  <part name=\"string1\" type=\"text\" value=\"&lt;hallo&gt;? ?&lt;/hallo&gt;\" />\n"
 				+ "  <part name=\"string2\" type=\"text\" value=\"&lt;hello&gt;€ è&lt;/hello&gt;\" />\n"
-				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1026\" sessionKey=\"file1\" mimeType=\"application/xml\"/>\n"
+				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1006\" sessionKey=\"file1\" mimeType=\"application/xml\"/>\n"
 				+ "</parts>", multipartXml);
 		Message file = (Message) session.get("file1");
 		assertEquals("ISO-8859-1", file.getCharset());
@@ -723,7 +723,7 @@ public class ApiListenerServletTest extends Mockito {
 		assertNotNull(multipartXml);
 		MatchUtils.assertXmlEquals("<parts>\n"
 				+ "  <part name=\"string1\" type=\"text\" value=\"&lt;hello&gt;€ è&lt;/hello&gt;\" />\n"
-				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1026\" sessionKey=\"file1\" mimeType=\"application/xml\"/>\n"
+				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1006\" sessionKey=\"file1\" mimeType=\"application/xml\"/>\n"
 				+ "</parts>", multipartXml);
 		Message file = (Message) session.get("file1");
 		assertEquals("ISO-8859-1", file.getCharset());
