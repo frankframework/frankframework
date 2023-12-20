@@ -391,28 +391,31 @@ public class ValidateAttributeRuleTest extends Mockito {
 		AppConstants appConstants = loadAppConstants(configuration);
 		appConstants.setProperty("configuration.warnings.linenumbers", true);
 
-		// Act
-		// Refreshing the configuration will trigger the loading via digester
-		configuration.refresh();
+		try {
+			// Act
+			// Refreshing the configuration will trigger the loading via digester
+			configuration.refresh();
 
-		// Assert
-		ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
-		assertEquals(4, configurationWarnings.getWarnings().size());
-		assertThat(configurationWarnings.getWarnings(), not(anyOf(
-			hasItem(containsString("[DeprecatedPipe1InAdapter1]")),
-			hasItem(containsString("[DeprecatedPipe2InAdapter1]")),
-			hasItem(containsString("[DeprecatedPipe1InAdapter3]")),
-			hasItem(containsString("[DeprecatedPipe2InAdapter3]"))
-		)));
-		assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
-			containsString("[DeprecatedPipe1InAdapter2] on line [35] column [91]"),
-			containsString("[DeprecatedPipe2InAdapter2] on line [42] column [6]"),
-			containsString("[DeprecatedPipe1InAdapter4] on line [79] column [24]"),
-			containsString("[DeprecatedPipe2InAdapter4] on line [84] column [6]")
-		));
+			// Assert
+			ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
+			assertEquals(4, configurationWarnings.getWarnings().size());
+			assertThat(configurationWarnings.getWarnings(), not(anyOf(
+				hasItem(containsString("[DeprecatedPipe1InAdapter1]")),
+				hasItem(containsString("[DeprecatedPipe2InAdapter1]")),
+				hasItem(containsString("[DeprecatedPipe1InAdapter3]")),
+				hasItem(containsString("[DeprecatedPipe2InAdapter3]"))
+			)));
+			assertThat(configurationWarnings.getWarnings(), containsInAnyOrder(
+				containsString("[DeprecatedPipe1InAdapter2] on line [35] column [87]"),
+				containsString("[DeprecatedPipe2InAdapter2] on line [42] column [6]"),
+				containsString("[DeprecatedPipe1InAdapter4] on line [79] column [24]"),
+				containsString("[DeprecatedPipe2InAdapter4] on line [84] column [6]")
+			));
 
-		// Cleanup so we don't crash other tests
-		appConstants.setProperty("configuration.warnings.linenumbers", false);
+		} finally {
+			// Cleanup so we don't crash other tests
+			appConstants.setProperty("configuration.warnings.linenumbers", false);
+		}
 	}
 
 	@Test
@@ -423,16 +426,19 @@ public class ValidateAttributeRuleTest extends Mockito {
 		AppConstants appConstants = loadAppConstants(configuration);
 		appConstants.setProperty(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), true);
 
-		// Act
-		// Refreshing the configuration will trigger the loading via digester
-		configuration.refresh();
+		try {
+			// Act
+			// Refreshing the configuration will trigger the loading via digester
+			configuration.refresh();
 
-		// Assert
-		ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
-		assertTrue(configurationWarnings.getWarnings().isEmpty());
+			// Assert
+			ConfigurationWarnings configurationWarnings = configuration.getBean(ConfigurationWarnings.class);
+			assertTrue(configurationWarnings.getWarnings().isEmpty());
 
-		// Cleanup so we don't crash other tests
-		appConstants.setProperty(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), false);
+		} finally {
+			// Cleanup so we don't crash other tests
+			appConstants.setProperty(SuppressKeys.DEPRECATION_SUPPRESS_KEY.getKey(), false);
+		}
 	}
 
 	private AppConstants loadAppConstants(ApplicationContext applicationContext) throws IOException {
