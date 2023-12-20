@@ -370,17 +370,10 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		return "SELECT LAST_INSERT_ID()";
 	}
 
-
 	// DDL related methods, have become more or less obsolete (and untested) with the introduction of Liquibase for table definitions
 	@Override
 	public String getAutoIncrementKeyFieldType() {
 		return "INT AUTO_INCREMENT";
-	}
-
-
-	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
-		return true;
 	}
 
 	@Override

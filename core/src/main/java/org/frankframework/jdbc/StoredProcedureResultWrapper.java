@@ -44,16 +44,18 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
+import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.util.JdbcUtil;
 
-class StoredProcedureResultWrapper implements ResultSet {
+public class StoredProcedureResultWrapper implements ResultSet {
 
+	@Nonnull private final IDbmsSupport dbmsSupport;
 	@Nonnull private final CallableStatement delegate;
 	@Nonnull private final ParameterMetaData parameterMetaData;
 	@Nonnull private final List<Map.Entry<Integer, Parameter>> parameterPositions;
 
-	private boolean hasNext = true;
+	private boolean hasNext;
 
 	/**
 	 * Class that wraps a CallableStatement to present its output-parameters as if they were
@@ -62,13 +64,17 @@ class StoredProcedureResultWrapper implements ResultSet {
 	 * @param delegate The {@link CallableStatement} to be wrapped
 	 * @param parameterPositions The position of each output-parameter in the overal list of stored procedure parameters
 	 */
-	StoredProcedureResultWrapper(@Nonnull CallableStatement delegate, @Nonnull ParameterMetaData parameterMetaData, @Nonnull Map<Integer, Parameter> parameterPositions) {
+	public StoredProcedureResultWrapper(
+			@Nonnull IDbmsSupport dbmsSupport,
+			@Nonnull CallableStatement delegate, @Nonnull ParameterMetaData parameterMetaData, @Nonnull Map<Integer, Parameter> parameterPositions) {
+		this.dbmsSupport = dbmsSupport;
 		this.delegate = delegate;
 		this.parameterMetaData = parameterMetaData;
 		this.parameterPositions = parameterPositions.entrySet()
 				.stream()
 				.sorted(Map.Entry.comparingByKey())
 				.collect(Collectors.toList());
+		this.hasNext = !parameterPositions.isEmpty();
 	}
 
 	@Override
@@ -1049,13 +1055,10 @@ class StoredProcedureResultWrapper implements ResultSet {
 				.orElseThrow(() -> new SQLException("Cannot find parameter with label [" + columnLabel + "]"));
 	}
 
-	private SQLType getSqlType(final int column) {
-		return JdbcUtil.mapParameterTypeToSqlType(parameterPositions.get(column - 1).getValue().getType());
-	}
-
 	private class MyResultSetMetaData implements ResultSetMetaData {
 
-		public MyResultSetMetaData() {
+		private SQLType getSqlType(final int column) {
+			return JdbcUtil.mapParameterTypeToSqlType(dbmsSupport, parameterPositions.get(column - 1).getValue().getType());
 		}
 
 		@Override

@@ -19,7 +19,7 @@
 		<jackson.version>2.16.0</jackson.version>
 		<cxf.version>3.6.2</cxf.version>
 		<spring.version>5.3.31</spring.version>
-		<spring-security.version>5.8.8</spring-security.version>
+		<spring-security.version>5.8.9</spring-security.version>
 		<spring-integration.version>5.5.20</spring-integration.version>
 
 		<btm.version>3.0.0-mk1</btm.version>
@@ -28,7 +28,7 @@
 		<micrometer.version>1.12.1</micrometer.version>
 		<argLine /> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<frankdoc.version>1.2-SNAPSHOT</frankdoc.version>
+		<frankdoc.version>2.0-SNAPSHOT</frankdoc.version>
 		<javadoc-plugin.version>3.6.3</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
@@ -131,7 +131,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-transport-native-epoll</artifactId>
-				<version>4.1.103.Final</version>
+				<version>4.1.104.Final</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -1376,6 +1376,10 @@
 								<artifactId>frank-doc-frontend</artifactId>
 								<version>${frankdoc.version}</version>
 							</frontendArtifact>
+							<additionalJOptions>
+								<additionalJOption>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</additionalJOption>
+								<additionalJOption>-J--add-opens=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</additionalJOption>
+							</additionalJOptions>
 							<additionalOptions>
 								<additionalOption>-outputDirectory</additionalOption>
 								<additionalOption>${project.build.directory}/frankdoc</additionalOption>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,16 +13,32 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.stream.document;
+package org.frankframework.dbms;
 
-import org.xml.sax.SAXException;
+import java.sql.SQLType;
 
-public interface IObjectBuilder extends AutoCloseable {
+class CustomSQLType implements SQLType {
 
-	INodeBuilder addField(String fieldName) throws SAXException;
-	ArrayBuilder addRepeatedField(String fieldName) throws SAXException;
+	private final String vendor;
+	private final int jdbcTypeNr;
+
+	public CustomSQLType(String vendor, int jdbcTypeNr) {
+		this.vendor = vendor;
+		this.jdbcTypeNr = jdbcTypeNr;
+	}
 
 	@Override
-	void close() throws SAXException;
+	public String getName() {
+		return "CURSOR";
+	}
 
+	@Override
+	public String getVendor() {
+		return vendor;
+	}
+
+	@Override
+	public Integer getVendorTypeNumber() {
+		return jdbcTypeNr;
+	}
 }
