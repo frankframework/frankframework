@@ -33,14 +33,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.hamcrest.core.StringContains;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
+import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TestLogMessages {
 	protected Logger log = LogUtil.getLogger(this);
