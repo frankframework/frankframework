@@ -42,7 +42,7 @@
               <label class="col-sm-3 control-label">Select an adapter</label>
               <div class="col-sm-9">
                 <select class="form-control m-b" name="adapter" [(ngModel)]="form.adapter" [disabled]="selectedConfiguration == ''">
-                  <option *ngFor="let adapter of adapters | configurationFilter : selectedConfiguration | withJavaListener" [ngValue]="adapter.name">{{adapter.name + (adapter.description != null? " - "+adapter.description:"")}}</option>
+                  <option *ngFor="let adapter of adapters | configurationFilter : selectedConfiguration | withJavaListener" [ngValue]="adapter">{{adapter.name + (adapter.description != null? " - "+adapter.description:"")}}</option>
                 </select>
               </div>
             </div>
@@ -53,7 +53,7 @@
               </div>
               <div class="col-sm-9" *ngIf="form.adapter">
                 <select class="form-control m-b" name="receiver" [(ngModel)]="form.listener">
-                  <ng-template ngFor let-receiver [ngForOf]="adapters[form.adapter].receivers">
+                  <ng-template ngFor let-receiver [ngForOf]="form.adapter.receivers">
                     <option *ngIf="receiver.listener.class.startsWith('JavaListener')" [ngValue]="receiver.listener.name">{{receiver.listener.name}}</option>
                   </ng-template>
                 </select>
