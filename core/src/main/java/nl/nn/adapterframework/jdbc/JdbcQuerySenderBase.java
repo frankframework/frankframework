@@ -518,12 +518,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		try (MessageOutputStream target=MessageOutputStream.getTargetStream(this, session, next)) {
 			// Create XML and give the maxlength as a parameter
 			if (getOutputFormat()==null) {
-				DB2XMLWriter db2xml = new DB2XMLWriter();
-				db2xml.setNullValue(getNullValue());
-				db2xml.setTrimSpaces(isTrimSpaces());
-				if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
-				db2xml.setDecompressBlobs(isBlobsCompressed());
-				db2xml.setGetBlobSmart(isBlobSmartGet());
+				DB2XMLWriter db2xml = buildDb2XMLWriter();
 				ContentHandler handler = target.asContentHandler();
 				db2xml.getXML(getDbmsSupport(), resultset, getMaxRows(), isIncludeFieldDefinition(), handler, isPrettyPrint());
 			} else {
@@ -540,6 +535,16 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		} catch (Exception e) {
 			throw new JdbcException(e);
 		}
+	}
+
+	protected DB2XMLWriter buildDb2XMLWriter() {
+		DB2XMLWriter db2xml = new DB2XMLWriter();
+		db2xml.setNullValue(getNullValue());
+		db2xml.setTrimSpaces(isTrimSpaces());
+		if (StringUtils.isNotEmpty(getBlobCharset())) db2xml.setBlobCharset(getBlobCharset());
+		db2xml.setDecompressBlobs(isBlobsCompressed());
+		db2xml.setGetBlobSmart(isBlobSmartGet());
+		return db2xml;
 	}
 
 
@@ -806,19 +811,7 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 					numRowsAffected = statement.executeUpdate();
 				}
 			}
-			if (resStmt != null) {
-				log.debug("obtaining result from [{}]", resultQuery);
-				try (ResultSet rs = resStmt.executeQuery()) {
-					return getResult(rs);
-				}
-			}
-			if (getColumnsReturnedList() != null) {
-				return getResult(getReturnedColumns(statement));
-			}
-			if (isScalar()) {
-				return new Message(Integer.toString(numRowsAffected));
-			}
-			return new Message("<result>" + (getBatchSize() > 0 ? "addedToBatch" : "<rowsupdated>" + numRowsAffected + "</rowsupdated>") + "</result>");
+			return getUpdateStatementResult(statement, resultQuery, resStmt, numRowsAffected);
 		} catch (SQLException e) {
 			throw new SenderException(getLogPrefix() + "got exception executing query ["+query+"]",e );
 		} catch (JdbcException|IOException|JMSException e) {
@@ -826,6 +819,22 @@ public abstract class JdbcQuerySenderBase<H> extends JdbcSenderBase<H> {
 		} catch (ParameterException e) {
 			throw new SenderException(getLogPrefix() + "got exception evaluating parameters", e);
 		}
+	}
+
+	protected Message getUpdateStatementResult(PreparedStatement statement, String resultQuery, PreparedStatement resStmt, int numRowsAffected) throws SQLException, JdbcException, IOException, JMSException {
+		if (resStmt != null) {
+			log.debug("obtaining result from [{}]", resultQuery);
+			try (ResultSet rs = resStmt.executeQuery()) {
+				return getResult(rs);
+			}
+		}
+		if (getColumnsReturnedList() != null) {
+			return getResult(getReturnedColumns(statement));
+		}
+		if (isScalar()) {
+			return new Message(Integer.toString(numRowsAffected));
+		}
+		return new Message("<result>" + (getBatchSize() > 0 ? "addedToBatch" : "<rowsupdated>" + numRowsAffected + "</rowsupdated>") + "</result>");
 	}
 
 	protected String fillParamArray(Object[] paramArray, String message) throws SenderException {

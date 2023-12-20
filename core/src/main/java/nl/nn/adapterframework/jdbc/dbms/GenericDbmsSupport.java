@@ -657,14 +657,4 @@ public class GenericDbmsSupport implements IDbmsSupport {
 		+ "') AND " + expiryDateField + " < ?"+(maxRows>0?" FETCH FIRST "+maxRows+ " ROWS ONLY":"")+")");
 		return query;
 	}
-
-	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
-		return true;
-	}
-
-	@Override
-	public boolean isStoredProcedureResultSetSupported() {
-		return true;
-	}
 }

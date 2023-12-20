@@ -1,5 +1,5 @@
 /*
-   Copyright 2015, 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2015, 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -115,10 +115,5 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		return doHasIndexOnColumns(conn, "PUBLIC", tableName.toUpperCase(), columnsUC,
 				"INFORMATION_SCHEMA.INDEXES", "INFORMATION_SCHEMA.INDEX_COLUMNS",
 				"TABLE_SCHEMA", "TABLE_NAME", "INDEX_NAME", "COLUMN_NAME", "ORDINAL_POSITION");
-	}
-
-	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
-		return false;
 	}
 }

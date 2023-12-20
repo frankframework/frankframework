@@ -889,7 +889,7 @@ public class JdbcUtil {
 		}
 	}
 
-	public static SQLType mapParameterTypeToSqlType(ParameterType parameterType) {
+	public static SQLType mapParameterTypeToSqlType(IDbmsSupport dbmsSupport, ParameterType parameterType) {
 		switch (parameterType) {
 			case DATE:
 				return JDBCType.DATE;
@@ -911,6 +911,9 @@ public class JdbcUtil {
 				return JDBCType.CLOB;
 			case BINARY:
 				return JDBCType.BLOB;
+			case LIST:
+				// Type 'LIST' is used for REF_CURSOR type OUTPUT parameters of stored procedures.
+				return dbmsSupport.getCursorSqlType();
 			default:
 				throw new IllegalArgumentException("Parameter type [" + parameterType + "] cannot be mapped to a SQL type");
 		}
@@ -1086,4 +1089,5 @@ public class JdbcUtil {
 			throw fnfe;
 		}
 	}
+
 }
