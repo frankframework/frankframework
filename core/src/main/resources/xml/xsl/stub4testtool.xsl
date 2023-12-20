@@ -155,9 +155,9 @@
 								or @className='org.frankframework.senders.FixedResultSender'
 								or @className='org.frankframework.senders.JavascriptSender'
 								or @className='org.frankframework.jdbc.MessageStoreSender'
-								or @className='nl.nn.adapterframework.senders.ReloadSender'
-								or @className='nl.nn.adapterframework.compression.ZipWriterSender'
-								or @className='nl.nn.adapterframework.senders.LocalFileSystemSender']">
+								or @className='org.frankframework.senders.ReloadSender'
+								or @className='org.frankframework.compression.ZipWriterSender'
+								or @className='org.frankframework.senders.LocalFileSystemSender']">
 		<xsl:call-template name="copy" />
 	</xsl:template>
 
@@ -242,7 +242,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.PutSystemDateInSession']">
+	<xsl:template match="pipe[@className='org.frankframework.pipes.PutSystemDateInSession']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="returnFixedDate">true</xsl:attribute>
@@ -299,7 +299,7 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.GetPrincipalPipe']">
+	<xsl:template match="pipe[@className='org.frankframework.pipes.GetPrincipalPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="className">org.frankframework.pipes.FixedResultPipe</xsl:attribute>
@@ -308,7 +308,7 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.IsUserInRolePipe']">
+	<xsl:template match="pipe[@className='org.frankframework.pipes.IsUserInRolePipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="className">org.frankframework.pipes.EchoPipe</xsl:attribute>
@@ -316,7 +316,7 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[@className='nl.nn.adapterframework.pipes.UUIDGeneratorPipe']">
+	<xsl:template match="pipe[@className='org.frankframework.pipes.UUIDGeneratorPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*[name()!='type']" />
 			<xsl:attribute name="className">org.frankframework.pipes.FixedResultPipe</xsl:attribute>
@@ -332,7 +332,7 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[ @className='nl.nn.adapterframework.pipes.Samba2Pipe' ]">
+	<xsl:template match="pipe[ @className='org.frankframework.pipes.Samba2Pipe' ]">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@name|@action|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
 			<xsl:attribute name="className">org.frankframework.pipes.LocalFileSystemPipe</xsl:attribute>
@@ -341,10 +341,10 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[ @className='nl.nn.adapterframework.ftp.FtpFileRetrieverPipe'
+	<xsl:template match="pipe[ @className='org.frankframework.ftp.FtpFileRetrieverPipe'
 							or @className='org.frankframework.tibco.extensions.SendTibcoMessage'
-							or @className='nl.nn.adapterframework.ldap.LdapFindMemberPipe'
-							or @className='nl.nn.adapterframework.ldap.LdapFindGroupMembershipsPipe']">
+							or @className='org.frankframework.ldap.LdapFindMemberPipe'
+							or @className='org.frankframework.ldap.LdapFindGroupMembershipsPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@name|@storeResultInSessionKey|@getInputFromSessionKey|@getInputFromFixedValue" />
 			<xsl:attribute name="className">org.frankframework.pipes.SenderPipe</xsl:attribute>
@@ -358,8 +358,8 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="pipe[ @className='nl.nn.adapterframework.pipes.SenderPipe'
-							or @className='nl.nn.adapterframework.pipes.ForEachChildElementPipe']">
+	<xsl:template match="pipe[ @className='org.frankframework.pipes.SenderPipe'
+							or @className='org.frankframework.pipes.ForEachChildElementPipe']">
 		<xsl:element name="pipe">
 			<xsl:apply-templates select="@*" />
 			<xsl:attribute name="timeOutOnResult">[timeout]</xsl:attribute>
@@ -372,8 +372,8 @@
 		<xsl:attribute name="pattern"><xsl:value-of select="replace(.,'\{now','{fixedDate')"/></xsl:attribute>
 	</xsl:template>
 
-	<xsl:template match="pipe/*[local-name()='errorStorage' or local-name()='messageLog'][@className!='nl.nn.adapterframework.jdbc.JdbcTransactionalStorage'
-																					  and @className!='nl.nn.adapterframework.jdbc.DummyTransactionalStorage']">
+	<xsl:template match="pipe/*[local-name()='errorStorage' or local-name()='messageLog'][@className!='org.frankframework.jdbc.JdbcTransactionalStorage'
+																					  and @className!='org.frankframework.jdbc.DummyTransactionalStorage']">
 		<xsl:call-template name="disable" />
 	</xsl:template>
 
