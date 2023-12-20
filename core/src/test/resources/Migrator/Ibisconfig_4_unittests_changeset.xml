@@ -10,7 +10,7 @@
 			<column name="NAME" type="java.sql.Types.VARCHAR(100)">
 				<constraints nullable="false"/>
 			</column>
-			<column name="VERSION" type="java.sql.Types.VARCHAR(50)">
+			<column name="VERSION" type="java.sql.Types.VARCHAR(120)">
 				<constraints nullable="false"/>
 			</column>
 			<column name="FILENAME" type="java.sql.Types.VARCHAR(150)"/>
