@@ -59,6 +59,26 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.ThreadContext;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IListener;
+import org.frankframework.core.IMessageHandler;
+import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.encryption.KeystoreType;
+import org.frankframework.encryption.PkiUtil;
+import org.frankframework.http.HttpMessageEntity;
+import org.frankframework.http.mime.MultipartEntityBuilder;
+import org.frankframework.http.rest.ApiListener.AuthenticationMethods;
+import org.frankframework.http.rest.ApiListener.HttpMethod;
+import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
+import org.frankframework.stream.UrlMessage;
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.EnumUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -86,26 +106,6 @@ import com.nimbusds.jwt.SignedJWT;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IListener;
-import org.frankframework.core.IMessageHandler;
-import org.frankframework.core.ListenerException;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.encryption.KeystoreType;
-import org.frankframework.encryption.PkiUtil;
-import org.frankframework.http.HttpMessageEntity;
-import org.frankframework.http.mime.MultipartEntityBuilder;
-import org.frankframework.http.rest.ApiListener.AuthenticationMethods;
-import org.frankframework.http.rest.ApiListener.HttpMethod;
-import org.frankframework.receivers.RawMessageWrapper;
-import org.frankframework.stream.Message;
-import org.frankframework.stream.MessageContext;
-import org.frankframework.stream.UrlMessage;
-import org.frankframework.testutil.MatchUtils;
-import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.EnumUtils;
 
 @Log4j2
 public class ApiListenerServletTest extends Mockito {
@@ -692,7 +692,7 @@ public class ApiListenerServletTest extends Mockito {
 		MatchUtils.assertXmlEquals("<parts>\n"
 				+ "  <part name=\"string1\" type=\"text\" value=\"&lt;hallo&gt;? ?&lt;/hallo&gt;\" />\n"
 				+ "  <part name=\"string2\" type=\"text\" value=\"&lt;hello&gt;€ è&lt;/hello&gt;\" />\n"
-				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1026\" sessionKey=\"file1\" mimeType=\"application/xml\"/>\n"
+				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1006\" sessionKey=\"file1\" mimeType=\"application/xml\"/>\n"
 				+ "</parts>", multipartXml);
 		Message file = (Message) session.get("file1");
 		assertEquals("ISO-8859-1", file.getCharset());
@@ -723,7 +723,7 @@ public class ApiListenerServletTest extends Mockito {
 		assertNotNull(multipartXml);
 		MatchUtils.assertXmlEquals("<parts>\n"
 				+ "  <part name=\"string1\" type=\"text\" value=\"&lt;hello&gt;€ è&lt;/hello&gt;\" />\n"
-				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1026\" sessionKey=\"file1\" mimeType=\"application/xml\"/>\n"
+				+ "  <part name=\"file1\" type=\"file\" filename=\"file1\" size=\"1006\" sessionKey=\"file1\" mimeType=\"application/xml\"/>\n"
 				+ "</parts>", multipartXml);
 		Message file = (Message) session.get("file1");
 		assertEquals("ISO-8859-1", file.getCharset());
