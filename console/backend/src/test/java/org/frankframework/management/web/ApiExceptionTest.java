@@ -12,13 +12,11 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.frankframework.management.web.ApiException;
+import org.frankframework.core.IbisException;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import org.frankframework.core.IbisException;
 
 public class ApiExceptionTest {
 

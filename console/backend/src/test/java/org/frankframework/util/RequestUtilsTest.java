@@ -15,11 +15,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.frankframework.management.web.ApiException;
 import org.apache.cxf.jaxrs.ext.multipart.Attachment;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.jaxrs.ext.multipart.MultipartBody;
-import org.frankframework.util.RequestUtils;
+import org.frankframework.management.web.ApiException;
 import org.junit.jupiter.api.Test;
 
 public class RequestUtilsTest {

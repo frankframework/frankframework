@@ -6,13 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.Method;
 
-import org.frankframework.util.ClassUtils;
+import org.frankframework.core.INamedObject;
 import org.junit.jupiter.api.Test;
 
 import lombok.Getter;
 import lombok.Setter;
-
-import org.frankframework.core.INamedObject;
 
 public class ClassUtilsTest {
 
