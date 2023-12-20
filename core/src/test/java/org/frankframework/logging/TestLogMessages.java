@@ -228,7 +228,7 @@ public class TestLogMessages {
 	public void testChangeLogLevel() {
 		TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build();
 		TestAppender.addToRootLogger(appender);
-		String rootLoggerName = LogUtil.getLogger(this).getName(); //For tests, we use the `nl.nn` logger instead of the rootlogger
+		String rootLoggerName = LogUtil.getLogger(this).getName(); //For tests, we use the `org.frankframework` logger instead of the rootlogger
 
 		try {
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);

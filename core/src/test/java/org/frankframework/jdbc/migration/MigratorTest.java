@@ -173,7 +173,7 @@ public class MigratorTest extends TransactionManagerTestBase {
 			assertTrue(appender.contains("Successfully acquired change log lock")); //Validate Liquibase logs on INFO level
 
 			Configurator.setRootLevel(Level.DEBUG); //Capture all loggers (at debug level)
-			Configurator.setLevel("nl.nn", Level.WARN); //Exclude Frank!Framework loggers
+			Configurator.setLevel("org.frankframework", Level.WARN); //Exclude Frank!Framework loggers
 			Configurator.setLevel("liquibase", Level.WARN); //Set all Liquibase loggers to WARN
 			appender.clearLogs();
 
