@@ -342,7 +342,7 @@
 	</xsl:template>
 
 	<xsl:template match="pipe[ @className='org.frankframework.ftp.FtpFileRetrieverPipe'
-							or @className='org.frankframework.tibco.extensions.SendTibcoMessage'
+							or @className='org.frankframework.extensions.tibco.SendTibcoMessage'
 							or @className='org.frankframework.ldap.LdapFindMemberPipe'
 							or @className='org.frankframework.ldap.LdapFindGroupMembershipsPipe']">
 		<xsl:element name="pipe">
