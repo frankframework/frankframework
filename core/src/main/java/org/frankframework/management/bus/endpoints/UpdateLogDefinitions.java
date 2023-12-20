@@ -31,15 +31,6 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.spi.StandardLevel;
-import org.frankframework.management.bus.TopicSelector;
-import org.springframework.messaging.Message;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-import lombok.Getter;
-import lombok.Setter;
-
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -48,14 +39,22 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.EmptyResponseMessage;
 import org.frankframework.management.bus.JsonResponseMessage;
+import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.util.LogUtil;
+import org.springframework.messaging.Message;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.LOG_DEFINITIONS)
 public class UpdateLogDefinitions {
 	private Logger log = LogUtil.getLogger(this);
 
-	private static final String FF_PACKAGE_PREFIX = "nl.nn.adapterframework";
+	private static final String FF_PACKAGE_PREFIX = "org.frankframework";
 
 	@ActionSelector(BusAction.GET)
 	public Message<String> getLoggersAndDefinitions(Message<?> message) {
