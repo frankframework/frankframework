@@ -6,17 +6,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.hamcrest.core.StringEndsWith;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
+import org.hamcrest.core.StringEndsWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("deprecation") //Part of the tests!
 public class PipeLineTest {

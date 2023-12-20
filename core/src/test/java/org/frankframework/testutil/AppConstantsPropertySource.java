@@ -2,10 +2,9 @@ package org.frankframework.testutil;
 
 import java.util.Properties;
 
-import org.springframework.beans.factory.BeanClassLoaderAware;
-
 import org.frankframework.lifecycle.CustomPropertySourcePostProcessor;
 import org.frankframework.util.AppConstants;
+import org.springframework.beans.factory.BeanClassLoaderAware;
 
 public class AppConstantsPropertySource extends CustomPropertySourcePostProcessor implements BeanClassLoaderAware {
 	private ClassLoader classLoader;

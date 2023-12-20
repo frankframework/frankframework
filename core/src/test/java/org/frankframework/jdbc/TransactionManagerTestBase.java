@@ -8,6 +8,9 @@ import java.util.List;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.jta.IThreadConnectableTransactionManager;
+import org.frankframework.jta.SpringTxManagerProxy;
+import org.frankframework.testutil.TransactionManagerType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -15,10 +18,6 @@ import org.junit.rules.Timeout;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
-
-import org.frankframework.jta.IThreadConnectableTransactionManager;
-import org.frankframework.jta.SpringTxManagerProxy;
-import org.frankframework.testutil.TransactionManagerType;
 
 public abstract class TransactionManagerTestBase extends JdbcTestBase {
 

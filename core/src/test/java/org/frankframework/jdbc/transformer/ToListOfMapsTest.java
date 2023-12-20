@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.frankframework.stream.FileMessage;
+import org.frankframework.testutil.TestFileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,9 +16,6 @@ import org.junit.runners.Parameterized;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.frankframework.stream.FileMessage;
-import org.frankframework.testutil.TestFileUtils;
 
 @RunWith(Parameterized.class)
 public class ToListOfMapsTest {

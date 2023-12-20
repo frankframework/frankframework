@@ -8,17 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandlingException;
-
-import lombok.Getter;
-import lombok.Setter;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusException;
@@ -42,6 +31,16 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public class TestMonitoring extends BusTestBase {
 	private static final String TEST_MONITOR_NAME = "TestMonitor";

@@ -10,13 +10,6 @@ import java.net.URL;
 
 import javax.xml.validation.ValidatorHandler;
 
-import org.junit.jupiter.api.Test;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationDigester;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -28,6 +21,12 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.PropertyLoader;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 public class ConfigurationDigesterTest {
 	private static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";

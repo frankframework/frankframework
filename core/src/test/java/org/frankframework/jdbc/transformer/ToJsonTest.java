@@ -6,14 +6,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.frankframework.stream.FileMessage;
+import org.frankframework.testutil.TestFileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.xml.sax.SAXException;
-
-import org.frankframework.stream.FileMessage;
-import org.frankframework.testutil.TestFileUtils;
 
 @RunWith(Parameterized.class)
 public class ToJsonTest {

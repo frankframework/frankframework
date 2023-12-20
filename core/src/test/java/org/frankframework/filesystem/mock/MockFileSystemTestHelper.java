@@ -7,10 +7,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 
+import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-
-import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
 
 public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystemTestHelperFullControl {
 

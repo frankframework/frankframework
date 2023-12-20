@@ -9,11 +9,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -29,6 +24,10 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.JavaxXmlValidator;
 import org.frankframework.validation.XercesXmlValidator;
 import org.frankframework.validation.XmlValidatorTestBase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * @author Michiel Meeuwissen

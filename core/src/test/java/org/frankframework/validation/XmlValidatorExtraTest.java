@@ -1,5 +1,12 @@
 package org.frankframework.validation;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
+import java.util.Arrays;
+import java.util.Collection;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
@@ -8,13 +15,6 @@ import org.frankframework.testutil.TestFileUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import java.util.Arrays;
-import java.util.Collection;
-
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 @RunWith(Parameterized.class)
 public class XmlValidatorExtraTest extends PipeTestBase<XmlValidator> {

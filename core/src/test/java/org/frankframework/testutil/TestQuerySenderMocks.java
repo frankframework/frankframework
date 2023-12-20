@@ -6,11 +6,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import org.frankframework.testutil.mock.FixedQuerySenderMock;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.testutil.mock.FixedQuerySenderMock;
 import org.frankframework.util.SpringUtils;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test mocked/stubbed ResultSets

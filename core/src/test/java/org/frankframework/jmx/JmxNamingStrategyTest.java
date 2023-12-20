@@ -6,13 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import javax.management.ObjectName;
 
-import org.frankframework.jmx.JmxNamingStrategy;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IAdapter;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class JmxNamingStrategyTest {
 	private JmxNamingStrategy namingStrategy;

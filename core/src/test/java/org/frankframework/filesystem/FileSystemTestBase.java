@@ -11,7 +11,6 @@ import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
-import org.frankframework.filesystem.FileSystemException;
 
 public abstract class FileSystemTestBase extends ConfiguredTestBase {
 

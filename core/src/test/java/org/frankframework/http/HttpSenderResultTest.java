@@ -34,14 +34,13 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.HttpSenderBase.HttpMethod;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 public class HttpSenderResultTest extends Mockito {
 

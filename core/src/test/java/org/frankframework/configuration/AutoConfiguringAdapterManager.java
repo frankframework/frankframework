@@ -1,7 +1,5 @@
 package org.frankframework.configuration;
 
-import org.frankframework.configuration.AdapterManager;
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 
 /**

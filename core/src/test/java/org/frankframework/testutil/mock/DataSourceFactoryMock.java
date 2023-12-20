@@ -9,10 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.mockito.Mockito;
-
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.jndi.JndiDataSourceFactory;
+import org.mockito.Mockito;
 
 public class DataSourceFactoryMock implements IDataSourceFactory {
 	private final Map<String, DataSource> objects = new ConcurrentHashMap<>();

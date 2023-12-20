@@ -9,7 +9,10 @@ import javax.jms.BytesMessage;
 import javax.jms.TextMessage;
 import javax.xml.soap.SOAPConstants;
 
-import org.frankframework.jms.JMSFacade;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.soap.SoapWrapper;
+import org.frankframework.stream.Message;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,11 +20,6 @@ import org.junit.jupiter.api.Test;
 
 import com.mockrunner.mock.jms.MockBytesMessage;
 import com.mockrunner.mock.jms.MockTextMessage;
-
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.soap.SoapWrapper;
-import org.frankframework.stream.Message;
 
 class JMSFacadeTest {
 

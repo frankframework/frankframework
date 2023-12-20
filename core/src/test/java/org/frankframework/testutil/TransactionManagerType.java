@@ -13,6 +13,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
+import org.frankframework.jndi.JndiDataSourceFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -20,7 +21,6 @@ import org.springframework.core.env.StandardEnvironment;
 
 import bitronix.tm.TransactionManagerServices;
 import lombok.extern.log4j.Log4j2;
-import org.frankframework.jndi.JndiDataSourceFactory;
 
 @Log4j2
 public enum TransactionManagerType {

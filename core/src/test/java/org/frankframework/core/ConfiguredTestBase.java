@@ -1,15 +1,14 @@
 package org.frankframework.core;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.LogUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public abstract class ConfiguredTestBase {
 	protected Logger log = LogUtil.getLogger(this);

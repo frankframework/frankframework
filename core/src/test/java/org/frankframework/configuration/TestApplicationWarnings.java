@@ -3,12 +3,11 @@ package org.frankframework.configuration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.LogUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.util.LogUtil;
 
 public class TestApplicationWarnings {
 	private final Logger log = LogUtil.getLogger(TestApplicationWarnings.class);

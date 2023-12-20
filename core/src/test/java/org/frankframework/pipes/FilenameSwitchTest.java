@@ -4,11 +4,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.hamcrest.Matchers;
-
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 /**

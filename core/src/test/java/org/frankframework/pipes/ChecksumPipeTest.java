@@ -1,7 +1,5 @@
 package org.frankframework.pipes;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -14,6 +12,7 @@ import org.frankframework.pipes.ChecksumPipe.ChecksumGenerator;
 import org.frankframework.pipes.ChecksumPipe.ChecksumType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
+import org.junit.jupiter.api.Test;
 
 public class ChecksumPipeTest extends PipeTestBase<ChecksumPipe> {
 

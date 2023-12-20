@@ -3,16 +3,15 @@ package org.frankframework.filesystem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.senders.SenderSeries;
 import org.frankframework.stream.Message;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public abstract class ForEachAttachmentPipeTest<P extends ForEachAttachmentPipe<F, A, FS>, F, A, FS extends IWithAttachments<F,A>> extends HelperedFileSystemTestBase {
 

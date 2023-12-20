@@ -9,14 +9,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.frankframework.http.HttpSender;
+import org.frankframework.util.CredentialFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import com.nimbusds.oauth2.sdk.Scope;
-
-import org.frankframework.http.HttpSender;
-import org.frankframework.util.CredentialFactory;
 
 public class OAuthAccessTokenManagerTest {
 

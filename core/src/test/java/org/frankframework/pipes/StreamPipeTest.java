@@ -9,15 +9,14 @@ import java.net.URL;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockMultipartHttpServletRequest;
-
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.ClassLoaderUtils;
+import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartHttpServletRequest;
 
 public class StreamPipeTest extends PipeTestBase<StreamPipe> {
 

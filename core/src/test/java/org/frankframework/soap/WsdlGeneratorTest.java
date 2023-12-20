@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
@@ -19,6 +17,7 @@ import org.frankframework.pipes.XmlValidator;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
+import org.junit.jupiter.api.Test;
 
 public class WsdlGeneratorTest {
 

@@ -5,13 +5,12 @@ import java.io.IOException;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
-import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
 
 public class XpathTest extends FunctionalTransformerPoolTestBase {
 

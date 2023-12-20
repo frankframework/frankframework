@@ -14,12 +14,11 @@ import java.nio.file.Path;
 import java.util.Date;
 import java.util.List;
 
+import org.frankframework.filesystem.FileNotFoundException;
+import org.frankframework.testutil.TestAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import org.frankframework.filesystem.FileNotFoundException;
-import org.frankframework.testutil.TestAssertions;
 
 public class FileUtilsTest {
 

@@ -2,7 +2,6 @@ package org.frankframework.align.content;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.frankframework.align.content.JsonElementContainer;
 import org.junit.jupiter.api.Test;
 
 

@@ -19,10 +19,6 @@ import java.util.UUID;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 
-import org.junit.jupiter.api.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.core.ParameterException;
@@ -43,6 +39,9 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.XmlUtils;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 public class ParameterTest {
 

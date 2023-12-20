@@ -11,7 +11,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
-
 import org.junit.jupiter.api.Test;
 
 public class CollectorPipeTest extends PipeTestBase<CollectorPipeBase<TestCollector, TestCollectorPart>> {

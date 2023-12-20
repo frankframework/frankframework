@@ -10,13 +10,10 @@ import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.frankframework.collection.TestCollector;
-import org.frankframework.collection.TestCollectorPart;
-import org.junit.jupiter.api.Test;
-import org.springframework.util.MimeType;
-
 import org.frankframework.collection.Collection;
 import org.frankframework.collection.CollectorPipeBase.Action;
+import org.frankframework.collection.TestCollector;
+import org.frankframework.collection.TestCollectorPart;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -26,6 +23,8 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.StreamUtil;
+import org.junit.jupiter.api.Test;
+import org.springframework.util.MimeType;
 
 public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 

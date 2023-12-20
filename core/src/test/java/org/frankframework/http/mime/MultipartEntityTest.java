@@ -11,15 +11,14 @@ import java.nio.charset.Charset;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
-
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 public class MultipartEntityTest {
 	private static final String FORMDATA_BOUNDARY = "multipart/form-data; boundary=test-boundary";

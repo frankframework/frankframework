@@ -1,11 +1,10 @@
 package org.frankframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
-
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * PutInSession Tester.

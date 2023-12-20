@@ -11,14 +11,10 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Date;
 
-import org.frankframework.dbms.Dbms;
-import org.frankframework.dbms.JdbcException;
-import org.frankframework.util.DbmsUtil;
-import org.junit.Before;
-import org.junit.Test;
-
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
+import org.frankframework.dbms.Dbms;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.JdbcTestBase;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
 import org.frankframework.pipes.MessageSendingPipe;
@@ -26,8 +22,11 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.job.CleanupDatabaseJob;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.DbmsUtil;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.Locker;
+import org.junit.Before;
+import org.junit.Test;
 
 public class CleanupDatabaseJobTest extends JdbcTestBase {
 

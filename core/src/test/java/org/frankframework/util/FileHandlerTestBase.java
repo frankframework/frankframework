@@ -16,19 +16,18 @@ import java.io.FileWriter;
 import java.net.URL;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.testutil.MessageTestUtils;
-import org.frankframework.testutil.TestFileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.filesystem.IFileHandler;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.MessageTestUtils;
+import org.frankframework.testutil.TestFileUtils;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 public abstract class FileHandlerTestBase {
 

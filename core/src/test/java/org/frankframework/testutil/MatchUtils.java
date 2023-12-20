@@ -18,12 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.custommonkey.xmlunit.Diff;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
-import jakarta.json.Json;
-import jakarta.json.JsonStructure;
-
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
@@ -31,6 +25,11 @@ import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.NamespaceRemovingFilter;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.XmlWriter;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
 
 public class MatchUtils {
 

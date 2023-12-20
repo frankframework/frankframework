@@ -1,11 +1,10 @@
 package org.frankframework.filesystem;
 
 import org.apache.sshd.server.SshServer;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-
 import org.frankframework.ftp.SftpFileRef;
 import org.frankframework.senders.SftpFileSystemSender;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public class SftpFileSystemSenderTest extends FileSystemSenderTest<SftpFileSystemSender, SftpFileRef, SftpFileSystem> {
 

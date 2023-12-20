@@ -10,19 +10,17 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.mockito.Mockito;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.jdbc.DirectQuerySender;
-
-import org.frankframework.dbms.JdbcException;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.stream.Message;
+import org.mockito.Mockito;
 
 /**
  * Enables the ability to provide a mockable DirectQuerySender. In some places a new QuerySender is created to execute (custom) statements.

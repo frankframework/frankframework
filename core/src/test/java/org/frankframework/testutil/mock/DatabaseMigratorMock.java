@@ -5,10 +5,8 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 
 import org.frankframework.core.Resource;
-
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.migration.DatabaseMigratorBase;
-
 import org.frankframework.util.StreamUtil;
 
 public class DatabaseMigratorMock extends DatabaseMigratorBase {

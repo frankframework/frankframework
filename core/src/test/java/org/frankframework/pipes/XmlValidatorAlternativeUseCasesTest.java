@@ -5,13 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 
 import org.frankframework.configuration.ConfigurationException;
-
-import org.junit.jupiter.api.Test;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.ValidatorTestBase;
+import org.junit.jupiter.api.Test;
 
 public class XmlValidatorAlternativeUseCasesTest extends PipeTestBase<XmlValidator> {
 

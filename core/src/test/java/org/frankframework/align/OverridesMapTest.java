@@ -2,8 +2,6 @@ package org.frankframework.align;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.frankframework.align.AlignmentContext;
-import org.frankframework.align.OverridesMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

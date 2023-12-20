@@ -2,9 +2,8 @@ package org.frankframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.IbisContext;
+import org.junit.jupiter.api.Test;
 
 public class SpringConfigurationXmlPropertyResolverTest {
 

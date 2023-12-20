@@ -16,25 +16,24 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.zip.DeflaterInputStream;
 
-import org.frankframework.dbms.JdbcException;
-import org.frankframework.util.DbmsUtil;
-import org.frankframework.util.StreamUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.DbmsUtil;
 import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.StreamUtil;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSetIteratingPipe> {
 

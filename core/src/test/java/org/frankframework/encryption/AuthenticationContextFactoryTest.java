@@ -9,9 +9,8 @@ import java.security.UnrecoverableKeyException;
 
 import javax.net.ssl.SSLContext;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.ConfigurationException;
+import org.junit.jupiter.api.Test;
 
 public class AuthenticationContextFactoryTest {
 

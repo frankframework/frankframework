@@ -45,13 +45,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SerializationTester;
@@ -61,6 +54,12 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class MessageTest {
 	protected Logger log = LogUtil.getLogger(this);

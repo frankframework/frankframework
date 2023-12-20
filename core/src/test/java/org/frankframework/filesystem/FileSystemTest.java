@@ -1,9 +1,9 @@
 package org.frankframework.filesystem;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.StringEndsWith.endsWith;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -16,10 +16,9 @@ import java.io.PrintWriter;
 import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
+import org.frankframework.stream.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.frankframework.stream.Message;
 
 public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> extends HelperedBasicFileSystemTest<F,FS> {
 

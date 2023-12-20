@@ -3,16 +3,15 @@ package org.frankframework.http.rest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.junit.Rule;
-import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.threading.IsolatedThread;
 import org.frankframework.testutil.threading.RunInThreadRule;
+import org.junit.Rule;
+import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 public class OpenApiTest extends OpenApiTestBase {
 

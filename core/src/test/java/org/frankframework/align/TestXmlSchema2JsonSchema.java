@@ -9,18 +9,17 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.core.PipeForward;
+import org.frankframework.pipes.Json2XmlValidator;
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.util.Misc;
+import org.frankframework.util.StreamUtil;
 import org.leadpony.justify.api.JsonSchema;
 import org.leadpony.justify.api.JsonValidationService;
 import org.leadpony.justify.api.ProblemHandler;
 
 import jakarta.json.JsonStructure;
 import jakarta.json.stream.JsonParser;
-
-import org.frankframework.core.PipeForward;
-import org.frankframework.pipes.Json2XmlValidator;
-import org.frankframework.testutil.MatchUtils;
-import org.frankframework.util.Misc;
-import org.frankframework.util.StreamUtil;
 
 /*
  * @see: https://github.com/networknt/json-schema-validator

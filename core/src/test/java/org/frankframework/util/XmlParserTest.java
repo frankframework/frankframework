@@ -3,18 +3,17 @@ package org.frankframework.util;
 import java.io.IOException;
 import java.net.URL;
 
+import org.frankframework.core.Resource;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.xml.XmlWriter;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import org.frankframework.core.Resource;
-import org.frankframework.stream.Message;
-import org.frankframework.xml.XmlWriter;
 
 @TestMethodOrder(MethodName.class)
 public class XmlParserTest {

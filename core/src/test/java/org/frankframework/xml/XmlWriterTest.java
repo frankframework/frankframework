@@ -8,12 +8,11 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.XmlUtils;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
-
-import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.XmlUtils;
 
 public class XmlWriterTest {
 

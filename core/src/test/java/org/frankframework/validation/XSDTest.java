@@ -7,17 +7,16 @@ import java.io.ByteArrayOutputStream;
 
 import javax.xml.stream.XMLStreamWriter;
 
-import org.frankframework.testutil.MatchUtils;
-import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.testutil.TestScopeProvider;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.soap.WsdlGeneratorUtils;
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.validation.xsd.ResourceXsd;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class XSDTest {
 

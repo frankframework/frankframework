@@ -6,11 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
@@ -19,6 +14,10 @@ import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.senders.JavascriptSender.JavaScriptEngines;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {

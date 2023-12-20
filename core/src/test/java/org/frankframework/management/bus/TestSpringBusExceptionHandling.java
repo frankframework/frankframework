@@ -5,10 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusException;
-import org.frankframework.management.bus.BusTopic;
-
+import org.frankframework.management.bus.BusTestEndpoints.ExceptionTestTypes;
+import org.frankframework.stream.StreamingException;
+import org.frankframework.testutil.SpringRootInitializer;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,10 +17,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import org.frankframework.management.bus.BusTestEndpoints.ExceptionTestTypes;
-import org.frankframework.stream.StreamingException;
-import org.frankframework.testutil.SpringRootInitializer;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(initializers = {SpringRootInitializer.class})

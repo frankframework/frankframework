@@ -3,12 +3,11 @@ package org.frankframework.xslt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.frankframework.core.PipeRunResult;
-
-import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
 import org.frankframework.pipes.XsltPipe;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
+import org.junit.jupiter.api.Test;
 
 public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 

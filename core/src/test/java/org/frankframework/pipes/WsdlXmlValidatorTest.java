@@ -10,11 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeForward;
@@ -28,6 +23,10 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.ValidatorTestBase;
 import org.frankframework.validation.XmlValidatorContentHandler;
 import org.frankframework.validation.XmlValidatorException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 
 /**

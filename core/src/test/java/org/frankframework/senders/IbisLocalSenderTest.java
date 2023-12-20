@@ -15,12 +15,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
@@ -44,6 +38,11 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.testutil.VirtualInputStream;
 import org.frankframework.util.RunState;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class IbisLocalSenderTest {
 	public static final String SERVICE_NAME = "TEST-SERVICE";

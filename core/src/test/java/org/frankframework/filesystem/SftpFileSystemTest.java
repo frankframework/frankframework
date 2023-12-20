@@ -13,11 +13,10 @@ import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.hostbased.StaticHostBasedAuthenticator;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.sftp.server.SftpSubsystemFactory;
+import org.frankframework.ftp.SftpFileRef;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.frankframework.ftp.SftpFileRef;
 
 /**
  * This test class is created to test both SFtpFileSystem and SFtpFileSystemSender classes.

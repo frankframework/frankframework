@@ -7,12 +7,13 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.bus.LocalGateway;
-import org.frankframework.management.bus.OutboundGateway;
-
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.testutil.QuerySenderPostProcessor;
+import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.mock.FixedQuerySenderMock;
+import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
+import org.frankframework.util.LogUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -20,13 +21,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
-
-import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.testutil.QuerySenderPostProcessor;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
-import org.frankframework.util.LogUtil;
 
 public class BusTestBase {
 

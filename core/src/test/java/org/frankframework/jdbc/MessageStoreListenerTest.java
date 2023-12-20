@@ -9,22 +9,20 @@ import static org.mockito.Mockito.doAnswer;
 
 import java.util.Date;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.SenderException;
-
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 public class MessageStoreListenerTest extends JdbcTestBase {
 

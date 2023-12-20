@@ -2,8 +2,6 @@ package org.frankframework.soap;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -13,6 +11,7 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.ValidatorTestBase;
+import org.junit.jupiter.api.Test;
 
 class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 

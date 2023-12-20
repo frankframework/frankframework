@@ -10,17 +10,16 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 import org.apache.logging.log4j.Level;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeRunResult;
+import org.frankframework.pipes.FixedForwardPipe;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestFileUtils;
 import org.junit.AssumptionViolatedException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeRunResult;
-import org.frankframework.pipes.FixedForwardPipe;
-import org.frankframework.stream.Message;
 
 public abstract class XsltErrorTestBase<P extends FixedForwardPipe> extends XsltTestBase<P> {
 

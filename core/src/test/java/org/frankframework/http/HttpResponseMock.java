@@ -40,12 +40,12 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
+import org.frankframework.http.mime.MultipartEntity;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import lombok.Getter;
-import org.frankframework.http.mime.MultipartEntity;
 
 public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	private final String lineSeparator = System.getProperty("line.separator");

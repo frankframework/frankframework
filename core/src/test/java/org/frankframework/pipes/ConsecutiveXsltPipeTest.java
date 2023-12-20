@@ -11,7 +11,6 @@ import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
-
 import org.junit.jupiter.api.Test;
 
 public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {

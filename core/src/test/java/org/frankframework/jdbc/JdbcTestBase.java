@@ -17,10 +17,18 @@ import java.util.Properties;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.frankframework.dbms.DbmsSupportFactory;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.dbms.DbmsSupportFactory;
+import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
+import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.testutil.URLDataSourceFactory;
+import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.LogUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,16 +46,6 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.Getter;
-import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
-
-import org.frankframework.dbms.IDbmsSupport;
-import org.frankframework.dbms.JdbcException;
-import org.frankframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.TransactionManagerType;
-import org.frankframework.testutil.URLDataSourceFactory;
-import org.frankframework.util.JdbcUtil;
-import org.frankframework.util.LogUtil;
 
 @RunWith(Parameterized.class)
 public abstract class JdbcTestBase {

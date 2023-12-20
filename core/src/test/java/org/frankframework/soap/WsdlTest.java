@@ -16,12 +16,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IValidator;
@@ -35,6 +29,11 @@ import org.frankframework.util.XmlUtils;
 import org.frankframework.validation.AbstractXmlValidator;
 import org.frankframework.validation.JavaxXmlValidator;
 import org.frankframework.validation.XercesXmlValidator;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 
 /**

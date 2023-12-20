@@ -4,13 +4,11 @@ import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.hamcrest.Matchers;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.pipes.CsvParserPipe.HeaderCase;
-
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {

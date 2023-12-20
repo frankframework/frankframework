@@ -12,6 +12,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Collection;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ISender;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
+import org.frankframework.core.TimeoutException;
+import org.frankframework.stream.Message;
+import org.frankframework.util.XmlUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,14 +29,6 @@ import org.w3c.dom.Node;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ISender;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.SenderResult;
-import org.frankframework.core.TimeoutException;
-import org.frankframework.stream.Message;
-import org.frankframework.util.XmlUtils;
 
 public class ShadowSenderTest extends ParallelSendersTest {
 

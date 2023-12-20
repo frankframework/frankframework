@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 
 import org.frankframework.core.PipeForward;
-
-import org.junit.jupiter.api.Test;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -15,6 +13,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 import org.frankframework.validation.ValidatorTestBase;
+import org.junit.jupiter.api.Test;
 
 public class Json2WsdlXmlValidatorTest extends ValidatorTestBase {
 

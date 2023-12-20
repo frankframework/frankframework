@@ -15,8 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 
-import org.junit.Test;
-
 import org.frankframework.core.SenderException;
 import org.frankframework.functional.ThrowingConsumer;
 import org.frankframework.parameters.Parameter;
@@ -25,6 +23,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
+import org.junit.Test;
 
 public class FixedQuerySenderTest extends JdbcSenderTestBase<FixedQuerySender> {
 

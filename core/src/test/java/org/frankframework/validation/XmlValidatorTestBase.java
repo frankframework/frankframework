@@ -6,11 +6,10 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.fail;
 
 import org.apache.xerces.xni.XNIException;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeStartException;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * @author Gerrit van Brakel / Michiel Meeuwissen

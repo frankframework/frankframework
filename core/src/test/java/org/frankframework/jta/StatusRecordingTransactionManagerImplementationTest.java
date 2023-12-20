@@ -13,6 +13,17 @@ import java.util.Collection;
 import javax.naming.NamingException;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.TimeoutException;
+import org.frankframework.jdbc.DirectQuerySender;
+import org.frankframework.jdbc.TransactionManagerTestBase;
+import org.frankframework.jta.xa.XaDatasourceCommitStopper;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.ConcurrentActionTester;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.testutil.URLDataSourceFactory;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,17 +37,6 @@ import com.arjuna.ats.arjuna.common.arjPropertyManager;
 
 import bitronix.tm.TransactionManagerServices;
 import lombok.Getter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
-import org.frankframework.jdbc.DirectQuerySender;
-import org.frankframework.jdbc.TransactionManagerTestBase;
-import org.frankframework.jta.xa.XaDatasourceCommitStopper;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.ConcurrentActionTester;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.TransactionManagerType;
-import org.frankframework.testutil.URLDataSourceFactory;
 
 @RunWith(Parameterized.class)
 public class StatusRecordingTransactionManagerImplementationTest<S extends StatusRecordingTransactionManager> extends StatusRecordingTransactionManagerTestBase<S> {

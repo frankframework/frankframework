@@ -5,9 +5,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
@@ -17,6 +14,8 @@ import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
 
 public class XmlIfTest extends PipeTestBase<XmlIf>{
 

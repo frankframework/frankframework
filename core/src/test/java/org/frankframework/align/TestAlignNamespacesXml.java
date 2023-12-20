@@ -8,12 +8,11 @@ import javax.xml.transform.TransformerException;
 import javax.xml.validation.ValidatorHandler;
 
 import org.apache.xerces.xs.XSModel;
-import org.xml.sax.SAXException;
-
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
+import org.xml.sax.SAXException;
 
 /**
  * @author Gerrit van Brakel

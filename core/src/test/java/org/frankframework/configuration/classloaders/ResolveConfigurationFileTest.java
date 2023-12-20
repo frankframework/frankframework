@@ -7,16 +7,15 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.IbisContext;
+import org.frankframework.util.AppConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Mockito;
-
-import org.frankframework.configuration.ConfigurationUtils;
-import org.frankframework.configuration.IbisContext;
-import org.frankframework.util.AppConstants;
 
 @RunWith(Parameterized.class)
 public class ResolveConfigurationFileTest extends Mockito {

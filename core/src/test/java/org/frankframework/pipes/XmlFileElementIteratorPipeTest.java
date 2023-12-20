@@ -4,12 +4,11 @@ import java.io.File;
 import java.net.URL;
 
 import org.frankframework.core.PipeRunResult;
-
-import org.junit.jupiter.api.Test;
 import org.frankframework.senders.XsltSender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
+import org.junit.jupiter.api.Test;
 
 public class XmlFileElementIteratorPipeTest extends PipeTestBase<XmlFileElementIteratorPipe> {
 

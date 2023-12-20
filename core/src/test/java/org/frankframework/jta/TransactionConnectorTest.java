@@ -14,6 +14,10 @@ import javax.transaction.UserTransaction;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.Logger;
+import org.frankframework.jdbc.TransactionManagerTestBase;
+import org.frankframework.task.TimeoutGuard;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.LogUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.transaction.TransactionDefinition;
@@ -23,10 +27,6 @@ import org.springframework.transaction.jta.JtaTransactionObject;
 import bitronix.tm.BitronixTransaction;
 import bitronix.tm.internal.XAResourceManager;
 import bitronix.tm.utils.Uid;
-import org.frankframework.jdbc.TransactionManagerTestBase;
-import org.frankframework.task.TimeoutGuard;
-import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
 
 public class TransactionConnectorTest extends TransactionManagerTestBase {
 	protected static Logger log = LogUtil.getLogger(TransactionConnectorTest.class);

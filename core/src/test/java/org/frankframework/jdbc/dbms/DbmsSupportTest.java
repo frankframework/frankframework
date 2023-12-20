@@ -28,23 +28,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.functional.ThrowingSupplier;
+import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
+import org.frankframework.jdbc.JdbcTestBase;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.DbmsUtil;
+import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.Semaphore;
 import org.frankframework.util.StreamUtil;
 import org.hamcrest.core.StringStartsWith;
 import org.hamcrest.text.IsEmptyString;
 import org.junit.Test;
 
 import lombok.Getter;
-
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
-import org.frankframework.jdbc.JdbcTestBase;
-import org.frankframework.util.JdbcUtil;
-import org.frankframework.util.Semaphore;
 
 public class DbmsSupportTest extends JdbcTestBase {
 	private final boolean testPeekFindsRecordsWhenTheyAreAvailable = true;

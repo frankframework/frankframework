@@ -31,15 +31,13 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.zip.DeflaterOutputStream;
 
+import org.frankframework.core.IMessageBrowsingIteratorItem;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.receivers.RawMessageWrapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.frankframework.core.IMessageBrowsingIteratorItem;
-import org.frankframework.core.PipeLineSession;
-
-import org.frankframework.dbms.JdbcException;
-import org.frankframework.receivers.RawMessageWrapper;
 
 public class JdbcTransactionalStorageTest extends TransactionManagerTestBase {
 

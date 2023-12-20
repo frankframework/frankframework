@@ -1,13 +1,14 @@
 package org.frankframework.monitoring;
 
-import lombok.Getter;
-import lombok.SneakyThrows;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
+
+import lombok.Getter;
+import lombok.SneakyThrows;
 
 class MessageCapturingEchoSender extends EchoSender {
 	private @Getter Message inputMessage;

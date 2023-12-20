@@ -13,6 +13,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.frankframework.core.Adapter;
+import org.frankframework.monitoring.events.ConsoleMonitorEvent;
+import org.frankframework.monitoring.events.FireMonitorEvent;
+import org.frankframework.monitoring.events.MonitorEvent;
+import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.XmlBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,12 +27,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import lombok.Getter;
-import org.frankframework.core.Adapter;
-import org.frankframework.monitoring.events.ConsoleMonitorEvent;
-import org.frankframework.monitoring.events.FireMonitorEvent;
-import org.frankframework.monitoring.events.MonitorEvent;
-import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.XmlBuilder;
 
 public class TriggerTest implements EventThrowing {
 	private static final String EVENT_CODE = "dummy code";

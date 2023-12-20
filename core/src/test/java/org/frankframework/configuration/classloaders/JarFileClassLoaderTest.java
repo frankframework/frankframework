@@ -24,10 +24,9 @@ import java.net.URL;
 import java.util.List;
 import java.util.jar.JarFile;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.TestAppender;
+import org.junit.jupiter.api.Test;
 
 public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<JarFileClassLoader> {
 

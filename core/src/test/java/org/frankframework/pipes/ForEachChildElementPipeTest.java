@@ -14,12 +14,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hamcrest.Matchers;
-import org.hamcrest.core.StringContains;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.Test;
-import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
-
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
@@ -35,6 +29,11 @@ import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.XmlUtils;
+import org.hamcrest.Matchers;
+import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Test;
+import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
 

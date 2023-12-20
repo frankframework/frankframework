@@ -31,12 +31,12 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.NamingException;
 
+import org.frankframework.jms.IConnectionFactoryFactory;
+import org.frankframework.jms.JmsTransactionalStorage;
 import org.mockito.Mockito;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.jms.IConnectionFactoryFactory;
-import org.frankframework.jms.JmsTransactionalStorage;
 
 public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 	private final Map<String, ConnectionFactory> objects = new ConcurrentHashMap<>();

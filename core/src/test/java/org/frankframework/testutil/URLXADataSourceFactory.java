@@ -6,11 +6,10 @@ import javax.sql.XADataSource;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.jta.xa.XaDatasourceCommitStopper;
 import org.mariadb.jdbc.MariaDbDataSource;
 
 import com.ibm.db2.jcc.DB2XADataSource;
-
-import org.frankframework.jta.xa.XaDatasourceCommitStopper;
 
 public abstract class URLXADataSourceFactory extends URLDataSourceFactory {
 

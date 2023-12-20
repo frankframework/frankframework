@@ -11,16 +11,15 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.jar.JarFile;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.frankframework.util.UUIDUtil;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 import org.frankframework.configuration.classloaders.JarFileClassLoader;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.testutil.TestScopeProvider;
+import org.frankframework.util.UUIDUtil;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 public class ClassLoaderEntityResolverTest {
 

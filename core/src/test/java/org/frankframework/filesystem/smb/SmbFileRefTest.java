@@ -2,7 +2,6 @@ package org.frankframework.filesystem.smb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.frankframework.filesystem.smb.SmbFileRef;
 import org.junit.jupiter.api.Test;
 
 public class SmbFileRefTest {

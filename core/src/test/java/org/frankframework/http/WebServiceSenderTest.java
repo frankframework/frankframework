@@ -21,12 +21,11 @@ import static org.mockito.Mockito.spy;
 import java.io.ByteArrayInputStream;
 
 import org.frankframework.core.PipeLineSession;
-
-import org.junit.jupiter.api.Test;
 import org.frankframework.core.SenderException;
 import org.frankframework.http.HttpSenderBase.HttpMethod;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
+import org.junit.jupiter.api.Test;
 
 public class WebServiceSenderTest extends HttpSenderTestBase<WebServiceSender> {
 

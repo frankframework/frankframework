@@ -3,11 +3,9 @@ package org.frankframework.jta.btm;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.frankframework.jta.btm.BtmDataSourceFactory;
+import org.frankframework.util.AppConstants;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-
-import org.frankframework.util.AppConstants;
 
 
 public class BtmDataSourceFactoryTest {

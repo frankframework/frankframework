@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Enumeration;
 
+import org.frankframework.stream.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -14,7 +15,6 @@ import com.icegreen.greenmail.util.ServerSetupTest;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import org.frankframework.stream.Message;
 
 class MailSender2Test extends SenderTestBase<MailSender> {
 

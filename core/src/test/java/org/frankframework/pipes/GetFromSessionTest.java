@@ -1,5 +1,9 @@
 package org.frankframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -15,13 +19,8 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
 import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.util.StreamUtil;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 

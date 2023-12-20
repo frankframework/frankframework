@@ -20,9 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.Date;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.receivers.RawMessageWrapper;
+import org.junit.jupiter.api.Test;
 
 public abstract class FileSystemListenerExtraTest<F,FS extends IWritableFileSystem<F>> extends FileSystemListenerTest<F, FS> {
 

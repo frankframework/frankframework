@@ -1,11 +1,10 @@
 package org.frankframework.pipes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
-
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DelayPipeTest extends PipeTestBase<DelayPipe> {
 

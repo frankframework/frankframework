@@ -20,9 +20,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
@@ -32,6 +29,8 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.StreamUtil;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 	private static final String DUMMY_STRING = "dummyString";

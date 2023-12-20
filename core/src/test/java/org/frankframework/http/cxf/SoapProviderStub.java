@@ -4,11 +4,11 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.SneakyThrows;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
-import org.frankframework.http.cxf.SOAPProviderBase;
+
+import lombok.SneakyThrows;
 
 public class SoapProviderStub extends SOAPProviderBase {
 

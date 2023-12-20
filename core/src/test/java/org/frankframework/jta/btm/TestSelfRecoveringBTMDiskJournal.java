@@ -16,7 +16,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.jdbc.TransactionManagerTestBase;
+import org.frankframework.jta.SpringTxManagerProxy;
+import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.DbmsUtil;
+import org.frankframework.util.JdbcUtil;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
@@ -30,11 +35,6 @@ import bitronix.tm.TransactionManagerServices;
 import bitronix.tm.journal.DiskJournal;
 import bitronix.tm.journal.Journal;
 import bitronix.tm.journal.TransactionLogAppender;
-import org.frankframework.jdbc.TransactionManagerTestBase;
-import org.frankframework.jta.SpringTxManagerProxy;
-import org.frankframework.testutil.TransactionManagerType;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.JdbcUtil;
 
 public class TestSelfRecoveringBTMDiskJournal extends TransactionManagerTestBase {
 

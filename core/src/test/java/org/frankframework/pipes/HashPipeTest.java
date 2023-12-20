@@ -4,14 +4,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.hamcrest.Matchers;
-
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.HashPipe.HashAlgorithm;
 import org.frankframework.pipes.HashPipe.HashEncoding;
-
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 public class HashPipeTest extends PipeTestBase<HashPipe> {

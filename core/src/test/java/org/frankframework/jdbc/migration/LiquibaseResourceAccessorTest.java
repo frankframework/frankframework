@@ -6,13 +6,12 @@ import static org.junit.Assert.assertNotNull;
 import java.net.URI;
 import java.util.List;
 
-import org.frankframework.jdbc.migration.LiquibaseResourceAccessor;
-import org.junit.Test;
-
-import liquibase.resource.ResourceAccessor;
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.core.Resource;
 import org.frankframework.util.ClassLoaderUtils;
+import org.junit.Test;
+
+import liquibase.resource.ResourceAccessor;
 
 public class LiquibaseResourceAccessorTest extends ConfiguredTestBase {
 

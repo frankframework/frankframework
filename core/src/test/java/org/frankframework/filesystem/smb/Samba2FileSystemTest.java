@@ -2,17 +2,16 @@ package org.frankframework.filesystem.smb;
 
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.filesystem.FileSystemTest;
 import org.frankframework.filesystem.IFileSystemTestHelper;
 import org.frankframework.filesystem.LocalFileSystemTestHelper;
 import org.frankframework.filesystem.Samba2FileSystem;
 import org.frankframework.filesystem.Samba2FileSystem.Samba2AuthType;
 import org.frankframework.testutil.junit.LocalFileServer;
-import org.frankframework.testutil.junit.LocalFileSystemMock;
 import org.frankframework.testutil.junit.LocalFileServer.FileSystemType;
+import org.frankframework.testutil.junit.LocalFileSystemMock;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class Samba2FileSystemTest extends FileSystemTest<SmbFileRef, Samba2FileSystem> {
 

@@ -23,6 +23,7 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.util.LogUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.bootstrap.DOMImplementationRegistry;
@@ -37,7 +38,6 @@ import org.xml.sax.XMLReader;
 
 import jakarta.json.Json;
 import jakarta.json.JsonStructure;
-import org.frankframework.util.LogUtil;
 
 public class Utils {
 	private static final Logger LOG = LogUtil.getLogger(Utils.class);

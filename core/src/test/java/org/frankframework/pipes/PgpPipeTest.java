@@ -9,10 +9,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -20,6 +16,9 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.StringUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class PgpPipeTest {
 

@@ -11,13 +11,12 @@ import java.io.PrintWriter;
 import java.net.URL;
 import java.nio.file.Path;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.StreamUtil;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem>{
 

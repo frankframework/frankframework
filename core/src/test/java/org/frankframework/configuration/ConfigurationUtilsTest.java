@@ -14,6 +14,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
+import org.frankframework.configuration.classloaders.DatabaseClassLoader;
+import org.frankframework.configuration.classloaders.DirectoryClassLoader;
+import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.dbms.GenericDbmsSupport;
+import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
+import org.frankframework.testutil.mock.PreparedStatementMock;
+import org.frankframework.util.AppConstants;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,18 +37,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
-
-import org.frankframework.configuration.classloaders.DatabaseClassLoader;
-import org.frankframework.configuration.classloaders.DirectoryClassLoader;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
-import org.frankframework.jdbc.FixedQuerySender;
-
-import org.frankframework.dbms.GenericDbmsSupport;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
-import org.frankframework.testutil.mock.PreparedStatementMock;
-import org.frankframework.util.AppConstants;
 
 public class ConfigurationUtilsTest extends Mockito {
 

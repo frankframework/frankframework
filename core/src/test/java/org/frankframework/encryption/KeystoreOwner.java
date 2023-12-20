@@ -1,7 +1,5 @@
 package org.frankframework.encryption;
 
-import org.frankframework.encryption.HasKeystore;
-import org.frankframework.encryption.KeystoreType;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;

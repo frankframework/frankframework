@@ -3,14 +3,13 @@ package org.frankframework.pipes;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class CompareIntegerPipeTest extends PipeTestBase<CompareIntegerPipe> {
 	@Override

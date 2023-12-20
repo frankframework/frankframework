@@ -11,8 +11,6 @@ import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.TextMessage;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.jms.JMSFacade;
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.management.bus.BusAction;
@@ -21,6 +19,7 @@ import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
+import org.junit.jupiter.api.Test;
 
 public class TestSendJmsMessage extends BusTestBase {
 

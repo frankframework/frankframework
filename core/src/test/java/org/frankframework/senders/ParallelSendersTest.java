@@ -8,8 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -17,6 +15,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
+import org.junit.jupiter.api.Test;
 
 public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 

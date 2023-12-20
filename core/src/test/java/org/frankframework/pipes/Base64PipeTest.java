@@ -26,8 +26,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.codec.binary.Base64InputStream;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -38,6 +36,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.util.StreamUtil;
+import org.junit.jupiter.api.Test;
 
 class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 

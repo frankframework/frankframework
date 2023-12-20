@@ -13,9 +13,14 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.List;
 
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.parameters.Parameter.ParameterType;
+import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
@@ -23,19 +28,13 @@ import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.testutil.ThrowingAfterCloseReader;
 import org.frankframework.testutil.VirtualInputStream;
 import org.frankframework.testutil.VirtualReader;
+import org.frankframework.xml.PrettyPrintFilter;
+import org.frankframework.xml.SaxElementBuilder;
+import org.frankframework.xml.XmlWriter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
-
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.parameters.Parameter.ParameterType;
-import org.frankframework.parameters.ParameterList;
-import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.stream.Message;
-import org.frankframework.xml.PrettyPrintFilter;
-import org.frankframework.xml.SaxElementBuilder;
-import org.frankframework.xml.XmlWriter;
 
 public class JdbcUtilTest {
 	private static final String H2_CONNECTION_STRING = "jdbc:h2:mem:test";

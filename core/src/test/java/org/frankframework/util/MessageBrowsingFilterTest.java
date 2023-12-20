@@ -8,19 +8,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Date;
 
-import org.junit.Before;
-import org.junit.Test;
-
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
-
 import org.frankframework.dbms.Dbms;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
 import org.frankframework.jdbc.TransactionManagerTestBase;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
+import org.junit.Before;
+import org.junit.Test;
 
 public class MessageBrowsingFilterTest extends TransactionManagerTestBase {
 

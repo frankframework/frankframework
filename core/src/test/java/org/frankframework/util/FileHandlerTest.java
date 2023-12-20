@@ -3,10 +3,9 @@ package org.frankframework.util;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.frankframework.filesystem.IFileHandler;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
-import org.frankframework.filesystem.IFileHandler;
 
 @RunWith(value = Parameterized.class)
 public class FileHandlerTest extends FileHandlerTestBase {

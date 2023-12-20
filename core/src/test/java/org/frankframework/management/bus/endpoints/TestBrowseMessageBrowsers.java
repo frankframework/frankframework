@@ -33,13 +33,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import org.springframework.messaging.Message;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IMessageBrowser;
@@ -66,6 +59,12 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.mock.TransactionManagerMock;
 import org.frankframework.util.SpringUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.springframework.messaging.Message;
 
 public class TestBrowseMessageBrowsers extends BusTestBase {
 	private static final String JSON_MESSAGE = "{\"dummy\":1}";

@@ -5,11 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.testutil.MatchUtils;
-import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
-
 import org.frankframework.align.Json2Xml;
 import org.frankframework.align.Xml2Json;
 import org.frankframework.core.PipeForward;
@@ -18,7 +13,11 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.document.DocumentFormat;
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
 
 public class Json2XmlValidatorSmileyTest {
 	private final Logger log = LogUtil.getLogger(this);

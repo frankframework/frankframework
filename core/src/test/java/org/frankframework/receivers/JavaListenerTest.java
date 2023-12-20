@@ -18,10 +18,6 @@ import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.AdapterManager;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -40,6 +36,9 @@ import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.RunState;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class JavaListenerTest {
 	private TestConfiguration configuration;

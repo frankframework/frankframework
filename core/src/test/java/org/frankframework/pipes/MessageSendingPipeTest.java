@@ -4,9 +4,6 @@ import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
@@ -19,6 +16,8 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class MessageSendingPipeTest extends PipeTestBase<MessageSendingPipe> {
 

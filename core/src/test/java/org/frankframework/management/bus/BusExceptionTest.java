@@ -5,14 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
-import org.frankframework.management.bus.BusException;
 import org.apache.logging.log4j.Level;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.testutil.TestAppender;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runners.Parameterized.Parameters;
-
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.testutil.TestAppender;
 
 public class BusExceptionTest {
 

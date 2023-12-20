@@ -5,17 +5,16 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.sql.ResultSet;
 
-import org.frankframework.testutil.mock.FixedQuerySenderMock;
-import org.frankframework.testutil.mock.MockIbisManager;
-import org.springframework.beans.BeansException;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.lifecycle.MessageEventListener;
+import org.frankframework.testutil.mock.FixedQuerySenderMock;
+import org.frankframework.testutil.mock.MockIbisManager;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.SpringUtils;
+import org.springframework.beans.BeansException;
 
 /**
  * Test Configuration utility

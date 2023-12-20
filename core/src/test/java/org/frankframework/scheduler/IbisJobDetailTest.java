@@ -3,14 +3,13 @@ package org.frankframework.scheduler;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.scheduler.job.SendMessageJob;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.Locker;
 import org.frankframework.util.SpringUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class IbisJobDetailTest {
 

@@ -1,13 +1,12 @@
 package org.frankframework.xslt;
 
-import org.frankframework.testutil.TestFileUtils;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.SenderPipe;
 import org.frankframework.senders.XsltSender;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
+import org.junit.jupiter.api.Test;
 
 public class XsltSenderTest extends XsltErrorTestBase<SenderPipe> {
 

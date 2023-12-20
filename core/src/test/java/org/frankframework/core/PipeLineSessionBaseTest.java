@@ -7,14 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.logging.log4j.Logger;
-import org.frankframework.core.PipeLineSession;
+import org.frankframework.stream.Message;
+import org.frankframework.util.LogUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import lombok.ToString;
-import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
 
 public class PipeLineSessionBaseTest {
 	protected Logger log = LogUtil.getLogger(this);

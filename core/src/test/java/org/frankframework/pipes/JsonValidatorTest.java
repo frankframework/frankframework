@@ -8,7 +8,6 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
-
 import org.junit.jupiter.api.Test;
 
 public class JsonValidatorTest extends PipeTestBase<JsonValidator>{

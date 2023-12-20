@@ -1,15 +1,13 @@
 package org.frankframework.pipes;
 
-import org.apache.logging.log4j.ThreadContext;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+import org.apache.logging.log4j.ThreadContext;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
-
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class LogContextPipeTest extends PipeTestBase<LogContextPipe>{
 

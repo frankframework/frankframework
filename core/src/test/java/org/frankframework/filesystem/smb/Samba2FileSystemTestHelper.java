@@ -44,6 +44,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.filesystem.FileSystemException;
+import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.util.LogUtil;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
@@ -64,10 +67,6 @@ import com.hierynomus.smbj.connection.Connection;
 import com.hierynomus.smbj.session.Session;
 import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
-
-import org.frankframework.filesystem.FileSystemException;
-import org.frankframework.filesystem.IFileSystemTestHelper;
-import org.frankframework.util.LogUtil;
 
 /**
  *

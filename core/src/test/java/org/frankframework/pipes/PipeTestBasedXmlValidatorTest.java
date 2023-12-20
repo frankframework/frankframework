@@ -5,7 +5,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.frankframework.core.PipeForward;
-
 import org.junit.jupiter.api.Test;
 
 public class PipeTestBasedXmlValidatorTest extends PipeTestBase<XmlValidator> {

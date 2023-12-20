@@ -35,12 +35,11 @@ import java.nio.file.Path;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.testutil.SerializationTester;
 import org.frankframework.util.FileUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 public class SerializableFileReferenceTest {
 	private final Logger log = LogManager.getLogger(SerializableFileReferenceTest.class);

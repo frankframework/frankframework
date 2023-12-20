@@ -8,11 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.frankframework.parameters.Parameter;
-import org.frankframework.parameters.ParameterList;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.ConfigurationException;
+import org.junit.jupiter.api.Test;
 
 public class ParameterListTest {
 

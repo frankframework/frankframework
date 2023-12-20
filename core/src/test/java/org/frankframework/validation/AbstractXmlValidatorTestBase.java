@@ -4,13 +4,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.frankframework.testutil.TestFileUtils;
-import org.junit.runners.Parameterized;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
+import org.junit.runners.Parameterized;
 
 /**
  * @author Gerrit van Brakel

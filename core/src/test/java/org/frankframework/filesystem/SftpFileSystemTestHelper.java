@@ -4,15 +4,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Vector;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.ChannelSftp.LsEntry;
-import com.jcraft.jsch.SftpException;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.ftp.SftpSession;
 import org.frankframework.util.LogUtil;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
+import com.jcraft.jsch.SftpException;
 
 public class SftpFileSystemTestHelper implements IFileSystemTestHelper{
 

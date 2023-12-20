@@ -10,8 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.jms.JmsRealm;
-import org.frankframework.jms.JmsRealmFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

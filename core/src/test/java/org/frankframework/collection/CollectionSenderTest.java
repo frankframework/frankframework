@@ -2,10 +2,9 @@ package org.frankframework.collection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.senders.SenderTestBase;
+import org.junit.jupiter.api.Test;
 
 class CollectionSenderTest extends SenderTestBase<CollectorSenderBase<TestCollector, TestCollectorPart>> {
 

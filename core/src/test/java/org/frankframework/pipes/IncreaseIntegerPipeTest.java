@@ -5,12 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.hamcrest.Matchers;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
-
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 /**

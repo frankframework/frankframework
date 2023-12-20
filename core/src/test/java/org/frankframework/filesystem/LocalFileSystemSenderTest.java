@@ -10,13 +10,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.LocalFileSystemSender;
 import org.frankframework.stream.Message;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileSystemSenderTest extends FileSystemSenderTest<LocalFileSystemSender, Path, LocalFileSystem>{
 

@@ -32,6 +32,9 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import org.frankframework.core.IForwardTarget;
+import org.frankframework.stream.json.JsonUtils;
+import org.frankframework.util.XmlUtils;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
@@ -39,10 +42,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
-
-import org.frankframework.core.IForwardTarget;
-import org.frankframework.stream.json.JsonUtils;
-import org.frankframework.util.XmlUtils;
 
 @TestMethodOrder(MethodName.class)
 public class MessageOutputStreamTest {

@@ -23,13 +23,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.input.ReaderInputStream;
-import org.frankframework.core.PipeLineSession;
+import org.frankframework.stream.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-
-import org.frankframework.stream.Message;
 
 /**
  * Lots of bugs tests, focus on getMessage(String)

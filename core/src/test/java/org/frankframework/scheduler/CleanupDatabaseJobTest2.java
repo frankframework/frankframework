@@ -11,14 +11,11 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Date;
 
+import org.frankframework.core.Adapter;
+import org.frankframework.core.PipeLine;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
-import org.frankframework.util.DbmsUtil;
-import org.junit.jupiter.api.BeforeEach;
-
-import org.frankframework.core.Adapter;
-import org.frankframework.core.PipeLine;
 import org.frankframework.jdbc.JdbcTransactionalStorage;
 import org.frankframework.pipes.MessageSendingPipe;
 import org.frankframework.receivers.Receiver;
@@ -30,8 +27,10 @@ import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.DbmsUtil;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.Locker;
+import org.junit.jupiter.api.BeforeEach;
 
 @WithLiquibase(tableName = "IBISLOCK") //Lock table must exist
 @WithLiquibase(tableName = CleanupDatabaseJobTest2.txStorageTableName) //Actual JdbcTXStorage table

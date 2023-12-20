@@ -45,13 +45,12 @@ import org.filesys.smb.server.SMBConfigSection;
 import org.filesys.smb.server.SMBServer;
 import org.filesys.smb.server.SMBSrvSession;
 import org.filesys.smb.server.disk.original.JavaFileDiskDriver;
-import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
-import org.springframework.extensions.config.ConfigElement;
-
 import org.frankframework.filesystem.smb.Samba2FileSystemTest;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
+import org.junit.jupiter.api.extension.ExtensionContext.Store.CloseableResource;
+import org.springframework.extensions.config.ConfigElement;
 
 /**
  * Will create a local FS with share 'home' @ 'localhost' : 'automatically-calculated-port'.

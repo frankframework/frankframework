@@ -15,9 +15,6 @@ import java.util.Arrays;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.PipeStartException;
@@ -27,6 +24,8 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.SignaturePipe.Action;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
 
 public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 

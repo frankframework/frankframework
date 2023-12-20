@@ -3,11 +3,6 @@ package org.frankframework.management.bus.endpoints;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.messaging.Message;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
@@ -23,6 +18,10 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.messaging.Message;
 
 public class TestManageSchedule extends BusTestBase {
 	private Adapter adapter;

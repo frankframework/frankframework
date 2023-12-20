@@ -20,11 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.frankframework.http.rest.ApiListener;
+import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import org.frankframework.http.rest.ApiListener.HttpMethod;
 
 
 public class ApiListenerPatternsTest {

@@ -1,8 +1,7 @@
 package org.frankframework.stream;
 
-import org.xml.sax.SAXException;
-
 import org.frankframework.xml.XmlWriter;
+import org.xml.sax.SAXException;
 
 public class CloseObservableXmlWriter extends XmlWriter {
 

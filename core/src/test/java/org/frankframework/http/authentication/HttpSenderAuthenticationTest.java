@@ -13,10 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
 
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
@@ -26,7 +22,9 @@ import org.frankframework.http.HttpSenderBase.HttpMethod;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
-
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.jupiter.api.Disabled;
 
 public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{

@@ -9,13 +9,19 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
 
-import org.frankframework.testutil.TestFileUtils;
-
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.Difference;
 import org.custommonkey.xmlunit.DifferenceConstants;
 import org.custommonkey.xmlunit.DifferenceListener;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.frankframework.ldap.LdapSender.Operation;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.senders.SenderTestBase;
+import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.TestAssertions;
+import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,14 +33,6 @@ import com.unboundid.ldap.listener.InMemoryDirectoryServer;
 import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
 import com.unboundid.ldap.listener.InMemoryListenerConfig;
 import com.unboundid.ldap.sdk.LDAPConnection;
-
-import org.frankframework.ldap.LdapSender.Operation;
-import org.frankframework.parameters.Parameter;
-import org.frankframework.senders.SenderTestBase;
-import org.frankframework.testutil.ParameterBuilder;
-import org.frankframework.testutil.TestAssertions;
-import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.StreamUtil;
 
 public class LdapSenderTest extends SenderTestBase<LdapSender> {
 	InMemoryDirectoryServer inMemoryDirectoryServer = null;

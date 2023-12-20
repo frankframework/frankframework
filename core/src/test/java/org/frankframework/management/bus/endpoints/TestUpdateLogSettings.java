@@ -6,16 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.messaging.Message;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.AppConstants;
+import org.junit.jupiter.api.Test;
+import org.springframework.messaging.Message;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TestUpdateLogSettings extends BusTestBase {
 

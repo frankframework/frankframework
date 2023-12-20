@@ -10,10 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
-
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
@@ -24,6 +20,9 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.document.DocumentFormat;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 
 public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 

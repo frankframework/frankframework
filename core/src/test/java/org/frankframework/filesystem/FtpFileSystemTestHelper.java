@@ -8,12 +8,11 @@ import java.io.OutputStream;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.ftp.FtpSession;
 import org.frankframework.util.LogUtil;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 public class FtpFileSystemTestHelper implements IFileSystemTestHelper{
 

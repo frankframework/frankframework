@@ -28,6 +28,17 @@ import java.util.List;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
+import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.configuration.ClassLoaderManager;
+import org.frankframework.configuration.IbisManager;
+import org.frankframework.dbms.GenericDbmsSupport;
+import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.jms.JmsRealm;
+import org.frankframework.jms.JmsRealmFactory;
+import org.frankframework.lifecycle.ApplicationMessageEvent;
+import org.frankframework.testutil.TestAppender;
+import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
+import org.frankframework.util.StreamUtil;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Test;
@@ -35,20 +46,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
-
-import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.ClassLoaderManager;
-import org.frankframework.configuration.IbisManager;
-import org.frankframework.jdbc.FixedQuerySender;
-
-import org.frankframework.dbms.GenericDbmsSupport;
-import org.frankframework.jms.JmsRealm;
-import org.frankframework.jms.JmsRealmFactory;
-import org.frankframework.lifecycle.ApplicationMessageEvent;
-import org.frankframework.testutil.TestAppender;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
-
-import org.frankframework.util.StreamUtil;
 
 public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<DatabaseClassLoader> {
 	private static final String ERROR_PREFIX = "error configuring ClassLoader for configuration [";

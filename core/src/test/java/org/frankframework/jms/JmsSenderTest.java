@@ -11,6 +11,12 @@ import java.nio.charset.StandardCharsets;
 import javax.jms.BytesMessage;
 import javax.jms.TextMessage;
 
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.MessageTestUtils;
+import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.EnumUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,13 +24,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import com.mockrunner.mock.jms.MockQueue;
-
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.MessageTestUtils;
-import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.EnumUtils;
 
 class JmsSenderTest {
 

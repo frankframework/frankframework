@@ -1,15 +1,13 @@
 package org.frankframework.pipes;
 
-import org.hamcrest.Matchers;
-
-import org.frankframework.core.PipeRunException;
-import org.frankframework.stream.Message;
-
-import org.junit.jupiter.api.Test;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import org.frankframework.core.PipeRunException;
+import org.frankframework.stream.Message;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
 
 /**
  * ExceptionPipe Tester.

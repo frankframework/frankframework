@@ -11,6 +11,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.util.LogUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -20,8 +22,6 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.util.StreamUtils;
 
 import bitronix.tm.TransactionManagerServices;
-import org.frankframework.testutil.TransactionManagerType;
-import org.frankframework.util.LogUtil;
 
 public abstract class StatusRecordingTransactionManagerTestBase<S extends StatusRecordingTransactionManager> {
 	protected Logger log = LogUtil.getLogger(this);

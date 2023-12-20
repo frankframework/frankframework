@@ -4,10 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.frankframework.core.PipeForward;
-
-import org.junit.jupiter.api.Test;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.util.TransformerPoolNamespaceUnawarenessTest;
+import org.junit.jupiter.api.Test;
 
 public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 

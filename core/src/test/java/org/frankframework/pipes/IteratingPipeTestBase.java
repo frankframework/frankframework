@@ -6,9 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
-
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -22,6 +19,8 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
+import org.junit.jupiter.api.Test;
+import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
 public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> extends PipeTestBase<P> {
 

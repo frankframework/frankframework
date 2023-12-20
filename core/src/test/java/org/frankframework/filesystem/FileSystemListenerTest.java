@@ -31,11 +31,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
@@ -43,6 +38,10 @@ import org.frankframework.core.ProcessState;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public abstract class FileSystemListenerTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
 

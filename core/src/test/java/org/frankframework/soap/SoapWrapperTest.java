@@ -46,14 +46,6 @@ import org.apache.wss4j.common.util.UsernameTokenUtil;
 import org.apache.wss4j.dom.WSConstants;
 import org.apache.wss4j.dom.WsuIdAllocator;
 import org.apache.xml.security.algorithms.JCEMapper;
-import org.junit.jupiter.api.Test;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.SAXException;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -66,6 +58,13 @@ import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.AttributesWrapper;
 import org.frankframework.xml.FullXmlFilter;
 import org.frankframework.xml.XmlWriter;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
 
 /**
  * @author Peter Leeuwenburgh

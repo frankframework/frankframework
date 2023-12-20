@@ -7,10 +7,6 @@ import java.util.Timer;
 
 import javax.jms.Message;
 
-import org.springframework.jms.listener.DefaultMessageListenerContainer;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListenerConnector;
 import org.frankframework.core.IMessageHandler;
@@ -19,6 +15,10 @@ import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.unmanaged.PollGuard;
 import org.frankframework.unmanaged.SpringJmsConnector;
 import org.frankframework.util.Counter;
+import org.springframework.jms.listener.DefaultMessageListenerContainer;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public class SlowListenerWithPollGuard extends SlowPushingListener implements IPortConnectedListener<Message> {
 

@@ -26,13 +26,12 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
-
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
+import org.junit.jupiter.api.Test;
+import org.xml.sax.SAXException;
 
 /**
  * This class is a 'comparison helper' for file assertions

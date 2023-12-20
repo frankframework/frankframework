@@ -20,6 +20,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.core.INamedObject;
+import org.frankframework.doc.Protected;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.AppConstants;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -29,13 +36,6 @@ import org.xml.sax.Attributes;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.SuppressKeys;
-import org.frankframework.core.INamedObject;
-import org.frankframework.doc.Protected;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.util.AppConstants;
 
 public class ValidateAttributeRuleTest extends Mockito {
 	private TestConfiguration configuration;

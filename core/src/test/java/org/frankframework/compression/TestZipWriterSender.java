@@ -7,16 +7,15 @@ import java.io.InputStreamReader;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.frankframework.collection.Collection;
 import org.frankframework.collection.TestCollector;
 import org.frankframework.collection.TestCollectorPart;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import org.frankframework.collection.Collection;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 

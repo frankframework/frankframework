@@ -6,11 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.InputStream;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
+import org.junit.jupiter.api.Test;
 
 public class CrlPipeTest extends PipeTestBase<CrlPipe> {
 

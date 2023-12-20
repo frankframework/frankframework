@@ -7,8 +7,14 @@ import java.io.StringReader;
 
 import javax.xml.validation.ValidatorHandler;
 
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.validation.AbstractXmlValidator;
 import org.frankframework.validation.DummySchemasProviderImpl;
+import org.frankframework.validation.JavaxXmlValidator;
+import org.frankframework.validation.ValidationContext;
+import org.frankframework.validation.XercesXmlValidator;
+import org.frankframework.validation.XmlValidatorErrorHandler;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -18,13 +24,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.validation.AbstractXmlValidator;
-import org.frankframework.validation.JavaxXmlValidator;
-import org.frankframework.validation.ValidationContext;
-import org.frankframework.validation.XercesXmlValidator;
-import org.frankframework.validation.XmlValidatorErrorHandler;
 
 public class EntityResolvingTest {
 

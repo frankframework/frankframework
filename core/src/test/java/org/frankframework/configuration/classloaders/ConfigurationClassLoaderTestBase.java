@@ -26,17 +26,16 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.LinkedList;
 
-import org.frankframework.util.UUIDUtil;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.UUIDUtil;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 public abstract class ConfigurationClassLoaderTestBase<C extends ClassLoaderBase> extends Mockito {
 

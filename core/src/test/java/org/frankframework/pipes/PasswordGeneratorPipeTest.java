@@ -1,11 +1,10 @@
 package org.frankframework.pipes;
 
-import org.frankframework.core.PipeRunResult;
-
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import org.frankframework.core.PipeRunResult;
+import org.junit.jupiter.api.Test;
 
 /**
  * PasswordGeneratorPipe Tester.

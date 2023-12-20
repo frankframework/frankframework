@@ -9,15 +9,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.zip.ZipInputStream;
 
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
 
 /**
  * UploadFilePipe Tester.

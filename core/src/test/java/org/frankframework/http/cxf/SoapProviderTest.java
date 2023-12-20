@@ -39,14 +39,6 @@ import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.Source;
 import javax.xml.ws.WebServiceContext;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.w3c.dom.Element;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.stream.Message;
@@ -54,6 +46,13 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.w3c.dom.Element;
 
 @RunWith(MockitoJUnitRunner.class)
 public class SoapProviderTest {

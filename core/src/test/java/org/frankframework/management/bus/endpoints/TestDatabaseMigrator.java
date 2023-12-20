@@ -14,11 +14,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandlingException;
-
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.BytesResource;
 import org.frankframework.core.Resource;
@@ -31,6 +26,10 @@ import org.frankframework.management.bus.ResponseMessageBase;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
 import org.frankframework.util.StreamUtil;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
 
 public class TestDatabaseMigrator extends BusTestBase {
 

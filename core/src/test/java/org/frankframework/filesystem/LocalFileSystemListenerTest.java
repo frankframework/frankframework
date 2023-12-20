@@ -2,10 +2,9 @@ package org.frankframework.filesystem;
 
 import java.nio.file.Path;
 
+import org.frankframework.receivers.DirectoryListener;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
-
-import org.frankframework.receivers.DirectoryListener;
 
 public class LocalFileSystemListenerTest extends FileSystemListenerTest<Path, LocalFileSystem>{
 

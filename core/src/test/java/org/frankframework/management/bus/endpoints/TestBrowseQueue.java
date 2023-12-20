@@ -1,11 +1,5 @@
 package org.frankframework.management.bus.endpoints;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.messaging.Message;
-
-import com.mockrunner.mock.jms.MockMessage;
-
 import org.frankframework.jms.JMSFacade.DestinationType;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
@@ -16,6 +10,11 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.messaging.Message;
+
+import com.mockrunner.mock.jms.MockMessage;
 
 public class TestBrowseQueue extends BusTestBase {
 

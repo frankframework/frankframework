@@ -14,17 +14,17 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, ApplicationContextAware {
 	private final @Getter(onMethod = @__(@Override)) String domain = "MockFilesystem";

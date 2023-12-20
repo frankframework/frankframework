@@ -1,16 +1,15 @@
 package org.frankframework.jdbc;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.mockito.Mock;
-
 import org.frankframework.core.ConfiguredTestBase;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
+import org.junit.After;
+import org.junit.Before;
+import org.mockito.Mock;
 
 public abstract class JdbcSenderTestBase<S extends JdbcSenderBase<?>> extends JdbcTestBase {
 

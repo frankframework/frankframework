@@ -12,16 +12,15 @@ import org.apache.http.HttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.MessageTestUtils;
+import org.frankframework.testutil.MessageTestUtils.MessageType;
+import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.MessageTestUtils;
-import org.frankframework.testutil.MessageTestUtils.MessageType;
-import org.frankframework.util.StreamUtil;
 
 public class HttpMessageEntityTest {
 	private String messageContent;

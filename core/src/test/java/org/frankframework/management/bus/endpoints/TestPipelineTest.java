@@ -9,12 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import org.hamcrest.collection.IsIterableContainingInOrder;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.messaging.Message;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine.ExitState;
@@ -26,6 +20,11 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
+import org.hamcrest.collection.IsIterableContainingInOrder;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.messaging.Message;
 
 public class TestPipelineTest extends BusTestBase {
 	private static final String TEST_PIPELINE_ADAPER_NAME = "TestPipelineAdapter";

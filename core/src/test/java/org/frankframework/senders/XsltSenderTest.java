@@ -8,9 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -21,6 +18,8 @@ import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.TransformerPoolNamespaceUnawarenessTest;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 public class XsltSenderTest extends SenderTestBase<XsltSender> {
 

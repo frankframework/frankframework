@@ -10,13 +10,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.TestFileUtils;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -28,7 +21,13 @@ import org.frankframework.pipes.JsonPipe;
 import org.frankframework.pipes.JsonPipe.Direction;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.document.DocumentFormat;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 /**
  * @author Gerrit van Brakel

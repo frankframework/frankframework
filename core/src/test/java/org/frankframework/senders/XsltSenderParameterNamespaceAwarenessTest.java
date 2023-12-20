@@ -2,12 +2,11 @@ package org.frankframework.senders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.Parameter.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
+import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("unused")
 public class XsltSenderParameterNamespaceAwarenessTest extends SenderTestBase<XsltSender> {

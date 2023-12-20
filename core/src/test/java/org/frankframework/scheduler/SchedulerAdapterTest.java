@@ -23,14 +23,13 @@ import static org.mockito.Mockito.when;
 import java.text.ParseException;
 import java.util.LinkedList;
 
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.IbisManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.quartz.JobDataMap;
 import org.quartz.SchedulerException;
 import org.quartz.impl.calendar.HolidayCalendar;
-
-import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.IbisManager;
 
 public class SchedulerAdapterTest extends SchedulerTestBase {
 

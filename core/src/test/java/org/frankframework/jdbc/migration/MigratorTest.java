@@ -18,8 +18,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.junit.Test;
-
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.BytesResource;
 import org.frankframework.core.Resource;
@@ -31,6 +29,7 @@ import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.MessageKeeper;
+import org.junit.Test;
 
 public class MigratorTest extends TransactionManagerTestBase {
 

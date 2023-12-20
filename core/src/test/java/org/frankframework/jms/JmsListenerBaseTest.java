@@ -5,12 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.jms.JMSException;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.testutil.mock.ConnectionFactoryFactoryMock;
 
 class JmsListenerBaseTest {
 

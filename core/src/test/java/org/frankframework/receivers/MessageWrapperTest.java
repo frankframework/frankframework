@@ -10,14 +10,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.codec.binary.Hex;
-import org.junit.jupiter.api.Test;
-
-import jakarta.mail.internet.InternetHeaders;
-import jakarta.mail.internet.MimeBodyPart;
 import org.frankframework.http.PartMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
 import org.frankframework.testutil.SerializationTester;
+import org.junit.jupiter.api.Test;
+
+import jakarta.mail.internet.InternetHeaders;
+import jakarta.mail.internet.MimeBodyPart;
 
 public class MessageWrapperTest {
 

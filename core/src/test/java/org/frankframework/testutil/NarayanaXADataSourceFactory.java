@@ -5,14 +5,15 @@ import java.util.Properties;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
-import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
-
-import lombok.Setter;
 import org.frankframework.jta.narayana.DataSourceXAResourceRecoveryHelper;
 import org.frankframework.jta.narayana.NarayanaConfigurationBean;
 import org.frankframework.jta.narayana.NarayanaDataSource;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
+
+import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
+import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
+
+import lombok.Setter;
 
 public class NarayanaXADataSourceFactory extends URLXADataSourceFactory {
 

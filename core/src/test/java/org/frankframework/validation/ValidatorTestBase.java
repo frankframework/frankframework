@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.PipeLineSession;

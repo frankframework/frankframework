@@ -5,6 +5,10 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
+import org.frankframework.core.PipeStartException;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -12,11 +16,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.springframework.core.annotation.Order;
-
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.PipeStartException;
 
 
 /**

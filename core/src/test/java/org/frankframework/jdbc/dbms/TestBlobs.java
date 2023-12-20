@@ -16,12 +16,11 @@ import java.sql.ResultSet;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.input.ReaderInputStream;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
 import org.frankframework.jdbc.JdbcTestBase;
 import org.frankframework.util.StreamUtil;
+import org.junit.Ignore;
+import org.junit.Test;
 
 @Ignore("Tests for Blobs take too much time and memory to test regularly")
 public class TestBlobs extends JdbcTestBase {

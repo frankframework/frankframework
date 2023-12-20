@@ -10,14 +10,12 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.impl.Log4jLogEvent;
 import org.apache.logging.log4j.message.SimpleMessage;
-import org.frankframework.logging.IbisThrowablePatternConverter;
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.core.PipeRunException;
 import org.frankframework.pipes.CompareIntegerPipe;
 import org.frankframework.pipes.UnzipPipe;
 import org.frankframework.pipes.XmlSwitch;
 import org.frankframework.pipes.XsltPipe;
+import org.junit.jupiter.api.Test;
 
 public class IbisThrowablePatternConverterTest {
 

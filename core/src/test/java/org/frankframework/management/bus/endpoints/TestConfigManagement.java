@@ -2,13 +2,12 @@ package org.frankframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.messaging.Message;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.testutil.TestConfiguration;
+import org.junit.jupiter.api.Test;
+import org.springframework.messaging.Message;
 
 public class TestConfigManagement extends BusTestBase {
 	private static final String LOADED_RESULT = "<loaded authAlias=\"test\" />";

@@ -2,12 +2,11 @@ package org.frankframework.management.bus.endpoints;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import org.frankframework.management.bus.BusTestBase;
+import org.frankframework.management.bus.BusTopic;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
-
-import org.frankframework.management.bus.BusTestBase;
-import org.frankframework.management.bus.BusTopic;
 
 public class TestEnvironmentVariables extends BusTestBase {
 

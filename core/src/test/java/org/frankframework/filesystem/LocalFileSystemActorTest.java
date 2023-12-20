@@ -9,14 +9,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class LocalFileSystemActorTest extends FileSystemActorTest<Path, LocalFileSystem>{
 

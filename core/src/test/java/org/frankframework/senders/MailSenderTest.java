@@ -1,8 +1,5 @@
 package org.frankframework.senders;
 
-import jakarta.mail.Provider;
-import jakarta.mail.Provider.Type;
-import jakarta.mail.Session;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -10,6 +7,10 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.senders.mail.MailSenderTestBase;
 import org.frankframework.senders.mail.TransportMock;
 import org.frankframework.stream.Message;
+
+import jakarta.mail.Provider;
+import jakarta.mail.Provider.Type;
+import jakarta.mail.Session;
 
 public class MailSenderTest extends MailSenderTestBase<MailSender> {
 

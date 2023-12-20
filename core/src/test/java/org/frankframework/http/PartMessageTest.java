@@ -12,12 +12,6 @@ import java.nio.file.Path;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-import org.springframework.util.MimeType;
-
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeBodyPart;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
@@ -27,6 +21,12 @@ import org.frankframework.stream.MessageTest;
 import org.frankframework.testutil.SerializationTester;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.springframework.util.MimeType;
+
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeBodyPart;
 
 public class PartMessageTest {
 	protected Logger log = LogUtil.getLogger(this);

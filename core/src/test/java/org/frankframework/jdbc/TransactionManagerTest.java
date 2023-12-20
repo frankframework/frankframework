@@ -6,11 +6,10 @@ import java.sql.Connection;
 
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.util.DbmsUtil;
+import org.frankframework.util.JdbcUtil;
 import org.junit.Test;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
-
-import org.frankframework.util.JdbcUtil;
 
 public class TransactionManagerTest extends TransactionManagerTestBase {
 

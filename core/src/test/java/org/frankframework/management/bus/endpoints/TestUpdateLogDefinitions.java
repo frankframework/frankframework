@@ -8,19 +8,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 import java.util.Map;
 
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Test;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandlingException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.ResponseMessageBase;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Test;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * In the Log4J4Ibis.xml is a org.frankframework.management.bus definition which we use here to test the BUS responses.

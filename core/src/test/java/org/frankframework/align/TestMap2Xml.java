@@ -9,10 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.frankframework.testutil.MatchUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import org.frankframework.testutil.MatchUtils;
 
 public class TestMap2Xml extends AlignTestBase {
 

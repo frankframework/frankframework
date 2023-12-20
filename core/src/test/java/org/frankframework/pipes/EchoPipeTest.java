@@ -4,11 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
+import org.junit.jupiter.api.Test;
 
 public class EchoPipeTest extends PipeTestBase<EchoPipe> {
 

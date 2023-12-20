@@ -32,26 +32,26 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IMessageBrowser.SortOrder;
+import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.ProcessState;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.jdbc.dbms.ConcurrentJdbcActionTester;
+import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.DbmsUtil;
+import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.Semaphore;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import lombok.Getter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IMessageBrowser.SortOrder;
-import org.frankframework.core.ListenerException;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.ProcessState;
-import org.frankframework.receivers.RawMessageWrapper;
-import org.frankframework.util.JdbcUtil;
-import org.frankframework.util.Semaphore;
 
 public class JdbcTableListenerTest extends JdbcTestBase {
 

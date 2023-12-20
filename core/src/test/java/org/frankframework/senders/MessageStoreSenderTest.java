@@ -5,13 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.Date;
 
-import org.junit.jupiter.api.Test;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.MessageStoreSender;
 import org.frankframework.stream.Message;
+import org.junit.jupiter.api.Test;
 
 public class MessageStoreSenderTest extends SenderTestBase<MessageStoreSender> {
 

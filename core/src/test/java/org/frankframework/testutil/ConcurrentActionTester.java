@@ -1,20 +1,18 @@
 package org.frankframework.testutil;
 
+import java.sql.SQLException;
+
+import org.apache.logging.log4j.Logger;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
-
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
-
-import org.apache.logging.log4j.Logger;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Semaphore;
 
-import java.sql.SQLException;
+import lombok.Getter;
+import lombok.Setter;
 
 public class ConcurrentActionTester extends Thread {
 	protected static Logger log = LogUtil.getLogger(ConcurrentActionTester.class);

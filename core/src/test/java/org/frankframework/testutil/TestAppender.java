@@ -26,7 +26,6 @@ import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-
 import org.frankframework.logging.IbisPatternLayout;
 import org.frankframework.logging.IbisThreadFilter;
 import org.frankframework.util.LogUtil;

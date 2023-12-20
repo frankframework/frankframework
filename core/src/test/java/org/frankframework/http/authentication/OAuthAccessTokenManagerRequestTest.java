@@ -8,12 +8,12 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
-import org.junit.jupiter.api.Test;
-import com.nimbusds.oauth2.sdk.TokenRequest;
-import com.nimbusds.oauth2.sdk.http.HTTPRequest;
-
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StreamUtil;
+import org.junit.jupiter.api.Test;
+
+import com.nimbusds.oauth2.sdk.TokenRequest;
+import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 
 public class OAuthAccessTokenManagerRequestTest {
 

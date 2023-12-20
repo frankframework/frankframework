@@ -16,20 +16,19 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 
 import org.apache.logging.log4j.Logger;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.classloaders.JarFileClassLoader;
+import org.frankframework.core.IScopeProvider;
+import org.frankframework.core.Resource;
 import org.frankframework.testutil.TestScopeProvider;
+import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.LogUtil;
+import org.frankframework.util.XmlUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.classloaders.JarFileClassLoader;
-import org.frankframework.core.IScopeProvider;
-import org.frankframework.core.Resource;
-import org.frankframework.util.ClassLoaderUtils;
-import org.frankframework.util.LogUtil;
-import org.frankframework.util.XmlUtils;
 
 public class ClassLoaderURIResolverTest {
 

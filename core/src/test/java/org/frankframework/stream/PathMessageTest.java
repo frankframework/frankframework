@@ -9,10 +9,9 @@ import java.nio.file.Path;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
 import org.frankframework.testutil.SerializationTester;
+import org.frankframework.util.LogUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import org.frankframework.util.LogUtil;
 
 public class PathMessageTest {
 

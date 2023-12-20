@@ -4,14 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.StringReader;
 
-import org.junit.jupiter.api.Test;
-
-import jakarta.json.Json;
-import jakarta.json.JsonStructure;
 import org.frankframework.core.SenderResult;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.TransformerPool.OutputType;
+import org.junit.jupiter.api.Test;
+
+import jakarta.json.Json;
+import jakarta.json.JsonStructure;
 
 public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 

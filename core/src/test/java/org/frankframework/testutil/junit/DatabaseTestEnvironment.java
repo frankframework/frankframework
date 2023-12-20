@@ -11,7 +11,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.sql.DataSource;
 
 import org.frankframework.dbms.DbmsSupportFactory;
-
+import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.testutil.URLDataSourceFactory;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.ExceptionUtils;
@@ -20,12 +24,6 @@ import org.springframework.jdbc.datasource.DelegatingDataSource;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import lombok.Getter;
-
-import org.frankframework.dbms.IDbmsSupport;
-import org.frankframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.TransactionManagerType;
-import org.frankframework.testutil.URLDataSourceFactory;
 
 public class DatabaseTestEnvironment implements Store.CloseableResource {
 

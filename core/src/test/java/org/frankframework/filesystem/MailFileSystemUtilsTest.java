@@ -4,11 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.UnsupportedEncodingException;
 
+import org.junit.jupiter.api.Test;
+
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
-
-import org.frankframework.filesystem.MailFileSystemUtils;
-import org.junit.jupiter.api.Test;
 
 public class MailFileSystemUtilsTest {
 
