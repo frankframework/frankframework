@@ -110,7 +110,7 @@
 					"
 					execution(
 						*
-						nl.nn.adapterframework.core.IBlockEnabledSender+.sendMessage(
+						org.frankframework.core.IBlockEnabledSender+.sendMessage(
 							*,
 							org.frankframework.stream.Message,
 							org.frankframework.core.PipeLineSession

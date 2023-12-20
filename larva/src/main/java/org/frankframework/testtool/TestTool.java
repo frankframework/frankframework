@@ -51,8 +51,10 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipInputStream;
 
+import javax.annotation.Nullable;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.stream.XMLInputFactory;
@@ -65,6 +67,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.frankframework.configuration.ClassNameRewriter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.core.ListenerException;
@@ -1091,10 +1094,12 @@ public class TestTool {
 		return scenarioFiles;
 	}
 
+	@Nullable
 	public static Properties readProperties(AppConstants appConstants, File propertiesFile, Map<String, Object> writers) {
 		return readProperties(appConstants, propertiesFile, true, writers);
 	}
 
+	@Nullable
 	public static Properties readProperties(AppConstants appConstants, File propertiesFile, boolean root, Map<String, Object> writers) {
 		String directory = new File(propertiesFile.getAbsolutePath()).getParent();
 		Properties properties = new Properties();
@@ -1114,7 +1119,9 @@ public class TestTool {
 				debugMessage("Load include file: " + includeFilename, writers);
 				File includeFile = new File(getAbsolutePath(directory, includeFilename));
 				Properties includeProperties = readProperties(appConstants, includeFile, false, writers);
-				includedProperties.putAll(includeProperties);
+				if (includeProperties != null) {
+					includedProperties.putAll(includeProperties);
+				}
 				i++;
 				includeFilename = properties.getProperty("include" + i);
 			}
@@ -1131,7 +1138,29 @@ public class TestTool {
 			properties = null;
 			errorMessage("Could not read properties file: " + e.getMessage(), e, writers);
 		}
-		return properties;
+		return fixLegacyClassnames(properties);
+	}
+
+	@Nullable
+	private static Properties fixLegacyClassnames(@Nullable Properties properties) {
+		if (properties == null) {
+			return null;
+		}
+		Map<Object, Object> collected = properties.entrySet().stream()
+				.map(TestTool::rewriteClassName)
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+		Properties result = new Properties();
+		result.putAll(collected);
+		return result;
+	}
+
+	private static Entry<Object, Object> rewriteClassName(Entry<Object, Object> e) {
+		Object propertyName = e.getKey();
+		if (e.getValue() == null || !propertyName.toString().endsWith(".className")) {
+			return e;
+		}
+		String newClassName = e.getValue().toString().replace(ClassNameRewriter.LEGACY_PACKAGE_NAME, ClassNameRewriter.ORG_FRANKFRAMEWORK_PACKAGE_NAME);
+		return Map.entry(propertyName, newClassName);
 	}
 
 	public static String getAbsolutePath(String parent, String child) {

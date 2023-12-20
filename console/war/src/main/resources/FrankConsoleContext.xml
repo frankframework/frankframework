@@ -11,7 +11,7 @@
 
 	<context:property-placeholder location="classpath:application.properties"/>
 
-	<context:component-scan base-package="nl.nn.adapterframework.web" />
+	<context:component-scan base-package="org.frankframework.web" />
 
 	<!-- Messaging Gateway -->
 	<bean id="outboundGateway" class="org.frankframework.management.bus.OutboundGatewayFactory">

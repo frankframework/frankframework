@@ -39,13 +39,6 @@ import javax.xml.transform.dom.DOMResult;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.jdbc.StoredProcedureQuerySender;
-import org.springframework.context.ApplicationContext;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -55,6 +48,7 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
+import org.frankframework.jdbc.StoredProcedureQuerySender;
 import org.frankframework.pipes.PutSystemDateInSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
@@ -69,6 +63,12 @@ import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
+import org.springframework.context.ApplicationContext;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * Generic parameter definition.
@@ -227,7 +227,7 @@ public class Parameter implements IConfigurable, IWithParameters {
 
 		/**
 		 * Used for StoredProcedure OUT parameters when the database type is a {@code CURSOR} or {@link java.sql.JDBCType#REF_CURSOR}.
-		 * See also {@link nl.nn.adapterframework.jdbc.StoredProcedureQuerySender}.
+		 * See also {@link org.frankframework.jdbc.StoredProcedureQuerySender}.
 		 * <br/>
 		 * DEPRECATED: Type LIST can also be used in larva test to Convert a List to an xml-string (&lt;items&gt;&lt;item&gt;...&lt;/item&gt;&lt;item&gt;...&lt;/item&gt;&lt;/items&gt;) */
 		LIST,

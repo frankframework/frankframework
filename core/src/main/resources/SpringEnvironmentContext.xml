@@ -27,7 +27,7 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
 	</context:component-scan>
 
-	<bean id="cxf" class="org.frankframework.cxf.http.SpringSoapBus">
+	<bean id="cxf" class="org.frankframework.http.cxf.SpringSoapBus">
 		<property name="id" value="ff-soap-bus"/>
 	</bean>
 
