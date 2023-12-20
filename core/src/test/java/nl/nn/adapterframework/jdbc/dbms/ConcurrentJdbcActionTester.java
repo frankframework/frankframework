@@ -27,7 +27,6 @@ public abstract class ConcurrentJdbcActionTester extends ConcurrentActionTester 
 	public void initAction(Connection conn) throws SQLException, DbmsException {
 	}
 
-
 	@Override
 	public final void action() throws SQLException {
 		action(connection);
@@ -42,7 +41,7 @@ public abstract class ConcurrentJdbcActionTester extends ConcurrentActionTester 
 		try {
 			finalizeAction(connection);
 		} finally {
-			if (connection!=null) {
+			if (connection != null) {
 				connection.close();
 			}
 		}

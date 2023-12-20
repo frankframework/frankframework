@@ -17,8 +17,6 @@ import java.util.Properties;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import nl.nn.adapterframework.dbms.DbmsSupportFactory;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -38,10 +36,11 @@ import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.Getter;
-import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
+import nl.nn.adapterframework.dbms.DbmsSupportFactory;
 import nl.nn.adapterframework.dbms.IDbmsSupport;
 import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.dbms.TransactionalDbmsSupportAwareDataSourceProxy;
+import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
 import nl.nn.adapterframework.testutil.TestConfiguration;
 import nl.nn.adapterframework.testutil.TransactionManagerType;
 import nl.nn.adapterframework.testutil.URLDataSourceFactory;
