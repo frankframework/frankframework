@@ -34,13 +34,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import nl.nn.adapterframework.util.StreamUtil;
-
-import nl.nn.adapterframework.util.DbmsUtil;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.SneakyThrows;
+import nl.nn.adapterframework.util.DbmsUtil;
+import nl.nn.adapterframework.util.StreamUtil;
 
 /**
  * Support for PostgreSQL.
@@ -372,17 +370,10 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		return "SELECT LAST_INSERT_ID()";
 	}
 
-
 	// DDL related methods, have become more or less obsolete (and untested) with the introduction of Liquibase for table definitions
 	@Override
 	public String getAutoIncrementKeyFieldType() {
 		return "INT AUTO_INCREMENT";
-	}
-
-
-	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
-		return true;
 	}
 
 	@Override

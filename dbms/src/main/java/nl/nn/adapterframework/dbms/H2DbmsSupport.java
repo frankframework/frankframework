@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.dbms;
 
-import nl.nn.adapterframework.util.DbmsUtil;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,6 +22,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import nl.nn.adapterframework.util.DbmsUtil;
 
 
 /**
@@ -118,8 +118,4 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 				"TABLE_SCHEMA", "TABLE_NAME", "INDEX_NAME", "COLUMN_NAME", "ORDINAL_POSITION");
 	}
 
-	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
-		return false;
-	}
 }

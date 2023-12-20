@@ -18,17 +18,20 @@ package nl.nn.adapterframework.dbms;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import nl.nn.adapterframework.util.DbmsUtil;
-
 import org.apache.commons.lang3.StringUtils;
+
+import nl.nn.adapterframework.util.DbmsUtil;
 
 /**
  * @author Gerrit van Brakel
  */
 public class OracleDbmsSupport extends GenericDbmsSupport {
+
+	public static final CustomSQLType ORACLE_CURSOR_TYPE_DEF = new CustomSQLType("Oracle", -10 /* (OracleTypes.CURSOR) */);
 
 	@Override
 	public Dbms getDbms() {
@@ -268,5 +271,10 @@ public class OracleDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public boolean canFetchStatementParameterMetaData() {
 		return false;
+	}
+
+	@Override
+	public SQLType getCursorSqlType() {
+		return ORACLE_CURSOR_TYPE_DEF;
 	}
 }

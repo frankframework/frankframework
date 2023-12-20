@@ -1,11 +1,16 @@
 package nl.nn.adapterframework.jdbc;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.hamcrest.Matchers.isOneOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.oneOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeThat;
@@ -32,6 +37,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.nn.adapterframework.core.PipeLineSession;
+import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -66,6 +72,8 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testSimpleStoredProcedureNoResultNoParameters() throws Exception {
+		assumeThat("H2 driver gives incorrect results for this test case", productKey, is(not("H2")));
+
 		// Arrange
 		String value = UUID.randomUUID().toString();
 		sender.setQuery("CALL INSERT_MESSAGE('" + value + "', 'P')");
@@ -142,7 +150,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testSimpleStoredProcedureBlobInputParameter() throws Exception {
-		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL", "DB2")));
+		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL", "DB2"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -176,7 +184,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testSimpleStoredProcedureClobInputParameter() throws Exception {
-		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL", "DB2")));
+		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL", "DB2"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -210,7 +218,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	@Test
 	public void testSimpleStoredProcedureClobInputParameter2() throws Exception {
-		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL", "DB2")));
+		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL", "DB2"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -330,7 +338,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	private void testStoredProcedureBlobOutputParameter(boolean blobSmartGet, boolean compressed, String charSet) throws Exception {
 
-		assumeThat("H2, PSQL not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL")));
+		assumeThat("H2, PSQL not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -366,7 +374,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	@Test
 	public void testStoredProcedureClobOutputParameter() throws Exception {
 
-		assumeThat("H2, PSQL not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL")));
+		assumeThat("H2, PSQL not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -400,7 +408,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	@Test
 	public void testStoredProcedureBlobOutputParameterNullValue() throws Exception {
 
-		assumeThat("H2, PSQL not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL")));
+		assumeThat("H2, PSQL not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -437,7 +445,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	@Test
 	public void testStoredProcedureClobOutputParameterNullValue() throws Exception {
 
-		assumeThat("H2, PSQL not supported for this test case", productKey, not(isOneOf("H2", "PostgreSQL")));
+		assumeThat("H2, PSQL not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -559,8 +567,8 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 	}
 
 	@Test
-	public void testStoredProcedureReturningResultSet() throws Exception {
-		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, not(isOneOf("Oracle", "PostgreSQL")));
+	public void testStoredProcedureReturningResultSetQueryTypeSelect() throws Exception {
+		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, is(not(oneOf("Oracle", "PostgreSQL"))));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -586,10 +594,201 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		// Assert
 		assertTrue(result.isSuccess());
 
-		final String expectedOutput = loadOutputExpectation("/Jdbc/StoredProcedureQuerySender/multi-row-results.xml", value, ids);
+		final String expectedOutput = loadOutputExpectation("/Jdbc/StoredProcedureQuerySender/multi-row-results-querytype-select.xml", value, ids);
 		final String actual = cleanActualOutput(result);
 
 		assertXmlEquals(expectedOutput, actual);
+	}
+
+	@Test
+	public void testStoredProcedureReturningResultSetQueryTypeOther() throws Exception {
+		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, is(not(oneOf("Oracle", "PostgreSQL"))));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long[] ids = new long[5];
+		for (int i = 0; i < ids.length; i++) {
+			ids[i] =insertRowWithMessageValue(value);
+		}
+
+		sender.setQuery("CALL GET_MESSAGES_BY_CONTENT(?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+
+		Parameter parameter = new Parameter("content", value);
+		sender.addParameter(parameter);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+
+		final String expectedOutput = loadOutputExpectation("/Jdbc/StoredProcedureQuerySender/multi-row-results-querytype-other.xml", value, ids);
+		final String actual = cleanActualOutput(result);
+
+		assertXmlEquals(expectedOutput, actual);
+	}
+
+	@Test
+	public void testStoredProcedureReturningResultSetAndOutParameters() throws Exception {
+		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, is(not(oneOf("H2", "Oracle", "PostgreSQL"))));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long[] ids = new long[5];
+		for (int i = 0; i < ids.length; i++) {
+			ids[i] =insertRowWithMessageValue(value);
+		}
+
+		sender.setQuery("CALL GET_MESSAGES_AND_COUNT(?, ?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+
+		Parameter parameter = new Parameter("content", value);
+		sender.addParameter(parameter);
+		Parameter count = new Parameter();
+		count.setName("count");
+		count.setMode(Parameter.ParameterMode.OUTPUT);
+		count.setType(Parameter.ParameterType.INTEGER);
+		sender.addParameter(count);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+
+		final String expectedOutput = loadOutputExpectation("/Jdbc/StoredProcedureQuerySender/multi-row-results-with-extra-out-param.xml", value, ids);
+		final String actual = cleanActualOutput(result);
+
+		assertXmlEquals(expectedOutput, actual);
+	}
+
+	@Test
+	public void testStoredProcedureReturningCursorSingleOutParameter() throws Exception {
+		assumeThat("REFCURSOR not supported, skipping test", productKey, is(oneOf("Oracle")));
+
+		// NOTE: This test only works on a clean database as it selects all rows and matches that against fixed expectation.
+		int rowCount = countAllRows();
+		assumeThat("This test only works on an empty test-data table", rowCount, is(0));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long[] ids = new long[5];
+		for (int i = 0; i < ids.length; i++) {
+			ids[i] = insertRowWithMessageValue(value);
+		}
+
+		sender.setQuery("CALL GET_ALL_MESSAGES_CURSOR(?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+
+		Parameter cursorParam = new Parameter();
+		cursorParam.setName("cursor1");
+		cursorParam.setType(Parameter.ParameterType.LIST);
+		cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
+		sender.addParameter(cursorParam);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+
+		final String expectedOutput = loadOutputExpectation("/Jdbc/StoredProcedureQuerySender/cursor-output-parameter-xml-result-single.xml", value, ids);
+		final String actual = cleanActualOutput(result);
+
+		assertXmlEquals(expectedOutput, actual);
+	}
+
+	@Test
+	public void testStoredProcedureReturningCursorInOutParameter() throws Exception {
+		assumeThat("REFCURSOR not supported, skipping test", productKey, is(oneOf("Oracle")));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		long[] ids = new long[5];
+		for (int i = 0; i < ids.length; i++) {
+			ids[i] = insertRowWithMessageValue(value);
+		}
+
+		sender.setQuery("CALL GET_MESSAGES_CURSOR(?,?,?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+
+		Parameter parameter = new Parameter("content", value);
+		sender.addParameter(parameter);
+		Parameter countParam = new Parameter();
+		countParam.setName("count");
+		countParam.setType(Parameter.ParameterType.INTEGER);
+		countParam.setMode(Parameter.ParameterMode.OUTPUT);
+		sender.addParameter(countParam);
+		Parameter cursorParam = new Parameter();
+    	cursorParam.setName("cursor1");
+    	cursorParam.setType(Parameter.ParameterType.LIST);
+    	cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
+    	sender.addParameter(cursorParam);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act
+		SenderResult result = sender.sendMessage(message, session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+
+		final String expectedOutput = loadOutputExpectation("/Jdbc/StoredProcedureQuerySender/cursor-output-parameter-xml-result-multi.xml", value, ids);
+		final String actual = cleanActualOutput(result);
+
+		assertXmlEquals(expectedOutput, actual);
+	}
+
+	@Test
+	public void testStoredProcedureReturningCursorNotSupported() throws Exception {
+		assumeThat(productKey, is(equalTo("MS_SQL")));
+
+		// Arrange
+		String value = UUID.randomUUID().toString();
+		sender.setQuery("CALL GET_MESSAGES_CURSOR(?,?,?)");
+		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
+
+		Parameter parameter = new Parameter("content", value);
+		sender.addParameter(parameter);
+		Parameter countParam = new Parameter();
+		countParam.setName("count");
+		countParam.setType(Parameter.ParameterType.INTEGER);
+		countParam.setMode(Parameter.ParameterMode.OUTPUT);
+		sender.addParameter(countParam);
+		Parameter cursorParam = new Parameter();
+    	cursorParam.setName("cursor1");
+    	cursorParam.setType(Parameter.ParameterType.LIST);
+    	cursorParam.setMode(Parameter.ParameterMode.OUTPUT);
+    	sender.addParameter(cursorParam);
+
+		sender.configure();
+		sender.open();
+
+		Message message = Message.nullMessage();
+
+		// Act // Assert
+		SenderException exception = assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
+
+		assertThat(exception.getMessage(), containsString("REF_CURSOR is not supported"));
 	}
 
 	@Test
@@ -628,6 +827,20 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		int rowsCounted;
 		try (PreparedStatement statement = getConnection().prepareStatement(checkValueStatement)) {
 			statement.setString(1, value);
+			ResultSet resultSet = statement.executeQuery();
+			if (resultSet.next()) {
+				rowsCounted = resultSet.getInt(1);
+			} else {
+				rowsCounted = 0;
+			}
+		}
+		return rowsCounted;
+	}
+
+	private int countAllRows() throws SQLException, JdbcException {
+		String checkValueStatement = dbmsSupport.convertQuery("SELECT COUNT(*) FROM SP_TESTDATA", "Oracle");
+		int rowsCounted;
+		try (PreparedStatement statement = getConnection().prepareStatement(checkValueStatement)) {
 			ResultSet resultSet = statement.executeQuery();
 			if (resultSet.next()) {
 				rowsCounted = resultSet.getInt(1);
@@ -715,7 +928,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		return result.getResult()
 				.asString()
 				.replaceAll("\\.0+<", "<")
-				.replaceAll("(?m)<fielddefinition>.+?</fielddefinition>", "<fielddefinition>IGNORE</fielddefinition>");
+				.replaceAll("(?ms)<fielddefinition>.+?</fielddefinition>", "<fielddefinition>IGNORE</fielddefinition>");
 	}
 
 	private static String loadOutputExpectation(final String file, final String messageContents) throws IOException {

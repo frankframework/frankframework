@@ -15,11 +15,17 @@
 */
 package nl.nn.adapterframework.util;
 
+import java.io.IOException;
+import java.sql.CallableStatement;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.logging.log4j.Logger;
 import org.xml.sax.ContentHandler;
@@ -27,6 +33,8 @@ import org.xml.sax.SAXException;
 
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.dbms.IDbmsSupport;
+import nl.nn.adapterframework.jdbc.StoredProcedureResultWrapper;
+import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.xml.SaxDocumentBuilder;
 import nl.nn.adapterframework.xml.SaxElementBuilder;
 import nl.nn.adapterframework.xml.XmlWriter;
@@ -81,67 +89,169 @@ public class DB2XMLWriter {
 	/**
 	 * Retrieve the Resultset as a well-formed XML string
 	 */
-	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs) {
+	public String getXML(@Nonnull IDbmsSupport dbmsSupport, @Nullable ResultSet rs) {
 		return getXML(dbmsSupport, rs, Integer.MAX_VALUE);
 	}
 
 	/**
 	 * Retrieve the Resultset as a well-formed XML string
 	 */
-	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength) {
-		return getXML(dbmsSupport, rs, maxlength, true);
+	public String getXML(@Nonnull IDbmsSupport dbmsSupport, @Nullable ResultSet rs, int maxRows) {
+		return getXML(dbmsSupport, rs, maxRows, true);
 	}
 
-	public String getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition) {
+	public String getXML(@Nonnull IDbmsSupport dbmsSupport, @Nullable ResultSet rs, int maxRows, boolean includeFieldDefinition) {
 		try {
 			XmlWriter xmlWriter = new XmlWriter();
-			getXML(dbmsSupport, rs, maxlength, includeFieldDefinition, xmlWriter, true);
+			getXML(dbmsSupport, rs, maxRows, includeFieldDefinition, xmlWriter, true);
 			return xmlWriter.toString();
 		} catch (SAXException e) {
 			log.warn("cannot convert ResultSet to XML", e);
-			return "<error>"+ XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage())+"</error>";
+			return buildErrorString(e);
 		}
 	}
 
-
-	public void getXML(IDbmsSupport dbmsSupport, ResultSet rs, int maxlength, boolean includeFieldDefinition, ContentHandler handler, boolean prettyPrint) throws SAXException {
+	public void getXML(@Nonnull IDbmsSupport dbmsSupport, @Nullable ResultSet rs, int maxRows, boolean includeFieldDefinition, ContentHandler handler, boolean prettyPrint) throws SAXException {
+		// If a negative value is passed, retrieve all rows of each result set
+		if (maxRows < 0) {
+			maxRows = Integer.MAX_VALUE;
+		}
 
 		try (SaxDocumentBuilder root = new SaxDocumentBuilder(docname, handler, prettyPrint)) {
 			if (null == rs) {
 				return;
 			}
-			if (maxlength < 0) {
-				maxlength = Integer.MAX_VALUE;
-			}
-			Statement stmt;
 			try {
-				stmt = rs.getStatement();
-				if (stmt!=null) {
+				Statement stmt = rs.getStatement();
+				if (stmt != null) {
 					JdbcUtil.warningsToXml(stmt.getWarnings(), root);
 				}
 			} catch (SQLException e1) {
 				log.warn("exception obtaining statement warnings", e1);
 			}
-			int rowCounter=0;
+			processResultSet(dbmsSupport, rs, maxRows, includeFieldDefinition, root);
+		}
+	}
+
+	public String getXML(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, boolean alsoGetResultSets, @Nonnull Map<Integer, Parameter> outputParameters, int maxRows, boolean includeFieldDefinition) {
+		try {
+			XmlWriter xmlWriter = new XmlWriter();
+			getXML(dbmsSupport, callableStatement, alsoGetResultSets, outputParameters, maxRows, includeFieldDefinition, xmlWriter, true);
+			return xmlWriter.toString();
+		} catch (SAXException e) {
+			log.warn("cannot convert CallableStatement to XML", e);
+			return buildErrorString(e);
+		}
+	}
+
+	private static String buildErrorString(Exception e) {
+		return "<error>" + XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage()) + "</error>";
+	}
+
+	private static void addErrorXml(Exception e, SaxElementBuilder parent) throws SAXException {
+		SaxElementBuilder errorElement = parent.startElement("error");
+		errorElement.addValue(XmlEncodingUtils.encodeCharsAndReplaceNonValidXmlCharacters(e.getMessage()));
+		errorElement.endElement();
+	}
+
+	public void getXML(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, boolean alsoGetResultSets, @Nonnull Map<Integer, Parameter> outputParameters, int maxRows, boolean includeFieldDefinition, @Nonnull ContentHandler handler, boolean prettyPrint) throws SAXException {
+		// If a negative value is passed, retrieve all rows of each result set
+		if (maxRows < 0) {
+			maxRows = Integer.MAX_VALUE;
+		}
+		try (SaxDocumentBuilder root = new SaxDocumentBuilder("resultset", handler, prettyPrint)) {
 			try {
-				ResultSetMetaData rsmeta = rs.getMetaData();
-				if (includeFieldDefinition) {
-					addFieldDefinitions(root, rsmeta);
-				}
-
-				//----------------------------------------
-				// Process result rows
-				//----------------------------------------
-
-				try (SaxElementBuilder queryresult = root.startElement(recordname)) {
-					while (rs.next() && rowCounter < maxlength) {
-						getRowXml(queryresult, dbmsSupport, rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces, getBlobSmart);
-						rowCounter++;
-					}
-				}
-			} catch (Exception e) {
-				log.error("Error occurred at row [" + rowCounter+"]", e);
+				JdbcUtil.warningsToXml(callableStatement.getWarnings(), root);
+			} catch (SQLException e1) {
+				log.warn("exception obtaining statement warnings", e1);
 			}
+
+			if (alsoGetResultSets) {
+				processStatementResults(dbmsSupport, callableStatement, maxRows, includeFieldDefinition, root);
+			}
+
+			processOutputParameters(dbmsSupport, callableStatement, outputParameters, maxRows, includeFieldDefinition, root);
+		}
+	}
+
+	private void processOutputParameters(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, @Nonnull Map<Integer, Parameter> outputParameters, int maxRows, boolean includeFieldDefinition, @Nonnull SaxElementBuilder parent) throws SAXException {
+		if (outputParameters.isEmpty()) {
+			return;
+		}
+		StoredProcedureResultWrapper resultWrapper;
+		ResultSetMetaData metaData;
+		try {
+			resultWrapper = new StoredProcedureResultWrapper(dbmsSupport, callableStatement, callableStatement.getParameterMetaData(), outputParameters);
+			metaData = resultWrapper.getMetaData();
+		} catch (SQLException e) {
+			log.warn("Error get stored procedure result data", e);
+			addErrorXml(e, parent);
+			return;
+		}
+		int index = 1;
+		for (Map.Entry<Integer, Parameter> entry : outputParameters.entrySet()) {
+			SaxElementBuilder resultElement = parent.startElement(docname);
+			int position = entry.getKey();
+			Parameter param = entry.getValue();
+			resultElement.addAttribute("param", param.getName());
+			resultElement.addAttribute("type", param.getType().toString());
+
+			try {
+				callableStatement.getObject(position);
+				if (callableStatement.wasNull()) {
+					resultElement.addAttribute("null", "true");
+				} else if (param.getType() == Parameter.ParameterType.LIST) {
+					ResultSet resultSet = callableStatement.getObject(position, ResultSet.class);
+					processResultSet(dbmsSupport, resultSet, maxRows, includeFieldDefinition, resultElement);
+				} else {
+					String value = JdbcUtil.getValue(dbmsSupport, resultWrapper, index, metaData, getBlobCharset(), isDecompressBlobs(), getNullValue(), isTrimSpaces(), isGetBlobSmart(), false);
+					resultElement.addValue(value);
+				}
+			} catch (SQLException | IOException e) {
+				log.warn("Error retrieving result value", e);
+				addErrorXml(e, resultElement);
+			}
+			resultElement.endElement();
+			++index;
+		}
+	}
+
+	private void processStatementResults(@Nonnull IDbmsSupport dbmsSupport, @Nonnull Statement statement, int maxRows, boolean includeFieldDefinition, @Nonnull SaxElementBuilder parent) throws SAXException {
+		int resultNr = 1;
+		try {
+			do {
+				SaxElementBuilder resultElement = parent.startElement(docname);
+				resultElement.addAttribute("resultNr", String.valueOf(resultNr));
+				processResultSet(dbmsSupport, statement.getResultSet(), maxRows, includeFieldDefinition, resultElement);
+				resultNr++;
+				resultElement.endElement();
+			} while (statement.getMoreResults());
+		} catch (SQLException e) {
+			log.warn("Could not get next result-set from statement");
+			addErrorXml(e, parent);
+		}
+	}
+
+	private void processResultSet(IDbmsSupport dbmsSupport, ResultSet rs, int maxRows, boolean includeFieldDefinition, SaxElementBuilder parent) {
+		int rowCounter = 0;
+		try {
+			ResultSetMetaData rsmeta = rs.getMetaData();
+			if (includeFieldDefinition) {
+				addFieldDefinitions(parent, rsmeta);
+			}
+
+			//----------------------------------------
+			// Process result rows
+			//----------------------------------------
+
+			try (SaxElementBuilder queryresult = parent.startElement(recordname)) {
+				while (rs.next() && rowCounter < maxRows) {
+					getRowXml(queryresult, dbmsSupport, rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces, getBlobSmart);
+					rowCounter++;
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error occurred at row [" + rowCounter+"]", e);
 		}
 	}
 
@@ -157,14 +267,14 @@ public class DB2XMLWriter {
 		for (int j = 1; j <= nfields; j++) {
 			try (SaxElementBuilder field = fields.startElement("field")) {
 
-				String columnName = "" + rsmeta.getColumnName(j);
+				String columnName = rsmeta.getColumnName(j);
 				if(convertFieldnamesToUppercase)
 					columnName = columnName.toUpperCase();
 				field.addAttribute("name", columnName);
 
 				//Not every JDBC implementation implements these attributes!
 				try {
-					field.addAttribute("type", "" + getFieldType(rsmeta.getColumnType(j)));
+					field.addAttribute("type", getFieldType(rsmeta.getColumnType(j)));
 				} catch (SQLException e) {
 					log.debug("Could not determine columnType",e);
 				}
@@ -220,7 +330,7 @@ public class DB2XMLWriter {
 			for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
 				try (SaxElementBuilder resultField = row.startElement("field")) {
 
-					String columnName = "" + rsmeta.getColumnName(i);
+					String columnName = rsmeta.getColumnName(i);
 					if(convertFieldnamesToUppercase)
 						columnName = columnName.toUpperCase();
 					resultField.addAttribute("name", columnName);
