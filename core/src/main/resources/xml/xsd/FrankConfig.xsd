@@ -2694,7 +2694,7 @@
   <xs:complexType name="FxfListenerType">
     <xs:group ref="JmsListenerBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="FxfListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.fxf.extensions.FxfListener" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.fxf.FxfListener" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FxfListenerDeclaredAttributeGroup">
     <xs:attribute name="fxfFileSessionKey" type="xs:string">
@@ -5008,7 +5008,7 @@
   </xs:group>
   <xs:complexType name="Afm2EdiFactSenderType">
     <xs:attributeGroup ref="Afm2EdiFactSenderDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.afm.extensions.Afm2EdiFactSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.afm.Afm2EdiFactSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="Afm2EdiFactSenderDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
@@ -8339,7 +8339,7 @@
   <xs:complexType name="XfbSenderType">
     <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
     <xs:attributeGroup ref="XfbSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.xfb.extensions.XfbSender" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.xfb.XfbSender" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XfbSenderDeclaredAttributeGroup">
     <xs:attribute name="script" type="xs:string">
@@ -10280,7 +10280,7 @@
   <xs:complexType name="ApiWsdlXmlValidatorType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="ApiWsdlXmlValidatorCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.api.extensions.ApiWsdlXmlValidator" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.api.ApiWsdlXmlValidator" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ApiWsdlXmlValidatorDeclaredAttributeGroup">
     <xs:attribute name="multipart" type="frankBoolean">
@@ -10769,7 +10769,7 @@
   <xs:complexType name="FxfXmlValidatorType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="FxfXmlValidatorCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.fxf.extensions.FxfXmlValidator" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.fxf.FxfXmlValidator" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FxfXmlValidatorDeclaredAttributeGroup">
     <xs:attribute name="direction">
@@ -11319,7 +11319,7 @@
   <xs:complexType name="ApiSoapWrapperPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="SoapWrapperPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.api.extensions.ApiSoapWrapperPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.api.ApiSoapWrapperPipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="SoapWrapperPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -11514,7 +11514,7 @@
   <xs:complexType name="FxfWrapperPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="FxfWrapperPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.fxf.extensions.FxfWrapperPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.fxf.FxfWrapperPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="FxfWrapperPipeDeclaredAttributeGroup">
     <xs:attribute name="flowId" type="xs:string">
@@ -16773,7 +16773,7 @@
   <xs:complexType name="ScanTibcoSolutionPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="ScanTibcoSolutionPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.svn.extensions.ScanTibcoSolutionPipe" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.svn.ScanTibcoSolutionPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="ScanTibcoSolutionPipeDeclaredAttributeGroup">
     <xs:attribute name="url" type="xs:string" />

@@ -1726,7 +1726,7 @@
   </xs:group>
   <xs:complexType name="Afm2EdiFactSenderType">
     <xs:attributeGroup ref="Afm2EdiFactSenderDeclaredAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.afm.extensions.Afm2EdiFactSender" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.afm.Afm2EdiFactSender" />
   </xs:complexType>
   <xs:attributeGroup name="Afm2EdiFactSenderDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
@@ -1933,7 +1933,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="BisJmsSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.bis.extensions.BisJmsSender" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.bis.BisJmsSender" />
   </xs:complexType>
   <xs:attributeGroup name="BisJmsSenderDeclaredAttributeGroup">
     <xs:attribute name="responseXPath" type="xs:string" />
@@ -5831,7 +5831,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="XfbSenderCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.xfb.extensions.XfbSender" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.xfb.XfbSender" />
   </xs:complexType>
   <xs:attributeGroup name="XfbSenderDeclaredAttributeGroup">
     <xs:attribute name="script" type="xs:string">
@@ -6457,7 +6457,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="BisJmsListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.bis.extensions.BisJmsListener" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.bis.BisJmsListener" />
   </xs:complexType>
   <xs:attributeGroup name="BisJmsListenerDeclaredAttributeGroup">
     <xs:attribute name="requestXPath" type="xs:string" />
@@ -7239,7 +7239,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="FxfListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.fxf.extensions.FxfListener" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.fxf.FxfListener" />
   </xs:complexType>
   <xs:attributeGroup name="FxfListenerDeclaredAttributeGroup">
     <xs:attribute name="fxfFileSessionKey" type="xs:string">
@@ -9087,7 +9087,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="ApiWsdlXmlValidatorCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.api.extensions.ApiWsdlXmlValidator" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.api.ApiWsdlXmlValidator" />
   </xs:complexType>
   <xs:attributeGroup name="ApiWsdlXmlValidatorDeclaredAttributeGroup">
     <xs:attribute name="multipart" type="frankBoolean">
@@ -9608,7 +9608,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="FxfXmlValidatorCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.fxf.extensions.FxfXmlValidator" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.fxf.FxfXmlValidator" />
   </xs:complexType>
   <xs:attributeGroup name="FxfXmlValidatorDeclaredAttributeGroup">
     <xs:attribute name="direction">
@@ -9881,7 +9881,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="SoapWrapperPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.api.extensions.ApiSoapWrapperPipe" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.api.ApiSoapWrapperPipe" />
   </xs:complexType>
   <xs:complexType name="SoapWrapperPipeType">
     <xs:sequence>
@@ -10030,7 +10030,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="BisWrapperPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.bis.extensions.BisWrapperPipe" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.bis.BisWrapperPipe" />
   </xs:complexType>
   <xs:attributeGroup name="BisWrapperPipeDeclaredAttributeGroup">
     <xs:attribute name="inputXPath" type="xs:string" />
@@ -10118,7 +10118,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="FxfWrapperPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.fxf.extensions.FxfWrapperPipe" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.fxf.FxfWrapperPipe" />
   </xs:complexType>
   <xs:attributeGroup name="FxfWrapperPipeDeclaredAttributeGroup">
     <xs:attribute name="flowId" type="xs:string">
@@ -12186,7 +12186,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="ApiStreamPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.api.extensions.ApiStreamPipe" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.api.ApiStreamPipe" />
   </xs:complexType>
   <xs:attributeGroup name="ApiStreamPipeDeclaredAttributeGroup">
     <xs:attribute name="jmsRealm" type="xs:string" />
@@ -15412,7 +15412,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="ScanTibcoSolutionPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.svn.extensions.ScanTibcoSolutionPipe" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.svn.ScanTibcoSolutionPipe" />
   </xs:complexType>
   <xs:attributeGroup name="ScanTibcoSolutionPipeDeclaredAttributeGroup">
     <xs:attribute name="url" type="xs:string" />
