@@ -35,6 +35,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 	protected abstract void setIndent(boolean indent);
 	protected abstract void setSkipEmptyTags(boolean skipEmptyTags);
 	protected abstract void setRemoveNamespaces(boolean removeNamespaces);
+
 	protected abstract void setXsltVersion(int xsltVersion);
 	protected abstract void setOutputType(OutputType outputType);
 	protected abstract void setHandleLexicalEvents(boolean handleLexicalEvents);

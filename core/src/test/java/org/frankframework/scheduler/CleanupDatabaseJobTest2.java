@@ -53,7 +53,7 @@ public class CleanupDatabaseJobTest2 {
 
 	@BeforeEach
 	@SuppressWarnings("unchecked")
-	public void setup(DatabaseTestEnvironment database) throws Exception {
+	public void setUp(DatabaseTestEnvironment database) throws Exception {
 		storage = getConfiguration().createBean(JdbcTransactionalStorage.class);
 		storage.setName("test-cleanupDB");
 		storage.setType("A");
