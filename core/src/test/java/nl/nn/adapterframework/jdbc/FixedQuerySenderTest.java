@@ -11,7 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
-import java.io.Serializable;
 import java.io.StringReader;
 
 import org.junit.jupiter.api.AfterEach;
@@ -39,8 +38,6 @@ public class FixedQuerySenderTest {
 
 	private final String resultColumnsReturned = "<result><rowset><row number=\"0\"><field name=\"TKEY\">1</field><field name=\"TVARCHAR\">value</field></row></rowset></result>";
 	protected static final String TABLE_NAME = "FQS_TABLE";
-
-	private JdbcTransactionalStorage<Serializable> storage;
 
 	private PipeLineSession session;
 

@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
 		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
-	<changeSet id="IAF_Util:1:${tableName}" author="Niels Meijer">
+	<changeSet id="TestTable:1:${tableName}" author="Niels Meijer">
 		<comment>Add ${tableName} Table</comment>
 		<createTable tableName="${tableName}">
 			<column name="tKEY" type="BIGINT">
@@ -26,7 +26,7 @@
 			<column name="tDATE"/>
 		</createIndex>
 	</changeSet>
-	<changeSet id="IAF_Util:2:${tableName}" author="Niels Meijer" onValidationFail="MARK_RAN">
+	<changeSet id="TestTable:2:${tableName}" author="Niels Meijer" onValidationFail="MARK_RAN">
 		<comment>Set sequence for ${tableName} Table</comment>
 		<createSequence sequenceName="SEQ_${tableName}" startValue="161332"/>
 	</changeSet>
