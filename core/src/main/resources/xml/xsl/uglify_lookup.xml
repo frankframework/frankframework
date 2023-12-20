@@ -697,7 +697,7 @@
   <Element>
     <Name>LadybugPipe</Name>
     <Type>pipe</Type>
-    <ClassName>nl.nn.ibistesttool.LadybugPipe</ClassName>
+    <ClassName>org.frankframework.ibistesttool.LadybugPipe</ClassName>
   </Element>
   <Element>
     <Name>LarvaPipe</Name>
