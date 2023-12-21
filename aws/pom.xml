@@ -11,7 +11,7 @@
 	<name>Ibis AdapterFramework support for AWS</name>
 
 	<properties>
-		<software.amazon.awssdk.version>2.22.2</software.amazon.awssdk.version>
+		<software.amazon.awssdk.version>2.22.3</software.amazon.awssdk.version>
 	</properties>
 
 	<dependencies>
