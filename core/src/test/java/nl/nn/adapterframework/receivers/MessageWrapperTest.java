@@ -14,11 +14,13 @@ import org.junit.jupiter.api.Test;
 
 import jakarta.mail.internet.InternetHeaders;
 import jakarta.mail.internet.MimeBodyPart;
+import lombok.extern.log4j.Log4j2;
 import nl.nn.adapterframework.http.PartMessage;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.stream.PathMessage;
 import nl.nn.adapterframework.testutil.SerializationTester;
 
+@Log4j2
 public class MessageWrapperTest {
 
 	private static final String characterWire76 = "aced00057372002f6e6c2e6e6e2e616461707465726672616d65776f726b2e7265636569766572732e4d657373616765577261707065728d7e867056c0b4ff0200034c0007636f6e7465787474000f4c6a6176612f7574696c2f4d61703b4c000269647400124c6a6176612f6c616e672f537472696e673b4c00076d6573736167657400274c6e6c2f6e6e2f616461707465726672616d65776f726b2f73747265616d2f4d6573736167653b7870737200176a6176612e7574696c2e4c696e6b6564486173684d617034c04e5c106cc0fb0200015a000b6163636573734f72646572787200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c770800000010000000017400196d65737361676557726170706572436f6e746578744974656d74000966616b6556616c7565780074000666616b654964737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c00076368617273657471007e00024c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e000c78707074001c746573746461746120766f6f72206d657373616765777261707065727078";
@@ -34,6 +36,7 @@ public class MessageWrapperTest {
 
 	@Test
 	public void testSerializeDeserializeCharacters() throws Exception {
+		// NB: This test logs a character-wire that can be added to future compatibility checkpoints
 		String data = "testdata voor messagewrapper";
 		String id = "fakeId";
 		String correlationId = "fakeCorrelationId";
@@ -44,6 +47,7 @@ public class MessageWrapperTest {
 		in.getContext().put(contextKey, contextValue);
 
 		byte[] wire = serializationTester.serialize(in);
+		log.debug("Current characterWire: [{}]", ()-> Hex.encodeHexString(wire));
 
 		assertNotNull(wire);
 		MessageWrapper<?> out = serializationTester.deserialize(wire);
@@ -79,6 +83,7 @@ public class MessageWrapperTest {
 
 	@Test
 	public void testSerializeDeserializeBinary() throws Exception {
+		// NB: This test logs a binary-wire that can be added to future compatibility checkpoints
 		byte[] data = "testdata voor messagewrapper".getBytes();
 		String id = "fakeId";
 		String correlationId = "fakeCorrelationId";
@@ -89,6 +94,7 @@ public class MessageWrapperTest {
 		in.getContext().put(contextKey, contextValue);
 
 		byte[] wire = serializationTester.serialize(in);
+		log.debug("Current binaryWire: [{}]", ()-> Hex.encodeHexString(wire));
 
 		assertNotNull(wire);
 		MessageWrapper<?> out = serializationTester.deserialize(wire);
