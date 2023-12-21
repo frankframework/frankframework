@@ -97,7 +97,7 @@ TagDatabase
 			<column name="NAME" type="java.sql.Types.VARCHAR(100)">
 				<constraints nullable="false"/>
 			</column>
-			<column name="VERSION" type="java.sql.Types.VARCHAR(120)">
+			<column name="VERSION" type="java.sql.Types.VARCHAR(50)">
 				<constraints nullable="false"/>
 			</column>
 			<column name="FILENAME" type="java.sql.Types.VARCHAR(150)"/>
@@ -147,4 +147,18 @@ TagDatabase
 		</addColumn>
 	</changeSet>
 
+	<changeSet id="IAF_Util:8" author="Yannick van Leeuwen">
+		<validCheckSum>7:85bdc937b35ee7e69753df403f970e82</validCheckSum> <!-- #1481, BLOB->LONGBLOB -->
+		<comment>Allow 120 chars for version field</comment>
+		<modifyDataType
+				columnName="VERSION"
+				newDataType="java.sql.Types.VARCHAR(120)"
+				tableName="IBISCONFIG"/>
+		<rollback>
+			<modifyDataType
+					columnName="VERSION"
+					newDataType="java.sql.Types.VARCHAR(50)"
+					tableName="IBISCONFIG"/>
+		</rollback>
+	</changeSet>
 </databaseChangeLog>
