@@ -3,7 +3,7 @@
   <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-ExceptionPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ExceptionPipe] caught exception: Pipe [Generate exception] &lt;test/&gt;</message>
   <cause>
     <throwable>
-      <class>org.frankframework.dispatcher.RequestProcessorException</class>
+      <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
       <message>RequestProcessor [ibis4test-ExceptionPipe] caught exception</message>
       <cause>
         <throwable>

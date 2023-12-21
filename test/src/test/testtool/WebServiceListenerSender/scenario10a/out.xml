@@ -3,7 +3,7 @@
   <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-WebServiceSenderTimeoutAddress]: (RequestProcessorException) RequestProcessor [ibis4test-WebServiceSenderTimeoutAddress] caught exception: Pipe [send2ws_no_forwards] caught timeout-exception: (SocketTimeoutException) Read timed out</message>
   <cause>
     <throwable>
-      <class>org.frankframework.dispatcher.RequestProcessorException</class>
+      <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
       <message>RequestProcessor [ibis4test-WebServiceSenderTimeoutAddress] caught exception</message>
       <cause>
         <throwable>

@@ -3,7 +3,7 @@
   <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-ForEachChildElementPipe]: (RequestProcessorException) RequestProcessor [ibis4test-ForEachChildElementPipe] caught exception: Pipe [ForEachChildElementPipe_Record] caught exception: (SaxException) Could not process list of elements using xpath [requests/request]: (TransformerException): (SaxException): IbisLocalSender [ForEachChildElementPipe_Record-sender] exception calling JavaListener [ForEachChildElementPipe_Record]: Pipe [exception] &lt;request&gt;exception&lt;/request&gt;</message>
   <cause>
     <throwable>
-      <class>org.frankframework.dispatcher.RequestProcessorException</class>
+      <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
       <message>RequestProcessor [ibis4test-ForEachChildElementPipe] caught exception</message>
       <cause>
         <throwable>

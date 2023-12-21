@@ -1,6 +1,6 @@
 <throwable><class>org.frankframework.core.SenderException</class><message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-AwsSqsFFSender]: (RequestProcessorException) RequestProcessor [ibis4test-AwsSqsFFSender] caught exception: Pipe [senderException] &lt;request action=&quot;senderException&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
-&lt;/request&gt;</message><cause><throwable><class>org.frankframework.dispatcher.RequestProcessorException</class><message>RequestProcessor [ibis4test-AwsSqsFFSender] caught exception</message><cause><throwable><class>org.frankframework.core.ListenerException</class><message>Pipe [senderException] &lt;request action=&quot;senderException&quot;&gt;
+&lt;/request&gt;</message><cause><throwable><class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class><message>RequestProcessor [ibis4test-AwsSqsFFSender] caught exception</message><cause><throwable><class>org.frankframework.core.ListenerException</class><message>Pipe [senderException] &lt;request action=&quot;senderException&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</message><cause><throwable><class>org.frankframework.core.PipeRunException</class><message>Pipe [senderException] &lt;request action=&quot;senderException&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;

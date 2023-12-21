@@ -5,7 +5,7 @@
 &lt;/request&gt;</message>
   <cause>
     <throwable>
-      <class>org.frankframework.dispatcher.RequestProcessorException</class>
+      <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
       <message>RequestProcessor [ibis4test-EsbJmsFFSender] caught exception</message>
       <cause>
         <throwable>

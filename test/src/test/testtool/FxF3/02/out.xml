@@ -4,7 +4,7 @@
 /Envelope/Body/OnCompletedTransferNotify_Action: at (5,24): cvc-complex-type.2.4.a: Invalid content was found starting with element &#39;{&quot;http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1&quot;:TransferFlowIdX}&#39;. One of &#39;{&quot;http://nn.nl/XSD/Infrastructure/Transfer/FileTransfer/1/OnCompletedTransferNotify/1&quot;:TransferFlowId}&#39; is expected.</message>
   <cause>
     <throwable>
-      <class>org.frankframework.dispatcher.RequestProcessorException</class>
+      <class>nl.nn.adapterframework.dispatcher.RequestProcessorException</class>
       <message>RequestProcessor [ibis4test-FxF3In] caught exception</message>
       <cause>
         <throwable>
