@@ -1,5 +1,5 @@
-<errorMessage timestamp="Thu Feb 24 12:10:59 CET 2022" originator="IAF_ss9 7.8-SNAPSHOT" message="Adapter [ClobAndBlob] msgId [synthetic-message-id-a9fee1b8-45cd1ffc_18c35bfd289_-7f68]: Pipe [readBlobReadAsIfcompressed] caught exception: [nl.nn.adapterframework.jdbc.FixedQuerySender] [readBlobReadAsIfcompressed-sender] got exception executing a SELECT SQL command: (ZipException) incorrect header check: [nl.nn.adapterframework.jdbc.FixedQuerySender] [readBlobReadAsIfcompressed-sender] got exception executing a SELECT SQL command: (ZipException) incorrect header check">
-	<location class="nl.nn.adapterframework.core.Adapter" name="ClobAndBlob"/>
+<errorMessage timestamp="Thu Feb 24 12:10:59 CET 2022" originator="IAF_ss9 7.8-SNAPSHOT" message="Adapter [ClobAndBlob] msgId [synthetic-message-id-a9fee1b8-45cd1ffc_18c35bfd289_-7f68]: Pipe [readBlobReadAsIfcompressed] caught exception: [org.frankframework.jdbc.FixedQuerySender] [readBlobReadAsIfcompressed-sender] got exception executing a SELECT SQL command: (ZipException) incorrect header check: [org.frankframework.jdbc.FixedQuerySender] [readBlobReadAsIfcompressed-sender] got exception executing a SELECT SQL command: (ZipException) incorrect header check">
+	<location class="org.frankframework.core.Adapter" name="ClobAndBlob"/>
 	<details>IGNORE</details>
 	<originalMessage messageId="IGNORE" receivedTime="IGNORE">&lt;result/&gt;</originalMessage>
 </errorMessage>

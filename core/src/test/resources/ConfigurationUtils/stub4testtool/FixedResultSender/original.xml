@@ -2,7 +2,7 @@
 	<adapter name="FixedResultSender">
 		<receiver name="FixedResultSender">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="FixedResultSender"
 			/>
 		</receiver>
@@ -13,10 +13,10 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.FixedResultSender"
+					className="org.frankframework.senders.FixedResultSender"
 					returnString="TEST"
 				/>
 				<forward name="success" path="READY"/>

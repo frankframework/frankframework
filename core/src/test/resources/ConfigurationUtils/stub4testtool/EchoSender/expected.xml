@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="EchoSender">
       <receiver name="testtool-EchoSender">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-EchoSender"/>
       </receiver>
 		    <receiver name="EchoSender">
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="EchoSender"/>
 		    </receiver>
       <receiver name="testtool-EchoSender-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-EchoSender-1"/>
       </receiver>
 
@@ -18,10 +18,10 @@
 				        <exit path="READY" state="success"/>
 			      </exits>
 			      <pipe name="Call Sender"
-               className="nl.nn.adapterframework.pipes.SenderPipe"
+               className="org.frankframework.pipes.SenderPipe"
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
-				        <sender className="nl.nn.adapterframework.senders.EchoSender"
+				        <sender className="org.frankframework.senders.EchoSender"
                     javaListener="TEST"/>
 				        <forward name="success" path="READY"/>
 			      </pipe>

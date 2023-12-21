@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="LdapFindMemberPipe">
       <receiver name="testtool-LdapFindMemberPipe">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-LdapFindMemberPipe"/>
       </receiver>
 		    <receiver>
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="LdapFindMemberPipe"/>
 		    </receiver>
       <receiver name="testtool-LdapFindMemberPipe-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-LdapFindMemberPipe-1"/>
       </receiver>
 		    <pipeline firstPipe="LdapFindMemberPipe">
@@ -17,8 +17,8 @@
 				        <exit path="EXIT" state="success"/>
 			      </exits>
 			      <pipe name="LdapFindMemberPipe"
-               className="nl.nn.adapterframework.pipes.SenderPipe">
-            <sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+               className="org.frankframework.pipes.SenderPipe">
+            <sender className="org.frankframework.senders.IbisJavaSender"
                     serviceName="testtool-LdapFindMemberPipe"/>
 				        <forward name="success" path="found"/>
 				        <forward name="notFound" path="notFound"/>

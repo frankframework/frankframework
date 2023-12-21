@@ -1,23 +1,23 @@
 flowchart
-	d2e2("<b>testtool-HelloLines</b><br/><a style='color:#909090;'>nl.nn.adapterframework.receivers.</a>JavaListener"):::normal
-	d2e4("<b>ApiListener</b><br/><a style='color:#909090;'>nl.nn.adapterframework.http.rest.</a>ApiListener"):::normal
-	d2e6("<b>testtool-HelloLines-1</b><br/><a style='color:#909090;'>nl.nn.adapterframework.receivers.</a>JavaListener"):::normal
-	d2e8("<b>WebServiceListener</b><br/><a style='color:#909090;'>nl.nn.adapterframework.http.</a>WebServiceListener"):::normal
-	d2e10("<b>testtool-HelloLines-2</b><br/><a style='color:#909090;'>nl.nn.adapterframework.receivers.</a>JavaListener"):::normal
-	d2e15("<b>ValidateInput</b><br/><a style='color:#909090;'>nl.nn.adapterframework.soap.</a>SoapValidator"):::normal
-	d2e66("<b>Create example plain text message</b><br/><a style='color:#909090;'>nl.nn.adapterframework.pipes.</a>FixedResultPipe<br/>output sessionKey: <i>exampleMessage</i>"):::errorOutline
-	d2e71("<b>Transform plain text message to XML</b><br/><a style='color:#909090;'>nl.nn.adapterframework.pipes.</a>Text2XmlPipe"):::errorOutline
-	d2e75("<b>Add position to elements</b><br/><a style='color:#909090;'>nl.nn.adapterframework.pipes.</a>XsltPipe<br/>output sessionKey: <i>exampleMessageAsXml</i>"):::errorOutline
-	d2e79("<b>Transform XML message to JSON message</b><br/><a style='color:#909090;'>nl.nn.adapterframework.pipes.</a>Json2XmlValidator<br/>output sessionKey: <i>exampleMessageAsJson</i><br/>replaces result with computed pipe input"):::errorOutline
-	d2e23("<b>Remove namespaces</b><br/><a style='color:#909090;'>nl.nn.adapterframework.pipes.</a>XsltPipe"):::normal
-	d2e27("<b>Only one line?</b><br/><a style='color:#909090;'>nl.nn.adapterframework.pipes.</a>XmlSwitch"):::normal
-	d2e33("<b>Call HelloWorld</b><br/><a style='color:#909090;'>nl.nn.adapterframework.senders.</a>IbisLocalSender"):::normal
-	d2e39("<b>Transform result to XML</b><br/><a style='color:#909090;'>nl.nn.adapterframework.pipes.</a>Text2XmlPipe"):::normal
-	d2e51("<b>Add documentation</b><br/><a style='color:#909090;'>nl.nn.adapterframework.pipes.</a>XsltPipe"):::normal
-	d2e22-READY("<b>OutputWrapper</b><br/><a style='color:#909090;'>nl.nn.adapterframework.soap.</a>SoapWrapperPipe"):::normal
+	d2e2("<b>testtool-HelloLines</b><br/><a style='color:#909090;'>org.frankframework.receivers.</a>JavaListener"):::normal
+	d2e4("<b>ApiListener</b><br/><a style='color:#909090;'>org.frankframework.http.rest.</a>ApiListener"):::normal
+	d2e6("<b>testtool-HelloLines-1</b><br/><a style='color:#909090;'>org.frankframework.receivers.</a>JavaListener"):::normal
+	d2e8("<b>WebServiceListener</b><br/><a style='color:#909090;'>org.frankframework.http.</a>WebServiceListener"):::normal
+	d2e10("<b>testtool-HelloLines-2</b><br/><a style='color:#909090;'>org.frankframework.receivers.</a>JavaListener"):::normal
+	d2e15("<b>ValidateInput</b><br/><a style='color:#909090;'>org.frankframework.soap.</a>SoapValidator"):::normal
+	d2e66("<b>Create example plain text message</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>FixedResultPipe<br/>output sessionKey: <i>exampleMessage</i>"):::errorOutline
+	d2e71("<b>Transform plain text message to XML</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>Text2XmlPipe"):::errorOutline
+	d2e75("<b>Add position to elements</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>XsltPipe<br/>output sessionKey: <i>exampleMessageAsXml</i>"):::errorOutline
+	d2e79("<b>Transform XML message to JSON message</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>Json2XmlValidator<br/>output sessionKey: <i>exampleMessageAsJson</i><br/>replaces result with computed pipe input"):::errorOutline
+	d2e23("<b>Remove namespaces</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>XsltPipe"):::normal
+	d2e27("<b>Only one line?</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>XmlSwitch"):::normal
+	d2e33("<b>Call HelloWorld</b><br/><a style='color:#909090;'>org.frankframework.senders.</a>IbisLocalSender"):::normal
+	d2e39("<b>Transform result to XML</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>Text2XmlPipe"):::normal
+	d2e51("<b>Add documentation</b><br/><a style='color:#909090;'>org.frankframework.pipes.</a>XsltPipe"):::normal
+	d2e22-READY("<b>OutputWrapper</b><br/><a style='color:#909090;'>org.frankframework.soap.</a>SoapWrapperPipe"):::normal
 	d2e14("<b>SUCCESS</b>"):::normal
-	d2e43("<b>Call HelloWorld for every line</b><br/><a style='color:#909090;'>nl.nn.adapterframework.senders.</a>IbisLocalSender"):::normal
-	d2e21("<b>InputWrapper</b><br/><a style='color:#909090;'>nl.nn.adapterframework.soap.</a>SoapWrapperPipe"):::normal
+	d2e43("<b>Call HelloWorld for every line</b><br/><a style='color:#909090;'>org.frankframework.senders.</a>IbisLocalSender"):::normal
+	d2e21("<b>InputWrapper</b><br/><a style='color:#909090;'>org.frankframework.soap.</a>SoapWrapperPipe"):::normal
 	classDef normal fill:#fff,stroke-width:4px,stroke:#8bc34a;
 	classDef errorOutline fill:#fff,stroke-width:4px,stroke:#ec4758;
 	d2e2 --> |success| d2e15

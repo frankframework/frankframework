@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="FtpFileRetrieverPipe">
       <receiver name="testtool-FtpFileRetrieverPipe">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-FtpFileRetrieverPipe"/>
       </receiver>
 		    <receiver>
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="FtpFileRetrieverPipe"/>
 		    </receiver>
       <receiver name="testtool-FtpFileRetrieverPipe-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-FtpFileRetrieverPipe-1"/>
       </receiver>
 		    <pipeline firstPipe="FtpFileRetrieverPipe">
@@ -17,8 +17,8 @@
 				        <exit path="EXIT" state="success"/>
 			      </exits>
 			      <pipe name="FtpFileRetrieverPipe"
-               className="nl.nn.adapterframework.pipes.SenderPipe">
-            <sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+               className="org.frankframework.pipes.SenderPipe">
+            <sender className="org.frankframework.senders.IbisJavaSender"
                     serviceName="testtool-FtpFileRetrieverPipe"/>
 				        <forward name="success" path="EXIT"/>
 			      </pipe>

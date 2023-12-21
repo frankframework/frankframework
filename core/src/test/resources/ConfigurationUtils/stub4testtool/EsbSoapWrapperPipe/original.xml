@@ -1,23 +1,23 @@
 <configuration>
 	<adapter name="EsbSoapWrapperPipe (mode='reg')">
-		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
+		<errorMessageFormatter className="org.frankframework.errormessageformatters.SoapErrorMessage" />
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-EsbSoapWrapperPipe2" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-EsbSoapWrapperPipe2" throwException="false" />
 		</receiver>
 		<pipeline firstPipe="switch">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<inputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"/>
-			<outputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"/>
-			
-			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" sessionKey="action" />
+			<inputWrapper className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"/>
+			<outputWrapper className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"/>
+
+			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" sessionKey="action" />
 			<!-- unwrap -->
-			<pipe name="unwrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" direction="unwrap" cmhVersion="1">
+			<pipe name="unwrap" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" direction="unwrap" cmhVersion="1">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap -->
-			<pipe name="wrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="1">
+			<pipe name="wrap" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="1">
 				<param name="businessDomain" value="Publishing" />
 				<param name="serviceName" value="Document" />
 				<param name="serviceContext" value="SalesDocument" />
@@ -33,7 +33,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap2 -->
-			<pipe name="wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply" cmhVersion="1">
+			<pipe name="wrap2" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply" cmhVersion="1">
 				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response" />
 				<param name="namespace" value="http://www.ibis.com/iaf" />
 				<param name="errorCode" value="ERROR1234" />
@@ -42,25 +42,25 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap3 -->
-			<pipe name="wrap3" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply" cmhVersion="1">
+			<pipe name="wrap3" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply" cmhVersion="1">
 				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap4 -->
-			<pipe name="wrap4" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="1">
+			<pipe name="wrap4" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="1">
 				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap5 -->
-			<pipe name="wrap5" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" fixResultNamespace="true" cmhVersion="1">
+			<pipe name="wrap5" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" fixResultNamespace="true" cmhVersion="1">
 				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- unwrap & wrap -->
-			<pipe name="unwrap_wrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader" cmhVersion="1">
+			<pipe name="unwrap_wrap" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader" cmhVersion="1">
 				<forward name="success" path="unwrap_wrap2" />
 			</pipe>
-			<pipe name="unwrap_wrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="1">
+			<pipe name="unwrap_wrap2" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="1">
 				<param name="businessDomain" value="BusinessDomain" />
 				<param name="serviceName" value="ServiceName" />
 				<param name="serviceContext" value="ServiceContext" />
@@ -73,7 +73,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- wrap & unwrap -->
-			<pipe name="wrap_unwrap" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="1">
+			<pipe name="wrap_unwrap" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="1">
 				<param name="businessDomain" value="Publishing" />
 				<param name="serviceName" value="Document" />
 				<param name="serviceContext" value="SalesDocument" />
@@ -87,7 +87,7 @@
 				<param name="conversationId" pattern="{hostname}_{uid}" />
 				<param name="cpaId" value="cpaid1" />
 			</pipe>
-			<pipe name="wrap_unwrap2" className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe" direction="unwrap" cmhVersion="1">
+			<pipe name="wrap_unwrap2" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" direction="unwrap" cmhVersion="1">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

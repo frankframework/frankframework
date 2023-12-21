@@ -5,7 +5,7 @@
 	>
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="TransactionHandlingMultiThread"
 				serviceName="ibis4test-TransactionHandlingMultiThread"
 			/>
@@ -15,150 +15,150 @@
 			<exits>
 				<exit path="EXIT" state="success"/>
 			</exits>
-			
+
 			<pipe name="prepare">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Prepare" />
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Prepare" />
 			</pipe>
 
 			<pipe name="action" getInputFromSessionKey="originalMessage">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Work" />
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Work" />
 			</pipe>
 
-			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage" xpathExpression="*/@select" notFoundForwardName="selectChar" />
+			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage" xpathExpression="*/@select" notFoundForwardName="selectChar" />
 
 			<pipe name="selectChar">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TCHAR FROM IBISTEMP WHERE TKEY=999" queryType="select" scalar="true" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TCHAR FROM IBISTEMP WHERE TKEY=999" queryType="select" scalar="true" />
 				<forward name="success" path="EXIT"/>
 			</pipe>
 
 			<pipe name="selectClob">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TCLOB FROM IBISTEMP WHERE TKEY=999" queryType="select" scalar="true" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TCLOB FROM IBISTEMP WHERE TKEY=999" queryType="select" scalar="true" />
 				<forward name="success" path="EXIT"/>
 			</pipe>
 
 			<pipe name="selectBlob">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=999" queryType="select" scalar="true" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=999" queryType="select" scalar="true" />
 			</pipe>
 		</pipeline>
 	</adapter>
-	
+
 	<adapter name="TransactionHandlingMultiThread-Work" >
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="TransactionHandlingMultiThread-Work"
 				throwException="false"
 			/>
 		</receiver>
-		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
+		<errorMessageFormatter className="org.frankframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
 
 		<pipeline transactionAttribute="RequiresNew" transactionTimeout="10">
 			<exits>
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="firstUpdate" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='b' WHERE TKEY=999" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='b' WHERE TKEY=999" />
 			</pipe>
 
-			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage" xpathExpression="*/@branch" />
+			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage" xpathExpression="*/@branch" />
 
 			<pipe name="update">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			
+
 			<pipe name="updateFromOtherThread">
-				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
-					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
+				<sender className="org.frankframework.senders.ParallelSenders">
+					<sender className="org.frankframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
-			
+
 			<pipe name="updateFromMultipleOtherThreads">
-				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
-					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
-					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
-					<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
+				<sender className="org.frankframework.senders.ParallelSenders">
+					<sender className="org.frankframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
+					<sender className="org.frankframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
+					<sender className="org.frankframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
-			
+
 			<pipe name="rollback">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Sub-Rollback" />
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Sub-Rollback" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 
 			<pipe name="rollbackFromOtherThread">
-				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
-					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Sub-Rollback" />
+				<sender className="org.frankframework.senders.ParallelSenders">
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Sub-Rollback" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
-			
-			<pipe name="DualXsltPipeBeforeForEachChild" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1"/> <!-- forward to XsltPipe, that will provide OutputStream  -->
-			<pipe name="XsltPipeBeforeForEachChild" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1" /> <!-- forward to ForEachChildElementPipe, that will provide OutputStream  -->
-			<pipe name="ForEachChildElementPipe" className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" elementXPathExpression="/*/*">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
+
+			<pipe name="DualXsltPipeBeforeForEachChild" className="org.frankframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1"/> <!-- forward to XsltPipe, that will provide OutputStream  -->
+			<pipe name="XsltPipeBeforeForEachChild" className="org.frankframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1" /> <!-- forward to ForEachChildElementPipe, that will provide OutputStream  -->
+			<pipe name="ForEachChildElementPipe" className="org.frankframework.pipes.ForEachChildElementPipe" elementXPathExpression="/*/*">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999 AND TCHAR='b'" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="DualXsltPipeBeforeUpdateClob" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1"/> <!-- forward to XsltPipe, that will provide OutputStream  -->
-			<pipe name="XsltPipeBeforeUpdateClob" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1" /> <!-- forward to FixedQuerySender, that will provide OutputStream  -->
+			<pipe name="DualXsltPipeBeforeUpdateClob" className="org.frankframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1"/> <!-- forward to XsltPipe, that will provide OutputStream  -->
+			<pipe name="XsltPipeBeforeUpdateClob" className="org.frankframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1" /> <!-- forward to FixedQuerySender, that will provide OutputStream  -->
 			<pipe name="UpdateClob">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE TKEY=999 AND TCHAR='b' FOR UPDATE" queryType="updateClob"/>
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE TKEY=999 AND TCHAR='b' FOR UPDATE" queryType="updateClob"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="DualXsltPipeBeforeUpdateBlob" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1"/> <!-- forward to XsltPipe, that will provide OutputStream  -->
-			<pipe name="XsltPipeBeforeUpdateBlob" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1" /> <!-- forward to FixedQuerySender, that will provide OutputStream  -->
+			<pipe name="DualXsltPipeBeforeUpdateBlob" className="org.frankframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1"/> <!-- forward to XsltPipe, that will provide OutputStream  -->
+			<pipe name="XsltPipeBeforeUpdateBlob" className="org.frankframework.pipes.XsltPipe" xpathExpression="/*" outputType="xml" xsltVersion="1" /> <!-- forward to FixedQuerySender, that will provide OutputStream  -->
 			<pipe name="UpdateBlob">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=999 AND TCHAR='b' FOR UPDATE" queryType="updateBlob" blobCharset="utf8"/>
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=999 AND TCHAR='b' FOR UPDATE" queryType="updateBlob" blobCharset="utf8"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
-	
-	
+
+
 	<adapter name="TransactionHandlingMultiThread-Sub-Rollback" >
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="TransactionHandlingMultiThread-Sub-Rollback"
 				throwException="false"
 			/>
 		</receiver>
-		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
+		<errorMessageFormatter className="org.frankframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
 
 		<pipeline transactionAttribute="Required" transactionTimeout="10">
 			<exits>
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="rollbackInSub">
-				<sender className="nl.nn.adapterframework.senders.XsltSender" styleSheetNameSessionKey="nonExistent" />
+				<sender className="org.frankframework.senders.XsltSender" styleSheetNameSessionKey="nonExistent" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
-	
+
 	<adapter name="TransactionHandlingMultiThread-Prepare" >
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="TransactionHandlingMultiThread-Prepare"
 				throwException="false"
 			/>
 		</receiver>
-		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
+		<errorMessageFormatter className="org.frankframework.errormessageformatters.XslErrorMessageFormatter" xpathExpression="/errorMessage/@message" />
 
 		<pipeline transactionAttribute="Required" transactionTimeout="10">
 			<exits>
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="deleteFromIbisTemp" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="DELETE FROM IBISTEMP WHERE TKEY=999" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="DELETE FROM IBISTEMP WHERE TKEY=999" />
 			</pipe>
 			<pipe name="insertIntoIbisTemp">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY,TCHAR,TCLOB,TBLOB) VALUES (999,'a',EMPTY_CLOB(),EMPTY_BLOB())" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY,TCHAR,TCLOB,TBLOB) VALUES (999,'a',EMPTY_CLOB(),EMPTY_BLOB())" />
 			</pipe>
 
 		</pipeline>

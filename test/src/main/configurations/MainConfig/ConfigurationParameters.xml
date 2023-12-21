@@ -1,23 +1,23 @@
 <module>
 	<adapter name="Parameters" description="Test the resolution of parameters">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Parameters" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Parameters" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage"
-			xpathExpression="request/@action"/>
+			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage"
+                  xpathExpression="request/@action"/>
 
-			<pipe name="XsltPipe-viaInput" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName ="Parameters/ShowParam.xslt">
+			<pipe name="XsltPipe-viaInput" className="org.frankframework.pipes.XsltPipe" styleSheetName ="Parameters/ShowParam.xslt">
 				<param name="param1" styleSheetName="Parameters/WrapInput.xslt" />
 				<param name="param2" styleSheetName="Parameters/WrapInput.xslt" sessionKey="originalMessage"/>
 				<param name="param3" styleSheetName="Parameters/WrapInput.xslt" value="&lt;literal/&gt;"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="XsltPipe-viaSessionKey" className="nl.nn.adapterframework.pipes.XsltPipe" styleSheetName ="Parameters/ShowParam.xslt" getInputFromSessionKey="originalMessage">
+			<pipe name="XsltPipe-viaSessionKey" className="org.frankframework.pipes.XsltPipe" styleSheetName ="Parameters/ShowParam.xslt" getInputFromSessionKey="originalMessage">
 				<param name="param1" styleSheetName="Parameters/WrapInput.xslt" />
 				<param name="param2" styleSheetName="Parameters/WrapInput.xslt" sessionKey="originalMessage"/>
 				<param name="param3" styleSheetName="Parameters/WrapInput.xslt" value="&lt;literal/&gt;"/>
@@ -25,7 +25,7 @@
 			</pipe>
 
 			<pipe name="MessageSendingPipe-viaInput" >
-				<sender className="nl.nn.adapterframework.senders.XsltSender" styleSheetName ="Parameters/ShowParam.xslt">
+				<sender className="org.frankframework.senders.XsltSender" styleSheetName ="Parameters/ShowParam.xslt">
 					<param name="param1" styleSheetName="Parameters/WrapInput.xslt" />
 					<param name="param2" styleSheetName="Parameters/WrapInput.xslt" sessionKey="originalMessage"/>
 					<param name="param3" styleSheetName="Parameters/WrapInput.xslt" value="&lt;literal/&gt;"/>
@@ -34,7 +34,7 @@
 			</pipe>
 
 			<pipe name="MessageSendingPipe-viaSessionKey" getInputFromSessionKey="originalMessage">
-				<sender className="nl.nn.adapterframework.senders.XsltSender" styleSheetName ="Parameters/ShowParam.xslt">
+				<sender className="org.frankframework.senders.XsltSender" styleSheetName ="Parameters/ShowParam.xslt">
 					<param name="param1" styleSheetName="Parameters/WrapInput.xslt" />
 					<param name="param2" styleSheetName="Parameters/WrapInput.xslt" sessionKey="originalMessage"/>
 					<param name="param3" styleSheetName="Parameters/WrapInput.xslt" value="&lt;literal/&gt;"/>
@@ -42,7 +42,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="HiddenParam" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="result [param]" replaceFixedParams="true">
+			<pipe name="HiddenParam" className="org.frankframework.pipes.FixedResultPipe" returnString="result [param]" replaceFixedParams="true">
 				<param name="param" hidden="true" value="xyz" />
 				<forward name="success" path="EXIT" />
 			</pipe>

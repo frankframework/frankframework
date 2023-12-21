@@ -4,7 +4,7 @@
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="NonTransacted, No InProcess"
-						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						className="org.frankframework.jdbc.JdbcTableListener"
 						tableName="IBISTEMP"
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
@@ -20,7 +20,7 @@
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="NonTransacted, InProcess"
-						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						className="org.frankframework.jdbc.JdbcTableListener"
 						tableName="IBISTEMP"
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
@@ -38,7 +38,7 @@
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="Transacted, No InProcess"
-						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						className="org.frankframework.jdbc.JdbcTableListener"
 						tableName="IBISTEMP"
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
@@ -55,7 +55,7 @@
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="Transacted, InProcess"
-						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						className="org.frankframework.jdbc.JdbcTableListener"
 						tableName="IBISTEMP"
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
@@ -76,20 +76,20 @@
 			</exits>
 
 			<pipe name="extract slot" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TNUMBER FROM IBISTEMP WHERE TKEY=?" queryType="select" scalar="true"/>
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TNUMBER FROM IBISTEMP WHERE TKEY=?" queryType="select" scalar="true"/>
 				<param name="tkey" />
 			</pipe>
 
 			<pipe name="record try" transactionAttribute="RequiresNew" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TNUMBER, TCHAR) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, 'T')" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TNUMBER, TCHAR) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, 'T')" />
 				<param name="tnumber" />
 			</pipe>
 
 			<pipe name="CallbackTesttool">
-				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+				<sender className="org.frankframework.senders.IbisJavaSender"
 					serviceName="testtool-receivertest" />
 			</pipe>
-			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="*/@forward" >
+			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" xpathExpression="*/@forward" >
 				<forward name="ready" path="READY"/>
 				<forward name="error" path="ERROR"/>
 			</pipe>

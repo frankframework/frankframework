@@ -2,7 +2,7 @@
 	<adapter name="ListenerInPipe">
 		<receiver name="ListenerInPipe">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="SenderPipe"
 			/>
 		</receiver>
@@ -13,14 +13,14 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					className="org.frankframework.senders.IbisLocalSender"
 					javaListener="TEST"
 				/>
 				<listener
-					className="nl.nn.adapterframework.receivers.JavaListener"
+					className="org.frankframework.receivers.JavaListener"
 					name="SenderListener"
 				/>
 				<forward name="success" path="READY"/>

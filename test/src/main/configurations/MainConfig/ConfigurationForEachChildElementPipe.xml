@@ -1,46 +1,46 @@
 <module>
 	<adapter name="ForEachChildElementPipe" description="Test the functioning of the ForEachChildElementPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ForEachChildElementPipe" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ForEachChildElementPipe" />
 		</receiver>
 		<pipeline firstPipe="ForEachChildElementPipe_Record">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe_Record" elementXPathExpression="requests/request">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ForEachChildElementPipe_Record" />
+			<pipe className="org.frankframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe_Record" elementXPathExpression="requests/request">
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ForEachChildElementPipe_Record" />
 			</pipe>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.RetrieveContextPipe" />
+			<pipe name="echo" className="org.frankframework.pipes.RetrieveContextPipe" />
 		</pipeline>
 	</adapter>
 	<adapter name="ForEachChildElementPipe_Record">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ForEachChildElementPipe_Record" />
+			<listener className="org.frankframework.receivers.JavaListener" name="ForEachChildElementPipe_Record" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 				<exit path="ERROR" state="error" />
 			</exits>
-			<pipe name="switch" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request" />
-			<pipe name="hello" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;goodbye&lt;/reply&gt;">
+			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request" />
+			<pipe name="hello" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;goodbye&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="hi" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ha&lt;/reply&gt;">
+			<pipe name="hi" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;ha&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="errorState" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;errorStateResult&lt;/reply&gt;">
+			<pipe name="errorState" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;reply&gt;errorStateResult&lt;/reply&gt;">
 				<forward name="success" path="ERROR" />
 			</pipe>
-			<pipe name="exception" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+			<pipe name="exception" className="org.frankframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="mdc local" className="nl.nn.adapterframework.pipes.LogContextPipe">
+			<pipe name="mdc local" className="org.frankframework.pipes.LogContextPipe">
 				<param name="mdc1" value="mdc1_value_local" />
 				<param name="mdc_local" value="mdc_local_value" />
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="mdc export" className="nl.nn.adapterframework.pipes.LogContextPipe" export="true">
+			<pipe name="mdc export" className="org.frankframework.pipes.LogContextPipe" export="true">
 				<param name="mdc1" value="mdc1_value_export" />
 				<param name="mdc_export" value="mdc_export_value" />
 				<forward name="success" path="EXIT" />

@@ -25,9 +25,10 @@
 	<changeSet id="IAF-UnitTests-SP-H2" author="Tim van der Leeuw" runOnChange="true" dbms="h2">
 		<comment>Create Stored Procedures for H2</comment>
 		<sql>
-			CREATE ALIAS IF NOT EXISTS INSERT_MESSAGE FOR "nl.nn.adapterframework.jdbc.H2TestProcedures.insertMessage";
-			CREATE ALIAS IF NOT EXISTS GET_MESSAGES_BY_CONTENT FOR "nl.nn.adapterframework.jdbc.H2TestProcedures.selectByContent";
-		</sql>
+            CREATE ALIAS IF NOT EXISTS INSERT_MESSAGE FOR "org.frankframework.jdbc.H2TestProcedures.insertMessage";
+            CREATE ALIAS IF NOT EXISTS GET_MESSAGES_BY_CONTENT FOR
+            "org.frankframework.jdbc.H2TestProcedures.selectByContent";
+        </sql>
 
 		<rollback>
 			<sql>

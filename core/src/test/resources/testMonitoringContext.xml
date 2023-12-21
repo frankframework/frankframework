@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
-	Beans defined in this file are unique for every configuration. If you want 
+<!--
+	Beans defined in this file are unique for every configuration. If you want
 	to reuse a bean over multiple configurations, add it to the SpringApplicationContext.xml
 	Singleton beans are managed by Spring and will be closed upon configuration unload.
  -->
@@ -17,12 +17,12 @@
 		Mocked classes should contain the primary attribute to ensure they are used!
 	-->
 
-	<bean primary="true" name="configurationDigester" class="nl.nn.adapterframework.testutil.mock.ConfigurationDigesterMock" />
+	<bean primary="true" name="configurationDigester" class="org.frankframework.testutil.mock.ConfigurationDigesterMock" />
 
-	<bean primary="true" name="jdbcMigrator" class="nl.nn.adapterframework.testutil.mock.DatabaseMigratorMock" scope="prototype" lazy-init="true" />
+	<bean primary="true" name="jdbcMigrator" class="org.frankframework.testutil.mock.DatabaseMigratorMock" scope="prototype" lazy-init="true" />
 
-	<bean name="eventPublisher" class="nl.nn.adapterframework.monitoring.EventPublisher" />
-	<bean name="monitorManager" class="nl.nn.adapterframework.monitoring.MonitorManager" />
+	<bean name="eventPublisher" class="org.frankframework.monitoring.EventPublisher" />
+	<bean name="monitorManager" class="org.frankframework.monitoring.MonitorManager" />
 
-	<bean id="ConfigurationMessageListener" class="nl.nn.adapterframework.testutil.ConfigurationMessageEventListener" />
+	<bean id="ConfigurationMessageListener" class="org.frankframework.testutil.ConfigurationMessageEventListener" />
 </beans>

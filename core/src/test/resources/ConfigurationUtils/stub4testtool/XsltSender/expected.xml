@@ -1,20 +1,20 @@
 <configuration>
 	<adapter name="XsltSender">
 		<receiver name="testtool-XsltSender">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-XsltSender"/>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-XsltSender"/>
 		</receiver>
 		<receiver name="XsltSender">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="XsltSender"/>
+			<listener className="org.frankframework.receivers.JavaListener" name="XsltSender"/>
 		</receiver>
 		<receiver name="testtool-XsltSender-1">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-XsltSender-1"/>
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-XsltSender-1"/>
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
-			<pipe name="Call Sender" className="nl.nn.adapterframework.pipes.SenderPipe" timeOutOnResult="[timeout]" exceptionOnResult="[error]">
-				<sender className="nl.nn.adapterframework.senders.XsltSender" xpathExpression="/test"/>
+			<pipe name="Call Sender" className="org.frankframework.pipes.SenderPipe" timeOutOnResult="[timeout]" exceptionOnResult="[error]">
+				<sender className="org.frankframework.senders.XsltSender" xpathExpression="/test"/>
 				<forward name="success" path="READY"/>
 			</pipe>
 		</pipeline>

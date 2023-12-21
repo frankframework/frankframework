@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="SenderPipe">
       <receiver name="testtool-SenderPipe">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-SenderPipe"/>
       </receiver>
 		    <receiver name="SenderPipe">
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="SenderPipe"/>
 		    </receiver>
       <receiver name="testtool-SenderPipe-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-SenderPipe-1"/>
       </receiver>
 
@@ -18,19 +18,19 @@
 				        <exit path="READY" state="success"/>
 			      </exits>
 			      <pipe name="Call Sender"
-               className="nl.nn.adapterframework.pipes.SenderPipe"
+               className="org.frankframework.pipes.SenderPipe"
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
-				        <sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+				        <sender className="org.frankframework.senders.IbisLocalSender"
                     javaListener="TEST"/>
-				        <errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"/>
-				        <errorStorage className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"/>
-				        <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"/>
-				        <messageLog className="nl.nn.adapterframework.jdbc.DummyTransactionalStorage"/>
-				<!--<errorStorage className="nl.nn.adapterframework.jms.JmsTransactionalStorage"/>-->
-				<!--<errorStorage className="nl.nn.adapterframework.extensions.esb.EsbJmsTransactionalStorage"/>-->
-				<!--<messageLog className="nl.nn.adapterframework.jms.JmsTransactionalStorage"/>-->
-				<!--<messageLog className="nl.nn.adapterframework.extensions.esb.EsbJmsTransactionalStorage"/>-->
+				        <errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage"/>
+				        <errorStorage className="org.frankframework.jdbc.DummyTransactionalStorage"/>
+				        <messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage"/>
+				        <messageLog className="org.frankframework.jdbc.DummyTransactionalStorage"/>
+				<!--<errorStorage className="org.frankframework.jms.JmsTransactionalStorage"/>-->
+				<!--<errorStorage className="org.frankframework.extensions.esb.EsbJmsTransactionalStorage"/>-->
+				<!--<messageLog className="org.frankframework.jms.JmsTransactionalStorage"/>-->
+				<!--<messageLog className="org.frankframework.extensions.esb.EsbJmsTransactionalStorage"/>-->
 				<forward name="success" path="READY"/>
 			      </pipe>
 		    </pipeline>

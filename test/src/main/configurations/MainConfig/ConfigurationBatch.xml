@@ -1,7 +1,7 @@
 <module>
 	<adapter name="Batch-bcb" >
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Batch-bcb" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Batch-bcb" />
 		</receiver>
 
 		<pipeline>
@@ -9,72 +9,72 @@
 				<exit path="READY" state="success"/>
 			</exits>
 
-			<pipe 
-				name="bcb.txt" 
-				className="nl.nn.adapterframework.batch.StreamTransformerPipe" 
+			<pipe
+				name="bcb.txt"
+				className="org.frankframework.batch.StreamTransformerPipe"
 			>
 				<manager
-					name="fundationRecordTypeManager" 
-					className="nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager" 
-					initial="true" 
-					fieldNr="1" 
+					name="fundationRecordTypeManager"
+					className="org.frankframework.batch.FieldPositionRecordHandlerManager"
+					initial="true"
+					fieldNr="1"
 					separator="|"
 				>
 					<flow
-						recordKey="81" 
-						recordHandlerRef="81_transformer" 
+						recordKey="81"
+						recordHandlerRef="81_transformer"
 						resultHandlerRef="81_writer"
 					/>
 					<flow
-						recordKey="85" 
-						recordHandlerRef="85_transformer" 
+						recordKey="85"
+						recordHandlerRef="85_transformer"
 						resultHandlerRef="85_writer"
 					/>
 				</manager>
-				<recordHandler 
-					name="81_transformer" 
-					className="nl.nn.adapterframework.batch.RecordTransformer" 
-					inputSeparator="|" 
+				<recordHandler
+					name="81_transformer"
+					className="org.frankframework.batch.RecordTransformer"
+					inputSeparator="|"
 					recordIdentifyingFields="2"
 				>
-					<child 
-						description="recordsoort" 
-						className="nl.nn.adapterframework.batch.OutputfieldsPart" 
+					<child
+						description="recordsoort"
+						className="org.frankframework.batch.OutputfieldsPart"
 						value="string(81);"
 					/>
 					<child
-						description="journaalpostkop gegevens" 
-						className="nl.nn.adapterframework.batch.OutputfieldsPart" 
+						description="journaalpostkop gegevens"
+						className="org.frankframework.batch.OutputfieldsPart"
 						value="string(001000); indate(2,yyMMdd,0yyyy0MM0dd);"
 					/>
 				</recordHandler>
 				<recordHandler
-					name="85_transformer" 
-					className="nl.nn.adapterframework.batch.RecordTransformer" 
-					inputSeparator="|" 
+					name="85_transformer"
+					className="org.frankframework.batch.RecordTransformer"
+					inputSeparator="|"
 					recordIdentifyingFields="2"
 				>
 					<child
-						description="recordsoort" 
-						className="nl.nn.adapterframework.batch.OutputfieldsPart" 
+						description="recordsoort"
+						className="org.frankframework.batch.OutputfieldsPart"
 						value="string(85);"
 					/>
 					<child
-						description="journaalpostkop gegevens" 
-						className="nl.nn.adapterframework.batch.OutputfieldsPart" 
+						description="journaalpostkop gegevens"
+						className="org.frankframework.batch.OutputfieldsPart"
 						value="string(001095); indate(2,yyMMdd,yyyy0MM0dd);"
 					/>
 				</recordHandler>
-				<resultHandler 
-					name="81_writer" 
-					className="nl.nn.adapterframework.batch.Result2StringWriter" 
-					onOpenBlock="AA" 
+				<resultHandler
+					name="81_writer"
+					className="org.frankframework.batch.Result2StringWriter"
+					onOpenBlock="AA"
 					onCloseBlock="ZZ"
 				/>
-				<resultHandler 
-					name="85_writer" 
-					className="nl.nn.adapterframework.batch.Result2StringWriter" 
-					onOpenBlock="AA" 
+				<resultHandler
+					name="85_writer"
+					className="org.frankframework.batch.Result2StringWriter"
+					onOpenBlock="AA"
 					onCloseBlock="ZZ"
 				/>
 				<forward name="success" path="READY"/>
@@ -84,7 +84,7 @@
 
 	<adapter name="Batch-pion" >
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Batch-pion" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Batch-pion" />
 		</receiver>
 		<pipeline>
 			<exits>
@@ -92,65 +92,65 @@
 			</exits>
 			<pipe
 			  name="pion.csv"
-			  className="nl.nn.adapterframework.batch.StreamTransformerPipe"
+			  className="org.frankframework.batch.StreamTransformerPipe"
 			>
 			  <!-- no manager and flow defined, use always first recordhandler and result handler -->
 			  <recordHandler
 			    name="handleLine"
-			    className="nl.nn.adapterframework.batch.RecordXmlTransformer"
+			    className="org.frankframework.batch.RecordXmlTransformer"
 			    inputSeparator="~"
 				outputFields="
-					VA-nr, 
-					Naam, 
-					Regio, 
-					Postadresstraat, 
-					Postadrespostcode, 
-					Postadreswoonplaats, 
-					Bezoekadresstraat, 
-					Bezoekadrespostcode, 
-					Bezoekadreswoonplaats, 
-					Telefoonnummer, 
-					Telefax, 
-					Incasso-omsschade, 
-					Incasso-omsleven, 
-					Feitelijk_Leider, 
-					Bedrijfsvorm, 
-					Eigenaar, 
-					Naam_Hoofdfiliaal_Schade, 
-					Naam_Hoofdfiliaal_Leven, 
-					SER-naam, 
-					SER-nummer, 
-					Register, 
-					BF-nummer_Leven, 
-					Telefoon_BF_Leven, 
-					Telefax_BF_Leven, 
-					Naam_BF_Leven, 
-					BF-nummer_Schade, 
-					Telefoon_BF_Schade, 
-					Telefax_BF_Schade, 
-					Naam_BF_Schade, 
-					BF-nummer_PABZ, 
-					Telefoon_BF_PABZ, 
-					Telefax_BF_PABZ, 
-					Naam_BF_PABZ, 
-					BF-nummer_EBA, 
-					Telefoon_BF_EBA, 
-					Telefax_BF_EBA, 
-					Naam_BF_EBA, 
-					Aanst_leven, 
-					Aanst_schade, 
-					Aanst_nnfd, 
-					Aanst_comb, 
-					Aanst_hyp, 
-					Aanst_nnfdz, 
+					VA-nr,
+					Naam,
+					Regio,
+					Postadresstraat,
+					Postadrespostcode,
+					Postadreswoonplaats,
+					Bezoekadresstraat,
+					Bezoekadrespostcode,
+					Bezoekadreswoonplaats,
+					Telefoonnummer,
+					Telefax,
+					Incasso-omsschade,
+					Incasso-omsleven,
+					Feitelijk_Leider,
+					Bedrijfsvorm,
+					Eigenaar,
+					Naam_Hoofdfiliaal_Schade,
+					Naam_Hoofdfiliaal_Leven,
+					SER-naam,
+					SER-nummer,
+					Register,
+					BF-nummer_Leven,
+					Telefoon_BF_Leven,
+					Telefax_BF_Leven,
+					Naam_BF_Leven,
+					BF-nummer_Schade,
+					Telefoon_BF_Schade,
+					Telefax_BF_Schade,
+					Naam_BF_Schade,
+					BF-nummer_PABZ,
+					Telefoon_BF_PABZ,
+					Telefax_BF_PABZ,
+					Naam_BF_PABZ,
+					BF-nummer_EBA,
+					Telefoon_BF_EBA,
+					Telefax_BF_EBA,
+					Naam_BF_EBA,
+					Aanst_leven,
+					Aanst_schade,
+					Aanst_nnfd,
+					Aanst_comb,
+					Aanst_hyp,
+					Aanst_nnfdz,
 					Aanst_belrek,
 					ISKeten,
-					ADNPostbusNr" 
+					ADNPostbusNr"
 				rootTag="Record"
 			  />
 			  <resultHandler
 			    name="result"
-			    className="nl.nn.adapterframework.batch.Result2StringWriter"
+			    className="org.frankframework.batch.Result2StringWriter"
 			  />
 			  <forward name="success" path="READY" />
 			</pipe>
@@ -159,7 +159,7 @@
 
 	<adapter name="Batch-fixedwitdth" >
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Batch-fixedwidth" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Batch-fixedwidth" />
 		</receiver>
 		<pipeline>
 			<exits>
@@ -167,19 +167,19 @@
 			</exits>
 			<pipe
 			  name="fixedwidth.txt"
-			  className="nl.nn.adapterframework.batch.StreamTransformerPipe"
+			  className="org.frankframework.batch.StreamTransformerPipe"
 			>
 			  <!-- no manager and flow defined, use always first recordhandler and result handler -->
 			  <recordHandler
 			    name="handleLine"
-			    className="nl.nn.adapterframework.batch.RecordXmlTransformer"
+			    className="org.frankframework.batch.RecordXmlTransformer"
 			    inputFields="7,9,9,1,8,40,8,3,3,8"
 			    outputFields="broker,workitem,workitemlist,procesdate,clientname,lastmodified,stage,endstage,processend"
 			    trim="true"
 			  />
 			  <resultHandler
 			    name="result"
-			    className="nl.nn.adapterframework.batch.Result2StringWriter"
+			    className="org.frankframework.batch.Result2StringWriter"
 			  />
 			  <forward name="success" path="READY" />
 			</pipe>
@@ -188,7 +188,7 @@
 
 	<adapter name="Batch-structured" >
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Batch-structured" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Batch-structured" />
 		</receiver>
 		<pipeline>
 			<exits>
@@ -196,12 +196,12 @@
 			</exits>
 			<pipe
 			  name="structured.txt"
-			  className="nl.nn.adapterframework.batch.StreamTransformerPipe"
+			  className="org.frankframework.batch.StreamTransformerPipe"
 			>
 			  <!-- first manager searches for 'start', then writes root tag -->
 			  <manager
 			    name="rhmRoot"
-			    className="nl.nn.adapterframework.batch.FixedPositionRecordHandlerManager"
+			    className="org.frankframework.batch.FixedPositionRecordHandlerManager"
 			    endPosition="6"
 			    initial="true"
 			  >
@@ -210,7 +210,7 @@
 			  </manager>
 			  <recordHandler
 			    name="rhOpenRoot"
-			    className="nl.nn.adapterframework.batch.RecordTransformer"
+			    className="org.frankframework.batch.RecordTransformer"
 			    inputFields="6, 1, 10"
 			    outputFields="string(&lt;documents&gt;)"
 			  />
@@ -218,7 +218,7 @@
 			  <!-- second manager searches for 'header', then writes open document tag -->
 			  <manager
 			    name="rhmOpenDoc"
-			    className="nl.nn.adapterframework.batch.FixedPositionRecordHandlerManager"
+			    className="org.frankframework.batch.FixedPositionRecordHandlerManager"
 			    endPosition="6"
 			  >
 			    <flow recordKey="docid " nextRecordHandlerManagerRef="rhmBody" recordHandlerRef="rhOpenDoc"  resultHandlerRef="result"   />
@@ -226,7 +226,7 @@
 			  </manager>
 			  <recordHandler
 			    name="rhOpenDoc"
-			    className="nl.nn.adapterframework.batch.RecordTransformer"
+			    className="org.frankframework.batch.RecordTransformer"
 			    inputFields="6, 1, 10"
 			    outputFields="string(&lt;doc&gt;)"
 			  />
@@ -234,7 +234,7 @@
 			  <!-- third manager writes body lines, until a start line is found -->
 			  <manager
 			    name="rhmBody"
-			    className="nl.nn.adapterframework.batch.FixedPositionRecordHandlerManager"
+			    className="org.frankframework.batch.FixedPositionRecordHandlerManager"
 			    endPosition="6"
 			  >
 			    <flow recordKey="body  " recordHandlerRef="rhWriteBody"  resultHandlerRef="result"   />
@@ -243,20 +243,20 @@
 			  </manager>
 			  <recordHandler
 			    name="rhWriteBody"
-			    className="nl.nn.adapterframework.batch.RecordTransformer"
+			    className="org.frankframework.batch.RecordTransformer"
 			    inputFields="6, 1, 10"
-			    outputFields="string(&lt;regel&gt;);incopy(3);string(&lt;/regel&gt;)" 
+			    outputFields="string(&lt;regel&gt;);incopy(3);string(&lt;/regel&gt;)"
 			  />
 			  <recordHandler
 			    name="rhCloseDoc"
-			    className="nl.nn.adapterframework.batch.RecordTransformer"
+			    className="org.frankframework.batch.RecordTransformer"
 			    inputFields="6, 1, 10"
-			    outputFields="string(&lt;/doc>)" 
+			    outputFields="string(&lt;/doc>)"
 			  />
 
 			  <resultHandler
 			    name="result"
-			    className="nl.nn.adapterframework.batch.Result2StringWriter"
+			    className="org.frankframework.batch.Result2StringWriter"
 			    onCloseDocument="&lt;/doc&gt;&lt;/documents&gt;&lt;/document&gt;"
 			  />
 			  <forward name="success" path="READY" />
@@ -266,7 +266,7 @@
 
 	<adapter name="Batch-substructured" >
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Batch-substructured" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Batch-substructured" />
 		</receiver>
 		<pipeline>
 			<exits>
@@ -274,11 +274,11 @@
 			</exits>
 			<pipe
 			  name="substructured.txt"
-			  className="nl.nn.adapterframework.batch.StreamTransformerPipe"
+			  className="org.frankframework.batch.StreamTransformerPipe"
 			>
 			  <manager
 			    name="rhmBody"
-			    className="nl.nn.adapterframework.batch.FixedPositionRecordHandlerManager"
+			    className="org.frankframework.batch.FixedPositionRecordHandlerManager"
 			    endPosition="6"
 			    initial="true"
 			  >
@@ -289,13 +289,13 @@
 			  </manager>
 			  <recordHandler
 			    name="rhWriteBody"
-			    className="nl.nn.adapterframework.batch.RecordTransformer"
+			    className="org.frankframework.batch.RecordTransformer"
 			    inputFields="6, 1, 10"
 			    outputFields="string(&lt;regel&gt;);incopy(3);string(&lt;/regel&gt;)"
 			  />
 			  <resultHandler
 			    name="result"
-			    className="nl.nn.adapterframework.batch.Result2StringWriter"
+			    className="org.frankframework.batch.Result2StringWriter"
 			    prefix=""
 			    suffix=""
 			    default="true"
@@ -307,14 +307,14 @@
 
 	<adapter name="Batch-edifact" >
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-Batch-edifact" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Batch-edifact" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
-		<pipe name="i4redifact.txt" className="nl.nn.adapterframework.batch.StreamTransformerPipe">
-			<manager name="rhmBody" className="nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager" separator="+" fieldNr="1" initial="true">
+		<pipe name="i4redifact.txt" className="org.frankframework.batch.StreamTransformerPipe">
+			<manager name="rhmBody" className="org.frankframework.batch.FieldPositionRecordHandlerManager" separator="+" fieldNr="1" initial="true">
 				<flow recordKey="UNA:" openBlockBeforeLine="UNA_block"/>
 				<flow recordKey="UNB" openBlockBeforeLine="UNB_block" recordHandlerRef="rhWriteUNB"/>
 				<flow recordKey="UNZ" recordHandlerRef="rhWriteUNZ"/>
@@ -324,16 +324,16 @@
 				<flow recordKey="LBW" recordHandlerRef="rhWriteLBW"/>
 				<flow recordKey="*" />
 			</manager>
-			<recordHandler name="rhWriteUNB" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="UNB" outputFields="recordSoort,filler,filler,geadresseerde,aanmaakDatumTijd,filler,filler,filler,filler,filler,filler,filler,testAanduiding"/>
-			<recordHandler name="rhWriteUNZ" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="UNZ" outputFields="recordSoort,aantalBerichten,filler"/>
-			<recordHandler name="rhWriteUNH" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="UNH" outputFields="recordSoort,filler,soortBericht"/>
-			<recordHandler name="rhWriteUNT" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="UNT" outputFields="recordSoort,aantalSegmenten,soortBericht"/>
-			<recordHandler name="rhWriteENT" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="ENT" outputFields="recordSoort,entiteit,volgNummer"/>
-			<recordHandler name="rhWriteLBW" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="LBW" outputFields="recordSoort,label,waarde"/>
-			<resultHandler name="ReceiveResultaat_Block" className="nl.nn.adapterframework.batch.Result2StringWriter" default="true" />
+			<recordHandler name="rhWriteUNB" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="UNB" outputFields="recordSoort,filler,filler,geadresseerde,aanmaakDatumTijd,filler,filler,filler,filler,filler,filler,filler,testAanduiding"/>
+			<recordHandler name="rhWriteUNZ" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="UNZ" outputFields="recordSoort,aantalBerichten,filler"/>
+			<recordHandler name="rhWriteUNH" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="UNH" outputFields="recordSoort,filler,soortBericht"/>
+			<recordHandler name="rhWriteUNT" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="UNT" outputFields="recordSoort,aantalSegmenten,soortBericht"/>
+			<recordHandler name="rhWriteENT" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="ENT" outputFields="recordSoort,entiteit,volgNummer"/>
+			<recordHandler name="rhWriteLBW" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" rootTag="LBW" outputFields="recordSoort,label,waarde"/>
+			<resultHandler name="ReceiveResultaat_Block" className="org.frankframework.batch.Result2StringWriter" default="true" />
 			<forward name="success" path="READY"/>
 		</pipe>
-		
+
 		</pipeline>
 	</adapter>
 </module>
