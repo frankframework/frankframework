@@ -3681,7 +3681,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="SapSenderBaseCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.sap.extensions.IdocSender" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.IdocSender" />
   </xs:complexType>
   <xs:group name="SapSenderBaseDeclaredChildGroup">
     <xs:sequence>
@@ -5074,7 +5074,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="SapSenderImplCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.sap.extensions.SapSender" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.SapSender" />
   </xs:complexType>
   <xs:attributeGroup name="SapSenderImplDeclaredAttributeGroup">
     <xs:attribute name="synchronous" type="frankBoolean">
@@ -7851,7 +7851,7 @@
   </xs:complexType>
   <xs:complexType name="SapListenerType">
     <xs:attributeGroup ref="SapListenerImplCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.sap.extensions.SapListener" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.SapListener" />
   </xs:complexType>
   <xs:attributeGroup name="SapListenerImplDeclaredAttributeGroup">
     <xs:attribute name="sapSystemName" type="xs:string" use="required">
@@ -16461,7 +16461,7 @@
         <xs:complexType>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="sapSystem" />
-          <xs:attribute name="className" type="xs:string" default="org.frankframework.sap.extensions.SapSystem" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.extensions.sap.SapSystem" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>

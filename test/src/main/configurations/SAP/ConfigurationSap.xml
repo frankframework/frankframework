@@ -45,12 +45,12 @@
 			<SapListener progid="dummyTwee" sapSystemName="twee"/>
 		</Receiver>
 		<Receiver name="2">
-			<listener className="org.frankframework.sap.extensions.SapListener" progid="${sap.progid2}" sapSystemName="default"/>
+			<listener className="org.frankframework.extensions.sap.SapListener" progid="${sap.progid2}" sapSystemName="default"/>
 		</Receiver>
 		<Pipeline>
 			<Exit name="EXIT" status="SUCCESS"/>
 			<pipe name="sapSender">
-				<sender className="org.frankframework.sap.extensions.SapSender" functionName="RFC_GET_SYSTEM_INFO" sapSystemName="default" />
+				<sender className="org.frankframework.extensions.sap.SapSender" functionName="RFC_GET_SYSTEM_INFO" sapSystemName="default" />
 			</pipe>
 			<pipe name="sapSender2">
 				<SapSender functionName="RFC_GET_SYSTEM_INFO" sapSystemName="default" />
