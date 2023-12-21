@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { AppService, Certificate, Pipe } from 'src/app/app.service';
-import { AuthEntry, CertificateList, Datasource, JmsRealm, SapSystem, SecurityItemsService, SecurityRole, ServerProps } from './security-items.service';
+import { AppService, Pipe } from 'src/app/app.service';
+import { AuthEntry, CertificateList, Datasource, JmsRealm, SapSystem, SecurityItemsService, SecurityRole } from './security-items.service';
 
 @Component({
   selector: 'app-security-items',

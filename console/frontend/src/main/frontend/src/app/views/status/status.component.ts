@@ -1,11 +1,10 @@
 import { ViewportScroller } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ConfigurationFilter } from 'src/app/pipes/configuration-filter.pipe';
 import { StatusService } from './status.service';
 import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog, MessageSummary, Receiver, Summary } from 'src/app/app.service';
-import { MiscService } from 'src/app/services/misc.service';
 import { PollerService } from 'src/app/services/poller.service';
 
 type Filter = Record<AdapterStatus, boolean>;
