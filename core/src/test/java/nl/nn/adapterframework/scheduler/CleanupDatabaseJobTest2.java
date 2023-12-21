@@ -11,17 +11,14 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Date;
 
-import nl.nn.adapterframework.dbms.JdbcException;
-
-import nl.nn.adapterframework.util.DbmsUtil;
-
 import org.junit.jupiter.api.BeforeEach;
 
 import nl.nn.adapterframework.core.Adapter;
 import nl.nn.adapterframework.core.PipeLine;
-import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.dbms.Dbms;
 import nl.nn.adapterframework.dbms.IDbmsSupport;
+import nl.nn.adapterframework.dbms.JdbcException;
+import nl.nn.adapterframework.jdbc.JdbcTransactionalStorage;
 import nl.nn.adapterframework.pipes.MessageSendingPipe;
 import nl.nn.adapterframework.receivers.Receiver;
 import nl.nn.adapterframework.scheduler.job.CleanupDatabaseJob;
@@ -32,6 +29,7 @@ import nl.nn.adapterframework.testutil.junit.DatabaseTest;
 import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
 import nl.nn.adapterframework.testutil.junit.WithLiquibase;
 import nl.nn.adapterframework.util.AppConstants;
+import nl.nn.adapterframework.util.DbmsUtil;
 import nl.nn.adapterframework.util.JdbcUtil;
 import nl.nn.adapterframework.util.Locker;
 
@@ -56,7 +54,7 @@ public class CleanupDatabaseJobTest2 {
 
 	@BeforeEach
 	@SuppressWarnings("unchecked")
-	public void setup(DatabaseTestEnvironment database) throws Exception {
+	public void setUp(DatabaseTestEnvironment database) throws Exception {
 		storage = getConfiguration().createBean(JdbcTransactionalStorage.class);
 		storage.setName("test-cleanupDB");
 		storage.setType("A");
