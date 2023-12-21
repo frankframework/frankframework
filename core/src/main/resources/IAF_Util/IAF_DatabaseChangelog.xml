@@ -148,7 +148,6 @@ TagDatabase
 	</changeSet>
 
 	<changeSet id="IAF_Util:8" author="Yannick van Leeuwen">
-		<validCheckSum>7:85bdc937b35ee7e69753df403f970e82</validCheckSum> <!-- #1481, BLOB->LONGBLOB -->
 		<comment>Allow 120 chars for version field</comment>
 		<modifyDataType
 				columnName="VERSION"
