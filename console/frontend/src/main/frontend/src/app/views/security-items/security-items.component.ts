@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AppService, Certificate, Pipe } from 'src/app/app.service';
+import { AppService, Pipe } from 'src/app/app.service';
 import { AuthEntry, CertificateList, Datasource, JmsRealm, SapSystem, SecurityItemsService, SecurityRole, ServerProps } from './security-items.service';
 
 @Component({
@@ -23,8 +23,7 @@ export class SecurityItemsComponent implements OnInit {
   ) { };
 
   ngOnInit(): void {
-    for (const a in this.appService.adapters) {
-      var adapter = this.appService.adapters[a];
+    for (const adapter of Object.values(this.appService.adapters)) {
 
       if (adapter.pipes) {
         for (const p in adapter.pipes) {
@@ -32,7 +31,7 @@ export class SecurityItemsComponent implements OnInit {
 
           if (pipe.certificate) {
             this.certificates.push({
-              adapter: a,
+              adapter: adapter.name,
               pipe: p,
               certificate: pipe.certificate
             });
