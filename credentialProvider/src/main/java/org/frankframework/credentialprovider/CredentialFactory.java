@@ -30,6 +30,9 @@ public class CredentialFactory {
 	private static final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY="credentialFactory.optionalPrefix";
 	private static final String DEFAULT_CREDENTIAL_FACTORY=FileSystemCredentialFactory.class.getName();
 
+	public static final String LEGACY_PACKAGE_NAME = "nl.nn.adapterframework.";
+	public static final String ORG_FRANKFRAMEWORK_PACKAGE_NAME = "org.frankframework.";
+
 	private static String optionalPrefix;
 
 	private ICredentialFactory delegate;
@@ -52,6 +55,11 @@ public class CredentialFactory {
 
 	private CredentialFactory() {
 		String factoryClassName = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
+
+		// Legacy support for old package names; to be removed in Frank!Framework 8.1 or later
+		if (StringUtils.isNotEmpty(factoryClassName) && factoryClassName.contains(LEGACY_PACKAGE_NAME)) {
+			factoryClassName = factoryClassName.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME);
+		}
 		if (tryFactory(factoryClassName)) {
 			return;
 		}

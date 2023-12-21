@@ -8,7 +8,7 @@ public class CredentialFactoryTest {
 
 	@Test
 	public void testFindAliasNoPrefix() {
-		// test depends on setting credentialFactory.class=org.frankframework.credentialprovider.PropertyFileCredentialFactory in test/resources/credentialprovider.properties
+		// test depends on setting credentialFactory.class=...credentialprovider.PropertyFileCredentialFactory in test/resources/credentialprovider.properties
 
 		// Act
 		ICredentials c = CredentialFactory.getCredentials("account", null, null);
