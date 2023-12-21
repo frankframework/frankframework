@@ -4,7 +4,7 @@
 	<!-- Parameter disableValidators has been used to test the impact of validators on memory usage -->
 	<xsl:param name="disableValidators"/>
 	<!--
-		This XSLT adjusts the IBIS configuration as follows:
+		This XSLT adjusts the Frank!Framework configuration as follows:
 		- disable all receiver elements, except those with childs JdbcQueryListener, DirectoryListener, JavaListener, WebServiceListener and RestListener
 		- add a default receiver (name="testtool-[adapter name]") with a child JavaListener (serviceName="testtool-[adapter name]") to each adapter (and copy all attributes (except transactionAttribute=Mandatory, this is replaced with Required), errorStorage and messageLog from disabled receiver when present)
 		- disable all listener elements which have a parent pipe

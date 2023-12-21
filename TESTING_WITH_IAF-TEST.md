@@ -79,14 +79,14 @@ Docker projects for a number of other DMBSes are provided in GitHub project http
 ## 5. Running the test scenarios
 
 ### Eclipse
-Run your Tomcat server from Eclipse's Servers view. It may take up to a minute for Eclipse to launch it; once ready, you can find the Ibis console by browsing to http://localhost/iaf-test/.
+Run your Tomcat server from Eclipse's Servers view. It may take up to a minute for Eclipse to launch it; once ready, you can find the Frank!Framework console by browsing to http://localhost/iaf-test/.
 
 ### IntelliJ
 Start your IAF-Test Run Configuration from the "Run Configurations" menu or from the "Services" tool panel, either in "Run" or in "Debug" mode.
 Depending on how you configured it when the system is ready it will either open a browser window automatically, or you can manually navigate to http://localhost/iaf-test/ in your browser of choice.
 
 ### Starting the Tests
-Once the Ibis console is loaded, go to the Larva testtool in the sidebar. Specify which scenarios to run and under which conditions - the default settings should be good for checking if everything works.
+Once the Frank!Framework console is loaded, go to the Larva testtool in the sidebar. Specify which scenarios to run and under which conditions - the default settings should be good for checking if everything works.
 
 Press [ Start ], sit back, relax, do some stretches, and let's hope for the best. :)
 
