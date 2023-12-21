@@ -226,7 +226,7 @@
 		which might be an old snapshot.
 
 		In older versions of Eclipse (Kepler - 20140224-0627) the larva and ladybug modules are not automatically added to the (correct) classpath.
-		Because of this the example module will throw a FileNotFoundException on springIbisTestTool.xml which prevents the IBIS from starting up.
+		Because of this the example module will throw a FileNotFoundException on springIbisTestTool.xml which prevents the Frank!Framework from starting up.
 		In newer versions of Eclipse (at least version 20181214-0600 onwards) this seems to have been resolved.
 		-->
 		<profile>

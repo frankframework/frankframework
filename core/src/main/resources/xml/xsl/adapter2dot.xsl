@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 	<xsl:output method="text" indent="no" />
 	<!--
-		This XSLT transforms an adapter in the IBIS configuration to a flowchart in dot format:
+		This XSLT transforms an adapter in the Frank!Framework configuration to a flowchart in dot format:
 		- each flow starts with a START element and ends with an END element (both in an ellipse)
 		- every pipe in the flow is represented by a box; excepting XmlSwitch, CompareIntegerPipe, CompareStringPipe, FilenameSwitch and XmlIf which are represented by a diamond
 		- for every forward a line (with arrowhead) is drawn between the regarding elements; if the pipe attribute notFoundForwardName, emptyForwardName, thenForwardName or elseForwardName exists and has no corresponding forward then a forward is assumed

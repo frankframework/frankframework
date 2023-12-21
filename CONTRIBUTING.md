@@ -88,9 +88,9 @@ Start reading our code, and you'll get the hang of it. We optimize for readabili
   * This is open source software. Consider the people who will read your code, and make it look nice for them. It's sort of like driving a car: Perhaps you love doing donuts when you're alone, but with passengers the goal is to make the ride as smooth as possible.
   * Use Unix style newlines.
   * Each class that can be used in a configuration must contain the following documentation:
-    - Class level IbisDoc, not larger than 5 to 10 lines
-    - For each configurable attribute, IbisDoc must not be larger than 2 lines
-    - Any examples and more detailed information, that has to be incorporated in to the IbisManual, should be provided as a separate file(s) attached to the pull request
+    - Class level Frank!Doc, not larger than 5 to 10 lines
+    - For each configurable attribute, Frank!Doc must not be larger than 2 lines
+    - Any examples and more detailed information, that has to be incorporated in to the Frank!Manual, should be provided as a separate file(s) attached to the pull request
   * In JavaDoc comments, do not use the `’` character. It breaks the Frank!Doc. You can use `'` instead.
   * Please do not modify files purely for the sake of formatting, or do so in a dedicated pull request. Formatting changes make a pull request harder to understand for reviewers.
   * You can experiment with Eclipse's formatting capabilities. In the preferences window, search for the string "tab". You will get an overview of all the options about formatting. The following options are interesting in particular:
