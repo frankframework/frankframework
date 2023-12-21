@@ -1,26 +1,27 @@
 <module>
+	<!-- This test uses the old package names on purpose, to keep testing the conversion logic -->
 	<adapter name="Base64Pipe" description="Test the functioning of the Base64Pipe">
 		<receiver name="Base64Pipe">
-			<listener className="org.frankframework.receivers.JavaListener"
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
 				serviceName="ibis4test-Base64Pipe" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Read" className="org.frankframework.pipes.FilePipe"
+			<pipe name="Read" className="nl.nn.adapterframework.pipes.FilePipe"
 				actions="read" outputType="bytes"/>
-			<pipe name="Encode" className="org.frankframework.pipes.Base64Pipe"
+			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe"
 				storeResultInSessionKey="base64"/>
 			<pipe name="Send"
-				className="org.frankframework.pipes.SenderPipe"
+				className="nl.nn.adapterframework.pipes.SenderPipe"
 				storeResultInSessionKey="fileOut" >
-				<sender className="org.frankframework.senders.IbisJavaSender"
+				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
 					serviceName="testtool-base64pipe" />
 			</pipe>
-			<pipe name="Decode" className="org.frankframework.pipes.Base64Pipe"
+			<pipe name="Decode" className="nl.nn.adapterframework.pipes.Base64Pipe"
 				direction="decode"/>
-			<pipe name="Write" className="org.frankframework.pipes.LocalFileSystemPipe"
+			<pipe name="Write" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
 				action="write" filename="${testdata.dir}/b64/file_out.bin"/>
 		</pipeline>
 	</adapter>
