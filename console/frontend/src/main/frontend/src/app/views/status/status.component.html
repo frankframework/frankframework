@@ -250,7 +250,7 @@
     <div *ngFor="let adapter of adapters | configurationFilter:selectedConfiguration:filter | searchFilter:searchText"
       class="col-lg-12 adapters">
       <div class="ibox float-e-margins" id="{{adapter.name}}">
-        <div (click)="adapterShowContent[adapter.name] = !showContent(adapter)" class="ibox-title" title="Click to open"
+        <div (click)="adapterShowContent[adapter.configuration+'/'+adapter.name] = !showContent(adapter)" class="ibox-title" title="Click to open"
           [ngClass]="(adapter.status=='warning') ? 'warning' : ((adapter.status=='stopped') ? 'danger' : 'primary')">
           <div class="ibox-tools pull-right">
             <a> <i class="fa fa-chevron-{{(showContent(adapter)) ? 'up' : 'down' }}"></i></a>
