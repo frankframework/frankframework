@@ -68,7 +68,10 @@ export class ConfigurationsUploadComponent implements OnInit {
   }
 
   submit() {
-    if (this.file == null) return;
+    if (this.file == null){
+      this.error = "Please upload a file";
+      return;
+    }
 
     var fd = new FormData();
     if (this.form.datasource && this.form.datasource != "")
