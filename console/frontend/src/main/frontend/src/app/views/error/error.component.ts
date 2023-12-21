@@ -38,7 +38,7 @@ export class ErrorComponent implements OnInit {
   cooldown(data: ServerError) {
     this.cooldownCounter = 60;
 
-    if (data.status === "error" || data.status === "INTERNAL_SERVER_ERROR") {
+    if (data.status === "error" || data.status === "Internal Server Error") {
       this.appService.updateStartupError(data.error);
       this.stackTrace = data.stackTrace;
 
@@ -49,7 +49,7 @@ export class ErrorComponent implements OnInit {
           this.checkState();
         };
       }, 1000);
-    } else if (data.status === "SERVICE_UNAVAILABLE") {
+    } else if (data.status === "Service Unavailable") {
       this.router.navigate(['/status']);
     };
   };
