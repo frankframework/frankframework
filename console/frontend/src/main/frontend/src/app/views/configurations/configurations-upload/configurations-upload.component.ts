@@ -112,7 +112,7 @@ export class ConfigurationsUploadComponent implements OnInit {
           this.file = null;
         }
       }, error: (errorData: HttpErrorResponse) => {
-        var error = (errorData.error) ? errorData.error : errorData.message;
+        var error = (errorData.error) ? errorData.error.error : errorData.message;
         this.error = error;
         this.result = "";
       }
