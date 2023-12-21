@@ -30,8 +30,8 @@ public class CredentialFactory {
 	private static final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY="credentialFactory.optionalPrefix";
 	private static final String DEFAULT_CREDENTIAL_FACTORY=FileSystemCredentialFactory.class.getName();
 
-	public static final String LEGACY_PACKAGE_NAME = "nl.nn.adapterframework.";
-	public static final String ORG_FRANKFRAMEWORK_PACKAGE_NAME = "org.frankframework.";
+	public static final String LEGACY_PACKAGE_NAME = "nl.nn.credentialprovider.";
+	public static final String ORG_FRANKFRAMEWORK_PACKAGE_NAME = "org.frankframework.credentialprovider.";
 
 	private static String optionalPrefix;
 
