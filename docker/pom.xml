@@ -8,7 +8,7 @@
 	<version>${revision}</version>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
+		<groupId>org.frankframework</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
@@ -80,19 +80,19 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>org.ibissource</groupId>
+				<groupId>org.frankframework</groupId>
 				<artifactId>ibis-adapterframework-docker-tomcat</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 			</dependency>
 			<dependency>
-				<groupId>org.ibissource</groupId>
+				<groupId>org.frankframework</groupId>
 				<artifactId>ibis-adapterframework-docker-tomcat-example</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 			</dependency>
 			<dependency>
-				<groupId>org.ibissource</groupId>
+				<groupId>org.frankframework</groupId>
 				<artifactId>ibis-adapterframework-docker-tomcat-test</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>

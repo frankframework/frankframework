@@ -8,7 +8,7 @@
 	<packaging>pom</packaging>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
+		<groupId>org.frankframework</groupId>
 		<artifactId>ibis-adapterframework-docker-tomcat</artifactId>
 		<version>${revision}</version>
 	</parent>
@@ -19,28 +19,28 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
 			<version>${project.version}</version>
 			<classifier>full-configuration</classifier>
 			<type>jar</type>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
 			<version>${project.version}</version>
 			<classifier>context</classifier>
 			<type>jar</type>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
 			<version>${project.version}</version>
 			<classifier>scenarios</classifier>
 			<type>jar</type>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-test</artifactId>
 			<version>${project.version}</version>
 			<classifier>secrets</classifier>
@@ -79,7 +79,7 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>org.ibissource</groupId>
+									<groupId>org.frankframework</groupId>
 									<artifactId>ibis-adapterframework-test</artifactId>
 									<version>${project.version}</version>
 									<classifier>context</classifier>
@@ -100,7 +100,7 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>org.ibissource</groupId>
+									<groupId>org.frankframework</groupId>
 									<artifactId>ibis-adapterframework-test</artifactId>
 									<version>${project.version}</version>
 									<classifier>scenarios</classifier>
@@ -121,7 +121,7 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>org.ibissource</groupId>
+									<groupId>org.frankframework</groupId>
 									<artifactId>ibis-adapterframework-test</artifactId>
 									<version>${project.version}</version>
 									<classifier>secrets</classifier>
