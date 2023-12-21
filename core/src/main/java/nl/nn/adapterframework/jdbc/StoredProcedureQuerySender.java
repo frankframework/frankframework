@@ -35,6 +35,8 @@ import javax.jms.JMSException;
 import org.apache.commons.lang3.StringUtils;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.parameters.Parameter;
@@ -48,13 +50,18 @@ import nl.nn.adapterframework.util.JdbcUtil;
  * StoredProcedureQuerySender is used to send stored procedure queries and retrieve the result.
  *
  * <p>
+ *     <h3>QueryType settings and OUTPUT parameters</h3>
  * The StoredProcedureQuerySender class has the following features:
  * <ul>
  *     <li>It supports setting the output parameters of the stored procedure by setting 'mode' attribute of
  *     the corresponding 'Param' to 'OUTPUT' or 'INOUT'.</li>
- *     <li>The queryType can only be 'SELECT' or 'OTHER'. Use 'SELECT' when the stored procedure
- *     returns a set of rows, use 'OTHER' if the stored procedure has one or more output parameters.
- *  </li>
+ *     <li>The queryType can only be 'SELECT' or 'OTHER'.</li>
+ *     <li>Use queryType 'SELECT' when the stored procedure only returns a set of rows, and you need
+ *     the output to be the format as {@link FixedQuerySender} (see {@link DB2XMLWriter}).</li>
+ *     <li>Use queryType 'OTHER' if the stored procedure has one or more output parameters. With this query type,
+ *     the stored procedure can return a result-set along with returning some values in output parameters.
+ *     Depending on the database, the stored procedure can even returning multiple result sets or a combination
+ *     of result sets as return values, and result sets as REF_CURSOR OUT parameters. </li>
  * </ul>
  * </p>
  * <p>
@@ -62,9 +69,78 @@ import nl.nn.adapterframework.util.JdbcUtil;
  *     have a corresponding {@link Parameter} entry. Output parameters should have {@code mode="OUTPUT"}, or
  *     {@code mode="INOUT"} depending on how the stored procedure is defined.
  * </p>
- * <p><em>NOTE 1:</em> Support for stored procedures is currently experimental and changes in the currently produced output-format
+ * <p>
+ *	<h3>Sample Output for queryType=OTHER</h3>
+ *	<h4>Basic Example with Only Simple Output Parameters</h4>
+ *  <code><pre>
+	&lt;resultset&gt;
+		&lt;result param="r1" type="STRING"&gt;MESSAGE-CONTENTS&lt;/result&gt;
+		&lt;result param="r2" type="STRING"&gt;E&lt;/result&gt;
+	&lt;/resultset&gt;
+ *  </pre></code>
+ *
+ *	<h4>Example with Resultset and Simple Output Parameters</h4>
+ *  <code><pre>
+	 &lt;resultset&gt;
+		 &lt;result resultNr="1"&gt;
+			 &lt;fielddefinition&gt;
+				&lt;field name="FIELDNAME"
+						  type="columnType"
+						  columnDisplaySize=""
+						  precision=""
+						  scale=""
+						  isCurrency=""
+						  columnTypeName=""
+						  columnClassName=""/&gt;
+				 &lt;field ...../&gt;
+ 		     &lt;/fielddefinition&gt;
+			 &lt;rowset&gt;
+				 &lt;row number="0"&gt;
+					 &lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
+					 &lt;field name="TCHAR"&gt;E&lt;/field&gt;
+					 &lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
+					 &lt;field name="TCLOB" null="true"/&gt;
+					 &lt;field name="TBLOB" null="true"/&gt;
+				 &lt;/row&gt;
+                 &lt;row number="1" ...../&gt;
+			 &lt;/rowset&gt;
+		 &lt;/result&gt;
+		 &lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
+	 &lt;/resultset&gt;
+ *  </pre></code>
+ *
+ *	<h4>Example with Simple and Cursor Output Parameters</h4>
+ *	<code><pre>
+	&lt;resultset&gt;
+		&lt;result param="count" type="INTEGER"&gt;5&lt;/result&gt;
+		&lt;result param="cursor1" type="LIST"&gt;
+			 &lt;fielddefinition&gt;
+				&lt;field name="FIELDNAME"
+						  type="columnType"
+						  columnDisplaySize=""
+						  precision=""
+						  scale=""
+						  isCurrency=""
+						  columnTypeName=""
+						  columnClassName=""/&gt;
+				 &lt;field ...../&gt;
+ 		     &lt;/fielddefinition&gt;
+			&lt;rowset&gt;
+				&lt;row number="0"&gt;
+					&lt;field name="TKEY"&gt;MSG-ID&lt;/field&gt;
+					&lt;field name="TCHAR"&gt;E&lt;/field&gt;
+					&lt;field name="TMESSAGE"&gt;MESSAGE-CONTENTS&lt;/field&gt;
+					&lt;field name="TCLOB" null="true"/&gt;
+					&lt;field name="TBLOB" null="true"/&gt;
+				&lt;/row&gt;
+				&lt;row number="1" ..... /&gt;
+			&lt;/rowset&gt;
+		&lt;/result&gt;
+	&lt;/resultset&gt;
+ *	</pre></code>
+ * </p>
+ * <p><em>NOTE:</em> Support for stored procedures is currently experimental and changes in the currently produced output-format
  * are expected.</p>
- * <p><b>NOTE 2:</b> For the current version see {@link DB2XMLWriter} for ResultSet output format.</p>
  *
  * @ff.parameters All parameters present are applied to the query to be executed.
  *
@@ -72,6 +148,10 @@ import nl.nn.adapterframework.util.JdbcUtil;
  */
 public class StoredProcedureQuerySender extends FixedQuerySender {
 
+	/**
+	 * All stored procedure OUT parameters indexed by their position
+	 * in the query parameter list (1-based).
+	 */
 	private Map<Integer, Parameter> outputParameters;
 
 	@Override
@@ -82,34 +162,40 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 		if (getQueryTypeEnum() != QueryType.SELECT && getQueryTypeEnum() != QueryType.OTHER) {
 			throw new ConfigurationException("For StoredProcedureSender, queryType can only be 'SELECT' or 'OTHER'");
 		}
-		if (getQueryTypeEnum() == QueryType.SELECT && !getDbmsSupport().isStoredProcedureResultSetSupported()) {
-			throw new ConfigurationException("QueryType SELECT for Stored Procedures is not supported for database " + getDbmsSupport().getDbmsName());
+
+		if (getQueryTypeEnum() == QueryType.OTHER && getOutputFormat() != null) {
+			ConfigurationWarnings.add(this, log, "When querytype is OTHER, the setting for outputFormat is currently ignored.", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 
 		super.configure();
 
 		// Have to check this after "super.configure()" b/c otherwise the datasource-name is not set
 		// and cannot check DMBS support features.
-		if (!getDbmsSupport().isStoredProceduresSupported()) {
-			throw new ConfigurationException("Stored Procedures are not supported for database " + getDbmsSupport().getDbmsName());
+		if (getQueryTypeEnum() == QueryType.SELECT && !getDbmsSupport().isStoredProcedureResultSetSupported()) {
+			throw new ConfigurationException("QueryType SELECT for Stored Procedures is not supported for database " + getDbmsSupport().getDbmsName());
 		}
 
 		outputParameters = buildOutputParameterMap(getParameterList(), getQuery());
-		if (!outputParameters.isEmpty()) {
-			if (!getDbmsSupport().isStoredProcedureOutParametersSupported()) {
-				throw new ConfigurationException("Stored Procedure OUT parameters are not supported for database " + getDbmsSupport().getDbmsName());
-			}
-		}
-
 		if (isScalar() && outputParameters.size() > 1) {
-			throw new ConfigurationException("When result should be scalar, only a single output can be returned from the stored procedure.");
+			ConfigurationWarnings.add(this, log, "When result should be scalar, only the first output parameter is used. Others are ignored.", SuppressKeys.CONFIGURATION_VALIDATION);
+		}
+		if (getQueryTypeEnum() == QueryType.SELECT && !outputParameters.isEmpty()) {
+			ConfigurationWarnings.add(this, log, "OUT parameters are ignored when QueryType = SELECT", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 
 		if (!getQuery().matches("(?i)^\\s*(call|exec|\\{\\s*\\?(\\{\\w+\\})?\\s*=\\s*call)\\s+.*")) {
-			throw new ConfigurationException("Stored Procedure query should start with CALL or EXEC SQL statement");
+			ConfigurationWarnings.add(this, log, "Stored Procedure query should start with CALL or EXEC SQL statement", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
 	}
 
+	/**
+	 * Build a map of all output-parameters for the stored procedure, indexed by
+	 * their parameter-position (1-based) in the parameter list of the call.
+	 *
+	 * @param parameterList Full list of all parameters configured on the StoredProcedureSender.
+	 * @param query The query that is configured
+	 * @return Output-parameters indexed by position in the query parameter-list.
+	 */
 	private Map<Integer, Parameter> buildOutputParameterMap(ParameterList parameterList, String query) {
 		if (parameterList == null) {
 			return Collections.emptyMap();
@@ -151,10 +237,10 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 			// Parameter metadata are more accurate than our parameter type mapping and
 			// for some databases, this can cause exceptions.
 			// But for Oracle we do need our own mapping.
-			if (getDbmsSupport().canFetchStatementParameterMetaData()) {
+			if (getDbmsSupport().canFetchStatementParameterMetaData() && param.getType() != Parameter.ParameterType.LIST) {
 				typeNr = parameterMetaData.getParameterType(position);
 			} else {
-				typeNr = JdbcUtil.mapParameterTypeToSqlType(param.getType()).getVendorTypeNumber();
+				typeNr = JdbcUtil.mapParameterTypeToSqlType(getDbmsSupport(), param.getType()).getVendorTypeNumber();
 			}
 			callableStatement.registerOutParameter(position, typeNr);
 		}
@@ -168,15 +254,27 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 
 	@Override
 	protected Message executeOtherQuery(Connection connection, PreparedStatement statement, String query, String resultQuery, PreparedStatement resStmt, Message message, PipeLineSession session, ParameterList parameterList) throws SenderException {
-		Message result = super.executeOtherQuery(connection, statement, query, resultQuery, resStmt, message, session, parameterList);
-		if (outputParameters.isEmpty()) {
-			return result;
-		}
 		try {
-			return getResult(new StoredProcedureResultWrapper((CallableStatement) statement, statement.getParameterMetaData(), outputParameters));
+			CallableStatement callableStatement = (CallableStatement) statement;
+			boolean alsoGetResultSets = callableStatement.execute();
+			return getResult(callableStatement, alsoGetResultSets, resultQuery, resStmt);
 		} catch (JdbcException | JMSException | IOException | SQLException e) {
 			throw new SenderException(e);
 		}
+	}
+
+	private Message getResult(CallableStatement callableStatement, boolean alsoGetResultSets, String resultQuery, PreparedStatement resStmt) throws SQLException, JMSException, IOException, JdbcException {
+		int updateCount = callableStatement.getUpdateCount();
+		if (resStmt != null || outputParameters.isEmpty() && (!alsoGetResultSets || updateCount != -1)) {
+			return getUpdateStatementResult(callableStatement, resultQuery, resStmt, updateCount);
+		}
+		if (isScalar() || isScalarExtended()) {
+			return getResult(new StoredProcedureResultWrapper(getDbmsSupport(), callableStatement, callableStatement.getParameterMetaData(), outputParameters));
+		}
+
+		DB2XMLWriter db2xml = buildDb2XMLWriter();
+		String result = db2xml.getXML(getDbmsSupport(), callableStatement, alsoGetResultSets, outputParameters, getMaxRows(), isIncludeFieldDefinition());
+		return Message.asMessage(result);
 	}
 
 	/**

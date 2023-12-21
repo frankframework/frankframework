@@ -1,5 +1,5 @@
 /*
-Copyright 2020-2022 WeAreFrank!
+Copyright 2020-2023 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -352,17 +352,10 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		return "SELECT LAST_INSERT_ID()";
 	}
 
-
 	// DDL related methods, have become more or less obsolete (and untested) with the introduction of Liquibase for table definitions
 	@Override
 	public String getAutoIncrementKeyFieldType() {
 		return "INT AUTO_INCREMENT";
-	}
-
-
-	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
-		return true;
 	}
 
 	@Override

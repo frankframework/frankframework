@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -266,16 +266,5 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	@Override
 	public String getBooleanValue(boolean value) {
 		return value? "1":"0";
-	}
-
-
-	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
-		return true;
-	}
-
-	@Override
-	public boolean isStoredProcedureResultSetSupported() {
-		return true;
 	}
 }

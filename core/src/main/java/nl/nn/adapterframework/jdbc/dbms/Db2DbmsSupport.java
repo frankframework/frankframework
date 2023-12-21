@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -108,15 +108,5 @@ public class Db2DbmsSupport extends GenericDbmsSupport {
 	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) throws JdbcException {
 		return doHasIndexOnColumns(conn, schemaOwner, tableName.toUpperCase(), columns.stream().map(s->s.toUpperCase()).collect(Collectors.toList()),
 				"syscat.indexes", "syscat.indexcoluse", null, "tabname", "indname", "colname", "colseq");
-	}
-
-	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
-		return true;
-	}
-
-	@Override
-	public boolean isStoredProcedureResultSetSupported() {
-		return true;
 	}
 }

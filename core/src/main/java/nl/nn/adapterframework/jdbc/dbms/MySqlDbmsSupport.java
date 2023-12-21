@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+Copyright 2019 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import nl.nn.adapterframework.util.DateUtils;
 import nl.nn.adapterframework.util.JdbcUtil;
 
 /**
-* Support for MySql/MariaDB.
+* Support for MySql.
 *
 */
 public class MySqlDbmsSupport extends GenericDbmsSupport {
@@ -157,15 +157,5 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 					+ " WHERE " + typeField + " IN ('" + IMessageBrowser.StorageType.MESSAGELOG_PIPE.getCode() + "','" + IMessageBrowser.StorageType.MESSAGELOG_RECEIVER.getCode()
 					+ "') AND " + expiryDateField + " < ?"+(maxRows>0?" LIMIT "+maxRows : ""));
 		return query;
-	}
-
-	@Override
-	public boolean isStoredProcedureOutParametersSupported() {
-		return true;
-	}
-
-	@Override
-	public boolean isStoredProcedureResultSetSupported() {
-		return true;
 	}
 }

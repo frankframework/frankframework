@@ -20,10 +20,12 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.sql.Connection;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.util.Date;
 import java.util.List;
 
@@ -165,41 +167,17 @@ public interface IDbmsSupport {
 	String getCleanUpIbisstoreQuery(String tableName, String keyField, String typeField, String expiryDateField, int maxRows);
 
 	/**
-	 * DBMS Feature flag: are stored procedures supported?
-	 *
-	 * @return true if stored procedures are supported, false otherwise. All databases are supported except for now H2.
-	 */
-	default boolean isStoredProceduresSupported() {
-		return true;
-	}
-
-	/**
-	 * DBMS Feature flag: are OUT parameters for stored procedures supported?
-	 * Can only be true if {@link #isStoredProceduresSupported()} is true.
-	 *
-	 * @return true if you can use stored procedures with {@code OUT} parameters with this database.
-	 * H2 does not support this by design. Oracle does not currently support this.
-	 */
-	boolean isStoredProcedureOutParametersSupported();
-
-	/**
 	 * DBMS Feature flag: is it possible to call a stored procedure that returns the results of a SELECT statement
 	 * directly, without needing a REFCURSOR OUT parameter.
 	 *
 	 * @return true for database that can directly return SELECT results. Not supported for PostgreSQL and Oracle.
 	 */
-	boolean isStoredProcedureResultSetSupported();
+	default boolean isStoredProcedureResultSetSupported() {
+		return true;
+	}
 
-	/**
-	 * DBMS Feature flag: is it possible to return a DB CURSOR in an OUT parameter, as a means to
-	 * return results of a SELECT statement.
-	 * <br/>
-	 * Currently, not yet supported on any database, planned for future for PostgreSQL and Oracle.
-	 *
-	 * @return false for all databases currently. Future support planned for Oracle and PostgreSQL.
-	 */
-	default boolean isStoredProcedureRefCursorOutParameterSupported() {
-		return false;
+	default SQLType getCursorSqlType() {
+		return JDBCType.REF_CURSOR;
 	}
 
 	default boolean canFetchStatementParameterMetaData() {
