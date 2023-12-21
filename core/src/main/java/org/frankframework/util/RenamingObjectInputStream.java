@@ -22,6 +22,7 @@ import java.io.ObjectStreamClass;
 import java.lang.reflect.Field;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.frankframework.configuration.ClassNameRewriter;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -38,8 +39,8 @@ public class RenamingObjectInputStream extends ObjectInputStream {
 		ObjectStreamClass resultClassDescriptor = super.readClassDescriptor();
 
 		String className = resultClassDescriptor.getName();
-		if (className.startsWith("nl.nn.adapterframework")) {
-			String newClassName = className.replace("nl.nn.adapterframework", "org.frankframework");
+		if (className.startsWith(ClassNameRewriter.LEGACY_PACKAGE_NAME)) {
+			String newClassName = className.replace(ClassNameRewriter.LEGACY_PACKAGE_NAME, ClassNameRewriter.ORG_FRANKFRAMEWORK_PACKAGE_NAME);
 			try {
 				// Do not return a new ObjectStreamClass looked up from new class definitions, but modify the descriptor read from the stream.
 				// Otherwise some flags could be wrong, like the flag "hasWriteObjectData" when reading objects from 7.6/7.7.
