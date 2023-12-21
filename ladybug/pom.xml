@@ -24,7 +24,7 @@
 			<artifactId>lombok</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.frankframework</groupId>
+			<groupId>org.ibissource</groupId>
 			<artifactId>ibis-ladybug</artifactId>
 			<version>${ladybug.version}</version>
 			<exclusions>
