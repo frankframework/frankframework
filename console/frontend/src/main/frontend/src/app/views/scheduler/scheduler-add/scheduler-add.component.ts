@@ -32,7 +32,7 @@ export class SchedulerAddComponent extends SchedulerAddEditParent implements OnI
     fd.append("name", this.form.name);
     fd.append("group", this.form.group);
     fd.append("configuration", this.selectedConfiguration);
-    fd.append("adapter", this.form.adapter);
+    fd.append("adapter", this.form.adapter?.name ?? "");
     fd.append("listener", this.form.listener);
     fd.append("cron", this.form.cron);
     fd.append("interval", this.form.interval);
@@ -42,12 +42,13 @@ export class SchedulerAddComponent extends SchedulerAddEditParent implements OnI
     fd.append("lockkey", this.form.lockkey);
 
     this.schedulerService.postSchedule(fd).subscribe({ next: () => {
+      this.state = [];
       this.addLocalAlert("success", "Successfully added schedule!");
       this.selectedConfiguration = "";
       this.form = {
         name: "",
         group: "",
-        adapter: "",
+        adapter: null,
         listener: "",
         cron: "",
         interval: "",

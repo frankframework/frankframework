@@ -383,7 +383,7 @@ export class AppComponent implements OnInit, OnDestroy {
             adapter.status = "stopped";
           }
 
-          this.appService.adapters[adapter.name] = adapter;
+          this.appService.adapters[`${adapter.configuration}/${adapter.name}`] = adapter;
 
           const selectedConfiguration = this.routeQueryParams.get("configuration");
           this.appService.updateAdapterSummary(selectedConfiguration ?? 'All', false);

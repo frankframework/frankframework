@@ -153,7 +153,7 @@ export class StatusComponent implements OnInit, OnDestroy {
   };
 
   showContent(adapter: Adapter) {
-    return this.adapterShowContent[adapter.name];
+    return this.adapterShowContent[`${adapter.configuration}/${adapter.name}`];
   }
 
   updateQueryParams() {

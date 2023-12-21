@@ -13,7 +13,7 @@ export class SchedulerAddEditParent {
   form: JobForm = {
     name: "",
     group: "",
-    adapter: "",
+    adapter: null,
     listener: "",
     cron: "",
     interval: "",
@@ -29,7 +29,7 @@ export class SchedulerAddEditParent {
     this.form = {
       name: "",
       group: "",
-      adapter: "",
+      adapter: null,
       listener: "",
       cron: "",
       interval: "",
@@ -43,4 +43,8 @@ export class SchedulerAddEditParent {
   addLocalAlert(type: string, message: string) {
     this.state.push({ type: type, message: message });
   };
+
+  clearLocalAlerts() {
+    this.state = [];
+  }
 }
