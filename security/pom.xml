@@ -2,18 +2,18 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-security</artifactId>
-	<name>Ibis AdapterFramework Security</name>
+	<artifactId>frankframework-security</artifactId>
+	<name>Frank!Framework Security</name>
 
 
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-commons</artifactId>
+			<artifactId>frankframework-commons</artifactId>
 		</dependency>
 
 		<dependency>

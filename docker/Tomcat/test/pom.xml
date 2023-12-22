@@ -3,13 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-tomcat-test</artifactId>
+	<artifactId>frankframework-docker-tomcat-test</artifactId>
 	<name>Frank!Framework - Docker > Tomcat > Test</name>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-docker-tomcat</artifactId>
+		<artifactId>frankframework-docker-tomcat</artifactId>
 		<version>${revision}</version>
 	</parent>
 
@@ -20,28 +20,28 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
+			<artifactId>frankframework-test</artifactId>
 			<version>${project.version}</version>
 			<classifier>full-configuration</classifier>
 			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
+			<artifactId>frankframework-test</artifactId>
 			<version>${project.version}</version>
 			<classifier>context</classifier>
 			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
+			<artifactId>frankframework-test</artifactId>
 			<version>${project.version}</version>
 			<classifier>scenarios</classifier>
 			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-test</artifactId>
+			<artifactId>frankframework-test</artifactId>
 			<version>${project.version}</version>
 			<classifier>secrets</classifier>
 			<type>jar</type>
@@ -80,7 +80,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.frankframework</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
+									<artifactId>frankframework-test</artifactId>
 									<version>${project.version}</version>
 									<classifier>context</classifier>
 									<type>jar</type>
@@ -101,7 +101,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.frankframework</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
+									<artifactId>frankframework-test</artifactId>
 									<version>${project.version}</version>
 									<classifier>scenarios</classifier>
 									<type>jar</type>
@@ -122,7 +122,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.frankframework</groupId>
-									<artifactId>ibis-adapterframework-test</artifactId>
+									<artifactId>frankframework-test</artifactId>
 									<version>${project.version}</version>
 									<classifier>secrets</classifier>
 									<type>jar</type>

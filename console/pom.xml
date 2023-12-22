@@ -3,11 +3,11 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-console</artifactId>
+	<artifactId>frankframework-console</artifactId>
 	<name>Frank Console</name>
 	<packaging>pom</packaging>
 

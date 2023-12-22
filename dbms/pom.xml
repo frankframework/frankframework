@@ -6,17 +6,17 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-dbms</artifactId>
-	<name>Ibis AdapterFramework DBMS</name>
+	<artifactId>frankframework-dbms</artifactId>
+	<name>Frank!Framework DBMS</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-commons</artifactId>
+			<artifactId>frankframework-commons</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>

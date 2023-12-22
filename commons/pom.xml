@@ -6,12 +6,12 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-commons</artifactId>
-	<name>Ibis AdapterFramework Commons</name>
+	<artifactId>frankframework-commons</artifactId>
+	<name>Frank!Framework Commons</name>
 
 	<dependencies>
 		<dependency>

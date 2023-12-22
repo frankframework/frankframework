@@ -3,13 +3,13 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>bundle-full</artifactId>
+		<artifactId>frankframework-bundle-full</artifactId>
 		<version>${revision}</version>
 		<relativePath>../bundle-full/pom.xml</relativePath>
 	</parent>
 
-	<artifactId>ibis-adapterframework-webapp</artifactId>
-	<name>Ibis AdapterFramework webapp</name>
+	<artifactId>frankframework-webapp</artifactId>
+	<name>Frank!Framework webapp</name>
 	<packaging>war</packaging>
 
 	<properties>

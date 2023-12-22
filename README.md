@@ -47,7 +47,7 @@ For general questions feel free to post them on our [discussions forum](https://
 If you would like to report a vulnerability, or have security concerns regarding the Frank!Framework, please email security@frankframework.org and include the word "SECURITY" in the subject line.
 
 ## Frank!Manual
-In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>. If you cannot find an answer to your question feel free to [submit a question in discussions](https://github.com/frankframework/frankframework/discussions). If you want to contribute to our manual, the sources can be found [here](https://github.com/ibissource/frank-manual).
+In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>. If you cannot find an answer to your question feel free to [submit a question in discussions](https://github.com/frankframework/frankframework/discussions). If you want to contribute to our manual, the sources can be found [here](https://github.com/frankframework/frank-manual).
 
 ## Contributing
 Eager to help us expand or enhance our framework? 

@@ -7,7 +7,7 @@ We want you working on things you're excited about, there are however plenty of 
 
 ## Running the Frank!Framework
 
-If you want to experiment with the Frank!Framework, you can use the [Frank!Runner](https://github.com/ibissource/frank-runner). If you want to stick with Maven, you can follow the instructions of this section.
+If you want to experiment with the Frank!Framework, you can use the [Frank!Runner](https://github.com/wearefrank/frank-runner). If you want to stick with Maven, you can follow the instructions of this section.
 
 Initial:
 
@@ -132,7 +132,7 @@ If you are developing under Windows, you can do the following to set this up:
 
 ## Developing with Eclipse
 
-You can download Eclipse and load the Frank!Framework sources into it using the [Frank!Runner](https://github.com/ibissource/frank-runner). It will also take care of project Lombok. If you want to understand what you are doing, you can do it manually using the instructions of this section. If you use the Frank!Runner, you still need to do the Eclipse configurations that are explained here.
+You can download Eclipse and load the Frank!Framework sources into it using the [Frank!Runner](https://github.com/frankframework/frank-runner). It will also take care of project Lombok. If you want to understand what you are doing, you can do it manually using the instructions of this section. If you use the Frank!Runner, you still need to do the Eclipse configurations that are explained here.
 
 ### Install Eclipse
 
@@ -191,9 +191,9 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
   - Right-click iaf-webapp and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
     - `src/main/webapp` to `/`
     - `target/m2e-wtp/web-resources` to `/`
-    - `iaf-akamai` to `WEB-INF/lib/ibis-adapterframework-akami-X.Y-SNAPSHOT.jar`
+    - `iaf-akamai` to `WEB-INF/lib/frankframework-akamai-X.Y-SNAPSHOT.jar`
     - ...
-    - `iaf-larva `to `WEB-INF/lib/ibis-adapterframework-larva-X.Y-SNAPSHOT.jar`
+    - `iaf-larva `to `WEB-INF/lib/frankframework-larva-X.Y-SNAPSHOT.jar`
     - `Maven Dependencies` to `WEB-INF/lib`
   - Sometimes, an additional mapping `/` to `/` is present. This is wrong; if you see it, delete it!
   - Right-click iaf-example and choose Properties. In the left-hand menu select "Deployment Assembly". To the right, you see what Eclipse directories are mapped to what directories within Apache Tomcat. You should have:
@@ -201,7 +201,7 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
     - `/src/main/resources` to `WEB-INF/classes`
     - `/src/main/webapp` to `/`
     - `/target/m2e-wtp/web-resources` to `/`
-    - `iaf-core` to `WEB-INF/lib/ibis-adapterframework-core-X.Y-SNAPSHOT.jar`
+    - `iaf-core` to `WEB-INF/lib/frankframework-core-X.Y-SNAPSHOT.jar`
     - `iaf-example` to -
     - ...
     - `iaf-webapp` to -
@@ -243,17 +243,17 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
   Make sure that all scripts are executable, for instance: `chmod a+x ~/.sdkman/candidates/tomcat/current/bin/*.sh`
 - Open Settings | Application Servers, add the Tomcat installation you just did.
 - Create a run configuration for a Tomcat server for the Example project.
-	- In the tab "Deployments", choose the module "ibis-adapterframework-example:war exploded"
-	  (or ibis-adapterframework-test, or other adapter, but in any case make sure to select the artefact with type `war exploded` and not `war`)
-	- Set the context to `/iaf-example` (or `/iaf-test`, for running tests from the project ibis-adapterframework-test).
+	- In the tab "Deployments", choose the module "frankframework-example:war exploded"
+	  (or frankframework-test, or other adapter, but in any case make sure to select the artefact with type `war exploded` and not `war`)
+	- Set the context to `/iaf-example` (or `/iaf-test`, for running tests from the project frankframework-test).
 	- Add `-Ddtap.stage=LOC` to VM Options.
     - In the "On Update" section, select "Update Classes and Resources" so that classes can be automatically updated and reloaded after project build (providing this is supported by your JDK)
-    - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "ibis-adapterframework-console-frontend".
+    - Under the section "Before launch", add a build step to build the console-frontend project via Maven. Add a Maven Goal action, running command `install` in the project "frankframework-console-frontend".
       __NB__: It is important that you run this step before the final Build step, which is to build the (Exploded) War Artifact! Otherwise, front-end resources will not be deployed.
     - Name your configuration and save it.
 - Create a run configuration for a Tomcat server for the Test project (See also [TESTING WITH IAF-TEST](TESTING_WITH_IAF-TEST.md)).  
   Unfortunately it is not possible to provide a run configuration for IAF-Test in the repository, since the configuration contains system-dependenty paths. 
-	- In the tab "Deployments", choose the module "ibis-adapterframework-test:war exploded"
+	- In the tab "Deployments", choose the module "frankframework-test:war exploded"
 	- Set the context to `/iaf-test` for the Test module.  
       __NB__: This is very important, otherwise a lot of tests will fail!
 	- Set the following VM options:
@@ -273,7 +273,7 @@ The syntax and the meaning of Frank configurations are documented in the followi
 * `./target/frankDoc/xml/xsd/FrankConfig-strict.xsd`. This file is given to Frank developers. They reference this XSD in their Frank config XML files. When they open an XML file, their text editor will use `FrankConfig-strict.xsd` to support autocomplete and to provide tooltip information.
 * `./target/frankDoc/xml/xsd/FrankConfig-compatibility.xsd`. This file is added to the Frank!Framework .jar file during the Maven build. The file is then used at runtime to parse Frank configurations.
 
-The Frank!Doc is created by a doclet (see https://docs.oracle.com/javase/8/docs/technotes/guides/javadoc/doclet/overview.html) that is implemented in our project https://github.com/ibissource/frank-doc. The doclet is executed during the Maven build of this project. The information in the Frank!Doc is based on the Java source files in this repository. As a developer of the F!F, please take care that the Frank!Doc remains correct and helpful for Frank developers. For further instructions, see [FRANKDOC.md](./FRANKDOC.md).
+The Frank!Doc is created by a doclet (see https://docs.oracle.com/javase/8/docs/technotes/guides/javadoc/doclet/overview.html) that is implemented in our project https://github.com/frankframework/frank-doc. The doclet is executed during the Maven build of this project. The information in the Frank!Doc is based on the Java source files in this repository. As a developer of the F!F, please take care that the Frank!Doc remains correct and helpful for Frank developers. For further instructions, see [FRANKDOC.md](./FRANKDOC.md).
 
 Thanks,
 The Frank!Framework Team

@@ -3,12 +3,12 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-core</artifactId>
-	<name>Ibis AdapterFramework core</name>
+	<artifactId>frankframework-core</artifactId>
+	<name>Frank!Framework core</name>
 
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
@@ -18,15 +18,15 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-commons</artifactId>
+			<artifactId>frankframework-commons</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-dbms</artifactId>
+			<artifactId>frankframework-dbms</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-security</artifactId>
+			<artifactId>frankframework-security</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -34,7 +34,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>iaf-management-gateway</artifactId>
+			<artifactId>frankframework-management-gateway</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.javassist</groupId>

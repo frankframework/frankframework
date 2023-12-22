@@ -3,17 +3,17 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-akamai</artifactId>
-	<name>Ibis AdapterFramework support for Akamai</name>
+	<artifactId>frankframework-akamai</artifactId>
+	<name>Frank!Framework support for Akamai</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<artifactId>frankframework-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -28,7 +28,7 @@
 
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<artifactId>frankframework-core</artifactId>
 			<classifier>tests</classifier>
 			<type>test-jar</type>
 			<version>${project.version}</version>

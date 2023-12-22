@@ -3,12 +3,12 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-ladybug</artifactId>
-	<name>Ibis AdapterFramework Ladybug</name>
+	<artifactId>frankframework-ladybug</artifactId>
+	<name>Frank!Framework Ladybug</name>
 
 	<properties>
 		<ladybug.version>2.3-20230911.183804</ladybug.version>
@@ -17,7 +17,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<artifactId>frankframework-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
