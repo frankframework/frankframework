@@ -133,7 +133,6 @@ public class StoredProcedureQuerySenderTest {
 		int rowsCounted = countRowsWithMessageValue(value, databaseTestEnvironment);
 
 		assertEquals(1, rowsCounted);
-		databaseTestEnvironment.close();
 	}
 
 	@DatabaseTest
@@ -576,7 +575,6 @@ public class StoredProcedureQuerySenderTest {
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL COUNT_MESSAGES_BY_CONTENT(?, ?, ?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
@@ -922,8 +920,6 @@ public class StoredProcedureQuerySenderTest {
 				fail("No generated keys from insert statement");
 			}
 			return generatedKeys.getLong(1);
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
 		}
 	}
 
@@ -937,13 +933,11 @@ public class StoredProcedureQuerySenderTest {
 			statement.executeUpdate();
 			ResultSet generatedKeys = statement.getGeneratedKeys();
 			if (!generatedKeys.next()) {
-				databaseTestEnvironment.close();
+				connection.close();
 				fail("No generated keys from insert statement");
 			}
 			connection.close();
 			return generatedKeys.getLong(1);
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
 		}
 	}
 
@@ -956,13 +950,11 @@ public class StoredProcedureQuerySenderTest {
 			statement.executeUpdate();
 			ResultSet generatedKeys = statement.getGeneratedKeys();
 			if (!generatedKeys.next()) {
-				databaseTestEnvironment.close();
+				connection.close();
 				fail("No generated keys from insert statement");
 			}
 			connection.close();
 			return generatedKeys.getLong(1);
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
 		}
 	}
 
@@ -980,8 +972,6 @@ public class StoredProcedureQuerySenderTest {
 			try (InputStream in = blob.getBinaryStream()) {
 				return StreamUtil.streamToString(in);
 			}
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
 		}
 	}
 
@@ -999,8 +989,6 @@ public class StoredProcedureQuerySenderTest {
 			try (Reader in = clob.getCharacterStream()) {
 				return StreamUtil.readerToString(in, "\n");
 			}
-		} catch (Throwable e) {
-			throw new RuntimeException(e);
 		}
 	}
 
