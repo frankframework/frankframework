@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
+		<groupId>org.frankframework</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
@@ -14,35 +14,35 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>bundle-minimal</artifactId>
 			<type>pom</type>
 		</dependency>
 
 		<!-- redefined so transient dependencies are version locked -->
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
 		</dependency>
 
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-akamai</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-aws</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-messaging</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>nn-specials</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-batch</artifactId>
 		</dependency>
 	</dependencies>
@@ -57,15 +57,15 @@
 			</activation>
 			<dependencies>
 				<dependency>
-					<groupId>org.ibissource</groupId>
+					<groupId>org.frankframework</groupId>
 					<artifactId>ibis-adapterframework-sap</artifactId>
 				</dependency>
 				<dependency>
-					<groupId>org.ibissource</groupId>
+					<groupId>org.frankframework</groupId>
 					<artifactId>ibis-adapterframework-tibco</artifactId>
 				</dependency>
 				<dependency>
-					<groupId>org.ibissource</groupId>
+					<groupId>org.frankframework</groupId>
 					<artifactId>ibis-adapterframework-idin</artifactId>
 				</dependency>
 			</dependencies>

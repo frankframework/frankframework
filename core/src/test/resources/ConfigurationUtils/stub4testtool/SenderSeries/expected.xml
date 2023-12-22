@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="SenderSeries">
       <receiver name="testtool-SenderSeries">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-SenderSeries"/>
       </receiver>
 		    <receiver name="SenderSeries">
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="SenderSeries"/>
 		    </receiver>
       <receiver name="testtool-SenderSeries-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-SenderSeries-1"/>
       </receiver>
 
@@ -18,12 +18,12 @@
 				        <exit path="READY" state="success"/>
 			      </exits>
 			      <pipe name="Call Sender"
-               className="nl.nn.adapterframework.pipes.SenderPipe"
+               className="org.frankframework.pipes.SenderPipe"
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
-				        <sender className="nl.nn.adapterframework.senders.SenderSeries">
-					          <sender className="nl.nn.adapterframework.senders.EchoSender"/>
-					          <sender className="nl.nn.adapterframework.senders.EchoSender"/>
+				        <sender className="org.frankframework.senders.SenderSeries">
+					          <sender className="org.frankframework.senders.EchoSender"/>
+					          <sender className="org.frankframework.senders.EchoSender"/>
 				        </sender>
 				        <forward name="success" path="READY"/>
 			      </pipe>

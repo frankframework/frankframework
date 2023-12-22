@@ -1,8 +1,7 @@
 package nl.nn.adapterframework.jdbc;
 
-import static nl.nn.adapterframework.parameters.Parameter.ParameterType;
-import static nl.nn.adapterframework.testutil.MatchUtils.assertJsonEquals;
-import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
+import static org.frankframework.testutil.MatchUtils.assertJsonEquals;
+import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,23 +12,24 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 
+import org.frankframework.core.ConfiguredTestBase;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
+import org.frankframework.functional.ThrowingConsumer;
+import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.Parameter.ParameterType;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.document.DocumentFormat;
+import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.testutil.junit.DatabaseTest;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.WithLiquibase;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-
-import nl.nn.adapterframework.core.ConfiguredTestBase;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.functional.ThrowingConsumer;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.stream.document.DocumentFormat;
-import nl.nn.adapterframework.testutil.ParameterBuilder;
-import nl.nn.adapterframework.testutil.TestConfiguration;
-import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.testutil.TransactionManagerType;
-import nl.nn.adapterframework.testutil.junit.DatabaseTest;
-import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
-import nl.nn.adapterframework.testutil.junit.WithLiquibase;
 
 @WithLiquibase(tableName = FixedQuerySenderTest.TABLE_NAME, file = "Migrator/ChangelogBlobTests.xml")
 public class FixedQuerySenderTest {
@@ -278,37 +278,37 @@ public class FixedQuerySenderTest {
 
 	@DatabaseTest
 	public void testOutputFormatDefault() throws Exception {
-		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default.xml");
+		String expected = TestFileUtils.getTestFile("/Jdbc/result-default.xml");
 		testOutputFormat(null, true, r-> assertXmlEquals(expected, r));
 	}
 
 	@DatabaseTest
 	public void testOutputFormatXml() throws Exception {
-		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml.xml");
+		String expected = TestFileUtils.getTestFile("/Jdbc/result-xml.xml");
 		testOutputFormat(DocumentFormat.XML, true, r-> assertXmlEquals(expected, r));
 	}
 
 	@DatabaseTest
 	public void testOutputFormatJson() throws Exception {
-		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json.json");
+		String expected = TestFileUtils.getTestFile("/Jdbc/result-json.json");
 		testOutputFormat(DocumentFormat.JSON, true, r-> assertJsonEquals(expected, r));
 	}
 
 	@DatabaseTest
 	public void testOutputFormatDefaultNoFieldDefinitions() throws Exception {
-		String expected =  TestFileUtils.getTestFile("/Jdbc/result-default-nofielddef.xml");
+		String expected = TestFileUtils.getTestFile("/Jdbc/result-default-nofielddef.xml");
 		testOutputFormat(null, false, r-> assertXmlEquals(expected, r));
 	}
 
 	@DatabaseTest
 	public void testOutputFormatXmlNoFieldDefinitions() throws Exception {
-		String expected =  TestFileUtils.getTestFile("/Jdbc/result-xml-nofielddef.xml");
+		String expected = TestFileUtils.getTestFile("/Jdbc/result-xml-nofielddef.xml");
 		testOutputFormat(DocumentFormat.XML, false, r -> assertXmlEquals(expected, r));
 	}
 
 	@DatabaseTest
 	public void testOutputFormatJsonNoFieldDefinitions() throws Exception {
-		String expected =  TestFileUtils.getTestFile("/Jdbc/result-json-nofielddef.json");
+		String expected = TestFileUtils.getTestFile("/Jdbc/result-json-nofielddef.json");
 		testOutputFormat(DocumentFormat.JSON, false, r-> assertJsonEquals(expected, r));
 	}
 

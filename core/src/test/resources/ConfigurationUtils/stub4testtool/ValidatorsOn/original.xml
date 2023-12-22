@@ -1,23 +1,23 @@
 <configuration>
 	<adapter name="Validator">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="validator" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="validator" throwException="false" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<inputValidator className="nl.nn.adapterframework.soap.SoapValidator" 
-				schemaLocation="urn:items /Validators/xsd/Items.xsd" 
-				soapBody="Item_Request" 
-				outputSoapBody="Item_Response,SpecialResponse,InputValidationFailure,OutputValidationFailure" 
+			<inputValidator className="org.frankframework.soap.SoapValidator"
+				schemaLocation="urn:items /Validators/xsd/Items.xsd"
+				soapBody="Item_Request"
+				outputSoapBody="Item_Response,SpecialResponse,InputValidationFailure,OutputValidationFailure"
 				allowPlainXml="true"
 			/>
-			
-			<outputValidator className="nl.nn.adapterframework.soap.SoapValidator" 
-				schemaLocation="urn:items /Validators/xsd/Items.xsd" 
-				soapBody="Item_Request" 
-				outputSoapBody="Item_Response,SpecialResponse,InputValidationFailure,OutputValidationFailure" 
+
+			<outputValidator className="org.frankframework.soap.SoapValidator"
+				schemaLocation="urn:items /Validators/xsd/Items.xsd"
+				soapBody="Item_Request"
+				outputSoapBody="Item_Response,SpecialResponse,InputValidationFailure,OutputValidationFailure"
 				allowPlainXml="true"
 			/>
 		</pipeline>

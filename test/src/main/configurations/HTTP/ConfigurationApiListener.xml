@@ -7,24 +7,24 @@
 			>
 			<listener
 				name="SimpleInsertListener"
-				className="nl.nn.adapterframework.http.rest.ApiListener"
+				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="insert"
 				method="post"
 			/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit state="success" path="EXIT" />
 			</exits>
 
-			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" >
+			<pipe name="FixedInsert" className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
 
-			<pipe name="FixedResultPipe" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;success/&gt;">
+			<pipe name="FixedResultPipe" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;success/&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
@@ -38,23 +38,23 @@
 			>
 			<listener
 				name="SimpleInsertListener"
-				className="nl.nn.adapterframework.http.rest.ApiListener"
+				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="transacted-exception"
 				method="post"
 			/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit state="success" path="EXIT" />
 			</exits>
 
-			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" >
+			<pipe name="FixedInsert" className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
-			<pipe name="generateException" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+			<pipe name="generateException" className="org.frankframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -66,24 +66,24 @@
 			>
 			<listener
 				name="SimpleInsertListener"
-				className="nl.nn.adapterframework.http.rest.ApiListener"
+				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="exception"
 				method="post"
 			/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck-Errors"/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck-Errors"/>
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
 				<exit state="success" path="EXIT" />
 			</exits>
 
-			<pipe name="FixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" >
+			<pipe name="FixedInsert" className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tvarchar) VALUES (SEQ_IBISTEMP.NEXTVAL,?)" queryType="insert" >
 					<param name="tvarchar" sessionKey="messageId" />
 				</sender>
 			</pipe>
-			<pipe name="generateException" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+			<pipe name="generateException" className="org.frankframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -94,7 +94,7 @@
 		>
 			<listener
 				name="MultipleUseOfOriginalMessage"
-				className="nl.nn.adapterframework.http.rest.ApiListener"
+				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="multiOriginalMessage"
 				method="post"
 			/>
@@ -103,14 +103,14 @@
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
-			<pipe name="first"  className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="*/*" outputType="xml" />
-			<pipe name="second" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="*/*" outputType="xml" getInputFromSessionKey="originalMessage" />
+			<pipe name="first" className="org.frankframework.pipes.XsltPipe" xpathExpression="*/*" outputType="xml" />
+			<pipe name="second" className="org.frankframework.pipes.XsltPipe" xpathExpression="*/*" outputType="xml" getInputFromSessionKey="originalMessage" />
 		</pipeline>
 	</adapter>
 
 	<adapter name="CallApiListener">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-CallApiListener" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-CallApiListener" />
 		</receiver>
 		<pipeline firstPipe="callApiListener">
 			<exits>
@@ -118,8 +118,8 @@
 			</exits>
 
 			<pipe name="callApiListener"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.http.HttpSender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.http.HttpSender"
 					urlParam="url_param" methodType="POST" resultStatusCodeSessionKey="statusCode"
 					allowSelfSignedCertificates="true"
 					verifyHostname="false"
@@ -132,14 +132,14 @@
 			</pipe>
 
 			<pipe
-				name="successOrException"
-				className="nl.nn.adapterframework.pipes.XmlSwitch" forwardNameSessionKey="statusCode">
+                    name="successOrException"
+                    className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="statusCode">
 				<forward name="200" path="EXIT" />
 				<forward name="304" path="EXIT" />
 				<forward name="500" path="FixedResultOnException" />
 			</pipe>
 
-			<pipe name="FixedResultOnException" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="&lt;error/&gt;">
+			<pipe name="FixedResultOnException" className="org.frankframework.pipes.FixedResultPipe" returnString="&lt;error/&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -151,7 +151,7 @@
 		>
 			<listener
 				name="LargeStreamProducer"
-				className="nl.nn.adapterframework.http.rest.ApiListener"
+				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="largeStream"
 			/>
 		</receiver>
@@ -159,18 +159,18 @@
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
-			<pipe name="ManyBlocks" className="nl.nn.adapterframework.pipes.LargeBlockTester" direction="produce" blockSize="10000" blockCount="20" sleepBetweenServedBlocks="100"/>
+			<pipe name="ManyBlocks" className="org.frankframework.pipes.LargeBlockTester" direction="produce" blockSize="10000" blockCount="20" sleepBetweenServedBlocks="100"/>
 		</pipeline>
 	</adapter>
 
 	<adapter name="ApiListener_LargeStreamConsumer">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ApiListener_LargeStream" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ApiListener_LargeStream" />
 		</receiver>
 		<pipeline>
 			<pipe name="callApiListener"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.http.HttpSender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.http.HttpSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/largeStream"
 					resultStatusCodeSessionKey="statusCode"
 					allowSelfSignedCertificates="true"
@@ -180,8 +180,8 @@
 			</pipe>
 
 			<pipe
-				name="consume"
-				className="nl.nn.adapterframework.pipes.LargeBlockTester" direction="consume" blockSize="10000" blockCount="20"
+                    name="consume"
+                    className="org.frankframework.pipes.LargeBlockTester" direction="consume" blockSize="10000" blockCount="20"
 			/>
 		</pipeline>
 	</adapter>

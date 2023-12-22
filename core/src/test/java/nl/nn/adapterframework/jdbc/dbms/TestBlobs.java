@@ -18,19 +18,18 @@ import java.sql.SQLException;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.input.ReaderInputStream;
+import org.frankframework.dbms.IDbmsSupport;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.jdbc.JdbcQuerySenderBase.QueryType;
+import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.testutil.junit.DatabaseTest;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.WithLiquibase;
+import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.StreamUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
-
-import nl.nn.adapterframework.dbms.IDbmsSupport;
-import nl.nn.adapterframework.dbms.JdbcException;
-import nl.nn.adapterframework.jdbc.JdbcQuerySenderBase.QueryType;
-import nl.nn.adapterframework.testutil.TransactionManagerType;
-import nl.nn.adapterframework.testutil.junit.DatabaseTest;
-import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
-import nl.nn.adapterframework.testutil.junit.WithLiquibase;
-import nl.nn.adapterframework.util.JdbcUtil;
-import nl.nn.adapterframework.util.StreamUtil;
 
 @Disabled("Tests for Blobs take too much time and memory to test regularly")
 @WithLiquibase(tableName = TestBlobs.TABLE_NAME, file = "Migrator/ChangelogBlobTests.xml")

@@ -1,40 +1,40 @@
 <Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://frankdoc.frankframework.org/iaf/api/frankdoc/files/FrankConfig.xsd">
 	<SapSystems>
-		<SapSystem 
-			name="default" 
-			host="${sap.host}" 
-			mandant="${sap.mandant}" 
-			systemnr="${sap.systemnr}" 
-			maxConnections="${sap.maxConnections}" 
+		<SapSystem
+			name="default"
+			host="${sap.host}"
+			mandant="${sap.mandant}"
+			systemnr="${sap.systemnr}"
+			maxConnections="${sap.maxConnections}"
 			authAlias="sapuser"
-			language="NL" 
-			unicode="true" 
-			traceLevel="${sap.traceLevel}" 
-			group="${sap.group}" 
-			r3name="${sap.r3name}" 
-			msservOffset="${sap.msservOffset}" 
-			sncEnabled="${sap.snc.enabled}" 
-			sncLibrary="${sap.snc.libraryPath}" 
-			sncQop="${sap.snc.qop}" 
-			myName="${sap.snc.myName}" 
+			language="NL"
+			unicode="true"
+			traceLevel="${sap.traceLevel}"
+			group="${sap.group}"
+			r3name="${sap.r3name}"
+			msservOffset="${sap.msservOffset}"
+			sncEnabled="${sap.snc.enabled}"
+			sncLibrary="${sap.snc.libraryPath}"
+			sncQop="${sap.snc.qop}"
+			myName="${sap.snc.myName}"
 			partnerName="${sap.snc.partnerName}"/>
-		<SapSystem 
-			name="twee" 
-			host="${sap.host}" 
-			mandant="${sap.mandant}" 
-			systemnr="${sap.systemnr}" 
-			maxConnections="${sap.maxConnections}" 
+		<SapSystem
+			name="twee"
+			host="${sap.host}"
+			mandant="${sap.mandant}"
+			systemnr="${sap.systemnr}"
+			maxConnections="${sap.maxConnections}"
 			authAlias="sapuser"
-			language="NL" 
-			unicode="true" 
-			traceLevel="${sap.traceLevel}" 
-			group="${sap.group}" 
-			r3name="${sap.r3name}" 
-			msservOffset="${sap.msservOffset}" 
-			sncEnabled="${sap.snc.enabled}" 
-			sncLibrary="${sap.snc.libraryPath}" 
-			sncQop="${sap.snc.qop}" 
-			myName="${sap.snc.myName}" 
+			language="NL"
+			unicode="true"
+			traceLevel="${sap.traceLevel}"
+			group="${sap.group}"
+			r3name="${sap.r3name}"
+			msservOffset="${sap.msservOffset}"
+			sncEnabled="${sap.snc.enabled}"
+			sncLibrary="${sap.snc.libraryPath}"
+			sncQop="${sap.snc.qop}"
+			myName="${sap.snc.myName}"
 			partnerName="${sap.snc.partnerName}"/>
 	</SapSystems>
 	<Adapter name="SapListener">
@@ -45,12 +45,12 @@
 			<SapListener progid="dummyTwee" sapSystemName="twee"/>
 		</Receiver>
 		<Receiver name="2">
-			<listener className="nl.nn.adapterframework.extensions.sap.SapListener" progid="${sap.progid2}" sapSystemName="default"/>
+			<listener className="org.frankframework.extensions.sap.SapListener" progid="${sap.progid2}" sapSystemName="default"/>
 		</Receiver>
 		<Pipeline>
 			<Exit name="EXIT" status="SUCCESS"/>
 			<pipe name="sapSender">
-				<sender className="nl.nn.adapterframework.extensions.sap.SapSender" functionName="RFC_GET_SYSTEM_INFO" sapSystemName="default" />
+				<sender className="org.frankframework.extensions.sap.SapSender" functionName="RFC_GET_SYSTEM_INFO" sapSystemName="default" />
 			</pipe>
 			<pipe name="sapSender2">
 				<SapSender functionName="RFC_GET_SYSTEM_INFO" sapSystemName="default" />

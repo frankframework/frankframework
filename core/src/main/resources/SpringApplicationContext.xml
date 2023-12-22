@@ -9,8 +9,8 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	">
 
-	<bean id="messageDispatcher" class="nl.nn.adapterframework.management.bus.MessageDispatcher">
-		<property name="packageName" value="nl.nn.adapterframework.management.bus" />
+	<bean id="messageDispatcher" class="org.frankframework.management.bus.MessageDispatcher">
+		<property name="packageName" value="org.frankframework.management.bus" />
 	</bean>
 
 	<context:property-placeholder />
@@ -19,7 +19,7 @@
 
 	<bean
 		name="lowerCasePropertySourcePostProcessor"
-		class="nl.nn.adapterframework.configuration.LowerCasePropertySourcePostProcessor"
+		class="org.frankframework.configuration.LowerCasePropertySourcePostProcessor"
 		autowire="byName"
 	/>
 
@@ -29,25 +29,25 @@
 		factory-method="getContextPrefix"
 	/>
 
-	<bean id="jndiContextPrefixFactory" class="nl.nn.adapterframework.core.JndiContextPrefixFactory" />
+	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
 
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jndi.JndiDataSourceFactory" />
-	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jndi.JndiConnectionFactoryFactory" />
-	<bean id="mongoClientFactory" class="nl.nn.adapterframework.mongodb.JndiMongoClientFactory" />
+	<bean id="dataSourceFactory" class="org.frankframework.jndi.JndiDataSourceFactory" />
+	<bean id="connectionFactoryFactory" class="org.frankframework.jndi.JndiConnectionFactoryFactory" />
+	<bean id="mongoClientFactory" class="org.frankframework.mongodb.JndiMongoClientFactory" />
 
-	<bean id="jdbcPropertySourceFactory" class="nl.nn.adapterframework.jdbc.JdbcPropertySourceFactory" />
+	<bean id="jdbcPropertySourceFactory" class="org.frankframework.jdbc.JdbcPropertySourceFactory" />
 
-	<bean id="VerifyDatabaseConnectionBean" class="nl.nn.adapterframework.lifecycle.VerifyDatabaseConnectionBean" />
+	<bean id="VerifyDatabaseConnectionBean" class="org.frankframework.lifecycle.VerifyDatabaseConnectionBean" />
 
 	<bean
 		name="hostnamePropertySourcePostProcessor"
-		class="nl.nn.adapterframework.configuration.HostnamePropertySourcePostProcessor"
+		class="org.frankframework.configuration.HostnamePropertySourcePostProcessor"
 		autowire="byName"
 	/>
 
 	<bean
 		name="jmsRealmsFactory"
-		class="nl.nn.adapterframework.jms.JmsRealmFactory"
+		class="org.frankframework.jms.JmsRealmFactory"
 		autowire="byName"
 		factory-method="getInstance"
 	/>
@@ -55,36 +55,36 @@
 
 	<bean id="adapterLifecycleWrapper" autowire="byName" scope="prototype" abstract="true" />
 
-	<bean name="adapterFlowProcessor" class="nl.nn.adapterframework.util.flow.FlowDiagramAdapterWrapper" parent="adapterLifecycleWrapper"/>
+	<bean name="adapterFlowProcessor" class="org.frankframework.util.flow.FlowDiagramAdapterWrapper" parent="adapterLifecycleWrapper"/>
 
 	<bean
 		name="flowDiagramManager"
-		class="nl.nn.adapterframework.util.flow.FlowDiagramManager"
+		class="org.frankframework.util.flow.FlowDiagramManager"
 		autowire="no"
 		scope="singleton"
 		lazy-init="true"
 		>
 	</bean>
 
-	<bean name="applicationWarnings" class="nl.nn.adapterframework.configuration.ApplicationWarnings" />
+	<bean name="applicationWarnings" class="org.frankframework.configuration.ApplicationWarnings" />
 
 	<bean
 		name="listenerContainer"
-		class="nl.nn.adapterframework.receivers.PullingListenerContainer"
+		class="org.frankframework.receivers.PullingListenerContainer"
 		autowire="byName"
 		scope="prototype"
 	/>
 
 	<bean
 		id="schedulerHelper"
-		class="nl.nn.adapterframework.scheduler.SchedulerHelper"
+		class="org.frankframework.scheduler.SchedulerHelper"
 		autowire="byName"
 		lazy-init="true"
 	/>
 
 	<bean
 		id="txManagerProxy"
-		class="nl.nn.adapterframework.jta.SpringTxManagerProxy"
+		class="org.frankframework.jta.SpringTxManagerProxy"
 		>
 		<property name="realTxManager">
 			<ref bean="txManagerReal"/>
@@ -95,44 +95,44 @@
 
 	<bean
 		name="isolatedServiceCaller"
-		class="nl.nn.adapterframework.senders.IsolatedServiceCaller"
+		class="org.frankframework.senders.IsolatedServiceCaller"
 		autowire="byName"
 		scope="singleton"
 	/>
 
 	<bean
 		name="pipeLineProcessor"
-		class="nl.nn.adapterframework.processors.InputOutputPipeLineProcessor"
+		class="org.frankframework.processors.InputOutputPipeLineProcessor"
 		autowire="byName"
 		scope="prototype"
 		>
 		<property name="pipeLineProcessor">
 			<bean
-				class="nl.nn.adapterframework.processors.CachePipeLineProcessor"
+				class="org.frankframework.processors.CachePipeLineProcessor"
 				autowire="byName"
 				scope="prototype"
 				>
 				<property name="pipeLineProcessor">
 					<bean
-						class="nl.nn.adapterframework.processors.CheckSemaphorePipeLineProcessor"
+						class="org.frankframework.processors.CheckSemaphorePipeLineProcessor"
 						autowire="byName"
 						scope="prototype"
 						>
 						<property name="pipeLineProcessor">
 							<bean
-								class="nl.nn.adapterframework.processors.TransactionAttributePipeLineProcessor"
+								class="org.frankframework.processors.TransactionAttributePipeLineProcessor"
 								autowire="byName"
 								scope="prototype"
 								>
 								<property name="pipeLineProcessor">
 									<bean
-										class="nl.nn.adapterframework.processors.LockerPipeLineProcessor"
+										class="org.frankframework.processors.LockerPipeLineProcessor"
 										autowire="byName"
 										scope="prototype"
 										>
 										<property name="pipeLineProcessor">
 											<bean
-												class="nl.nn.adapterframework.processors.CorePipeLineProcessor"
+												class="org.frankframework.processors.CorePipeLineProcessor"
 												autowire="byName"
 												scope="prototype"
 											/>
@@ -149,49 +149,49 @@
 
 	<bean
 		name="pipeProcessor,inputValidatorProcessor,outputValidatorProcessor,inputWrapperProcessor,outputWrapperProcessor"
-		class="nl.nn.adapterframework.processors.MonitoringPipeProcessor"
+		class="org.frankframework.processors.MonitoringPipeProcessor"
 		autowire="byName"
 		scope="prototype"
 		>
 		<property name="pipeProcessor">
 			<bean
-				class="nl.nn.adapterframework.processors.ExceptionHandlingPipeProcessor"
+				class="org.frankframework.processors.ExceptionHandlingPipeProcessor"
 				autowire="byName"
 				scope="prototype"
 				>
 				<property name="pipeProcessor">
 					<bean
-						class="nl.nn.adapterframework.processors.InputOutputPipeProcessor"
+						class="org.frankframework.processors.InputOutputPipeProcessor"
 						autowire="byName"
 						scope="prototype"
 						>
 						<property name="pipeProcessor">
 							<bean
-								class="nl.nn.adapterframework.processors.CheckSemaphorePipeProcessor"
+								class="org.frankframework.processors.CheckSemaphorePipeProcessor"
 								autowire="byName"
 								scope="prototype"
 								>
 								<property name="pipeProcessor">
 									<bean
-										class="nl.nn.adapterframework.processors.TransactionAttributePipeProcessor"
+										class="org.frankframework.processors.TransactionAttributePipeProcessor"
 										autowire="byName"
 										scope="prototype"
 										>
 										<property name="pipeProcessor">
 											<bean
-												class="nl.nn.adapterframework.processors.LockerPipeProcessor"
+												class="org.frankframework.processors.LockerPipeProcessor"
 												autowire="byName"
 												scope="prototype"
 												>
 												<property name="pipeProcessor">
 													<bean
-														class="nl.nn.adapterframework.processors.CheckMessageSizePipeProcessor"
+														class="org.frankframework.processors.CheckMessageSizePipeProcessor"
 														autowire="byName"
 														scope="prototype"
 														>
 														<property name="pipeProcessor">
 															<bean
-																class="nl.nn.adapterframework.processors.CorePipeProcessor"
+																class="org.frankframework.processors.CorePipeProcessor"
 																autowire="byName"
 																scope="prototype"
 															/>
@@ -212,19 +212,19 @@
 
 	<bean
 		name="senderWrapperProcessor"
-		class="nl.nn.adapterframework.processors.InputOutputSenderWrapperProcessor"
+		class="org.frankframework.processors.InputOutputSenderWrapperProcessor"
 		autowire="byName"
 		scope="prototype"
 		>
 		<property name="senderWrapperProcessor">
 			<bean
-				class="nl.nn.adapterframework.processors.CacheSenderWrapperProcessor"
+				class="org.frankframework.processors.CacheSenderWrapperProcessor"
 				autowire="byName"
 				scope="prototype"
 				>
 				<property name="senderWrapperProcessor">
 					<bean
-						class="nl.nn.adapterframework.processors.CoreSenderWrapperProcessor"
+						class="org.frankframework.processors.CoreSenderWrapperProcessor"
 						autowire="byName"
 						scope="prototype"
 						>
@@ -236,14 +236,14 @@
 
 	<bean
 		name="listenerProcessor"
-		class="nl.nn.adapterframework.processors.CoreListenerProcessor"
+		class="org.frankframework.processors.CoreListenerProcessor"
 		autowire="byName"
 		scope="prototype"
 	/>
 
 	<bean
 		name="namedThreadFactory"
-		class="nl.nn.adapterframework.scheduler.NamedThreadFactory"
+		class="org.frankframework.scheduler.NamedThreadFactory"
 		scope="prototype"
 	>
 		<property name="ThreadGroupName" value="ControlTasks"/>
@@ -260,14 +260,14 @@
 
 	<bean
 		name="dbmsSupportFactory"
-		class="nl.nn.adapterframework.dbms.DbmsSupportFactory"
+		class="org.frankframework.dbms.DbmsSupportFactory"
 		scope="singleton"
 		>
 		<property name="dbmsSupportMap">
 			<props>
 				<!-- configure additional DbmsSupport mappings here -->
-				<prop key="DB2/NT">nl.nn.adapterframework.dbms.Db2DbmsSupport</prop>
-				<prop key="DB2/LINUXX8664">nl.nn.adapterframework.dbms.Db2DbmsSupport</prop>
+				<prop key="DB2/NT">org.frankframework.dbms.Db2DbmsSupport</prop>
+				<prop key="DB2/LINUXX8664">org.frankframework.dbms.Db2DbmsSupport</prop>
 			</props>
 		</property>
 	</bean>

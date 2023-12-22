@@ -1,7 +1,7 @@
 <!-- This adapter creates a large file by reading and appending the content of a small file.
-	 Adapter gets the JVM maxMemory and calculates how many times can append the file content in the SetEndIndex pipe. 
-	 In the calculation 160 is substracted from the max memory this is the average expected memory the framework occupies. 
-	 32 is the calculated common factor 
+	 Adapter gets the JVM maxMemory and calculates how many times can append the file content in the SetEndIndex pipe.
+	 In the calculation 160 is substracted from the max memory this is the average expected memory the framework occupies.
+	 32 is the calculated common factor
 	 size of the file to be created - corresponding JVM max memory - expected duration(tested on the specified hardware CPU-Intel i7-7700HQ@2.8GHz ; RAM 8GB):
 
 	 * 75MB - 4096M - 24 minutes
@@ -15,72 +15,72 @@
 		<receiver>
 			<listener name="Starstar"
 				serviceName="ibis4test-CreateLargeFile"
-				className="nl.nn.adapterframework.receivers.JavaListener" />
+				className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 		<pipeline firstPipe="ReadFile">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="ReadFile"
-				className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				className="org.frankframework.pipes.FixedResultPipe"
 				storeResultInSessionKey="fileContent"
 				filename="CreateLargeFile/input_small.txt">
 				<forward name="success" path="CreateFile" />
 			</pipe>
 			<pipe name="CreateFile" actions="create"
-				className="nl.nn.adapterframework.pipes.FilePipe"
+				className="org.frankframework.pipes.FilePipe"
 				directory="${log.dir}" filename="input_big.xml">
 				<forward name="success" path="WriteFile" />
 			</pipe>
 			<pipe name="WriteFile" actions="write"
-				className="nl.nn.adapterframework.pipes.FilePipe"
+				className="org.frankframework.pipes.FilePipe"
 				directory="${log.dir}" getInputFromFixedValue="&lt;dummy&gt;"
 				filename="input_big.xml">
 				<forward name="success" path="SetStartIndex" />
 			</pipe>
 			<pipe name="SetStartIndex"
-				className="nl.nn.adapterframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSession"
 				sessionKey="index" getInputFromFixedValue="0">
 				<forward name="success" path="GetHeapSize" />
 			</pipe>
 			<pipe name="GetHeapSize"
-				className="nl.nn.adapterframework.pipes.IbisMetricsPipe"
+				className="org.frankframework.pipes.IbisMetricsPipe"
 				storeResultInSessionKey="metrics">
 				<forward name="success" path="SetEndIndex" />
 			</pipe>
 			<pipe name="SetEndIndex"
-				className="nl.nn.adapterframework.pipes.XsltPipe"
+				className="org.frankframework.pipes.XsltPipe"
 				getInputFromSessionKey="metrics"
 				xpathExpression="floor((number(substring(processMetrics/properties/property[@name='maxMemory'], 0, string-length(processMetrics/properties/property[@name='maxMemory'])))-160) div 32)"
 				sessionKey="endIndex">
 				<forward name="success" path="AppendFile" />
 			</pipe>
 			<pipe name="AppendFile" actions="write_append"
-				className="nl.nn.adapterframework.pipes.FilePipe"
+				className="org.frankframework.pipes.FilePipe"
 				directory="${log.dir}" filename="input_big.xml"
 				getInputFromSessionKey="fileContent">
 				<forward name="success" path="IncrementIndex" />
 			</pipe>
 			<pipe name="IncrementIndex"
-				className="nl.nn.adapterframework.pipes.IncreaseIntegerPipe"
+				className="org.frankframework.pipes.IncreaseIntegerPipe"
 				sessionKey="index">
 				<forward name="success" path="CompareValues" />
 			</pipe>
 			<pipe name="AppendTag" actions="write_append"
-				className="nl.nn.adapterframework.pipes.FilePipe"
+				className="org.frankframework.pipes.FilePipe"
 				directory="${log.dir}" filename="input_big.xml"
 				getInputFromFixedValue="&lt;/dummy&gt;">
 				<forward name="success" path="IncrementIndex" />
 			</pipe>
 			<pipe name="CompareValues"
-				className="nl.nn.adapterframework.pipes.CompareIntegerPipe"
+				className="org.frankframework.pipes.CompareIntegerPipe"
 				sessionKey1="index" sessionKey2="endIndex">
 				<forward name="lessthan" path="AppendFile" />
 				<forward name="equals" path="AppendTag" />
 				<forward name="greaterthan" path="Echo" />
 			</pipe>
 			<pipe name="Echo"
-				className="nl.nn.adapterframework.pipes.EchoPipe"
+				className="org.frankframework.pipes.EchoPipe"
 				getInputFromFixedValue="success">
 				<forward name="success" path="READY" />
 			</pipe>
@@ -91,14 +91,14 @@
 		<receiver>
 			<listener name="Starstar"
 				serviceName="ibis4test-DeleteLargeFile"
-				className="nl.nn.adapterframework.receivers.JavaListener" />
+				className="org.frankframework.receivers.JavaListener" />
 		</receiver>
 		<pipeline firstPipe="DeleteFile">
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
 			<pipe name="DeleteFile" action="delete"
-				className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+				className="org.frankframework.pipes.LocalFileSystemPipe"
 				filename="${log.dir}/input_big.xml">
 				<forward name="success" path="READY" />
 			</pipe>

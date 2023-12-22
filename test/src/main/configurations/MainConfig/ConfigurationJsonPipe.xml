@@ -1,24 +1,24 @@
 <module>
 	<adapter name="JsonPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-JsonPipe" />
 		</receiver>
 		<pipeline firstPipe="xml2json">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="xml2json" className="nl.nn.adapterframework.pipes.JsonPipe"
+			<pipe name="xml2json" className="org.frankframework.pipes.JsonPipe"
 				direction="xml2json" storeResultInSessionKey="json">
 				<forward name="success" path="send" />
 			</pipe>
 			<pipe name="send"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.senders.IbisJavaSender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.senders.IbisJavaSender"
 					serviceName="testtool-JsonPipe" />
 				<forward name="success" path="json2xml" />
 			</pipe>
-			<pipe name="json2xml" className="nl.nn.adapterframework.pipes.JsonPipe"
+			<pipe name="json2xml" className="org.frankframework.pipes.JsonPipe"
 				getInputFromSessionKey="json">
 				<forward name="success" path="EXIT" />
 			</pipe>

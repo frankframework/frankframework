@@ -1,25 +1,25 @@
 <adapter name="HelloBeautifulWorld">
 	<receiver name="HelloBeautifulWorld">
-		<listener className="nl.nn.adapterframework.receivers.JavaListener" name="HelloBeautifulWorld"/>
+		<listener className="org.frankframework.receivers.JavaListener" name="HelloBeautifulWorld"/>
 	</receiver>
 	<receiver name="HelloBeautifulWorld">
-		<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="testtool-HelloBeautifulWorld"/>
+		<listener className="org.frankframework.receivers.JavaListener" serviceName="testtool-HelloBeautifulWorld"/>
 	</receiver>
 	<pipeline>
-		<pipe className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" name="appending" action="append" filename="C:/Temp/Rotatingfile.xml" rotateDays="14">
+		<pipe className="org.frankframework.pipes.LocalFileSystemPipe" name="appending" action="append" filename="C:/Temp/Rotatingfile.xml" rotateDays="14">
 			<forward name="exception" path="echoSomethingError"/>
 		</pipe>
-		<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="echoSomethingNext">
+		<pipe className="org.frankframework.pipes.EchoPipe" name="echoSomethingNext">
 			<forward name="success" path="echoSomething1"/>
 		</pipe>
-		<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="echoSomethingError">
+		<pipe className="org.frankframework.pipes.EchoPipe" name="echoSomethingError">
 			<forward name="success" path="echoSomething1"/>
 		</pipe>
-		<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="echoSomething1">
+		<pipe className="org.frankframework.pipes.EchoPipe" name="echoSomething1">
 			<forward name="success" path="EXIT"/>
 			<forward name="exception" path="echoSomethingSomethingError"/>
 		</pipe>
-		<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="echoSomethingSomethingError">
+		<pipe className="org.frankframework.pipes.EchoPipe" name="echoSomethingSomethingError">
 			<forward name="success" path="EXIT"/>
 		</pipe>
 		<exits>

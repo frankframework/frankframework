@@ -4,7 +4,7 @@
 			<!-- This listener is used when the API is called as specified in OpenAPI 3.0 at the Webservices page -->
 			<listener
 				name="HelloWorld"
-				className="nl.nn.adapterframework.http.rest.ApiListener"
+				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="hello-world"
 			/>
 		</receiver>
@@ -12,7 +12,7 @@
 			<!-- This listener is used by the scheduler and IbisLocalSender in adapter HelloWorlds  -->
 			<listener
 				name="HelloWorld"
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 			/>
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
@@ -21,7 +21,7 @@
 			</exits>
 			<pipe
 				name="HelloWorld"
-				className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				className="org.frankframework.pipes.FixedResultPipe"
 				returnString="Hello World"
 				>
 				<forward name="success" path="EXIT"/>
@@ -41,9 +41,9 @@
 		<receiver name="HelloUniverse" >
 			<listener
 				name="HelloUniverse"
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 			/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage"
 				slotId="${instance.name}/HelloUniverse_In" />
 		</receiver>
 		<pipeline firstPipe="HelloUniverse">
@@ -51,10 +51,10 @@
 				<exit name="EXIT" state="success"/>
 			</exits>
 			<pipe name="HelloUniverse"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.senders.FixedResultSender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.senders.FixedResultSender"
 					returnString="Hello, Universe!" />
-   				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" 
+   				<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage"
 					slotId="${instance.name}/HelloUniverse_Out" />
 				<forward name="success" path="EXIT" />
 			</pipe>

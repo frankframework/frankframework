@@ -31,7 +31,7 @@ The module's test scenarios can be run manually with the Larva testtool. This wi
 
    - `log.dir=c:/temp` (lower case 'c' is mandatory)
    - `dtap.stage=LOC`.
-   - `credentialFactory.class=nl.nn.credentialprovider.FileSystemCredentialFactory`
+   - `credentialFactory.class=org.frankframework.credentialprovider.FileSystemCredentialFactory`
    - `credentialFactory.filesystem.root=<path to your sources root>/test/src/main/secrets`
    - `authAliases.expansion.allowed=testalias`
 2. In the Tomcat Overview window, set the port number for HTTP/1.1 to 80. If you wish to use another port, please set the property `web.port` accordingly in catalina.properties.
@@ -61,7 +61,7 @@ parallel, so you can for instance run multiple debug sessions side by side to co
    - `-Ddtap.stage=LOC`
    - `-DauthAliases.expansion.allowed=testalias`
    - `-Dlog.dir=c:/temp` (lower case 'c' is mandatory) (or whatever works for your system, drive letters on Windows must be lowercase).
-   - `-DcredentialFactory.class=nl.nn.credentialprovider.FileSystemCredentialFactory`
+   - `-DcredentialFactory.class=org.frankframework.credentialprovider.FileSystemCredentialFactory`
    - `-DcredentialFactory.filesystem.root=<path to your sources root>/test/src/main/secrets`
 3. Set the Tomcat HTTP port to `80`
 NB: If you want to run on a different port, you also need to add to your VM options the option `-Dweb.port=8080` (or whatever port you chose).
@@ -79,14 +79,14 @@ Docker projects for a number of other DMBSes are provided in GitHub project http
 ## 5. Running the test scenarios
 
 ### Eclipse
-Run your Tomcat server from Eclipse's Servers view. It may take up to a minute for Eclipse to launch it; once ready, you can find the Ibis console by browsing to http://localhost/iaf-test/.
+Run your Tomcat server from Eclipse's Servers view. It may take up to a minute for Eclipse to launch it; once ready, you can find the Frank!Framework console by browsing to http://localhost/iaf-test/.
 
 ### IntelliJ
 Start your IAF-Test Run Configuration from the "Run Configurations" menu or from the "Services" tool panel, either in "Run" or in "Debug" mode.
 Depending on how you configured it when the system is ready it will either open a browser window automatically, or you can manually navigate to http://localhost/iaf-test/ in your browser of choice.
 
 ### Starting the Tests
-Once the Ibis console is loaded, go to the Larva testtool in the sidebar. Specify which scenarios to run and under which conditions - the default settings should be good for checking if everything works.
+Once the Frank!Framework console is loaded, go to the Larva testtool in the sidebar. Specify which scenarios to run and under which conditions - the default settings should be good for checking if everything works.
 
 Press [ Start ], sit back, relax, do some stretches, and let's hope for the best. :)
 

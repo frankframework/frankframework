@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
+		<groupId>org.frankframework</groupId>
 		<artifactId>bundle-full</artifactId>
 		<version>${revision}</version>
 		<relativePath>../bundle-full/pom.xml</relativePath>

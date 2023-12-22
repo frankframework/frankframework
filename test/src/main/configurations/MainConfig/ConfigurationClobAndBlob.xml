@@ -1,33 +1,33 @@
 <module>
 	<adapter name="ClobAndBlob" description="Test the functioning handling CLOBs and BLOBs">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ClobAndBlob" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ClobAndBlob" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="prepareDummyInput" className="nl.nn.adapterframework.pipes.FixedResultPipe" storeResultInSessionKey="dummyInput" returnString="&lt;root&gt;dummyInput&lt;/root&gt;" />
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage"
-			xpathExpression="request/@action"/>
+			<pipe name="prepareDummyInput" className="org.frankframework.pipes.FixedResultPipe" storeResultInSessionKey="dummyInput" returnString="&lt;root&gt;dummyInput&lt;/root&gt;" />
+			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage"
+                  xpathExpression="request/@action"/>
 
 			<!-- 01 InsertClobViaInputMessage -->
 			<pipe name="InsertClobViaInputMessage" storeResultInSessionKey="clobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tclob) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_CLOB())" queryType="insert"
-					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tclob) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_CLOB())" queryType="insert"
+                        resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
 				</sender>
 			</pipe>
-			<pipe name="transformOriginalMessageForClob" className="nl.nn.adapterframework.pipes.XsltPipe" 
+			<pipe name="transformOriginalMessageForClob" className="org.frankframework.pipes.XsltPipe"
 				getInputFromSessionKey="originalMessage"
 				styleSheetName ="Jdbc/WrapDocument.xslt">
 			</pipe>
 			<pipe name="updateClobViaInputMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateClob"> 
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateClob">
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readClobAsResultMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=?" queryType="select" scalar="true">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=?" queryType="select" scalar="true">
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -35,84 +35,84 @@
 
 			<!-- 01b OverwriteClobViaInputMessage -->
 			<pipe name="OverwriteClobViaInputMessage" storeResultInSessionKey="clobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tclob) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_CLOB())" queryType="insert"
-					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tclob) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_CLOB())" queryType="insert"
+                        resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
 				</sender>
 			</pipe>
-			<pipe name="WaitForClobRecordToSettleBeforeUpdating" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="0" /> <!-- necessary when streaming -->
+			<pipe name="WaitForClobRecordToSettleBeforeUpdating" className="org.frankframework.pipes.DelayPipe" delayTime="0" /> <!-- necessary when streaming -->
 			<pipe name="OverwriteClobViaInputMessage2" getInputFromSessionKey="">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateClob"> 
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateClob">
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 				<forward name="success" path="transformOriginalMessageForClob" />
 			</pipe>
 
-			
+
 			<!-- 02 InsertClobViaClobSessionKey -->
 			<pipe name="InsertClobViaClobSessionKey" storeResultInSessionKey="clobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tclob) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_CLOB())" queryType="insert"
-					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" 
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,tclob) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_CLOB())" queryType="insert"
+                        resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
 					>
 				</sender>
 			</pipe>
-			<pipe name="transformOriginalMessageAndStoreInClobSourceSessionVariable" className="nl.nn.adapterframework.pipes.XsltPipe" 
+			<pipe name="transformOriginalMessageAndStoreInClobSourceSessionVariable" className="org.frankframework.pipes.XsltPipe"
 				getInputFromSessionKey="originalMessage"
 				styleSheetName ="Jdbc/WrapDocument.xslt"
 				storeResultInSessionKey="clobSource">
 			</pipe>
 			<pipe name="updateClobViaSessionKey" getInputFromSessionKey="dummyInput" > <!-- make sure input is not the same as clobSource session variable -->
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateClob"
-					clobSessionKey="clobSource">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateClob"
+                        clobSessionKey="clobSource">
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 			</pipe>
-			<pipe name="prepareClobResultSessionKey" className="nl.nn.adapterframework.pipes.FixedResultPipe" storeResultInSessionKey="clobResult" returnString="${testdata.dir}/clobresult.txt" />
-			<pipe name="cleanupClobResult" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="delete" filename="${testdata.dir}/clobresult.txt" >
+			<pipe name="prepareClobResultSessionKey" className="org.frankframework.pipes.FixedResultPipe" storeResultInSessionKey="clobResult" returnString="${testdata.dir}/clobresult.txt" />
+			<pipe name="cleanupClobResult" className="org.frankframework.pipes.LocalFileSystemPipe" action="delete" filename="${testdata.dir}/clobresult.txt" >
 				<forward name="exception" path="readClobViaSessionKey" />
 			</pipe>
 			<pipe name="readClobViaSessionKey" getInputFromSessionKey="dummyInput" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=?" queryType="select" scalar="true"
-					clobSessionKey="clobResult">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT tclob FROM IBISTEMP WHERE tkey=?" queryType="select" scalar="true"
+                        clobSessionKey="clobResult">
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 			</pipe>
-			<pipe name="renderClob" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="read" filename="${testdata.dir}/clobresult.txt">
+			<pipe name="renderClob" className="org.frankframework.pipes.LocalFileSystemPipe" action="read" filename="${testdata.dir}/clobresult.txt">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
 
 			<!-- 03 InsertBlobViaInputMessage -->
 			<pipe name="InsertBlobViaInputMessage" storeResultInSessionKey="blobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
-					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
+                        resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
 				</sender>
 			</pipe>
-			<pipe name="transformOriginalMessageForBlob" className="nl.nn.adapterframework.pipes.XsltPipe" 
+			<pipe name="transformOriginalMessageForBlob" className="org.frankframework.pipes.XsltPipe"
 				getInputFromSessionKey="originalMessage"
 				styleSheetName ="Jdbc/WrapDocument.xslt">
 			</pipe>
 			<pipe name="updateBlobViaInputMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob"> 
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readBlobViaInputMessage" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select" 
-				scalar="true">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select"
+                        scalar="true">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
-			
+
 			<!-- 03b OverwriteBlobViaInputMessage -->
 			<pipe name="OverwriteBlobViaInputMessage" storeResultInSessionKey="blobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
-					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
+                        resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
 				</sender>
 			</pipe>
-			<pipe name="WaitForBlobRecordToSettleBeforeUpdating" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="0" /> <!-- necessary when streaming -->
+			<pipe name="WaitForBlobRecordToSettleBeforeUpdating" className="org.frankframework.pipes.DelayPipe" delayTime="0" /> <!-- necessary when streaming -->
 			<pipe name="OverwriteBlobViaInputMessage2" getInputFromSessionKey="">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob"> 
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 				<forward name="success" path="transformOriginalMessageForBlob" />
@@ -121,83 +121,83 @@
 
 			<!-- 04 InsertBlobViaBlobSessionKey -->
 			<pipe name="InsertBlobViaBlobSessionKey" storeResultInSessionKey="blobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" 
-					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" 
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
+                        resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
 					>
 				</sender>
 			</pipe>
-			<pipe name="transformOriginalMessageAndStoreInBlobSourceSessionVariable" className="nl.nn.adapterframework.pipes.XsltPipe" 
+			<pipe name="transformOriginalMessageAndStoreInBlobSourceSessionVariable" className="org.frankframework.pipes.XsltPipe"
 				getInputFromSessionKey="originalMessage"
 				styleSheetName ="Jdbc/WrapDocument.xslt"
 				storeResultInSessionKey="blobSource">
 			</pipe>
 			<pipe name="updateblobViaSessionKey" getInputFromSessionKey="dummyInput" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateblob"
-					blobSessionKey="blobSource">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateblob"
+                        blobSessionKey="blobSource">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
-			<pipe name="prepareBlobResultSessionKey" className="nl.nn.adapterframework.pipes.FixedResultPipe" storeResultInSessionKey="blobResult" returnString="${testdata.dir}/blobresult1.txt" />
-			<pipe name="cleanupBlobResult" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="delete" filename="${testdata.dir}/blobresult1.txt" >
+			<pipe name="prepareBlobResultSessionKey" className="org.frankframework.pipes.FixedResultPipe" storeResultInSessionKey="blobResult" returnString="${testdata.dir}/blobresult1.txt" />
+			<pipe name="cleanupBlobResult" className="org.frankframework.pipes.LocalFileSystemPipe" action="delete" filename="${testdata.dir}/blobresult1.txt" >
 				<forward name="exception" path="readBlobViaSessionKey" />
 			</pipe>
 
 			<pipe name="readBlobViaSessionKey" getInputFromSessionKey="dummyInput" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select" scalar="true"
-					blobSessionKey="blobResult">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select" scalar="true"
+                        blobSessionKey="blobResult">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
-			<pipe name="renderBlob1" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="read" filename="${testdata.dir}/blobresult1.txt">
+			<pipe name="renderBlob1" className="org.frankframework.pipes.LocalFileSystemPipe" action="read" filename="${testdata.dir}/blobresult1.txt">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
 
 			<!-- 05 InsertBlobViaInputMessageNotCompressed -->
 			<pipe name="InsertBlobViaInputMessageNotCompressed" storeResultInSessionKey="blobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
-					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
+                        resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
 				</sender>
 			</pipe>
-			<pipe name="transformOriginalMessageForBlobNotCompressed" className="nl.nn.adapterframework.pipes.XsltPipe" 
+			<pipe name="transformOriginalMessageForBlobNotCompressed" className="org.frankframework.pipes.XsltPipe"
 				getInputFromSessionKey="originalMessage"
 				styleSheetName ="Jdbc/WrapDocument.xslt">
 			</pipe>
 			<pipe name="updateBlobViaInputMessageNotCompressed">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob"
-				blobsCompressed="false"> 
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob"
+                        blobsCompressed="false">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readBlobViaInputMessageNotCompressed" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select"
-				blobsCompressed="false" scalar="true">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select"
+                        blobsCompressed="false" scalar="true">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
-			
+
 			<!-- 06 InsertBlobViaBlobSessionKeyNotCompressed -->
 			<pipe name="InsertBlobViaBlobSessionKeyNotCompressed" storeResultInSessionKey="blobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" blobsCompressed="false" 
-					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" 
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert" blobsCompressed="false"
+                        resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true"
 					>
 				</sender>
 			</pipe>
-			<pipe name="transformOriginalMessageAndStoreInBlobSessionVariableNotCompressed" className="nl.nn.adapterframework.pipes.XsltPipe" 
+			<pipe name="transformOriginalMessageAndStoreInBlobSessionVariableNotCompressed" className="org.frankframework.pipes.XsltPipe"
 				getInputFromSessionKey="originalMessage"
 				styleSheetName ="Jdbc/WrapDocument.xslt"
 				storeResultInSessionKey="blobSource">
 			</pipe>
 			<pipe name="updateblobViaSessionKeyNotCompressed" getInputFromSessionKey="dummyInput">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateblob" 
-					blobSessionKey="blobSource" blobsCompressed="false" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE" queryType="updateblob"
+                        blobSessionKey="blobSource" blobsCompressed="false" >
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readBlobViaSessionKeyNotCompressed" getInputFromSessionKey="dummyInput">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select" scalar="true" 
-					blobsCompressed="false" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select" scalar="true"
+                        blobsCompressed="false" >
 					<param name="key" sessionKey="blobKey"/>
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -205,18 +205,18 @@
 
 			<!-- 07 InsertBlobViaInputMessageReadAsIfcompressed -->
 			<pipe name="InsertBlobViaInputMessageReadAsIfcompressed" storeResultInSessionKey="blobKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
-					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (tkey,TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL,EMPTY_BLOB())" queryType="insert"
+                        resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" >
 				</sender>
 			</pipe>
 			<pipe name="updateBlobViaInputMessageReadAsIfcompressed" getInputFromSessionKey="originalMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob" blobsCompressed="false"> 
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=? FOR UPDATE " queryType="updateBlob" blobsCompressed="false">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
 			<pipe name="readBlobReadAsIfcompressed" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select"
-				scalar="true">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE tkey=?" queryType="select"
+                        scalar="true">
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 				<forward name="success" path="EXIT" />

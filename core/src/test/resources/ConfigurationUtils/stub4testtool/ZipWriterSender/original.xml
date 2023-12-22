@@ -2,7 +2,7 @@
 	<adapter name="ZipWriterSender">
 		<receiver name="ZipWriterSender">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="ZipWriterSender"
 			/>
 		</receiver>
@@ -13,10 +13,10 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.compression.ZipWriterSender"
+					className="org.frankframework.compression.ZipWriterSender"
 				/>
 				<forward name="success" path="READY"/>
 			</pipe>

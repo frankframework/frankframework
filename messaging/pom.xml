@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
+		<groupId>org.frankframework</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
@@ -12,7 +12,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
 		</dependency>
 		<dependency>
@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>com.ibm.mq</groupId>
 			<artifactId>com.ibm.mq.allclient</artifactId>
-			<version>9.3.4.0</version>
+			<version>9.3.4.1</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -92,7 +92,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
 			<classifier>tests</classifier>
 			<type>test-jar</type>

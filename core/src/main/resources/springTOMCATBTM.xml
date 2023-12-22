@@ -13,7 +13,7 @@
 
 	<bean
 		name="txManagerReal"
-		class="nl.nn.adapterframework.jta.btm.BtmJtaTransactionManager"
+		class="org.frankframework.jta.btm.BtmJtaTransactionManager"
 		depends-on="btmConfig"
 		>
 		<property name="statusFile" value="${transactionmanager.log.dir}/status.txt" />
@@ -30,10 +30,10 @@
 			<property name="logPart1Filename" value="${transactionmanager.log.dir}/1.tlog" />
 			<property name="logPart2Filename" value="${transactionmanager.log.dir}/2.tlog" />
 			<property name="defaultTransactionTimeout" value="${transactionmanager.defaultTransactionTimeout}" />
-			<property name="journal" value="nl.nn.adapterframework.jta.btm.BtmDiskJournal" />
+			<property name="journal" value="org.frankframework.jta.btm.BtmDiskJournal" />
 	</bean>
 
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.btm.BtmDataSourceFactory" />
-	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jta.btm.BtmConnectionFactoryFactory" />
+	<bean id="dataSourceFactory" class="org.frankframework.jta.btm.BtmDataSourceFactory" />
+	<bean id="connectionFactoryFactory" class="org.frankframework.jta.btm.BtmConnectionFactoryFactory" />
 
 </beans>

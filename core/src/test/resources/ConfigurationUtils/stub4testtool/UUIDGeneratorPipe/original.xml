@@ -1,26 +1,26 @@
 <configuration>
 	<adapter name="UUIDGeneratorPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="UUIDGeneratorPipe" />
+			<listener className="org.frankframework.receivers.JavaListener" name="UUIDGeneratorPipe" />
 		</receiver>
 		<pipeline firstPipe="UUIDGeneratorPipe-numeric">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="UUIDGeneratorPipe-numeric"
-				className="nl.nn.adapterframework.pipes.UUIDGeneratorPipe" 
+				className="org.frankframework.pipes.UUIDGeneratorPipe"
 				type="numeric">
 				<forward name="success" path="UUIDGeneratorPipe-alphanumeric"/>
-			</pipe>	
+			</pipe>
 			<pipe name="UUIDGeneratorPipe-alphanumeric"
-				className="nl.nn.adapterframework.pipes.UUIDGeneratorPipe" 
+				className="org.frankframework.pipes.UUIDGeneratorPipe"
 				type="alphanumeric">
 				<forward name="success" path="UUIDGeneratorPipe-default"/>
-			</pipe>	
+			</pipe>
 			<pipe name="UUIDGeneratorPipe-default"
-				className="nl.nn.adapterframework.pipes.UUIDGeneratorPipe">
+				className="org.frankframework.pipes.UUIDGeneratorPipe">
 				<forward name="success" path="EXIT"/>
-			</pipe>	
+			</pipe>
 		</pipeline>
 	</adapter>
 </configuration>

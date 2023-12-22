@@ -68,7 +68,10 @@ export class ConfigurationsUploadComponent implements OnInit {
   }
 
   submit() {
-    if (this.file == null) return;
+    if (this.file == null){
+      this.error = "Please upload a file";
+      return;
+    }
 
     var fd = new FormData();
     if (this.form.datasource && this.form.datasource != "")
@@ -109,7 +112,7 @@ export class ConfigurationsUploadComponent implements OnInit {
           this.file = null;
         }
       }, error: (errorData: HttpErrorResponse) => {
-        var error = (errorData.error) ? errorData.error : errorData.message;
+        var error = (errorData.error) ? errorData.error.error : errorData.message;
         this.error = error;
         this.result = "";
       }

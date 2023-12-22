@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 	<xsl:output method="text" indent="no" />
 	<!--
-		This XSLT transforms the entire IBIS configuration to a flowchart in dot format:
+		This XSLT transforms the entire Frank!Framework configuration to a flowchart in dot format:
 		- every adapter in the flow is represented by a box
 		- every listener (in a receiver) is represented by an ellipse; excepting an interal JavaListener which is represented by a point
 		- the following listeners are recognized: JAVA (interal/external) (JavaListener), FILE (DirectoryListener), FXF (FxfListener), JDBC (JdbcQueryListener), JMS (JmsListener), SAP (SapListener), TIBCO (EsbJmsListener) and WEB (WebServiceListener)

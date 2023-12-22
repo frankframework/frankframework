@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
+		<groupId>org.frankframework</groupId>
 		<artifactId>ibis-adapterframework-console</artifactId>
 		<version>${revision}</version>
 	</parent>
@@ -12,11 +12,11 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>iaf-management-gateway</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-commons</artifactId>
 		</dependency>
 

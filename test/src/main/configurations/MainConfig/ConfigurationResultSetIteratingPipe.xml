@@ -1,37 +1,37 @@
 <module>
 	<adapter name="ResultSetIteratingPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ResultSetIteratingPipe" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ResultSetIteratingPipe" />
 		</receiver>
 		<pipeline firstPipe="SelectRecords-A" transactionAttribute="RequiresNew">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.jdbc.ResultSetIteratingPipe" name="SelectRecords-A" lockRows="true" query="SELECT TKEY FROM IBISTEMP 
-						WHERE TCHAR = 'A' 
-						AND TTIMESTAMP IS NULL 
+			<pipe className="org.frankframework.jdbc.ResultSetIteratingPipe" name="SelectRecords-A" lockRows="true" query="SELECT TKEY FROM IBISTEMP
+						WHERE TCHAR = 'A'
+						AND TTIMESTAMP IS NULL
 						ORDER BY TKEY">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ResultSetIteratingPipe_Record" />
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ResultSetIteratingPipe_Record" />
 				<forward name="success" path="SelectRecords-Z" />
 			</pipe>
-			<pipe className="nl.nn.adapterframework.jdbc.ResultSetIteratingPipe" name="SelectRecords-Z" lockRows="true" query="SELECT TKEY FROM IBISTEMP 
-						WHERE TCHAR = 'Z' 
-						AND TTIMESTAMP IS NULL 
+			<pipe className="org.frankframework.jdbc.ResultSetIteratingPipe" name="SelectRecords-Z" lockRows="true" query="SELECT TKEY FROM IBISTEMP
+						WHERE TCHAR = 'Z'
+						AND TTIMESTAMP IS NULL
 						ORDER BY TKEY">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ResultSetIteratingPipe_Record" />
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ResultSetIteratingPipe_Record" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="ResultSetIteratingPipe_Record">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ResultSetIteratingPipe_Record" />
+			<listener className="org.frankframework.receivers.JavaListener" name="ResultSetIteratingPipe_Record" />
 		</receiver>
 		<pipeline firstPipe="echo">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
