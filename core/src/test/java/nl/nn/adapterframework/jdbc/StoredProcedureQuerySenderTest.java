@@ -575,6 +575,7 @@ public class StoredProcedureQuerySenderTest {
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
+		insertRowWithMessageValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL COUNT_MESSAGES_BY_CONTENT(?, ?, ?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
@@ -920,6 +921,8 @@ public class StoredProcedureQuerySenderTest {
 				fail("No generated keys from insert statement");
 			}
 			return generatedKeys.getLong(1);
+		} finally {
+			connection.close();
 		}
 	}
 
@@ -936,8 +939,9 @@ public class StoredProcedureQuerySenderTest {
 				connection.close();
 				fail("No generated keys from insert statement");
 			}
-			connection.close();
 			return generatedKeys.getLong(1);
+		} finally {
+			connection.close();
 		}
 	}
 
@@ -953,8 +957,9 @@ public class StoredProcedureQuerySenderTest {
 				connection.close();
 				fail("No generated keys from insert statement");
 			}
-			connection.close();
 			return generatedKeys.getLong(1);
+		} finally {
+			connection.close();
 		}
 	}
 
@@ -972,6 +977,8 @@ public class StoredProcedureQuerySenderTest {
 			try (InputStream in = blob.getBinaryStream()) {
 				return StreamUtil.streamToString(in);
 			}
+		} finally {
+			connection.close();
 		}
 	}
 
@@ -989,6 +996,8 @@ public class StoredProcedureQuerySenderTest {
 			try (Reader in = clob.getCharacterStream()) {
 				return StreamUtil.readerToString(in, "\n");
 			}
+		} finally {
+			connection.close();
 		}
 	}
 
