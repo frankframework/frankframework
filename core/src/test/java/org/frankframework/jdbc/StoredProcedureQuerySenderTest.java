@@ -1,6 +1,5 @@
 package org.frankframework.jdbc;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -11,16 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.oneOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -41,6 +30,7 @@ import java.util.regex.Pattern;
 import java.util.zip.DeflaterInputStream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -48,8 +38,12 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.testutil.junit.DatabaseTest;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.WithLiquibase;
+import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -59,23 +53,9 @@ import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
-import nl.nn.adapterframework.core.PipeLineSession;
-import nl.nn.adapterframework.core.SenderException;
-import nl.nn.adapterframework.core.SenderResult;
-import nl.nn.adapterframework.dbms.JdbcException;
-import nl.nn.adapterframework.parameters.Parameter;
-import nl.nn.adapterframework.stream.Message;
-import nl.nn.adapterframework.testutil.TestFileUtils;
-import nl.nn.adapterframework.testutil.TransactionManagerType;
-import nl.nn.adapterframework.testutil.junit.DatabaseTest;
-import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
-import nl.nn.adapterframework.testutil.junit.WithLiquibase;
-import nl.nn.adapterframework.util.LogUtil;
-import nl.nn.adapterframework.util.StreamUtil;
 
 @WithLiquibase(tableName = StoredProcedureQuerySenderTest.TABLE_NAME, file = "Jdbc/StoredProcedureQuerySender/DatabaseChangelog-StoredProcedures.xml")
 public class StoredProcedureQuerySenderTest {
-public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 	protected static final String TABLE_NAME = "SP_TESTDATA";
 	public static final String TEST_DATA_STRING = "tést-data";
