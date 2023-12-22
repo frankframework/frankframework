@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.0.0">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -1332,6 +1332,24 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="IdinSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="IdinSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="IdocSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="IdocSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="ImapSender">
         <xs:complexType>
           <xs:complexContent>
@@ -1516,6 +1534,15 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="Samba2SenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SapSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SapSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="sender" />
             </xs:extension>
           </xs:complexContent>
@@ -3435,6 +3462,167 @@
     <xs:attributeGroup ref="IbisLocalSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="IdinSenderType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="SenderWithParametersBaseDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="IdinSenderCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.idin.IdinSender" />
+  </xs:complexType>
+  <xs:attributeGroup name="IdinSenderDeclaredAttributeGroup">
+    <xs:attribute name="action" type="xs:string" />
+    <xs:attribute name="merchantID" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>This is the contract number for iDIN the Merchant received from its Acquirer after registration,
+ and is used to unambiguously identify the Merchant. This number is 10-digits long, where the
+ first four digits are equal to the AcquirerID.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="merchantSubID" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>The SubID that uniquely defines the name and address of the Merchant to be used for iDIN,
+ if operating under different brands or trading entities. The Merchant obtains the SubID
+ from its Acquirer after registration for iDIN. A Merchant can request permission from
+ the Acquirer to use one or more SubIDs.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="merchantReturnUrl" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The web address provided by the Merchant in the transaction request that is used to redirect the
+ Consumer back to the Merchant after completing the authentication in the Issuer domain. The URL
+ does not necessarily begin with http:// or https://, it can also start with an app handler
+ e.g. companyname-nlservice://.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="acquirerDirectoryUrl" type="xs:string" />
+    <xs:attribute name="acquirerTransactionUrl" type="xs:string" />
+    <xs:attribute name="acquirerStatusUrl" type="xs:string" />
+    <xs:attribute name="keyStoreLocation" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The Java iDIN Software Library needs to access a keystore located in the Java classpath to
+ store all the required certificates</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyStorePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The password used to access the keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="keyStoreAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The AuthAlias used to access the keystore</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="merchantCertificateAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>This is the certificate owned by the Merchant. It's the private certificate
+ used to sign messages sent by the Merchant to the Acquirer's Routing Service platform. Its public
+ key is also used by the Acquirer to authenticate incoming messages from the Merchant. The
+ Merchant certificate must be in PKCS#12 format which has the extension .p12 or .pfx</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="merchantCertificatePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>In case the merchant certificate has been password protected</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="merchantCertificateAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>In case the merchant certificate has been password protected</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="acquirerCertificateAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library
+ only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
+ has the file extension .cer,.crt or .pem.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="acquirerAlternativeCertificateAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>This is the public certificate used to authenticate incoming messages from the Acquirer. The library
+ only needs its public key. The public certificate must be in PEM format (base64 ASCII) and typically
+ has the file extension .cer,.crt or .pem.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sAMLCertificateAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>This is the certificate owned by the Merchant. Its public key is used by the Issuer to encrypt information.
+ The Merchant can then use the private key to decrypt that information. The SAML certificate must be in
+ PKCS#12 format which has the extension .p12 or .pfx;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sAMLCertificatePassword" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>In case the SAML certificate has been password protected</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sAMLCertificateAuthAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>In case the SAML certificate has been password protected</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="logsEnabled" type="frankBoolean" />
+    <xs:attribute name="serviceLogsEnabled" type="frankBoolean" />
+    <xs:attribute name="serviceLogsLocation" type="xs:string" />
+    <xs:attribute name="serviceLogsPattern" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="IdinSenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="IdinSenderDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="SenderBaseDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="IdocSenderType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="SapSenderBaseDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="SapSenderBaseCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.IdocSender" />
+  </xs:complexType>
+  <xs:group name="SapSenderBaseDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="Param" minOccurs="0" maxOccurs="unbounded" type="ParamType" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="SapSenderBaseDeclaredAttributeGroup">
+    <xs:attribute name="luwHandleSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Session key in which LUW information is stored. If set, actions that share a LUW-handle will be executed using the same destination. Can only be used for synchronous functions</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sapSystemNameParam" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the parameter used to indicate the name of the SapSystem used by this object if the attribute &lt;code&gt;sapSystemName&lt;/code&gt; is empty Default: sapSystemName</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SapSenderBaseCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SapSenderBaseDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="SapFunctionFacadeDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SapFunctionFacadeDeclaredAttributeGroup">
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the Ibis-object</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sapSystemName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the SapSystem used by this object</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="correlationIdFieldIndex" />
+    <xs:attribute ref="correlationIdFieldName" />
+    <xs:attribute ref="requestFieldIndex" />
+    <xs:attribute ref="requestFieldName" />
+    <xs:attribute ref="replyFieldIndex" />
+    <xs:attribute ref="replyFieldName" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:complexType name="ImapSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -4689,6 +4877,36 @@
     <xs:attributeGroup ref="Samba2SenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FileSystemSenderCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="SapSenderType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="SapSenderBaseDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="SapSenderImplCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.SapSender" />
+  </xs:complexType>
+  <xs:attributeGroup name="SapSenderImplDeclaredAttributeGroup">
+    <xs:attribute name="synchronous" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;false&lt;/code&gt;, the sender operates in RR mode: the a reply is expected from SAP, and the sender does not participate in a transaction. When &lt;code&gt;false&lt;/code&gt;, the sender operates in FF mode: no reply is expected from SAP, and the sender joins the transaction, that must be present. The SAP transaction is committed right after the XA transaction is completed. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="functionName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the RFC-function to be called in the SAP system</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="functionNameParam" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the parameter used to obtain the functionName from if the attribute &lt;code&gt;functionName&lt;/code&gt; is empty Default: functionName</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SapSenderImplCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SapSenderImplDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="SapSenderBaseCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="SchedulerSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -5866,6 +6084,15 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="SapListener">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SapListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="SftpFileSystemListener">
         <xs:complexType>
           <xs:complexContent>
@@ -5879,6 +6106,15 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="SimpleJdbcListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="TibcoLogJmsListener">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="TibcoLogJmsListenerType">
               <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
             </xs:extension>
           </xs:complexContent>
@@ -7409,6 +7645,43 @@
     <xs:attributeGroup ref="Samba2ListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.SambaListener" />
   </xs:complexType>
+  <xs:complexType name="SapListenerType">
+    <xs:attributeGroup ref="SapListenerImplCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.SapListener" />
+  </xs:complexType>
+  <xs:attributeGroup name="SapListenerImplDeclaredAttributeGroup">
+    <xs:attribute name="sapSystemName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the SapSystem used by this object</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="progid" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the RFC-destination to be registered in the SAP system</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="connectionCount" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The number of connections that should be registered at the gateway Default: 2</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SapListenerImplCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SapListenerImplDeclaredAttributeGroup" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the Ibis-object</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="correlationIdFieldIndex" />
+    <xs:attribute ref="correlationIdFieldName" />
+    <xs:attribute ref="requestFieldIndex" />
+    <xs:attribute ref="requestFieldName" />
+    <xs:attribute ref="replyFieldIndex" />
+    <xs:attribute ref="replyFieldName" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:complexType name="SftpFileSystemListenerType">
     <xs:attributeGroup ref="SftpFileSystemListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.SftpFileSystemListener" />
@@ -7533,6 +7806,15 @@
     <xs:attributeGroup ref="SimpleJdbcListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="JdbcFacadeCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="TibcoLogJmsListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JmsListenerBaseDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="PushingJmsListenerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.tibco.TibcoLogJmsListener" />
+  </xs:complexType>
   <xs:complexType name="WebServiceListenerType">
     <xs:attributeGroup ref="WebServiceListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.WebServiceListener" />
@@ -7770,6 +8052,24 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="IdinErrorSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="IdinSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="IdocErrorSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="IdocSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="ImapErrorSender">
         <xs:complexType>
           <xs:complexContent>
@@ -7954,6 +8254,15 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="Samba2SenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SapErrorSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SapSenderType">
               <xs:attribute name="elementRole" type="xs:string" fixed="errorSender" />
             </xs:extension>
           </xs:complexContent>
@@ -10865,6 +11174,15 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="GetTibcoQueuesPipe">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="GetTibcoQueuesType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="HashPipe">
         <xs:complexType>
           <xs:complexContent>
@@ -11198,10 +11516,28 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="SapLUWManagerPipe">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SapLUWManagerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="ScanTibcoSolutionPipe">
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="ScanTibcoSolutionPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SendTibcoMessagePipe">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SendTibcoMessageType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -12902,6 +13238,52 @@
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.GetPrincipalPipe" />
   </xs:complexType>
+  <xs:complexType name="GetTibcoQueuesType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="GetTibcoQueuesCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.tibco.GetTibcoQueues" />
+  </xs:complexType>
+  <xs:attributeGroup name="GetTibcoQueuesDeclaredAttributeGroup">
+    <xs:attribute name="url" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>URL or base of URL to be used. When multiple URLs are defined (comma separated list), the first URL is used of which the server has an active state</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>alias used to obtain credentials for authentication to host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>username used in authentication to host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>password used in authentication to host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="skipTemporaryQueues" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, temporary queues are skipped Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="hideMessage" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>when set to &lt;code&gt;true&lt;/code&gt;, the length of the queue message is returned instead of the queue message self (when parameter &lt;code&gt;queueName&lt;/code&gt; is not empty) Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="queueRegex" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="GetTibcoQueuesCumulativeAttributeGroup">
+    <xs:attributeGroup ref="GetTibcoQueuesDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="TimeoutGuardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="HashPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -14515,6 +14897,36 @@
     <xs:attributeGroup ref="Samba2PipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SambaPipe" />
   </xs:complexType>
+  <xs:complexType name="SapLUWManagerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="SapLUWManagerCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.jco3.SapLUWManager" />
+  </xs:complexType>
+  <xs:attributeGroup name="SapLUWManagerDeclaredAttributeGroup">
+    <xs:attribute name="sapSystemName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Name of the SapSystem used by this object</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="action" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>One of: begin, commit, rollback, release</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="luwHandleSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Session key under which information is stored</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SapLUWManagerCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SapLUWManagerDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="ScanTibcoSolutionPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -14531,6 +14943,64 @@
   <xs:attributeGroup name="ScanTibcoSolutionPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ScanTibcoSolutionPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="SendTibcoMessageType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="SendTibcoMessageCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.tibco.SendTibcoMessage" />
+  </xs:complexType>
+  <xs:attributeGroup name="SendTibcoMessageDeclaredAttributeGroup">
+    <xs:attribute name="url" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>URL or base of URL to be used. When multiple URLs are defined (comma separated list), the first URL is used of which the server has an active state</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>alias used to obtain credentials for authentication to host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>username used in authentication to host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>password used in authentication to host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="queueName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of the queue which is used for browsing one queue</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageProtocol">
+      <xs:annotation>
+        <xs:documentation>Protocol of Tibco service to be called</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageProtocolAttributeValuesType_3 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="replyTimeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Maximum time in milliseconds to wait for a reply. 0 means no timeout. (Only for messageProtocol=RR) Default: 5000</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="soapAction" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If empty then derived from queueName (if $messagingLayer='P2P' then '$applicationFunction' else '$operationName_$operationVersion)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SendTibcoMessageCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SendTibcoMessageDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="TimeoutGuardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="SenderPipeType">
     <xs:sequence>
@@ -15521,7 +15991,7 @@
         <xs:complexType>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="sapSystem" />
-          <xs:attribute name="className" type="xs:string" use="required" />
+          <xs:attribute name="className" type="xs:string" default="org.frankframework.extensions.sap.SapSystem" />
           <xs:anyAttribute processContents="skip" />
         </xs:complexType>
       </xs:element>
@@ -16318,6 +16788,12 @@
       <xs:pattern value="[cC][oO][mM][bB][iI][nN][eE]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="MessageProtocolAttributeValuesType_3">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[rR][rR]" />
+      <xs:pattern value="[fF][fF]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="ActionAttributeValuesType_5">
     <xs:restriction base="xs:string">
       <xs:pattern value="[sS][iI][gG][nN]" />
@@ -16967,6 +17443,36 @@
     <xs:annotation>
       <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with {@code protocol} as the provided Suite may not be valid for the provided Protocol
  See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="correlationIdFieldIndex" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>Index of the field in the ImportParameterList of the RFC function that contains the correlationId Default: 0</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="correlationIdFieldName" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Name of the field in the ImportParameterList of the RFC function that contains the correlationId</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="requestFieldIndex" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>Index of the field in the ImportParameterList of the RFC function that contains the whole request message contents Default: 0</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="requestFieldName" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Name of the field in the ImportParameterList of the RFC function that contains the whole request message contents</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="replyFieldIndex" type="frankInt">
+    <xs:annotation>
+      <xs:documentation>Index of the field in the ExportParameterList of the RFC function that contains the whole reply message contents Default: 0</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="replyFieldName" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Name of the field in the ExportParameterList of the RFC function that contains the whole reply message contents</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="debugInput" type="frankBoolean">
