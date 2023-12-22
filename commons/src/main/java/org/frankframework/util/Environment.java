@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
 
 public class Environment {
 	private static final Logger log = LogManager.getLogger(Environment.class);
-	private static final String IBISSOURCE_NAMESPACE = "META-INF/maven/org.frankframework/";
+	private static final String FRANKFRAMEWORK_NAMESPACE = "META-INF/maven/org.frankframework/";
 
 	public static Properties getEnvironmentVariables() throws IOException {
 		Properties props = new Properties();
@@ -127,7 +127,7 @@ public class Environment {
 	 */
 	public static @Nullable String getModuleVersion(@Nonnull String module) {
 		ClassLoader classLoader = Environment.class.getClassLoader();
-		URL pomProperties = classLoader.getResource(IBISSOURCE_NAMESPACE + module + "/pom.properties");
+		URL pomProperties = classLoader.getResource(FRANKFRAMEWORK_NAMESPACE + module + "/pom.properties");
 
 		if (pomProperties == null) {
 			// unable to find module, assume it's not on the classpath
