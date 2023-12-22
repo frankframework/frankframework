@@ -12,15 +12,22 @@ export class PagesNavigationComponent {
 
   constructor(private router: Router) { }
 
-  openInfo(){
+  openInfo() {
     this.onOpenInfo.emit();
   }
 
-  openFeedback(){
+  openFeedback() {
     this.onOpenFeedback.emit();
   }
 
-  getClassByRoute(className: string, routeState: string){
-    return { [className]: this.router.url.split("?")[0].includes(routeState) }
+  getClassByRoute(className: string, routeState: string | string[]) {
+    if (Array.isArray(routeState)) {
+      return {
+        [className]: routeState.some(routePartial => this.router.url.split("?")[0].includes(routePartial))
+      }
+    }
+    return {
+      [className]: this.router.url.split("?")[0].includes(routeState)
+    }
   }
 }
