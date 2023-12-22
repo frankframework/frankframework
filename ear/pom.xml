@@ -7,7 +7,7 @@
 	</parent>
 
 	<artifactId>frankframework-ear</artifactId>
-	<name>Ibis AdapterFramework ear</name>
+	<name>Frank!Framework ear</name>
 	<packaging>ear</packaging>
 
 	<dependencies>

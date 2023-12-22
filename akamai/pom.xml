@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>frankframework-akamai</artifactId>
-	<name>Ibis AdapterFramework support for Akamai</name>
+	<name>Frank!Framework support for Akamai</name>
 
 	<dependencies>
 		<dependency>

@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>frankframework-aws</artifactId>
-	<name>Ibis AdapterFramework support for AWS</name>
+	<name>Frank!Framework support for AWS</name>
 
 	<properties>
 		<software.amazon.awssdk.version>2.22.3</software.amazon.awssdk.version>

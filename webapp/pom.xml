@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>frankframework-webapp</artifactId>
-	<name>Ibis AdapterFramework webapp</name>
+	<name>Frank!Framework webapp</name>
 	<packaging>war</packaging>
 
 	<properties>

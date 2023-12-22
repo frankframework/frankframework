@@ -8,7 +8,7 @@
   </parent>
 
   <artifactId>frankframework-tibco</artifactId>
-  <name>Ibis AdapterFramework support for TIBCO</name>
+  <name>Frank!Framework support for TIBCO</name>
 
   <dependencies>
     <dependency>

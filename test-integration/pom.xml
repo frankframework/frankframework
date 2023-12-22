@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>frankframework-test-integration</artifactId>
-	<name>Ibis AdapterFramework Integration Tests for various databases, messaging and mail systems</name>
+	<name>Frank!Framework Integration Tests for various databases, messaging and mail systems</name>
 
 	<dependencies>
 		<dependency>

@@ -11,7 +11,7 @@
 	</parent>
 
 	<artifactId>frankframework-dbms</artifactId>
-	<name>Ibis AdapterFramework DBMS</name>
+	<name>Frank!Framework DBMS</name>
 
 	<dependencies>
 		<dependency>

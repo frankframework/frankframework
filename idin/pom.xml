@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>frankframework-idin</artifactId>
-	<name>Ibis AdapterFramework support for iDIN</name>
+	<name>Frank!Framework support for iDIN</name>
 
 	<dependencies>
 		<dependency>

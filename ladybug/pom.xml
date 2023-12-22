@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>frankframework-ladybug</artifactId>
-	<name>Ibis AdapterFramework Ladybug</name>
+	<name>Frank!Framework Ladybug</name>
 
 	<properties>
 		<ladybug.version>2.3-20230911.183804</ladybug.version>

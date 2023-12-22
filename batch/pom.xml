@@ -11,7 +11,7 @@
 	</parent>
 
 	<artifactId>frankframework-batch</artifactId>
-	<name>Ibis AdapterFramework support for Batch processing</name>
+	<name>Frank!Framework support for Batch processing</name>
 
 	<dependencies>
 		<dependency>

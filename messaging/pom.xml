@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>frankframework-messaging</artifactId>
-	<name>Ibis AdapterFramework support for Messaging Systems</name>
+	<name>Frank!Framework support for Messaging Systems</name>
 
 	<dependencies>
 		<dependency>

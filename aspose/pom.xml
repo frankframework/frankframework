@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>frankframework-aspose</artifactId>
-	<name>Ibis AdapterFramework support for Aspose</name>
+	<name>Frank!Framework support for Aspose</name>
 
 	<properties>
 		<!-- NOTE: some dependencies require the classifier tag to be set to jdk16 (1.6) -->

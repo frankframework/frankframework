@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>frankframework-sap</artifactId>
-	<name>Ibis AdapterFramework support for SAP</name>
+	<name>Frank!Framework support for SAP</name>
 
 	<dependencies>
 		<dependency>

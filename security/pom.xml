@@ -7,7 +7,7 @@
 	</parent>
 
 	<artifactId>frankframework-security</artifactId>
-	<name>Ibis AdapterFramework Security</name>
+	<name>Frank!Framework Security</name>
 
 
 	<dependencies>

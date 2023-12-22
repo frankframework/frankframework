@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>frankframework-larva</artifactId>
-	<name>Ibis AdapterFramework Larva</name>
+	<name>Frank!Framework Larva</name>
 
 	<dependencies>
 		<dependency>

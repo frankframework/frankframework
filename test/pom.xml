@@ -8,7 +8,7 @@
 	</parent>
 
 	<artifactId>frankframework-test</artifactId>
-	<name>Ibis AdapterFramework Test</name>
+	<name>Frank!Framework Test</name>
 	<packaging>war</packaging>
 
 	<properties>
