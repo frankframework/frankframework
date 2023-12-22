@@ -1,17 +1,17 @@
 <module>
 	<adapter name="OutputStreaming" >
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-OutputStreaming" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-OutputStreaming" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
 			<SenderPipe name="retrieveData" storeResultInSessionKey="dataSessionKey"> <!-- Should not stream to XsltPipe, because of storeResultInSessionKey -->
-				<FixedQuerySender 
+				<FixedQuerySender
 					queryType="select"
 					query="SELECT COUNT(*) AS MSGCOUNT FROM IBISTEMP WHERE TKEY = 0 AND TKEY != 0"
-				>	
+				>
 				</FixedQuerySender>
 			</SenderPipe>
 
@@ -19,27 +19,27 @@
 			<GetFromSessionPipe name="retrieveSessionKey" sessionKey="dataSessionKey" />
 		</pipeline>
 	</adapter>
-	
+
 	<adapter name="RestoreMovedElements" >
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-RestoreMovedElements" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-RestoreMovedElements" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="READY" state="success" />
 			</exits>
 			<FixedResultPipe name="createData" returnString="data" storeResultInSessionKey="ref_FileContent" />
-			<pipe 
-				name="TransformResponse" 
-				className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe
+				name="TransformResponse"
+				className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="OutputStreaming/xsl/TransformResponse.xsl"
 				getInputFromFixedValue="&lt;dummy /&gt;"
 			>
 			</pipe>
 			<!-- next pipe should not provide outputstream because restoreMovedElements=true -->
-			<pipe 
-				name="outputSoapWrapper" 
-				className="nl.nn.adapterframework.pipes.XsltPipe" 
+			<pipe
+				name="outputSoapWrapper"
+				className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="OutputStreaming/xsl/Soapwrapper.xsl"
 				restoreMovedElements="true"
 			>
@@ -50,17 +50,17 @@
 
 	<adapter name="TransactedOutputStreaming" >
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-TransactedOutputStreaming" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-TransactedOutputStreaming" />
 		</receiver>
 		<pipeline transactionAttribute="RequiresNew">
 			<SenderPipe name="prepareTable1" >
-				<FixedQuerySender 
+				<FixedQuerySender
 					queryType="other"
 					query="DELETE FROM IBISTEMP WHERE TKEY = 2639"
 				/>
 			</SenderPipe>
 			<SenderPipe name="prepareTable2" >
-				<FixedQuerySender 
+				<FixedQuerySender
 					queryType="other"
 					query="INSERT INTO IBISTEMP (TKEY, TCHAR) VALUES (2639,'A')"
 				/>
@@ -68,7 +68,7 @@
 			<XsltPipe name="createDocument" styleSheetName="OutputStreaming/xsl/createDocument.xslt" />
 			<!-- ForEachChildElementPipe provides OutputStream to XsltPipe. Transaction connection must be properly handled  -->
 			<ForEachChildElementPipe name="iterate">
-				<FixedQuerySender 
+				<FixedQuerySender
 					queryType="other"
 					query="UPDATE IBISTEMP SET TCHAR='Y' WHERE TKEY=2639"
 				/>
@@ -78,17 +78,17 @@
 
 	<adapter name="TransactedOutputStreaming2" >
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-TransactedOutputStreaming2" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-TransactedOutputStreaming2" />
 		</receiver>
 		<pipeline transactionAttribute="RequiresNew">
 			<SenderPipe name="prepareTable1" >
-				<FixedQuerySender 
+				<FixedQuerySender
 					queryType="other"
 					query="DELETE FROM IBISTEMP WHERE TKEY = 2639"
 				/>
 			</SenderPipe>
 			<SenderPipe name="prepareTable2" >
-				<FixedQuerySender 
+				<FixedQuerySender
 					queryType="other"
 					query="INSERT INTO IBISTEMP (TKEY, TCHAR) VALUES (2639,'A')"
 				/>
@@ -96,12 +96,12 @@
 			<XsltPipe name="createDocument" xpathExpression="/*" getInputFromFixedValue="&lt;root&gt;&lt;elem&gt;x&lt;/elem&gt;&lt;elem&gt;y&lt;/elem&gt;&lt;/root&gt;" outputType="XML"/>
 			<!-- TransactionConnector for MessageOutputStream of ForEachChildElementPipe is created after that for elementXPathExpression, but the latter should be 'last in thread'  -->
 			<ForEachChildElementPipe name="iterate" elementXPathExpression="/*/*" >
-				<FixedQuerySender 
+				<FixedQuerySender
 					queryType="other"
 					query="UPDATE IBISTEMP SET TCHAR='Y' WHERE TKEY=2639"
 				/>
 			</ForEachChildElementPipe>
 		</pipeline>
 	</adapter>
-	
+
 </module>

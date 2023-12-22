@@ -1,15 +1,15 @@
 <monitoring active="${monitoring.enabled}">
-	<destination name="MONITOR_LOG" className="nl.nn.adapterframework.monitoring.SenderMonitorAdapter">
-		<sender className="nl.nn.adapterframework.senders.LogSender" logCategory="monitoring"/>
+	<destination name="MONITOR_LOG" className="org.frankframework.monitoring.SenderMonitorAdapter">
+		<sender className="org.frankframework.senders.LogSender" logCategory="monitoring"/>
 	</destination>
 	<monitor name="Internal adapter exception" destinations="MONITOR_LOG">
-		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Pipe Exception" severity="CRITICAL" threshold="1" period="3600">
+		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Pipe Exception" severity="CRITICAL" threshold="1" period="3600">
 			<adapterfilter adapter="TransactionTimeoutHandlingNonTransacted" />
 			<adapterfilter adapter="TransactionTimeoutHandlingTransacted" />
 		</trigger>
 	</monitor>
 	<monitor name="Sender timeout" destinations="MONITOR_LOG">
-		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Sender Timeout" severity="CRITICAL" threshold="10" period="3600">
+		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Sender Timeout" severity="CRITICAL" threshold="10" period="3600">
 			<adapterfilter adapter="TransactionHandlingMandatory">
 				<source>Pipe [Send transacted message to mandatory subadapter]</source>
 			</adapterfilter>
@@ -19,31 +19,31 @@
 		</trigger>
 	</monitor>
 	<monitor name="Sender exception" destinations="MONITOR_LOG">
-		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Sender Exception Caught" severity="CRITICAL" threshold="10" period="3600"/>
+		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Sender Exception Caught" severity="CRITICAL" threshold="10" period="3600"/>
 	</monitor>
 	<monitor name="Invalid XML Message" type="FUNCTIONAL">
-		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Invalid XML: does not comply to XSD" severity="WARNING"/>
-		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Invalid XML: parser error" severity="WARNING"/>
+		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Invalid XML: does not comply to XSD" severity="WARNING"/>
+		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Invalid XML: parser error" severity="WARNING"/>
 	</monitor>
 	<monitor name="Configuration error" destinations="MONITOR_LOG">
-		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Exception Configuring Receiver" severity="CRITICAL"/>
+		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Exception Configuring Receiver" severity="CRITICAL"/>
 	</monitor>
 	<monitor name="Message size exceeding">
-		<trigger className="nl.nn.adapterframework.monitoring.Alarm" eventCode="Pipe Message Size Exceeding" severity="WARNING"/>
+		<trigger className="org.frankframework.monitoring.Alarm" eventCode="Pipe Message Size Exceeding" severity="WARNING"/>
 	</monitor>
 	<monitor name="Message in Error" type="FUNCTIONAL" destinations="MONITOR_LOG">
-		<trigger className="nl.nn.adapterframework.monitoring.Alarm" severity="WARNING">
+		<trigger className="org.frankframework.monitoring.Alarm" severity="WARNING">
 			<event>Receiver Moved Message to ErrorStorage</event>
 		</trigger>
-		<trigger className="nl.nn.adapterframework.monitoring.Clearing" severity="WARNING">
+		<trigger className="org.frankframework.monitoring.Clearing" severity="WARNING">
 			<event>Receiver Moved Message to ErrorStorage</event>
 		</trigger>
 	</monitor>
 	<monitor name="Receiver Shutdown" destinations="MONITOR_LOG">
-		<trigger className="nl.nn.adapterframework.monitoring.Alarm" severity="WARNING">
+		<trigger className="org.frankframework.monitoring.Alarm" severity="WARNING">
 			<event>Receiver Shutdown</event>
 		</trigger>
-		<trigger className="nl.nn.adapterframework.monitoring.Clearing" severity="WARNING">
+		<trigger className="org.frankframework.monitoring.Clearing" severity="WARNING">
 			<event>Receiver Shutdown</event>
 		</trigger>
 	</monitor>

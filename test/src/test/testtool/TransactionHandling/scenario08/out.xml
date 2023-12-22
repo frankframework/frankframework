@@ -1,5 +1,5 @@
 <throwable>
-  <class>nl.nn.adapterframework.core.SenderException</class>
+  <class>org.frankframework.core.SenderException</class>
   <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [INSTANCE_NAME-TransactionHandlingRequiredSubAdapterException]: (RequestProcessorException) RequestProcessor [INSTANCE_NAME-TransactionHandlingRequiredSubAdapterException] caught exception: Pipe [fixedInsertRollback2] unable to execute SQL statement, transaction has been marked as failed by an earlier sender</message>
   <cause>
     <throwable>
@@ -7,11 +7,11 @@
       <message>RequestProcessor [INSTANCE_NAME-TransactionHandlingRequiredSubAdapterException] caught exception</message>
       <cause>
         <throwable>
-          <class>nl.nn.adapterframework.core.ListenerException</class>
+          <class>org.frankframework.core.ListenerException</class>
           <message>Pipe [fixedInsertRollback2] unable to execute SQL statement, transaction has been marked as failed by an earlier sender</message>
           <cause>
             <throwable>
-              <class>nl.nn.adapterframework.core.PipeRunException</class>
+              <class>org.frankframework.core.PipeRunException</class>
               <message>Pipe [fixedInsertRollback2] unable to execute SQL statement, transaction has been marked as failed by an earlier sender</message>
             </throwable>
           </cause>

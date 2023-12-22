@@ -1,7 +1,7 @@
 <configuration>
 	<adapter name="LdapFindMemberPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="LdapFindMemberPipe" />
+			<listener className="org.frankframework.receivers.JavaListener" name="LdapFindMemberPipe" />
 		</receiver>
 		<pipeline firstPipe="LdapFindMemberPipe">
 			<exits>
@@ -9,7 +9,7 @@
 			</exits>
 			<pipe
 				name="LdapFindMemberPipe"
-				className="nl.nn.adapterframework.ldap.LdapFindMemberPipe"
+				className="org.frankframework.ldap.LdapFindMemberPipe"
 				useSsl="true">
 				<forward name="success" path="found" />
 				<forward name="notFound" path="notFound" />

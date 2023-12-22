@@ -1,13 +1,13 @@
 <module>
 	<adapter name="ReplacerPipe" description="Test the functioning of the ReplacerPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ReplacerPipe" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ReplacerPipe" />
 		</receiver>
 		<pipeline firstPipe="Replace">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="Replace" className="nl.nn.adapterframework.pipes.ReplacerPipe" find="hallo" replace="bonjour" replaceNonXmlChars="true" replaceNonXmlChar="x">
+			<pipe name="Replace" className="org.frankframework.pipes.ReplacerPipe" find="hallo" replace="bonjour" replaceNonXmlChars="true" replaceNonXmlChar="x">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

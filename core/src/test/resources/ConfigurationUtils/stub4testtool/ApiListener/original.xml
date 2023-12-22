@@ -3,10 +3,10 @@
 		<receiver>
 			<listener
 				name="ApiListener"
-				className="nl.nn.adapterframework.http.rest.ApiListener"
+				className="org.frankframework.http.rest.ApiListener"
 				method="post"
 				uriPattern="insert"/>
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
 		</receiver>
 	</adapter>
 </configuration>

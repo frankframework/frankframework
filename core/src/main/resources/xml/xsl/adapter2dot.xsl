@@ -2,7 +2,7 @@
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 	<xsl:output method="text" indent="no" />
 	<!--
-		This XSLT transforms an adapter in the IBIS configuration to a flowchart in dot format:
+		This XSLT transforms an adapter in the Frank!Framework configuration to a flowchart in dot format:
 		- each flow starts with a START element and ends with an END element (both in an ellipse)
 		- every pipe in the flow is represented by a box; excepting XmlSwitch, CompareIntegerPipe, CompareStringPipe, FilenameSwitch and XmlIf which are represented by a diamond
 		- for every forward a line (with arrowhead) is drawn between the regarding elements; if the pipe attribute notFoundForwardName, emptyForwardName, thenForwardName or elseForwardName exists and has no corresponding forward then a forward is assumed
@@ -72,7 +72,7 @@
 		<xsl:value-of select="@name" />
 		<xsl:text>\n(</xsl:text>
 		<xsl:choose>
-			<xsl:when test="@className='nl.nn.adapterframework.pipes.SenderPipe'">
+			<xsl:when test="@className='org.frankframework.pipes.SenderPipe'">
 				<xsl:call-template name="lastIndexOf">
 					<xsl:with-param name="string" select="sender/@className" />
 				</xsl:call-template>
@@ -85,7 +85,7 @@
 		</xsl:choose>
 		<xsl:text>)</xsl:text>
 		<xsl:text>&quot;</xsl:text>
-		<xsl:if test="@className='nl.nn.adapterframework.pipes.SenderPipe'">
+		<xsl:if test="@className='org.frankframework.pipes.SenderPipe'">
 			<xsl:text>, shape=parallelogram</xsl:text>
 		</xsl:if>
 		<xsl:text>]</xsl:text>
@@ -94,11 +94,11 @@
 			<xsl:with-param name="pipeName" select="@name" />
 		</xsl:apply-templates>
 		<xsl:choose>
-			<xsl:when test="@className='nl.nn.adapterframework.pipes.XmlSwitch'
-							or@className='nl.nn.adapterframework.pipes.CompareIntegerPipe'
-							or@className='nl.nn.adapterframework.pipes.CompareStringPipe'
-							or@className='nl.nn.adapterframework.pipes.FilenameSwitch'
-							or@className='nl.nn.adapterframework.pipes.XmlIf'">
+			<xsl:when test="@className='org.frankframework.pipes.XmlSwitch'
+							or@className='org.frankframework.pipes.CompareIntegerPipe'
+							or@className='org.frankframework.pipes.CompareStringPipe'
+							or@className='org.frankframework.pipes.FilenameSwitch'
+							or@className='org.frankframework.pipes.XmlIf'">
 				<xsl:text>&quot;</xsl:text>
 				<xsl:value-of select="@name" />
 				<xsl:text>&quot;</xsl:text>
@@ -169,7 +169,7 @@
 		</xsl:if>
 		<xsl:variable name="pipeName" select="@name" />
 		<xsl:if test="(parent::*[name()='pipeline']/@firstPipe=$pipeName)=false() and (parent::*[name()='pipeline']/pipe/forward/@path=$pipeName)=false() and (parent::*[name()='pipeline']/pipe/@notFoundForwardName=$pipeName)=false() and (parent::*[name()='pipeline']/pipe/@emptyForwardName=$pipeName)=false() and (parent::*[name()='pipeline']/pipe/@thenForwardName=$pipeName)=false() and (parent::*[name()='pipeline']/pipe/@elseForwardName=$pipeName)=false()">
-			<xsl:for-each select="parent::*[name()='pipeline']/pipe[position()&lt;$pos and @className='nl.nn.adapterframework.pipes.XmlSwitch' and forward=false()]">
+			<xsl:for-each select="parent::*[name()='pipeline']/pipe[position()&lt;$pos and @className='org.frankframework.pipes.XmlSwitch' and forward=false()]">
 				<xsl:if test="position()=last()">
 					<xsl:call-template name="forward">
 						<xsl:with-param name="pipeName" select="@name" />

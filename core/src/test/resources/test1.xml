@@ -3,7 +3,7 @@
 		<receiver name="Test1">
 			<listener
 				name="Test1"
-				className="nl.nn.adapterframework.http.WebServiceListener"
+				className="org.frankframework.http.WebServiceListener"
 				serviceNamespaceURI="urn:test1"
 			/>
 	</receiver>
@@ -12,14 +12,14 @@
 				<exit path="READY" state="success"/>
 			</exits>
 			<inputValidator
-				className="nl.nn.adapterframework.pipes.XmlValidator"
+				className="org.frankframework.pipes.XmlValidator"
 				schemaLocation="urn:test1 test.xsd"
 				addNamespaceToSchema="true"
 				root="a"
 				throwException="true"
 			/>
 			<outputValidator
-				className="nl.nn.adapterframework.pipes.XmlValidator"
+				className="org.frankframework.pipes.XmlValidator"
 				schemaLocation="urn:test1:out test.out.xsd"
 				addNamespaceToSchema="true"
 				root="b"
@@ -27,9 +27,9 @@
 			/>
 			<pipe
 				name="Call IFSA"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
+				className="org.frankframework.pipes.SenderPipe">
 				<sender
-					className="nl.nn.adapterframework.senders.EchoSender"
+					className="org.frankframework.senders.EchoSender"
 					applicationId="1"
 					serviceId="2"
 					messageProtocol="RR"

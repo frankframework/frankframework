@@ -13,7 +13,7 @@
 
 	<bean
 		name="txManagerReal"
-		class="nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager"
+		class="org.frankframework.jta.narayana.NarayanaJtaTransactionManager"
 		depends-on="narayanaConfig"
 		>
 		<property name="statusFile" value="${transactionmanager.log.dir}/status.txt" />
@@ -22,7 +22,7 @@
 	</bean>
 
 
-	<bean id="narayanaConfig" class="nl.nn.adapterframework.jta.narayana.NarayanaConfigurationBean">
+	<bean id="narayanaConfig" class="org.frankframework.jta.narayana.NarayanaConfigurationBean">
 		<property name="properties">
 			<props>
 				<prop key="JDBCEnvironmentBean.isolationLevel">2</prop> <!-- TRANSACTION_READ_COMMITTED -->
@@ -46,10 +46,10 @@
 		</property>
 	</bean>
 
-	<bean id="dataSourceFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaDataSourceFactory" depends-on="txManagerReal" >
+	<bean id="dataSourceFactory" class="org.frankframework.jta.narayana.NarayanaDataSourceFactory" depends-on="txManagerReal" >
 		<property name="transactionManager" ref="txManagerReal"/>
 	</bean>
-	<bean id="connectionFactoryFactory" class="nl.nn.adapterframework.jta.narayana.NarayanaConnectionFactoryFactory" depends-on="txManagerReal" >
+	<bean id="connectionFactoryFactory" class="org.frankframework.jta.narayana.NarayanaConnectionFactoryFactory" depends-on="txManagerReal" >
 		<property name="transactionManager" ref="txManagerReal"/>
 	</bean>
 </beans>

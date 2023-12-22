@@ -7,7 +7,7 @@
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="JdbcQueryListener for ibis4test"
-						className="nl.nn.adapterframework.jdbc.JdbcQueryListener"
+						className="org.frankframework.jdbc.JdbcQueryListener"
 						selectQuery="SELECT TKEY, TCLOB
 										FROM IBISTEMP
 										WHERE TCHAR = '1'
@@ -21,8 +21,8 @@
 										WHERE TCHAR = '1'
 										AND TNUMBER=${jdbc.querylistener.key} FETCH FIRST 1 ROWS ONLY"/>
 				<!-- use FETCH FIRST 1 ROWS only to test automatic conversion using sqlDialect -->
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/JdbcQueryListener" />
-			<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/JdbcQueryListener" retention="-1" />
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/JdbcQueryListener" />
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/JdbcQueryListener" retention="-1" />
 		</receiver>
 		<receiver
 				name="JdbcTableListener"
@@ -31,7 +31,7 @@
 				pollInterval="1"
 				transactionTimeout="30">
 			<listener name="JdbcTableListener for ibis4test"
-						className="nl.nn.adapterframework.jdbc.JdbcTableListener"
+						className="org.frankframework.jdbc.JdbcTableListener"
 						tableName="IBISTEMP"
 						statusField="TCHAR"
 						timestampField="TTIMESTAMP"
@@ -50,20 +50,20 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Insert" transactionAttribute="RequiresNew">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TNUMBER) VALUES (SEQ_IBISTEMP.NEXTVAL, 'X', ${jdbc.querylistener.key})" queryType="insert" />
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TNUMBER) VALUES (SEQ_IBISTEMP.NEXTVAL, 'X', ${jdbc.querylistener.key})" queryType="insert" />
 			</pipe>
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" forwardNameSessionKey="originalMessage">
+			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="originalMessage">
 				<forward name="success" path="do_success" />
 				<forward name="error" path="do_error" />
 			</pipe>
 			<pipe
 				name="do_error"
-				className="nl.nn.adapterframework.pipes.ExceptionPipe">
+				className="org.frankframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe
-				name="do_success"
-				className="nl.nn.adapterframework.pipes.EchoPipe" getInputFromFixedValue="short text">
+                    name="do_success"
+                    className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="short text">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -71,30 +71,30 @@
 	<adapter name="JdbcListenerDatabaseMiddleware"
 		description="Used as a middleware in JdbcListener scenarios to prevent other nodes processing the message">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-JdbcListenerDatabaseMiddleware" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="SwitchAction" className="nl.nn.adapterframework.pipes.XmlSwitch"
+			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="request/@action"></pipe>
 			<pipe name="DeleteIbistemp">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="DELETE FROM IBISTEMP WHERE TNUMBER = ${jdbc.querylistener.key}"
 				/>
 				<forward name="success" path="do_success" />
 			</pipe>
 			<pipe name="DeleteIbisstore">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="DELETE FROM IBISSTORE WHERE SLOTID = ?"
 				/>
 					<param name="slotid" xpathExpression="request/@slotId"/>
 				<forward name="success" path="do_success" />
 			</pipe>
 			<pipe name="InsertIbistemp">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (tkey, tchar, tclob, tnumber, tdate) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, ?, ${jdbc.querylistener.key}, SYSDATE)"
 				>
 					<param name="status" xpathExpression="request/@status"/>
@@ -102,14 +102,14 @@
 				</sender>
 				<forward name="success" path="do_success" />
 			</pipe>
-			<pipe name="SelectData" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="SelectData" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="xsl/md2-in-select-data.xsl"
 			>
 				<param name="tnumber" value="${jdbc.querylistener.key}"/>
 				<param name="slotid" value="${applicationId}/JdbcQueryListener"/>
 				<forward name="success" path="Exec_Query"/>
 			</pipe>
-			<pipe name="SelectDataTable" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="SelectDataTable" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="xsl/md2-in-select-data.xsl"
 			>
 				<param name="tnumber" value="${jdbc.querylistener.key}"/>
@@ -118,13 +118,13 @@
 			</pipe>
 			<pipe name="Exec_Query"
 				storeResultInSessionKey="xml">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ManageDatabaseWrapper" >
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ManageDatabaseWrapper" >
 					<param name="expectedNumberOfResults" sessionKey="expectedNumberOfResults"/>
 					<param name="numberOfAttempts" sessionKey="numberOfAttempts"/>
 				</sender>
 				<forward name="success" path="AddIgnores"/>
 			</pipe>
-			<pipe name="AddIgnores" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="AddIgnores" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="xsl/add-ignores.xsl"
 			>
 				<param name="tnumber" value="${jdbc.querylistener.key}"/>
@@ -133,7 +133,7 @@
 			<pipe
 				name="do_success"
 				getInputFromFixedValue="&lt;result&gt;ok&lt;/result&gt;"
-				className="nl.nn.adapterframework.pipes.EchoPipe">
+				className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

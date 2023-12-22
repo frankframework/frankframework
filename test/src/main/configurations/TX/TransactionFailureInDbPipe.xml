@@ -8,11 +8,11 @@
 			transactionAttribute="Required"
 		>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="TransactionExceptionInDbPipe"
 				serviceName="ibis4test-TransactionExceptionInDbPipe"
 			/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/TransactionExceptionInDbPipe"
 			/>
 		</receiver>
@@ -23,27 +23,27 @@
 				<exit path="ERROR" state="error"/>
 			</exits>
 
-			<pipe name="fixedInsert" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('LASTNAME',?)" queryType="insert">
+			<pipe name="fixedInsert" className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('LASTNAME',?)" queryType="insert">
 					<param name="value" value="test1" />
 				</sender>
 				<forward name="success" path="fixedInsert2" />
 			</pipe>
 
-			<pipe name="fixedInsert2" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE1) VALUES ('this-column-does-not-exist')" queryType="insert"/>
+			<pipe name="fixedInsert2" className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE1) VALUES ('this-column-does-not-exist')" queryType="insert"/>
 				<forward name="success" path="fail"/>
 				<forward name="exception" path="fixedInsert3"/>
 			</pipe>
 
-			<pipe name="fixedInsert3" className="nl.nn.adapterframework.pipes.SenderPipe" transactionAttribute="NotSupported">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE2) VALUES ('this-column-does-not-exist')" queryType="insert"/>
+			<pipe name="fixedInsert3" className="org.frankframework.pipes.SenderPipe" transactionAttribute="NotSupported">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAMEVALUE2) VALUES ('this-column-does-not-exist')" queryType="insert"/>
 				<forward name="success" path="fail"/>
 				<forward name="exception" path="This PutInSession should throw an exception but not trigger a rollback"/>
 			</pipe>
 
 			<pipe name="This PutInSession should throw an exception but not trigger a rollback"
-				className="nl.nn.adapterframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSession"
 				getInputFromFixedValue="tralala"
 				transactionAttribute="Mandatory"
 			>
@@ -53,17 +53,17 @@
 			</pipe>
 
 			<!-- purposely change order of pipes to ensure we are don't just go to the next pipe -->
-			<pipe name="fail" className="nl.nn.adapterframework.pipes.EchoPipe"
+			<pipe name="fail" className="org.frankframework.pipes.EchoPipe"
 				getInputFromFixedValue="&lt;transacted&gt;failed&lt;/transacted&gt;">
 				<forward name="success" path="EXIT"/>
 			</pipe>
-			<pipe name="success" className="nl.nn.adapterframework.pipes.EchoPipe"
+			<pipe name="success" className="org.frankframework.pipes.EchoPipe"
 				getInputFromFixedValue="&lt;transacted&gt;succeeded&lt;/transacted&gt;">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 
-			<pipe name="fixedInsert4" className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('SURNAME',?)" queryType="insert" />
+			<pipe name="fixedInsert4" className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISPROP (NAME,VALUE) VALUES ('SURNAME',?)" queryType="insert" />
 					<param name="value" value="test2" />
 				<forward name="success" path="success" />
 			</pipe>

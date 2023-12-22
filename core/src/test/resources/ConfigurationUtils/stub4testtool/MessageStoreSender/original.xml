@@ -2,7 +2,7 @@
 	<adapter name="MessageStoreSender">
 		<receiver name="MessageStoreSender">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="MessageStoreSender"
 			/>
 		</receiver>
@@ -13,10 +13,10 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.jdbc.MessageStoreSender"
+					className="org.frankframework.jdbc.MessageStoreSender"
 					slotId="TestMessageStoreSenderAndListener-Queue"
 					sessionKeys="key1,key2">
 					<param name="messageId"

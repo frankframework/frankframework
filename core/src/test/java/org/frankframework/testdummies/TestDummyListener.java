@@ -1,6 +1,6 @@
 package org.frankframework.testdummies;
 
-import nl.nn.adapterframework.receivers.JavaListener;
+import org.frankframework.receivers.JavaListener;
 
 public class TestDummyListener extends JavaListener<String> {
 }

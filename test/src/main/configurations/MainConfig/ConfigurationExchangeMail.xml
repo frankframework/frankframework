@@ -2,7 +2,7 @@
 	<adapter name="ExchangeMail" >
 		<receiver name="ExchangeMail" active="${exchangemail.active}">
 			<listener
-				className="nl.nn.adapterframework.receivers.ExchangeMailListener"
+				className="org.frankframework.receivers.ExchangeMailListener"
 				url="${exchangemail.url}"
 				mailAddress="${exchangemail.mailAddress}"
 				authAlias="${exchangemail.authAlias}"
@@ -25,7 +25,7 @@
 		</receiver>
 		<receiver name="ImapMail" active="${imapmail.active}">
 			<listener
-				className="nl.nn.adapterframework.receivers.ImapListener"
+				className="org.frankframework.receivers.ImapListener"
 				host="${imapmail.host}"
 				port="${imapmail.port}"
 				authAlias="${imapmail.authAlias}"
@@ -46,7 +46,7 @@
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="Echo">
+			<pipe className="org.frankframework.pipes.EchoPipe" name="Echo">
 				<forward name="success" path="READY" />
 			</pipe>
 		</pipeline>

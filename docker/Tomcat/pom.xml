@@ -8,7 +8,7 @@
 	<packaging>pom</packaging>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
+		<groupId>org.frankframework</groupId>
 		<artifactId>ibis-adapterframework-docker</artifactId>
 		<version>${revision}</version>
 	</parent>

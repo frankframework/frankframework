@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
+		<groupId>org.frankframework</groupId>
 		<artifactId>ibis-adapterframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
@@ -12,12 +12,12 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-core</artifactId>
 			<classifier>tests</classifier>
 			<type>test-jar</type>
@@ -25,17 +25,17 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-aws</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-cmis</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
+			<groupId>org.frankframework</groupId>
 			<artifactId>ibis-adapterframework-sap</artifactId>
 			<scope>test</scope>
 		</dependency>
