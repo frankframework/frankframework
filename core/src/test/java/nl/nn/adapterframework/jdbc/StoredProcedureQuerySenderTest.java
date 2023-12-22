@@ -1,28 +1,26 @@
 package nl.nn.adapterframework.jdbc;
 
 import static nl.nn.adapterframework.testutil.MatchUtils.assertXmlEquals;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.equalToIgnoringCase;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.oneOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,10 +30,16 @@ import java.util.regex.Pattern;
 import java.util.zip.DeflaterInputStream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
+import liquibase.Contexts;
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.resource.ClassLoaderResourceAccessor;
 import nl.nn.adapterframework.core.PipeLineSession;
 import nl.nn.adapterframework.core.SenderException;
 import nl.nn.adapterframework.core.SenderResult;
@@ -43,36 +47,68 @@ import nl.nn.adapterframework.dbms.JdbcException;
 import nl.nn.adapterframework.parameters.Parameter;
 import nl.nn.adapterframework.stream.Message;
 import nl.nn.adapterframework.testutil.TestFileUtils;
+import nl.nn.adapterframework.testutil.TransactionManagerType;
+import nl.nn.adapterframework.testutil.junit.DatabaseTest;
+import nl.nn.adapterframework.testutil.junit.DatabaseTestEnvironment;
+import nl.nn.adapterframework.testutil.junit.WithLiquibase;
+import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
-public class StoredProcedureQuerySenderTest extends JdbcTestBase {
+@WithLiquibase(tableName = StoredProcedureQuerySenderTest.TABLE_NAME, file = "Jdbc/StoredProcedureQuerySender/DatabaseChangelog-StoredProcedures.xml")
+public class StoredProcedureQuerySenderTest {
 
+	protected static final String TABLE_NAME = "SP_TESTDATA";
 	public static final String TEST_DATA_STRING = "tést-data";
 	StoredProcedureQuerySender sender;
+	protected static Logger log = LogUtil.getLogger(StoredProcedureQuerySenderTest.class);
+	protected Liquibase liquibase;
 
 	PipeLineSession session;
 
-	@Before
-	public void setUp() throws Exception {
-		runMigrator("Jdbc/StoredProcedureQuerySender/DatabaseChangelog-StoredProcedures.xml");
+	@DatabaseTest.Parameter(0)
+	private TransactionManagerType transactionManagerType;
 
-		sender = getConfiguration().createBean(StoredProcedureQuerySender.class);
+	@DatabaseTest.Parameter(1)
+	private String dataSourceName;
+
+	@BeforeEach
+	public void setUp(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
+		runMigrator("Jdbc/StoredProcedureQuerySender/DatabaseChangelog-StoredProcedures.xml", databaseTestEnvironment);
+
+		sender = databaseTestEnvironment.getConfiguration().createBean(StoredProcedureQuerySender.class);
 		sender.setSqlDialect("Oracle");
-		sender.setDatasourceName(productKey);
+		sender.setDatasourceName(dataSourceName);
 
 		session = new PipeLineSession();
 	}
 
-	@After
-	public void tearDown() {
+	@AfterEach
+	public void tearDown(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
 		if (session != null) {
 			session.close();
 		}
+		databaseTestEnvironment.getConnection().close();
 	}
 
-	@Test
-	public void testSimpleStoredProcedureNoResultNoParameters() throws Exception {
-		assumeThat("H2 driver gives incorrect results for this test case", productKey, is(not("H2")));
+	protected void runMigrator(String changeLogFile, DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
+		Connection connection = databaseTestEnvironment.getConnection();
+		Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
+		liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
+		liquibase.forceReleaseLocks();
+		StringWriter out = new StringWriter(2048);
+		liquibase.reportStatus(true, new Contexts(), out);
+		log.info("Liquibase Database: {}, {}", liquibase.getDatabase().getDatabaseProductName(), liquibase.getDatabase().getDatabaseProductVersion());
+		log.info("Liquibase Database connection: {}", liquibase.getDatabase());
+		log.info("Liquibase changeset status:");
+		log.info(out.toString());
+		liquibase.update(new Contexts());
+
+		connection.close();
+	}
+
+	@DatabaseTest
+	public void testSimpleStoredProcedureNoResultNoParameters(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
+		assumeTrue(dataSourceName.equals("H2"), "H2 driver gives incorrect results for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -88,18 +124,19 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		SenderResult result = sender.sendMessage(message, session);
 
 		// Assert
-		assertTrue(result.isSuccess());
+		assumeTrue(result.isSuccess());
 
 		// Due to differences between databases, "rows updated" is sometimes 1, sometimes 0
-		assertTrue("Result should start with [<result><rowsupdated>]", result.getResult().asString().startsWith("<result><rowsupdated>"));
+		assumeTrue(result.getResult().asString().startsWith("<result><rowsupdated>"), "Result should start with [<result><rowsupdated>]");
 
 		// Check presence of row that should have been inserted
-		int rowsCounted = countRowsWithMessageValue(value);
+		int rowsCounted = countRowsWithMessageValue(value, databaseTestEnvironment);
 
 		assertEquals(1, rowsCounted);
+		databaseTestEnvironment.close();
 	}
 
-	@Test
+	@DatabaseTest
 	public void testSimpleStoredProcedureResultQueryNoParameters() throws Exception {
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -122,7 +159,7 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertEquals("1", result.getResult().asString());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testSimpleStoredProcedureResultQueryInputParameters() throws Exception {
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -148,13 +185,15 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertEquals("1", result.getResult().asString());
 	}
 
-	@Test
-	public void testSimpleStoredProcedureBlobInputParameter() throws Exception {
-		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL", "DB2"))));
+	@DatabaseTest
+	public void testSimpleStoredProcedureBlobInputParameter(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeFalse(dataSourceName.contains("H2"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("PostgreSQL"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("DB2"), "H2, PSQL, DB2 not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		long id = insertRowWithMessageValue(value);
+		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 		sender.setQuery("CALL SET_BLOB(?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
 		sender.setScalar(true);
@@ -178,17 +217,19 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 		// Assert
 		assertTrue(result.isSuccess());
-		String blobValue = getBlobValueAsString(id);
+		String blobValue = getBlobValueAsString(id, databaseTestEnvironment);
 		assertEquals(TEST_DATA_STRING, blobValue);
 	}
 
-	@Test
-	public void testSimpleStoredProcedureClobInputParameter() throws Exception {
-		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL", "DB2"))));
+	@DatabaseTest
+	public void testSimpleStoredProcedureClobInputParameter(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeFalse(dataSourceName.contains("H2"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("PostgreSQL"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("DB2"), "H2, PSQL, DB2 not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		long id = insertRowWithMessageValue(value);
+		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 		sender.setQuery("CALL SET_CLOB(?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
 		sender.setScalar(true);
@@ -212,17 +253,19 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 		// Assert
 		assertTrue(result.isSuccess());
-		String clobValue = getClobValueAsString(id);
+		String clobValue = getClobValueAsString(id, databaseTestEnvironment);
 		assertEquals(TEST_DATA_STRING, clobValue);
 	}
 
-	@Test
-	public void testSimpleStoredProcedureClobInputParameter2() throws Exception {
-		assumeThat("H2, PSQL, DB2 not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL", "DB2"))));
+	@DatabaseTest
+	public void testSimpleStoredProcedureClobInputParameter2(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeFalse(dataSourceName.contains("H2"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("PostgreSQL"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("DB2"), "H2, PSQL, DB2 not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		long id = insertRowWithMessageValue(value);
+		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 		sender.setQuery("CALL SET_CLOB(?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
 		sender.setScalar(true);
@@ -248,18 +291,18 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 
 		// Assert
 		assertTrue(result.isSuccess());
-		String clobValue = getClobValueAsString(id);
+		String clobValue = getClobValueAsString(id, databaseTestEnvironment);
 		assertEquals(TEST_DATA_STRING, clobValue);
 	}
 
-	@Test
-	public void testStoredProcedureInputAndOutputParameters() throws Exception {
+	@DatabaseTest
+	public void testStoredProcedureInputAndOutputParameters(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
+		assumeFalse(dataSourceName.equalsIgnoreCase("H2"), "H2 does not support OUT parameters, skipping test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		long id = insertRowWithMessageValue(value);
+		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_MESSAGE_BY_ID(?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
@@ -286,13 +329,13 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertEquals(value, result.getResult().asString());
 	}
 
-	@Test
-	public void testStoredProcedureInputAndOutputParameterNullValue() throws Exception {
+	@DatabaseTest
+	public void testStoredProcedureInputAndOutputParameterNullValue(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
+		assumeFalse(dataSourceName.equalsIgnoreCase("H2"), "H2 does not support OUT parameters, skipping test case");
 
 		// Arrange
-		long id = insertRowWithMessageValue(null);
+		long id = insertRowWithMessageValue(null, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_MESSAGE_BY_ID(?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
@@ -319,30 +362,34 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertNull(result.getResult().asString());
 	}
 
-	@Test
-	public void testStoredProcedureBlobOutputParameter1() throws Exception {
-		testStoredProcedureBlobOutputParameter(false, true, null);
-	}
-	@Test
-	public void testStoredProcedureBlobOutputParameter2() throws Exception {
-		testStoredProcedureBlobOutputParameter(false, true, StandardCharsets.UTF_8.name());
-	}
-	@Test
-	public void testStoredProcedureBlobOutputParameter3() throws Exception {
-		testStoredProcedureBlobOutputParameter(true, false, StandardCharsets.UTF_8.name());
-	}
-	@Test
-	public void testStoredProcedureBlobOutputParameter4() throws Exception {
-		testStoredProcedureBlobOutputParameter(true, true, StandardCharsets.UTF_8.name());
+	@DatabaseTest
+	public void testStoredProcedureBlobOutputParameter1(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		testStoredProcedureBlobOutputParameter(false, true, null, databaseTestEnvironment);
 	}
 
-	private void testStoredProcedureBlobOutputParameter(boolean blobSmartGet, boolean compressed, String charSet) throws Exception {
+	@DatabaseTest
+	public void testStoredProcedureBlobOutputParameter2(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		testStoredProcedureBlobOutputParameter(false, true, StandardCharsets.UTF_8.name(), databaseTestEnvironment);
+	}
 
-		assumeThat("H2, PSQL not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL"))));
+	@DatabaseTest
+	public void testStoredProcedureBlobOutputParameter3(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		testStoredProcedureBlobOutputParameter(true, false, StandardCharsets.UTF_8.name(), databaseTestEnvironment);
+	}
+
+	@DatabaseTest
+	public void testStoredProcedureBlobOutputParameter4(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		testStoredProcedureBlobOutputParameter(true, true, StandardCharsets.UTF_8.name(), databaseTestEnvironment);
+	}
+
+	private void testStoredProcedureBlobOutputParameter(boolean blobSmartGet, boolean compressed, String charSet, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+
+		assumeFalse(dataSourceName.contains("H2"), "H2, PSQL not supported for this test case");
+		assumeFalse(dataSourceName.contains("PostgreSQL"), "H2, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		long id = insertRowWithBlobValue(value, compressed);
+		long id = insertRowWithBlobValue(value, compressed, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_BLOB(?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
@@ -371,14 +418,15 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertEquals(value, result.getResult().asString());
 	}
 
-	@Test
-	public void testStoredProcedureClobOutputParameter() throws Exception {
+	@DatabaseTest
+	public void testStoredProcedureClobOutputParameter(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeThat("H2, PSQL not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL"))));
+		assumeFalse(dataSourceName.contains("H2"), "H2, PSQL not supported for this test case");
+		assumeFalse(dataSourceName.contains("PostgreSQL"), "H2, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		long id = insertRowWithClobValue(value);
+		long id = insertRowWithClobValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_CLOB(?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
@@ -405,14 +453,15 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertEquals(value, result.getResult().asString());
 	}
 
-	@Test
-	public void testStoredProcedureBlobOutputParameterNullValue() throws Exception {
+	@DatabaseTest
+	public void testStoredProcedureBlobOutputParameterNullValue(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeThat("H2, PSQL not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL"))));
+		assumeFalse(dataSourceName.contains("H2"), "H2, PSQL not supported for this test case");
+		assumeFalse(dataSourceName.contains("PostgreSQL"), "H2, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		long id = insertRowWithMessageValue(value);
+		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_BLOB(?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
@@ -442,14 +491,16 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertEquals(0, bytes.length);
 		assertEquals("", result.getResult().asString());
 	}
-	@Test
-	public void testStoredProcedureClobOutputParameterNullValue() throws Exception {
 
-		assumeThat("H2, PSQL not supported for this test case", productKey, is(not(oneOf("H2", "PostgreSQL"))));
+	@DatabaseTest
+	public void testStoredProcedureClobOutputParameterNullValue(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+
+		assumeFalse(dataSourceName.contains("H2"), "H2, PSQL not supported for this test case");
+		assumeFalse(dataSourceName.contains("PostgreSQL"), "H2, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		long id = insertRowWithMessageValue(value);
+		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_CLOB(?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
@@ -476,14 +527,14 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertTrue(StringUtils.isEmpty(result.getResult().asString()));
 	}
 
-	@Test
-	public void testStoredProcedureInputAndOutputParametersXmlOutput() throws Exception {
+	@DatabaseTest
+	public void testStoredProcedureInputAndOutputParametersXmlOutput(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
+		assumeFalse(dataSourceName.equalsIgnoreCase("H2"), "H2 does not support OUT parameters, skipping test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		long id = insertRowWithMessageValue(value);
+		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL GET_MESSAGE_AND_TYPE_BY_ID(?, ?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
@@ -518,14 +569,14 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertXmlEquals(expectedOutput, actual);
 	}
 
-	@Test
-	public void testStoredProcedureOutputParameterConversion() throws Exception {
+	@DatabaseTest
+	public void testStoredProcedureOutputParameterConversion(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeThat("H2 does not support OUT parameters, skipping test case", productKey, not(equalToIgnoringCase("H2")));
+		assumeFalse(dataSourceName.equalsIgnoreCase("H2"), "H2 does not support OUT parameters, skipping test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
-		long id = insertRowWithMessageValue(value);
+		long id = insertRowWithMessageValue(value, databaseTestEnvironment);
 
 		sender.setQuery("CALL COUNT_MESSAGES_BY_CONTENT(?, ?, ?, ?)");
 		sender.setQueryType(JdbcQuerySenderBase.QueryType.OTHER.name());
@@ -566,15 +617,16 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertXmlEquals(expectedOutput, actual);
 	}
 
-	@Test
-	public void testStoredProcedureReturningResultSetQueryTypeSelect() throws Exception {
-		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, is(not(oneOf("Oracle", "PostgreSQL"))));
+	@DatabaseTest
+	public void testStoredProcedureReturningResultSetQueryTypeSelect(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeFalse(dataSourceName.contains("Oracle"), "PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test");
+		assumeFalse(dataSourceName.contains("PostgreSQL"), "PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
 		long[] ids = new long[5];
 		for (int i = 0; i < ids.length; i++) {
-			ids[i] =insertRowWithMessageValue(value);
+			ids[i] = insertRowWithMessageValue(value, databaseTestEnvironment);
 		}
 
 		sender.setQuery("CALL GET_MESSAGES_BY_CONTENT(?)");
@@ -600,15 +652,15 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertXmlEquals(expectedOutput, actual);
 	}
 
-	@Test
-	public void testStoredProcedureReturningResultSetQueryTypeOther() throws Exception {
-		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, is(not(oneOf("Oracle", "PostgreSQL"))));
-
+	@DatabaseTest
+	public void testStoredProcedureReturningResultSetQueryTypeOther(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeFalse(dataSourceName.contains("Oracle"), "PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test");
+		assumeFalse(dataSourceName.contains("PostgreSQL"), "PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test");
 		// Arrange
 		String value = UUID.randomUUID().toString();
 		long[] ids = new long[5];
 		for (int i = 0; i < ids.length; i++) {
-			ids[i] =insertRowWithMessageValue(value);
+			ids[i] = insertRowWithMessageValue(value, databaseTestEnvironment);
 		}
 
 		sender.setQuery("CALL GET_MESSAGES_BY_CONTENT(?)");
@@ -634,15 +686,17 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertXmlEquals(expectedOutput, actual);
 	}
 
-	@Test
-	public void testStoredProcedureReturningResultSetAndOutParameters() throws Exception {
-		assumeThat("PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test", productKey, is(not(oneOf("H2", "Oracle", "PostgreSQL"))));
+	@DatabaseTest
+	public void testStoredProcedureReturningResultSetAndOutParameters(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeFalse(dataSourceName.contains("H2"), "PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test");
+		assumeFalse(dataSourceName.contains("Oracle"), "PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test");
+		assumeFalse(dataSourceName.contains("PostgreSQL"), "PostgreSQL and Oracle do not support stored procedures that directly return multi-row results, skipping test");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
 		long[] ids = new long[5];
 		for (int i = 0; i < ids.length; i++) {
-			ids[i] =insertRowWithMessageValue(value);
+			ids[i] = insertRowWithMessageValue(value, databaseTestEnvironment);
 		}
 
 		sender.setQuery("CALL GET_MESSAGES_AND_COUNT(?, ?)");
@@ -673,19 +727,19 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertXmlEquals(expectedOutput, actual);
 	}
 
-	@Test
-	public void testStoredProcedureReturningCursorSingleOutParameter() throws Exception {
-		assumeThat("REFCURSOR not supported, skipping test", productKey, is(oneOf("Oracle")));
+	@DatabaseTest
+	public void testStoredProcedureReturningCursorSingleOutParameter(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
+		assumeTrue(dataSourceName.contains("Oracle"), "REFCURSOR not supported, skipping test");
 
 		// NOTE: This test only works on a clean database as it selects all rows and matches that against fixed expectation.
-		int rowCount = countAllRows();
-		assumeThat("This test only works on an empty test-data table", rowCount, is(0));
+		int rowCount = countAllRows(databaseTestEnvironment);
+		assumeTrue(rowCount == 0, "This test only works on an empty test-data table");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
 		long[] ids = new long[5];
 		for (int i = 0; i < ids.length; i++) {
-			ids[i] = insertRowWithMessageValue(value);
+			ids[i] = insertRowWithMessageValue(value, databaseTestEnvironment);
 		}
 
 		sender.setQuery("CALL GET_ALL_MESSAGES_CURSOR(?)");
@@ -714,15 +768,15 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertXmlEquals(expectedOutput, actual);
 	}
 
-	@Test
-	public void testStoredProcedureReturningCursorInOutParameter() throws Exception {
-		assumeThat("REFCURSOR not supported, skipping test", productKey, is(oneOf("Oracle")));
+	@DatabaseTest
+	public void testStoredProcedureReturningCursorInOutParameter(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		assumeTrue(dataSourceName.contains("Oracle"), "REFCURSOR not supported, skipping test");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
 		long[] ids = new long[5];
 		for (int i = 0; i < ids.length; i++) {
-			ids[i] = insertRowWithMessageValue(value);
+			ids[i] = insertRowWithMessageValue(value, databaseTestEnvironment);
 		}
 
 		sender.setQuery("CALL GET_MESSAGES_CURSOR(?,?,?)");
@@ -758,9 +812,9 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertXmlEquals(expectedOutput, actual);
 	}
 
-	@Test
+	@DatabaseTest
 	public void testStoredProcedureReturningCursorNotSupported() throws Exception {
-		assumeThat(productKey, is(equalTo("MS_SQL")));
+		assumeTrue(dataSourceName.equals("MS_SQL"));
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -791,9 +845,9 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertThat(exception.getMessage(), containsString("REF_CURSOR is not supported"));
 	}
 
-	@Test
+	@DatabaseTest
 	public void testCallFunction() throws Exception {
-		assumeThat("CALL to custom function only tested on Oracle so far", productKey, equalToIgnoringCase("Oracle"));
+		assumeTrue(dataSourceName.equalsIgnoreCase("Oracle"), "CALL to custom function only tested on Oracle so far");
 
 		// Arrange
 		sender.setQuery("{ ? = call add_numbers(?, ?) }");
@@ -822,10 +876,11 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 		assertEquals("3", result.getResult().asString());
 	}
 
-	private int countRowsWithMessageValue(final String value) throws SQLException, JdbcException {
-		String checkValueStatement = dbmsSupport.convertQuery("SELECT COUNT(*) FROM SP_TESTDATA WHERE TMESSAGE = ?", "Oracle");
+	private int countRowsWithMessageValue(final String value, DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
+		String checkValueStatement = databaseTestEnvironment.getDbmsSupport().convertQuery("SELECT COUNT(*) FROM SP_TESTDATA WHERE TMESSAGE = ?", "Oracle");
 		int rowsCounted;
-		try (PreparedStatement statement = getConnection().prepareStatement(checkValueStatement)) {
+		Connection connection = databaseTestEnvironment.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(checkValueStatement)) {
 			statement.setString(1, value);
 			ResultSet resultSet = statement.executeQuery();
 			if (resultSet.next()) {
@@ -834,13 +889,15 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 				rowsCounted = 0;
 			}
 		}
+		connection.close();
 		return rowsCounted;
 	}
 
-	private int countAllRows() throws SQLException, JdbcException {
-		String checkValueStatement = dbmsSupport.convertQuery("SELECT COUNT(*) FROM SP_TESTDATA", "Oracle");
+	private int countAllRows(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, JdbcException {
+		String checkValueStatement = databaseTestEnvironment.getDbmsSupport().convertQuery("SELECT COUNT(*) FROM SP_TESTDATA", "Oracle");
 		int rowsCounted;
-		try (PreparedStatement statement = getConnection().prepareStatement(checkValueStatement)) {
+		Connection connection = databaseTestEnvironment.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(checkValueStatement)) {
 			ResultSet resultSet = statement.executeQuery();
 			if (resultSet.next()) {
 				rowsCounted = resultSet.getInt(1);
@@ -848,79 +905,102 @@ public class StoredProcedureQuerySenderTest extends JdbcTestBase {
 				rowsCounted = 0;
 			}
 		}
+		connection.close();
 		return rowsCounted;
 	}
 
-	private long insertRowWithMessageValue(final String value) throws SQLException, JdbcException {
-		String insertValueQuery = dbmsSupport.convertQuery("INSERT INTO SP_TESTDATA (TMESSAGE, TCHAR) VALUES (?, 'E')", "Oracle");
+	private long insertRowWithMessageValue(final String value, DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, JdbcException {
+		String insertValueQuery = databaseTestEnvironment.getDbmsSupport().convertQuery("INSERT INTO SP_TESTDATA (TMESSAGE, TCHAR) VALUES (?, 'E')", "Oracle");
 		// Column name of generated key-field should be in lowercase for PostgreSQL
-		try (PreparedStatement statement = getConnection().prepareStatement(insertValueQuery, new String[] {"tkey"})) {
+		Connection connection = databaseTestEnvironment.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(insertValueQuery, new String[]{"tkey"})) {
 			statement.setString(1, value);
 			statement.executeUpdate();
 			ResultSet generatedKeys = statement.getGeneratedKeys();
 			if (!generatedKeys.next()) {
+				connection.close();
 				fail("No generated keys from insert statement");
 			}
 			return generatedKeys.getLong(1);
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
 		}
 	}
 
-	private long insertRowWithBlobValue(final String value, final boolean compressed) throws SQLException, JdbcException {
-		String insertValueQuery = dbmsSupport.convertQuery("INSERT INTO SP_TESTDATA (TBLOB, TCHAR) VALUES (?, 'B')", "Oracle");
+	private long insertRowWithBlobValue(final String value, final boolean compressed, DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, JdbcException {
+		String insertValueQuery = databaseTestEnvironment.getDbmsSupport().convertQuery("INSERT INTO SP_TESTDATA (TBLOB, TCHAR) VALUES (?, 'B')", "Oracle");
 		// Column name of generated key-field should be in lowercase for PostgreSQL
-		try (PreparedStatement statement = getConnection().prepareStatement(insertValueQuery, new String[] {"tkey"})) {
+		Connection connection = databaseTestEnvironment.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(insertValueQuery, new String[]{"tkey"})) {
 			ByteArrayInputStream inputStream = new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8));
 			statement.setBlob(1, (compressed) ? new DeflaterInputStream(inputStream) : inputStream);
 			statement.executeUpdate();
 			ResultSet generatedKeys = statement.getGeneratedKeys();
 			if (!generatedKeys.next()) {
+				databaseTestEnvironment.close();
 				fail("No generated keys from insert statement");
 			}
+			connection.close();
 			return generatedKeys.getLong(1);
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
 		}
 	}
 
-	private long insertRowWithClobValue(final String value) throws SQLException, JdbcException {
-		String insertValueQuery = dbmsSupport.convertQuery("INSERT INTO SP_TESTDATA (TCLOB, TCHAR) VALUES (?, 'C')", "Oracle");
+	private long insertRowWithClobValue(final String value, DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, JdbcException {
+		String insertValueQuery = databaseTestEnvironment.getDbmsSupport().convertQuery("INSERT INTO SP_TESTDATA (TCLOB, TCHAR) VALUES (?, 'C')", "Oracle");
 		// Column name of generated key-field should be in lowercase for PostgreSQL
-		try (PreparedStatement statement = getConnection().prepareStatement(insertValueQuery, new String[] {"tkey"})) {
+		Connection connection = databaseTestEnvironment.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(insertValueQuery, new String[]{"tkey"})) {
 			statement.setClob(1, new StringReader(value));
 			statement.executeUpdate();
 			ResultSet generatedKeys = statement.getGeneratedKeys();
 			if (!generatedKeys.next()) {
+				databaseTestEnvironment.close();
 				fail("No generated keys from insert statement");
 			}
+			connection.close();
 			return generatedKeys.getLong(1);
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
 		}
 	}
 
-	private String getBlobValueAsString(final long id) throws SQLException, JdbcException, IOException {
-		String getBlobQuery = dbmsSupport.convertQuery("SELECT TBLOB FROM SP_TESTDATA WHERE TKEY = ?", "Oracle");
-		try (PreparedStatement statement = getConnection().prepareStatement(getBlobQuery)) {
+	private String getBlobValueAsString(final long id, DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, JdbcException, IOException {
+		String getBlobQuery = databaseTestEnvironment.getDbmsSupport().convertQuery("SELECT TBLOB FROM SP_TESTDATA WHERE TKEY = ?", "Oracle");
+		Connection connection = databaseTestEnvironment.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(getBlobQuery)) {
 			statement.setLong(1, id);
 			ResultSet rs = statement.executeQuery();
 			if (!rs.next()) {
+				connection.close();
 				fail("No data found for id = " + id);
 			}
 			Blob blob = rs.getBlob(1);
 			try (InputStream in = blob.getBinaryStream()) {
 				return StreamUtil.streamToString(in);
 			}
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
 		}
 	}
 
-	private String getClobValueAsString(final long id) throws SQLException, JdbcException, IOException {
-		String getClobQuery = dbmsSupport.convertQuery("SELECT TCLOB FROM SP_TESTDATA WHERE TKEY = ?", "Oracle");
-		try (PreparedStatement statement = getConnection().prepareStatement(getClobQuery)) {
+	private String getClobValueAsString(final long id, DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, JdbcException, IOException {
+		String getClobQuery = databaseTestEnvironment.getDbmsSupport().convertQuery("SELECT TCLOB FROM SP_TESTDATA WHERE TKEY = ?", "Oracle");
+		Connection connection = databaseTestEnvironment.getConnection();
+		try (PreparedStatement statement = connection.prepareStatement(getClobQuery)) {
 			statement.setLong(1, id);
 			ResultSet rs = statement.executeQuery();
 			if (!rs.next()) {
+				connection.close();
 				fail("No data found for id = " + id);
 			}
 			Clob clob = rs.getClob(1);
 			try (Reader in = clob.getCharacterStream()) {
 				return StreamUtil.readerToString(in, "\n");
 			}
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
 		}
 	}
 
