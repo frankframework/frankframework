@@ -3,11 +3,11 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>bundle-full</artifactId>
+	<artifactId>frankframework-bundle-full</artifactId>
 	<name>Frank!Framework full bundle</name>
 	<description>Minimal bundle + all extra + (optionally) all proprietary modules</description>
 	<packaging>pom</packaging>
@@ -15,35 +15,35 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>bundle-minimal</artifactId>
+			<artifactId>frankframework-bundle-minimal</artifactId>
 			<type>pom</type>
 		</dependency>
 
 		<!-- redefined so transient dependencies are version locked -->
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<artifactId>frankframework-core</artifactId>
 		</dependency>
 
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-akamai</artifactId>
+			<artifactId>frankframework-akamai</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-aws</artifactId>
+			<artifactId>frankframework-aws</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-messaging</artifactId>
+			<artifactId>frankframework-messaging</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>nn-specials</artifactId>
+			<artifactId>frankframework-nn-specials</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-batch</artifactId>
+			<artifactId>frankframework-batch</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -58,15 +58,15 @@
 			<dependencies>
 				<dependency>
 					<groupId>org.frankframework</groupId>
-					<artifactId>ibis-adapterframework-sap</artifactId>
+					<artifactId>frankframework-sap</artifactId>
 				</dependency>
 				<dependency>
 					<groupId>org.frankframework</groupId>
-					<artifactId>ibis-adapterframework-tibco</artifactId>
+					<artifactId>frankframework-tibco</artifactId>
 				</dependency>
 				<dependency>
 					<groupId>org.frankframework</groupId>
-					<artifactId>ibis-adapterframework-idin</artifactId>
+					<artifactId>frankframework-idin</artifactId>
 				</dependency>
 			</dependencies>
 		</profile>

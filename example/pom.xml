@@ -3,12 +3,12 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>bundle-minimal</artifactId>
+		<artifactId>frankframework-bundle-minimal</artifactId>
 		<version>${revision}</version>
 		<relativePath>../bundle-minimal/pom.xml</relativePath>
 	</parent>
 
-	<artifactId>ibis-adapterframework-example</artifactId>
+	<artifactId>frankframework-example</artifactId>
 	<name>Ibis AdapterFramework example</name>
 	<packaging>war</packaging>
 
@@ -65,7 +65,7 @@
 						</systemProperty>
 					</systemProperties>
 					<webAppConfig>
-						<webInfIncludeJarPattern>./WEB-INF/lib/ibis-adapterframework-[^/]*\.jar|./WEB-INF/lib/spring-[^/]*\.jar</webInfIncludeJarPattern>
+						<webInfIncludeJarPattern>./WEB-INF/lib/frankframework-[^/]*\.jar|./WEB-INF/lib/spring-[^/]*\.jar</webInfIncludeJarPattern>
 						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
 					</webAppConfig>
 					<loginServices>

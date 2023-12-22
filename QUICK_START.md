@@ -13,7 +13,7 @@ By using either our minimal or full bundle you don't have the overhead of defini
 ```
 <parent>
 	<groupId>org.frankframework</groupId>
-	<artifactId>bundle-minimal</artifactId>
+	<artifactId>frankframework-bundle-minimal</artifactId>
 	<version>${ff.version}</version>
 </parent>
 ```
@@ -22,7 +22,7 @@ Or the full bundle which contains almost every module:
 ```
 <parent>
 	<groupId>org.frankframework</groupId>
-	<artifactId>bundle-full</artifactId>
+	<artifactId>frankframework-bundle-full</artifactId>
 	<version>${ff.version}</version>
 </parent>
 ```
@@ -31,7 +31,7 @@ If you wish to use `CMIS` or `Aspose` you will need to manually add those depend
 ```
 <dependency>
 	<groupId>org.frankframework</groupId>
-	<artifactId>ibis-adapterframework-aspose</artifactId>
+	<artifactId>frankframework-aspose</artifactId>
 	<version>${ff.version}</version>
 </dependency>
 ```

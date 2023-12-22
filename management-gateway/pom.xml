@@ -3,11 +3,11 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>iaf-management-gateway</artifactId>
+	<artifactId>frankframework-management-gateway</artifactId>
 	<name>Frank Management Gateway</name>
 
 	<dependencies>
@@ -17,7 +17,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-commons</artifactId>
+			<artifactId>frankframework-commons</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>

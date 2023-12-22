@@ -2,18 +2,18 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-ear</artifactId>
+	<artifactId>frankframework-ear</artifactId>
 	<name>Ibis AdapterFramework ear</name>
 	<packaging>ear</packaging>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-webapp</artifactId>
+			<artifactId>frankframework-webapp</artifactId>
 			<type>war</type>
 		</dependency>
 	</dependencies>
@@ -40,7 +40,7 @@
 						<modules>
 							<webModule>
 								<groupId>org.frankframework</groupId>
-								<artifactId>ibis-adapterframework-webapp</artifactId>
+								<artifactId>frankframework-webapp</artifactId>
 								<bundleFileName>adapterframework.war</bundleFileName>
 								<contextRoot>/iaf</contextRoot>
 							</webModule>
