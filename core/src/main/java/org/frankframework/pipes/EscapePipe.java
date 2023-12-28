@@ -88,7 +88,6 @@ public class EscapePipe extends FixedForwardPipe {
 					substring = handle(substring);
 					result = result.substring(0, i + substringStart.length()) + substring + result.substring(j);
 				} else {
-					// Handle the case where there is no matching substringEnd
 					break;
 				}
 			}
