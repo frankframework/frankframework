@@ -52,6 +52,18 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 	}
 
 	@Test
+	public void testPartialEscapedMultiLineXmlInputMultiOccurences() throws Exception {
+		pipe.setSubstringStart("<message>");
+		pipe.setSubstringEnd("</message>");
+		configureAndStartPipe();
+
+		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped-multi-occurences.xml"));
+		String expected = getResource("multi-line-partial-escaped-multi-occurences.result").asString();
+		System.out.println(result.getResult().asString());
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
+
+	@Test
 	public void testPartialEscapedMultiLineXmlInputSubString() throws Exception { //double escapes
 		pipe.setSubstringStart("<multi>");
 		pipe.setSubstringEnd("</multi>");

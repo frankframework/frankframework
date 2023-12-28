@@ -18,8 +18,6 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.apache.commons.lang3.NotImplementedException;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -29,6 +27,8 @@ import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
+
+import lombok.Getter;
 
 /**
  * Pipe that performs translations between special characters and their xml equivalents.
@@ -72,19 +72,24 @@ public class EscapePipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
-		String substring = null;
 		String result = input;
-		int i = -1;
-		int j = -1;
-		log.debug("substringStart [{}] substringEnd [{}] input [{}]", substringStart, substringEnd, input);
+
 		if (substringStart != null && substringEnd != null) {
-			i = input.indexOf(substringStart);
-			if (i != -1) {
+			int i = -1;
+			int j = -1;
+
+			log.debug("substringStart [{}] substringEnd [{}] input [{}]", substringStart, substringEnd, input);
+
+			while ((i = input.indexOf(substringStart, i + 1)) != -1) {
 				j = input.indexOf(substringEnd, i);
+
 				if (j != -1) {
-					substring = input.substring(i + substringStart.length(), j);
+					String substring = input.substring(i + substringStart.length(), j);
 					substring = handle(substring);
-					result = input.substring(0, i + substringStart.length()) + substring + input.substring(j);
+					result = result.substring(0, i + substringStart.length()) + substring + result.substring(j);
+				} else {
+					// Handle the case where there is no matching substringEnd
+					break;
 				}
 			}
 		} else {
