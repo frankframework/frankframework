@@ -53,8 +53,8 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 	@Test
 	public void testPartialEscapedMultiLineXmlInputMultiOccurences() throws Exception {
-		pipe.setSubstringStart("<message>");
-		pipe.setSubstringEnd("</message>");
+		pipe.setSubstringStart("<reasons>");
+		pipe.setSubstringEnd("</reasons>");
 		configureAndStartPipe();
 
 		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped-multi-occurences.xml"));
