@@ -22,12 +22,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.MimeType;
-
-import com.nimbusds.jose.proc.SecurityContext;
-
-import lombok.Getter;
-import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
@@ -43,6 +37,12 @@ import org.frankframework.receivers.ReceiverAware;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
+import org.springframework.util.MimeType;
+
+import com.nimbusds.jose.proc.SecurityContext;
+
+import lombok.Getter;
+import lombok.Setter;
 
 // TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
 /**
@@ -66,7 +66,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 
 	private @Getter HttpMethod method = HttpMethod.GET;
 	public enum HttpMethod {
-		GET,PUT,POST,PATCH,DELETE,OPTIONS;
+		GET, PUT, POST, PATCH, DELETE, HEAD, OPTIONS;
 	}
 
 	private @Getter AuthenticationMethods authenticationMethod = AuthenticationMethods.NONE;

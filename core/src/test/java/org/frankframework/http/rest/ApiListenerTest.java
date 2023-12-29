@@ -258,4 +258,15 @@ public class ApiListenerTest {
 		listener.configure();
 		assertEquals("uriPattern: [/aap, /noot]/dummy; method: PUT; consumes: JSON; produces: XML", listener.getPhysicalDestinationName());
 	}
+
+	@Test
+	public void testHeadPhysicalDestinationName() throws Exception {
+		listener.setMethod(ApiListener.HttpMethod.HEAD);
+		listener.setUriPattern("/dummy");
+		listener.setConsumes(MediaTypes.JSON);
+		listener.setProduces(MediaTypes.XML);
+		listener.configure();
+
+		assertEquals("uriPattern: /dummy; method: HEAD; consumes: JSON; produces: XML", listener.getPhysicalDestinationName());
+	}
 }
