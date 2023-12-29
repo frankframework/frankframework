@@ -80,6 +80,7 @@ public class EscapePipe extends FixedForwardPipe {
 
 			log.debug("substringStart [{}] substringEnd [{}] input [{}]", substringStart, substringEnd, input);
 
+			// check if substringStart is still there -> in this way we can handle multiple substrings
 			while ((i = input.indexOf(substringStart, i + 1)) != -1) {
 				j = input.indexOf(substringEnd, i);
 
