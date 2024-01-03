@@ -106,10 +106,10 @@ public class MailSender extends MailSenderBase {
 
 	private @Getter String smtpHost;
 	private @Getter int smtpPort=25;
+	private @Setter boolean useSsl = false;
 
 	private Properties properties = new Properties();
 	private Session session = null;
-	private final boolean useSsl = true;
 
 	@Override
 	public void configure() throws ConfigurationException {
