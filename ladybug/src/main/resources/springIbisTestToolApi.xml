@@ -34,7 +34,6 @@
 					<property name="label" value="Namespace"/>
 					<property name="xpath" value="namespace-uri(/*[local-name()='Envelope']/*[local-name()='Body']/*)"/>
 				</bean>
-				<bean class="nl.nn.testtool.metadata.StatusMetadataFieldExtractor"/>
 			</list>
 		</property>
 	</bean>

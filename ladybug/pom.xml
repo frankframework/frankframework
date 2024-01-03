@@ -11,7 +11,7 @@
 	<name>Frank!Framework Ladybug</name>
 
 	<properties>
-		<ladybug.version>2.3-20230911.183804</ladybug.version>
+		<ladybug.version>2.3-20240103.172229</ladybug.version>
 	</properties>
 
 	<dependencies>
