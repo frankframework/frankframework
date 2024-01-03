@@ -24,6 +24,10 @@ import java.util.Properties;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ISender;
+import org.frankframework.core.SenderException;
+import org.frankframework.doc.Category;
 import org.frankframework.util.Misc;
 import org.frankframework.util.XmlUtils;
 import org.w3c.dom.Element;
@@ -45,10 +49,6 @@ import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
 import lombok.Getter;
 import lombok.Setter;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ISender;
-import org.frankframework.core.SenderException;
-import org.frankframework.doc.Category;
 
 /**
  * {@link ISender sender} that sends a mail specified by an XML message.
@@ -109,6 +109,7 @@ public class MailSender extends MailSenderBase {
 
 	private Properties properties = new Properties();
 	private Session session = null;
+	private final boolean useSsl = true;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -130,6 +131,10 @@ public class MailSender extends MailSenderBase {
 		//Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if(StringUtils.isNotEmpty(getBounceAddress())) {
 			properties.put("mail.smtp.from", getBounceAddress());
+		}
+
+		if (useSsl) {
+			properties.put("mail.smtp.starttls.enable", "true");
 		}
 	}
 
