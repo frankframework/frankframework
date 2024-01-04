@@ -343,10 +343,7 @@ public class JwtSecurityHandlerTest {
 		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		assertDoesNotThrow(() -> {
-			// When
-		});
+	
 		//Expect
 		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
 			// When
