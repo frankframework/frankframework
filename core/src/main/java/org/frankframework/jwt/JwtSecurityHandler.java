@@ -69,40 +69,52 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	public void validateClaims(String requiredClaims, String exactMatchClaims, String anyMatchClaims) throws AuthorizationException {
 		// verify required claims exist
 		if(StringUtils.isNotEmpty(requiredClaims)) {
-			List<String> missingClaims = StringUtil.splitToStream(requiredClaims)
-					.filter(claim -> !claimsSet.containsKey(claim))
-					.collect(Collectors.toList());
-
-			if(!missingClaims.isEmpty()){
-				throw new AuthorizationException("JWT missing required claims: " + missingClaims);
-			}
+			validateRequiredClaims(requiredClaims);
 		}
 
 		// verify claims have expected values
 		if(StringUtils.isNotEmpty(exactMatchClaims)) {
-			Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
-					.filter(entry -> !entry.getValue().equals(getClaimAsString(entry.getKey())))
-					.findFirst();
-
-			if(nonMatchingClaim.isPresent()){
-				String key = nonMatchingClaim.get().getKey();
-				String expectedValue = nonMatchingClaim.get().getValue();
-				throw new AuthorizationException("JWT "+key+" claim has value ["+claimsSet.get(key)+"], must be ["+expectedValue+"]");
-			}
+			validateExactMatchClaims(exactMatchClaims);
 		}
 
 		// verify matchOneOf claims
 		if(StringUtils.isNotEmpty(anyMatchClaims)) {
-			Map<String, Set<String>> allowedValuesByClaim = splitClaims(anyMatchClaims)
-					.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toSet())));
-			boolean matchesOneOf = allowedValuesByClaim
-					.entrySet()
-					.stream()
-					.anyMatch(entry -> entry.getValue().contains(getClaimAsString(entry.getKey())));
+			validateAnyMatchClaims(anyMatchClaims);
+		}
+	}
 
-			if(!matchesOneOf){
-				throw new AuthorizationException("JWT does not match one of: ["+ anyMatchClaims +"]");
-			}
+	public void validateRequiredClaims(@Nonnull String requiredClaims) throws AuthorizationException {
+		List<String> missingClaims = StringUtil.splitToStream(requiredClaims)
+				.filter(claim -> !claimsSet.containsKey(claim))
+				.collect(Collectors.toList());
+
+		if(!missingClaims.isEmpty()){
+			throw new AuthorizationException("JWT missing required claims: " + missingClaims);
+		}
+	}
+
+	public void validateExactMatchClaims(@Nonnull String exactMatchClaims) throws AuthorizationException {
+		Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
+				.filter(entry -> !entry.getValue().equals(getClaimAsString(entry.getKey())))
+				.findFirst();
+
+		if(nonMatchingClaim.isPresent()){
+			String key = nonMatchingClaim.get().getKey();
+			String expectedValue = nonMatchingClaim.get().getValue();
+			throw new AuthorizationException("JWT "+key+" claim has value ["+claimsSet.get(key)+"], must be ["+expectedValue+"]");
+		}
+	}
+
+	public void validateAnyMatchClaims(@Nonnull String anyMatchClaims) throws AuthorizationException {
+		Map<String, Set<String>> allowedValuesByClaim = splitClaims(anyMatchClaims)
+				.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toSet())));
+		boolean matchesOneOf = allowedValuesByClaim
+				.entrySet()
+				.stream()
+				.anyMatch(entry -> entry.getValue().contains(getClaimAsString(entry.getKey())));
+
+		if(!matchesOneOf){
+			throw new AuthorizationException("JWT does not match one of: ["+ anyMatchClaims +"]");
 		}
 	}
 
