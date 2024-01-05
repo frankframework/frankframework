@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -258,7 +259,10 @@ public class WebServices extends BusEndpointBase {
 
 		public ListenerDAO(ApiListener listener) {
 			this.name = listener.getName();
-			this.method = listener.getMethod().name();
+			this.method = listener.getMethod().stream()
+					.map(m -> m.name())
+					.collect(Collectors.joining(","));
+
 			this.uriPattern = listener.getUriPattern();
 		}
 

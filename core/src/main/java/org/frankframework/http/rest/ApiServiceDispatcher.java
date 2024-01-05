@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2021 WeAreFrank!
+Copyright 2017-2021, 2024 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -120,40 +120,40 @@ public class ApiServiceDispatcher {
 		if(uriPattern == null)
 			throw new ListenerException("uriPattern cannot be null or empty");
 
-		ApiListener.HttpMethod method = listener.getMethod();
-
 		synchronized(patternClients) {
-			patternClients.computeIfAbsent(uriPattern, pattern -> new ApiDispatchConfig(pattern)).register(method, listener);
+			for(ApiListener.HttpMethod method : listener.getMethod()){
+				patternClients.computeIfAbsent(uriPattern, pattern -> new ApiDispatchConfig(pattern)).register(method, listener);
+				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern ["+uriPattern+"] method ["+method+"]");
+			}
 		}
-
-		if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern ["+uriPattern+"] method ["+method+"]");
 	}
 
 	public void unregisterServiceClient(ApiListener listener) {
-		ApiListener.HttpMethod method = listener.getMethod();
 		String uriPattern = listener.getCleanPattern();
 		if(uriPattern == null) {
 			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
 		}
 		else {
-			boolean success = false;
-			synchronized (patternClients) {
-				ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
-				if(dispatchConfig != null) {
-					if(dispatchConfig.getMethods().size() == 1) {
-						patternClients.remove(uriPattern); //Remove the entire config if there's only 1 ServiceClient registered
-					} else {
-						dispatchConfig.remove(method); //Only remove the ServiceClient as there are multiple registered
+			for(ApiListener.HttpMethod method : listener.getMethod()){
+				boolean success = false;
+				synchronized (patternClients) {
+					ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
+					if(dispatchConfig != null) {
+						if(dispatchConfig.getMethods().size() == 1) {
+							patternClients.remove(uriPattern); //Remove the entire config if there's only 1 ServiceClient registered
+						} else {
+							dispatchConfig.remove(method); //Only remove the ServiceClient as there are multiple registered
+						}
+						success = true;
 					}
-					success = true;
 				}
-			}
 
-			//keep log statements out of synchronized block
-			if(success) {
-				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
-			} else {
-				log.warn("unable to find DispatchConfig for uriPattern ["+uriPattern+"]");
+				//keep log statements out of synchronized block
+				if(success) {
+					if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
+				} else {
+					log.warn("unable to find DispatchConfig for uriPattern ["+uriPattern+"]");
+				}
 			}
 		}
 	}
