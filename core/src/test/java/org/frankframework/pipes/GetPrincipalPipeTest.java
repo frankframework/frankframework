@@ -233,6 +233,6 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 			doPipe(pipe, "", session);
 		});
 
-		assertEquals("Pipe ["+pipe.getName()+"] got exception getting name from principal: ((NotImplementedException)", exception.getMessage());
+		assertEquals("Pipe ["+pipe.getName()+"] got exception getting name from principal: (NotImplementedException)", exception.getMessage());
 	}
 }
