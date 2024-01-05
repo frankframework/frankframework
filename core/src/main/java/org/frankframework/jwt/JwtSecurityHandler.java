@@ -62,21 +62,6 @@ public class JwtSecurityHandler extends SecurityHandlerBase {
 	}
 
 	@Override
-	public boolean isUserInAnyRole(List<String> roles, PipeLineSession pipeLineSession) {
-		Object claim = claimsSet.get(roleClaim);
-		if (claim instanceof String) {
-			return roles.contains(claim);
-		} else if (claim instanceof List<?>) {
-			List<?> claims = (List<?>) claim;
-			if (claims.stream().allMatch(cl -> cl instanceof String)) {
-				List<String> claimList = (List<String>) claims;
-				return claimList.stream().anyMatch(roles::contains);
-			}
-		}
-		return false;
-	}
-
-	@Override
 	public Principal getPrincipal(PipeLineSession session) {
 		return () -> (String) claimsSet.get(principalNameClaim);
 	}
