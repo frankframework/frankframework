@@ -55,7 +55,7 @@ public class ApiListenerPatternsTest {
 	public void initApiListenerPatternsTest(String pattern, String expectedUriPattern, String expectedCleanPattern) {
 		listener = new ApiListener();
 		listener.setName("my-api-listener");
-		listener.setMethod(HttpMethod.PUT.name());
+		listener.setMethod(HttpMethod.PUT);
 		listener.setUriPattern(pattern);
 	}
 

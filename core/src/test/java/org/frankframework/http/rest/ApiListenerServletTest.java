@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.net.ssl.KeyManager;
@@ -670,7 +669,7 @@ public class ApiListenerServletTest extends Mockito {
 	@Test
 	public void listenerMultipartContentUTF8() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/listenerMultipartContentCharset";
-		new ApiListenerBuilder(uri, Arrays.asList(Methods.POST), MediaTypes.MULTIPART, MediaTypes.JSON, null, "string2").build();
+		new ApiListenerBuilder(uri, Methods.POST, MediaTypes.MULTIPART, MediaTypes.JSON, null, "string2").build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody("string1", "<hallo>€ è</hallo>", ContentType.create("text/plain"));
@@ -1712,33 +1711,17 @@ public class ApiListenerServletTest extends Mockito {
 		}
 
 		public ApiListenerBuilder(String uri, Methods method, AuthMethods authMethod) throws ListenerException, ConfigurationException {
-			this(uri, Arrays.asList(method), null, null, authMethod,null);
-		}
-
-		public ApiListenerBuilder(String uri, Methods method, MediaTypes consumes, MediaTypes produces) throws ListenerException, ConfigurationException {
-			this(uri, Arrays.asList(method), consumes, produces, null, null);
-		}
-
-		public ApiListenerBuilder(String uri, List<Methods> method) throws ListenerException, ConfigurationException {
-			this(uri, method, null, null);
-		}
-
-		public ApiListenerBuilder(String uri, List<Methods> method, AuthMethods authMethod) throws ListenerException, ConfigurationException {
 			this(uri, method, null, null, authMethod,null);
 		}
 
-		public ApiListenerBuilder(String uri, List<Methods> method, MediaTypes consumes, MediaTypes produces) throws ListenerException, ConfigurationException {
+		public ApiListenerBuilder(String uri, Methods method, MediaTypes consumes, MediaTypes produces) throws ListenerException, ConfigurationException {
 			this(uri, method, consumes, produces, null, null);
 		}
 
-		public ApiListenerBuilder(String uri, List<Methods> method, MediaTypes consumes, MediaTypes produces, AuthMethods authMethod, String multipartBodyName) {
+		public ApiListenerBuilder(String uri, Methods method, MediaTypes consumes, MediaTypes produces, AuthMethods authMethod, String multipartBodyName) {
 			listener = spy(ApiListener.class);
 			listener.setUriPattern(uri);
-
-			String methods = method.stream()
-					.map(m -> EnumUtils.parse(HttpMethod.class, m.name()).name())
-					.collect(Collectors.joining("."));
-			listener.setMethod(methods);
+			listener.setMethod(EnumUtils.parse(HttpMethod.class, method.name()));
 
 			handler = new MessageHandler();
 			listener.setHandler(handler);

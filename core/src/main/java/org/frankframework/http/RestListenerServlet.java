@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2015 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013-2015 Nationale-Nederlanden, 2020-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -105,7 +105,6 @@ public class RestListenerServlet extends HttpServletBase {
 		ISecurityHandler securityHandler = new HttpSecurityHandler(request);
 		try (PipeLineSession messageContext= new PipeLineSession()) {
 			messageContext.setSecurityHandler(securityHandler);
-			messageContext.put(PipeLineSession.HTTP_METHOD_KEY, request.getMethod());
 
 			Enumeration<String> paramnames=request.getParameterNames();
 			while (paramnames.hasMoreElements()) {

@@ -5,9 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.frankframework.core.ListenerException;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
@@ -71,7 +69,7 @@ public class ApiServiceDispatcherTest {
 			}
 			ApiListener listener = new ApiListener();
 			listener.setName(name);
-			listener.setMethod(HttpMethod.GET.name());
+			listener.setMethod(HttpMethod.GET);
 			listener.setUriPattern(name);
 
 			try {
@@ -83,18 +81,9 @@ public class ApiServiceDispatcherTest {
 	}
 
 	private ApiListener createServiceClient(ApiListenerServletTest.Methods method, String uri) {
-		return createServiceClient(Arrays.asList(method), uri);
-	}
-
-	private ApiListener createServiceClient(List<ApiListenerServletTest.Methods> method, String uri) {
 		ApiListener listener = new ApiListener();
 		listener.setName("Listener4Uri["+uri+"]");
-
-		String methods = method.stream()
-				.map(m -> EnumUtils.parse(HttpMethod.class, m.name()).name())
-				.collect(Collectors.joining(","));
-
-		listener.setMethod(methods);
+		listener.setMethod(EnumUtils.parse(HttpMethod.class, method.name()));
 		listener.setUriPattern(uri);
 		return listener;
 	}
@@ -104,17 +93,6 @@ public class ApiServiceDispatcherTest {
 		String uri = "testEndpoint1";
 		dispatcher.registerServiceClient(createServiceClient(ApiListenerServletTest.Methods.GET, uri));
 		dispatcher.registerServiceClient(createServiceClient(ApiListenerServletTest.Methods.POST, uri));
-		testMultipleMethods(uri);
-	}
-
-	@Test
-	void testMultipleMethodsSameEndpointSameListener() throws Exception {
-		String uri = "testEndpoint1";
-		dispatcher.registerServiceClient(createServiceClient(Arrays.asList(ApiListenerServletTest.Methods.GET, ApiListenerServletTest.Methods.POST), uri));
-		testMultipleMethods(uri);
-	}
-
-	private void testMultipleMethods(String uri){
 		ApiDispatchConfig config = dispatcher.findConfigForUri("/"+uri);
 		assertNotNull(config);
 		assertEquals("[GET, POST]", config.getMethods().toString());

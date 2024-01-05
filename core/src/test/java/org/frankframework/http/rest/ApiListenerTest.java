@@ -45,13 +45,13 @@ public class ApiListenerTest {
 	public void setUp() {
 		listener = new ApiListener();
 		listener.setName("my-api-listener");
-		listener.setMethod(HttpMethod.PUT.name());
+		listener.setMethod(HttpMethod.PUT);
 		listener.setUriPattern("dummy");
 	}
 
 	@Test
 	public void testOptionsMethod() {
-		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> listener.setMethod(HttpMethod.OPTIONS.name()));
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> listener.setMethod(HttpMethod.OPTIONS));
 		assertEquals("method OPTIONS should not be added manually", ex.getMessage());
 	}
 

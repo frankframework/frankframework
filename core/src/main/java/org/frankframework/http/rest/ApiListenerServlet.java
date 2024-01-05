@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2024 WeAreFrank!
+   Copyright 2017-2023 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -212,10 +212,10 @@ public class ApiListenerServlet extends HttpServletBase {
 		 * Initiate and populate messageContext
 		 */
 		try (PipeLineSession messageContext = new PipeLineSession()) {
-			messageContext.put(PipeLineSession.HTTP_METHOD_KEY, method);
 			messageContext.put(PipeLineSession.HTTP_REQUEST_KEY, request);
 			messageContext.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 			messageContext.put(PipeLineSession.SERVLET_CONTEXT_KEY, getServletContext());
+			messageContext.put("HttpMethod", method);
 			messageContext.setSecurityHandler(new HttpSecurityHandler(request));
 			try {
 				ApiDispatchConfig config = dispatcher.findConfigForUri(uri);
@@ -545,7 +545,7 @@ public class ApiListenerServlet extends HttpServletBase {
 						cache.remove(etagCacheKey);
 
 						// Not only remove the eTag for the selected resources but also the collection
-						String key = ApiCacheManager.getParentCacheKey(listener, uri, method);
+						String key = ApiCacheManager.getParentCacheKey(listener, uri);
 						if(key != null) {
 							LOG.debug("removing parent etag with key[{}]", key);
 							cache.remove(key);
