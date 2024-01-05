@@ -237,8 +237,9 @@ public class DbmsSupportTest {
 	}
 
 	public void testGetTableColumnsInSchema(String tableName, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		String schema = databaseTestEnvironment.getDbmsSupport().getSchema(databaseTestEnvironment.getConnection());
-		try (ResultSet rs = databaseTestEnvironment.getDbmsSupport().getTableColumns(databaseTestEnvironment.getConnection(), schema, tableName)) {
+		Connection connection = databaseTestEnvironment.getConnection();
+		String schema = databaseTestEnvironment.getDbmsSupport().getSchema(connection);
+		try (ResultSet rs = databaseTestEnvironment.getDbmsSupport().getTableColumns(connection, schema, tableName)) {
 			while (rs.next()) {
 				String tablename = rs.getString("TABLE_NAME");
 				String columnName = rs.getString("COLUMN_NAME");
@@ -246,11 +247,14 @@ public class DbmsSupportTest {
 				int columnSize = rs.getInt("COLUMN_SIZE");
 
 				if (columnName.equalsIgnoreCase("TINT")) {
+					connection.close();
 					return;
 				}
 			}
+			connection.close();
 			fail("Column TINT not found");
 		}
+		connection.close();
 	}
 
 	@DatabaseTest
@@ -603,7 +607,9 @@ public class DbmsSupportTest {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertThat(JdbcUtil.getBlobAsString(databaseTestEnvironment.getDbmsSupport(), resultSet, 1, "UTF-8", false, false, false), IsEmptyString.isEmptyOrNullString());
+				connection.close();
 			}
+			connection.close();
 		}
 		connection.close();
 	}
@@ -619,6 +625,7 @@ public class DbmsSupportTest {
 			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
 			stmt.setString(2, clobContents);
 			stmt.execute();
+			connection.close();
 		}
 
 		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TBLOB,TCLOB FROM " + TABLE_NAME + " WHERE TKEY=24", QueryType.SELECT)) {
@@ -629,6 +636,7 @@ public class DbmsSupportTest {
 				String actual2 = JdbcUtil.getValue(databaseTestEnvironment.getDbmsSupport(), resultSet, 2, rsmeta, "UTF-8", false, null, true, false, false);
 				assertEquals(blobContents, actual1);
 				assertEquals(clobContents, actual2);
+				connection.close();
 			}
 		}
 		connection.close();
