@@ -484,20 +484,22 @@ public class DbmsSupportTest {
 
 	}
 
-//	@DatabaseTest
-//	public void testInsertEmptyClobUsingDbmsSupport(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-//
-//		Connection connection = databaseTestEnvironment.getConnection();
-//		JdbcUtil.executeStatement(connection, "INSERT INTO " + TABLE_NAME + " (TKEY,TCLOB) VALUES (13," + databaseTestEnvironment.getDbmsSupport().emptyClobValue() + ")");
-//
-//		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TCLOB FROM " + TABLE_NAME + " WHERE TKEY=13", QueryType.SELECT)) {
-//			try (ResultSet resultSet = stmt.executeQuery()) {
-//				resultSet.next();
-//				assertThat(JdbcUtil.getClobAsString(databaseTestEnvironment.getDbmsSupport(), resultSet, 1, false), IsEmptyString.isEmptyOrNullString());
-//			}
-//		}
-//		connection.close();
-//	}
+	@DatabaseTest
+	public void testInsertEmptyClobUsingDbmsSupport(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+
+		Connection connection = databaseTestEnvironment.getConnection();
+		JdbcUtil.executeStatement(connection, "INSERT INTO " + TABLE_NAME + " (TKEY,TCLOB) VALUES (13," + databaseTestEnvironment.getDbmsSupport().emptyClobValue() + ")");
+
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TCLOB FROM " + TABLE_NAME + " WHERE TKEY=13", QueryType.SELECT)) {
+			try (ResultSet resultSet = stmt.executeQuery()) {
+				resultSet.next();
+				assertThat(JdbcUtil.getClobAsString(databaseTestEnvironment.getDbmsSupport(), resultSet, 1, false), IsEmptyString.isEmptyOrNullString());
+				connection.close();
+			}
+			connection.close();
+		}
+		connection.close();
+	}
 
 	@DatabaseTest
 	public void testWriteAndReadBlob(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
@@ -524,30 +526,30 @@ public class DbmsSupportTest {
 		}
 	}
 
-//	@DatabaseTest
-//	public void testWriteAndReadBlobCompressed(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-//		String blobContents = "Dit is de content van de blob";
-//		executeTranslatedQuery(databaseTestEnvironment, "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (21,EMPTY_BLOB())", QueryType.OTHER);
-//		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=21 FOR UPDATE", QueryType.SELECT, true)) {
-//			try (ResultSet resultSet = stmt.executeQuery()) {
-//				resultSet.next();
-//				Object blobHandle = databaseTestEnvironment.getDbmsSupport().getBlobHandle(resultSet, 1);
-//
-//				try (OutputStream blobOutputStream = JdbcUtil.getBlobOutputStream(databaseTestEnvironment.getDbmsSupport(), blobHandle, resultSet, 1, true)) {
-//					blobOutputStream.write(blobContents.getBytes("UTF-8"));
-//				}
-//				databaseTestEnvironment.getDbmsSupport().updateBlob(resultSet, 1, blobHandle);
-//				resultSet.updateRow();
-//			}
-//		}
-//		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=21", QueryType.SELECT)) {
-//			try (ResultSet resultSet = stmt.executeQuery()) {
-//				resultSet.next();
-//				String actual = JdbcUtil.getBlobAsString(databaseTestEnvironment.getDbmsSupport(), resultSet, 1, "UTF-8", true, false, false);
-//				assertEquals(blobContents, actual);
-//			}
-//		}
-//	}
+	@DatabaseTest
+	public void testWriteAndReadBlobCompressed(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		String blobContents = "Dit is de content van de blob";
+		executeTranslatedQuery(databaseTestEnvironment, "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (21,EMPTY_BLOB())", QueryType.OTHER);
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=21 FOR UPDATE", QueryType.SELECT, true)) {
+			try (ResultSet resultSet = stmt.executeQuery()) {
+				resultSet.next();
+				Object blobHandle = databaseTestEnvironment.getDbmsSupport().getBlobHandle(resultSet, 1);
+
+				try (OutputStream blobOutputStream = JdbcUtil.getBlobOutputStream(databaseTestEnvironment.getDbmsSupport(), blobHandle, resultSet, 1, true)) {
+					blobOutputStream.write(blobContents.getBytes("UTF-8"));
+				}
+				databaseTestEnvironment.getDbmsSupport().updateBlob(resultSet, 1, blobHandle);
+				resultSet.updateRow();
+			}
+		}
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=21", QueryType.SELECT)) {
+			try (ResultSet resultSet = stmt.executeQuery()) {
+				resultSet.next();
+				String actual = JdbcUtil.getBlobAsString(databaseTestEnvironment.getDbmsSupport(), resultSet, 1, "UTF-8", true, false, false);
+				assertEquals(blobContents, actual);
+			}
+		}
+	}
 
 	@DatabaseTest
 	public void testReadEmptyBlob(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
@@ -576,27 +578,29 @@ public class DbmsSupportTest {
 		}
 	}
 
-//	@DatabaseTest
-//	public void testWriteBlobInOneStep(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-//		String blobContents = "Dit is de content van de blob";
-//		String query = "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (24,?)";
-//		IDbmsSupport dbmsSupport = databaseTestEnvironment.getDbmsSupport();
-//		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
-//		Connection connection = databaseTestEnvironment.getConnection();
-//		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery);) {
-//			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
-//			stmt.execute();
-//		}
-//
-//		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=24", QueryType.SELECT)) {
-//			try (ResultSet resultSet = stmt.executeQuery()) {
-//				resultSet.next();
-//				String actual = JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, false, false);
-//				assertEquals(blobContents, actual);
-//			}
-//		}
-//		connection.close();
-//	}
+	@DatabaseTest
+	public void testWriteBlobInOneStep(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		String blobContents = "Dit is de content van de blob";
+		String query = "INSERT INTO " + TABLE_NAME + " (TKEY,TBLOB) VALUES (24,?)";
+		IDbmsSupport dbmsSupport = databaseTestEnvironment.getDbmsSupport();
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+		Connection connection = databaseTestEnvironment.getConnection();
+		try (PreparedStatement stmt = connection.prepareStatement(translatedQuery);) {
+			stmt.setBytes(1, blobContents.getBytes("UTF-8"));
+			stmt.execute();
+			connection.close();
+		}
+
+		try (PreparedStatement stmt = executeTranslatedQuery(databaseTestEnvironment, "SELECT TBLOB FROM " + TABLE_NAME + " WHERE TKEY=24", QueryType.SELECT)) {
+			try (ResultSet resultSet = stmt.executeQuery()) {
+				resultSet.next();
+				String actual = JdbcUtil.getBlobAsString(dbmsSupport, resultSet, 1, "UTF-8", false, false, false);
+				assertEquals(blobContents, actual);
+				connection.close();
+			}
+		}
+		connection.close();
+	}
 
 	@DatabaseTest
 	public void testInsertEmptyBlobUsingDbmsSupport(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
