@@ -28,12 +28,12 @@ import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.Logger;
-
-import lombok.Getter;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
+
+import lombok.Getter;
 
 public class JwtSecurityHandler implements ISecurityHandler {
 	protected Logger log = LogUtil.getLogger(this);
@@ -57,6 +57,21 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		} else if(claim instanceof List) {
 			List<String> claimList = (List<String>) claim;
 			return claimList.stream().anyMatch(role::equals);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isUserInAnyRole(List<String> roles, PipeLineSession pipeLineSession) {
+		Object claim = claimsSet.get(roleClaim);
+		if (claim instanceof String) {
+			return roles.contains(claim);
+		} else if (claim instanceof List<?>) {
+			List<?> claims = (List<?>) claim;
+			if (claims.stream().allMatch(cl -> cl instanceof String)) {
+				List<String> claimList = (List<String>) claims;
+				return claimList.stream().anyMatch(roles::contains);
+			}
 		}
 		return false;
 	}

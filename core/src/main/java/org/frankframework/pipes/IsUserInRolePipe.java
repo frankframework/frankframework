@@ -16,10 +16,9 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -29,6 +28,8 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
+
+import lombok.Getter;
 
 /**
  * Pipe that checks if the calling user has a specified role.
@@ -69,6 +70,12 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		}
 	}
 
+	protected void assertUserIsInAnyRole(PipeLineSession session, List<String> roles) throws SecurityException {
+		if (!session.isUserInAnyRole(roles)) {
+			throw new SecurityException("User not in any of the provided roles");
+		}
+	}
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
@@ -83,8 +90,10 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 					throw new PipeRunException(this, "role cannot be empty");
 				}
 				assertUserIsInRole(session, inputString);
+				assertUserIsInAnyRole(session, List.of(inputString));
 			} else {
 				assertUserIsInRole(session, getRole());
+				assertUserIsInAnyRole(session, List.of(getRole()));
 			}
 		} catch (SecurityException e) {
 			if (notInRoleForward!=null) {

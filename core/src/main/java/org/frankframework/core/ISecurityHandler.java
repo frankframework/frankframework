@@ -16,6 +16,7 @@
 package org.frankframework.core;
 
 import java.security.Principal;
+import java.util.List;
 
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -26,6 +27,8 @@ import org.apache.commons.lang3.NotImplementedException;
  * @since  4.3
  */
 public interface ISecurityHandler {
+
+	boolean isUserInAnyRole(List<String> roles, PipeLineSession session) throws NotImplementedException;
 
 	boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException;
 

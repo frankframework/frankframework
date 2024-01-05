@@ -16,9 +16,11 @@
 package org.frankframework.http;
 
 import java.security.Principal;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeLineSession;
 
@@ -35,6 +37,11 @@ public class HttpSecurityHandler implements ISecurityHandler {
 	public HttpSecurityHandler(HttpServletRequest request) {
 		super();
 		this.request=request;
+	}
+
+	@Override
+	public boolean isUserInAnyRole(List<String> roles, PipeLineSession session) throws NotImplementedException {
+		throw new NotImplementedException("Not implemented yet");
 	}
 
 	@Override

@@ -16,12 +16,12 @@
 package org.frankframework.extensions.cmis.server;
 
 import java.security.Principal;
+import java.util.List;
 
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.commons.lang3.NotImplementedException;
-
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ISecurityHandler;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.CredentialFactory;
 
 /**
@@ -36,6 +36,11 @@ public class CmisSecurityHandler implements ISecurityHandler {
 
 	public CmisSecurityHandler(CallContext callContext) {
 		this.credentials = new CredentialFactory(null, callContext.getUsername(), callContext.getPassword());
+	}
+
+	@Override
+	public boolean isUserInAnyRole(List<String> roles, PipeLineSession session) throws NotImplementedException {
+		return false;
 	}
 
 	@Override

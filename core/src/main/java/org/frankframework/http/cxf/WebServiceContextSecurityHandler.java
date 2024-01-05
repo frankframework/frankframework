@@ -15,9 +15,11 @@
 */
 package org.frankframework.http.cxf;
 import java.security.Principal;
+import java.util.List;
 
 import javax.xml.ws.WebServiceContext;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeLineSession;
 
@@ -32,6 +34,11 @@ public class WebServiceContextSecurityHandler implements ISecurityHandler {
 
 	public WebServiceContextSecurityHandler(WebServiceContext webServiceContext) {
 		this.webServiceContext = webServiceContext;
+	}
+
+	@Override
+	public boolean isUserInAnyRole(List<String> roles, PipeLineSession session) throws NotImplementedException {
+		throw new NotImplementedException("Not implemented yet");
 	}
 
 	@Override
