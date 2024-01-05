@@ -194,10 +194,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			}
 		}
 		builder.append(getUriPattern());
-		String methods = getMethod().stream()
-				.map(m -> m.name())
-				.collect(Collectors.joining(","));
-		builder.append("; method: ").append(methods);
+		builder.append("; method: ").append(getMethod());
 
 		if(MediaTypes.ANY != consumes) {
 			builder.append("; consumes: ").append(getConsumes());
@@ -210,7 +207,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	private boolean hasMethod(HttpMethod method){
-		return getMethod().contains(method);
+		return this.method.contains(method);
 	}
 
 	/**
@@ -251,6 +248,16 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		if(hasMethod(HttpMethod.OPTIONS)) {
 			throw new IllegalArgumentException("method OPTIONS should not be added manually");
 		}
+	}
+
+	public String getMethod(){
+		return method.stream()
+				.map(HttpMethod::name)
+				.collect(Collectors.joining(","));
+	}
+
+	public List<HttpMethod> getMethods(){
+		return method;
 	}
 
 	/**
