@@ -655,7 +655,6 @@ public class DbmsSupportTest {
 		assertEquals(30, DbmsUtil.executeIntQuery(connection, "SELECT TKEY FROM " + TABLE_NAME + " WHERE TINT=99 AND TBOOLEAN=" + databaseTestEnvironment.getDbmsSupport().getBooleanValue(false)));
 		assertEquals(31, DbmsUtil.executeIntQuery(connection, "SELECT TKEY FROM " + TABLE_NAME + " WHERE TINT=99 AND TBOOLEAN=" + databaseTestEnvironment.getDbmsSupport().getBooleanValue(true)));
 		connection.close();
-
 	}
 
 	private boolean peek(String query, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
