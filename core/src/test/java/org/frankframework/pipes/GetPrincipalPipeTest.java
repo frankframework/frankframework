@@ -15,9 +15,11 @@
 */
 package org.frankframework.pipes;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -214,5 +216,23 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 		assertEquals(NOT_FOUND_FORWARD_NAME, prr.getPipeForward().getName());
 		assertEquals(NOT_FOUND_FORWARD_PATH, prr.getPipeForward().getPath());
 		assertEquals("", result);
+	}
+
+	@Test
+	public void getPrincipalNameThrowsException() throws Exception {
+		// Given
+		Principal principal = mock(Principal.class);
+		when(principal.getName()).thenThrow(new NotImplementedException());
+		when(session.getPrincipal()).thenReturn(principal);
+
+		pipe.configure();
+		pipe.start();
+
+		// Expect
+		PipeRunException exception = assertThrows(PipeRunException.class, () -> {
+			doPipe(pipe, "", session);
+		});
+
+		assertEquals("Pipe ["+pipe.getName()+"] got exception getting name from principal: (IllegalStateException)", exception.getMessage());
 	}
 }
