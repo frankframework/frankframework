@@ -196,7 +196,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		builder.append(getUriPattern());
 		String methods = getMethod().stream()
 				.map(m -> m.name())
-				.collect(Collectors.joining(""));
+				.collect(Collectors.joining(","));
 		builder.append("; method: ").append(methods);
 
 		if(MediaTypes.ANY != consumes) {
