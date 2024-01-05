@@ -28,7 +28,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
-import org.frankframework.util.StringUtil;
 
 /**
  * Returns the name of the user executing the request.
