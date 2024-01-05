@@ -28,6 +28,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
+import org.frankframework.util.StringUtil;
 
 /**
  * Returns the name of the user executing the request.
@@ -55,7 +56,7 @@ public class GetPrincipalPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException{
 		Principal principal= session.getPrincipal();
-		String principalName = "";
+		String principalName = null;
 		if (principal==null) {
 			log.warn("no principal found");
 			if (notFoundForward!=null) {
@@ -66,6 +67,13 @@ public class GetPrincipalPipe extends FixedForwardPipe {
 				principalName = principal.getName();
 			} catch (Throwable e) {
 				throw new PipeRunException(this,"got exception getting name from principal",e);
+			}
+		}
+
+		if(StringUtils.isEmpty(principalName)){
+			log.warn("empty principal found");
+			if (notFoundForward!=null) {
+				return new PipeRunResult(notFoundForward, principalName);
 			}
 		}
 

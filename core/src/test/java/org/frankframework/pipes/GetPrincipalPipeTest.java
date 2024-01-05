@@ -57,7 +57,7 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 			pipe.configure();
 		});
 
-		assertEquals(exception.getMessage(), "notInRoleForwardName [notFound] not found");
+		assertEquals("notInRoleForwardName [notFound] not found", exception.getMessage());
 	}
 
 	@Test
@@ -89,7 +89,46 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 
 		// Expect
 		String result=prr.getResult().asString();
+		assertEquals("success", prr.getPipeForward().getName());
 		assertEquals(PRINCIPAL_NAME, result);
+	}
+
+	@Test
+	public void getNullPrincipalNameDoPipe() throws Exception {
+		// Given
+		Principal principal = mock(Principal.class);
+		when(principal.getName()).thenReturn(null);
+		when(session.getPrincipal()).thenReturn(principal);
+
+		pipe.configure();
+		pipe.start();
+
+		// When
+		PipeRunResult prr = doPipe(pipe, "", session);
+
+		// Expect
+		String result=prr.getResult().asString();
+		assertEquals("success", prr.getPipeForward().getName());
+		assertEquals(null, result);
+	}
+
+	@Test
+	public void getEmptyStringPrincipalNameDoPipe() throws Exception {
+		// Given
+		Principal principal = mock(Principal.class);
+		when(principal.getName()).thenReturn("");
+		when(session.getPrincipal()).thenReturn(principal);
+
+		pipe.configure();
+		pipe.start();
+
+		// When
+		PipeRunResult prr = doPipe(pipe, "", session);
+
+		// Expect
+		String result=prr.getResult().asString();
+		assertEquals("success", prr.getPipeForward().getName());
+		assertEquals("", result);
 	}
 
 	@Test
@@ -105,7 +144,8 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 
 		// Expect
 		String result=prr.getResult().asString();
-		assertEquals(result, "");
+		assertEquals("success", prr.getPipeForward().getName());
+		assertEquals( null, result);
 	}
 
 	@Test
@@ -124,8 +164,55 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 
 		// Expect
 		String result=prr.getResult().asString();
-		assertEquals(prr.getPipeForward().getName(), NOT_FOUND_FORWARD_NAME);
-		assertEquals(prr.getPipeForward().getPath(), NOT_FOUND_FORWARD_PATH);
-		assertEquals(result, "");
+		assertEquals(NOT_FOUND_FORWARD_NAME, prr.getPipeForward().getName());
+		assertEquals(NOT_FOUND_FORWARD_PATH, prr.getPipeForward().getPath());
+		assertEquals(null, result);
+	}
+
+	@Test
+	public void getNullPrincipalNameWithNotFoundForwardDoPipe() throws Exception {
+		// Given
+		Principal principal = mock(Principal.class);
+		when(principal.getName()).thenReturn(null);
+		when(session.getPrincipal()).thenReturn(principal);
+
+		PipeForward notFound = new PipeForward(NOT_FOUND_FORWARD_NAME, NOT_FOUND_FORWARD_PATH);
+		pipe.setNotFoundForwardName(NOT_FOUND_FORWARD_NAME);
+		pipe.registerForward(notFound);
+		pipe.configure();
+		pipe.start();
+
+
+		// When
+		PipeRunResult prr = doPipe(pipe, "", session);
+
+		// Expect
+		String result=prr.getResult().asString();
+		assertEquals(NOT_FOUND_FORWARD_NAME, prr.getPipeForward().getName());
+		assertEquals(NOT_FOUND_FORWARD_PATH, prr.getPipeForward().getPath());
+		assertEquals(null, result);
+	}
+
+	@Test
+	public void getEmptyStringPrincipalWithNotFoundForwardNameDoPipe() throws Exception {
+		// Given
+		Principal principal = mock(Principal.class);
+		when(principal.getName()).thenReturn("");
+		when(session.getPrincipal()).thenReturn(principal);
+
+		PipeForward notFound = new PipeForward(NOT_FOUND_FORWARD_NAME, NOT_FOUND_FORWARD_PATH);
+		pipe.setNotFoundForwardName(NOT_FOUND_FORWARD_NAME);
+		pipe.registerForward(notFound);
+		pipe.configure();
+		pipe.start();
+
+		// When
+		PipeRunResult prr = doPipe(pipe, "", session);
+
+		// Expect
+		String result=prr.getResult().asString();
+		assertEquals(NOT_FOUND_FORWARD_NAME, prr.getPipeForward().getName());
+		assertEquals(NOT_FOUND_FORWARD_PATH, prr.getPipeForward().getPath());
+		assertEquals("", result);
 	}
 }
