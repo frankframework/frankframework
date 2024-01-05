@@ -284,6 +284,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return handler.isUserInAnyRole(roles, this);
 	}
 
+	public String inWhichRoleIsUser(List<String> roles) throws NotImplementedException {
+		ISecurityHandler handler = getSecurityHandler();
+		return handler.inWhichRoleIsUser(roles, this);
+	}
+
 	public Principal getPrincipal() throws NotImplementedException {
 		ISecurityHandler handler = getSecurityHandler();
 		return handler.getPrincipal(this);

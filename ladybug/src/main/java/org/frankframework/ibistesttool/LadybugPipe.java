@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -34,6 +33,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
+
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
@@ -268,25 +268,12 @@ class IbisSecurityContext implements SecurityContext {
 
 	@Override
 	public Principal getUserPrincipal() {
-		if (checkRoles) {
-			return session.getPrincipal();
-		} else {
-			return null;
-		}
+		return checkRoles ? session.getPrincipal() : null;
 	}
 
 	@Override
 	public boolean isUserInRoles(List<String> roles) {
-		if (checkRoles) {
-			for (String role : roles) {
-				if (session.isUserInRole(role)) {
-					return true;
-				}
-			}
-			return false;
-		} else {
-			return true;
-		}
+		return !checkRoles || session.isUserInAnyRole(roles);
 	}
 }
 

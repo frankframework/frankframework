@@ -20,8 +20,8 @@ import java.util.List;
 
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.commons.lang3.NotImplementedException;
-import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SecurityHandlerBase;
 import org.frankframework.util.CredentialFactory;
 
 /**
@@ -30,7 +30,7 @@ import org.frankframework.util.CredentialFactory;
  * @author Niels Meijer
  *
  */
-public class CmisSecurityHandler implements ISecurityHandler {
+public class CmisSecurityHandler extends SecurityHandlerBase {
 
 	private CredentialFactory credentials = null;
 

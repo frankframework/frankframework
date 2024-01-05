@@ -15,25 +15,14 @@
 */
 package org.frankframework.core;
 
-import java.security.Principal;
 import java.util.List;
 
-import org.apache.commons.lang3.NotImplementedException;
+public abstract class SecurityHandlerBase implements ISecurityHandler {
+	public boolean isUserInAnyRole(List<String> roles, PipeLineSession session) {
+		return roles.stream().anyMatch(role -> this.isUserInRole(role, session));
+	}
 
-/**
- * Defines behaviour that can be used to assert identity of callers of a pipeline.
- *
- * @author Gerrit van Brakel
- * @since  4.3
- */
-public interface ISecurityHandler {
-
-	boolean isUserInAnyRole(List<String> roles, PipeLineSession session) throws NotImplementedException;
-
-	String inWhichRoleIsUser(List<String> roles, PipeLineSession session) throws NotImplementedException;
-
-	boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException;
-
-	Principal getPrincipal(PipeLineSession session) throws NotImplementedException;
-
+	public String inWhichRoleIsUser(List<String> roles, PipeLineSession session) {
+		return roles.stream().filter(role -> this.isUserInRole(role, session)).findFirst().get();
+	}
 }

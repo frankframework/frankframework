@@ -21,8 +21,8 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SecurityHandlerBase;
 
 /**
  * SecurityHandler that delegates its implementation to the corresponding methods in the HttpServlet.
@@ -30,7 +30,7 @@ import org.frankframework.core.PipeLineSession;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
-public class HttpSecurityHandler implements ISecurityHandler {
+public class HttpSecurityHandler extends SecurityHandlerBase {
 
 	HttpServletRequest request;
 
@@ -41,7 +41,12 @@ public class HttpSecurityHandler implements ISecurityHandler {
 
 	@Override
 	public boolean isUserInAnyRole(List<String> roles, PipeLineSession session) throws NotImplementedException {
-		throw new NotImplementedException("Not implemented yet");
+		for (String s : roles) {
+			if (request.isUserInRole(s)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

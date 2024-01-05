@@ -28,6 +28,7 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.ElementType;
 import org.frankframework.doc.ElementType.ElementTypes;
 import org.frankframework.stream.Message;
+import org.frankframework.util.StringUtil;
 
 import lombok.Getter;
 
@@ -64,36 +65,44 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		}
 	}
 
-	protected void assertUserIsInRole(PipeLineSession session, String role) throws SecurityException {
-		if (!session.isUserInRole(role)) {
-			throw new SecurityException("user is not in role ["+role+"]");
-		}
-	}
-
 	protected void assertUserIsInAnyRole(PipeLineSession session, List<String> roles) throws SecurityException {
 		if (!session.isUserInAnyRole(roles)) {
 			throw new SecurityException("User not in any of the provided roles");
 		}
 	}
 
+	protected String inWhichRoleIsUser(PipeLineSession session, String roles) {
+		List<String> splitRoles = StringUtil.split(roles);
+		return session.inWhichRoleIsUser(splitRoles);
+	}
+
+	protected String getRolesToCheck(Message message) throws PipeRunException {
+		if (StringUtils.isEmpty(getRole())) {
+			try {
+				return message.asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, "cannot open stream", e);
+			}
+		}
+		return getRole();
+	}
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			if (StringUtils.isEmpty(getRole())) {
-				String inputString;
-				try {
-					inputString = message.asString();
-				} catch (IOException e) {
-					throw new PipeRunException(this, "cannot open stream", e);
-				}
-				if (StringUtils.isEmpty(inputString)) {
-					throw new PipeRunException(this, "role cannot be empty");
-				}
-				assertUserIsInRole(session, inputString);
-				assertUserIsInAnyRole(session, List.of(inputString));
-			} else {
-				assertUserIsInRole(session, getRole());
-				assertUserIsInAnyRole(session, List.of(getRole()));
+			String rolesToCheck = getRolesToCheck(message);
+			if (StringUtils.isEmpty(rolesToCheck)) {
+				throw new PipeRunException(this, "role cannot be empty");
+			}
+
+			String userRole = inWhichRoleIsUser(session, rolesToCheck);
+			if (userRole == null) {
+				throw new SecurityException("user is not in role(s) [" + rolesToCheck + "]");
+			}
+
+			PipeForward relatedForward = findForward(userRole);
+			if (relatedForward != null) {
+				return new PipeRunResult(relatedForward, message);
 			}
 		} catch (SecurityException e) {
 			if (notInRoleForward!=null) {

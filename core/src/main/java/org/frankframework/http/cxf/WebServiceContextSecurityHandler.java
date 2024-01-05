@@ -14,14 +14,15 @@
    limitations under the License.
 */
 package org.frankframework.http.cxf;
+
 import java.security.Principal;
 import java.util.List;
 
 import javax.xml.ws.WebServiceContext;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SecurityHandlerBase;
 
 /**
  * Securityhandler that delegates its implementation to the corresponding
@@ -29,7 +30,7 @@ import org.frankframework.core.PipeLineSession;
  *
  * @author Jaco de Groot
  */
-public class WebServiceContextSecurityHandler implements ISecurityHandler {
+public class WebServiceContextSecurityHandler extends SecurityHandlerBase {
 	WebServiceContext webServiceContext;
 
 	public WebServiceContextSecurityHandler(WebServiceContext webServiceContext) {
