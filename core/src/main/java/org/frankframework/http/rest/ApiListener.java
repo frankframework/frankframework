@@ -66,7 +66,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter boolean updateEtag = AppConstants.getInstance().getBoolean("api.etag.enabled", false);
 	private @Getter String operationId;
 
-	private @Getter List<HttpMethod> method = Arrays.asList(HttpMethod.GET);
+	private List<HttpMethod> method = Arrays.asList(HttpMethod.GET);
 	public enum HttpMethod {
 		GET,PUT,POST,PATCH,DELETE,OPTIONS;
 	}
