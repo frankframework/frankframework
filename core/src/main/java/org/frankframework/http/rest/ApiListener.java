@@ -139,11 +139,17 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private void validateClaimAttribute(String claimAttributeToValidate, String claimAttributeName) throws ConfigurationException {
 		if(StringUtils.isNotEmpty(claimAttributeToValidate)){
 			List<String> invalidClaims = StringUtil.splitToStream(claimAttributeToValidate)
-					.filter(claim -> StringUtil.split(claim, "=").size() != 2)
+					.filter(claim ->
+							StringUtil.splitToStream(claim, "=")
+									.filter(part -> part.length() > 0)
+									.collect(Collectors.toList())
+									.size() != 2
+					)
 					.collect(Collectors.toList());
 
 			if(!invalidClaims.isEmpty()){
-				throw new ConfigurationException("[" + invalidClaims + "] are not a valid key/value pairs for [" + claimAttributeName + "].");
+				String partialMessage = invalidClaims.size() == 1 ? "is not a valid key/value pair" : "are not valid key/value pairs";
+				throw new ConfigurationException("[" + String.join(",", invalidClaims) + "] "+partialMessage+" for [" + claimAttributeName + "].");
 			}
 		}
 	}

@@ -280,6 +280,17 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
+	public void simpleGetMultiMethod() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri="/test1";
+		new ApiListenerBuilder(uri, Arrays.asList(Methods.GET, Methods.POST)).build();
+
+		Response result = service(createRequest(uri, Methods.GET));
+		assertEquals(200, result.getStatus());
+		assertEquals("OPTIONS, GET, POST", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
 	public void testAfterServiceMethodThreadContextMustBeCleared() throws ServletException, IOException, ListenerException, ConfigurationException {
 		// arrange
 		ThreadContext.put("fakeMdcKey", "fakeContextValue");
@@ -1737,7 +1748,7 @@ public class ApiListenerServletTest extends Mockito {
 
 			String methods = method.stream()
 					.map(m -> EnumUtils.parse(HttpMethod.class, m.name()).name())
-					.collect(Collectors.joining("."));
+					.collect(Collectors.joining(","));
 			listener.setMethod(methods);
 
 			handler = new MessageHandler();
