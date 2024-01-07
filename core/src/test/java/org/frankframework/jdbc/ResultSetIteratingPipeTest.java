@@ -1,8 +1,8 @@
 package org.frankframework.jdbc;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -109,7 +109,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		long startTime = System.currentTimeMillis();
 		PipeRunResult result = doPipe("since query attribute is set, this should be ignored");
 		long duration = System.currentTimeMillis() - startTime;
-		assertTrue("Test took "+(duration- (PARALLEL_DELAY + 100))+"ms too long.", duration < PARALLEL_DELAY + 100);
+		assertTrue(duration < PARALLEL_DELAY + 100,"Test took "+(duration- (PARALLEL_DELAY + 100))+"ms too long.");
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
 		String expectedXml = TestFileUtils.getTestFile("/Pipes/ResultSetIteratingPipe/result.xml");
 
