@@ -1,7 +1,7 @@
 package org.frankframework.configuration.classloaders;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 import java.util.Arrays;
@@ -90,14 +90,14 @@ public class ResolveConfigurationFileTest extends Mockito {
 	public void properBasePathAndConfigurationFile() {
 		String configFile = ConfigurationUtils.getConfigurationFile(classLoader, getConfigurationName());
 
-		assertTrue((configFile.indexOf('/') == -1), "configurationFile should not contain a BasePath ["+configFile+"]");
+		assertTrue("configurationFile should not contain a BasePath ["+configFile+"]", (configFile.indexOf('/') == -1));
 
 		URL configurationFileURL = classLoader.getResource(configFile);
-		assertNotNull(configurationFileURL,"configurationFile cannot be found");
+		assertNotNull("configurationFile cannot be found", configurationFileURL);
 
 		String filePath = configurationFileURL.getPath();
 		String root = classLoader.getBasePath();
 		System.out.println(root);
-		assertTrue(filePath.endsWith(root+configFile), "filePath ["+filePath+"] should consists of basePath ["+root+"] and configFile ["+configFile+"]");
+		assertTrue("filePath ["+filePath+"] should consists of basePath ["+root+"] and configFile ["+configFile+"]", filePath.endsWith(root+configFile));
 	}
 }

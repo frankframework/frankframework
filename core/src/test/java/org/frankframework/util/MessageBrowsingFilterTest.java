@@ -1,6 +1,7 @@
 package org.frankframework.util;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
 import java.sql.Connection;

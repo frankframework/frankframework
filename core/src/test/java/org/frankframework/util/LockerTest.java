@@ -2,10 +2,10 @@ package org.frankframework.util;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeFalse;
 
 import java.sql.Connection;
@@ -93,7 +93,7 @@ public class LockerTest extends TransactionManagerTestBase {
 		MessageKeeper messageKeeper = new MessageKeeper();
 
 		objectId = locker.acquire(messageKeeper);
-		assertNull(objectId, "Should not be possible to obtain the lock a second time");
+		assertNull("Should not be possible to obtain the lock a second time", objectId);
 
 		String message = messageKeeper.get(0).getMessageText();
 		assertThat(message, containsString("objectId [myLocker]"));
@@ -127,7 +127,7 @@ public class LockerTest extends TransactionManagerTestBase {
 		assertEquals(1, getRowCount());
 
 		objectId = locker.acquire();
-		assertNull(objectId, "Should not be possible to obtain the lock a second time");
+		assertNull("Should not be possible to obtain the lock a second time", objectId);
 	}
 
 

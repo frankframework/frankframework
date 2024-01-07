@@ -1,7 +1,8 @@
 package org.frankframework.statistics;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -158,12 +159,12 @@ public class StatisticsKeeperTest {
 		StatisticsKeeper sk = createStatisticsKeeper();
 		sk.initMetrics(new SimpleMeterRegistry(), "testInterval", null);
 
-		assertEquals(0L,   sk.getIntervalItemValue(0), sk.getIntervalItemName(0)); // count
-		assertEquals(null, sk.getIntervalItemValue(1), sk.getIntervalItemName(1)); // min
-		assertEquals(null, sk.getIntervalItemValue(2), sk.getIntervalItemName(2)); // max
-		assertEquals(null, sk.getIntervalItemValue(3), sk.getIntervalItemName(3)); // avg
-		assertEquals(0L,   sk.getIntervalItemValue(4), sk.getIntervalItemName(4)); // sum
-		assertEquals(0L,   sk.getIntervalItemValue(5), sk.getIntervalItemName(5)); // sumSq
+		assertEquals(sk.getIntervalItemName(0), 0L,   sk.getIntervalItemValue(0)); // count
+		assertEquals(sk.getIntervalItemName(1), null, sk.getIntervalItemValue(1)); // min
+		assertEquals(sk.getIntervalItemName(2), null, sk.getIntervalItemValue(2)); // max
+		assertEquals(sk.getIntervalItemName(3), null, sk.getIntervalItemValue(3)); // avg
+		assertEquals(sk.getIntervalItemName(4), 0L,   sk.getIntervalItemValue(4)); // sum
+		assertEquals(sk.getIntervalItemName(5), 0L,   sk.getIntervalItemValue(5)); // sumSq
 
 		for (int i=0; i<100; i++) {
 			sk.addValue(i);
@@ -176,21 +177,21 @@ public class StatisticsKeeperTest {
 		assertEquals(4950, sk.getTotal(), 0.001);
 		assertEquals(841.0, sk.getVariance(), 0.001);
 
-		assertEquals(100L,    sk.getIntervalItemValue(0), sk.getIntervalItemName(0)); // count
-		assertEquals(0L,      sk.getIntervalItemValue(1), sk.getIntervalItemName(1)); // min
-		assertEquals(99L,     sk.getIntervalItemValue(2), sk.getIntervalItemName(2)); // max
-		assertEquals(49.5,    sk.getIntervalItemValue(3), sk.getIntervalItemName(3)); // avg
-		assertEquals(4950L,   sk.getIntervalItemValue(4), sk.getIntervalItemName(4)); // sum
-		assertEquals(328350L, sk.getIntervalItemValue(5), sk.getIntervalItemName(5)); // sumSq
+		assertEquals(sk.getIntervalItemName(0), 100L,    sk.getIntervalItemValue(0)); // count
+		assertEquals(sk.getIntervalItemName(1), 0L,      sk.getIntervalItemValue(1)); // min
+		assertEquals(sk.getIntervalItemName(2), 99L,     sk.getIntervalItemValue(2)); // max
+		assertEquals(sk.getIntervalItemName(3), 49.5,    sk.getIntervalItemValue(3)); // avg
+		assertEquals(sk.getIntervalItemName(4), 4950L,   sk.getIntervalItemValue(4)); // sum
+		assertEquals(sk.getIntervalItemName(5), 328350L, sk.getIntervalItemValue(5)); // sumSq
 
 		sk.performAction(Action.MARK_FULL);
 
-		assertEquals(0L,   sk.getIntervalItemValue(0), sk.getIntervalItemName(0)); // count
-		assertEquals(null, sk.getIntervalItemValue(1), sk.getIntervalItemName(1)); // min
-		assertEquals(null, sk.getIntervalItemValue(2), sk.getIntervalItemName(2)); // max
-		assertEquals(null, sk.getIntervalItemValue(3), sk.getIntervalItemName(3)); // avg
-		assertEquals(0L,   sk.getIntervalItemValue(4), sk.getIntervalItemName(4)); // sum
-		assertEquals(0L,   sk.getIntervalItemValue(5), sk.getIntervalItemName(5)); // sumSq
+		assertEquals(sk.getIntervalItemName(0), 0L,   sk.getIntervalItemValue(0)); // count
+		assertEquals(sk.getIntervalItemName(1), null, sk.getIntervalItemValue(1)); // min
+		assertEquals(sk.getIntervalItemName(2), null, sk.getIntervalItemValue(2)); // max
+		assertEquals(sk.getIntervalItemName(3), null, sk.getIntervalItemValue(3)); // avg
+		assertEquals(sk.getIntervalItemName(4), 0L,   sk.getIntervalItemValue(4)); // sum
+		assertEquals(sk.getIntervalItemName(5), 0L,   sk.getIntervalItemValue(5)); // sumSq
 
 
 		for (int i=200; i<300; i++) {
@@ -204,12 +205,12 @@ public class StatisticsKeeperTest {
 		assertEquals(29900, sk.getTotal(), 0.001);
 		assertEquals(10887.0, sk.getVariance(), 0.001);
 
-		assertEquals(100L,     sk.getIntervalItemValue(0), sk.getIntervalItemName(0)); // count
-		assertEquals(200L,     sk.getIntervalItemValue(1), sk.getIntervalItemName(1)); // min
-		assertEquals(299L,     sk.getIntervalItemValue(2), sk.getIntervalItemName(2)); // max
-		assertEquals(249.5,    sk.getIntervalItemValue(3), sk.getIntervalItemName(3)); // avg
-		assertEquals(24950L,   sk.getIntervalItemValue(4), sk.getIntervalItemName(4)); // sum
-		assertEquals(6308350L, sk.getIntervalItemValue(5), sk.getIntervalItemName(5)); // sumSq
+		assertEquals(sk.getIntervalItemName(0), 100L,     sk.getIntervalItemValue(0)); // count
+		assertEquals(sk.getIntervalItemName(1), 200L,     sk.getIntervalItemValue(1)); // min
+		assertEquals(sk.getIntervalItemName(2), 299L,     sk.getIntervalItemValue(2)); // max
+		assertEquals(sk.getIntervalItemName(3), 249.5,    sk.getIntervalItemValue(3)); // avg
+		assertEquals(sk.getIntervalItemName(4), 24950L,   sk.getIntervalItemValue(4)); // sum
+		assertEquals(sk.getIntervalItemName(5), 6308350L, sk.getIntervalItemValue(5)); // sumSq
 
 	}
 
