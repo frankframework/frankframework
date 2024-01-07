@@ -20,10 +20,10 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class JwtSecurityHandlerTest {
 	public final String PRINCIPAL = "TST9";
@@ -53,7 +53,7 @@ public class JwtSecurityHandlerTest {
 
 		// Expect
 		String principal = securityHandler.getPrincipal(null).getName();
-		assertEquals(principal, PRINCIPAL);
+		assertEquals(PRINCIPAL, principal);
 	}
 
 	@Test
@@ -91,11 +91,8 @@ public class JwtSecurityHandlerTest {
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		assertDoesNotThrow(() -> {
-			// When
-			securityHandler.validateRequiredClaims(PRINCIPAL_CLAIM);
-		});
+		//Expect/When
+		assertDoesNotThrow(() -> securityHandler.validateRequiredClaims(PRINCIPAL_CLAIM));
 	}
 
 	@Test
@@ -104,13 +101,9 @@ public class JwtSecurityHandlerTest {
 		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
-			// When
-			securityHandler.validateRequiredClaims(PRINCIPAL_CLAIM);
-		});
-
-		assertEquals(exception.getMessage(), "JWT missing required claims: ["+PRINCIPAL_CLAIM+"]");
+		//Expect/When
+		assertThrows(AuthorizationException.class, () -> securityHandler.validateRequiredClaims(PRINCIPAL_CLAIM),
+				"JWT missing required claims: ["+PRINCIPAL_CLAIM+"]");
 	}
 
 	@Test
@@ -121,11 +114,8 @@ public class JwtSecurityHandlerTest {
 		claims.put(ROLE_CLAIM, PRINCIPAL);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		assertDoesNotThrow(() -> {
-			// When
-			securityHandler.validateRequiredClaims(claims(PRINCIPAL_CLAIM, ROLE_CLAIM));
-		});
+		//Expect/When
+		assertDoesNotThrow(() -> securityHandler.validateRequiredClaims(claims(PRINCIPAL_CLAIM, ROLE_CLAIM)));
 	}
 
 	@Test
@@ -134,13 +124,10 @@ public class JwtSecurityHandlerTest {
 		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
-			// When
-			securityHandler.validateRequiredClaims(claims(PRINCIPAL_CLAIM, ROLE_CLAIM));
-		});
-
-		assertEquals(exception.getMessage(), "JWT missing required claims: ["+PRINCIPAL_CLAIM+", "+ROLE_CLAIM+"]");
+		//Expect/When
+		assertThrows(AuthorizationException.class,
+				() -> securityHandler.validateRequiredClaims(claims(PRINCIPAL_CLAIM, ROLE_CLAIM)),
+				"JWT missing required claims: ["+PRINCIPAL_CLAIM+", "+ROLE_CLAIM+"]");
 	}
 
 	@Test
@@ -150,13 +137,9 @@ public class JwtSecurityHandlerTest {
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 		claims.put(ROLE_CLAIM, PRINCIPAL);
 
-		//Expect
-		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
-			// When
-			securityHandler.validateRequiredClaims(claims(PRINCIPAL_CLAIM, ROLE_CLAIM));
-		});
-
-		assertEquals(exception.getMessage(), "JWT missing required claims: ["+PRINCIPAL_CLAIM+"]");
+		//Expect/When
+		assertThrows(AuthorizationException.class, () -> securityHandler.validateRequiredClaims(claims(PRINCIPAL_CLAIM, ROLE_CLAIM)),
+				"JWT missing required claims: ["+PRINCIPAL_CLAIM+"]");
 	}
 
 	@Test
@@ -166,11 +149,8 @@ public class JwtSecurityHandlerTest {
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		assertDoesNotThrow(() -> {
-			// When
-			securityHandler.validateExactMatchClaims(claim(PRINCIPAL_CLAIM, PRINCIPAL));
-		});
+		//Expect/When
+		assertDoesNotThrow(() -> securityHandler.validateExactMatchClaims(claim(PRINCIPAL_CLAIM, PRINCIPAL)));
 	}
 
 	@Test
@@ -180,13 +160,9 @@ public class JwtSecurityHandlerTest {
 		claims.put(PRINCIPAL_CLAIM, NO_MATCH);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
-			// When
-			securityHandler.validateExactMatchClaims(claim(PRINCIPAL_CLAIM, PRINCIPAL));
-		});
-
-		assertEquals(exception.getMessage(), "JWT "+PRINCIPAL_CLAIM+" claim has value ["+NO_MATCH+"], must be ["+PRINCIPAL+"]");
+		//Expect/When
+		assertThrows(AuthorizationException.class, () -> securityHandler.validateExactMatchClaims(claim(PRINCIPAL_CLAIM, PRINCIPAL)),
+				"JWT "+PRINCIPAL_CLAIM+" claim has value ["+NO_MATCH+"], must be ["+PRINCIPAL+"]");
 	}
 
 	@Test
@@ -195,13 +171,9 @@ public class JwtSecurityHandlerTest {
 		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
-			// When
-			securityHandler.validateExactMatchClaims(claim(PRINCIPAL_CLAIM, PRINCIPAL));
-		});
-
-		assertEquals(exception.getMessage(), "JWT "+PRINCIPAL_CLAIM+" claim has value [null], must be ["+PRINCIPAL+"]");
+		//Expect/When
+		assertThrows(AuthorizationException.class, () -> securityHandler.validateExactMatchClaims(claim(PRINCIPAL_CLAIM, PRINCIPAL)),
+				"JWT "+PRINCIPAL_CLAIM+" claim has value [null], must be ["+PRINCIPAL+"]");
 	}
 
 	@Test
@@ -212,11 +184,8 @@ public class JwtSecurityHandlerTest {
 		claims.put(ROLE_CLAIM, ROLE);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		assertDoesNotThrow(() -> {
-			// When
-			securityHandler.validateExactMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE)));
-		});
+		//Expect/When
+		assertDoesNotThrow(() -> securityHandler.validateExactMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE))));
 	}
 
 	@Test
@@ -227,13 +196,9 @@ public class JwtSecurityHandlerTest {
 		claims.put(ROLE_CLAIM, NO_MATCH);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
-			// When
-			securityHandler.validateExactMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE)));
-		});
-
-		assertEquals(exception.getMessage(), "JWT "+PRINCIPAL_CLAIM+" claim has value ["+NO_MATCH+"], must be ["+PRINCIPAL+"]");
+		//Expect/When
+		assertThrows(AuthorizationException.class, () -> securityHandler.validateExactMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE))),
+				"JWT "+PRINCIPAL_CLAIM+" claim has value ["+NO_MATCH+"], must be ["+PRINCIPAL+"]");
 	}
 
 	@Test
@@ -244,13 +209,9 @@ public class JwtSecurityHandlerTest {
 		claims.put(ROLE_CLAIM, NO_MATCH);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
-			// When
-			securityHandler.validateExactMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE)));
-		});
-
-		assertEquals(exception.getMessage(), "JWT "+ROLE_CLAIM+" claim has value ["+NO_MATCH+"], must be ["+ROLE+"]");
+		//Expect/When
+		assertThrows(AuthorizationException.class, () -> securityHandler.validateExactMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE))),
+				"JWT "+ROLE_CLAIM+" claim has value ["+NO_MATCH+"], must be ["+ROLE+"]");
 	}
 
 	@Test
@@ -259,13 +220,9 @@ public class JwtSecurityHandlerTest {
 		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
-			// When
-			securityHandler.validateExactMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE)));
-		});
-
-		assertEquals(exception.getMessage(), "JWT "+PRINCIPAL_CLAIM+" claim has value [null], must be ["+PRINCIPAL+"]");
+		//Expect/When
+		assertThrows(AuthorizationException.class, () -> securityHandler.validateExactMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE))),
+				"JWT "+PRINCIPAL_CLAIM+" claim has value [null], must be ["+PRINCIPAL+"]");
 	}
 
 	@Test
@@ -275,13 +232,9 @@ public class JwtSecurityHandlerTest {
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
-			// When
-			securityHandler.validateExactMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE)));
-		});
-
-		assertEquals(exception.getMessage(), "JWT "+ROLE_CLAIM+" claim has value [null], must be ["+ROLE+"]");
+		//Expect/When
+		assertThrows(AuthorizationException.class, () -> securityHandler.validateExactMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE))),
+				"JWT "+ROLE_CLAIM+" claim has value [null], must be ["+ROLE+"]");
 	}
 
 	@Test
@@ -291,11 +244,8 @@ public class JwtSecurityHandlerTest {
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		assertDoesNotThrow(() -> {
-			// When
-			securityHandler.validateAnyMatchClaims(claim(PRINCIPAL_CLAIM, PRINCIPAL));
-		});
+		//Expect/When
+		assertDoesNotThrow(() -> securityHandler.validateAnyMatchClaims(claim(PRINCIPAL_CLAIM, PRINCIPAL)));
 	}
 
 	@Test
@@ -305,16 +255,9 @@ public class JwtSecurityHandlerTest {
 		claims.put(PRINCIPAL_CLAIM, NO_MATCH);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		assertDoesNotThrow(() -> {
-			// When
-		});
-		//Expect
-		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
-			// When
-			securityHandler.validateAnyMatchClaims(claim(PRINCIPAL_CLAIM, PRINCIPAL));
-		});
-		assertEquals(exception.getMessage(), "JWT does not match one of: ["+claim(PRINCIPAL_CLAIM, PRINCIPAL)+"]");
+		//Expect/When
+		assertThrows(AuthorizationException.class, () -> securityHandler.validateAnyMatchClaims(claim(PRINCIPAL_CLAIM, PRINCIPAL)),
+				"JWT does not match one of: ["+claim(PRINCIPAL_CLAIM, PRINCIPAL)+"]");
 	}
 
 	@Test
@@ -323,12 +266,9 @@ public class JwtSecurityHandlerTest {
 		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
-			// When
-			securityHandler.validateAnyMatchClaims(claim(PRINCIPAL_CLAIM, ROLE));
-		});
-		assertEquals(exception.getMessage(), "JWT does not match one of: ["+claim(PRINCIPAL_CLAIM, ROLE)+"]");
+		//Expect/When
+		assertThrows(AuthorizationException.class, () -> securityHandler.validateAnyMatchClaims(claim(PRINCIPAL_CLAIM, ROLE)),
+				"JWT does not match one of: ["+claim(PRINCIPAL_CLAIM, ROLE)+"]");
 	}
 
 	@Test
@@ -339,11 +279,8 @@ public class JwtSecurityHandlerTest {
 		claims.put(ROLE_CLAIM, ROLE);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		assertDoesNotThrow(() -> {
-			// When
-			securityHandler.validateAnyMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE)));
-		});
+		//Expect/When
+		assertDoesNotThrow(() -> securityHandler.validateAnyMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE))));
 	}
 
 	@Test
@@ -353,11 +290,8 @@ public class JwtSecurityHandlerTest {
 		claims.put(ROLE_CLAIM, ROLE);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
-		//Expect
-		assertDoesNotThrow(() -> {
-			// When
-			securityHandler.validateAnyMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE)));
-		});
+		//Expect/When
+		assertDoesNotThrow(() -> securityHandler.validateAnyMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE))));
 	}
 
 	@Test
@@ -368,10 +302,7 @@ public class JwtSecurityHandlerTest {
 
 
 		//Expect
-		AuthorizationException exception = assertThrows(AuthorizationException.class, () -> {
-			// When
-			securityHandler.validateAnyMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE)));
-		});
-		assertEquals(exception.getMessage(), "JWT does not match one of: ["+claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE))+"]");
+		assertThrows(AuthorizationException.class, () -> securityHandler.validateAnyMatchClaims(claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE))),
+				"JWT does not match one of: ["+claims(claim(PRINCIPAL_CLAIM, PRINCIPAL), claim(ROLE_CLAIM, ROLE))+"]");
 	}
 }
