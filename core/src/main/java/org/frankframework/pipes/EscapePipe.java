@@ -72,31 +72,31 @@ public class EscapePipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "cannot open stream", e);
 		}
 
-		String result = input;
+		String result = handleSubstrings(input);
+		return new PipeRunResult(getSuccessForward(), result);
+	}
 
-		if (substringStart != null && substringEnd != null) {
-			int i = -1;
-			int j = -1;
-
-			log.debug("substringStart [{}] substringEnd [{}] input [{}]", substringStart, substringEnd, input);
-
-			// check if substringStart is still there -> in this way we can handle multiple substrings
-			while ((i = input.indexOf(substringStart, i + 1)) != -1) {
-				j = input.indexOf(substringEnd, i);
-
-				if (j != -1) {
-					String substring = input.substring(i + substringStart.length(), j);
-					substring = handle(substring);
-					result = result.substring(0, i + substringStart.length()) + substring + result.substring(j);
-				} else {
-					break;
-				}
-			}
-		} else {
-			result = handle(input);
+	private String handleSubstrings(String input) {
+		if (substringStart == null || substringEnd == null) {
+			return handle(input);
 		}
 
-		return new PipeRunResult(getSuccessForward(), result);
+		int i = -1;
+		while ((i = input.indexOf(substringStart, i + 1)) != -1) {
+			int j = input.indexOf(substringEnd, i);
+			if (j != -1) {
+				// Pak de content tussen de substrings
+				String content = input.substring(i + substringStart.length(), j);
+
+				String processedContent = handle(content);
+
+				// Replace the geparste content in de originele string
+				input = input.substring(0, i + substringStart.length()) + processedContent + input.substring(j);
+			} else {
+				break;
+			}
+		}
+		return input;
 	}
 
 	private String handle(String input) {
