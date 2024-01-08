@@ -65,12 +65,6 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		}
 	}
 
-	protected void assertUserIsInAnyRole(PipeLineSession session, List<String> roles) throws SecurityException {
-		if (!session.isUserInAnyRole(roles)) {
-			throw new SecurityException("User not in any of the provided roles");
-		}
-	}
-
 	protected String inWhichRoleIsUser(PipeLineSession session, String roles) {
 		List<String> splitRoles = StringUtil.split(roles);
 		return session.inWhichRoleIsUser(splitRoles);
