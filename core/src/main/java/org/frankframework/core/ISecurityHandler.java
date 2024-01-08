@@ -16,7 +16,6 @@
 package org.frankframework.core;
 
 import java.security.Principal;
-import java.util.List;
 
 import org.apache.commons.lang3.NotImplementedException;
 
