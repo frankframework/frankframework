@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2024 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.frankframework.core;
 
 import java.security.Principal;
-import java.util.List;
 
 import org.apache.commons.lang3.NotImplementedException;
 
@@ -27,12 +26,6 @@ import org.apache.commons.lang3.NotImplementedException;
  * @since   4.3
  */
 public class AllowAllSecurityHandler implements ISecurityHandler {
-
-	@Override
-	public boolean isUserInAnyRole(List<String> roles) throws NotImplementedException {
-		return true;
-	}
-
 	@Override
 	public boolean isUserInRole(String role) {
 		return true;
