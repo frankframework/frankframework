@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AppService, Certificate } from 'src/app/app.service';
 
 export interface CertificateList {
@@ -26,16 +27,11 @@ export interface SapSystem {
 
 export interface JmsRealm {
   name: string;
-  datasourceName: string;
-  queueConnectionFactoryName: string;
-  topicConnectionFactoryName: string;
-  info: string;
-  connectionPoolProperties: string;
-}
-
-export interface ServerProps {
-  maximumTransactionTimeout: string;
-  totalTransactionLifetimeTimeout: string;
+  info: string | null;
+  datasourceName?: string;
+  connectionPoolProperties?: string;
+  queueConnectionFactoryName?: string;
+  topicConnectionFactoryName?: string;
 }
 
 export interface Datasource {
@@ -45,7 +41,7 @@ export interface Datasource {
 }
 
 interface SecurityItems {
-  securityRoles: SecurityRole[];
+  securityRoles: Record<string, SecurityRole>;
   datasources: Datasource[];
   authEntries: AuthEntry[];
   jmsRealms: JmsRealm[];
@@ -63,7 +59,7 @@ export class SecurityItemsService {
     private appService: AppService,
   ) { }
 
-  getSecurityItems(){
+  getSecurityItems() {
     return this.http.get<SecurityItems>(this.appService.absoluteApiPath + "securityitems");
   }
 }
