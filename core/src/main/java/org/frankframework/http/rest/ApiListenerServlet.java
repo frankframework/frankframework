@@ -316,7 +316,7 @@ public class ApiListenerServlet extends HttpServletBase {
 							if(StringUtils.isNotEmpty(listener.getRoleClaim())) {
 								List<String> authRoles = listener.getAuthenticationRoleList();
 								if(authRoles != null) {
-									boolean userIsInRole = handler.isUserInAnyRole(authRoles);
+									boolean userIsInRole = authRoles.stream().anyMatch(handler::isUserInRole);
 									if(userIsInRole) {
 										userPrincipal = new ApiPrincipal();
 									}

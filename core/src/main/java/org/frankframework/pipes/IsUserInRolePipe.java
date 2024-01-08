@@ -61,14 +61,16 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getNotInRoleForwardName())) {
 			notInRoleForward = findForward(getNotInRoleForwardName());
 			if (notInRoleForward==null) {
-				throw new ConfigurationException("notInRoleForwardName ["+getNotInRoleForwardName()+"] not found");
+				throw new ConfigurationException("notInRoleForwardName not found");
 			}
 		}
 	}
 
 	protected String inWhichRoleIsUser(PipeLineSession session, List<String> roles) {
 		ISecurityHandler securityHandler = session.getSecurityHandler();
-		return roles.stream().filter(role -> securityHandler.isUserInRole(role)).findFirst().get();
+		return roles.stream()
+				.filter(securityHandler::isUserInRole)
+				.findFirst().orElse(null);
 	}
 
 	protected List<String> getRolesToCheck(Message message) throws PipeRunException {
@@ -101,7 +103,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 				return new PipeRunResult(relatedForward, message);
 			}
 		} catch (SecurityException e) {
-			if (notInRoleForward!=null) {
+			if (notInRoleForward!=null) { // is this needed? configure() test for != null..?
 				return new PipeRunResult(notInRoleForward, message);
 			}
 			throw new PipeRunException(this,"",e);
