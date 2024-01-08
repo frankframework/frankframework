@@ -147,7 +147,7 @@ TagDatabase
 		</addColumn>
 	</changeSet>
 
-	<changeSet id="IAF_Util:8" author="Yannick van Leeuwen">
+	<changeSet id="FF_Util:8" author="Yannick van Leeuwen">
 		<comment>Allow 120 chars for version field</comment>
 		<modifyDataType
 				columnName="VERSION"
