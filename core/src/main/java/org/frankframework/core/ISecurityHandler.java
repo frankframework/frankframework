@@ -29,6 +29,6 @@ public interface ISecurityHandler {
 
 	boolean isUserInRole(String role) throws NotImplementedException;
 
-	Principal getPrincipal(PipeLineSession session) throws NotImplementedException;
+	Principal getPrincipal() throws NotImplementedException;
 
 }

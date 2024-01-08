@@ -19,7 +19,6 @@ import java.security.Principal;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ISecurityHandler;
 
 /**
@@ -43,7 +42,7 @@ public class HttpSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public Principal getPrincipal(PipeLineSession session){
+	public Principal getPrincipal(){
 		return request.getUserPrincipal();
 	}
 

@@ -28,7 +28,6 @@ import javax.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ISecurityHandler;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
@@ -62,7 +61,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public Principal getPrincipal(PipeLineSession session) {
+	public Principal getPrincipal() {
 		return () -> (String) claimsSet.get(principalNameClaim);
 	}
 

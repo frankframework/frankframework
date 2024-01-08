@@ -32,7 +32,7 @@ public class AllowAllSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public Principal getPrincipal(PipeLineSession session) throws NotImplementedException {
+	public Principal getPrincipal() throws NotImplementedException {
 		throw new NotImplementedException("no default user available");
 	}
 

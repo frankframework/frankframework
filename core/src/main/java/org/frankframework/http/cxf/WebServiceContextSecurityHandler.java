@@ -19,7 +19,6 @@ import java.security.Principal;
 
 import javax.xml.ws.WebServiceContext;
 
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ISecurityHandler;
 
 /**
@@ -41,7 +40,7 @@ public class WebServiceContextSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
-	public Principal getPrincipal(PipeLineSession session){
+	public Principal getPrincipal(){
 		return webServiceContext.getUserPrincipal();
 	}
 }

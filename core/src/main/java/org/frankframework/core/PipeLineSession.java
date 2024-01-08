@@ -15,7 +15,6 @@
 */
 package org.frankframework.core;
 
-import java.security.Principal;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -271,11 +270,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			}
 		}
 		return securityHandler;
-	}
-
-	public Principal getPrincipal() throws NotImplementedException {
-		ISecurityHandler handler = getSecurityHandler();
-		return handler.getPrincipal(this);
 	}
 
 	/**
