@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -65,27 +66,28 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		}
 	}
 
-	protected String inWhichRoleIsUser(PipeLineSession session, String roles) {
-		List<String> splitRoles = StringUtil.split(roles);
-		return session.inWhichRoleIsUser(splitRoles);
+	protected String inWhichRoleIsUser(PipeLineSession session, List<String> roles) {
+		ISecurityHandler securityHandler = session.getSecurityHandler();
+		return roles.stream().filter(role -> securityHandler.isUserInRole(role)).findFirst().get();
 	}
 
-	protected String getRolesToCheck(Message message) throws PipeRunException {
-		if (StringUtils.isEmpty(getRole())) {
+	protected List<String> getRolesToCheck(Message message) throws PipeRunException {
+		String roles = getRole();
+		if (StringUtils.isEmpty(roles)) {
 			try {
-				return message.asString();
+				roles = message.asString();
 			} catch (IOException e) {
 				throw new PipeRunException(this, "cannot open stream", e);
 			}
 		}
-		return getRole();
+		return StringUtil.split(roles);
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			String rolesToCheck = getRolesToCheck(message);
-			if (StringUtils.isEmpty(rolesToCheck)) {
+			List<String> rolesToCheck = getRolesToCheck(message);
+			if (rolesToCheck.isEmpty()) {
 				throw new PipeRunException(this, "role cannot be empty");
 			}
 
@@ -111,7 +113,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		return role;
 	}
 
-	/** the j2ee role to check.  */
+	/** the j2ee role(s) to check, if multiple roles specified, the first matching role is prioritized.  */
 	public void setRole(String string) {
 		role = string;
 	}

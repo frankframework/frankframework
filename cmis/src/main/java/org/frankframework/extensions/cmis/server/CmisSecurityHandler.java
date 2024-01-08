@@ -20,7 +20,7 @@ import java.security.Principal;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SecurityHandlerBase;
+import org.frankframework.core.ISecurityHandler;
 import org.frankframework.util.CredentialFactory;
 
 /**
@@ -29,7 +29,7 @@ import org.frankframework.util.CredentialFactory;
  * @author Niels Meijer
  *
  */
-public class CmisSecurityHandler extends SecurityHandlerBase {
+public class CmisSecurityHandler implements ISecurityHandler {
 
 	private CredentialFactory credentials = null;
 
@@ -38,7 +38,7 @@ public class CmisSecurityHandler extends SecurityHandlerBase {
 	}
 
 	@Override
-	public boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException {
+	public boolean isUserInRole(String role) throws NotImplementedException {
 		return false;
 	}
 

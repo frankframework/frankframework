@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -272,21 +272,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			}
 		}
 		return securityHandler;
-	}
-
-	public boolean isUserInRole(String role) throws NotImplementedException {
-		ISecurityHandler handler = getSecurityHandler();
-		return handler.isUserInRole(role, this);
-	}
-
-	public boolean isUserInAnyRole(List<String> roles) throws NotImplementedException {
-		ISecurityHandler handler = getSecurityHandler();
-		return handler.isUserInAnyRole(roles, this);
-	}
-
-	public String inWhichRoleIsUser(List<String> roles) throws NotImplementedException {
-		ISecurityHandler handler = getSecurityHandler();
-		return handler.inWhichRoleIsUser(roles, this);
 	}
 
 	public Principal getPrincipal() throws NotImplementedException {

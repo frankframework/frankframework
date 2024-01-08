@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Nationale-Nederlanden
+   Copyright 2019, 2020 Nationale-Nederlanden, 2024 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -273,7 +273,7 @@ class IbisSecurityContext implements SecurityContext {
 
 	@Override
 	public boolean isUserInRoles(List<String> roles) {
-		return !checkRoles || session.isUserInAnyRole(roles);
+		return !checkRoles || roles.stream().anyMatch(role -> session.getSecurityHandler().isUserInRole(role));
 	}
 }
 

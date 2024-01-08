@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2024 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,11 +28,7 @@ import org.apache.commons.lang3.NotImplementedException;
  */
 public interface ISecurityHandler {
 
-	boolean isUserInAnyRole(List<String> roles, PipeLineSession session) throws NotImplementedException;
-
-	String inWhichRoleIsUser(List<String> roles, PipeLineSession session) throws NotImplementedException;
-
-	boolean isUserInRole(String role, PipeLineSession session) throws NotImplementedException;
+	boolean isUserInRole(String role) throws NotImplementedException;
 
 	Principal getPrincipal(PipeLineSession session) throws NotImplementedException;
 

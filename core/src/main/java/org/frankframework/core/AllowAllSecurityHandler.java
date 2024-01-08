@@ -26,15 +26,15 @@ import org.apache.commons.lang3.NotImplementedException;
  * @author  Gerrit van Brakel
  * @since   4.3
  */
-public class AllowAllSecurityHandler extends SecurityHandlerBase {
+public class AllowAllSecurityHandler implements ISecurityHandler {
 
 	@Override
-	public boolean isUserInAnyRole(List<String> roles, PipeLineSession session) throws NotImplementedException {
+	public boolean isUserInAnyRole(List<String> roles) throws NotImplementedException {
 		return true;
 	}
 
 	@Override
-	public boolean isUserInRole(String role, PipeLineSession session) {
+	public boolean isUserInRole(String role) {
 		return true;
 	}
 

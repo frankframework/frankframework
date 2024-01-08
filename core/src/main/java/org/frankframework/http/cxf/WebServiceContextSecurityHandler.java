@@ -20,7 +20,7 @@ import java.security.Principal;
 import javax.xml.ws.WebServiceContext;
 
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.SecurityHandlerBase;
+import org.frankframework.core.ISecurityHandler;
 
 /**
  * Securityhandler that delegates its implementation to the corresponding
@@ -28,7 +28,7 @@ import org.frankframework.core.SecurityHandlerBase;
  *
  * @author Jaco de Groot
  */
-public class WebServiceContextSecurityHandler extends SecurityHandlerBase {
+public class WebServiceContextSecurityHandler implements ISecurityHandler {
 	WebServiceContext webServiceContext;
 
 	public WebServiceContextSecurityHandler(WebServiceContext webServiceContext) {
@@ -36,7 +36,7 @@ public class WebServiceContextSecurityHandler extends SecurityHandlerBase {
 	}
 
 	@Override
-	public boolean isUserInRole(String role, PipeLineSession session) {
+	public boolean isUserInRole(String role) {
 		return webServiceContext.isUserInRole(role);
 	}
 
