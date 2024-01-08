@@ -1,6 +1,6 @@
 package org.frankframework.testdummies;
 
-import nl.nn.adapterframework.pipes.FixedResultPipe;
+import org.frankframework.pipes.FixedResultPipe;
 
 public class TestDummyPipe extends FixedResultPipe {
 }

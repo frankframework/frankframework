@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<log4j2:Configuration status="warn" name="${ctx:instance.name}" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="log4j-config.xsd" packages="nl.nn.adapterframework.logging">
+<log4j2:Configuration status="warn" name="${ctx:instance.name}" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="log4j-config.xsd" packages="org.frankframework.logging">
 	<!-- https://logging.apache.org/log4j/2.x/manual/customloglevels.html -->
 
 	<Appenders>
@@ -76,8 +76,8 @@
 
 	<Loggers>
 		<Logger name="liquibase" level="INFO" />
-		<Logger name="nl.nn.adapterframework.jdbc.migration.LiquibaseXmlChangeLogParser" level="INFO" /> <!-- to avoid stacktraces in DEBUG mode about "Cannot enable ACCESS_EXTERNAL_SCHEMA" -->
-		<Logger name="nl.nn.adapterframework.testtool" level="WARN" />
+		<Logger name="org.frankframework.jdbc.migration.LiquibaseXmlChangeLogParser" level="INFO" /> <!-- to avoid stacktraces in DEBUG mode about "Cannot enable ACCESS_EXTERNAL_SCHEMA" -->
+		<Logger name="org.frankframework.testtool" level="WARN" />
 		<Logger name="org.apache" level="INFO" />
 		<Logger name="org.apache.commons" level="WARN" />
 		<Logger name="org.apache.cxf" level="WARN" />
@@ -87,11 +87,11 @@
 		<Logger name="org.aspectj.weaver" level="WARN" />
 		<Logger name="bitronix.tm" level="INFO" />
 		<Logger name="com.arjuna" level="INFO" />
-		<Logger name="nl.nn.adapterframework.jta.narayana.NarayanaJtaTransactionManager" level="WARN" />
-		<Logger name="nl.nn.adapterframework.jta.ThreadConnectableDataSourceTransactionManager" level="INFO" />
+		<Logger name="org.frankframework.jta.narayana.NarayanaJtaTransactionManager" level="WARN" />
+		<Logger name="org.frankframework.jta.ThreadConnectableDataSourceTransactionManager" level="INFO" />
 		<Logger name="org.mongodb" level="INFO" />
 		<Logger name="org.quartz" level="WARN" />
-		<Logger name="nl.nn.adapterframework.configuration.digester" level="WARN" />
+		<Logger name="org.frankframework.configuration.digester" level="WARN" />
 		<Logger name="microsoft.exchange" level="INFO" />
 		<Logger name="org.springframework.security.web" level="INFO" />
 		<Logger name="org.springframework.security.ldap" level="WARN" />
@@ -125,7 +125,7 @@
 		</Logger>
 
 		<!-- This is an example of a custom logger that prints all log messages of the IbisContext class to sysout -->
-		<!-- Logger name="nl.nn.adapterframework.configuration.IbisContext" level="ERROR" additivity="true">
+		<!-- Logger name="org.frankframework.configuration.IbisContext" level="ERROR" additivity="true">
 			<AppenderRef ref="stdout"/>
 		</Logger -->
 

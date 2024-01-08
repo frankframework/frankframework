@@ -3,13 +3,13 @@
 	<adapter name="WebServiceListenerAddressAttachments"
 		description="Test the functioning of the WebServiceListener with the attribute [address] and receiving attachments">
 		<receiver name="WebServiceListener-address-with-attachments">
-			<listener className="nl.nn.adapterframework.http.WebServiceListener" address="urn/ws/address/attachments" />
+			<listener className="org.frankframework.http.WebServiceListener" address="urn/ws/address/attachments" />
 		</receiver>
 		<pipeline firstPipe="EchoPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="EchoPipe" getInputFromSessionKey="attachment1">
+			<pipe className="org.frankframework.pipes.EchoPipe" name="EchoPipe" getInputFromSessionKey="attachment1">
 				<forward name="success" path="EXIT"/>
 			</pipe>
 		</pipeline>
@@ -17,14 +17,14 @@
 	<adapter name="WebServiceListenerAddressAttachmentsMultipartSessionKey"
 		description="Test the functioning of the WebServiceListener with the attribute [address] and receiving attachments using multipart sessionkey">
 		<receiver name="WebServiceListener-address-with-MultipartXmlSessionKey">
-			<listener className="nl.nn.adapterframework.http.WebServiceListener" address="urn/ws/address/attachments/multipart" />
+			<listener className="org.frankframework.http.WebServiceListener" address="urn/ws/address/attachments/multipart" />
 		</receiver>
 		<pipeline firstPipe="MergeAttachments">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.XsltPipe" name="MergeAttachments"
-				styleSheetName="WebServiceListenerSender/mergeAttachments.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
+			<pipe className="org.frankframework.pipes.XsltPipe" name="MergeAttachments"
+                  styleSheetName="WebServiceListenerSender/mergeAttachments.xsl" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="attachment1" sessionKey="attachment1" />
 				<param name="attachment2" sessionKey="attachment2" />
 
@@ -37,19 +37,19 @@
 	<adapter name="WebServiceListenerAddressAttachmentsReturnAttachments"
 		description="Test the functioning of the WebServiceListener with the attribute [address] and returning attachments">
 		<receiver name="WebServiceListener-address-with-attachments">
-			<listener className="nl.nn.adapterframework.http.WebServiceListener" address="urn/ws/address/attachments/returning" attachmentSessionKeys="attachment1"/>
+			<listener className="org.frankframework.http.WebServiceListener" address="urn/ws/address/attachments/returning" attachmentSessionKeys="attachment1"/>
 		</receiver>
 		<pipeline firstPipe="EchoMessage">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="EchoMessage" getInputFromFixedValue="&lt;xml/&gt;">
+			<pipe className="org.frankframework.pipes.EchoPipe" name="EchoMessage" getInputFromFixedValue="&lt;xml/&gt;">
 				<forward name="success" path="GetFile"/>
 			</pipe>
 			<pipe
-				name="GetFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="read" 
-				filename="${testdata.dir}/webservices/filetext.txt" storeResultInSessionKey="attachment1" 
-				preserveInput="true"
+                    name="GetFile" className="org.frankframework.pipes.LocalFileSystemPipe" action="read"
+                    filename="${testdata.dir}/webservices/filetext.txt" storeResultInSessionKey="attachment1"
+                    preserveInput="true"
 				>
 
 				<forward name="success" path="EXIT"/>
@@ -60,44 +60,44 @@
 	<adapter name="WebServiceListenerAddressAttachmentsReturnAttachmentsSessionKey"
 		description="Test the functioning of the WebServiceListener with the attribute [address] and returning attachments from session MultipartXml">
 		<receiver name="WebServiceListener-address-with-MultipartXml-attachments">
-			<listener className="nl.nn.adapterframework.http.WebServiceListener" address="urn/ws/address/attachments/returning/sessionkey"/>
+			<listener className="org.frankframework.http.WebServiceListener" address="urn/ws/address/attachments/returning/sessionkey"/>
 		</receiver>
 		<pipeline firstPipe="EchoMessage">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="EchoMessage" getInputFromFixedValue="&lt;xml/&gt;">
+			<pipe className="org.frankframework.pipes.EchoPipe" name="EchoMessage" getInputFromFixedValue="&lt;xml/&gt;">
 				<forward name="success" path="GetFile"/>
 			</pipe>
 			<pipe
-				name="GetFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="read" 
-				filename="${testdata.dir}/webservices/filetext.txt" storeResultInSessionKey="file" 
-				preserveInput="true"
+                    name="GetFile" className="org.frankframework.pipes.LocalFileSystemPipe" action="read"
+                    filename="${testdata.dir}/webservices/filetext.txt" storeResultInSessionKey="file"
+                    preserveInput="true"
 			>
 				<forward name="success" path="SetMultipartSessionKey"/>
 			</pipe>
 			<pipe name="SetMultipartSessionKey" preserveInput="true"
-				className="nl.nn.adapterframework.pipes.PutInSession" getInputFromFixedValue="hello world" 
+                  className="org.frankframework.pipes.PutInSession" getInputFromFixedValue="hello world"
 			>
 				<param name="multipartXml" value="&lt;parts&gt;&lt;part name='file' sessionKey='file' mimeType='text/plain'/&gt;&lt;/parts&gt;"/>
 				<forward name="success" path="EXIT" />
-			</pipe> 
+			</pipe>
 		</pipeline>
 	</adapter>
 
 	<!-- Sending Senders -->
-	<adapter name="WebServiceSenderAddressAttachmentsWithParam" 
+	<adapter name="WebServiceSenderAddressAttachmentsWithParam"
 		description="Test the functioning of the WebServiceSender sending attachments to a listener with address">
 		<receiver name="WebServiceSender-address">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-WebServiceSenderAddressAttachmentsWithParam" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-WebServiceSenderAddressAttachmentsWithParam" />
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
 				<exit path="EXIT" state="success" />
-			</exits> 
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			</exits>
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					firstBodyPartName="file"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments"
 					postType="MTOM"
@@ -108,35 +108,35 @@
 			</pipe>
 		</pipeline>
 	</adapter>
-    <adapter name="WebServiceSenderAddressAttachments" 
+    <adapter name="WebServiceSenderAddressAttachments"
 		description="Test the functioning of the WebServiceSender sending attachments to a listener with address">
 		<receiver name="WebServiceSender-address-send-attachments">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderAddressAttachmentsMultipart" />
 		</receiver>
 		<pipeline firstPipe="GetAttachment1">
 			<exits>
 				<exit path="EXIT" state="success" />
-			</exits> 
-			<pipe name="GetAttachment1" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+			</exits>
+			<pipe name="GetAttachment1" className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="read" filename="${testdata.dir}/webservices/textfile.txt" storeResultInSessionKey="file"
 			>
 				<forward name="success" path="GetAttachment2" />
-			</pipe> 
-			<pipe name="GetAttachment2" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+			</pipe>
+			<pipe name="GetAttachment2" className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="read" filename="${testdata.dir}/webservices/textfile.txt"  storeResultInSessionKey="file2"
 			>
 				<forward name="success" path="PutMultipartInSessionKey" />
-			</pipe>	
+			</pipe>
 			<pipe name="PutMultipartInSessionKey"
-				className="nl.nn.adapterframework.pipes.PutInSession" getInputFromFixedValue="hello world"
+                  className="org.frankframework.pipes.PutInSession" getInputFromFixedValue="hello world"
 			>
 				<param name="multipart" value="&lt;parts&gt;&lt;part name='file' sessionKey='file' mimeType='text/plain'/&gt;&lt;part name='file' sessionKey='file2' mimeType='text/plain'/&gt;&lt;/parts&gt;"/>
 				<forward name="success" path="Send2WS" />
-			</pipe> 
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			</pipe>
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender"
+				<sender className="org.frankframework.http.WebServiceSender"
 					firstBodyPartName="file"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/multipart"
 					postType="MTOM"
@@ -149,19 +149,19 @@
 	</adapter>
 
 	<!-- Receiving Senders -->
-	<adapter name="WebServiceSenderAddressAttachmentsReturningAttachments" 
+	<adapter name="WebServiceSenderAddressAttachmentsReturningAttachments"
 		description="Test the functioning of the WebServiceSender receiving attachments from a listener with address">
 		<receiver name="WebServiceSender-address-receive-attachments">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderAddressAttachmentsReturning" />
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
 				<exit path="EXIT" state="success" />
-			</exits> 
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			</exits>
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
+				<sender className="org.frankframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning"
 					sharedResourceRef="SharedHttpSession"
 				/>
@@ -181,32 +181,32 @@
 			</LocalFileSystemPipe>
 		</pipeline>
 	</adapter>
-	<adapter name="WebServiceSenderAddressAttachmentsReturningAttachmentsSessionKey" 
+	<adapter name="WebServiceSenderAddressAttachmentsReturningAttachmentsSessionKey"
 		description="Test the functioning of the WebServiceSender receiving attachments from a listener with address and multipartXml sessionkey">
 		<receiver name="WebServiceSender-address-receive-attachment-in-session">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-WebServiceSenderAddressAttachmentsReturningSessionKey" />
 		</receiver>
 		<pipeline firstPipe="Send2WS">
 			<exits>
 				<exit path="EXIT" state="success" />
-			</exits> 
-			<pipe className="nl.nn.adapterframework.pipes.SenderPipe"
+			</exits>
+			<pipe className="org.frankframework.pipes.SenderPipe"
 				name="Send2WS" getInputFromFixedValue="&lt;xml&gt;hello world&lt;/xml&gt;">
-				<sender className="nl.nn.adapterframework.http.WebServiceSender" 
+				<sender className="org.frankframework.http.WebServiceSender"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/services/urn/ws/address/attachments/returning/sessionkey"
 					sharedResourceRef="SharedHttpSession"
 				/>
 				<forward name="success" path="CheckIfMultipartSessionKeyPresent" />
 			</pipe>
-			<XsltPipe 
+			<XsltPipe
 				name="CheckIfMultipartSessionKeyPresent"
 				styleSheetName="WebServiceListenerSender/checkMultipartSessionkeyPresence.xsl"
 			>
 				<Param name="multipart1" sessionKey="multipart1" defaultValue="NoMultiPart1"/>
 				<Forward name="success" path="SwitchCases"/>
 			</XsltPipe>
-			<XmlSwitchPipe 
+			<XmlSwitchPipe
 				name="SwitchCases"
 				xpathExpression="/case"
 			>
@@ -228,7 +228,7 @@
 			>
 				<forward name="success" path="EXIT"/>
 			</LocalFileSystemPipe>
-			
+
 			<ExceptionPipe name="throwException" getInputFromFixedValue="Session key [multipart1] does not exists or not contains the expected data.">
 				<Forward name="success" path="EXIT" />
 			</ExceptionPipe>

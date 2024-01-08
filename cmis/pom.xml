@@ -2,13 +2,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<groupId>org.frankframework</groupId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-cmis</artifactId>
-	<name>Ibis AdapterFramework support for Cmis</name>
+	<artifactId>frankframework-cmis</artifactId>
+	<name>Frank!Framework support for Cmis</name>
 
 	<properties>
 		<opencmis.version>1.1.0</opencmis.version>
@@ -16,8 +16,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -95,8 +95,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-core</artifactId>
 			<classifier>tests</classifier>
 			<type>test-jar</type>
 			<version>${project.version}</version>
@@ -107,6 +107,11 @@
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

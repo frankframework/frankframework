@@ -2,18 +2,18 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<groupId>org.frankframework</groupId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-idin</artifactId>
-	<name>Ibis AdapterFramework support for iDIN</name>
+	<artifactId>frankframework-idin</artifactId>
+	<name>Frank!Framework support for iDIN</name>
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.bankid.merchant</groupId>

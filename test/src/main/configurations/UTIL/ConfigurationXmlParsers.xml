@@ -1,13 +1,13 @@
 <adapter name="XmlParsersPipe">
 	<receiver>
-		<listener name="XmlParsers" className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-XmlParsers" />
+		<listener name="XmlParsers" className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-XmlParsers" />
 	</receiver>
 	<pipeline firstPipe="XmlParsersPipe">
 		<exits>
 			<exit state="success" path="EXIT" />
 		</exits>
 
-		<pipe name="XmlParsersPipe" className="nl.nn.adapterframework.pipes.XmlParsersPipe">
+		<pipe name="XmlParsersPipe" className="org.frankframework.pipes.XmlParsersPipe">
 			<forward name="success" path="EXIT" />
 		</pipe>
 	</pipeline>

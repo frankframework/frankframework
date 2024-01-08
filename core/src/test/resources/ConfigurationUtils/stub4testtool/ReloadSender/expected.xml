@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="ReloadSender">
       <receiver name="testtool-ReloadSender">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-ReloadSender"/>
       </receiver>
 		    <receiver name="ReloadSender">
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="ReloadSender"/>
 		    </receiver>
       <receiver name="testtool-ReloadSender-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-ReloadSender-1"/>
       </receiver>
 
@@ -18,10 +18,10 @@
 				        <exit path="READY" state="success"/>
 			      </exits>
 			      <pipe name="Call Sender"
-               className="nl.nn.adapterframework.pipes.SenderPipe"
+               className="org.frankframework.pipes.SenderPipe"
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
-				        <sender className="nl.nn.adapterframework.senders.ReloadSender"/>
+				        <sender className="org.frankframework.senders.ReloadSender"/>
 				        <forward name="success" path="READY"/>
 			      </pipe>
 		    </pipeline>

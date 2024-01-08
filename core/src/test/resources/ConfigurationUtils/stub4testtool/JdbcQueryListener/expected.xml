@@ -5,11 +5,11 @@
                 maxRetries="4"
                 pollInterval="1"
                 transactionTimeout="30">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-JdbcQueryListener"/>
-         <errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+         <errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage"
                        slotId="stubbed-${applicationId}/JdbcQueryListener"/>
-         <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+         <messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage"
                      slotId="stubbed-${applicationId}/JdbcQueryListener"
                      retention="-1"/>
       </receiver>
@@ -19,15 +19,15 @@
                 pollInterval="1"
                 transactionTimeout="30">
 			      <listener name="JdbcQueryListener for ibis4test"
-                   className="nl.nn.adapterframework.jdbc.JdbcQueryListener"
+                   className="org.frankframework.jdbc.JdbcQueryListener"
                    selectQuery="SELECT TKEY, TCLOB           FROM IBISTEMP           WHERE TCHAR = '1'           AND TNUMBER=${jdbc.querylistener.key}"
                    updateStatusToProcessedQuery="UPDATE IBISTEMP SET TCHAR='2' WHERE TKEY=?"
                    updateStatusToErrorQuery="UPDATE IBISTEMP SET TCHAR='3' WHERE TKEY=?"
                    keyField="tkey"
                    messageField="TCLOB"/>
-			      <errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			      <errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage"
                        slotId="${applicationId}/JdbcQueryListener"/>
-			      <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			      <messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage"
                      slotId="${applicationId}/JdbcQueryListener"
                      retention="-1"/>
 		    </receiver>
@@ -36,11 +36,11 @@
                 maxRetries="4"
                 pollInterval="1"
                 transactionTimeout="30">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-JdbcQueryListener-1"/>
-         <errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+         <errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage"
                        slotId="stubbed-${applicationId}/JdbcQueryListener"/>
-         <messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+         <messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage"
                      slotId="stubbed-${applicationId}/JdbcQueryListener"
                      retention="-1"/>
       </receiver>
@@ -48,7 +48,7 @@
 			      <exits>
 				        <exit path="EXIT" state="success"/>
 			      </exits>
-			      <pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+			      <pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe">
 				        <forward name="success" path="EXIT"/>
 			      </pipe>
 		    </pipeline>

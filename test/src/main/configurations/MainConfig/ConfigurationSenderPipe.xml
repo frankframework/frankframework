@@ -1,14 +1,14 @@
 <module>
 	<adapter name="SenderPipe" description="Test the functioning of the SenderPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-SenderPipe" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-SenderPipe" />
 		</receiver>
 		<pipeline firstPipe="sendMessage">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="sendMessage" className="nl.nn.adapterframework.pipes.SenderPipe" retryXPath="(reply/textIn='goodbye')=false()" maxRetries="5" retryMinInterval="2" retryMaxInterval="5">
-				<sender className="nl.nn.adapterframework.senders.IbisJavaSender" serviceName="testtool-SenderPipe" />
+			<pipe name="sendMessage" className="org.frankframework.pipes.SenderPipe" retryXPath="(reply/textIn='goodbye')=false()" maxRetries="5" retryMinInterval="2" retryMaxInterval="5">
+				<sender className="org.frankframework.senders.IbisJavaSender" serviceName="testtool-SenderPipe" />
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

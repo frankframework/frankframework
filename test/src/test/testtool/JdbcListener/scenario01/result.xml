@@ -60,7 +60,7 @@
 				<rowset>
 					<row number="0">
 						<field name="TYPE">E</field>
-						<field name="SLOTID">IFSA://NLIBIS4TEST/JdbcQueryListener</field>
+						<field name="SLOTID">FF4TEST/JdbcQueryListener</field>
 					</row>
 				</rowset>
 			</result>

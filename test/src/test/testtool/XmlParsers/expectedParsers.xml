@@ -5,7 +5,7 @@
   <TransformerFactory1-class>org.apache.xalan.processor.TransformerFactoryImpl</TransformerFactory1-class>
   <TransformerFactory2-class>net.sf.saxon.TransformerFactoryImpl</TransformerFactory2-class>
   <XMLEventFactory-class>org.apache.xerces.stax.XMLEventFactoryImpl</XMLEventFactory-class>
-  <XMLInputFactory-class>nl.nn.adapterframework.xml.StaxParserFactory</XMLInputFactory-class>
+  <XMLInputFactory-class>org.frankframework.xml.StaxParserFactory</XMLInputFactory-class>
   <XMLOutputFactory-class>com.sun.xml.stream.ZephyrWriterFactory</XMLOutputFactory-class>
   <MessageFactory-class>com.sun.xml.messaging.saaj.soap.MessageFactoryImpl</MessageFactory-class>
   <Xerces-Version>Xerces-J 2.12.2-xml-schema-1.1</Xerces-Version>

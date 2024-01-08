@@ -5,7 +5,7 @@
 		>
 		<receiver name="ReceiverSendersExceptionInSenderWithExceptionForward">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="SendersExceptionInSenderWithExceptionForward"
 				serviceName="ibis4test-SendersExceptionInSenderWithExceptionForward"
 			/>
@@ -18,7 +18,7 @@
 
 			<pipe
 				name="Generate timestamp"
-				className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
+				className="org.frankframework.pipes.PutSystemDateInSession"
 				sessionKey="timestamp"
 				dateFormat="yyyyMMdd HH:mm:ss"
 				>
@@ -27,17 +27,17 @@
 
 			<pipe
 				name="Call ExceptionPipe"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					className="org.frankframework.senders.IbisLocalSender"
 					javaListener="ExceptionPipe"
 				/>
 				<forward name="success" path="Echo"/>
 				<forward name="exception" path="Echo"/>
 			</pipe>
 
-			<pipe name="Echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="Echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="READY"/>
 			</pipe>
 
@@ -49,7 +49,7 @@
 
 		<receiver name="ReceiverTestToolExceptionInSubAdapter">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="SendersExceptionInSubAdapter"
 				serviceName="ibis4test-SendersExceptionInSubAdapter"
 			/>
@@ -62,7 +62,7 @@
 
 			<pipe
 				name="Generate timestamp"
-				className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
+				className="org.frankframework.pipes.PutSystemDateInSession"
 				sessionKey="timestamp"
 				dateFormat="yyyyMMdd HH:mm:ss"
 				>
@@ -71,16 +71,16 @@
 
 			<pipe
 				name="Call ExceptionPipe"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					className="org.frankframework.senders.IbisLocalSender"
 					javaListener="ExceptionPipe"
 				/>
 				<forward name="success" path="Echo"/>
 			</pipe>
 
-			<pipe name="Echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="Echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="READY"/>
 			</pipe>
 
@@ -92,7 +92,7 @@
 
 		<receiver name="ReceiverTestToolParallelSenders">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="SendersParallelSenders"
 				serviceName="ibis4test-SendersParallelSenders"
 			/>
@@ -105,7 +105,7 @@
 
 			<pipe
 				name="Generate timestamp"
-				className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
+				className="org.frankframework.pipes.PutSystemDateInSession"
 				sessionKey="timestamp"
 				dateFormat="yyyyMMdd HH:mm:ss"
 				>
@@ -116,73 +116,73 @@
 				name="Parallel processing"
 				getInputFromSessionKey="originalMessage"
 				>
-				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
-					<sender className="nl.nn.adapterframework.senders.SenderWrapper">
-						<sender className="nl.nn.adapterframework.senders.SenderSeries">
+				<sender className="org.frankframework.senders.ParallelSenders">
+					<sender className="org.frankframework.senders.SenderWrapper">
+						<sender className="org.frankframework.senders.SenderSeries">
 							<sender
-								className="nl.nn.adapterframework.senders.XsltSender"
+								className="org.frankframework.senders.XsltSender"
 								styleSheetName="XsltPipe/copy.xsl"
 								>
 								<param name="timestamp" sessionKey="timestamp"/>
 							</sender>
 							<sender
-								className="nl.nn.adapterframework.senders.IbisLocalSender"
+								className="org.frankframework.senders.IbisLocalSender"
 								javaListener="SendersExceptionInSubAdapter"
 								isolated="true"
 							/>
 						</sender>
 					</sender>
-					<sender className="nl.nn.adapterframework.senders.SenderWrapper" getInputFromSessionKey="originalMessage" storeResultInSessionKey="test">
-						<sender className="nl.nn.adapterframework.senders.SenderSeries">
+					<sender className="org.frankframework.senders.SenderWrapper" getInputFromSessionKey="originalMessage" storeResultInSessionKey="test">
+						<sender className="org.frankframework.senders.SenderSeries">
 							<sender
 								name="delay 1000 ms"
-								className="nl.nn.adapterframework.senders.DelaySender"
+								className="org.frankframework.senders.DelaySender"
 								delayTime="1000"
 								/>
 							<sender
-								className="nl.nn.adapterframework.senders.XsltSender"
+								className="org.frankframework.senders.XsltSender"
 								styleSheetName="XsltPipe/copy.xsl"
 								>
 								<param name="timestamp" sessionKey="timestamp"/>
 							</sender>
 							<sender
-								className="nl.nn.adapterframework.senders.IbisLocalSender"
+								className="org.frankframework.senders.IbisLocalSender"
 								javaListener="CompareStringPipe"
 							/>
 						</sender>
 					</sender>
-					<sender className="nl.nn.adapterframework.senders.SenderWrapper">
-						<sender className="nl.nn.adapterframework.senders.SenderSeries">
+					<sender className="org.frankframework.senders.SenderWrapper">
+						<sender className="org.frankframework.senders.SenderSeries">
 							<sender
-								className="nl.nn.adapterframework.senders.XsltSender"
+								className="org.frankframework.senders.XsltSender"
 								styleSheetName="XsltPipe/copy.xsl"
 								>
 								<param name="timestamp" sessionKey="timestamp"/>
 							</sender>
 							<sender
-								className="nl.nn.adapterframework.senders.IbisLocalSender"
+								className="org.frankframework.senders.IbisLocalSender"
 								javaListener="CompareStringPipe"
 							/>
 							<sender
-								className="nl.nn.adapterframework.senders.DelaySender"
+								className="org.frankframework.senders.DelaySender"
 								delayTime="1"
 							/>
 							<sender
-								className="nl.nn.adapterframework.senders.EchoSender"
+								className="org.frankframework.senders.EchoSender"
 							/>
 							<sender
-								className="nl.nn.adapterframework.senders.IbisJavaSender"
+								className="org.frankframework.senders.IbisJavaSender"
 								serviceName="ibis4test-CompareStringPipe"
 							/>
 							<sender
-								className="nl.nn.adapterframework.senders.LogSender"
+								className="org.frankframework.senders.LogSender"
 							/>
 							<sender
-								className="nl.nn.adapterframework.senders.FixedResultSender"
+								className="org.frankframework.senders.FixedResultSender"
 								returnString="&lt;email&gt;&lt;recipients&gt;&lt;recipient type='to'&gt;rfax@natned&lt;/recipient&gt;&lt;/recipients&gt;&lt;/email&gt;"
 							/>
 							<sender
-								className="nl.nn.adapterframework.senders.EchoSender"
+								className="org.frankframework.senders.EchoSender"
 							/>
 						</sender>
 					</sender>
@@ -190,7 +190,7 @@
 				<forward name="success" path="Echo"/>
 			</pipe>
 
-			<pipe name="Echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="Echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="READY"/>
 			</pipe>
 
@@ -202,7 +202,7 @@
 
 		<receiver name="ReceiverTestIsolated">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="SendersIsolated"
 				serviceName="ibis4test-SendersIsolated"
 			/>
@@ -215,7 +215,7 @@
 
 			<pipe
 				name="Generate timestamp"
-				className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
+				className="org.frankframework.pipes.PutSystemDateInSession"
 				sessionKey="timestamp"
 				dateFormat="yyyyMMdd HH:mm:ss"
 				>
@@ -223,10 +223,10 @@
 
 			<pipe
 				name="Call Sender Isolated"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					className="org.frankframework.senders.IbisLocalSender"
 					javaListener="CompareStringPipe"
 					isolated="true"
 				/>
@@ -234,16 +234,16 @@
 
 			<pipe
 				name="Call Sender Asynchronous"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					className="org.frankframework.senders.IbisLocalSender"
 					javaListener="CompareStringPipe"
 					synchronous="false"
 				/>
 			</pipe>
 
-			<pipe name="Echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="Echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="READY"/>
 			</pipe>
 
@@ -254,7 +254,7 @@
 
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="SenderToLarva"
 				serviceName="ibis4test-SenderToLarva"
 			/>
@@ -268,10 +268,10 @@
 
 			<pipe
 				name="Call Larva"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.IbisJavaSender"
+					className="org.frankframework.senders.IbisJavaSender"
 					serviceName="testtool-SendToLarva"
 				/>
 				<forward name="success" path="Called successfully"/>
@@ -279,15 +279,15 @@
 			</pipe>
 
 			<pipe
-				name="Fallthroug" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="fall through" >
+                    name="Fallthroug" className="org.frankframework.pipes.FixedResultPipe" returnString="fall through" >
 				<forward name="success" path="InternalError"/>
 			</pipe>
 			<pipe
-				name="Called successfully" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="successful">
+                    name="Called successfully" className="org.frankframework.pipes.FixedResultPipe" returnString="successful">
 				<forward name="success" path="READY"/>
 			</pipe>
 			<pipe
-				name="Called unsuccessfully" className="nl.nn.adapterframework.pipes.FixedResultPipe" returnString="unsuccessful">
+                    name="Called unsuccessfully" className="org.frankframework.pipes.FixedResultPipe" returnString="unsuccessful">
 				<forward name="success" path="InternalError"/>
 			</pipe>
 		</pipeline>

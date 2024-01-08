@@ -8,11 +8,11 @@
 			transactionAttribute="Required"
 		>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="TransactionHandlingMultiAdapter"
 				serviceName="ibis4test-TransactionHandlingMandatory"
 			/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/ReceiverTransactionHandlingMandatory"
 			/>
 		</receiver>
@@ -24,11 +24,11 @@
 
 			<!-- This should create (or reuse) it's transaction when calling this subadapter -->
 			<pipe name="Send transacted message to mandatory subadapter"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				getInputFromFixedValue="tralala"
 			>
 				<sender
-					className="nl.nn.adapterframework.senders.IbisLocalSender"
+					className="org.frankframework.senders.IbisLocalSender"
 					javaListener="TransactionHandlingMandatorySubAdapter"
 				/>
 				<forward name="success" path="EXIT"/>
@@ -44,7 +44,7 @@
 			transactionAttribute="Mandatory"
 		>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="TransactionHandlingMandatorySubAdapter"
 			/>
 		</receiver>
@@ -54,7 +54,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="Continue if this call was transacted" className="nl.nn.adapterframework.pipes.EchoPipe"
+			<pipe name="Continue if this call was transacted" className="org.frankframework.pipes.EchoPipe"
 				getInputFromFixedValue="&lt;transacted&gt;true&lt;/transacted&gt;">
 
 				<forward name="success" path="EXIT"/>

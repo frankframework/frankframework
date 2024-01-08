@@ -1,1 +1,1 @@
-nl.nn.adapterframework.jdbc.migration.LiquibaseLog4j2LogService
+org.frankframework.jdbc.migration.LiquibaseLog4j2LogService

@@ -2,13 +2,13 @@
 	<module>
 		<adapter name="HelloWorld" active="${HelloWorld.active}">
 			<receiver name="HelloWorld">
-				<listener name="HelloWorld" className="nl.nn.adapterframework.receivers.JavaListener"/>
+				<listener name="HelloWorld" className="org.frankframework.receivers.JavaListener"/>
 			</receiver>
 			<pipeline firstPipe="HelloWorld">
 				<exits>
 					<exit path="EXIT" state="success"/>
 				</exits>
-				<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResult" returnString="Hello World">
+				<pipe name="HelloWorld" className="org.frankframework.pipes.FixedResult" returnString="Hello World">
 					<forward name="success" path="EXIT"/>
 				</pipe>
 			</pipeline>
@@ -18,16 +18,16 @@
 		</scheduler>
 		<adapter name="HelloUniverse" active="${junit.active}">
 			<receiver name="HelloUniverse">
-				<listener name="HelloUniverse" className="nl.nn.adapterframework.receivers.JavaListener"/>
-				<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${instance.name}/HelloUniverse_In"/>
+				<listener name="HelloUniverse" className="org.frankframework.receivers.JavaListener"/>
+				<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${instance.name}/HelloUniverse_In"/>
 			</receiver>
 			<pipeline firstPipe="HelloUniverse">
 				<exits>
 					<exit path="EXIT" state="success"/>
 				</exits>
-				<pipe name="HelloUniverse" className="nl.nn.adapterframework.pipes.SenderPipe">
-					<sender className="nl.nn.adapterframework.senders.FixedResultSender" returnString="Hello, Universe! ${digester.property} &lt;@quot;&gt;"/>
-					<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${instance.name}/HelloUniverse_Out"/>
+				<pipe name="HelloUniverse" className="org.frankframework.pipes.SenderPipe">
+					<sender className="org.frankframework.senders.FixedResultSender" returnString="Hello, Universe! ${digester.property} &lt;@quot;&gt;"/>
+					<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${instance.name}/HelloUniverse_Out"/>
 					<forward name="success" path="EXIT"/>
 				</pipe>
 			</pipeline>

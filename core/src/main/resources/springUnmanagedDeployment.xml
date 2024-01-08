@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans
-	xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation=
-		"
-			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-			http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
-		"
-	>
+		xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation=
+				"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
+>
 
 	<!-- Scheduler (Quartz) -->
 	<bean
 		id="scheduler"
-		class="nl.nn.adapterframework.scheduler.SchedulerFactoryBean"
+		class="org.frankframework.scheduler.SchedulerFactoryBean"
 		autowire="byName"
 		lazy-init="true"
 		>
@@ -26,18 +22,17 @@
 	<!-- IBIS Beans -->
 	<bean
 		name="ibisManager"
-		class="nl.nn.adapterframework.unmanaged.DefaultIbisManager"
+		class="org.frankframework.unmanaged.DefaultIbisManager"
 		autowire="byName"
 		>
 	</bean>
 
 	<bean
 		name="jmsConnector"
-		class="nl.nn.adapterframework.unmanaged.SpringJmsConnector"
+		class="org.frankframework.unmanaged.SpringJmsConnector"
 		autowire="byName"
 		scope="prototype"
 		>
-		<property name="messageListenerClassName" ref="messageListenerClassName"/>
 	</bean>
 
 	<!--

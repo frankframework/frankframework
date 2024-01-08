@@ -15,12 +15,12 @@
 		name="testSpringXmlPropertyResolver"
 		class="java.lang.String"
 		>
-		<constructor-arg value="${jms.messageListenerClassName}"/>
+		<constructor-arg value="${console.location}"/>
 	</bean>
 
-	<bean name="ibisManager" class="nl.nn.adapterframework.testutil.mock.MockIbisManager" />
+	<bean name="ibisManager" class="org.frankframework.testutil.mock.MockIbisManager" />
 
-	<bean name="schedulerHelper" class="nl.nn.adapterframework.testutil.SchedulerHelperMock" />
+	<bean name="schedulerHelper" class="org.frankframework.testutil.SchedulerHelperMock" />
 
-	<bean name="flowDiagramManager" class="nl.nn.adapterframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
+	<bean name="flowDiagramManager" class="org.frankframework.util.flow.FlowDiagramManager" autowire="no" scope="singleton" lazy-init="true" />
 </beans>

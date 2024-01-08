@@ -175,26 +175,25 @@ Hamcrest Core - using: New BSD License
 hazelcast - using: The Apache Software License, Version 2.0
 HdrHistogram - using: Public Domain, per Creative Commons CC0 or BSD-2-Clause
 HtmlCleaner - using: BSD License
-Ibis AdapterFramework Commons - using: Apache License, Version 2.0
-Ibis AdapterFramework core - using: Apache License, Version 2.0
-Ibis AdapterFramework DBMS - using: Apache License, Version 2.0
-Ibis AdapterFramework example - using: Apache License, Version 2.0
-Ibis AdapterFramework Ladybug - using: Apache License, Version 2.0
-Ibis AdapterFramework Larva - using: Apache License, Version 2.0
-Ibis AdapterFramework parent - using: Apache License, Version 2.0
-Ibis AdapterFramework Security - using: Apache License, Version 2.0
-Ibis AdapterFramework support for Akamai - using: Apache License, Version 2.0
-Ibis AdapterFramework support for Aspose - using: Apache License, Version 2.0
-Ibis AdapterFramework support for AWS - using: Apache License, Version 2.0
-Ibis AdapterFramework support for Batch processing - using: Apache License, Version 2.0
-Ibis AdapterFramework support for Cmis - using: Apache License, Version 2.0
-Ibis AdapterFramework support for iDIN - using: Apache License, Version 2.0
-Ibis AdapterFramework support for IFSA - using: Apache License, Version 2.0
-Ibis AdapterFramework support for Messaging Systems - using: Apache License, Version 2.0
-Ibis AdapterFramework support for SAP - using: Apache License, Version 2.0
-Ibis AdapterFramework support for TIBCO - using: Apache License, Version 2.0
-Ibis AdapterFramework Test - using: Apache License, Version 2.0
-Ibis AdapterFramework webapp - using: Apache License, Version 2.0
+Frank!Framework Commons - using: Apache License, Version 2.0
+Frank!Framework core - using: Apache License, Version 2.0
+Frank!Framework DBMS - using: Apache License, Version 2.0
+Frank!Framework example - using: Apache License, Version 2.0
+Frank!Framework Ladybug - using: Apache License, Version 2.0
+Frank!Framework Larva - using: Apache License, Version 2.0
+Frank!Framework parent - using: Apache License, Version 2.0
+Frank!Framework Security - using: Apache License, Version 2.0
+Frank!Framework support for Akamai - using: Apache License, Version 2.0
+Frank!Framework support for Aspose - using: Apache License, Version 2.0
+Frank!Framework support for AWS - using: Apache License, Version 2.0
+Frank!Framework support for Batch processing - using: Apache License, Version 2.0
+Frank!Framework support for Cmis - using: Apache License, Version 2.0
+Frank!Framework support for iDIN - using: Apache License, Version 2.0
+Frank!Framework support for Messaging Systems - using: Apache License, Version 2.0
+Frank!Framework support for SAP - using: Apache License, Version 2.0
+Frank!Framework support for TIBCO - using: Apache License, Version 2.0
+Frank!Framework Test - using: Apache License, Version 2.0
+Frank!Framework webapp - using: Apache License, Version 2.0
 Ibis Servicedispatcher Core - using: Apache License, Version 2.0
 ibis-echo2 - using: Apache License, Version 2.0
 IBM Data Server Driver for JDBC and SQLJ - using: International Program License Agreement (IPLA)

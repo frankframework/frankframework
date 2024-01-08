@@ -3,13 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-tomcat-example</artifactId>
+	<artifactId>frankframework-docker-tomcat-example</artifactId>
 	<name>Frank!Framework - Docker > Tomcat > Example</name>
 	<packaging>pom</packaging>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-docker-tomcat</artifactId>
+		<groupId>org.frankframework</groupId>
+		<artifactId>frankframework-docker-tomcat</artifactId>
 		<version>${revision}</version>
 	</parent>
 
@@ -21,14 +21,14 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-example</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-example</artifactId>
 			<version>${project.version}</version>
 			<classifier>resources</classifier>
 		</dependency>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-adapterframework-example</artifactId>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-example</artifactId>
 			<version>${project.version}</version>
 			<classifier>context</classifier>
 		</dependency>
@@ -65,8 +65,8 @@
 						<configuration>
 							<artifactItems>
 								<artifactItem>
-									<groupId>org.ibissource</groupId>
-									<artifactId>ibis-adapterframework-example</artifactId>
+									<groupId>org.frankframework</groupId>
+									<artifactId>frankframework-example</artifactId>
 									<version>${project.version}</version>
 									<classifier>context</classifier>
 									<type>jar</type>

@@ -1,7 +1,7 @@
 <module>
 	<adapter name="Authentication test" active="${active.authentication}">
 		<receiver name="Authentication-Java">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-authentication" />
 		</receiver>
 		<errorMessageFormatter/>
@@ -10,41 +10,41 @@
 				<exit path="READY" state="success" />
 			</exits>
 
-			<pipe name="selectSenderBasedOnRootNode" className="nl.nn.adapterframework.pipes.XmlSwitch" />
+			<pipe name="selectSenderBasedOnRootNode" className="org.frankframework.pipes.XmlSwitch" />
 
-			<pipe name="testalias" className="nl.nn.adapterframework.pipes.CredentialCheckingPipe"
+			<pipe name="testalias" className="org.frankframework.pipes.CredentialCheckingPipe"
 				targetUserid="testUser" targetPassword="testPassword" authAlias="${test.alias}"
 				defaultUserid="fakeDefaultUsername" defaultPassword="fakeDefaultPassword">
 				<forward name="success" path="text2Xml" />
 			</pipe>
 
-			<pipe name="unknownAliasWithDefaults" className="nl.nn.adapterframework.pipes.CredentialCheckingPipe"
+			<pipe name="unknownAliasWithDefaults" className="org.frankframework.pipes.CredentialCheckingPipe"
 				targetUserid="fakeDefaultUsername" targetPassword="fakeDefaultPassword" authAlias="dummy" defaultUserid="fakeDefaultUsername" defaultPassword="fakeDefaultPassword">
 				<forward name="success" path="text2Xml" />
 				<forward name="exception" path="extractErrorMessage" />
 			</pipe>
 
-			<pipe name="unknownAliasWithoutDefaults" className="nl.nn.adapterframework.pipes.CredentialCheckingPipe"
+			<pipe name="unknownAliasWithoutDefaults" className="org.frankframework.pipes.CredentialCheckingPipe"
 				targetUserid="dummy" targetPassword="dummy" authAlias="dummy">
 				<forward name="success" path="text2Xml" />
 				<forward name="exception" path="extractErrorMessage" />
 			</pipe>
 
-			<pipe name="expandCredentialProperty" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+			<pipe name="expandCredentialProperty" className="org.frankframework.pipes.FixedResultPipe"
 				substituteVars="true" returnString="username: ${credential:username:${test.alias}}; password:${credential:password:${test.alias}}">
 				<forward name="success" path="text2Xml" />
 				<forward name="exception" path="extractErrorMessage" />
 			</pipe>
 
-			<pipe name="expandCredentialPropertyNotAllowed" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+			<pipe name="expandCredentialPropertyNotAllowed" className="org.frankframework.pipes.FixedResultPipe"
 				substituteVars="true" returnString="username: ${credential:username:secretAlias}; password:${credential:password:secretAlias}">
 				<forward name="success" path="text2Xml" />
 				<forward name="exception" path="extractErrorMessage" />
 			</pipe>
 
-			<pipe name="extractErrorMessage" className="nl.nn.adapterframework.pipes.XsltPipe" xpathExpression="*/@message"/>
+			<pipe name="extractErrorMessage" className="org.frankframework.pipes.XsltPipe" xpathExpression="*/@message"/>
 
-			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
+			<pipe name="text2Xml" className="org.frankframework.pipes.Text2XmlPipe"
 				xmlTag="result" useCdataSection="false">
 				<forward name="success" path="READY" />
 			</pipe>

@@ -1,7 +1,7 @@
 <module>
 	<adapter name="RestListener_ArchiveDoc">
 		<receiver>
-			<listener className="nl.nn.adapterframework.http.RestListener"
+			<listener className="org.frankframework.http.RestListener"
 				name="RestListener_ArchiveDoc" uriPattern="doc" method="POST" />
 		</receiver>
 		<pipeline firstPipe="insertDoc" transactionAttribute="Required">
@@ -10,8 +10,8 @@
 			</exits>
 
 			<pipe name="insertDoc"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
 					queryType="insert"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true">
@@ -24,7 +24,7 @@
 	</adapter>
 	<adapter name="RestSender_ArchiveDoc">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-RestSender_ArchiveDoc" />
 		</receiver>
 		<pipeline firstPipe="readFile">
@@ -32,21 +32,21 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="readFile" className="nl.nn.adapterframework.pipes.FilePipe"
+			<pipe name="readFile" className="org.frankframework.pipes.FilePipe"
 				actions="read" outputType="stream" getInputFromFixedValue="RestListener/pdf/sample.pdf"
 				fileSource="classpath" storeResultInSessionKey="fileContent"
 				preserveInput="true">
 				<forward name="success" path="setFileName" />
 			</pipe>
 
-			<pipe name="setFileName" className="nl.nn.adapterframework.pipes.PutInSession"
+			<pipe name="setFileName" className="org.frankframework.pipes.PutInSession"
 				sessionKey="fileContentName" value="sample.pdf">
 				<forward name="success" path="callRest" />
 			</pipe>
 
 			<pipe name="callRest"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.http.HttpSender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.http.HttpSender"
 					methodType="POST"
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc"
 					postType="FORMDATA"
@@ -59,17 +59,17 @@
 				<forward name="success" path="text2Xml" />
 			</pipe>
 
-			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
+			<pipe name="text2Xml" className="org.frankframework.pipes.Text2XmlPipe"
 				xmlTag="id" useCdataSection="false">
 				<forward name="success" path="writeFile" />
 			</pipe>
 
-			<pipe name="writeFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+			<pipe name="writeFile" className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="write" filename="${testdata.dir}/rest/id.xml">
 				<forward name="success" path="text2Xml2" />
 			</pipe>
 
-			<pipe name="text2Xml2" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
+			<pipe name="text2Xml2" className="org.frankframework.pipes.Text2XmlPipe"
 				xmlTag="filename" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -77,7 +77,7 @@
 	</adapter>
 	<adapter name="RestListener_GetDoc">
 		<receiver>
-			<listener className="nl.nn.adapterframework.http.RestListener"
+			<listener className="org.frankframework.http.RestListener"
 				name="RestListener_GetDoc" uriPattern="doc" method="GET" />
 		</receiver>
 		<pipeline firstPipe="setContentType">
@@ -85,12 +85,12 @@
 				<exit state="success" path="EXIT" />
 			</exits>
 
-			<pipe name="setContentType" className="nl.nn.adapterframework.pipes.PutInSession"
+			<pipe name="setContentType" className="org.frankframework.pipes.PutInSession"
 				sessionKey="contentType" value="application/octet-stream">
 				<forward name="success" path="getId" />
 			</pipe>
 
-			<pipe name="getId" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="getId" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="RestListener/xsl/GetId.xsl" storeResultInSessionKey="docId"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="uri" sessionKey="uri" />
@@ -98,9 +98,9 @@
 			</pipe>
 
 			<pipe name="getDocFileName"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				storeResultInSessionKey="docFileName">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="SELECT TVARCHAR FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					scalar="true">
 					<param name="messageKey" sessionKey="docId" />
@@ -108,7 +108,7 @@
 				<forward name="success" path="setContentDisposition" />
 			</pipe>
 
-			<pipe name="setContentDisposition" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="setContentDisposition" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="RestListener/xsl/GetContentDisposition.xsl"
 				storeResultInSessionKey="contentDisposition" getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="fileName" sessionKey="docFileName" />
@@ -116,8 +116,8 @@
 			</pipe>
 
 			<pipe name="getDocAndWriteToFile"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
 					scalar="true" streamResultToServlet="true"
 					blobsCompressed="false">
@@ -129,7 +129,7 @@
 	</adapter>
 	<adapter name="RestListener_GetDoc2">
 		<receiver>
-			<listener className="nl.nn.adapterframework.http.RestListener"
+			<listener className="org.frankframework.http.RestListener"
 				name="RestListener_GetDoc2" uriPattern="doc2" method="GET" />
 		</receiver>
 		<pipeline firstPipe="getId">
@@ -137,14 +137,14 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="getId" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="getId" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="RestListener/xsl/GetId2.xsl" storeResultInSessionKey="docId"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="uri" sessionKey="uri" />
 				<forward name="success" path="getUrl" />
 			</pipe>
 
-			<pipe name="getUrl" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="getUrl" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="RestListener/xsl/GetUrl.xsl" storeResultInSessionKey="url"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="baseUrl"
@@ -154,8 +154,8 @@
 			</pipe>
 
 			<pipe name="callRest"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.http.HttpSender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.http.HttpSender"
 					urlParam="url_param" sharedResourceRef="SharedHttpSession">
 					<param name="url_param" sessionKey="url" />
 				</sender>
@@ -165,7 +165,7 @@
 	</adapter>
 	<adapter name="RestSender_GetDoc">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-RestSender_GetDoc" />
 		</receiver>
 		<pipeline firstPipe="getFileName">
@@ -173,17 +173,17 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="getFileName" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="getFileName" className="org.frankframework.pipes.XsltPipe"
 				xpathExpression="filename">
 				<forward name="success" path="readFile" />
 			</pipe>
 
-			<pipe name="readFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+			<pipe name="readFile" className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="read">
 				<forward name="success" path="getUrl" />
 			</pipe>
 
-			<pipe name="getUrl" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="getUrl" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="RestListener/xsl/GetUrl.xsl" storeResultInSessionKey="url" preserveInput="true">
 				<param name="baseUrl"
 					value="${web.protocol}://${web.host}:${web.port}${web.contextpath}/rest/doc2" />
@@ -192,8 +192,8 @@
 			</pipe>
 
 			<pipe name="callRest"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.http.HttpSender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.http.HttpSender"
 					urlParam="url_param"
 					sharedResourceRef="SharedHttpSession"
 				>
@@ -202,12 +202,12 @@
 				<forward name="success" path="writeFile" />
 			</pipe>
 
-			<pipe name="writeFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+			<pipe name="writeFile" className="org.frankframework.pipes.LocalFileSystemPipe"
 				action="write" filename="${testdata.dir}/rest/result.pdf">
 				<forward name="success" path="text2Xml" />
 			</pipe>
 
-			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe"
+			<pipe name="text2Xml" className="org.frankframework.pipes.Text2XmlPipe"
 				xmlTag="filename2" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -215,7 +215,7 @@
 	</adapter>
 	<adapter name="RestListener_GetDoc3">
 		<receiver>
-			<listener className="nl.nn.adapterframework.http.RestListener"
+			<listener className="org.frankframework.http.RestListener"
 				name="RestListener_GetDoc3" uriPattern="doc3" method="GET" />
 		</receiver>
 		<pipeline firstPipe="readFile">
@@ -223,7 +223,7 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="readFile" className="nl.nn.adapterframework.pipes.FilePipe"
+			<pipe name="readFile" className="org.frankframework.pipes.FilePipe"
 				actions="read" outputType="stream" getInputFromFixedValue="RestListener/pdf/sample.pdf"
 				fileSource="classpath" streamResultToServlet="true">
 				<forward name="success" path="EXIT" />
@@ -232,7 +232,7 @@
 	</adapter>
 	<adapter name="RestSender_GetDoc3">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-RestSender_GetDoc3" />
 		</receiver>
 		<pipeline firstPipe="createFileNameKey">
@@ -240,12 +240,12 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="createFileNameKey" className="nl.nn.adapterframework.pipes.PutInSession"
+			<pipe name="createFileNameKey" className="org.frankframework.pipes.PutInSession"
 				sessionKey="fileName" getInputFromFixedValue="${testdata.dir}/rest/result3.pdf">
 				<forward name="success" path="getUrl" />
 			</pipe>
 
-			<pipe name="getUrl" className="nl.nn.adapterframework.pipes.XsltPipe"
+			<pipe name="getUrl" className="org.frankframework.pipes.XsltPipe"
 				styleSheetName="RestListener/xsl/GetUrl.xsl" storeResultInSessionKey="url"
 				getInputFromFixedValue="&lt;dummy/&gt;">
 				<param name="baseUrl"
@@ -255,8 +255,8 @@
 			</pipe>
 
 			<pipe name="callRest"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.http.HttpSender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.http.HttpSender"
 					urlParam="url_param"
 					sharedResourceRef="SharedHttpSession"
 				>
@@ -265,13 +265,13 @@
 				<forward name="success" path="safePdfFile" />
 			</pipe>
 
-			<pipe name="safePdfFile" className="nl.nn.adapterframework.pipes.LocalFileSystemPipe" action="write">
+			<pipe name="safePdfFile" className="org.frankframework.pipes.LocalFileSystemPipe" action="write">
 				<param name="filename" sessionKey="fileName" />
 				<forward name="success" path="text2Xml" />
 			</pipe>
 
-			<pipe name="text2Xml" className="nl.nn.adapterframework.pipes.Text2XmlPipe" getInputFromSessionKey="fileName"
-				xmlTag="filename3" useCdataSection="false">
+			<pipe name="text2Xml" className="org.frankframework.pipes.Text2XmlPipe" getInputFromSessionKey="fileName"
+                  xmlTag="filename3" useCdataSection="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

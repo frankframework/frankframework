@@ -1,14 +1,14 @@
 <module>
 	<adapter name="BatchFileTransformerPipe" description="Test the functioning of the BatchFileTransformerPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BatchFileTransformerPipe" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-BatchFileTransformerPipe" />
 		</receiver>
 		<pipeline firstPipe="processFile" transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="processFile" className="nl.nn.adapterframework.batch.BatchFileTransformerPipe" storeOriginalBlock="true" delete="true">
-				<manager name="rhmBody" className="nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager" separator="+" fieldNr="1" initial="true">
+			<pipe name="processFile" className="org.frankframework.batch.BatchFileTransformerPipe" storeOriginalBlock="true" delete="true">
+				<manager name="rhmBody" className="org.frankframework.batch.FieldPositionRecordHandlerManager" separator="+" fieldNr="1" initial="true">
 					<flow recordKey="UNA:" openBlockBeforeLine="UNA_block" recordHandlerRef="rhWriteUNA" />
 					<flow recordKey="UNB" openBlockBeforeLine="UNB_block" recordHandlerRef="rhWriteUNB" />
 					<flow recordKey="UNZ" recordHandlerRef="rhWriteUNZ" />
@@ -18,15 +18,15 @@
 					<flow recordKey="LBW" recordHandlerRef="rhWriteLBW" />
 					<flow recordKey="*" />
 				</manager>
-				<recordHandler name="rhWriteUNA" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNA" />
-				<recordHandler name="rhWriteUNB" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNB" outputFields="recordSoort,filler,filler,geadresseerde,aanmaakDatumTijd,filler,filler,filler,filler,filler,filler,testAanduiding" />
-				<recordHandler name="rhWriteUNZ" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNZ" outputFields="recordSoort,aantalBerichten,filler" />
-				<recordHandler name="rhWriteUNH" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNH" outputFields="recordSoort,filler,soortBericht" />
-				<recordHandler name="rhWriteUNT" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNT" outputFields="recordSoort,aantalSegmenten,filler" />
-				<recordHandler name="rhWriteENT" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="ENT" outputFields="recordSoort,entiteit,volgNummer" />
-				<recordHandler name="rhWriteLBW" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="LBW" outputFields="recordSoort,label,waarde" />
-				<resultHandler name="BatchFileTransformerPipe_Block" className="nl.nn.adapterframework.batch.ResultBlock2Sender" default="true">
-					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="BatchFileTransformerPipe_Block">
+				<recordHandler name="rhWriteUNA" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNA" />
+				<recordHandler name="rhWriteUNB" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNB" outputFields="recordSoort,filler,filler,geadresseerde,aanmaakDatumTijd,filler,filler,filler,filler,filler,filler,testAanduiding" />
+				<recordHandler name="rhWriteUNZ" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNZ" outputFields="recordSoort,aantalBerichten,filler" />
+				<recordHandler name="rhWriteUNH" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNH" outputFields="recordSoort,filler,soortBericht" />
+				<recordHandler name="rhWriteUNT" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="UNT" outputFields="recordSoort,aantalSegmenten,filler" />
+				<recordHandler name="rhWriteENT" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="ENT" outputFields="recordSoort,entiteit,volgNummer" />
+				<recordHandler name="rhWriteLBW" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator="+" endOfRecord="'" rootTag="LBW" outputFields="recordSoort,label,waarde" />
+				<resultHandler name="BatchFileTransformerPipe_Block" className="org.frankframework.batch.ResultBlock2Sender" default="true">
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="BatchFileTransformerPipe_Block">
 						<param name="originalBlock" sessionKey="originalBlock" />
 					</sender>
 				</resultHandler>
@@ -37,7 +37,7 @@
 
 	<adapter name="BatchFileTransformerPipe_Block">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="BatchFileTransformerPipe_Block" />
+			<listener className="org.frankframework.receivers.JavaListener" name="BatchFileTransformerPipe_Block" />
 		</receiver>
 		<pipeline firstPipe="InsertData1" transactionAttribute="Required">
 			<exits>
@@ -47,24 +47,24 @@
 				INPUT (in de vorm van sessionKeys):
 				- originalBlock
 			-->
-			<pipe name="InsertData1" className="nl.nn.adapterframework.pipes.SenderPipe" storeResultInSessionKey="dataKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" />
+			<pipe name="InsertData1" className="org.frankframework.pipes.SenderPipe" storeResultInSessionKey="dataKey">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" />
 				<forward name="success" path="InsertData2" />
 			</pipe>
 
-			<pipe name="InsertData2" className="nl.nn.adapterframework.pipes.SenderPipe" getInputFromSessionKey="originalMessage">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE" queryType="updateBlob">
+			<pipe name="InsertData2" className="org.frankframework.pipes.SenderPipe" getInputFromSessionKey="originalMessage">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE" queryType="updateBlob">
 					<param name="dataKey" sessionKey="dataKey" />
 				</sender>
 				<forward name="success" path="InsertData3" />
 			</pipe>
-			<pipe name="InsertData3" className="nl.nn.adapterframework.pipes.SenderPipe" storeResultInSessionKey="dataKey">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" />
+			<pipe name="InsertData3" className="org.frankframework.pipes.SenderPipe" storeResultInSessionKey="dataKey">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, 'B', EMPTY_BLOB())" resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true" queryType="insert" />
 				<forward name="success" path="InsertData4" />
 			</pipe>
 
-			<pipe name="InsertData4" className="nl.nn.adapterframework.pipes.SenderPipe" getInputFromSessionKey="originalBlock">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE" queryType="updateBlob">
+			<pipe name="InsertData4" className="org.frankframework.pipes.SenderPipe" getInputFromSessionKey="originalBlock">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=? FOR UPDATE" queryType="updateBlob">
 					<param name="dataKey" sessionKey="dataKey" />
 				</sender>
 				<forward name="success" path="EXIT" />
@@ -74,19 +74,19 @@
 
 	<adapter name="BatchFileTransformerPipe2">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BatchFileTransformerPipe2" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-BatchFileTransformerPipe2" />
 		</receiver>
 		<pipeline firstPipe="processFile">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="processFile" className="nl.nn.adapterframework.batch.BatchFileTransformerPipe" delete="true">
-				<manager className="nl.nn.adapterframework.batch.FieldPositionRecordHandlerManager" fieldNr="1" initial="true" name="allRecords" separator=";">
+			<pipe name="processFile" className="org.frankframework.batch.BatchFileTransformerPipe" delete="true">
+				<manager className="org.frankframework.batch.FieldPositionRecordHandlerManager" fieldNr="1" initial="true" name="allRecords" separator=";">
 					<flow recordHandlerRef="rhAllRecords" recordKey="*" openBlockBeforeLine="records" openBlockBeforeLineNumber="3" />
 				</manager>
-				<recordHandler name="rhAllRecords" className="nl.nn.adapterframework.batch.RecordXmlTransformer" inputSeparator=";" outputFields="NAAM,VOORLETT,VOORV" />
-				<resultHandler name="BatchFileTransformerPipe_Block" className="nl.nn.adapterframework.batch.ResultBlock2Sender" default="true">
-					<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="BatchFileTransformerPipe2_Block" />
+				<recordHandler name="rhAllRecords" className="org.frankframework.batch.RecordXmlTransformer" inputSeparator=";" outputFields="NAAM,VOORLETT,VOORV" />
+				<resultHandler name="BatchFileTransformerPipe_Block" className="org.frankframework.batch.ResultBlock2Sender" default="true">
+					<sender className="org.frankframework.senders.IbisLocalSender" javaListener="BatchFileTransformerPipe2_Block" />
 				</resultHandler>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -95,13 +95,13 @@
 
 	<adapter name="BatchFileTransformerPipe2_Block">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="BatchFileTransformerPipe2_Block" />
+			<listener className="org.frankframework.receivers.JavaListener" name="BatchFileTransformerPipe2_Block" />
 		</receiver>
 		<pipeline firstPipe="echo" transactionAttribute="Required">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 
