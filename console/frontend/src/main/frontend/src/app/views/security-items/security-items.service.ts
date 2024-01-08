@@ -11,8 +11,9 @@ export interface CertificateList {
 export interface SecurityRole {
   allowed: boolean
   'role-name': string
-  specialSubjects: string
-  groups: string
+  description: string
+  specialSubjects: string[]
+  groups: string[]
 }
 
 export interface AuthEntry {
@@ -28,16 +29,16 @@ export interface SapSystem {
 
 export interface JmsRealm {
   name: string
-  datasourceName: string
-  queueConnectionFactoryName: string
-  topicConnectionFactoryName: string
-  info: string
-  connectionPoolProperties: string
+  info: string | null
+  datasourceName?: string
+  connectionPoolProperties?: string
+  queueConnectionFactoryName?: string
+  topicConnectionFactoryName?: string
 }
 
 export interface ServerProps {
-  maximumTransactionTimeout: string
-  totalTransactionLifetimeTimeout: string
+  maximumTransactionTimeout: number
+  totalTransactionLifetimeTimeout: number
 }
 
 export interface Datasource {
@@ -47,7 +48,7 @@ export interface Datasource {
 }
 
 interface SecurityItems {
-  securityRoles: SecurityRole[];
+  securityRoles: Record<string, SecurityRole>;
   datasources: Datasource[];
   authEntries: AuthEntry[];
   jmsRealms: JmsRealm[];
@@ -66,7 +67,7 @@ export class SecurityItemsService {
     private appService: AppService,
   ) { }
 
-  getSecurityItems(){
+  getSecurityItems() {
     return this.http.get<SecurityItems>(this.appService.absoluteApiPath + "securityitems");
   }
 }
