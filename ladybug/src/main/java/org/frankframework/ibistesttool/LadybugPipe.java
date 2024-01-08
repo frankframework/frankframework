@@ -268,7 +268,7 @@ class IbisSecurityContext implements SecurityContext {
 
 	@Override
 	public Principal getUserPrincipal() {
-		return checkRoles ? session.getPrincipal() : null;
+		return checkRoles ? session.getSecurityHandler().getPrincipal() : null;
 	}
 
 	@Override
