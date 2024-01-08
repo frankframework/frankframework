@@ -666,25 +666,27 @@ public class DbmsSupportTest {
 		}
 	}
 
-	//TODO: Convert this test method
 //	@DatabaseTest
 //	public void testQueueHandling(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 //		executeTranslatedQuery(databaseTestEnvironment, "INSERT INTO " + TABLE_NAME + " (TKEY,TINT) VALUES (40,100)", QueryType.OTHER);
 //
 //		String selectQuery = "SELECT TKEY FROM " + TABLE_NAME + " WHERE TINT=100";
-//		assertEquals(40, DbmsUtil.executeIntQuery(databaseTestEnvironment.getConnection(), selectQuery));
+//		Connection connection = databaseTestEnvironment.getConnection();
+//		assertEquals(40, DbmsUtil.executeIntQuery(connection, selectQuery));
 //
 //		String readQueueQuery = databaseTestEnvironment.getDbmsSupport().prepareQueryTextForWorkQueueReading(1, selectQuery);
 //		String peekQueueQuery = databaseTestEnvironment.getDbmsSupport().prepareQueryTextForWorkQueuePeeking(1, selectQuery);
 //
 //		// test that peek and read find records when they are available
-//		assertEquals(40, DbmsUtil.executeIntQuery(databaseTestEnvironment.getConnection(), peekQueueQuery));
-//		assertEquals(40, DbmsUtil.executeIntQuery(databaseTestEnvironment.getConnection(), readQueueQuery));
-//		assertEquals(40, DbmsUtil.executeIntQuery(databaseTestEnvironment.getConnection(), peekQueueQuery));
+//		assertEquals(40, DbmsUtil.executeIntQuery(connection, peekQueueQuery));
+//		assertEquals(40, DbmsUtil.executeIntQuery(connection, readQueueQuery));
+//		assertEquals(40, DbmsUtil.executeIntQuery(connection, peekQueueQuery));
+//		connection.close();
 //
 //		ReadNextRecordConcurrentlyTester nextRecordTester = null;
 //		Semaphore actionFinished = null;
-//		try (Connection workConn1 = databaseTestEnvironment.getConnection()) {
+//		Connection workingConn1 = databaseTestEnvironment.getConnection();
+//		try (Connection workConn1 = workingConn1) {
 //			workConn1.setAutoCommit(false);
 //			try (Statement stmt1 = workConn1.createStatement()) {
 //				stmt1.setFetchSize(1);
@@ -696,7 +698,8 @@ public class DbmsSupportTest {
 //						assertFalse(peek(peekQueueQuery, databaseTestEnvironment), "Peek should skip records already locked, but it found one");    // assert no more records found
 //
 //					if (databaseTestEnvironment.getDbmsSupport().hasSkipLockedFunctionality()) {
-//						try (Connection workConn2 = databaseTestEnvironment.getConnection()) {
+//						Connection workingConn2 = databaseTestEnvironment.getConnection();
+//						try (Connection workConn2 = workingConn2) {
 //							workConn2.setAutoCommit(false);
 //							try (Statement stmt2 = workConn2.createStatement()) {
 //								stmt2.setFetchSize(1);
@@ -707,24 +710,29 @@ public class DbmsSupportTest {
 //								}
 //							}
 //							workConn2.commit();
+//							workingConn2.close();
 //						}
+//						workingConn2.close();
 //
 //						// insert another record
 //						executeTranslatedQuery(databaseTestEnvironment, "INSERT INTO " + TABLE_NAME + " (TKEY,TINT) VALUES (41,100)", QueryType.OTHER);
 //						if (testPeekFindsRecordsWhenTheyAreAvailable)
 //							assertTrue(peek(peekQueueQuery, databaseTestEnvironment), "second record should have been seen by peek query");// assert that record is seen
 //
-//						try (Connection workConn2 = databaseTestEnvironment.getConnection()) {
-//							workConn2.setAutoCommit(false);
-//							try (Statement stmt2 = workConn2.createStatement()) {
+//						Connection workingConn3 = databaseTestEnvironment.getConnection();
+//						try (Connection workConn3 = workingConn3) {
+//							workConn3.setAutoCommit(false);
+//							try (Statement stmt2 = workConn3.createStatement()) {
 //								stmt2.setFetchSize(1);
 //								try (ResultSet rs2 = stmt2.executeQuery(readQueueQuery)) {
 //									assertTrue(rs2.next());
 //									assertEquals(41, rs2.getInt(1));    // find the second record
 //								}
 //							}
-//							workConn2.rollback();
+//							workConn3.rollback();
+//							workingConn3.close();
 //						}
+//						workingConn3.close();
 //					} else {
 //						// Next best behaviour for DBMSes that have no skip lock functionality (like MariaDB):
 //						// another thread must find the next record when the thread that has the current record moves it out of the way
@@ -732,7 +740,7 @@ public class DbmsSupportTest {
 //						executeTranslatedQuery(databaseTestEnvironment, "INSERT INTO " + TABLE_NAME + " (TKEY,TINT) VALUES (41,100)", QueryType.OTHER);
 //
 //						actionFinished = new Semaphore();
-//						nextRecordTester = new ReadNextRecordConcurrentlyTester((ThrowingSupplier<Connection, SQLException>) databaseTestEnvironment.getConnection(), readQueueQuery);
+//						nextRecordTester = new ReadNextRecordConcurrentlyTester((ThrowingSupplier<Connection, SQLException>) connection, readQueueQuery);
 //						nextRecordTester.setActionDone(actionFinished);
 //						nextRecordTester.start();
 //
@@ -749,6 +757,7 @@ public class DbmsSupportTest {
 //				actionFinished.acquire();
 //				assertTrue(nextRecordTester.isPassed(), "Did not read next record");
 //			}
+//			workingConn1.close();
 //		}
 //	}
 
