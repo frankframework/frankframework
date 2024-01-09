@@ -1,6 +1,9 @@
 package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Objects;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
@@ -59,7 +62,8 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 
 		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped-multi-occurences.xml"));
 		String expected = getResource("multi-line-partial-escaped-multi-occurences.result").asString();
-		System.out.println(result.getResult().asString());
+		assertTrue(Objects.requireNonNull(getResource("multi-line-partial-escaped-multi-occurences.result").asString()).contains("<location>at (13,3)</location>"));
+		assertTrue(Objects.requireNonNull(getResource("multi-line-partial-escaped-multi-occurences.result").asString()).contains("<xpath>/Envelope/Body/path/to/code</xpath>"));
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
