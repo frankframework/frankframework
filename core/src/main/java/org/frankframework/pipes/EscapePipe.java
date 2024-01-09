@@ -86,7 +86,6 @@ public class EscapePipe extends FixedForwardPipe {
 		while ((startIndex = result.indexOf(substringStart, startIndex + 1)) != -1) {
 			int endIndex = result.indexOf(substringEnd, startIndex);
 			if (endIndex != -1) {
-				// Get the content between the substrings
 				String content = result.substring(startIndex + substringStart.length(), endIndex);
 
 				String handledContent = handle(content);
@@ -96,7 +95,6 @@ public class EscapePipe extends FixedForwardPipe {
 					handledContent = "null";
 				}
 
-				// Replace the new content in the original string
 				result.replace(startIndex + substringStart.length(), endIndex, handledContent);
 			} else {
 				break;
