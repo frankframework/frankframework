@@ -12,7 +12,7 @@ interface stackTrace {
 type ServerError = {
   status: string,
   error: string,
-  stackTrace: any,
+  stackTrace?: stackTrace[],
 }
 
 @Component({
@@ -38,7 +38,10 @@ export class ErrorComponent implements OnInit {
   cooldown(data: ServerError) {
     this.cooldownCounter = 60;
 
-    if (data.status === "error" || data.status === "INTERNAL_SERVER_ERROR") {
+    if (data.status === "error"
+      || data.status === "INTERNAL_SERVER_ERROR"
+      || data.status === "Internal Server Error"
+      || data.status === "Gateway Timeout") {
       this.appService.updateStartupError(data.error);
       this.stackTrace = data.stackTrace;
 
@@ -49,7 +52,7 @@ export class ErrorComponent implements OnInit {
           this.checkState();
         };
       }, 1000);
-    } else if (data.status === "SERVICE_UNAVAILABLE") {
+    } else if (data.status === "SERVICE_UNAVAILABLE" || "Service Unavailable") {
       this.router.navigate(['/status']);
     };
   };
@@ -60,6 +63,13 @@ export class ErrorComponent implements OnInit {
       /* setTimeout(() => {
         window.location.reload();
       }, 50); */
-    }, error: (response: HttpErrorResponse) => this.cooldown({ error: response.error, status: response.statusText, stackTrace: [] })});
+    }, error: (response: HttpErrorResponse) => {
+      try {
+        const serverError: ServerError = JSON.parse(response.error);
+        this.cooldown(serverError);
+      } catch {
+        this.cooldown({ error: response.error, status: response.statusText });
+      }
+    }});
   };
 }

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { AppService } from 'src/app/app.service';
+import { Adapter, AppService } from 'src/app/app.service';
 
 export type Trigger = {
   name: string,
@@ -11,10 +11,9 @@ export type Trigger = {
   nextFireTime: string
 }
 
-export type JobForm = {
+type Job = {
   name: string
   group: string
-  adapter: string
   listener: string
   cron: string
   interval: string
@@ -24,7 +23,12 @@ export type JobForm = {
   lockkey: string
 }
 
-interface JobResponse extends JobForm {
+export interface JobForm extends Job {
+  adapter: Adapter | null,
+}
+
+interface JobResponse extends Job {
+  adapter: string,
   configuration: string,
   triggers: Trigger[]
 }

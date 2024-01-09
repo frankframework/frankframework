@@ -1,19 +1,19 @@
 <module>
 	<adapter name="MoveFilePipe" description="Test the functioning of the MoveFilePipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-MoveFilePipe" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-MoveFilePipe" />
 		</receiver>
 		<pipeline firstPipe="cleanup dir">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
 
-			<pipe name="cleanup dir" className="nl.nn.adapterframework.pipes.CleanupOldFilesPipe"
+			<pipe name="cleanup dir" className="org.frankframework.pipes.CleanupOldFilesPipe"
 				filePattern="${testdata.dir}/mfp" subdirectories="true" lastModifiedDelta="-1">
 				<forward name="success" path="cleanup dir2" />
 			</pipe>
 
-			<pipe name="cleanup dir2" className="nl.nn.adapterframework.pipes.CleanupOldFilesPipe"
+			<pipe name="cleanup dir2" className="org.frankframework.pipes.CleanupOldFilesPipe"
 				filePattern="${testdata.dir}/mfp2" subdirectories="true" lastModifiedDelta="-1">
 				<forward name="success" path="write file" />
 			</pipe>
@@ -21,7 +21,7 @@
 			<!-- Write file -->
 			<pipe
 				name="write file"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="write"
 	        	filename="${testdata.dir}/mfp/test.txt"
 				getInputFromFixedValue="test"
@@ -31,7 +31,7 @@
 
 			<pipe
 				name="write file2"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="write"
 	        	filename="${testdata.dir}/mfp/test2.txt"
 				getInputFromFixedValue="test2"
@@ -41,7 +41,7 @@
 
 			<pipe
 				name="write file3"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="write"
 	        	filename="${testdata.dir}/mfp/test3.abc"
 				getInputFromFixedValue="test3"
@@ -51,21 +51,21 @@
 
 			<pipe
 				name="write file4"
-	        	className="nl.nn.adapterframework.pipes.FilePipe"
+	        	className="org.frankframework.pipes.FilePipe"
 	        	actions="write"
 	        	filename="${testdata.dir}/mfp/sub/test4.txt"
 				getInputFromFixedValue="test4"
 				createDirectory="true">
 	        	<forward name="success" path="switchAction"/>
 	        </pipe>
-	        
+
 			<!-- choose which action should be done -->
-			<pipe name="switchAction" className="nl.nn.adapterframework.pipes.XmlSwitch" xpathExpression="request/@action" getInputFromSessionKey="originalMessage"/>
-						
+			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action" getInputFromSessionKey="originalMessage"/>
+
 			<!-- Move file with use of directory and filename -->
 			<pipe
 				name="move file [dir_file]"
-	        	className="nl.nn.adapterframework.pipes.MoveFilePipe"
+	        	className="org.frankframework.pipes.MoveFilePipe"
 	        	directory="${testdata.dir}/mfp"
 	        	filename="test.txt"
 	        	move2dir="${testdata.dir}/mfp2"
@@ -76,7 +76,7 @@
 			<!-- Move file with use of filename -->
 			<pipe
 				name="move file [file]"
-	        	className="nl.nn.adapterframework.pipes.MoveFilePipe"
+	        	className="org.frankframework.pipes.MoveFilePipe"
 	        	filename="${testdata.dir}/mfp/test.txt"
 	        	move2dir="${testdata.dir}/mfp2"
 				createDirectory="true">
@@ -86,7 +86,7 @@
 	        <!-- Move file with use of directory and input message -->
 			<pipe
 				name="move file [dir_input]"
-	        	className="nl.nn.adapterframework.pipes.MoveFilePipe"
+	        	className="org.frankframework.pipes.MoveFilePipe"
 	        	directory="${testdata.dir}/mfp"
 	        	move2dir="${testdata.dir}/mfp2"
 	        	getInputFromFixedValue="test.txt"
@@ -97,7 +97,7 @@
 	        <!-- Move file with use of input message -->
 			<pipe
 				name="move file [input]"
-	        	className="nl.nn.adapterframework.pipes.MoveFilePipe"
+	        	className="org.frankframework.pipes.MoveFilePipe"
 	        	move2dir="${testdata.dir}/mfp2"
 	        	getInputFromFixedValue="${testdata.dir}/mfp/test.txt"
 				createDirectory="true">
@@ -107,7 +107,7 @@
 			<!-- Move file with use of wildcard and directory -->
 			<pipe
 				name="move file [dir_wildcard]"
-	        	className="nl.nn.adapterframework.pipes.MoveFilePipe"
+	        	className="org.frankframework.pipes.MoveFilePipe"
 	        	directory="${testdata.dir}/mfp"
 	        	wildcard="*.txt"
 	        	move2dir="${testdata.dir}/mfp2"
@@ -118,7 +118,7 @@
 			<!-- Move file with use of wildcard and filename -->
 			<pipe
 				name="move file [file_wildcard]"
-	        	className="nl.nn.adapterframework.pipes.MoveFilePipe"
+	        	className="org.frankframework.pipes.MoveFilePipe"
 	        	filename="${testdata.dir}/mfp"
 	        	wildcard="*.txt"
 	        	move2dir="${testdata.dir}/mfp2"
@@ -129,7 +129,7 @@
 			<!-- Move file with use of wildcard and input message -->
 			<pipe
 				name="move file [input_wildcard]"
-	        	className="nl.nn.adapterframework.pipes.MoveFilePipe"
+	        	className="org.frankframework.pipes.MoveFilePipe"
 	        	wildcard="*.txt"
 	        	move2dir="${testdata.dir}/mfp2"
 				createDirectory="true"
@@ -140,7 +140,7 @@
 			<!-- Move file with use move2file -->
 			<pipe
 				name="move file [move2file]"
-	        	className="nl.nn.adapterframework.pipes.MoveFilePipe"
+	        	className="org.frankframework.pipes.MoveFilePipe"
 	        	directory="${testdata.dir}/mfp"
 	        	filename="test.txt"
 	        	move2dir="${testdata.dir}/mfp2"
@@ -152,14 +152,14 @@
 			<!-- Move file with use move2fileSessionKey -->
 			<pipe
 				name="move file [move2fileSessionKey]"
-				className="nl.nn.adapterframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSession"
 				sessionKey="move2filename"
 				value="new_test.txt">
- 			 	<forward name="success" path="move file [move2fileSessionKey]2"/> 			 
+ 			 	<forward name="success" path="move file [move2fileSessionKey]2"/>
 			</pipe>
 			<pipe
 				name="move file [move2fileSessionKey]2"
-	        	className="nl.nn.adapterframework.pipes.MoveFilePipe"
+	        	className="org.frankframework.pipes.MoveFilePipe"
 	        	directory="${testdata.dir}/mfp"
 	        	filename="test.txt"
 	        	move2dir="${testdata.dir}/mfp2"
@@ -168,7 +168,7 @@
 	        	<forward name="success" path="list files"/>
 	        </pipe>
 
-			<pipe name="list files" className="nl.nn.adapterframework.pipes.FilePipe"
+			<pipe name="list files" className="org.frankframework.pipes.FilePipe"
 				actions="list" filename="${testdata.dir}/mfp2/*.*">
 				<forward name="success" path="EXIT" />
 			</pipe>

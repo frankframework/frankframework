@@ -1,74 +1,74 @@
 <module>
 	<adapter name="BlockEnabledFixedQuerySender" description="Test the sending items in one block from the ForEachChildElementPipe to the FixedQuerySender">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledFixedQuerySender" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledFixedQuerySender" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
+			<pipe className="org.frankframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
 					<param name="tchar" xpathExpression="/record/char" />
 					<param name="tnumber" value="${jdbc.blockenabledsenders.key}" />
 					<param name="tvarchar" />
 			</pipe>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="BlockEnabledFixedQuerySenderInBlocks" description="Test the sending of multiple blocks from the ForEachChildElementPipe to the FixedQuerySender">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledFixedQuerySenderInBlocks" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledFixedQuerySenderInBlocks" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe" blockSize="2" combineBlocks="false" >
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
+			<pipe className="org.frankframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe" blockSize="2" combineBlocks="false" >
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)" />
 					<param name="tchar" xpathExpression="/record/char" />
 					<param name="tnumber" value="${jdbc.blockenabledsenders.key}" />
 					<param name="tvarchar" />
 			</pipe>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="BlockEnabledFixedQuerySenderInBatch" description="Test the sending of multiple lines from the ForEachChildElementPipe to the FixedQuerySender in batch mode">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledFixedQuerySenderInBatch" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledFixedQuerySenderInBatch" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe">
-				<sender className="nl.nn.adapterframework.jdbc.FixedQuerySender" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)"
-					batchSize="2" />
+			<pipe className="org.frankframework.pipes.ForEachChildElementPipe" name="ForEachChildElementPipe">
+				<sender className="org.frankframework.jdbc.FixedQuerySender" query="insert into IBISTEMP (TKEY, TCHAR, TNUMBER, TVARCHAR) values (SEQ_IBISTEMP.NEXTVAL,?,?,?)"
+                        batchSize="2" />
 					<param name="tchar" xpathExpression="/record/char" />
 					<param name="tnumber" value="${jdbc.blockenabledsenders.key}" />
 					<param name="tvarchar" />
 			</pipe>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="BlockEnabledDirectQuerySender" description="Test the functioning of sending blocks from the StreamLineIteratorPipe to the DirectQuerySender">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledDirectQuerySender" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-BlockEnabledDirectQuerySender" />
 		</receiver>
 		<pipeline>
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe className="nl.nn.adapterframework.pipes.StreamLineIteratorPipe" name="StreamLineIteratorPipe_Record" >
-				<sender className="nl.nn.adapterframework.jdbc.DirectQuerySender" />
+			<pipe className="org.frankframework.pipes.StreamLineIteratorPipe" name="StreamLineIteratorPipe_Record" >
+				<sender className="org.frankframework.jdbc.DirectQuerySender" />
 			</pipe>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -1,4 +1,4 @@
-Ibis AdapterFramework release notes
+Frank!Framework release notes
 ===================================
 
 [Tags](https://github.com/frankframework/frankframework/releases)

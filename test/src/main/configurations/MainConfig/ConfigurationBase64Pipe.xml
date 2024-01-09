@@ -1,4 +1,5 @@
 <module>
+	<!-- This test uses the old package names on purpose, to keep testing the conversion logic -->
 	<adapter name="Base64Pipe" description="Test the functioning of the Base64Pipe">
 		<receiver name="Base64Pipe">
 			<listener className="nl.nn.adapterframework.receivers.JavaListener"

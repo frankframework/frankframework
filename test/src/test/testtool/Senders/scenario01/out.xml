@@ -1,5 +1,5 @@
 <errorMessage timestamp="Mon Dec 04 18:20:24 CET 2023" originator="IAF_ss9 8.0-SNAPSHOT" message="Adapter [SendersExceptionInSenderWithExceptionForward] msgId [synthetic-message-id-a9fee1b8--28ad0d7c_18c35d5dec4_-7f68]: Pipe [Call ExceptionPipe] caught exception: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;: IbisLocalSender [Call ExceptionPipe-sender] exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;">
-  <location class="nl.nn.adapterframework.core.Adapter" name="SendersExceptionInSenderWithExceptionForward"/>
+  <location class="org.frankframework.core.Adapter" name="SendersExceptionInSenderWithExceptionForward"/>
   <details>IGNORE</details>
   <originalMessage messageId="synthetic-message-id-a9fee1b8--28ad0d7c_18c35d5dec4_-7f68" receivedTime="Mon Dec 04 18:20:23 CET 2023">&lt;test/&gt;</originalMessage>
 </errorMessage>

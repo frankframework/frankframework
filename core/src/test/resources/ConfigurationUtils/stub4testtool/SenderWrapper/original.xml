@@ -2,7 +2,7 @@
 	<adapter name="SenderWrapper">
 		<receiver name="SenderWrapper">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="SenderWrapper"
 			/>
 		</receiver>
@@ -13,10 +13,10 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.senders.SenderWrapper"
+				className="org.frankframework.senders.SenderWrapper"
 				>
-				<sender className="nl.nn.adapterframework.senders.ParallelSenders">
-					<sender className="nl.nn.adapterframework.senders.EchoSender"/>
+				<sender className="org.frankframework.senders.ParallelSenders">
+					<sender className="org.frankframework.senders.EchoSender"/>
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>

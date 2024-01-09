@@ -88,10 +88,10 @@
 	</xsl:template>
 
 	<!-- For local senders, add a 'forward' to the sub-adapter -->
-	<xsl:template match="sender[@className='nl.nn.adapterframework.senders.IbisLocalSender']" mode="preprocess">
+	<xsl:template match="sender[@className='org.frankframework.senders.IbisLocalSender']" mode="preprocess">
 		<xsl:copy>
 			<xsl:call-template name="defaultCopyActions"/>
-			<xsl:variable name="targetListener" select="ancestor::adapter/../adapter/receiver/listener[@className='nl.nn.adapterframework.receivers.JavaListener' and @name=current()/@javaListener]"/>
+			<xsl:variable name="targetListener" select="ancestor::adapter/../adapter/receiver/listener[@className='org.frankframework.receivers.JavaListener' and @name=current()/@javaListener]"/>
 			<xsl:if test="exists($targetListener)">
 				<forward name="" path="{$targetListener/@name}" targetID="{generate-id($targetListener)}"/>
 			</xsl:if>

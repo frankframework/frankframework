@@ -1,15 +1,15 @@
 <configuration>
 	  <adapter name="XmlQuerySender">
       <receiver name="testtool-XmlQuerySender">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-XmlQuerySender"/>
       </receiver>
 		    <receiver name="XmlQuerySender">
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    name="XmlQuerySender"/>
 		    </receiver>
       <receiver name="testtool-XmlQuerySender-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-XmlQuerySender-1"/>
       </receiver>
 
@@ -18,10 +18,10 @@
 				        <exit path="READY" state="success"/>
 			      </exits>
 			      <pipe name="Call Sender"
-               className="nl.nn.adapterframework.pipes.SenderPipe"
+               className="org.frankframework.pipes.SenderPipe"
                timeOutOnResult="[timeout]"
                exceptionOnResult="[error]">
-				        <sender className="nl.nn.adapterframework.jdbc.XmlQuerySender"
+				        <sender className="org.frankframework.jdbc.XmlQuerySender"
                     queryType="select"/>
 				        <forward name="success" path="READY"/>
 			      </pipe>

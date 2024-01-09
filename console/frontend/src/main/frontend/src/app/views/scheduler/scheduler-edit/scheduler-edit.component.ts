@@ -41,7 +41,7 @@ export class SchedulerEditComponent extends SchedulerAddEditParent implements On
         this.form = {
           name: data.name,
           group: data.group,
-          adapter: data.adapter,
+          adapter: Object.values(this.adapters).find(adapter => adapter.name === data.adapter) ?? null,
           listener: data.listener,
           cron: data.triggers[0].cronExpression || "",
           interval: data.triggers[0].repeatInterval || "",
@@ -61,7 +61,7 @@ export class SchedulerEditComponent extends SchedulerAddEditParent implements On
     fd.append("name", this.form.name);
     fd.append("group", this.form.group);
     fd.append("configuration", this.selectedConfiguration);
-    fd.append("adapter", this.form.adapter);
+    fd.append("adapter", this.form.adapter?.name ?? "");
     fd.append("listener", this.form.listener);
 
     if (this.form.cron)

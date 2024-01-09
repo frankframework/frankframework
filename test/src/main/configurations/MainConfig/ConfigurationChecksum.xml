@@ -1,9 +1,9 @@
 <module>
 	<adapter name="ChecksumTest-Java" >
-		<receiver 
+		<receiver
 			name="Checksum-Java">
             <listener
-	            className="nl.nn.adapterframework.receivers.JavaListener"
+	            className="org.frankframework.receivers.JavaListener"
 	            serviceName="ibis4test-checksum"
 	        />
 		</receiver>
@@ -15,33 +15,33 @@
 
 			<pipe
 				name="selectSenderBasedOnRootNode"
-				className="nl.nn.adapterframework.pipes.XmlSwitch" >
+				className="org.frankframework.pipes.XmlSwitch" >
 			</pipe>
 
 
-			<pipe 
+			<pipe
 				name="CRC32"
-				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				className="org.frankframework.pipes.ChecksumPipe"
 				type="CRC32"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
-			<pipe 
+			<pipe
 				name="Adler32"
-				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				className="org.frankframework.pipes.ChecksumPipe"
 				type="Adler32"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
-			<pipe 
+			<pipe
 				name="MD5"
-				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				className="org.frankframework.pipes.ChecksumPipe"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
-			<pipe 
+			<pipe
 				name="SHA"
-				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				className="org.frankframework.pipes.ChecksumPipe"
 				type="SHA"
 				>
 				<forward name="success" path="READY"/>
@@ -50,17 +50,17 @@
 	</adapter>
 
 	<adapter name="ChecksumTest-File" active="${active.fxf}" >
-		<receiver 
+		<receiver
 			name="Checksum-FXF"
 		>
-			<listener 
-				className="nl.nn.adapterframework.extensions.fxf.FxfListener" 
-				destinationName="${jms.destination.fxf}" 
+			<listener
+				className="org.frankframework.extensions.fxf.FxfListener"
+				destinationName="${jms.destination.fxf}"
 				script="${FXF_init}"
 				applicationId="CHECKSUM"
-				jmsRealm="fxf" 
+				jmsRealm="fxf"
 				delete="true"
-				workDirectory="yyyy" 
+				workDirectory="yyyy"
 				fxfDestinationName="zzzz"
 			/>
 		</receiver>
@@ -72,56 +72,56 @@
 
 			<pipe
 				name="selectSenderBasedOnTransferName"
-				className="nl.nn.adapterframework.pipes.XmlSwitch" 
+				className="org.frankframework.pipes.XmlSwitch"
 				getInputFromSessionKey="FxfTransferName" >
 			</pipe>
 
 
-			<pipe 
+			<pipe
 				name="CRC32"
-				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				className="org.frankframework.pipes.ChecksumPipe"
 				type="CRC32"
 				inputIsFile="true"
 				>
 				<forward name="success" path="ResponseSender"/>
 			</pipe>
-			<pipe 
+			<pipe
 				name="Adler32"
-				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				className="org.frankframework.pipes.ChecksumPipe"
 				type="Adler32"
 				inputIsFile="true"
 				>
 				<forward name="success" path="ResponseSender"/>
 			</pipe>
-			<pipe 
+			<pipe
 				name="MD5"
-				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				className="org.frankframework.pipes.ChecksumPipe"
 				inputIsFile="true"
 				>
 				<forward name="success" path="ResponseSender"/>
 			</pipe>
-			<pipe 
+			<pipe
 				name="SHA"
-				className="nl.nn.adapterframework.pipes.ChecksumPipe"
+				className="org.frankframework.pipes.ChecksumPipe"
 				type="SHA"
 				inputIsFile="true"
 				>
 				<forward name="success" path="ResponseSender"/>
 			</pipe>
-			<pipe 
-		        name="ResponseSender" > 
-		        <sender 
-		                className="nl.nn.adapterframework.jms.JmsSender" 
+			<pipe
+		        name="ResponseSender" >
+		        <sender
+		                className="org.frankframework.jms.JmsSender"
 		                destinationName="${jms.destination.i4testiaf_out}"
 		                deliveryMode="NON_PERSISTENT"
 		                jmsRealm="qcf"
 		        >
 		        	<param name="SOURCE" value="I4TESTGR"/>
-				</sender> 
-				<messageLog className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/ChecksumTest-File" />
+				</sender>
+				<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="${applicationId}/ChecksumTest-File" />
 			  <forward name="success" path="READY" />
-			</pipe>	
+			</pipe>
 		</pipeline>
 	</adapter>
-	
+
 </module>
