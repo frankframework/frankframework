@@ -29,11 +29,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.rest.ApiListener.AuthenticationMethods;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.frankframework.lifecycle.DynamicRegistration.Servlet;
 import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
+import org.frankframework.stream.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -268,5 +271,14 @@ public class ApiListenerTest {
 		listener.configure();
 
 		assertEquals("uriPattern: /dummy; method: HEAD; consumes: JSON; produces: XML", listener.getPhysicalDestinationName());
+	}
+
+	@Test
+	void testGetEmptyMessageBodyWithHeadMethod() throws ListenerException {
+		listener.setMethod(ApiListener.HttpMethod.HEAD);
+
+		Object result = listener.processRequest(new Message("Mocked request"), new PipeLineSession());
+
+		assertTrue(result.toString().contains("[]"));
 	}
 }
