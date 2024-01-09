@@ -66,7 +66,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		}
 	}
 
-	protected String inWhichRoleIsUser(PipeLineSession session, List<String> roles) {
+	protected String getFirstMatchingUserRole(PipeLineSession session, List<String> roles) {
 		ISecurityHandler securityHandler = session.getSecurityHandler();
 		return roles.stream()
 				.filter(securityHandler::isUserInRole)
@@ -93,7 +93,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 				throw new PipeRunException(this, "role cannot be empty");
 			}
 
-			String userRole = inWhichRoleIsUser(session, rolesToCheck);
+			String userRole = getFirstMatchingUserRole(session, rolesToCheck);
 			if (userRole == null) {
 				throw new SecurityException("user is not in role(s) [" + rolesToCheck + "]");
 			}
@@ -103,10 +103,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 				return new PipeRunResult(relatedForward, message);
 			}
 		} catch (SecurityException e) {
-			if (notInRoleForward!=null) { // is this needed? configure() test for != null..?
-				return new PipeRunResult(notInRoleForward, message);
-			}
-			throw new PipeRunException(this,"",e);
+			return new PipeRunResult(notInRoleForward, message);
 		}
 		return new PipeRunResult(getSuccessForward(),message);
 	}
@@ -115,7 +112,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		return role;
 	}
 
-	/** the j2ee role(s) to check, if multiple roles specified, the first matching role is prioritized.  */
+	/** the j2ee role(s) to check, if the user in multiple roles, the first specified role will be matched. */
 	public void setRole(String string) {
 		role = string;
 	}

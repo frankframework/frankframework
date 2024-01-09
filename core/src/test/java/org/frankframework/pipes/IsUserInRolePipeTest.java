@@ -5,6 +5,7 @@ import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunResult;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,31 +19,39 @@ import static org.mockito.Mockito.when;
  *
  * @author <Laurens Mäkel>
  */
-public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
+class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 
-	public final String ROLE = "MyRole";
-	public final String ROLE2 = "MyRole1";
-	public final String ROLE3 = "MyRole2";
+	private final String ROLE = "MyRole";
+	private final String ROLE2 = "MyRole1";
+	private final String ROLE3 = "MyRole2";
+	private final String ROLES = ROLE+","+ROLE2+","+ROLE3;
 
-	public final String NOT_IN_ROLE_FORWARD_NAME = "notInRole";
-	public final String NOT_IN_ROLE_FORWARD_PATH = "doSomething";
+	private final String NOT_IN_ROLE_FORWARD_NAME = "notInRole";
+	private final String NOT_IN_ROLE_FORWARD_PATH = "doSomething";
+
+	private ISecurityHandler securityHandler;
+	private PipeLineSession mockedSession;
 
 	@Override
 	public IsUserInRolePipe createPipe() throws ConfigurationException {
 		return new IsUserInRolePipe();
 	}
 
+	@BeforeEach
+	void beforeEach(){
+		securityHandler = mock(ISecurityHandler.class);
+		mockedSession = mock(PipeLineSession.class);
+		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
+	}
+
 	@Test
-	public void requiresNotInRoleForward() {
+	void requiresNotInRoleForward() {
 		assertThrows(ConfigurationException.class, () -> pipe.configure(), "notInRoleForwardName not found");
 	}
 
 	@Test
-	public void userIsInSingleRoleAttribute() throws Exception {
+	void userIsInSingleRoleAttribute() throws Exception {
 		// Given
-		ISecurityHandler securityHandler = mock(ISecurityHandler.class);
-		PipeLineSession mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
 		when(securityHandler.isUserInRole(any(String.class))).thenReturn(true);
 
 		setNotInRoleForward();
@@ -57,11 +66,8 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	}
 
 	@Test
-	public void userIsInSingleRoleInput() throws Exception {
+	void userIsInSingleRoleInput() throws Exception {
 		// Given
-		ISecurityHandler securityHandler = mock(ISecurityHandler.class);
-		PipeLineSession mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
 		when(securityHandler.isUserInRole(any(String.class))).thenReturn(true);
 
 		setNotInRoleForward();
@@ -75,11 +81,8 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	}
 
 	@Test
-	public void userIsNotInSingleRoleAttribute() throws Exception {
+	void userIsNotInSingleRoleAttribute() throws Exception {
 		// Given
-		ISecurityHandler securityHandler = mock(ISecurityHandler.class);
-		PipeLineSession mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
 		when(securityHandler.isUserInRole(any(String.class))).thenReturn(false);
 
 		setNotInRoleForward();
@@ -94,11 +97,8 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	}
 
 	@Test
-	public void userIsNotInSingleRoleInput() throws Exception {
+	void userIsNotInSingleRoleInput() throws Exception {
 		// Given
-		ISecurityHandler securityHandler = mock(ISecurityHandler.class);
-		PipeLineSession mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
 		when(securityHandler.isUserInRole(any(String.class))).thenReturn(false);
 
 		setNotInRoleForward();
@@ -112,12 +112,8 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	}
 
 	@Test
-	public void userIsInMultiRoleInput() throws Exception {
+	void userIsInMultiRoleInput() throws Exception {
 		// Given
-		ISecurityHandler securityHandler = mock(ISecurityHandler.class);
-		PipeLineSession mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
-
 		when(securityHandler.isUserInRole(ROLE)).thenReturn(false);
 		when(securityHandler.isUserInRole(ROLE2)).thenReturn(true);
 		when(securityHandler.isUserInRole(ROLE3)).thenReturn(true);
@@ -126,19 +122,15 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, ROLE+","+ROLE2+","+ROLE3, mockedSession);
+		PipeRunResult prr = doPipe(pipe, ROLES, mockedSession);
 
 		// Expect
 		assertEquals(PipeForward.SUCCESS_FORWARD_NAME, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void userIsInMultiRoleInputWithForwards() throws Exception {
+	void userIsInMultiRoleInputWithForwards() throws Exception {
 		// Given
-		ISecurityHandler securityHandler = mock(ISecurityHandler.class);
-		PipeLineSession mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
-
 		when(securityHandler.isUserInRole(ROLE)).thenReturn(false);
 		when(securityHandler.isUserInRole(ROLE2)).thenReturn(true);
 		when(securityHandler.isUserInRole(ROLE3)).thenReturn(true);
@@ -150,25 +142,21 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, ROLE+","+ROLE2+","+ROLE3, mockedSession);
+		PipeRunResult prr = doPipe(pipe, ROLES, mockedSession);
 
 		// Expect
 		assertEquals(ROLE2, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void userIsInMultiRoleAttribute() throws Exception {
+	void userIsInMultiRoleAttribute() throws Exception {
 		// Given
-		ISecurityHandler securityHandler = mock(ISecurityHandler.class);
-		PipeLineSession mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
-
 		when(securityHandler.isUserInRole(ROLE)).thenReturn(false);
 		when(securityHandler.isUserInRole(ROLE2)).thenReturn(true);
 		when(securityHandler.isUserInRole(ROLE3)).thenReturn(true);
 
 		setNotInRoleForward();
-		pipe.setRole(ROLE+","+ROLE2+","+ROLE3);
+		pipe.setRole(ROLES);
 		pipe.configure();
 
 		// When
@@ -179,12 +167,8 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	}
 
 	@Test
-	public void userIsInMultiRoleAttributeWithForwards() throws Exception {
+	void userIsInMultiRoleAttributeWithForwards() throws Exception {
 		// Given
-		ISecurityHandler securityHandler = mock(ISecurityHandler.class);
-		PipeLineSession mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
-
 		when(securityHandler.isUserInRole(ROLE)).thenReturn(false);
 		when(securityHandler.isUserInRole(ROLE2)).thenReturn(true);
 		when(securityHandler.isUserInRole(ROLE3)).thenReturn(true);
@@ -193,7 +177,7 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.registerForward(new PipeForward(ROLE, ""));
 		pipe.registerForward(new PipeForward(ROLE2, ""));
 		pipe.registerForward(new PipeForward(ROLE3, ""));
-		pipe.setRole(ROLE+","+ROLE2+","+ROLE3);
+		pipe.setRole(ROLES);
 		pipe.configure();
 
 		// When
@@ -204,12 +188,8 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	}
 
 	@Test
-	public void userIsNotMultiRoleInput() throws Exception {
+	void userIsNotMultiRoleInput() throws Exception {
 		// Given
-		ISecurityHandler securityHandler = mock(ISecurityHandler.class);
-		PipeLineSession mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
-
 		when(securityHandler.isUserInRole(ROLE)).thenReturn(false);
 		when(securityHandler.isUserInRole(ROLE2)).thenReturn(false);
 		when(securityHandler.isUserInRole(ROLE3)).thenReturn(false);
@@ -218,19 +198,15 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, ROLE+","+ROLE2+","+ROLE3, mockedSession);
+		PipeRunResult prr = doPipe(pipe, ROLES, mockedSession);
 
 		// Expect
 		assertEquals(NOT_IN_ROLE_FORWARD_NAME, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void userIsNotMultiRoleInputWithForwards() throws Exception {
+	void userIsNotMultiRoleInputWithForwards() throws Exception {
 		// Given
-		ISecurityHandler securityHandler = mock(ISecurityHandler.class);
-		PipeLineSession mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
-
 		when(securityHandler.isUserInRole(ROLE)).thenReturn(false);
 		when(securityHandler.isUserInRole(ROLE2)).thenReturn(false);
 		when(securityHandler.isUserInRole(ROLE3)).thenReturn(false);
@@ -242,25 +218,21 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, ROLE+","+ROLE2+","+ROLE3, mockedSession);
+		PipeRunResult prr = doPipe(pipe, ROLES, mockedSession);
 
 		// Expect
 		assertEquals(NOT_IN_ROLE_FORWARD_NAME, prr.getPipeForward().getName());
 	}
 
 	@Test
-	public void userIsNotMultiRoleAttribute() throws Exception {
+	void userIsNotMultiRoleAttribute() throws Exception {
 		// Given
-		ISecurityHandler securityHandler = mock(ISecurityHandler.class);
-		PipeLineSession mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
-
 		when(securityHandler.isUserInRole(ROLE)).thenReturn(false);
 		when(securityHandler.isUserInRole(ROLE2)).thenReturn(false);
 		when(securityHandler.isUserInRole(ROLE3)).thenReturn(false);
 
 		setNotInRoleForward();
-		pipe.setRole(ROLE+","+ROLE2+","+ROLE3);
+		pipe.setRole(ROLES);
 		pipe.configure();
 
 		// When
@@ -271,12 +243,8 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	}
 
 	@Test
-	public void userIsNotMultiRoleAttributeWithForwards() throws Exception {
+	void userIsNotMultiRoleAttributeWithForwards() throws Exception {
 		// Given
-		ISecurityHandler securityHandler = mock(ISecurityHandler.class);
-		PipeLineSession mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
-
 		when(securityHandler.isUserInRole(ROLE)).thenReturn(false);
 		when(securityHandler.isUserInRole(ROLE2)).thenReturn(false);
 		when(securityHandler.isUserInRole(ROLE3)).thenReturn(false);
@@ -285,7 +253,7 @@ public class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.registerForward(new PipeForward(ROLE, ""));
 		pipe.registerForward(new PipeForward(ROLE2, ""));
 		pipe.registerForward(new PipeForward(ROLE3, ""));
-		pipe.setRole(ROLE+","+ROLE2+","+ROLE3);
+		pipe.setRole(ROLES);
 		pipe.configure();
 
 		// When
