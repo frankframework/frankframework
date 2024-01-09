@@ -81,22 +81,25 @@ public class EscapePipe extends FixedForwardPipe {
 			return handle(input);
 		}
 
+		StringBuilder result = new StringBuilder(input);
 		int i = -1;
-		while ((i = input.indexOf(substringStart, i + 1)) != -1) {
-			int j = input.indexOf(substringEnd, i);
+		while ((i = result.indexOf(substringStart, i + 1)) != -1) {
+			int j = result.indexOf(substringEnd, i);
 			if (j != -1) {
-				// Pak de content tussen de substrings
-				String content = input.substring(i + substringStart.length(), j);
+				try {
+					// Get the content between the substrings
+					String content = result.substring(i + substringStart.length(), j);
 
-				String processedContent = handle(content);
-
-				// Replace the geparste content in de originele string
-				input = input.substring(0, i + substringStart.length()) + processedContent + input.substring(j);
+					// Replace the new content in the original string
+					result.replace(i + substringStart.length(), j, handle(content));
+				} catch (NullPointerException nullPointerException) {
+					return substringStart + "null" + substringEnd;
+				}
 			} else {
 				break;
 			}
 		}
-		return input;
+		return result.toString();
 	}
 
 	private String handle(String input) {
