@@ -82,19 +82,22 @@ public class EscapePipe extends FixedForwardPipe {
 		}
 
 		StringBuilder result = new StringBuilder(input);
-		int i = -1;
-		while ((i = result.indexOf(substringStart, i + 1)) != -1) {
-			int j = result.indexOf(substringEnd, i);
-			if (j != -1) {
-				try {
-					// Get the content between the substrings
-					String content = result.substring(i + substringStart.length(), j);
+		int startIndex = -1;
+		while ((startIndex = result.indexOf(substringStart, startIndex + 1)) != -1) {
+			int endIndex = result.indexOf(substringEnd, startIndex);
+			if (endIndex != -1) {
+				// Get the content between the substrings
+				String content = result.substring(startIndex + substringStart.length(), endIndex);
 
-					// Replace the new content in the original string
-					result.replace(i + substringStart.length(), j, handle(content));
-				} catch (NullPointerException nullPointerException) {
-					return substringStart + "null" + substringEnd;
+				String handledContent = handle(content);
+
+				//Use "null" value when XML parsing goes wrong
+				if (handledContent == null) {
+					handledContent = "null";
 				}
+
+				// Replace the new content in the original string
+				result.replace(startIndex + substringStart.length(), endIndex, handledContent);
 			} else {
 				break;
 			}
@@ -104,18 +107,19 @@ public class EscapePipe extends FixedForwardPipe {
 
 	private String handle(String input) {
 		switch (getDirection()) {
-		case ENCODE:
-			return XmlEncodingUtils.encodeChars(input);
-		case DECODE:
-			return XmlEncodingUtils.decodeChars(input);
-		case CDATA2TEXT:
-			return XmlUtils.cdataToText(input);
-		default:
-			throw new NotImplementedException("unknown direction ["+getDirection()+"]");
+			case ENCODE:
+				return XmlEncodingUtils.encodeChars(input);
+			case DECODE:
+				return XmlEncodingUtils.decodeChars(input);
+			case CDATA2TEXT:
+				return XmlUtils.cdataToText(input);
+			default:
+				throw new NotImplementedException("unknown direction [" + getDirection() + "]");
 		}
 	}
 
 	// ESCAPE BETWEEN
+
 	/** substring to start translation */
 	public void setSubstringStart(String substringStart) {
 		this.substringStart = substringStart;
@@ -136,6 +140,7 @@ public class EscapePipe extends FixedForwardPipe {
 
 	/**
 	 * when set <code>true</code> special characters in <code>substringstart</code> and <code>substringend</code> are first translated to their xml equivalents
+	 *
 	 * @ff.default false
 	 */
 	public void setEncodeSubstring(boolean b) {
