@@ -2,7 +2,7 @@
 	<adapter name="ParameterPatternNow">
 		<receiver name="ParameterPatternNow">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="ParameterPatternNow"
 			/>
 		</receiver>
@@ -13,7 +13,7 @@
 			</exits>
 			<pipe
 				name="PutParametersInSession"
-				className="nl.nn.adapterframework.pipes.PutParametersInSession"
+				className="org.frankframework.pipes.PutParametersInSession"
 				>
 				<param name="date" type="datetime" pattern="{now,date,yyyy-MM-dd HH:mm:ss}"/>
 				<param name="date" type="datetime" pattern="{now}"/>

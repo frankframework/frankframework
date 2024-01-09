@@ -2,7 +2,7 @@
 	<adapter name="LogSender">
 		<receiver name="LogSender">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="LogSender"
 			/>
 		</receiver>
@@ -13,10 +13,10 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
 				<sender
-					className="nl.nn.adapterframework.senders.LogSender"
+					className="org.frankframework.senders.LogSender"
 					logLevel="warn"
 				/>
 				<forward name="success" path="READY"/>

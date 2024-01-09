@@ -1,15 +1,15 @@
 <module>
 	<adapter name="WsdlGenerator" active="${active.jms}">
 		<errorMessageFormatter
-			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
+			className="org.frankframework.errormessageformatters.SoapErrorMessage" />
 		<receiver
 			numThreads="4">
-			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
+			<listener className="org.frankframework.extensions.esb.EsbJmsListener"
 				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageProtocol="RR"
 				messageSelector="SOURCE ='I4TIAF2a'" />
 		</receiver>
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-WsdlGenerator" />
 		</receiver>
 		<pipeline firstPipe="FixedReply">
@@ -18,24 +18,24 @@
 			</exits>
 
 			<inputValidator
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+				className="org.frankframework.extensions.esb.EsbSoapValidator"
 				schemaLocation="http://nn.nl/XSD/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1 /WsdlGenerator/xsd/HumanResources_AccessRightsManagement_AccessRightsManagement_1_GetUserAndOfficeDataIntermediary_1_Request.xsd"
 				soapBody="GetUserAndOfficeDataIntermediary_Request" throwException="true">
 			</inputValidator>
 
 			<outputValidator
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+				className="org.frankframework.extensions.esb.EsbSoapValidator"
 				schemaLocation="http://nn.nl/XSD/HumanResources/AccessRightsManagement/AccessRightsManagement/1/GetUserAndOfficeDataIntermediary/1 /WsdlGenerator/xsd/HumanResources_AccessRightsManagement_AccessRightsManagement_1_GetUserAndOfficeDataIntermediary_1_Response.xsd"
 				soapBody="GetUserAndOfficeDataIntermediary_Response" throwException="true">
 			</outputValidator>
 
 			<inputWrapper
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 				direction="unwrap" root="request" removeOutputNamespaces="true">
 			</inputWrapper>
 
 			<outputWrapper
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 				addOutputNamespace="true" retrievePhysicalDestination="false">
 				<param name="errorCode" sessionKey="errorCode" />
 				<param name="errorReason" sessionKey="errorMessage" />
@@ -45,7 +45,7 @@
 					value="ESB.HumanResources.BS.AccessRightsManagement.AccessRightsManagement.1.GetUserAndOfficeDataIntermediary.1.Response" />
 			</outputWrapper>
 
-			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+			<pipe name="FixedReply" className="org.frankframework.pipes.FixedResultPipe"
 				filename="WsdlGenerator/xml/fixedReply.xml">
 				<forward name="success" path="READY" />
 			</pipe>
@@ -54,10 +54,10 @@
 	</adapter>
 	<adapter name="WsdlGenerator2" active="${active.jms}">
 		<errorMessageFormatter
-			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
+			className="org.frankframework.errormessageformatters.SoapErrorMessage" />
 		<receiver
 			numThreads="4">
-			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
+			<listener className="org.frankframework.extensions.esb.EsbJmsListener"
 				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageProtocol="RR"
 				messageSelector="SOURCE ='I4TIAF2b'" />
 		</receiver>
@@ -67,30 +67,30 @@
 			</exits>
 
 			<inputWrapper
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 				direction="unwrap" mode="i2t" removeOutputNamespaces="true">
 			</inputWrapper>
 
 			<outputWrapper
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 				addOutputNamespace="true" mode="i2t">
 				<param name="destination"
 					value="ESB.PropertyAndCasualtyRetail.TS.Vehicle.PropertyAndCasualtyRetailVehicle.1.FindVehicle.1.Request" />
 			</outputWrapper>
 
 			<inputValidator
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+				className="org.frankframework.extensions.esb.EsbSoapValidator"
 				addNamespaceToSchema="true"
 				schemaLocation="http://nn.nl/XSD/PropertyAndCasualtyRetail/Vehicle/PropertyAndCasualtyRetailVehicle/1/FindVehicle/1 /WsdlGenerator/xsd/XSD_FindVehicleType_Request.xsd"
 				soapBody="FindVehicleTypeREQ" throwException="true" />
 
 			<outputValidator
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+				className="org.frankframework.extensions.esb.EsbSoapValidator"
 				addNamespaceToSchema="true"
 				schemaLocation="http://nn.nl/XSD/PropertyAndCasualtyRetail/Vehicle/PropertyAndCasualtyRetailVehicle/1/FindVehicle/1 /WsdlGenerator/xsd/XSD_FindVehicleType_Reply.xsd"
 				soapBody="FindVehicleTypeRLY" throwException="true" />
 
-			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+			<pipe name="FixedReply" className="org.frankframework.pipes.FixedResultPipe"
 				filename="WsdlGenerator/xml/fixedReply2.xml">
 				<forward name="success" path="READY" />
 			</pipe>
@@ -99,15 +99,15 @@
 	</adapter>
 	<adapter name="WsdlGenerator3" active="${active.jms}">
 		<errorMessageFormatter
-			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
+			className="org.frankframework.errormessageformatters.SoapErrorMessage" />
 		<receiver
 			numThreads="4">
-			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
+			<listener className="org.frankframework.extensions.esb.EsbJmsListener"
 				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageProtocol="RR"
 				messageSelector="SOURCE ='I4TIAF2c'" />
 		</receiver>
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-WsdlGenerator3" />
 		</receiver>
 		<pipeline firstPipe="FixedReply">
@@ -116,27 +116,27 @@
 			</exits>
 
 			<inputValidator
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+				className="org.frankframework.extensions.esb.EsbSoapValidator"
 				schemaLocation="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1 /WsdlGenerator/xsd/CustomerAdministration_Party_Party_1_FindBPPensions_1.xsd"
 				soapBody="RequestFindBPPensionsREQ" mode="reg" cmhVersion="2" throwException="true" />
 			<outputValidator
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+				className="org.frankframework.extensions.esb.EsbSoapValidator"
 				schemaLocation="http://nn.nl/XSD/CustomerAdministration/Party/Party/1/FindBPPensions/1 /WsdlGenerator/xsd/CustomerAdministration_Party_Party_1_FindBPPensions_1.xsd"
 				soapBody="ReplyFindBPPensionsRLY" mode="reg" cmhVersion="2" throwException="true" />
 
 			<inputWrapper
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 				direction="unwrap" cmhVersion="2" removeOutputNamespaces="true">
 			</inputWrapper>
 
 			<outputWrapper addOutputNamespace="true"
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+				className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 				cmhVersion="2" retrievePhysicalDestination="false">
 				<param name="destination"
 					value="ESB.CustomerAdministration.TS.Party.Party.1.FindBPPensions.1.Response" />
 			</outputWrapper>
 
-			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+			<pipe name="FixedReply" className="org.frankframework.pipes.FixedResultPipe"
 				filename="WsdlGenerator/xml/fixedReply3.xml">
 				<forward name="success" path="READY" />
 			</pipe>
@@ -145,15 +145,15 @@
 	</adapter>
 	<adapter name="WsdlGenerator4" active="${active.jms}">
 		<errorMessageFormatter
-			className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage" />
+			className="org.frankframework.errormessageformatters.SoapErrorMessage" />
 		<receiver
 			numThreads="4">
-			<listener className="nl.nn.adapterframework.extensions.esb.EsbJmsListener"
+			<listener className="org.frankframework.extensions.esb.EsbJmsListener"
 				destinationName="${jms.destination.i4testiaf_in}" jmsRealm="qcf" messageProtocol="RR"
 				messageSelector="SOURCE ='I4TIAF2d'" />
 		</receiver>
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-WsdlGenerator4" />
 		</receiver>
 		<pipeline firstPipe="FixedReply">
@@ -161,36 +161,36 @@
 				<exit path="READY" state="success" />
 			</exits>
 
-			<inputValidator 
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+			<inputValidator
+				className="org.frankframework.extensions.esb.EsbSoapValidator"
 				schemaLocation="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1 /WsdlGenerator/xsd/AccountInformation_CD_1_GetPaymentReferenceAndPayLink_1.xsd"
 				soapBody="GetPaymentReferenceAndPayLink_Request"
 				ignoreUnknownNamespaces="true"
 				cmhVersion="2"
 				throwException="true">
 			</inputValidator>
-			
-			<outputValidator 
-				className="nl.nn.adapterframework.extensions.esb.EsbSoapValidator"
+
+			<outputValidator
+				className="org.frankframework.extensions.esb.EsbSoapValidator"
 				schemaLocation="http://nn.nl/XSD/AccountInformation/AccountInformation/1/GetPaymentReferenceAndPayLink/1 /WsdlGenerator/xsd/AccountInformation_CD_1_GetPaymentReferenceAndPayLink_1.xsd"
 				soapBody="GetPaymentReferenceAndPayLink_Response"
 				cmhVersion="2"
 				throwException="true">
 			</outputValidator>
-			
-			<inputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+
+			<inputWrapper className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 				direction="unwrap"
 				removeOutputNamespaces="true"
 				cmhVersion="2">
 			</inputWrapper>
-			
-			<outputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+
+			<outputWrapper className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
 				cmhVersion="2"
 				addOutputNamespace="true" retrievePhysicalDestination="false">
 				<param name="destination" value="ESB.AccountInformation.BS.AccountInformation.1.GetPaymentReferenceAndPayLink.1.Response"/>
 			</outputWrapper>
 
-			<pipe name="FixedReply" className="nl.nn.adapterframework.pipes.FixedResultPipe"
+			<pipe name="FixedReply" className="org.frankframework.pipes.FixedResultPipe"
 				filename="WsdlGenerator/xml/fixedReply4.xml">
 				<forward name="success" path="READY" />
 			</pipe>

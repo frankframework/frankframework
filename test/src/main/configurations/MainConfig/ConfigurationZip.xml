@@ -4,7 +4,7 @@
 			name="Zip - Main"
 			maxRetries="0">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-unzip"
 			/>
 		</receiver>
@@ -15,12 +15,12 @@
 			<pipe
 				name="selectSenderBasedOnRootElement"
 				getInputFromSessionKey="originalMessage"
-				className="nl.nn.adapterframework.pipes.XmlSwitch"  >
+				className="org.frankframework.pipes.XmlSwitch"  >
 			</pipe>
 
 			<pipe
 				name="UnZip"
-				className="nl.nn.adapterframework.pipes.UnzipPipe"
+				className="org.frankframework.pipes.UnzipPipe"
 				directory="${testdata.dir}/zip"
 				assumeDirectoryExists="true"
 				>
@@ -30,9 +30,9 @@
 			<pipe
 				name="NestedZipRead"
 				getInputFromSessionKey="stream"
-				className="nl.nn.adapterframework.compression.ZipIteratorPipe"
+				className="org.frankframework.compression.ZipIteratorPipe"
 				>
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-unzipNested" >
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-unzipNested" >
 					<param name="zipdata" sessionKey="zipdata" />
 				</sender>
 				<forward name="success" path="READY"/>
@@ -40,14 +40,14 @@
 
 			<pipe
 				name="ReCreateZip"
-				className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				className="org.frankframework.pipes.FixedResultPipe"
 				returnString="${testdata.dir}/zip/recreated.zip"
 				>
 				<forward name="success" path="create a new zip collection with a specified name"/>
 			</pipe>
 			<pipe
 				name="create a new zip collection with a specified name"
-				className="nl.nn.adapterframework.compression.ZipWriterPipe"
+				className="org.frankframework.compression.ZipWriterPipe"
 				action="open"
 				backwardsCompatibility="true"
 				>
@@ -57,10 +57,10 @@
 			<pipe
 				name="Iterate over a zip file and add the content to a new zip archive"
 				getInputFromSessionKey="stream"
-				className="nl.nn.adapterframework.compression.ZipIteratorPipe"
+				className="org.frankframework.compression.ZipIteratorPipe"
 
 				>
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender" javaListener="ibis4test-RecreateZip" >
+				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="ibis4test-RecreateZip" >
 					<param name="zipdata" sessionKey="zipdata" />
 					<param name="zipwriterhandle" sessionKey="zipwriterhandle" />
 				</sender>
@@ -68,7 +68,7 @@
 			</pipe>
 			<pipe
 				name="ReCreateZip4"
-				className="nl.nn.adapterframework.compression.ZipWriterPipe"
+				className="org.frankframework.compression.ZipWriterPipe"
 				action="close"
 				backwardsCompatibility="true"
 				>
@@ -77,30 +77,30 @@
 
 			<pipe
 				name="SimpleZip"
-				className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				className="org.frankframework.pipes.FixedResultPipe"
 				returnString="${testdata.dir}/zip/simple.zip"
 			/>
 			<pipe
 				name="SimpleZip2"
-				className="nl.nn.adapterframework.compression.ZipWriterPipe"
+				className="org.frankframework.compression.ZipWriterPipe"
 				action="open"
 				backwardsCompatibility="true"
 			/>
 			<pipe
 				name="SimpleZip3"
-				className="nl.nn.adapterframework.compression.ZipWriterPipe"
+				className="org.frankframework.compression.ZipWriterPipe"
 				getInputFromSessionKey="originalMessage"
 				>
 					<param name="filename" value="zipentry.txt" />
 			</pipe>
 			<pipe
 				name="SimpleZip4"
-				className="nl.nn.adapterframework.compression.ZipWriterPipe"
+				className="org.frankframework.compression.ZipWriterPipe"
 				action="close"
 			/>
 			<pipe
 				name="klaar"
-				className="nl.nn.adapterframework.pipes.EchoPipe"
+				className="org.frankframework.pipes.EchoPipe"
 				getInputFromFixedValue="klaar"
 				>
 				<forward name="success" path="READY"/>
@@ -108,18 +108,18 @@
 
 			<pipe
 				name="SimpleZipX"
-				className="nl.nn.adapterframework.pipes.FixedResultPipe"
+				className="org.frankframework.pipes.FixedResultPipe"
 				returnString="${testdata.dir}/zip/simple.zip"
 			/>
 			<pipe
 				name="SimpleZipX2"
-				className="nl.nn.adapterframework.compression.ZipWriterPipe"
+				className="org.frankframework.compression.ZipWriterPipe"
 				action="open"
 				backwardsCompatibility="true"
 			/>
 			<pipe
 				name="SimpleZipX3"
-				className="nl.nn.adapterframework.compression.ZipWriterPipe"
+				className="org.frankframework.compression.ZipWriterPipe"
 				completeFileHeader="true"
 				getInputFromSessionKey="originalMessage"
 				>
@@ -127,23 +127,23 @@
 			</pipe>
 			<pipe
 				name="SimpleZipX4"
-				className="nl.nn.adapterframework.compression.ZipWriterPipe"
+				className="org.frankframework.compression.ZipWriterPipe"
 				action="close"
 			/>
 			<pipe
 				name="klaarX"
-				className="nl.nn.adapterframework.pipes.EchoPipe"
+				className="org.frankframework.pipes.EchoPipe"
 				getInputFromFixedValue="klaarX"
 				>
 				<forward name="success" path="READY"/>
 			</pipe>
 
 			<pipe name="RemoveRecreatedZipFile"
-				  className="nl.nn.adapterframework.pipes.SenderPipe"
+				  className="org.frankframework.pipes.SenderPipe"
 				  preserveInput="true"
 				  getInputFromFixedValue="zip/recreated.zip">
 				  <sender name="localfilesender"
-						  className="nl.nn.adapterframework.senders.LocalFileSystemSender"
+						  className="org.frankframework.senders.LocalFileSystemSender"
 						  action="delete"
 						  root="${testdata.dir}">
 				  </sender>
@@ -151,11 +151,11 @@
 			</pipe>
 
 			<pipe name="RemoveSimpleZipFile"
-				  className="nl.nn.adapterframework.pipes.SenderPipe"
+				  className="org.frankframework.pipes.SenderPipe"
 				  preserveInput="true"
 				  getInputFromFixedValue="zip/simple.zip">
 				  <sender name="localfilesender"
-						  className="nl.nn.adapterframework.senders.LocalFileSystemSender"
+						  className="org.frankframework.senders.LocalFileSystemSender"
 						  action="delete"
 						  root="${testdata.dir}">
 				  </sender>
@@ -163,11 +163,11 @@
 			</pipe>
 
 			<pipe name="RemoveZipDirectory"
-				  className="nl.nn.adapterframework.pipes.SenderPipe"
+				  className="org.frankframework.pipes.SenderPipe"
 				  preserveInput="true"
 				  getInputFromFixedValue="zip">
 				  <sender name="localfilesender"
-						  className="nl.nn.adapterframework.senders.LocalFileSystemSender"
+						  className="org.frankframework.senders.LocalFileSystemSender"
 						  action="delete"
 						  root="${testdata.dir}">
 				  </sender>
@@ -183,7 +183,7 @@
 			name="Java UnZipNested"
 			maxRetries="0">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="ibis4test-unzipNested"
 			/>
 		</receiver>
@@ -196,12 +196,12 @@
 			<pipe
 				name="ReadOuterZipEntry"
 				getInputFromSessionKey="zipdata"
-				className="nl.nn.adapterframework.compression.ZipIteratorPipe"
+				className="org.frankframework.compression.ZipIteratorPipe"
 				streamingContents="false"
 				contentsSessionKey="nestedZipData"
 				charset="ISO-8859-1"
 				>
-				<sender className="nl.nn.adapterframework.senders.FixedResultSender"
+				<sender className="org.frankframework.senders.FixedResultSender"
 					filename="zip/NameAndContents.txt"
 				 >
 					<param name="name"  />
@@ -219,7 +219,7 @@
 			name="Zip-Recreate 1"
 			maxRetries="0">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="ibis4test-RecreateZip"
 			/>
 		</receiver>
@@ -230,7 +230,7 @@
 
 			<pipe
 				name="make entry"
-				className="nl.nn.adapterframework.compression.ZipWriterPipe"
+				className="org.frankframework.compression.ZipWriterPipe"
 				action="stream"
 				backwardsCompatibility="true"
 				>
@@ -239,7 +239,7 @@
 			</pipe>
 			<pipe
 				name="start nested zip"
-				className="nl.nn.adapterframework.compression.ZipWriterPipe"
+				className="org.frankframework.compression.ZipWriterPipe"
 				action="open"
 				zipWriterHandle="zipwriter2"
 				backwardsCompatibility="true"
@@ -249,12 +249,12 @@
 			<pipe
 				name="ZipRead"
 				getInputFromSessionKey="zipdata"
-				className="nl.nn.adapterframework.compression.ZipIteratorPipe"
+				className="org.frankframework.compression.ZipIteratorPipe"
 				streamingContents="false"
 				charset="ISO-8859-1"
 				contentsSessionKey="nestedZipData"
 				>
-				<sender className="nl.nn.adapterframework.compression.ZipWriterSender"
+				<sender className="org.frankframework.compression.ZipWriterSender"
 					collectionName="zipwriter2"
 					backwardsCompatibility="true"
 				>
@@ -264,7 +264,7 @@
 			</pipe>
 			<pipe
 				name="close nested zip"
-				className="nl.nn.adapterframework.compression.ZipWriterPipe"
+				className="org.frankframework.compression.ZipWriterPipe"
 				action="close"
 				collectionName="zipwriter2"
 				backwardsCompatibility="true"
@@ -280,7 +280,7 @@
 			name="Zip-Iterator-Main"
 			>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-zip-iterator-main"
 				/>
 		</receiver>
@@ -291,7 +291,7 @@
 
 			<pipe
 					name="Open"
-					className="nl.nn.adapterframework.compression.ZipWriterPipe"
+					className="org.frankframework.compression.ZipWriterPipe"
 					action="open"
 					collectionName="zipHandle"
 			>
@@ -301,7 +301,7 @@
 			<!-- Data for the files in the ZIP to be created. All static in-built so we do not need a FilePipe -->
 			<pipe
 					name="Get File List"
-					className="nl.nn.adapterframework.pipes.FixedResultPipe"
+					className="org.frankframework.pipes.FixedResultPipe"
 					returnString="&lt;files&gt;
 	&lt;file&gt;&lt;filename&gt;file1.txt&lt;/filename&gt;&lt;contents&gt;File1 Contents
 &lt;/contents&gt;&lt;/file&gt;
@@ -314,10 +314,10 @@
 
 			<pipe
 					name="ForEachFileEntry"
-					className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
+					className="org.frankframework.pipes.ForEachChildElementPipe"
 					collectResults="false" elementXPathExpression="/files/file"
 					>
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+				<sender className="org.frankframework.senders.IbisLocalSender"
 						javaListener="ibis4test-zip-iterator-add-files">
 					<param name="zipHandle" sessionKey="zipHandle"/>
 				</sender>
@@ -325,7 +325,7 @@
 
 			<pipe
 					name="Close"
-					className="nl.nn.adapterframework.compression.ZipWriterPipe"
+					className="org.frankframework.compression.ZipWriterPipe"
 					action="close"
 					collectionName="zipHandle"
 			/>
@@ -334,7 +334,7 @@
 
 			<pipe
 					name="Create unzip target directory"
-					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					className="org.frankframework.pipes.LocalFileSystemPipe"
 					action="mkdir"
 					getInputFromFixedValue="${testdata.dir}/unziperator">
 
@@ -343,20 +343,20 @@
 			</pipe>
 			<pipe
 					name="Create result file"
-					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					className="org.frankframework.pipes.LocalFileSystemPipe"
 					action="create"
 					filename="${testdata.dir}/result.xml"
 			/>
 			<pipe
 					name="Write opening tag"
-					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					className="org.frankframework.pipes.LocalFileSystemPipe"
 					action="append"
 					filename="${testdata.dir}/result.xml"
 					getInputFromFixedValue="&lt;result&gt;"
 			/>
 			<pipe
 					name="Unzip"
-					className="nl.nn.adapterframework.pipes.UnzipPipe"
+					className="org.frankframework.pipes.UnzipPipe"
 					processFile="true"
 					getInputFromFixedValue="${testdata.dir}/ziperator.zip"
 					directory="${testdata.dir}/unziperator"
@@ -364,24 +364,24 @@
 			/>
 			<pipe
 					name="ForEachFile"
-					className="nl.nn.adapterframework.pipes.ForEachChildElementPipe"
+					className="org.frankframework.pipes.ForEachChildElementPipe"
 					collectResults="false" elementXPathExpression="/results/result/fileName"
 			>
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+				<sender className="org.frankframework.senders.IbisLocalSender"
 						javaListener="ibis4test-zip-iterator-collect-files">
 					<param name="zipHandle" sessionKey="zipHandle"/>
 				</sender>
 			</pipe>
 			<pipe
 					name="Write closing tag"
-					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					className="org.frankframework.pipes.LocalFileSystemPipe"
 					action="append"
 					filename="${testdata.dir}/result.xml"
 					getInputFromFixedValue="&lt;/result&gt;"
 			/>
 			<pipe
 					name="Remove unzip target directory"
-					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					className="org.frankframework.pipes.LocalFileSystemPipe"
 					action="rmdir"
 					getInputFromFixedValue="${testdata.dir}/unziperator">
 
@@ -390,7 +390,7 @@
 			</pipe>
 			<pipe
 					name="Read Result File"
-					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					className="org.frankframework.pipes.LocalFileSystemPipe"
 					filename="${testdata.dir}/result.xml"
 					action="readDelete"
 			/>
@@ -402,7 +402,7 @@
 			name="Zip-Iterator-Sub1-Add-To-Zip"
 			>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="ibis4test-zip-iterator-add-files"
 				/>
 		</receiver>
@@ -412,18 +412,18 @@
 			</exits>
 
 			<pipe name="Extract File Contents From Message Into Session"
-				  className="nl.nn.adapterframework.pipes.EchoPipe"
+				  className="org.frankframework.pipes.EchoPipe"
 				  elementToMove="contents"
 				  elementToMoveSessionKey="fileContents"/>
 			<pipe name="Get File Contents For Zip"
-				  className="nl.nn.adapterframework.pipes.GetFromSession"
+				  className="org.frankframework.pipes.GetFromSession"
 				  sessionKey="fileContents"/>
 
 			<!-- Encode/decode causes the original to be registered for close at end of this sub-adapter, issue 5702 -->
-			<pipe name="Encode" className="nl.nn.adapterframework.pipes.Base64Pipe"/>
-			<pipe name="Decode" className="nl.nn.adapterframework.pipes.Base64Pipe" direction="decode"/>
+			<pipe name="Encode" className="org.frankframework.pipes.Base64Pipe"/>
+			<pipe name="Decode" className="org.frankframework.pipes.Base64Pipe" direction="decode"/>
 
-			<pipe className="nl.nn.adapterframework.compression.ZipWriterPipe" collectionName="zipHandle" name="WriteDataToZipStream">
+			<pipe className="org.frankframework.compression.ZipWriterPipe" collectionName="zipHandle" name="WriteDataToZipStream">
 				<param name="filename" sessionKey="originalMessage" xpathExpression="file/filename"/>
 				<forward name="success" path="READY"/>
 			</pipe>
@@ -435,7 +435,7 @@
 			name="Zip-Iterator-Sub2-Collect-Files"
 			>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="ibis4test-zip-iterator-collect-files"
 				/>
 		</receiver>
@@ -446,13 +446,13 @@
 
 			<pipe
 					name="Read File"
-					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					className="org.frankframework.pipes.LocalFileSystemPipe"
 					action="read">
 				<param name="filename" xpathExpression="fileName"/>
 			</pipe>
 			<pipe
 					name="Write File"
-					className="nl.nn.adapterframework.pipes.LocalFileSystemPipe"
+					className="org.frankframework.pipes.LocalFileSystemPipe"
 					action="append"
 					filename="${testdata.dir}/result.xml"
 			/>

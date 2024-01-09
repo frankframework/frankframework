@@ -1,23 +1,23 @@
 <configuration>
 	  <adapter name="DirectoryListener">
       <receiver name="testtool-DirectoryListener">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-DirectoryListener"/>
       </receiver>
 		    <receiver>
-			      <listener className="nl.nn.adapterframework.receivers.DirectoryListener"
+			      <listener className="org.frankframework.receivers.DirectoryListener"
                    name="DirectoryListener"
                    wildcard="*"/>
 		    </receiver>
       <receiver name="testtool-DirectoryListener-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-DirectoryListener-1"/>
       </receiver>
 		    <pipeline firstPipe="EchoPipe">
 			      <exits>
 				        <exit path="EXIT" state="success"/>
 			      </exits>
-			      <pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe">
+			      <pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe">
 				        <forward name="success" path="EXIT"/>
 			      </pipe>
 		    </pipeline>

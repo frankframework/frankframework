@@ -1,16 +1,16 @@
 <module>
 	<adapter name="ErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
-		<errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.XslErrorMessageFormatter" styleSheet="ErrorMessageFormatter/buildGenericError.xsl">
+		<errorMessageFormatter className="org.frankframework.errormessageformatters.XslErrorMessageFormatter" styleSheet="ErrorMessageFormatter/buildGenericError.xsl">
 			<param name="foutCode" value="1001" />
 		</errorMessageFormatter>
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" serviceName="ibis4test-ErrorMessageFormatter" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ErrorMessageFormatter" throwException="false" />
 		</receiver>
 		<pipeline firstPipe="GenerateException">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="GenerateException" className="nl.nn.adapterframework.pipes.ExceptionPipe" getInputFromFixedValue="Some generic Exception">
+			<pipe name="GenerateException" className="org.frankframework.pipes.ExceptionPipe" getInputFromFixedValue="Some generic Exception">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

@@ -5,7 +5,7 @@
 		<receiver name="ManageDatabaseWrapper">
 			<listener name="ManageDatabaseWrapper"
 				serviceName="${manageDatabaseWrapper.serviceName}"
-				className="nl.nn.adapterframework.receivers.JavaListener"/>
+				className="org.frankframework.receivers.JavaListener"/>
 		</receiver>
 
 		<pipeline>
@@ -14,7 +14,7 @@
 			</exits>
 
 			<pipe name="InitSessionKeyDefaults"
-				className="nl.nn.adapterframework.pipes.PutInSession">
+				className="org.frankframework.pipes.PutInSession">
 				<param name="expectedNumberOfResults" sessionKey="expectedNumberOfResults" defaultValue="-1"/>
 				<param name="numberOfAttempts" sessionKey="numberOfAttempts" defaultValue="10"/>
 				<param name="timeout" sessionKey="timeout" defaultValue="1000"/>
@@ -22,16 +22,16 @@
 			</pipe>
 
 			<pipe name="SendToManageDatabase"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				transactionAttribute="RequiresNew"
 				getInputFromSessionKey="originalMessage">
-				<sender className="nl.nn.adapterframework.senders.IbisLocalSender"
+				<sender className="org.frankframework.senders.IbisLocalSender"
 					javaListener="ManageDatabase"/>
 				<forward name="success" path="CheckSessionKey"/>
 			</pipe>
 
 			<pipe name="CheckSessionKey"
-				className="nl.nn.adapterframework.pipes.XmlIf"
+				className="org.frankframework.pipes.XmlIf"
 				getInputFromSessionKey="expectedNumberOfResults"
 				regex="-1"
 				preserveInput="true">
@@ -40,7 +40,7 @@
 			</pipe>
 
 			<pipe name="CheckNumberOfResults"
-				className="nl.nn.adapterframework.pipes.CompareIntegerPipe">
+				className="org.frankframework.pipes.CompareIntegerPipe">
 				<param name="operand1" xpathExpression="sum(manageDatabaseRLY/results/result/result/rowsupdated,count(manageDatabaseRLY/results/result/result/rowset/row))"/>
 				<param name="operand2" sessionKey="expectedNumberOfResults"/>
 				<forward name="lessthan" path="PrepareNextIteration" />
@@ -49,14 +49,14 @@
 			</pipe>
 
 			<pipe name="PrepareNextIteration"
-				className="nl.nn.adapterframework.pipes.IncreaseIntegerPipe"
+				className="org.frankframework.pipes.IncreaseIntegerPipe"
 				sessionKey="numberOfAttempts"
 				increment="-1">
 				<forward name="success" path="ChecknumberOfAttempts" />
 			</pipe>
 
 			<pipe name="ChecknumberOfAttempts"
-				className="nl.nn.adapterframework.pipes.CompareIntegerPipe">
+				className="org.frankframework.pipes.CompareIntegerPipe">
 				<param name="operand1" sessionKey="numberOfAttempts"/>
 				<param name="operand2" value="0"/>
 				<forward name="lessthan" path="EXIT" />
@@ -64,14 +64,14 @@
 				<forward name="equals" path="EXIT" />
 			</pipe>
 
-			<pipe name="Wait" className="nl.nn.adapterframework.pipes.XmlIf" getInputFromSessionKey="timeout" regex="5000" >
+			<pipe name="Wait" className="org.frankframework.pipes.XmlIf" getInputFromSessionKey="timeout" regex="5000" >
 				<forward name="then" path="Wait5000"/>
 				<forward name="else" path="Wait1000"/>
 			</pipe>
-			<pipe name="Wait1000" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="1000">
+			<pipe name="Wait1000" className="org.frankframework.pipes.DelayPipe" delayTime="1000">
 				<forward name="success" path="SendToManageDatabase" />
 			</pipe>
-			<pipe name="Wait5000" className="nl.nn.adapterframework.pipes.DelayPipe">
+			<pipe name="Wait5000" className="org.frankframework.pipes.DelayPipe">
 				<forward name="success" path="SendToManageDatabase" />
 			</pipe>
 		</pipeline>

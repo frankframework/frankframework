@@ -1,8 +1,8 @@
 import { Component, Inject, LOCALE_ID, OnDestroy, OnInit, Renderer2 } from '@angular/core';
 import { Idle } from '@ng-idle/core';
-import { Observable, Subscription, combineLatest, filter, first } from 'rxjs';
+import { Observable, Subscription, filter, first } from 'rxjs';
 import { Adapter, AppConstants, AppService, ServerInfo } from './app.service';
-import { ActivatedRoute, Data, NavigationEnd, NavigationSkipped, NavigationStart, ParamMap, Router, RouterEvent, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, Data, NavigationEnd, NavigationSkipped, NavigationStart, ParamMap, Router, convertToParamMap } from '@angular/router';
 import { ViewportScroller, formatDate } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 // @ts-ignore pace-js does not have types
@@ -37,10 +37,10 @@ export class AppComponent implements OnInit, OnDestroy {
   userName?: string;
   appConstants: AppConstants;
   routeData: Data = {};
+  routeQueryParams: ParamMap = convertToParamMap({});
   isLoginView: boolean = false;
 
   private urlHash$!: Observable<string | null>;
-  private routeQueryParams: ParamMap = convertToParamMap({});
   private _subscriptions = new Subscription();
 
   constructor(
@@ -81,8 +81,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.router.events.pipe(filter((e) =>
       e instanceof NavigationSkipped
-    )).subscribe(e => {
-      const event = e as any as NavigationSkipped
+    )).subscribe(() => {
       const childRoute = this.route.children.slice(-1)[0];
       this.routeQueryParams = childRoute.snapshot.queryParamMap;
       this.routeData = childRoute.snapshot.data;
@@ -383,7 +382,7 @@ export class AppComponent implements OnInit, OnDestroy {
             adapter.status = "stopped";
           }
 
-          this.appService.adapters[adapter.name] = adapter;
+          this.appService.adapters[`${adapter.configuration}/${adapter.name}`] = adapter;
 
           const selectedConfiguration = this.routeQueryParams.get("configuration");
           this.appService.updateAdapterSummary(selectedConfiguration ?? 'All', false);

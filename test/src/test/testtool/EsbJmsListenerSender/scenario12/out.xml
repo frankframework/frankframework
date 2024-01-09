@@ -1,5 +1,5 @@
 <throwable>
-  <class>nl.nn.adapterframework.core.SenderException</class>
+  <class>org.frankframework.core.SenderException</class>
   <message>IbisJavaSender [Test Tool IbisJavaSender] exception processing message using request processor [ibis4test-EsbJmsFFSenderWithDatasource]: (RequestProcessorException) RequestProcessor [ibis4test-EsbJmsFFSenderWithDatasource] caught exception: Pipe [exception] &lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;</message>
   <cause>
     <throwable>
@@ -7,11 +7,11 @@
       <message>RequestProcessor [ibis4test-EsbJmsFFSenderWithDatasource] caught exception</message>
       <cause>
         <throwable>
-          <class>nl.nn.adapterframework.core.ListenerException</class>
+          <class>org.frankframework.core.ListenerException</class>
           <message>Pipe [exception] &lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;</message>
           <cause>
             <throwable>
-              <class>nl.nn.adapterframework.core.PipeRunException</class>
+              <class>org.frankframework.core.PipeRunException</class>
               <message>Pipe [exception] &lt;result&gt;&lt;rowsupdated&gt;1&lt;/rowsupdated&gt;&lt;/result&gt;</message>
             </throwable>
           </cause>

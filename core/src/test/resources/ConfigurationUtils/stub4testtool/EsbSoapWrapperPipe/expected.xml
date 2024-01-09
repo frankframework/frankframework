@@ -1,18 +1,18 @@
 <configuration>
 	  <adapter name="EsbSoapWrapperPipe (mode='reg')">
       <receiver name="testtool-EsbSoapWrapperPipe (mode='reg')">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-EsbSoapWrapperPipe (mode='reg')"
                    throwException="false"/>
       </receiver>
-		    <errorMessageFormatter className="nl.nn.adapterframework.errormessageformatters.SoapErrorMessage"/>
+		    <errorMessageFormatter className="org.frankframework.errormessageformatters.SoapErrorMessage"/>
 		    <receiver>
-			      <listener className="nl.nn.adapterframework.receivers.JavaListener"
+			      <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="ibis4test-EsbSoapWrapperPipe2"
                    throwException="false"/>
 		    </receiver>
       <receiver name="testtool-EsbSoapWrapperPipe (mode='reg')-1">
-         <listener className="nl.nn.adapterframework.receivers.JavaListener"
+         <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="testtool-EsbSoapWrapperPipe (mode='reg')-1"
                    throwException="false"/>
       </receiver>
@@ -20,23 +20,23 @@
 			      <exits>
 				        <exit path="EXIT" state="success"/>
 			      </exits>
-			      <inputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+			      <inputWrapper className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                        useFixedValues="true">
             <param name="destination"
                    value="P2P.Infrastructure.Ibis4TestTool.Stub.Request"/>
          </inputWrapper>
-			      <outputWrapper className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+			      <outputWrapper className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                         useFixedValues="true">
             <param name="destination"
                    value="P2P.Infrastructure.Ibis4TestTool.Stub.Response"/>
          </outputWrapper>
-			
+
 			      <pipe name="switch"
-               className="nl.nn.adapterframework.pipes.XmlSwitch"
+               className="org.frankframework.pipes.XmlSwitch"
                sessionKey="action"/>
 			      <!-- unwrap -->
 			<pipe name="unwrap"
-               className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+               className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                direction="unwrap"
                cmhVersion="1"
                useFixedValues="true">
@@ -44,7 +44,7 @@
 			      </pipe>
 			      <!-- wrap -->
 			<pipe name="wrap"
-               className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+               className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                cmhVersion="1"
                useFixedValues="true">
 				        <param name="businessDomain" value="Publishing"/>
@@ -65,7 +65,7 @@
          </pipe>
 			      <!-- wrap2 -->
 			<pipe name="wrap2"
-               className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+               className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply"
                cmhVersion="1"
                useFixedValues="true">
@@ -79,7 +79,7 @@
 			      </pipe>
 			      <!-- wrap3 -->
 			<pipe name="wrap3"
-               className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+               className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply"
                cmhVersion="1"
                useFixedValues="true">
@@ -89,7 +89,7 @@
 			      </pipe>
 			      <!-- wrap4 -->
 			<pipe name="wrap4"
-               className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+               className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                cmhVersion="1"
                useFixedValues="true">
 				        <param name="destination"
@@ -98,7 +98,7 @@
 			      </pipe>
 			      <!-- wrap5 -->
 			<pipe name="wrap5"
-               className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+               className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                fixResultNamespace="true"
                cmhVersion="1"
                useFixedValues="true">
@@ -108,7 +108,7 @@
 			      </pipe>
 			      <!-- unwrap & wrap -->
 			<pipe name="unwrap_wrap"
-               className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+               className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                direction="unwrap"
                soapHeaderSessionKey="soapHeader"
                cmhVersion="1"
@@ -116,7 +116,7 @@
 				        <forward name="success" path="unwrap_wrap2"/>
 			      </pipe>
 			      <pipe name="unwrap_wrap2"
-               className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+               className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                cmhVersion="1"
                useFixedValues="true">
 				        <param name="businessDomain" value="BusinessDomain"/>
@@ -134,7 +134,7 @@
          </pipe>
 			      <!-- wrap & unwrap -->
 			<pipe name="wrap_unwrap"
-               className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+               className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                cmhVersion="1"
                useFixedValues="true">
 				        <param name="businessDomain" value="Publishing"/>
@@ -153,7 +153,7 @@
                    value="P2P.Infrastructure.Ibis4TestTool.Stub.Request"/>
          </pipe>
 			      <pipe name="wrap_unwrap2"
-               className="nl.nn.adapterframework.extensions.esb.EsbSoapWrapperPipe"
+               className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"
                direction="unwrap"
                cmhVersion="1"
                useFixedValues="true">

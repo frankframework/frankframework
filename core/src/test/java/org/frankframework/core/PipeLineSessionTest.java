@@ -1,0 +1,412 @@
+package org.frankframework.core;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.io.input.ReaderInputStream;
+import org.frankframework.stream.Message;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+/**
+ * Lots of bugs tests, focus on getMessage(String)
+ */
+public class PipeLineSessionTest {
+
+	private PipeLineSession session;
+
+	@BeforeEach
+	public void setUp() throws Exception {
+		session = new PipeLineSession();
+
+		Map<String, Object> map = new HashMap<>();
+		map.put("1", 1);
+		map.put("2", true);
+		map.put("3", "string");
+
+		List<Object> list = new ArrayList<>(map.values());
+		list.add("123");
+		list.add("456");
+		list.add("789");
+
+		session.put("key1", "test");
+		session.put("key1", "test1"); //Overwrite a key
+		session.put("key2", new Message("test2"));
+		session.put("key3", "test3".getBytes());
+		session.put("key4", new ByteArrayInputStream("test4".getBytes()));
+		session.put("key5", list);
+		session.put("key6", list.toArray());
+		session.put("key7", new Date());
+		session.put("key8", 123);
+		session.put("key8b", "456");
+		session.put("key8c", Message.asMessage("456"));
+		session.put("key8d", Message.asByteArray((Object)"456"));
+		session.put("key9", true);
+		session.put("key9b", "true");
+		session.put("key9c", "false");
+		session.put("key10", map);
+		session.put("key11", 123L);
+		session.put("key11b", "456");
+	}
+
+	@Test
+	public void testPutWithCloseable() {
+		// Arrange
+		InputStream closeable = new ReaderInputStream(new StringReader("xyz"));
+
+		// Act
+		session.put("x", closeable);
+
+		// Assert
+		assertTrue(session.getCloseables().containsKey(closeable));
+	}
+
+	@Test
+	public void testPutAllWithCloseable() {
+		// Arrange
+		InputStream closeable = new ReaderInputStream(new StringReader("xyz"));
+		Map<String, Object> values = new HashMap<>();
+		values.put("v1", 1);
+		values.put("v2", 2);
+		values.put("x", closeable);
+
+		// Act
+		session.putAll(values);
+
+		// Assert
+		assertTrue(session.getCloseables().containsKey(closeable));
+	}
+
+	@Test
+	public void testString() {
+		assertEquals("test1", session.get("key1"));
+		assertEquals("test1", session.get("key1", "default"));
+		assertEquals("default", session.get("key1a", "default"));
+	}
+
+	@Test
+	public void testTsSentTsReceived() {
+		Instant tsReceived = Instant.ofEpochMilli(1634150000000L);
+		Instant tsSent = Instant.ofEpochMilli(1634500000000L);
+
+		//Should set the value as a String
+		PipeLineSession.updateListenerParameters(session, null, null, tsReceived, tsSent);
+
+		assertEquals(tsReceived, session.getTsReceived());
+		assertEquals(tsSent, session.getTsSent());
+
+		//Sets the raw value
+		session.put(PipeLineSession.TS_RECEIVED_KEY, tsReceived);
+		session.put(PipeLineSession.TS_SENT_KEY, tsSent);
+
+		assertEquals(tsReceived, session.getTsReceived());
+		assertEquals(tsSent, session.getTsSent());
+	}
+
+	@Test
+	public void testGetMessage() throws Exception {
+		Message message1 = session.getMessage("key1");
+		Message message2 = session.getMessage("key2");
+		Message message3 = session.getMessage("key3");
+		Message message4 = session.getMessage("key4");
+		Message message5 = session.getMessage("doesnt-exist");
+
+		assertEquals("test1", message1.asString());
+		assertEquals("test2", message2.asString());
+		assertEquals("test3", message3.asString());
+		assertEquals("test4", message4.asString());
+		assertTrue(message5.isEmpty(), "If key does not exist, result message should be empty");
+		assertNotNull(((Message) session.get("key2")).asObject(), "SessionKey 'key2' stored in Message should not be closed after reading value");
+	}
+
+	@Test
+	public void testGetString() {
+		String message1 = session.getString("key1");
+		String message2 = session.getString("key2");
+		String message3 = session.getString("key3");
+		String message4 = session.getString("key4");
+		String message5 = session.getString("doesnt-exist");
+
+		assertEquals("test1", message1);
+		assertEquals("test2", message2);
+		assertEquals("test3", message3);
+		assertEquals("test4", message4);
+		assertNull(message5, "If key does not exist, result string should be NULL");
+		assertNotNull(((Message) session.get("key2")).asObject(), "SessionKey 'key2' stored in Message should not be closed after reading value");
+	}
+
+	@Test
+	public void testList() {
+		assertEquals("[1, true, string, 123, 456, 789]", session.get("key5").toString());
+	}
+
+	@Test
+	public void testArray() {
+		assertTrue(session.get("key6") instanceof Object[]);
+		Object[] array = (Object[]) session.get("key6");
+		assertEquals(6, array.length);
+	}
+
+	@Test
+	public void testDate() {
+		assertTrue(session.get("key7") instanceof Date);
+	}
+
+	@Test
+	public void testInteger() {
+		// Arrange
+		session.put("key8e", "123");
+		session.put("key8f", 123L);
+		session.put("key8g", Message.asMessage("123"));
+
+		// Act / Assert
+		assertEquals(123, session.getInteger("key8"));
+		assertEquals(123, session.getInteger("key8e"));
+		assertEquals(123, session.getInteger("key8f"));
+	}
+
+	@Test
+	public void testIntegerWithDefault() {
+		assertEquals(123, session.get("key8"));
+		assertEquals(123, session.get("key8", 0));
+		assertEquals(0, session.get("key8a", 0));
+		assertEquals(456, session.get("key8b", 0));
+		assertEquals(456, session.get("key8c", 0));
+		assertEquals(456, session.get("key8d", 0));
+
+		assertNotNull(((Message) session.get("key8c")).asObject(), "SessionKey 'key8c' stored in Message should not be closed after reading value");
+	}
+
+	@Test
+	public void testBoolean() {
+		// Arrange
+		session.put("key9d", "true");
+		session.put("key9e", "false");
+
+		// Act / Assert
+		assertEquals(true, session.getBoolean("key9"));
+		assertEquals(true, session.getBoolean("key9d"));
+		assertEquals(false, session.getBoolean("key9e"));
+		assertNull(session.getBoolean("key-not-there"));
+	}
+
+	@Test
+	public void testBooleanWithDefault() {
+		assertEquals(true, session.get("key9"));
+		assertTrue(session.get("key9", false));
+		assertFalse(session.get("key9a", false));
+		assertTrue(session.get("key9b", false));
+		assertFalse(session.get("key9c", true));
+	}
+
+	@Test
+	public void testMap() {
+		assertTrue(session.get("key10") instanceof Map);
+		@SuppressWarnings("unchecked")
+		Map<String, Object> map = (Map<String, Object>) session.get("key10");
+		assertEquals(3, map.size());
+	}
+
+	@Test
+	public void testLongWithDefault() {
+		assertEquals(123L, session.get("key11"));
+		assertEquals(123L, session.get("key11", 0L));
+		assertEquals(0L, session.get("key11a", 0L));
+		assertEquals(456L, session.get("key11b", 0L));
+	}
+
+	@Test
+	public void ladybugStubMessageIDTest() {
+		String messageId = "I am a messageID!";
+
+		session.put(PipeLineSession.MESSAGE_ID_KEY, messageId); //key inserted as String
+		assertEquals(messageId, session.getMessageId());
+
+		session.put(PipeLineSession.MESSAGE_ID_KEY, Message.asMessage(messageId)); //key inserted as Message
+		assertEquals(messageId, session.getMessageId());
+	}
+
+	@Test
+	public void ladybugStubCorrelationIDTest() {
+		String correlationId = "I am something else";
+
+		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId); //key inserted as String
+		assertEquals(correlationId, session.getCorrelationId());
+
+		session.put(PipeLineSession.CORRELATION_ID_KEY, Message.asMessage(correlationId)); //key inserted as Message
+		assertEquals(correlationId, session.getCorrelationId());
+	}
+
+	/**
+	 * Method: mergeToParentSession(String keys, Map<String,Object> from, Map<String,Object>
+	 * to)
+	 */
+	@Test
+	public void testMergeToParentSession() {
+		// Arrange
+		PipeLineSession from = new PipeLineSession();
+		PipeLineSession to = new PipeLineSession();
+		String keys = "a,b";
+		from.put("a", 15);
+		from.put("b", 16);
+
+		// Act
+		from.mergeToParentSession(keys, to);
+
+		// Assert
+		assertEquals(from,to);
+	}
+
+	@Test
+	public void testMergeToParentContextMap() {
+		// Arrange
+		PipeLineSession from = new PipeLineSession();
+		Map<String, Object> to = new HashMap<>();
+		String keys = "a,b";
+		from.put("a", 15);
+		from.put("b", 16);
+
+		Message message1 = Message.asMessage("17");
+		from.put("c", message1);
+		to.put("c", message1);
+
+		// Act
+		from.mergeToParentSession(keys, to);
+
+		// Assert
+		assertEquals(from,to);
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"*", ","})
+	public void testMergeToParentSessionCopyAllKeys(String keysToCopy) throws Exception {
+		// Arrange
+		PipeLineSession from = new PipeLineSession();
+		PipeLineSession to = new PipeLineSession();
+		Message message = Message.asMessage("a message");
+		BufferedReader closeable1 = new BufferedReader(new StringReader("a closeable"));
+		Message closeable2 = Message.asMessage("a message is closeable");
+		from.put("a", 15);
+		from.put("b", 16);
+		from.put("c", message);
+		from.put("d", closeable1);
+		from.put("__e", closeable2);
+
+		from.scheduleCloseOnSessionExit(message, "test-c");
+
+		// Act
+		from.mergeToParentSession(keysToCopy, to);
+
+		from.close();
+
+		// Assert
+		assertEquals(from,to);
+
+		assertTrue(to.getCloseables().containsKey(message));
+		assertTrue(to.getCloseables().containsKey(closeable1));
+		assertFalse(to.getCloseables().containsKey(closeable2));
+		assertNotNull(((Message) to.get("c")).asObject());
+		assertEquals("a message", ((Message) to.get("c")).asString());
+		assertEquals("a closeable", ((BufferedReader) to.get("d")).readLine());
+
+		// Act
+		to.close();
+
+		// Assert
+		assertNull(((Message) to.get("c")).asObject());
+		assertNotNull(((Message) to.get("__e")).asObject());
+	}
+
+	@Test
+	public void testMergeToParentSessionLimitedKeys() throws Exception {
+		// Arrange
+		PipeLineSession from = new PipeLineSession();
+		PipeLineSession to = new PipeLineSession();
+
+		Message message1 = Message.asMessage("m1");
+		Message message2 = Message.asMessage("m2");
+
+		String keys = "a,c";
+		from.put("a", 15);
+		from.put("b", 16);
+		from.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, "exitCode");
+		from.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, "exitState");
+
+		// Same key different objects; same object different keys.
+		// Afterwards message1 should be closed and message2 should not be.
+		from.put("d", message1);
+		from.put("e", message2);
+		to.put("d", message2);
+
+		from.scheduleCloseOnSessionExit(message1, "test-d");
+
+		// Act
+		from.mergeToParentSession(keys, to);
+
+		from.close();
+
+		// Assert
+		assertEquals(5, to.size());
+		assertTrue(to.containsKey("a"));
+		assertTrue(to.containsKey("c"));
+		assertTrue(to.containsKey(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
+		assertTrue(to.containsKey(PipeLineSession.EXIT_STATE_CONTEXT_KEY));
+		assertEquals(15, to.get("a"));
+		assertNull(to.get("c"));
+
+		assertNull(message1.asObject());
+		assertEquals("m2", message2.asString());
+	}
+
+	@Test
+	public void testMergeToParentSessionEmptyKeys() {
+		PipeLineSession from = new PipeLineSession();
+		PipeLineSession to = new PipeLineSession();
+		from.put("a", 15);
+		from.put("b", 16);
+		from.mergeToParentSession("", to);
+		assertEquals(0,to.size());
+	}
+
+	@Test
+	public void testNotCloseSystemCloseables() throws Exception {
+		// Arrange
+		javax.jms.Session jmsSession = mock(AutoCloseableJmsSession.class);
+		session.put("__JmsSession", jmsSession);
+		doAnswer((params) -> fail("Should not close JMS Session")).when(jmsSession).close();
+
+		java.sql.Connection jdbcConnection = mock(java.sql.Connection.class);
+		session.put("CloseThis", jdbcConnection);
+
+		// Act
+		session.close();
+
+		// Assert
+		verify(jdbcConnection, times(1)).close();
+	}
+
+	private interface AutoCloseableJmsSession extends javax.jms.Session, AutoCloseable {
+		// No methods added
+	}
+}

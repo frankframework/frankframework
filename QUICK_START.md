@@ -12,8 +12,8 @@ By using either our minimal or full bundle you don't have the overhead of defini
 
 ```
 <parent>
-	<groupId>org.ibissource</groupId>
-	<artifactId>bundle-minimal</artifactId>
+	<groupId>org.frankframework</groupId>
+	<artifactId>frankframework-bundle-minimal</artifactId>
 	<version>${ff.version}</version>
 </parent>
 ```
@@ -21,8 +21,8 @@ Or the full bundle which contains almost every module:
 
 ```
 <parent>
-	<groupId>org.ibissource</groupId>
-	<artifactId>bundle-full</artifactId>
+	<groupId>org.frankframework</groupId>
+	<artifactId>frankframework-bundle-full</artifactId>
 	<version>${ff.version}</version>
 </parent>
 ```
@@ -30,8 +30,8 @@ If you wish to use `CMIS` or `Aspose` you will need to manually add those depend
 
 ```
 <dependency>
-	<groupId>org.ibissource</groupId>
-	<artifactId>ibis-adapterframework-aspose</artifactId>
+	<groupId>org.frankframework</groupId>
+	<artifactId>frankframework-aspose</artifactId>
 	<version>${ff.version}</version>
 </dependency>
 ```
@@ -48,7 +48,7 @@ If you want to create custom images to run the framework, or wish to see how we 
 You may choose to use our pre-build Docker images, which you can directly run without having to compile our code.
 More info about using and creating containers can be found in [Docker.md](Docker.md).
 
-All production-ready containers will be pushed to our [Nexus Repository Manager](https://nexus.frankframework.org/) `frankframework-docker` repository. Helm charts are available [in the charts repository](https://github.com/ibissource/charts).
+All production-ready containers will be pushed to our [Nexus Repository Manager](https://nexus.frankframework.org/) `frankframework-docker` repository. Helm charts are available [in the charts repository](https://github.com/frankframework/charts).
 
 ## Frank!Manual
 In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>. If you cannot find an answer to your question feel free to [submit a question in discussions](https://github.com/frankframework/frankframework/discussions).

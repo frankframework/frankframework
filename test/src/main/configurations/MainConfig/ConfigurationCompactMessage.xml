@@ -2,14 +2,14 @@
 	<adapter name="CompactMessage-JavaListener">
 		<receiver chompCharSize="50"
 			elementToMoveChain="AuditLog_Action;Message;Text">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-CompactMessage-JavaListener" />
 		</receiver>
 		<pipeline firstPipe="echo">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe"
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe"
 				restoreMovedElements="true">
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -18,32 +18,32 @@
 	<adapter name="CompactMessage-JavaListener2">
 		<receiver chompCharSize="50"
 			elementToMove="Location">
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-CompactMessage-JavaListener2" />
 		</receiver>
 		<pipeline firstPipe="echo">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<outputValidator className="nl.nn.adapterframework.pipes.XmlValidator"
+			<outputValidator className="org.frankframework.pipes.XmlValidator"
 				schema="xsd/any.xsd"
 				root="Envelope" throwException="true" restoreMovedElements="true">
 			</outputValidator>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe">
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="CompactMessage-JavaListener3">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 					  serviceName="ibis4test-CompactMessage-JavaListener3" />
 		</receiver>
 		<pipeline firstPipe="echo">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="echo" className="nl.nn.adapterframework.pipes.EchoPipe"
+			<pipe name="echo" className="org.frankframework.pipes.EchoPipe"
 				  elementToMoveChain="AuditLog_Action;Message;Text">
 				<forward name="success" path="EXIT" />
 			</pipe>

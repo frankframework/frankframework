@@ -24,7 +24,10 @@
         <a href=""><i class="fa fa-cogs"></i> <span class="nav-label">Configurations</span> <span
             class="fa arrow"></span></a>
         <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'configuration')">
-          <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><a routerLink="/configurations">Show Configurations</a></li>
+          <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><a
+            routerLink="/configurations"
+            [queryParams]="{ name: getConfigurationsQueryParam() }"
+          >Show Configurations</a></li>
           <li routerLinkActive="active"><a routerLink="/configurations/manage">Manage Configurations</a></li>
         </ul>
       </li>
@@ -39,9 +42,9 @@
           <li routerLinkActive="active"><a routerLink="/logging/settings">Log Settings</a></li>
         </ul>
       </li>
-      <li [ngClass]="getClassByRoute('active', 'testing')" class="nav-group">
+      <li [ngClass]="getClassByRoute('active', ['testing', 'test-'])" class="nav-group">
         <a href=""><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span></a>
-        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'testing')">
+        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', ['testing', 'test-'])">
           <li routerLinkActive="active"><a routerLink="/testing/larva">Larva</a></li>
           <li routerLinkActive="active"><a routerLink="/testing/ladybug">Ladybug</a></li>
           <li routerLinkActive="active"><a routerLink="/testing/ladybug-beta">Ladybug (beta)</a></li>
@@ -49,9 +52,9 @@
           <li routerLinkActive="active"><a routerLink="/test-service-listener">Test a ServiceListener</a></li>
         </ul>
       </li>
-      <li [ngClass]="getClassByRoute('active', 'jdbc')" class="nav-group">
+      <li [ngClass]="getClassByRoute('active', ['jdbc', 'liquibase'])" class="nav-group">
         <a href=""><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span></a>
-        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'jdbc')">
+        <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', ['jdbc', 'liquibase'])">
           <li routerLinkActive="active"><a routerLink="/jdbc/execute-query">Execute Query</a></li>
           <li routerLinkActive="active"><a routerLink="/jdbc/browse-tables">Browse Tables</a></li>
           <li routerLinkActive="active"><a routerLink="/liquibase">Liquibase Script</a></li>

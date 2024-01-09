@@ -1,18 +1,18 @@
 <configuration>
 	<adapter name="FtpFileRetrieverPipe">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="FtpFileRetrieverPipe" />
+			<listener className="org.frankframework.receivers.JavaListener" name="FtpFileRetrieverPipe" />
 		</receiver>
 		<pipeline firstPipe="FtpFileRetrieverPipe">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="FtpFileRetrieverPipe" className="nl.nn.adapterframework.ftp.FtpFileRetrieverPipe" 
-				host="${msg.ftp.host}" 
-				port="${msg.ftp.port}" 
-				remoteDirectory="${msg.ftp.dir}" 
-				ftpTypeDescription="${msg.ftp.type}" 
-				authAlias="${msg.ftp.alias}" 
+			<pipe name="FtpFileRetrieverPipe" className="org.frankframework.ftp.FtpFileRetrieverPipe"
+				host="${msg.ftp.host}"
+				port="${msg.ftp.port}"
+				remoteDirectory="${msg.ftp.dir}"
+				ftpTypeDescription="${msg.ftp.type}"
+				authAlias="${msg.ftp.alias}"
 				messageIsContent="true" >
 				<forward name="success" path="EXIT"/>
 			</pipe>

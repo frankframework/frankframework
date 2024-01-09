@@ -2,7 +2,7 @@
 	<adapter name="ExceptionPipe" description="ExceptionPipe">
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="ExceptionPipe"
 				serviceName="ibis4test-ExceptionPipe"
 			/>
@@ -13,13 +13,13 @@
 			</exits>
 			<pipe
 				name="Generate timestamp"
-				className="nl.nn.adapterframework.pipes.PutSystemDateInSession"
+				className="org.frankframework.pipes.PutSystemDateInSession"
 				sessionKey="timestamp"
 				dateFormat="yyyyMMdd HH:mm:ss"
 				>
 				<forward name="success" path="Generate exception"/>
 			</pipe>
-			<pipe name="Generate exception" className="nl.nn.adapterframework.pipes.ExceptionPipe">
+			<pipe name="Generate exception" className="org.frankframework.pipes.ExceptionPipe">
 				<forward name="success" path="Generate timestamp"/>
 			</pipe>
 		</pipeline>

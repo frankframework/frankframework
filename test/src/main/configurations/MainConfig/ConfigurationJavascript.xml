@@ -2,7 +2,7 @@
 	<adapter name="Javascript" description="Execute javascript using the JavascriptSender">
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-Javascript"
 			/>
 		</receiver>
@@ -11,8 +11,8 @@
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="Javascript"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
+				className="org.frankframework.pipes.SenderPipe">
+					<sender className="org.frankframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
 						jsFunctionName="f2"
 						engineName="J2V8">
@@ -27,7 +27,7 @@
 	<adapter name="JavascriptDouble" description="Execute javascript using the JavascriptSender">
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-JavascriptDouble"
 			/>
 		</receiver>
@@ -36,9 +36,9 @@
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="Javascript"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				storeResultInSessionKey = "resultSessionKey">
-					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
+					<sender className="org.frankframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
 						jsFunctionName="f2"
 						engineName="J2V8">
@@ -49,8 +49,8 @@
 				<forward name="exception" path="EXIT" />
 			</pipe>
 			<pipe name="Javascript2"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
+				className="org.frankframework.pipes.SenderPipe">
+					<sender className="org.frankframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
 						jsFunctionName="f2"
 						engineName="J2V8">
@@ -65,7 +65,7 @@
 	<adapter name="JavascriptCallback" description="Call a sender with javascript code">
 		<receiver>
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-JavascriptCallback"
 			/>
 		</receiver>
@@ -74,15 +74,15 @@
 				<exit path="EXIT" state="success"/>
 			</exits>
 			<pipe name="JavascriptCallback"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-					<sender className="nl.nn.adapterframework.senders.JavascriptSender"
+				className="org.frankframework.pipes.SenderPipe">
+					<sender className="org.frankframework.senders.JavascriptSender"
 						jsFileName="JavaScript/JavascriptTest.js"
 						jsFunctionName="f5"
 						engineName="J2V8">
 						<param name="x" type="integer" sessionKey="originalMessage"/>
 						<param name="y" type="integer" value="2"/>
 						<sender name = "echoFunction"
-							className="nl.nn.adapterframework.senders.EchoSender">
+							className="org.frankframework.senders.EchoSender">
 						</sender>
 					</sender>
 				<forward name="success" path="EXIT" />

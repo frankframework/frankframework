@@ -6,7 +6,7 @@
 			transactionAttribute="Required"
 			transactionTimeout="2">
 			<listener
-				className="nl.nn.adapterframework.extensions.fxf.FxfListener"
+				className="org.frankframework.extensions.fxf.FxfListener"
 				destinationName="${jms.destination.fxf}"
 				script="${FXF_init}"
 				applicationId="TIMEOUTFXF"
@@ -15,7 +15,7 @@
 				workDirectory="yyyy"
 				fxfDestinationName="zzzz"
 			/>
-			<errorStorage className="nl.nn.adapterframework.jdbc.JdbcTransactionalStorage"
+			<errorStorage className="org.frankframework.jdbc.JdbcTransactionalStorage"
 				slotId="${applicationId}/TransactionTimeoutFxfListener" />
 		</receiver>
 
@@ -23,7 +23,7 @@
 			<exits>
 				<exit path="READY" state="success"/>
 			</exits>
-			<pipe name="delay" className="nl.nn.adapterframework.pipes.DelayPipe" delayTime="3000">
+			<pipe name="delay" className="org.frankframework.pipes.DelayPipe" delayTime="3000">
 					<forward name="success" path="READY" />
 				</pipe>
 			</pipeline>

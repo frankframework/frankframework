@@ -2,7 +2,7 @@
 	<adapter name="SenderSeries">
 		<receiver name="SenderSeries">
 			<listener
-				className="nl.nn.adapterframework.receivers.JavaListener"
+				className="org.frankframework.receivers.JavaListener"
 				name="SenderSeries"
 			/>
 		</receiver>
@@ -13,27 +13,27 @@
 			</exits>
 			<pipe
 				name="Call Sender"
-				className="nl.nn.adapterframework.pipes.SenderPipe"
+				className="org.frankframework.pipes.SenderPipe"
 				>
-				<sender className="nl.nn.adapterframework.senders.SenderSeries">
-					<sender className="nl.nn.adapterframework.jms.JmsSender"
+				<sender className="org.frankframework.senders.SenderSeries">
+					<sender className="org.frankframework.jms.JmsSender"
 						destinationName="Test1"
 						lookupDestination="false"/>
 					<sender name="JmsSender-L1"
-						className="nl.nn.adapterframework.jms.JmsSender"
+						className="org.frankframework.jms.JmsSender"
 						destinationName="Test2"
 						lookupDestination="false"/>
-					<sender className="nl.nn.adapterframework.senders.ParallelSenders">
-						<sender className="nl.nn.adapterframework.senders.EchoSender"/>
-						<sender className="nl.nn.adapterframework.jms.JmsSender"
+					<sender className="org.frankframework.senders.ParallelSenders">
+						<sender className="org.frankframework.senders.EchoSender"/>
+						<sender className="org.frankframework.jms.JmsSender"
 							destinationName="Test3"
 							lookupDestination="false"/>
 						<sender name="JmsSender-L2"
-							className="nl.nn.adapterframework.jms.JmsSender"
+							className="org.frankframework.jms.JmsSender"
 							destinationName="Test4"
 							lookupDestination="false"/>
 					</sender>
-					<sender className="nl.nn.adapterframework.senders.EchoSender"/>
+					<sender className="org.frankframework.senders.EchoSender"/>
 				</sender>
 				<forward name="success" path="READY"/>
 			</pipe>

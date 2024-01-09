@@ -1,32 +1,32 @@
 <module>
 	<adapter name="ApiWsdlGenerator">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ApiWsdlGenerator" />
+			<listener className="org.frankframework.receivers.JavaListener" name="ApiWsdlGenerator" />
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<inputValidator className="nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator" wsdl="/ApiWsdlGenerator/wsdl/HelloWorld.wsdl" soapBody="HelloWorld_Request" soapBodyNamespace="http://api.nn.nl/HelloWorld" outputSoapBody="HelloWorld_Response" throwException="true" />
-			<inputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" />
-			<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" outputNamespace="http://api.nn.nl/HelloWorld" root="HelloWorld_Response" />
-			<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="ApiWsdlGenerator/xml/HelloWorldResponseStub.xml">
+			<inputValidator className="org.frankframework.extensions.api.ApiWsdlXmlValidator" wsdl="/ApiWsdlGenerator/wsdl/HelloWorld.wsdl" soapBody="HelloWorld_Request" soapBodyNamespace="http://api.nn.nl/HelloWorld" outputSoapBody="HelloWorld_Response" throwException="true" />
+			<inputWrapper className="org.frankframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" />
+			<outputWrapper className="org.frankframework.extensions.api.ApiSoapWrapperPipe" outputNamespace="http://api.nn.nl/HelloWorld" root="HelloWorld_Response" />
+			<pipe name="HelloWorld" className="org.frankframework.pipes.FixedResultPipe" filename="ApiWsdlGenerator/xml/HelloWorldResponseStub.xml">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
 	</adapter>
 	<adapter name="ApiWsdlGeneratorMultipart">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener" name="ApiWsdlGeneratorMultipart" />
+			<listener className="org.frankframework.receivers.JavaListener" name="ApiWsdlGeneratorMultipart" />
 		</receiver>
 		<pipeline firstPipe="HelloWorld">
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<inputValidator className="nl.nn.adapterframework.extensions.api.ApiWsdlXmlValidator" wsdl="/ApiWsdlGenerator/wsdl/HelloWorld.wsdl" soapBody="HelloWorld_Request" soapBodyNamespace="http://api.nn.nl/HelloWorld" outputSoapBody="HelloWorld_Response" multipart="true" throwException="true" />
-			<inputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" />
-			<outputWrapper className="nl.nn.adapterframework.extensions.api.ApiSoapWrapperPipe" outputNamespace="http://api.nn.nl/HelloWorld" root="HelloWorld_Response" />
-			<pipe name="HelloWorld" className="nl.nn.adapterframework.pipes.FixedResultPipe" filename="ApiWsdlGenerator/xml/HelloWorldResponseStub.xml">
+			<inputValidator className="org.frankframework.extensions.api.ApiWsdlXmlValidator" wsdl="/ApiWsdlGenerator/wsdl/HelloWorld.wsdl" soapBody="HelloWorld_Request" soapBodyNamespace="http://api.nn.nl/HelloWorld" outputSoapBody="HelloWorld_Response" multipart="true" throwException="true" />
+			<inputWrapper className="org.frankframework.extensions.api.ApiSoapWrapperPipe" direction="unwrap" />
+			<outputWrapper className="org.frankframework.extensions.api.ApiSoapWrapperPipe" outputNamespace="http://api.nn.nl/HelloWorld" root="HelloWorld_Response" />
+			<pipe name="HelloWorld" className="org.frankframework.pipes.FixedResultPipe" filename="ApiWsdlGenerator/xml/HelloWorldResponseStub.xml">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

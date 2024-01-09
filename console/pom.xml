@@ -2,12 +2,12 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.ibissource</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<groupId>org.frankframework</groupId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-console</artifactId>
+	<artifactId>frankframework-console</artifactId>
 	<name>Frank Console</name>
 	<packaging>pom</packaging>
 

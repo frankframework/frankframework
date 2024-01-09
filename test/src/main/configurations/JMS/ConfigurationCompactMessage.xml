@@ -1,7 +1,7 @@
 <module>
 	<adapter name="CompactMessage-JmsSender" active="${active.jms}">
 		<receiver>
-			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+			<listener className="org.frankframework.receivers.JavaListener"
 				serviceName="ibis4test-CompactMessage-JmsSender" />
 		</receiver>
 		<pipeline firstPipe="Send2Jms">
@@ -9,8 +9,8 @@
 				<exit path="EXIT" state="success" />
 			</exits>
 			<pipe name="Send2Jms"
-				className="nl.nn.adapterframework.pipes.SenderPipe">
-				<sender className="nl.nn.adapterframework.jms.JmsSender"
+				className="org.frankframework.pipes.SenderPipe">
+				<sender className="org.frankframework.jms.JmsSender"
 					jmsRealm="qcf" destinationName="${jms.destination.i4testiaf_in}" synchronous="true"
 					replyToName="${jms.destination.i4testiaf_out}">
 					<param name="SOURCE" value="I4TIAF3" />
@@ -21,10 +21,10 @@
 	</adapter>
 	<adapter name="CompactMessage-JmsListener" active="${active.jms}">
 		<receiver chompCharSize="50" elementToMoveChain="AuditLog_Action;Message;FunctionCallId">
-			<listener className="nl.nn.adapterframework.jms.JmsListener"
+			<listener className="org.frankframework.jms.JmsListener"
 				destinationName="${jms.destination.i4testiaf_in}" useReplyTo="false" jmsRealm="qcf"
 				forceMessageIdAsCorrelationId="true" messageSelector="SOURCE ='I4TIAF3'">
-				<sender className="nl.nn.adapterframework.jms.JmsSender"
+				<sender className="org.frankframework.jms.JmsSender"
 					destinationName="${jms.destination.i4testiaf_out}" jmsRealm="qcf">
 					<param name="SOURCE" value="I4TIAF3" />
 				</sender>
@@ -34,7 +34,7 @@
 			<exits>
 				<exit path="EXIT" state="success" />
 			</exits>
-			<pipe name="EchoPipe" className="nl.nn.adapterframework.pipes.EchoPipe"
+			<pipe name="EchoPipe" className="org.frankframework.pipes.EchoPipe"
 				restoreMovedElements="true">
 				<forward name="success" path="EXIT" />
 			</pipe>

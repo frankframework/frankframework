@@ -7,7 +7,7 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 	">
 
-	<bean name="adapterJmxProcessor" class="nl.nn.adapterframework.jmx.JmxAdapterWrapper" parent="adapterLifecycleWrapper"/>
+	<bean name="adapterJmxProcessor" class="org.frankframework.jmx.JmxAdapterWrapper" parent="adapterLifecycleWrapper"/>
 
 	<bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
 		<property name="locateExistingServerIfPossible" value="true" /><!-- indicate to first look for a server -->
@@ -15,7 +15,7 @@
 		<property name="agentId" value="${management.endpoints.jmx.agentId}" /> <!-- an empty string forces the PlatformMbeanServer to be used -->
 	</bean>
 
-	<bean id="namingStrategy" class="nl.nn.adapterframework.jmx.JmxNamingStrategy">
+	<bean id="namingStrategy" class="org.frankframework.jmx.JmxNamingStrategy">
 		<property name="defaultDomain" value="${management.endpoints.jmx.domain}" />
 	</bean>
 
@@ -24,7 +24,7 @@
 		<property name="server" ref="mbeanServer"/>
 		<property name="ensureUniqueRuntimeObjectNames" value="false" />
 		<property name="assembler">
-			<bean class="nl.nn.adapterframework.jmx.JmxMBeanInfoAssembler" />
+			<bean class="org.frankframework.jmx.JmxMBeanInfoAssembler" />
 		</property>
 		<property name="registrationPolicy" value="REPLACE_EXISTING"/>
 	</bean>
