@@ -15,6 +15,7 @@
 */
 package org.frankframework.jwt;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -25,27 +26,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class JwtSecurityHandlerTest {
-	public final String PRINCIPAL = "TST9";
-	public final String PRINCIPAL_CLAIM = "principal";
+class JwtSecurityHandlerTest {
+	private final String PRINCIPAL = "TST9";
+	private final String PRINCIPAL_CLAIM = "principal";
 
-	public final String ROLE = "TestRole";
-	public final String ROLE_CLAIM = "roles";
+	private final String ROLE = "TestRole";
+	private final String ROLE_CLAIM = "roles";
 
-	public final String NO_MATCH = "NO_MATCH";
+	private final String NO_MATCH = "NO_MATCH";
 
-	public String claim(String key, String value){
+	private String claim(String key, String value){
 		return key+"="+value;
 	}
-
-	public String claims(String... claims){
+	private String claims(String... claims){
 		return String.join(",", claims);
+	}
+	private HashMap<String, Object> claims;
+
+	@BeforeEach
+	void beforeEach(){
+		claims = new HashMap<>();
 	}
 
 	@Test
-	public void principalClaim(){
+	void principalClaim(){
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 
 		// When
@@ -57,9 +62,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void roleClaim(){
+	void roleClaim(){
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(ROLE_CLAIM, ROLE);
 
 		// When
@@ -71,9 +75,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void roleClaimAsList(){
+	void roleClaimAsList(){
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(ROLE_CLAIM, Arrays.asList(ROLE));
 
 		// When
@@ -85,9 +88,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void requiredSingleClaim() {
+	void requiredSingleClaim() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
@@ -96,9 +98,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void requiredSingleClaimMissing() {
+	void requiredSingleClaimMissing() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
 		//Expect/When
@@ -107,9 +108,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void requiredClaims() {
+	void requiredClaims() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 		claims.put(ROLE_CLAIM, PRINCIPAL);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
@@ -119,9 +119,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void requiredClaimsAllMissing() {
+	void requiredClaimsAllMissing() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
 		//Expect/When
@@ -131,9 +130,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void requiredClaimsOneMissing() {
+	void requiredClaimsOneMissing() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 		claims.put(ROLE_CLAIM, PRINCIPAL);
 
@@ -143,9 +141,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void exactMatchSingleClaim() {
+	void exactMatchSingleClaim() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
@@ -154,9 +151,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void exactMatchClaimNotMatching() {
+	void exactMatchClaimNotMatching() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(PRINCIPAL_CLAIM, NO_MATCH);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
@@ -166,9 +162,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void exactMatchClaimMissing() {
+	void exactMatchClaimMissing() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
 		//Expect/When
@@ -177,9 +172,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void exactMatchClaims() {
+	void exactMatchClaims() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 		claims.put(ROLE_CLAIM, ROLE);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
@@ -189,9 +183,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void exactMatchClaimsAllNotMatching() {
+	void exactMatchClaimsAllNotMatching() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(PRINCIPAL_CLAIM, NO_MATCH);
 		claims.put(ROLE_CLAIM, NO_MATCH);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
@@ -202,9 +195,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void exactMatchClaimsOneNotMatching() {
+	void exactMatchClaimsOneNotMatching() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 		claims.put(ROLE_CLAIM, NO_MATCH);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
@@ -215,9 +207,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void exactMatchClaimsAllMissing() {
+	void exactMatchClaimsAllMissing() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
 		//Expect/When
@@ -226,9 +217,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void exactMatchClaimsOneMissing() {
+	void exactMatchClaimsOneMissing() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
@@ -238,9 +228,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void anyMatchSingleClaim() {
+	void anyMatchSingleClaim() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
@@ -249,9 +238,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void anyMatchSingleClaimNotMatching() {
+	void anyMatchSingleClaimNotMatching() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(PRINCIPAL_CLAIM, NO_MATCH);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
@@ -261,9 +249,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void anyMatchSingleClaimMissing() {
+	void anyMatchSingleClaimMissing() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
 		//Expect/When
@@ -272,9 +259,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void anyMatchOutOfTwoClaims() {
+	void anyMatchOutOfTwoClaims() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(PRINCIPAL_CLAIM, PRINCIPAL);
 		claims.put(ROLE_CLAIM, ROLE);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
@@ -284,9 +270,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void anyMatchOutOfTwoClaimsOneMissing() {
+	void anyMatchOutOfTwoClaimsOneMissing() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		claims.put(ROLE_CLAIM, ROLE);
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
@@ -295,9 +280,8 @@ public class JwtSecurityHandlerTest {
 	}
 
 	@Test
-	public void anyMatchOutOfTwoClaimsAllMissing() {
+	void anyMatchOutOfTwoClaimsAllMissing() {
 		// Given
-		HashMap<String, Object> claims = new HashMap<>();
 		JwtSecurityHandler securityHandler = new JwtSecurityHandler(claims, ROLE_CLAIM, PRINCIPAL_CLAIM);
 
 
