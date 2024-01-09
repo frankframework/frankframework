@@ -289,6 +289,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		Response result = service(createRequest(uri, Methods.HEAD));
 		assertEquals(200, result.getStatus());
+		assertEquals("", result.getContentAsString());
 		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
