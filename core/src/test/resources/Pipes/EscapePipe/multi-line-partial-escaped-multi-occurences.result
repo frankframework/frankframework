@@ -1,5 +1,6 @@
 <reasons>
 	<message>Validation using WsdlXmlValidator with &#39;test.wsdl&#39; failed</message>
+	<test>Validation using WsdlXmlValidator with 'test.wsdl' failed</test>
 	<reason type="ERROR">
 		<xpath>/Envelope/Body/path/to/code</xpath>
 		<location>at (13,3)</location>
