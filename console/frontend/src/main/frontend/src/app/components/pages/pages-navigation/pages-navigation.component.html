@@ -24,7 +24,10 @@
         <a href=""><i class="fa fa-cogs"></i> <span class="nav-label">Configurations</span> <span
             class="fa arrow"></span></a>
         <ul class="nav nav-second-level" [ngClass]="getClassByRoute('in', 'configuration')">
-          <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><a routerLink="/configurations">Show Configurations</a></li>
+          <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"><a
+            routerLink="/configurations"
+            [queryParams]="{ name: getConfigurationsQueryParam() }"
+          >Show Configurations</a></li>
           <li routerLinkActive="active"><a routerLink="/configurations/manage">Manage Configurations</a></li>
         </ul>
       </li>
