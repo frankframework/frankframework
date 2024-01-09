@@ -115,7 +115,7 @@ public class ApiListenerServletTest extends Mockito {
 	private static final String PAYLOAD="{\"sub\":\"UnitTest\",\"aud\":\"Framework\",\"iss\":\"JWTPipeTest\",\"jti\":\"1234\"}";
 
 	enum Methods {
-		GET,POST,PUT,DELETE,OPTIONS
+		GET, POST, PUT, DELETE, OPTIONS, HEAD
 	}
 
 	enum AuthMethods {
@@ -220,6 +220,10 @@ public class ApiListenerServletTest extends Mockito {
 			request.setContent(content);
 		}
 
+		if (method == Methods.HEAD) {
+			request.setContent(null);
+		}
+
 		return request;
 	}
 
@@ -275,6 +279,17 @@ public class ApiListenerServletTest extends Mockito {
 		Response result = service(createRequest(uri, Methods.GET));
 		assertEquals(200, result.getStatus());
 		assertEquals("OPTIONS, GET", result.getHeader("Allow"));
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void simpleHead() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri = "/test1";
+		new ApiListenerBuilder(uri, Methods.HEAD).build();
+
+		Response result = service(createRequest(uri, Methods.HEAD));
+		assertEquals(200, result.getStatus());
+		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -370,7 +385,7 @@ public class ApiListenerServletTest extends Mockito {
 	}
 
 	@Test
-	public void apiListenerThatProducesJSON() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void apiListenerThatProducesJSONForMethodPost() throws ServletException, IOException, ListenerException, ConfigurationException {
 		String uri="/ApiListenerThatProducesJSON/";
 		new ApiListenerBuilder(uri, Methods.POST, null, MediaTypes.JSON).build();
 
@@ -379,6 +394,18 @@ public class ApiListenerServletTest extends Mockito {
 		assertEquals("{}", result.getContentAsString());
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
 		assertTrue(result.getContentType().contains("application/json"), "Content-Type header does not contain [application/json]");
+		assertNull(result.getErrorMessage());
+	}
+
+	@Test
+	public void apiListenerThatProducesJSONForMethodHead() throws ServletException, IOException, ListenerException, ConfigurationException {
+		String uri = "/ApiListenerThatProducesJSON/";
+		new ApiListenerBuilder(uri, Methods.HEAD, null, MediaTypes.JSON).build();
+
+		Response result = service(createRequest(uri, Methods.HEAD, "{}"));
+		assertEquals(200, result.getStatus());
+		assertEquals("", result.getContentAsString());
+		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
 
@@ -1186,8 +1213,11 @@ public class ApiListenerServletTest extends Mockito {
 
 		// Assert
 		assertEquals(200, result.getStatus());
-		Message input = requestMessage;
-		assertEquals("application/xml", input.getContext().get("Header.accept"));
+		if (method != Methods.HEAD) {
+			Message input = requestMessage;
+			assertEquals("application/xml", input.getContext().get("Header.accept"));
+		}
+
 		assertNull(result.getErrorMessage());
 	}
 

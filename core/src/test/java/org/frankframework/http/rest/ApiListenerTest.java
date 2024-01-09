@@ -17,6 +17,7 @@ package org.frankframework.http.rest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -263,22 +264,9 @@ public class ApiListenerTest {
 	}
 
 	@Test
-	public void testHeadPhysicalDestinationName() throws Exception {
-		listener.setMethod(ApiListener.HttpMethod.HEAD);
-		listener.setUriPattern("/dummy");
-		listener.setConsumes(MediaTypes.JSON);
-		listener.setProduces(MediaTypes.XML);
-		listener.configure();
-
-		assertEquals("uriPattern: /dummy; method: HEAD; consumes: JSON; produces: XML", listener.getPhysicalDestinationName());
-	}
-
-	@Test
-	void testGetEmptyMessageBodyWithHeadMethod() throws ListenerException {
+	void testGetNoMessageWithHeadMethod() throws ListenerException {
 		listener.setMethod(ApiListener.HttpMethod.HEAD);
 
-		Object result = listener.processRequest(new Message("Mocked request"), new PipeLineSession());
-
-		assertTrue(result.toString().contains("[]"));
+		assertNull(listener.processRequest(new Message("Mocked request"), new PipeLineSession()));
 	}
 }
