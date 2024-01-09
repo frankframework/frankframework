@@ -106,6 +106,11 @@ public class MailSender extends MailSenderBase {
 
 	private @Getter String smtpHost;
 	private @Getter int smtpPort=25;
+	/**
+	 * When set to true, we ensure TLS is being used
+	 *
+	 * @ff.default false
+	 */
 	private @Setter boolean useSsl = false;
 
 	private Properties properties = new Properties();
