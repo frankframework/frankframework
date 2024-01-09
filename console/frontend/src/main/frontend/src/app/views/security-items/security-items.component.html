@@ -20,14 +20,14 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let roleName, let role of securityRoles">
-                  <td>{{role["role-name"]}}</td>
-                  <td><i [ngClass]="role.allowed ? 'fa-check-square' : 'fa-times-circle'"></i></td>
+                <tr *ngFor="let rolesKV of securityRoles | keyvalue">
+                  <td>{{rolesKV.value["role-name"]}}</td>
+                  <td><i [ngClass]="rolesKV.value.allowed ? 'fa fa-check-square' : 'fa fa-times-circle'"></i></td>
                   <td>
-                    <p *ngFor="let subject of role.specialSubjects">{{subject}}</p>
+                    <p *ngFor="let subject of rolesKV.value.specialSubjects">{{subject}}</p>
                   </td>
                   <td>
-                    <p *ngFor="let group of role.groups">{{group}}</p>
+                    <p *ngFor="let group of rolesKV.value.groups">{{group}}</p>
                   </td>
                 </tr>
               </tbody>
