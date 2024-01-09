@@ -30,7 +30,6 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	private final String NOT_IN_ROLE_FORWARD_PATH = "doSomething";
 
 	private ISecurityHandler securityHandler;
-	private PipeLineSession mockedSession;
 
 	@Override
 	public IsUserInRolePipe createPipe() throws ConfigurationException {
@@ -40,8 +39,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 	@BeforeEach
 	void beforeEach(){
 		securityHandler = mock(ISecurityHandler.class);
-		mockedSession = mock(PipeLineSession.class);
-		when(mockedSession.getSecurityHandler()).thenReturn(securityHandler);
+		session.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
 	}
 
 	@Test
@@ -59,7 +57,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, "", mockedSession);
+		PipeRunResult prr = doPipe(pipe, "", session);
 
 		// Expect
 		assertEquals(PipeForward.SUCCESS_FORWARD_NAME, prr.getPipeForward().getName());
@@ -74,7 +72,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, ROLE, mockedSession);
+		PipeRunResult prr = doPipe(pipe, ROLE, session);
 
 		// Expect
 		assertEquals(PipeForward.SUCCESS_FORWARD_NAME, prr.getPipeForward().getName());
@@ -90,7 +88,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, "", mockedSession);
+		PipeRunResult prr = doPipe(pipe, "", session);
 
 		// Expect
 		assertEquals(NOT_IN_ROLE_FORWARD_NAME, prr.getPipeForward().getName());
@@ -105,7 +103,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, ROLE, mockedSession);
+		PipeRunResult prr = doPipe(pipe, ROLE, session);
 
 		// Expect
 		assertEquals(NOT_IN_ROLE_FORWARD_NAME, prr.getPipeForward().getName());
@@ -122,7 +120,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, ROLES, mockedSession);
+		PipeRunResult prr = doPipe(pipe, ROLES, session);
 
 		// Expect
 		assertEquals(PipeForward.SUCCESS_FORWARD_NAME, prr.getPipeForward().getName());
@@ -142,7 +140,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, ROLES, mockedSession);
+		PipeRunResult prr = doPipe(pipe, ROLES, session);
 
 		// Expect
 		assertEquals(ROLE2, prr.getPipeForward().getName());
@@ -160,7 +158,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, "", mockedSession);
+		PipeRunResult prr = doPipe(pipe, "", session);
 
 		// Expect
 		assertEquals(PipeForward.SUCCESS_FORWARD_NAME, prr.getPipeForward().getName());
@@ -181,7 +179,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, "", mockedSession);
+		PipeRunResult prr = doPipe(pipe, "", session);
 
 		// Expect
 		assertEquals(ROLE2, prr.getPipeForward().getName());
@@ -198,7 +196,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, ROLES, mockedSession);
+		PipeRunResult prr = doPipe(pipe, ROLES, session);
 
 		// Expect
 		assertEquals(NOT_IN_ROLE_FORWARD_NAME, prr.getPipeForward().getName());
@@ -218,7 +216,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, ROLES, mockedSession);
+		PipeRunResult prr = doPipe(pipe, ROLES, session);
 
 		// Expect
 		assertEquals(NOT_IN_ROLE_FORWARD_NAME, prr.getPipeForward().getName());
@@ -236,7 +234,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, "", mockedSession);
+		PipeRunResult prr = doPipe(pipe, "", session);
 
 		// Expect
 		assertEquals(NOT_IN_ROLE_FORWARD_NAME, prr.getPipeForward().getName());
@@ -257,7 +255,7 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 		pipe.configure();
 
 		// When
-		PipeRunResult prr = doPipe(pipe, "", mockedSession);
+		PipeRunResult prr = doPipe(pipe, "", session);
 
 		// Expect
 		assertEquals(NOT_IN_ROLE_FORWARD_NAME, prr.getPipeForward().getName());
