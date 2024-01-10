@@ -113,7 +113,7 @@ public class MailSender extends MailSenderBase {
 	 */
 	private @Setter boolean useSsl = false;
 
-	private Properties properties = new Properties();
+	private @Getter Properties properties = new Properties();
 	private Session session = null;
 
 	@Override
