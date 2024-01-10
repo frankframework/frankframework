@@ -35,27 +35,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
-import org.frankframework.http.mime.MultipartUtils;
-import org.springframework.util.InvalidMimeTypeException;
-import org.springframework.util.MimeType;
-
-import com.nimbusds.jose.util.JSONObjectUtils;
-
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
-import jakarta.json.stream.JsonGenerator;
-import jakarta.mail.BodyPart;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMultipart;
-
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.HttpSecurityHandler;
 import org.frankframework.http.HttpServletBase;
 import org.frankframework.http.InputStreamDataSource;
 import org.frankframework.http.PartMessage;
-
+import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.jwt.AuthorizationException;
 import org.frankframework.jwt.JwtSecurityHandler;
 import org.frankframework.lifecycle.IbisInitializer;
@@ -70,6 +55,19 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlBuilder;
+import org.springframework.util.InvalidMimeTypeException;
+import org.springframework.util.MimeType;
+
+import com.nimbusds.jose.util.JSONObjectUtils;
+
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
+import jakarta.mail.BodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMultipart;
 
 /**
  *
@@ -523,6 +521,11 @@ public class ApiListenerServlet extends HttpServletBase {
 				 * Do the actual request processing by the ApiListener
 				 */
 				Message result = listener.processRequest(body, messageContext);
+
+				if (listener.getMethod().equals(ApiListener.HttpMethod.HEAD)) {
+					response.setContentType(listener.getContentType().toString());
+					result = null;
+				}
 
 				/*
 				 * Calculate an eTag over the processed result and store in cache

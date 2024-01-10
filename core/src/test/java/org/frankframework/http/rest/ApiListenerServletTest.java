@@ -404,9 +404,11 @@ public class ApiListenerServletTest extends Mockito {
 		new ApiListenerBuilder(uri, Methods.HEAD, null, MediaTypes.JSON).build();
 
 		Response result = service(createRequest(uri, Methods.HEAD, "{}"));
+
 		assertEquals(200, result.getStatus());
 		assertEquals("", result.getContentAsString());
 		assertEquals("OPTIONS, HEAD", result.getHeader("Allow"));
+		assertEquals("application/json;charset=UTF-8", result.getHeader("Content-Type"));
 		assertNull(result.getErrorMessage());
 	}
 
