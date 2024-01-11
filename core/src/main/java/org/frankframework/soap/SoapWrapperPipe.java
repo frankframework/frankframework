@@ -86,7 +86,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		soapWrapper = SoapWrapper.getInstance();
-		if (getDirection() == Direction.UNWRAP && soapVersion != null) {
+		if (getDirection() == Direction.UNWRAP && soapVersion != null && soapVersion != SoapVersion.AUTO) {
 			ConfigurationWarnings.add(this, log, "SoapWrapperPipe does NOT support unwrapping with a specified SoapVersion. " +
 					"It is auto-detected: remove soapVersion property from wrapper.", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
