@@ -352,7 +352,7 @@ public class StoredProcedureQuerySenderTest {
 
 	private void testStoredProcedureBlobOutputParameter(boolean blobSmartGet, boolean compressed, String charSet, DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse(dataSourceName.contains("H2") || dataSourceName.contains("PostgreSQL"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("H2") || dataSourceName.contains("PostgreSQL"), "H2, PSQL not supported for this test case");
 
 
 		// Arrange
@@ -389,7 +389,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureClobOutputParameter(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse(dataSourceName.contains("H2") || dataSourceName.contains("PostgreSQL"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("H2") || dataSourceName.contains("PostgreSQL"), "H2, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -423,7 +423,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureBlobOutputParameterNullValue(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse(dataSourceName.contains("H2") || dataSourceName.contains("PostgreSQL"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("H2") || dataSourceName.contains("PostgreSQL"), "H2, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -461,7 +461,7 @@ public class StoredProcedureQuerySenderTest {
 	@DatabaseTest
 	public void testStoredProcedureClobOutputParameterNullValue(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
 
-		assumeFalse(dataSourceName.contains("H2") || dataSourceName.contains("PostgreSQL"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("H2") || dataSourceName.contains("PostgreSQL"), "H2, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -584,7 +584,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testStoredProcedureReturningResultSetQueryTypeSelect(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		assumeFalse(dataSourceName.contains("Oracle") || dataSourceName.contains("PostgreSQL"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("Oracle") || dataSourceName.contains("PostgreSQL"), "Oracle, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -618,7 +618,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testStoredProcedureReturningResultSetQueryTypeOther(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		assumeFalse(dataSourceName.contains("Oracle") || dataSourceName.contains("PostgreSQL"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("Oracle") || dataSourceName.contains("PostgreSQL"), "Oracle, PSQL not supported for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -652,7 +652,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testStoredProcedureReturningResultSetAndOutParameters(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
-		assumeFalse(dataSourceName.contains("H2") || dataSourceName.contains("PostgreSQL") || dataSourceName.contains("Oracle"), "H2, PSQL, DB2 not supported for this test case");
+		assumeFalse(dataSourceName.contains("H2") || dataSourceName.contains("PostgreSQL") || dataSourceName.contains("Oracle"), "H2, PSQL, Oracle not supported for this test case");
 
 
 		// Arrange
