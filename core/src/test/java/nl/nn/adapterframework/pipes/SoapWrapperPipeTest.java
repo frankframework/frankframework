@@ -1,6 +1,7 @@
 package nl.nn.adapterframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -71,7 +72,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.setRemoveOutputNamespaces(true);
 		configureAndStartPipe();
 
-		P wrapPipeSoap = createWrapperSoapPipe(SoapVersion.SOAP11);
+		P wrapPipeSoap = createWrapperSoapPipe(SoapVersion.SOAP11, true);
 
 		// Arrange
 		String inputSoap12 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
@@ -97,7 +98,7 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		pipe.configure();
 		pipe.start();
 
-		P wrapPipeSoap = createWrapperSoapPipe(SoapVersion.SOAP12);
+		P wrapPipeSoap = createWrapperSoapPipe(SoapVersion.SOAP12, true);
 
 		// Arrange
 		String inputSoap11 = "<soapenv:Envelope xmlns:soapenv=\"" + SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE + "\"><soapenv:Body>" + DEFAULT_BODY_END;
@@ -114,19 +115,6 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		assertTrue(actual.contains(SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE));
 		pipeLineSession.close();
 		wrapPipeSoap.stop();
-	}
-
-	private P createWrapperSoapPipe(final SoapVersion soapVersion) throws ConfigurationException, PipeStartException {
-		P wrapPipeSoap = createPipe();
-		wrapPipeSoap.setDirection(Direction.WRAP);
-		autowireByType(wrapPipeSoap);
-		wrapPipeSoap.registerForward(new PipeForward("success", "READY"));
-		wrapPipeSoap.setName(PipeLine.OUTPUT_WRAPPER_NAME);
-		wrapPipeSoap.setSoapVersion(soapVersion);
-		pipeline.addPipe(wrapPipeSoap);
-		wrapPipeSoap.configure();
-		wrapPipeSoap.start();
-		return wrapPipeSoap;
 	}
 
 	@Test
@@ -464,8 +452,8 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	@Test
 	void shouldUseConfiguredPipelineSoapVersion11() throws Exception {
 		// Arrange: Simulate soapOutputWrapper having soap version 1.1 (expecting soap 1.1 namespace in the output)
-		setupUnwrapAutoPipe();
-		P outputWrapper = createWrapperSoapPipe(SoapVersion.SOAP11);
+		setupUnwrapSoapPipe(SoapVersion.AUTO, true);
+		P outputWrapper = createWrapperSoapPipe(SoapVersion.SOAP11, true);
 
 		// Act: message through unwrap & wrap pipes
 		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap12), session);
@@ -484,8 +472,8 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	@Test
 	void shouldUseConfiguredPipelineSoapVersion12() throws Exception {
 		// Arrange: Simulate soapOutputWrapper having soap version 1.2 (expecting soap 1.2 namespace in the output)
-		setupUnwrapAutoPipe();
-		P outputWrapper = createWrapperSoapPipe(SoapVersion.SOAP12);
+		setupUnwrapSoapPipe(SoapVersion.AUTO, true);
+		P outputWrapper = createWrapperSoapPipe(SoapVersion.SOAP12, true);
 		session = new PipeLineSession();
 
 		// Act: message SOAP11 through unwrap & wrap pipes
@@ -502,8 +490,8 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 	@Test
 	void shouldUseConfiguredPipelineSoapVersionAuto() throws Exception {
 		// Arrange: Wrapper pipe SoapVersion not set. Should go to AUTO.
-		setupUnwrapAutoPipe();
-		P outputWrapper = createWrapperSoapPipe(null);
+		setupUnwrapSoapPipe(SoapVersion.AUTO, true);
+		P outputWrapper = createWrapperSoapPipe(null, true);
 		session = new PipeLineSession();
 
 		// Act: message SOAP12 through unwrap & wrap pipes
@@ -517,13 +505,80 @@ public class SoapWrapperPipeTest<P extends SoapWrapperPipe> extends PipeTestBase
 		outputWrapper.stop();
 	}
 
-	private void setupUnwrapAutoPipe() throws ConfigurationException, PipeStartException {
-		// Arrange - Simulate soapInputWrapper unwrapping the input and creating soapNamespace sessionKey using the namespace from the input
+	@Test
+	void shouldUnwrapEvenThoughSessionHasDifferentSoapVersionStored() throws Exception {
+		// Scenario:
+		// <inputWrapper direction="UNWRAP" storeResultInSessionKey="originalMessage"/> Note: input=1.2, stored version in session
+		// <inputWrapper soapVersion="1.1"> Note: output=1.1
+		// <outputWrapper direction="UNWRAP" removeOutputNamespaces="true" soapVersion="1.1"/> Note: input=1.1, should be unwrapped fine with 1.1
+
+		// Arrange: inputWrapper 1 - unwrap
+		setupUnwrapSoapPipe(SoapVersion.AUTO, false);
 		pipe.setDirection(Direction.UNWRAP);
-		pipe.setSoapVersion(SoapVersion.AUTO);
-		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
+		pipe.setStoreResultInSessionKey("originalMessage");
 		pipe.configure();
 		pipe.start();
+
+		// Arrange: inputWrapper 2 - wrap
+		P outputWrapper = createPipe();
+		autowireByType(outputWrapper);
+		outputWrapper.registerForward(new PipeForward("success", PipeLine.OUTPUT_WRAPPER_NAME + "2"));
+		outputWrapper.setName(PipeLine.OUTPUT_WRAPPER_NAME + "1");
+		outputWrapper.setSoapVersion(SoapVersion.SOAP11);
+		pipeline.addPipe(outputWrapper);
+		outputWrapper.configure();
+		outputWrapper.start();
+
+		// Arrange: outputWrapper 2 - unwrap
+		P outputWrapper2 = createWrapperSoapPipe(SoapVersion.SOAP11, false);
+		outputWrapper2.setName(PipeLine.OUTPUT_WRAPPER_NAME + "2");
+		outputWrapper2.setDirection(Direction.UNWRAP);
+		outputWrapper2.setRemoveOutputNamespaces(true);
+		outputWrapper2.registerForward(new PipeForward("success", "READY"));
+		outputWrapper2.configure();
+		outputWrapper2.start();
+		pipeline.addPipe(outputWrapper2);
+
+		session = new PipeLineSession();
+
+		// Act: message SOAP12 through pipes
+		PipeRunResult pipeRunResult1 = doPipe(pipe, Message.asMessage(soapMessageSoap12), session);
+		PipeRunResult pipeRunResult2 = doPipe(outputWrapper, pipeRunResult1.getResult(), session);
+		PipeRunResult pipeRunResult3 = doPipe(outputWrapper2, pipeRunResult2.getResult(), session);
+
+		// Assert: but the output is without SOAP namespaces, as it is unwrapped.
+		String result = pipeRunResult3.getResult().asString();
+		assertNotNull(result);
+		assertFalse(result.contains(SoapVersion.SOAP11.namespace), "result should be unwrapped for sure");
+		assertFalse(result.contains(SoapVersion.SOAP12.namespace), "result should be unwrapped for sure");
+		assertTrue(result.contains("FindDocuments_Response"), "result should contain original message, without namespaces");
+		outputWrapper.stop();
+	}
+
+	private P createWrapperSoapPipe(final SoapVersion soapVersion, boolean started) throws ConfigurationException, PipeStartException {
+		P wrapPipeSoap = createPipe();
+		wrapPipeSoap.setDirection(Direction.WRAP);
+		autowireByType(wrapPipeSoap);
+		wrapPipeSoap.registerForward(new PipeForward("success", "READY"));
+		wrapPipeSoap.setName(PipeLine.OUTPUT_WRAPPER_NAME);
+		wrapPipeSoap.setSoapVersion(soapVersion);
+		pipeline.addPipe(wrapPipeSoap);
+		if (started) {
+			wrapPipeSoap.configure();
+			wrapPipeSoap.start();
+		}
+		return wrapPipeSoap;
+	}
+
+	private void setupUnwrapSoapPipe(final SoapVersion soapVersion, boolean started) throws ConfigurationException, PipeStartException {
+		// Arrange - Simulate soapInputWrapper unwrapping the input and creating soapNamespace sessionKey using the namespace from the input
+		pipe.setDirection(Direction.UNWRAP);
+		pipe.setSoapVersion(soapVersion);
+		pipe.setName(PipeLine.INPUT_WRAPPER_NAME);
+		if (started) {
+			pipe.configure();
+			pipe.start();
+		}
 	}
 
 }
