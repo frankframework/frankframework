@@ -83,7 +83,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testSimpleStoredProcedureNoResultNoParameters(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
-		assumeTrue(!dataSourceName.equals("H2"), "H2 driver gives incorrect results for this test case");
+		assumeFalse(dataSourceName.equals("H2"), "H2 driver gives incorrect results for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
