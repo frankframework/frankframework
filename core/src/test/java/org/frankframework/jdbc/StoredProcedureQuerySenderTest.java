@@ -83,7 +83,7 @@ public class StoredProcedureQuerySenderTest {
 
 	@DatabaseTest
 	public void testSimpleStoredProcedureNoResultNoParameters(DatabaseTestEnvironment databaseTestEnvironment) throws Throwable {
-		assumeTrue(dataSourceName.equals("H2"), "H2 driver gives incorrect results for this test case");
+		assumeTrue(!dataSourceName.equals("H2"), "H2 driver gives incorrect results for this test case");
 
 		// Arrange
 		String value = UUID.randomUUID().toString();
@@ -102,7 +102,7 @@ public class StoredProcedureQuerySenderTest {
 		assertTrue(result.isSuccess());
 
 		// Due to differences between databases, "rows updated" is sometimes 1, sometimes 0
-		assumeTrue(result.getResult().asString().startsWith("<result><rowsupdated>"), "Result should start with [<result><rowsupdated>]");
+		assertTrue(result.getResult().asString().startsWith("<result><rowsupdated>"), "Result should start with [<result><rowsupdated>]");
 
 		// Check presence of row that should have been inserted
 		int rowsCounted = countRowsWithMessageValue(value, databaseTestEnvironment);
