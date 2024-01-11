@@ -25,6 +25,8 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import nl.nn.adapterframework.configuration.ConfigurationException;
+import nl.nn.adapterframework.configuration.ConfigurationWarnings;
+import nl.nn.adapterframework.configuration.SuppressKeys;
 import nl.nn.adapterframework.core.IWrapperPipe;
 import nl.nn.adapterframework.core.PipeLine;
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -85,6 +87,10 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		soapWrapper = SoapWrapper.getInstance();
+		if (getDirection() == Direction.UNWRAP && soapVersion != null) {
+			ConfigurationWarnings.add(this, log, "SoapWrapperPipe does NOT support unwrapping with a specified SoapVersion. " +
+					"It is auto-detected: remove soapVersion property from wrapper.", SuppressKeys.CONFIGURATION_VALIDATION);
+		}
 		if (getDirection() == Direction.UNWRAP && PipeLine.INPUT_WRAPPER_NAME.equals(getName())) {
 			if (StringUtils.isEmpty(getSoapHeaderSessionKey())) {
 				setSoapHeaderSessionKey(DEFAULT_SOAP_HEADER_SESSION_KEY);
@@ -284,6 +290,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 	protected Message wrapMessage(Message message, String soapHeader, PipeLineSession session) throws IOException {
 		String soapNamespace = determineSoapNamespace(session);
+		log.debug("Using SOAP namespace [{}] for Wrapping message", soapNamespace);
 		if (soapNamespace == null) {
 			return message;
 		}

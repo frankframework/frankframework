@@ -168,6 +168,10 @@ public class SoapWrapper {
 		String extractedMessage;
 		if (soapVersion == SoapVersion.SOAP12) {
 			extractedMessage = transformerS12.transform(message.asSource());
+			// If session had the wrong SOAP version stored (e.g. multiple SoapWrappers), try SOAP 1.1 too. (#6032)
+			if (StringUtils.isEmpty(extractedMessage)) {
+				extractedMessage = transformerS11.transform(message.asSource());
+			}
 		} else if (soapVersion == SoapVersion.NONE) {
 			return null;
 		} else {
@@ -198,6 +202,7 @@ public class SoapWrapper {
 		if (session == null) return null;
 		Object soapVersionObject = session.getOrDefault(SoapWrapper.SOAP_VERSION_SESSION_KEY, null);
 		if (soapVersionObject instanceof SoapVersion) {
+			log.debug("Found SOAP version in session: {}", ((SoapVersion) soapVersionObject).name());
 			return (SoapVersion) soapVersionObject;
 		}
 		return null;
