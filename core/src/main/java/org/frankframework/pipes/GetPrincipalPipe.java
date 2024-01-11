@@ -54,8 +54,8 @@ public class GetPrincipalPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException{
-		Principal principal= session.getPrincipal();
-		String principalName = null;
+		Principal principal=session.getSecurityHandler().getPrincipal();
+		String principalName = "";
 		if (principal==null) {
 			log.warn("no principal found");
 			if (notFoundForward!=null) {

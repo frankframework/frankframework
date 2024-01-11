@@ -18,9 +18,9 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let roleName, let role of securityRoles">
-                  <td>{{role.name}}</td>
-                  <td><i [ngClass]="role.allowed ? 'fa fa-check-square' : 'fa fa-times-circle'"></i></td>
+                <tr *ngFor="let rolesKV of securityRoles | keyvalue">
+                  <td>{{rolesKV.value.name}}</td>
+                  <td><i [ngClass]="rolesKV.value.allowed ? 'fa fa-check-square' : 'fa fa-times-circle'"></i></td>
                 </tr>
               </tbody>
             </table>

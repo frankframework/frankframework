@@ -50,11 +50,19 @@ export type Pipe = {
   sender: string,
   name: string,
   destination: string,
-  isJdbcSender: boolean,
+  message?: PipeMessage,
+  isJdbcSender?: boolean,
   hasMessageLog?: boolean,
   messageLogCount?: 'error' | string,
   isSenderTransactionalStorage?: boolean,
-  certificate?: Certificate
+  certificate?: Certificate,
+}
+
+export type PipeMessage = {
+  name: string,
+  type: string,
+  slotId: string,
+  count: string
 }
 
 export type Certificate = {
