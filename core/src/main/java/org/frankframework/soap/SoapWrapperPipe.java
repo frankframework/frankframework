@@ -15,11 +15,7 @@
 */
 package org.frankframework.soap;
 
-import java.io.IOException;
-import java.util.Map;
-
-import javax.xml.transform.TransformerException;
-
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -38,7 +34,9 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 import org.xml.sax.SAXException;
 
-import lombok.Getter;
+import javax.xml.transform.TransformerException;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
@@ -86,7 +84,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 	public void configure() throws ConfigurationException {
 		super.configure();
 		soapWrapper = SoapWrapper.getInstance();
-		if (getDirection() == Direction.UNWRAP && soapVersion != null) {
+		if (getDirection() == Direction.UNWRAP && soapVersion != null && soapVersion != SoapVersion.AUTO) {
 			ConfigurationWarnings.add(this, log, "SoapWrapperPipe does NOT support unwrapping with a specified SoapVersion. " +
 					"It is auto-detected: remove soapVersion property from wrapper.", SuppressKeys.CONFIGURATION_VALIDATION);
 		}
