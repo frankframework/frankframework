@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2024 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
 */
 package org.frankframework.core;
 
-import java.security.Principal;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,12 +32,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Supplier;
-
-import lombok.Getter;
-import lombok.SneakyThrows;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
+
+import lombok.Getter;
+import lombok.SneakyThrows;
 
 
 /**
@@ -271,16 +270,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			}
 		}
 		return securityHandler;
-	}
-
-	public boolean isUserInRole(String role) throws NotImplementedException {
-		ISecurityHandler handler = getSecurityHandler();
-		return handler.isUserInRole(role, this);
-	}
-
-	public Principal getPrincipal() throws NotImplementedException {
-		ISecurityHandler handler = getSecurityHandler();
-		return handler.getPrincipal(this);
 	}
 
 	/**

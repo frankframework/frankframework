@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2024 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class GetPrincipalPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException{
-		Principal principal=session.getPrincipal();
+		Principal principal=session.getSecurityHandler().getPrincipal();
 		String principalName = "";
 		if (principal==null) {
 			log.warn("no principal found");
