@@ -61,7 +61,7 @@ public class IsUserInRolePipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getNotInRoleForwardName())) {
 			notInRoleForward = findForward(getNotInRoleForwardName());
 			if (notInRoleForward==null) {
-				throw new ConfigurationException("notInRoleForwardName not found");
+				throw new ConfigurationException("could not find forward for notInRoleForwardName ["+ getNotInRoleForwardName()+"]");
 			}
 		}
 	}
