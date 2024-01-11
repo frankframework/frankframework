@@ -17,8 +17,8 @@ package org.frankframework.http.rest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -30,7 +30,7 @@ public class ApiListenerPatternsTest {
 	private ApiListener listener;
 
 	public static Collection<Object[]> data() {
-		return Arrays.asList(new Object[][] {
+		return List.of(new Object[][] {
 				{ "*", "/*", "/*" },
 				{ "test", "/test", "/test" },
 				{ "/test", "/test", "/test" },

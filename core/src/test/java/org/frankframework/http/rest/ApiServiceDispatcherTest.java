@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -83,7 +82,7 @@ public class ApiServiceDispatcherTest {
 	}
 
 	private ApiListener createServiceClient(ApiListenerServletTest.Methods method, String uri) {
-		return createServiceClient(Arrays.asList(method), uri);
+		return createServiceClient(List.of(method), uri);
 	}
 
 	private ApiListener createServiceClient(List<ApiListenerServletTest.Methods> method, String uri) {
@@ -110,7 +109,7 @@ public class ApiServiceDispatcherTest {
 	@Test
 	void testMultipleMethodsSameEndpointSameListener() throws Exception {
 		String uri = "testEndpoint1";
-		dispatcher.registerServiceClient(createServiceClient(Arrays.asList(ApiListenerServletTest.Methods.GET, ApiListenerServletTest.Methods.POST), uri));
+		dispatcher.registerServiceClient(createServiceClient(List.of(ApiListenerServletTest.Methods.GET, ApiListenerServletTest.Methods.POST), uri));
 		testMultipleMethods(uri);
 	}
 
