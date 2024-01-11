@@ -65,7 +65,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter boolean updateEtag = AppConstants.getInstance().getBoolean("api.etag.enabled", false);
 	private @Getter String operationId;
 
-	private List<HttpMethod> method = List.of(HttpMethod.GET);
+	private List<HttpMethod> methods = List.of(HttpMethod.GET);
 	public enum HttpMethod {
 		GET,PUT,POST,PATCH,DELETE,OPTIONS;
 	}
@@ -194,7 +194,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 			}
 		}
 		builder.append(getUriPattern());
-		builder.append("; method: ").append(getMethod());
+		builder.append("; method: ").append(getMethods());
 
 		if(MediaTypes.ANY != consumes) {
 			builder.append("; consumes: ").append(getConsumes());
@@ -207,7 +207,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	private boolean hasMethod(HttpMethod method){
-		return this.method.contains(method);
+		return this.methods.contains(method);
 	}
 
 	/**
@@ -237,11 +237,18 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	}
 
 	/**
+	 * @deprecated The 'method' attribute has been renamed to 'methods'
+	 */
+	public void setMethod(String method){
+		setMethods(method);
+	}
+
+	/**
 	 * HTTP method(s) to listen to, separated by comma
 	 * @ff.default GET
 	 */
-	public void setMethod(String method) {
-		this.method = StringUtil.splitToStream(method)
+	public void setMethods(String methods) {
+		this.methods = StringUtil.splitToStream(methods)
 				.map(s -> EnumUtils.parse(HttpMethod.class, s))
 				.collect(Collectors.toList());
 
@@ -250,14 +257,14 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		}
 	}
 
-	public String getMethod(){
-		return method.stream()
+	public String getMethods(){
+		return methods.stream()
 				.map(HttpMethod::name)
 				.collect(Collectors.joining(","));
 	}
 
-	public List<HttpMethod> getMethods(){
-		return method;
+	public List<HttpMethod> getAllMethods(){
+		return methods;
 	}
 
 	/**

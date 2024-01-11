@@ -90,7 +90,7 @@ public class ApiServiceDispatcher {
 
 		for (Iterator<String> it = patternClients.keySet().iterator(); it.hasNext();) {
 			String uriPattern = it.next();
-			if(log.isTraceEnabled()) log.trace("comparing uri ["+uri+"] to pattern ["+uriPattern+"]");
+			if(log.isTraceEnabled()) log.trace("comparing uri [{}] to pattern [{}]", uri, uriPattern);
 
 			String[] patternSegments = uriPattern.split("/");
 			if (exactMatch && patternSegments.length != uriSegments.length || patternSegments.length < uriSegments.length) {
@@ -120,9 +120,9 @@ public class ApiServiceDispatcher {
 			throw new ListenerException("uriPattern cannot be null or empty");
 
 		synchronized(patternClients) {
-			for(ApiListener.HttpMethod method : listener.getMethods()){
+			for(ApiListener.HttpMethod method : listener.getAllMethods()){
 				patternClients.computeIfAbsent(uriPattern, pattern -> new ApiDispatchConfig(pattern)).register(method, listener);
-				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern ["+uriPattern+"] method ["+method+"]");
+				if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully registered uriPattern [{}] method [{}}]", uriPattern, method);
 			}
 		}
 	}
@@ -133,7 +133,7 @@ public class ApiServiceDispatcher {
 			log.warn("uriPattern cannot be null or empty, unable to unregister ServiceClient");
 		}
 		else {
-			for(ApiListener.HttpMethod method : listener.getMethods()){
+			for(ApiListener.HttpMethod method : listener.getAllMethods()){
 				boolean success = false;
 				synchronized (patternClients) {
 					ApiDispatchConfig dispatchConfig = patternClients.get(uriPattern);
@@ -149,9 +149,9 @@ public class ApiServiceDispatcher {
 
 				//keep log statements out of synchronized block
 				if(success) {
-					if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern ["+uriPattern+"] method ["+method+"]");
+					if(log.isTraceEnabled()) log.trace("ApiServiceDispatcher successfully unregistered uriPattern [{}] method [{}}]", uriPattern, method);
 				} else {
-					log.warn("unable to find DispatchConfig for uriPattern ["+uriPattern+"]");
+					log.warn("unable to find DispatchConfig for uriPattern [{}]", uriPattern);
 				}
 			}
 		}
@@ -404,7 +404,7 @@ public class ApiServiceDispatcher {
 			if(config != null) config.clear();
 		}
 		if(!patternClients.isEmpty()) {
-			log.warn("unable to gracefully unregister "+patternClients.size()+" DispatchConfigs");
+			log.warn("unable to gracefully unregister [{}] DispatchConfigs", patternClients.size());
 			patternClients.clear();
 		}
 	}

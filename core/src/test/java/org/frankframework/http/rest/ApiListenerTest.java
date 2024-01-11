@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.ListenerException;
 import org.frankframework.http.rest.ApiListener.AuthenticationMethods;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
 import org.frankframework.lifecycle.DynamicRegistration.Servlet;
