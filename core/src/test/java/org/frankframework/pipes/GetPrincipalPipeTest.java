@@ -17,6 +17,7 @@ package org.frankframework.pipes;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -26,21 +27,24 @@ import org.junit.jupiter.api.Test;
 
 import java.security.Principal;
 
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
-	private PipeLineSession session;
+class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	private final String PRINCIPAL_NAME = "TST9";
 	private final String NOT_FOUND_FORWARD_NAME = "notFound";
 	private final String NOT_FOUND_FORWARD_PATH = "doSomething";
+	private ISecurityHandler securityHandler;
+	private Principal principal = mock(Principal.class);
 
 	@BeforeEach
 	public void populateSession() {
-		session = mock(PipeLineSession.class);
+		principal = mock(Principal.class);
+		securityHandler = mock(ISecurityHandler.class);
+		session.put(PipeLineSession.SECURITY_HANDLER_KEY, securityHandler);
 	}
 
 	@Override
@@ -49,21 +53,19 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	}
 
 	@Test
-	public void missingNotFoundForwardConfigure(){
+	void missingNotFoundForwardConfigure(){
 		// Given
 		pipe.setNotFoundForwardName(NOT_FOUND_FORWARD_NAME);
 
 		// Expect
-		ConfigurationException exception = assertThrows(ConfigurationException.class, () -> {
+		assertThrows(ConfigurationException.class, () ->
 			// When
-			pipe.configure();
-		});
-
-		assertEquals("notInRoleForwardName [notFound] not found", exception.getMessage());
+			pipe.configure()
+		, "notInRoleForwardName [notFound] not found");
 	}
 
 	@Test
-	public void notFoundForwardConfigure() throws ConfigurationException {
+	void notFoundForwardConfigure() throws ConfigurationException {
 		// Given
 		PipeForward notFound = new PipeForward(NOT_FOUND_FORWARD_NAME, NOT_FOUND_FORWARD_PATH);
 		pipe.setNotFoundForwardName(NOT_FOUND_FORWARD_NAME);
@@ -77,11 +79,10 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	}
 
 	@Test
-	public void getPrincipalDoPipe() throws Exception {
+	void getPrincipalDoPipe() throws Exception {
 		// Given
-		Principal principal = mock(Principal.class);
 		when(principal.getName()).thenReturn(PRINCIPAL_NAME);
-		when(session.getPrincipal()).thenReturn(principal);
+		when(securityHandler.getPrincipal()).thenReturn(principal);
 
 		pipe.configure();
 		pipe.start();
@@ -96,11 +97,10 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	}
 
 	@Test
-	public void getNullPrincipalNameDoPipe() throws Exception {
+	void getNullPrincipalNameDoPipe() throws Exception {
 		// Given
-		Principal principal = mock(Principal.class);
 		when(principal.getName()).thenReturn(null);
-		when(session.getPrincipal()).thenReturn(principal);
+				when(securityHandler.getPrincipal()).thenReturn(principal);
 
 		pipe.configure();
 		pipe.start();
@@ -115,11 +115,10 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	}
 
 	@Test
-	public void getEmptyStringPrincipalNameDoPipe() throws Exception {
+	void getEmptyStringPrincipalNameDoPipe() throws Exception {
 		// Given
-		Principal principal = mock(Principal.class);
 		when(principal.getName()).thenReturn("");
-		when(session.getPrincipal()).thenReturn(principal);
+				when(securityHandler.getPrincipal()).thenReturn(principal);
 
 		pipe.configure();
 		pipe.start();
@@ -134,9 +133,9 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	}
 
 	@Test
-	public void getNullPrincipalDoPipe() throws Exception {
+	void getNullPrincipalDoPipe() throws Exception {
 		// Given
-		when(session.getPrincipal()).thenReturn(null);
+		when(securityHandler.getPrincipal()).thenReturn(null);
 
 		pipe.configure();
 		pipe.start();
@@ -151,9 +150,9 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	}
 
 	@Test
-	public void getNullPrincipalWithNotFoundForwardDoPipe() throws Exception {
+	void getNullPrincipalWithNotFoundForwardDoPipe() throws Exception {
 		// Given
-		when(session.getPrincipal()).thenReturn(null);
+		when(securityHandler.getPrincipal()).thenReturn(null);
 
 		PipeForward notFound = new PipeForward(NOT_FOUND_FORWARD_NAME, NOT_FOUND_FORWARD_PATH);
 		pipe.setNotFoundForwardName(NOT_FOUND_FORWARD_NAME);
@@ -172,18 +171,16 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	}
 
 	@Test
-	public void getNullPrincipalNameWithNotFoundForwardDoPipe() throws Exception {
+	void getNullPrincipalNameWithNotFoundForwardDoPipe() throws Exception {
 		// Given
-		Principal principal = mock(Principal.class);
 		when(principal.getName()).thenReturn(null);
-		when(session.getPrincipal()).thenReturn(principal);
+				when(securityHandler.getPrincipal()).thenReturn(principal);
 
 		PipeForward notFound = new PipeForward(NOT_FOUND_FORWARD_NAME, NOT_FOUND_FORWARD_PATH);
 		pipe.setNotFoundForwardName(NOT_FOUND_FORWARD_NAME);
 		pipe.registerForward(notFound);
 		pipe.configure();
 		pipe.start();
-
 
 		// When
 		PipeRunResult prr = doPipe(pipe, "", session);
@@ -196,11 +193,10 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	}
 
 	@Test
-	public void getEmptyStringPrincipalWithNotFoundForwardNameDoPipe() throws Exception {
+	void getEmptyStringPrincipalWithNotFoundForwardNameDoPipe() throws Exception {
 		// Given
-		Principal principal = mock(Principal.class);
 		when(principal.getName()).thenReturn("");
-		when(session.getPrincipal()).thenReturn(principal);
+				when(securityHandler.getPrincipal()).thenReturn(principal);
 
 		PipeForward notFound = new PipeForward(NOT_FOUND_FORWARD_NAME, NOT_FOUND_FORWARD_PATH);
 		pipe.setNotFoundForwardName(NOT_FOUND_FORWARD_NAME);
@@ -219,20 +215,16 @@ public class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 	}
 
 	@Test
-	public void getPrincipalNameThrowsException() throws Exception {
+	void getPrincipalNameThrowsException() throws Exception {
 		// Given
-		Principal principal = mock(Principal.class);
 		when(principal.getName()).thenThrow(new NotImplementedException());
-		when(session.getPrincipal()).thenReturn(principal);
+				when(securityHandler.getPrincipal()).thenReturn(principal);
 
 		pipe.configure();
 		pipe.start();
 
-		// Expect
-		PipeRunException exception = assertThrows(PipeRunException.class, () -> {
-			doPipe(pipe, "", session);
-		});
-
-		assertEquals("Pipe ["+pipe.getName()+"] got exception getting name from principal: (NotImplementedException)", exception.getMessage());
+		// Expect/When
+		assertThrows(PipeRunException.class, () -> doPipe(pipe, "", session),
+				"Pipe ["+pipe.getName()+"] got exception getting name from principal: (NotImplementedException)");
 	}
 }
