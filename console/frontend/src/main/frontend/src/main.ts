@@ -5,6 +5,7 @@ import { AppModule } from './app/app.module';
 import * as Prism from 'prismjs';
 import 'prismjs/plugins/line-numbers/prism-line-numbers';
 import 'prismjs/plugins/line-highlight/prism-line-highlight';
+import 'prismjs/plugins/custom-class/prism-custom-class';
 import type * as jQuery from 'jquery';
 
 try {
@@ -143,4 +144,15 @@ $(function () {
 
     env.element.appendChild(lineNumbersWrapper);
   });
+
+  // this stinks but blame prismjs for the bad support for how its handling / giving content
+  const customClassFn = ({ language, type, content }: { language: string, type: string, content: string }): any => {
+    if (type === 'tag' && content.endsWith('<span class="token punctuation">></span>') && content.includes('adapter')) {
+      const nameRegex = /<span class="token attr-value"><span class="token punctuation attr-equals">=<\/span><span class="token punctuation">"<\/span>(?<value>[^<]+)<span class="token punctuation">"<\/span><\/span>/g.exec(content);
+      if(nameRegex?.groups)
+        return `adapter-tag ${nameRegex?.groups['value']}`;
+      return 'adapter-tag';
+    }
+  }
+  Prism.plugins['customClass'].add(customClassFn);
 });
