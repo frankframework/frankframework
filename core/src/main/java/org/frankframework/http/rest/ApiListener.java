@@ -15,7 +15,6 @@
 */
 package org.frankframework.http.rest;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,7 +65,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter boolean updateEtag = AppConstants.getInstance().getBoolean("api.etag.enabled", false);
 	private @Getter String operationId;
 
-	private List<HttpMethod> method = Arrays.asList(HttpMethod.GET);
+	private List<HttpMethod> method = List.of(HttpMethod.GET);
 	public enum HttpMethod {
 		GET,PUT,POST,PATCH,DELETE,OPTIONS;
 	}
@@ -139,12 +138,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private void validateClaimAttribute(String claimAttributeToValidate, String claimAttributeName) throws ConfigurationException {
 		if(StringUtils.isNotEmpty(claimAttributeToValidate)){
 			List<String> invalidClaims = StringUtil.splitToStream(claimAttributeToValidate)
-					.filter(claim ->
-							StringUtil.splitToStream(claim, "=")
-									.filter(part -> part.length() > 0)
-									.collect(Collectors.toList())
-									.size() != 2
-					)
+					.filter(claim -> StringUtil.split(claim, "=").size() != 2)
 					.collect(Collectors.toList());
 
 			if(!invalidClaims.isEmpty()){

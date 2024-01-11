@@ -16,7 +16,6 @@ limitations under the License.
 package org.frankframework.http.rest;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -167,7 +166,7 @@ public class ApiServiceDispatcher {
 	}
 
 	public JsonObject generateOpenApiJsonSchema(ApiDispatchConfig client, String endpoint) {
-		List<ApiDispatchConfig> clientList = Arrays.asList(client);
+		List<ApiDispatchConfig> clientList = List.of(client);
 		return generateOpenApiJsonSchema(clientList, endpoint);
 	}
 
@@ -369,7 +368,7 @@ public class ApiServiceDispatcher {
 					if(StringUtils.isNotEmpty(ple.getResponseRoot()) && outputValidator == null) {
 						reference = ple.getResponseRoot();
 					} else {
-						List<String> references = Arrays.asList(schemaReferenceElement.split(","));
+						List<String> references = List.of(schemaReferenceElement.split(","));
 						if(ple.isSuccessExit()) {
 							reference = references.get(0);
 						} else {
