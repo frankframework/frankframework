@@ -2,21 +2,21 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.frankframework</groupId>
-	<artifactId>ibis-adapterframework-parent</artifactId>
+	<artifactId>frankframework-parent</artifactId>
 	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>8.0-SNAPSHOT</revision>
+		<revision>8.1.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>11</maven.compiler.target>
 		<maven.compiler.source>11</maven.compiler.source>
-		<log4j2.version>2.22.0</log4j2.version>
+		<log4j2.version>2.22.1</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
-		<jackson.version>2.16.0</jackson.version>
+		<jackson.version>2.16.1</jackson.version>
 		<cxf.version>3.6.2</cxf.version>
 		<spring.version>5.3.31</spring.version>
 		<spring-security.version>5.8.9</spring-security.version>
@@ -50,8 +50,8 @@
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
 	</properties>
 
-	<name>Ibis AdapterFramework parent</name>
-	<description>The Ibis Adapter Framework is an easy-to-use, stateless integration framework which allows (transactional) messages to be modified and exchanged between different systems.</description>
+	<name>Frank!Framework parent</name>
+	<description>The Frank!Framework is an easy-to-use, stateless integration framework which allows (transactional) messages to be modified and exchanged between different systems.</description>
 	<url>https://frankframework.org</url>
 
 	<organization>
@@ -142,22 +142,22 @@
 
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-commons</artifactId>
+				<artifactId>frankframework-commons</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-security</artifactId>
+				<artifactId>frankframework-security</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>iaf-management-gateway</artifactId>
+				<artifactId>frankframework-management-gateway</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-core</artifactId>
+				<artifactId>frankframework-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -167,123 +167,123 @@
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-tibco</artifactId>
+				<artifactId>frankframework-tibco</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-sap</artifactId>
+				<artifactId>frankframework-sap</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-messaging</artifactId>
+				<artifactId>frankframework-messaging</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-larva</artifactId>
+				<artifactId>frankframework-larva</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-akamai</artifactId>
+				<artifactId>frankframework-akamai</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-cmis</artifactId>
+				<artifactId>frankframework-cmis</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-console</artifactId>
+				<artifactId>frankframework-console</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-console-frontend</artifactId>
+				<artifactId>frankframework-console-frontend</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-console-backend</artifactId>
+				<artifactId>frankframework-console-backend</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-console-webapp</artifactId>
+				<artifactId>frankframework-console-webapp</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-webapp</artifactId>
+				<artifactId>frankframework-webapp</artifactId>
 				<version>${project.version}</version>
 				<type>war</type>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-ear</artifactId>
+				<artifactId>frankframework-ear</artifactId>
 				<version>${project.version}</version>
 				<type>ear</type>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-test</artifactId>
+				<artifactId>frankframework-test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-test-integration</artifactId>
+				<artifactId>frankframework-test-integration</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-idin</artifactId>
+				<artifactId>frankframework-idin</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-ladybug</artifactId>
+				<artifactId>frankframework-ladybug</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-aspose</artifactId>
+				<artifactId>frankframework-aspose</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-aws</artifactId>
+				<artifactId>frankframework-aws</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-dbms</artifactId>
+				<artifactId>frankframework-dbms</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>nn-specials</artifactId>
+				<artifactId>frankframework-nn-specials</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-batch</artifactId>
+				<artifactId>frankframework-batch</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>bundle-minimal</artifactId>
+				<artifactId>frankframework-bundle-minimal</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>bundle-full</artifactId>
+				<artifactId>frankframework-bundle-full</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 			</dependency>
@@ -600,9 +600,9 @@
 				<version>2.0.0</version>
 				<configuration>
 					<excludedModules>
-						<excludedModule>ibis-adapterframework-sap</excludedModule>
-						<excludedModule>ibis-adapterframework-tibco</excludedModule>
-						<excludedModule>ibis-adapterframework-idin</excludedModule>
+						<excludedModule>frankframework-sap</excludedModule>
+						<excludedModule>frankframework-tibco</excludedModule>
+						<excludedModule>frankframework-idin</excludedModule>
 					</excludedModules>
 					<noticeMessage>{0} - using: {1}</noticeMessage>
 					<excludeOptional>true</excludeOptional>
@@ -689,7 +689,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.11.0</version>
+					<version>3.12.1</version>
 					<configuration>
 						<release>${maven.compiler.target}</release>
 						<source>${maven.compiler.source}</source>
@@ -797,7 +797,7 @@
 								<property>iaf.rootdir</property>
 								<project>
 									<groupId>org.frankframework</groupId>
-									<artifactId>ibis-adapterframework-parent</artifactId>
+									<artifactId>frankframework-parent</artifactId>
 								</project>
 							</configuration>
 						</execution>
@@ -872,7 +872,7 @@
 							</tag>
 						</tags>
 						<useStandardDocletOptions>true</useStandardDocletOptions>
-						<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp,ibis-adapterframework-console-frontend</skippedModules>
+						<skippedModules>frankframework-test,frankframework-example,frankframework-webapp,frankframework-console-frontend</skippedModules>
 					</configuration>
 					<executions>
 						<execution>
@@ -1199,7 +1199,7 @@
 						<extensions>true</extensions>
 						<configuration>
 							<serverId>ossrh</serverId>
-							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
 							<autoReleaseAfterClose>false</autoReleaseAfterClose>
 						</configuration>
 					</plugin>
@@ -1208,11 +1208,11 @@
 			<distributionManagement>
 				<repository>
 					<id>ossrh</id>
-					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+					<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 				</repository>
 				<snapshotRepository>
 					<id>ossrh</id>
-					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+					<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
 				</snapshotRepository>
 				<site>
 					<id>www.ibissource.org</id>
@@ -1394,9 +1394,9 @@
 							<outputDirectory>${project.build.directory}/frankdoc</outputDirectory>
 							<source>${maven.compiler.source}</source>
 							<useStandardDocletOptions>false</useStandardDocletOptions>
-							<appendTo>ibis-adapterframework-core</appendTo>
-							<finalName>ibis-adapterframework-parent-${project.version}</finalName>
-							<skippedModules>ibis-adapterframework-test,ibis-adapterframework-example,ibis-adapterframework-webapp,ibis-adapterframework-console-backend,ibis-adapterframework-console-frontend</skippedModules>
+							<appendTo>frankframework-core</appendTo>
+							<finalName>frankframework-parent-${project.version}</finalName>
+							<skippedModules>frankframework-test,frankframework-example,frankframework-webapp,frankframework-console-backend,frankframework-console-frontend</skippedModules>
 						</configuration>
 						<executions>
 							<execution>

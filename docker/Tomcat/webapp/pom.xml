@@ -3,13 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>ibis-adapterframework-docker-tomcat-webapp</artifactId>
+	<artifactId>frankframework-docker-tomcat-webapp</artifactId>
 	<name>Frank!Framework - Docker > Tomcat > WebApp</name>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-docker-tomcat</artifactId>
+		<artifactId>frankframework-docker-tomcat</artifactId>
 		<version>${revision}</version>
 	</parent>
 
@@ -97,7 +97,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-webapp</artifactId>
+			<artifactId>frankframework-webapp</artifactId>
 			<type>war</type>
 		</dependency>
 	</dependencies>
@@ -133,7 +133,7 @@
 							<artifactItems>
 								<artifactItem>
 									<groupId>org.frankframework</groupId>
-									<artifactId>ibis-adapterframework-webapp</artifactId>
+									<artifactId>frankframework-webapp</artifactId>
 									<version>${project.version}</version>
 									<type>war</type>
 									<outputDirectory>${project.build.directory}/dependencies/war</outputDirectory>

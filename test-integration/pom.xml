@@ -3,22 +3,22 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
-	<artifactId>ibis-adapterframework-test-integration</artifactId>
-	<name>Ibis AdapterFramework Integration Tests for various databases, messaging and mail systems</name>
+	<artifactId>frankframework-test-integration</artifactId>
+	<name>Frank!Framework Integration Tests for various databases, messaging and mail systems</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<artifactId>frankframework-core</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-core</artifactId>
+			<artifactId>frankframework-core</artifactId>
 			<classifier>tests</classifier>
 			<type>test-jar</type>
 			<version>${project.version}</version>
@@ -26,17 +26,17 @@
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-aws</artifactId>
+			<artifactId>frankframework-aws</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-cmis</artifactId>
+			<artifactId>frankframework-cmis</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>ibis-adapterframework-sap</artifactId>
+			<artifactId>frankframework-sap</artifactId>
 			<scope>test</scope>
 		</dependency>
 

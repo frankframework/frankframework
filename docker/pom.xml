@@ -3,13 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>pom</packaging>
 
-	<artifactId>ibis-adapterframework-docker</artifactId>
+	<artifactId>frankframework-docker</artifactId>
 	<name>Frank!Framework - Docker</name>
 	<version>${revision}</version>
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>ibis-adapterframework-parent</artifactId>
+		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
 
@@ -81,19 +81,19 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-docker-tomcat</artifactId>
+				<artifactId>frankframework-docker-tomcat</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-docker-tomcat-example</artifactId>
+				<artifactId>frankframework-docker-tomcat-example</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>ibis-adapterframework-docker-tomcat-test</artifactId>
+				<artifactId>frankframework-docker-tomcat-test</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 			</dependency>

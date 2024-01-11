@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
@@ -238,11 +239,10 @@ public class ApiListenerServlet extends HttpServletBase {
 						response.setHeader("Access-Control-Allow-Headers", headers);
 					response.setHeader("Access-Control-Expose-Headers", CorsExposeHeaders);
 
-					StringBuilder methods = new StringBuilder();
-					for (ApiListener.HttpMethod mtd : config.getMethods()) {
-						methods.append(", ").append(mtd);
-					}
-					response.setHeader("Access-Control-Allow-Methods", methods.toString());
+					String methods = config.getMethods().stream()
+						.map(ApiListener.HttpMethod::name)
+						.collect(Collectors.joining(", "));
+					response.setHeader("Access-Control-Allow-Methods", methods);
 
 					//Only cut off OPTIONS (aka preflight) requests
 					if (method == ApiListener.HttpMethod.OPTIONS) {
