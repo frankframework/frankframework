@@ -524,7 +524,7 @@ public class ApiListenerServlet extends HttpServletBase {
 
 				if (listener.getMethod().equals(ApiListener.HttpMethod.HEAD)) {
 					response.setContentType(listener.getContentType().toString());
-					result = null;
+					result.isNull();
 				}
 
 				/*

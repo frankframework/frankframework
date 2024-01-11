@@ -263,7 +263,7 @@ public class ApiListenerTest {
 	}
 
 	@Test
-	void testGetNoMessageWithHeadMethod() throws ListenerException {
+	void testGetEmptyBodyMessageWithHeadMethod() throws ListenerException {
 		listener.setMethod(ApiListener.HttpMethod.HEAD);
 		assertTrue(listener.processRequest(new Message("Mocked request"), new PipeLineSession()).toString().contains("[]"));
 	}
