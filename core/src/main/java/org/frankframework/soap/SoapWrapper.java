@@ -167,9 +167,11 @@ public class SoapWrapper {
 		String extractedMessage;
 		if (soapVersion == SoapVersion.SOAP12) {
 			extractedMessage = transformerS12.transform(message.asSource());
-			// If session had the wrong SOAP version stored (e.g. multiple SoapWrappers), try SOAP 1.1 too.
+			// If session had the wrong SOAP version stored (e.g. multiple SoapWrappers), try SOAP 1.1 too. (#6032)
 			if (StringUtils.isEmpty(extractedMessage)) {
 				extractedMessage = transformerS11.transform(message.asSource());
+				// TODO: previous SoapWrapper configurations can write the wrong SOAP version to the session (using the same name).
+				// Consider a solution to match the right saved SOAP version with the right SoapWrapper: e.g. cache SoapVersion inside Message.context
 			}
 		} else if (soapVersion == SoapVersion.NONE) {
 			return null;
