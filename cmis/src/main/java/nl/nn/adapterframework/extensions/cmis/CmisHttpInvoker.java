@@ -44,7 +44,7 @@ import nl.nn.adapterframework.util.EnumUtils;
 import nl.nn.adapterframework.util.LogUtil;
 import nl.nn.adapterframework.util.StreamUtil;
 
-public class CmisHttpInvoker implements HttpInvoker {
+public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 	private Logger log = LogUtil.getLogger(CmisHttpInvoker.class);
 
@@ -53,6 +53,18 @@ public class CmisHttpInvoker implements HttpInvoker {
 	//To stub during testing
 	protected CmisHttpSender createSender() {
 		return new CmisHttpSender() {};
+	}
+
+	@Override
+	public void close() {
+		if (sender != null) {
+			try {
+				sender.close();
+			} catch (SenderException e) {
+				log.warn("Unexpected exception closing CmisHttpSender", e);
+			}
+			sender = null;
+		}
 	}
 
 	private CmisHttpSender getInstance(BindingSession session) throws SenderException, ConfigurationException {

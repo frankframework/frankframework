@@ -53,6 +53,7 @@ import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisNotSupportedException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
+import org.apache.chemistry.opencmis.commons.spi.CmisBinding;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
@@ -331,11 +332,19 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	}
 
 	@Override
-	public void close() throws SenderException {
+	public void close() {
 		if (globalSession != null) {
-			globalSession.clear();
+			closeCmisSession(globalSession);
 			globalSession = null;
 		}
+	}
+
+	private void closeCmisSession(Session session) {
+		CmisBinding binding = session.getBinding();
+		if (binding != null) {
+			binding.close();
+		}
+		session.clear();
 	}
 
 	@Override
@@ -378,7 +387,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			}
 		} finally {
 			if (cmisSession != null && runtimeSession) {
-				cmisSession.clear();
+				closeCmisSession(cmisSession);
 				cmisSession = null;
 			}
 		}

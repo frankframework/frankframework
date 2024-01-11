@@ -116,7 +116,7 @@ public class CmisSessionBuilder {
 
 	/**
 	 * @param userName to connect or empty when no username
-	 * @param password 
+	 * @param password
 	 * @return a {@link Session} connected to the CMIS repository
 	 * @throws CmisSessionException when the CmisSessionBuilder fails to connect to cmis repository
 	 */
@@ -151,6 +151,8 @@ public class CmisSessionBuilder {
 			parameterMap.put(SessionParameter.BROWSER_DATETIME_FORMAT, DateTimeFormat.EXTENDED.value());
 		} else {
 			parameterMap.setUsernameTokenAuthentication(true);
+			parameterMap.put(SessionParameter.BINDING_SPI_CLASS, CmisCustomWebServicesSpi.class.getName());
+
 			// OpenCMIS requires an entrypoint url (wsdl), if this url has been secured and is not publicly accessible,
 			// we can manually override this wsdl by reading it from the classpath.
 			//TODO: Does this work with any binding type?
@@ -192,8 +194,8 @@ public class CmisSessionBuilder {
 		//SSL
 		if (keystore!=null || truststore!=null || allowSelfSignedCertificates) {
 			CredentialFactory keystoreCf = new CredentialFactory(keystoreAuthAlias, null, keystorePassword);
-			CredentialFactory keystoreAliasCf = StringUtils.isNotEmpty(keystoreAliasAuthAlias) || StringUtils.isNotEmpty(keystoreAliasPassword) 
-							?  new CredentialFactory(keystoreAliasAuthAlias, null, keystoreAliasPassword) 
+			CredentialFactory keystoreAliasCf = StringUtils.isNotEmpty(keystoreAliasAuthAlias) || StringUtils.isNotEmpty(keystoreAliasPassword)
+							?  new CredentialFactory(keystoreAliasAuthAlias, null, keystoreAliasPassword)
 							: keystoreCf;
 			CredentialFactory truststoreCf = new CredentialFactory(truststoreAuthAlias,  null, truststorePassword);
 
@@ -229,7 +231,7 @@ public class CmisSessionBuilder {
 		if(timeout > 0)
 			parameterMap.put(SessionParameter.CONNECT_TIMEOUT, timeout);
 
-		// Custom IBIS HttpSender to support ssl connections and proxies
+		// Custom CMIS HttpSender to support ssl connections and proxies
 		parameterMap.setHttpInvoker(nl.nn.adapterframework.extensions.cmis.CmisHttpInvoker.class);
 
 		SessionFactory sessionFactory = SessionFactoryImpl.newInstance();
@@ -276,7 +278,7 @@ public class CmisSessionBuilder {
 		keystorePassword = string;
 		return this;
 	}
-	
+
 	public CmisSessionBuilder setKeyManagerAlgorithm(String keyManagerAlgorithm) {
 		this.keyManagerAlgorithm = keyManagerAlgorithm;
 		return this;
@@ -435,7 +437,7 @@ public class CmisSessionBuilder {
 			}
 		}).toString();
 	}
-	
+
 	public String getKeystore() {
 		return keystore;
 	}
