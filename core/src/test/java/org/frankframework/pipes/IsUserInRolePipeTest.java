@@ -44,7 +44,13 @@ class IsUserInRolePipeTest extends PipeTestBase<IsUserInRolePipe> {
 
 	@Test
 	void requiresNotInRoleForward() {
-		assertThrows(ConfigurationException.class, () -> pipe.configure(), "notInRoleForwardName not found");
+		assertThrows(ConfigurationException.class, () -> pipe.configure(), "notInRoleForwardName [null] not found");
+	}
+
+	@Test
+	void requiresNotInRoleForwardSetButNotFound() {
+		pipe.setNotInRoleForwardName(NOT_IN_ROLE_FORWARD_NAME);
+		assertThrows(ConfigurationException.class, () -> pipe.configure(), "notInRoleForwardName ["+NOT_IN_ROLE_FORWARD_NAME+"] not found");
 	}
 
 	@Test
