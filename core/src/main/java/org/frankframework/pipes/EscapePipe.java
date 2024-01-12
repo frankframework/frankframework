@@ -81,24 +81,43 @@ public class EscapePipe extends FixedForwardPipe {
 			return handle(input);
 		}
 
-		StringBuilder result = new StringBuilder(input);
-		int startIndex = -1;
-		while ((startIndex = result.indexOf(substringStart, startIndex + 1)) != -1) {
-			int endIndex = result.indexOf(substringEnd, startIndex);
-			if (endIndex != -1) {
-				String content = result.substring(startIndex + substringStart.length(), endIndex);
+		if (substringStart.isEmpty() || substringEnd.isEmpty()) {
+			return input;
+		}
 
-				String handledContent = handle(content);
+		StringBuilder result = new StringBuilder(input.length());
+		int startIndex = 0;
 
-				//Use "null" value when XML parsing goes wrong
-				if (handledContent == null) {
-					handledContent = "null";
-				}
+		while (startIndex < input.length()) {
+			// Find the index of substringStart in the remaining part of the input
+			int start = input.indexOf(substringStart, startIndex);
 
-				result.replace(startIndex + substringStart.length(), endIndex, handledContent);
-			} else {
+			// If substringStart is not found, append the remaining part and exit the loop
+			if (start == -1) {
+				result.append(input, startIndex, input.length());
 				break;
 			}
+
+			// Find the index of substringEnd after the current substringStart
+			int end = input.indexOf(substringEnd, start + substringStart.length());
+
+			// If substringEnd is not found, append the remaining part and exit the loop
+			if (end == -1) {
+				result.append(input, startIndex, input.length());
+				break;
+			}
+
+			// Append the part from the last startIndex to the current substringStart
+			result.append(input, startIndex, start + substringStart.length());
+
+			String content = input.substring(start + substringStart.length(), end);
+
+			String handledContent = handle(content);
+			handledContent = (handledContent == null) ? "null" : handledContent;
+
+			result.append(handledContent);
+
+			startIndex = end;
 		}
 		return result.toString();
 	}

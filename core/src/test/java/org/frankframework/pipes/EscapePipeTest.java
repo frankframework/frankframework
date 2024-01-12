@@ -63,6 +63,28 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 	}
 
 	@Test
+	public void nothingGetsEscapedWhenNoSubstringEndConfigured() throws Exception {
+		pipe.setSubstringStart("<message>");
+		pipe.setSubstringEnd("");
+		configureAndStartPipe();
+
+		PipeRunResult result = doPipe(getResource("no-substring-configured.xml"));
+		String expected = getResource("no-substring-configured.result").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
+
+	@Test
+	public void nothingGetsEscapedWhenNoSubstringStartConfigured() throws Exception {
+		pipe.setSubstringStart("");
+		pipe.setSubstringEnd("</message>");
+		configureAndStartPipe();
+
+		PipeRunResult result = doPipe(getResource("no-substring-configured.xml"));
+		String expected = getResource("no-substring-configured.result").asString();
+		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
+	}
+
+	@Test
 	public void testPartialEscapedMultiLineXmlInputSubString() throws Exception { //double escapes
 		pipe.setSubstringStart("<multi>");
 		pipe.setSubstringEnd("</multi>");
