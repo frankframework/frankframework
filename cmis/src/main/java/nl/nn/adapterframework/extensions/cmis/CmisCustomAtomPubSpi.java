@@ -18,12 +18,12 @@ package nl.nn.adapterframework.extensions.cmis;
 import static org.apache.chemistry.opencmis.client.bindings.impl.CmisBindingsHelper.HTTP_INVOKER_OBJECT;
 
 import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
-import org.apache.chemistry.opencmis.client.bindings.spi.webservices.CmisWebServicesSpi;
+import org.apache.chemistry.opencmis.client.bindings.spi.atompub.CmisAtomPubSpi;
 
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class CmisCustomWebServicesSpi extends CmisWebServicesSpi {
+public class CmisCustomAtomPubSpi extends CmisAtomPubSpi {
 	private final BindingSession bindingSession;
 
 	/**
@@ -31,9 +31,9 @@ public class CmisCustomWebServicesSpi extends CmisWebServicesSpi {
 	 *
 	 * @param session
 	 */
-	public CmisCustomWebServicesSpi(BindingSession session) {
+	public CmisCustomAtomPubSpi(BindingSession session) {
 		super(session);
-		log.warn("Creating instance of {}", getClass().getSimpleName());
+		log.warn("Creating instance of [{}]", getClass().getSimpleName());
 		this.bindingSession = session;
 	}
 

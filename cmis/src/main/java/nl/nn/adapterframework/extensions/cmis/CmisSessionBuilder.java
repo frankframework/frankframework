@@ -144,11 +144,15 @@ public class CmisSessionBuilder {
 		if (getBindingType() == BindingTypes.ATOMPUB) {
 			parameterMap.setAtomPubBindingUrl(url);
 			parameterMap.setUsernameTokenAuthentication(false);
+			parameterMap.put(SessionParameter.BINDING_SPI_CLASS, CmisCustomAtomPubSpi.class.getName());
+			log.warn("Added custom BINDING_SPI_CLASS CmisCustomAtomPubSpi to new CmisSession");
 		} else if (getBindingType() == BindingTypes.BROWSER) {
 			parameterMap.setBrowserBindingUrl(url);
 			parameterMap.setBasicAuthentication();
 			//Add parameter dateTimeFormat to send dates in ISO format instead of milliseconds.
 			parameterMap.put(SessionParameter.BROWSER_DATETIME_FORMAT, DateTimeFormat.EXTENDED.value());
+			parameterMap.put(SessionParameter.BINDING_SPI_CLASS, CmisCustomBrowserBindingSpi.class.getName());
+			log.warn("Added custom BINDING_SPI_CLASS CmisCustomBrowserBindingSpi to new CmisSession");
 		} else {
 			parameterMap.setUsernameTokenAuthentication(true);
 			parameterMap.put(SessionParameter.BINDING_SPI_CLASS, CmisCustomWebServicesSpi.class.getName());
