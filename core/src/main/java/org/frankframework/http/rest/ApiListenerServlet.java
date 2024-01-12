@@ -520,7 +520,7 @@ public class ApiListenerServlet extends HttpServletBase {
 				/*
 				 * Do the actual request processing by the ApiListener
 				 */
-				@SuppressWarnings("java:S2583") // Suppress Sonar warning for setting result to null
+				//@SuppressWarnings("java:S2583") // Suppress Sonar warning for setting result to null
 				Message result = listener.getMethod().equals(ApiListener.HttpMethod.HEAD) ? null : listener.processRequest(body, messageContext);
 
 
