@@ -52,18 +52,23 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 	//To stub during testing
 	protected CmisHttpSender createSender() {
-		return new CmisHttpSender() {};
+		CmisHttpSender cmisHttpSender = new CmisHttpSender() {};
+		log.warn("CmisHttpInvoker [{}] created new CmisHttpSender [{}]", this, cmisHttpSender);
+		return cmisHttpSender;
 	}
 
 	@Override
 	public void close() {
 		if (sender != null) {
+			log.warn("Closing CmisHttpSender [{}] from CmisHttpInvoker [{}]", sender, this);
 			try {
 				sender.close();
 			} catch (SenderException e) {
 				log.warn("Unexpected exception closing CmisHttpSender", e);
 			}
 			sender = null;
+		} else {
+			log.warn("Closing CmisHttpInvoker [{}] but does not have a sender to close", this);
 		}
 	}
 

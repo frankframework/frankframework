@@ -152,6 +152,7 @@ public class CmisSessionBuilder {
 		} else {
 			parameterMap.setUsernameTokenAuthentication(true);
 			parameterMap.put(SessionParameter.BINDING_SPI_CLASS, CmisCustomWebServicesSpi.class.getName());
+			log.warn("Added custom BINDING_SPI_CLASS CmisCustomWebServicesSpi to new CmisSession");
 
 			// OpenCMIS requires an entrypoint url (wsdl), if this url has been secured and is not publicly accessible,
 			// we can manually override this wsdl by reading it from the classpath.

@@ -481,6 +481,7 @@ public abstract class HttpSenderBase extends SenderWithParametersBase implements
 		try {
 			//Close the HttpClient and ConnectionManager to release resources and potential open connections
 			if(httpClient != null) {
+				log.warn("Close HTTP Client (should close down background threads)");
 				httpClient.close();
 			}
 		} catch (IOException e) {

@@ -43,6 +43,7 @@ import org.apache.chemistry.opencmis.client.api.QueryResult;
 import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.api.Tree;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
 import org.apache.chemistry.opencmis.commons.data.ObjectList;
@@ -267,6 +268,10 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		if(!isKeepSession()) {
 			runtimeSession = true;
 		}
+
+		if (runtimeSession) {
+			log.warn("{} using runtime session", getLogPrefix());
+		}
 	}
 
 	/**
@@ -334,15 +339,20 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 	@Override
 	public void close() {
 		if (globalSession != null) {
+			log.warn("{} Closing global CMIS session", getLogPrefix());
 			closeCmisSession(globalSession);
 			globalSession = null;
 		}
 	}
 
 	private void closeCmisSession(Session session) {
+		log.warn("{} CMIS Session Close, SPI Binding class name: [{}]", getLogPrefix(), session.getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
 		CmisBinding binding = session.getBinding();
 		if (binding != null) {
+			log.warn("{} Closing CMIS Bindings instance [{}:{}]", getLogPrefix(), binding.getClass().getSimpleName(), binding);
 			binding.close();
+		} else {
+			log.warn("{} Session has no CMIS Bindings", getLogPrefix());
 		}
 		session.clear();
 	}
@@ -387,6 +397,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 			}
 		} finally {
 			if (cmisSession != null && runtimeSession) {
+				log.warn("{} Closing CMIS runtime session", getLogPrefix());
 				closeCmisSession(cmisSession);
 				cmisSession = null;
 			}

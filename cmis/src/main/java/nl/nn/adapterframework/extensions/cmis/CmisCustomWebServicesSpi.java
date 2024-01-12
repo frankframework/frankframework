@@ -20,6 +20,9 @@ import static org.apache.chemistry.opencmis.client.bindings.impl.CmisBindingsHel
 import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
 import org.apache.chemistry.opencmis.client.bindings.spi.webservices.CmisWebServicesSpi;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class CmisCustomWebServicesSpi extends CmisWebServicesSpi {
 	private final BindingSession bindingSession;
 
@@ -30,15 +33,20 @@ public class CmisCustomWebServicesSpi extends CmisWebServicesSpi {
 	 */
 	public CmisCustomWebServicesSpi(BindingSession session) {
 		super(session);
+		log.warn("Creating instance of CmisCustomWebServicesSpi");
 		this.bindingSession = session;
 	}
 
 	@Override
 	public void close() {
+		log.warn("Closing CmisCustomWebServicesSpi");
 		Object invoker = bindingSession.get(HTTP_INVOKER_OBJECT);
 		if (invoker instanceof CmisHttpInvoker) {
 			CmisHttpInvoker cmisHttpInvoker = (CmisHttpInvoker) invoker;
+			log.warn("Closing CMIS Invoker {}", cmisHttpInvoker);
 			cmisHttpInvoker.close();
+		} else {
+			log.warn("CmisCustomWebServicesSpi does not have instance of CmisHttpInvoker: {}", invoker);
 		}
 		super.close();
 	}
