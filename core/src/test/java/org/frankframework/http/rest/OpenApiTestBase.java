@@ -174,7 +174,7 @@ public class OpenApiTestBase extends Mockito {
 		}
 		public AdapterBuilder setListener(String uriPattern, String method, String produces, String operationId) {
 			listener = new ApiListener();
-			if (method!=null) listener.setMethod(EnumUtils.parse(HttpMethod.class,method));
+			if (method!=null) listener.setMethod(EnumUtils.parse(HttpMethod.class,method).name());
 			listener.setUriPattern(uriPattern);
 			if (produces!=null) listener.setProduces(EnumUtils.parse(MediaTypes.class,produces));
 			if(StringUtils.isNotEmpty(operationId)) {

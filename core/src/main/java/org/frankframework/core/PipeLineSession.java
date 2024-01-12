@@ -60,6 +60,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String TS_SENT_KEY = "tsSent";
 	public static final String SECURITY_HANDLER_KEY ="securityHandler";
 
+	public static final String HTTP_METHOD_KEY 	   = "HttpMethod";
 	public static final String HTTP_REQUEST_KEY    = "servletRequest";
 	public static final String HTTP_RESPONSE_KEY   = "servletResponse";
 	public static final String SERVLET_CONTEXT_KEY = "servletContext";
