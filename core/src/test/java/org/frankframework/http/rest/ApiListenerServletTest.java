@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+Copyright 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -218,9 +218,7 @@ public class ApiListenerServletTest extends Mockito {
 
 		if(method != Methods.GET) {
 			request.setContent(content);
-		}
-
-		if (method == Methods.HEAD) {
+		} else {
 			request.setContent(null);
 		}
 
@@ -403,7 +401,7 @@ public class ApiListenerServletTest extends Mockito {
 		String uri = "/ApiListenerThatProducesJSON/";
 		new ApiListenerBuilder(uri, Methods.HEAD, null, MediaTypes.JSON).build();
 
-		Response result = service(createRequest(uri, Methods.HEAD, "{}"));
+		Response result = service(createRequest(uri, Methods.HEAD, (String) null));
 
 		assertEquals(200, result.getStatus());
 		assertEquals("", result.getContentAsString());
