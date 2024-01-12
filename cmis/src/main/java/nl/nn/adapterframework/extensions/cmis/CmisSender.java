@@ -347,6 +347,7 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 
 	private void closeCmisSession(Session session) {
 		log.warn("{} CMIS Session Close, SPI Binding class name: [{}]", getLogPrefix(), session.getSessionParameters().get(SessionParameter.BINDING_SPI_CLASS));
+		session.clear();
 		CmisBinding binding = session.getBinding();
 		if (binding != null) {
 			log.warn("{} Closing CMIS Bindings instance [{}:{}]", getLogPrefix(), binding.getClass().getSimpleName(), binding);
@@ -354,7 +355,6 @@ public class CmisSender extends SenderWithParametersBase implements HasKeystore,
 		} else {
 			log.warn("{} Session has no CMIS Bindings", getLogPrefix());
 		}
-		session.clear();
 	}
 
 	@Override
