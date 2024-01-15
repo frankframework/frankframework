@@ -71,6 +71,7 @@ public class PdfPipe extends FixedForwardPipe {
 	private AsposeFontManager fontManager;
 	private @Getter boolean unpackDefaultFonts = false;
 	private @Getter boolean loadExternalResources = false;
+	private @Getter int maxThreads = 1;
 
 	private CisConversionService cisConversionService;
 
@@ -129,7 +130,7 @@ public class PdfPipe extends FixedForwardPipe {
 			throw new ConfigurationException("an error occurred while loading fonts", e);
 		}
 
-		CisConfiguration configuration = new CisConfiguration(loadExternalResources, getPdfOutputLocation(), getCharset(), fontManager.getFontsPath());
+		CisConfiguration configuration = new CisConfiguration(loadExternalResources, getPdfOutputLocation(), getCharset(), fontManager.getFontsPath(), getMaxThreads());
 		cisConversionService = new CisConversionServiceImpl(configuration);
 	}
 
@@ -299,6 +300,14 @@ public class PdfPipe extends FixedForwardPipe {
 	 * @ff.default false
 	 */
 	public void setLoadExternalResources(boolean loadExternalResources) {
+		this.loadExternalResources = loadExternalResources;
+	}
+
+	/**
+	 * indicates how many threads are used for conversion of discovered attachments, 0 means no limit
+	 * @ff.default 1
+	 */
+	public void setMaxThreads(boolean loadExternalResources) {
 		this.loadExternalResources = loadExternalResources;
 	}
 }

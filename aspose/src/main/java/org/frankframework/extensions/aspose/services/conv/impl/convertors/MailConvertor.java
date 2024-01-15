@@ -21,10 +21,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
@@ -63,6 +70,8 @@ class MailConvertor extends AbstractConvertor {
 	private static final float MAX_IMAGE_HEIGHT_IN_POINTS = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - 2 * 1.1f);
 	private static final String MAIL_HEADER_DATEFORMAT = "dd-MM-yyyy HH:mm:ss";
 	private final CisConversionService cisConversionService;
+	private final ExecutorService attachmentConversionExecutor;
+
 
 	// contains mapping from MediaType to the LoadOption for the Aspose Word conversion.
 	private static final Map<MediaType, Class<? extends LoadOptions>> MEDIA_TYPE_LOAD_FORMAT_MAPPING;
@@ -90,6 +99,7 @@ class MailConvertor extends AbstractConvertor {
 	protected MailConvertor(CisConversionService cisConversionService, CisConfiguration configuration) {
 		super(configuration, MEDIA_TYPE_LOAD_FORMAT_MAPPING.keySet());
 		this.cisConversionService = cisConversionService;
+		this.attachmentConversionExecutor = Executors.newFixedThreadPool(configuration.getMaxThreads());
 	}
 
 	@Override
@@ -142,26 +152,33 @@ class MailConvertor extends AbstractConvertor {
 			Files.delete(tempMHtmlFile.toPath());
 		}
 
-		// Convert and (optional add) any attachment of the mail.
-		for (int index = 0; index < attachments.size(); index++) {
-			// Initialize Attachment object and Get the indexed Attachment reference
-			Attachment attachment = attachments.get_Item(index);
+		List<Future<CisConversionResult>> futures = new ArrayList<>();
 
-			// Convert the attachment.
-			CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, result.getConversionOption());
-			// If it is a singlepdf add the file to the current pdf.
-			if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessful()) {
-				try {
-					PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
-					pdfAttachmentUtil.addAttachmentInSinglePdf();
-				} finally {
-					deleteFile(cisConversionResultAttachment.getPdfResultFile());
-					// Clear the file because it is now incorporated in the file itself.
-					cisConversionResultAttachment.setPdfResultFile(null);
-					cisConversionResultAttachment.setResultFilePath(null);
+		// Submit tasks to the ExecutorService
+		for (Attachment attachment : attachments) {
+			// Submit a task to the executor and store the Future object
+			futures.add(attachmentConversionExecutor.submit(() ->  {
+				// Convert the attachment.
+				CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, result.getConversionOption());
+				// If it is a singlepdf add the file to the current pdf.
+				if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessful()) {
+					try {
+						PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
+						pdfAttachmentUtil.addAttachmentInSinglePdf();
+					} finally {
+						deleteFile(cisConversionResultAttachment.getPdfResultFile());
+						// Clear the file because it is now incorporated in the file itself.
+						cisConversionResultAttachment.setPdfResultFile(null);
+						cisConversionResultAttachment.setResultFilePath(null);
+					}
+
 				}
+				return cisConversionResultAttachment;
+			}));
+		}
 
-			}
+		for (Future<CisConversionResult> future : futures) {
+			CisConversionResult cisConversionResultAttachment = future.get();
 			result.addAttachment(cisConversionResultAttachment);
 		}
 	}
