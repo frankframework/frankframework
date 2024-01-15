@@ -18,6 +18,7 @@ package org.frankframework.pipes;
 import java.io.IOException;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -77,12 +78,8 @@ public class EscapePipe extends FixedForwardPipe {
 	}
 
 	private String handleSubstrings(String input) {
-		if (substringStart == null || substringEnd == null) {
+		if (StringUtils.isBlank(substringStart) || StringUtils.isBlank(substringEnd)) {
 			return handle(input);
-		}
-
-		if (substringStart.isEmpty() || substringEnd.isEmpty()) {
-			return input;
 		}
 
 		StringBuilder result = new StringBuilder(input.length());

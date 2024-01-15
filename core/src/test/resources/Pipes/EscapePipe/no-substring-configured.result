@@ -1,9 +1,9 @@
-<reasons>
-	<message>Validation using WsdlXmlValidator with 'test.wsdl' failed</message>
-	<test>Validation using WsdlXmlValidator with 'test.wsdl' failed</test>
-	<reason type="ERROR">
-		<xpath>/Envelope/Body/path/to/code</xpath>
-		<location>at (13,3)</location>
-		<message>The element type "ns4:code" must be terminated by the matching end-tag "</ns4:code>".</message>
-	</reason>
-</reasons>
+&lt;reasons&gt;
+	&lt;message&gt;Validation using WsdlXmlValidator with &#39;test.wsdl&#39; failed&lt;/message&gt;
+	&lt;test&gt;Validation using WsdlXmlValidator with &#39;test.wsdl&#39; failed&lt;/test&gt;
+	&lt;reason type=&quot;ERROR&quot;&gt;
+		&lt;xpath&gt;/Envelope/Body/path/to/code&lt;/xpath&gt;
+		&lt;location&gt;at (13,3)&lt;/location&gt;
+		&lt;message&gt;The element type &quot;ns4:code&quot; must be terminated by the matching end-tag &quot;&lt;/ns4:code&gt;&quot;.&lt;/message&gt;
+	&lt;/reason&gt;
+&lt;/reasons&gt;
