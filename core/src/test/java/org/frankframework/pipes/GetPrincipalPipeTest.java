@@ -146,7 +146,7 @@ class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 		// Expect
 		String result=prr.getResult().asString();
 		assertEquals("success", prr.getPipeForward().getName());
-		assertEquals( null, result);
+		assertEquals( "", result);
 	}
 
 	@Test
@@ -167,7 +167,7 @@ class GetPrincipalPipeTest extends PipeTestBase<GetPrincipalPipe> {
 		String result=prr.getResult().asString();
 		assertEquals(NOT_FOUND_FORWARD_NAME, prr.getPipeForward().getName());
 		assertEquals(NOT_FOUND_FORWARD_PATH, prr.getPipeForward().getPath());
-		assertEquals(null, result);
+		assertEquals("", result);
 	}
 
 	@Test
