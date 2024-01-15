@@ -165,7 +165,7 @@ public class CmisUtils {
 	}
 
 	public static void closeBindingSession(CmisSpi owner, BindingSession bindingSession) {
-		log.warn("Closing {}", owner.getClass().getSimpleName());
+		log.debug("Closing {}", owner.getClass().getSimpleName());
 		Object invoker = bindingSession.get(HTTP_INVOKER_OBJECT);
 		if (invoker instanceof CmisHttpInvoker) {
 			CmisHttpInvoker cmisHttpInvoker = (CmisHttpInvoker) invoker;
