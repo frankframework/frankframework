@@ -48,6 +48,9 @@
 		<artemis.driver.version>2.31.2</artemis.driver.version>
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
+
+		<!-- Some test dependency versions -->
+		<mockito.version>5.9.0</mockito.version>
 	</properties>
 
 	<name>Frank!Framework parent</name>
@@ -550,13 +553,13 @@
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-core</artifactId>
-				<version>5.8.0</version>
+				<version>${mockito.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.mockito</groupId>
 				<artifactId>mockito-junit-jupiter</artifactId>
-				<version>5.8.0</version>
+				<version>${mockito.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
